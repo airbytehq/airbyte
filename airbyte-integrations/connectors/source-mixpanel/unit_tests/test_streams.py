@@ -5,19 +5,19 @@
 import json
 import logging
 from datetime import timedelta
+from unittest import mock
 from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from source_mixpanel import SourceMixpanel
-from source_mixpanel.streams import EngageSchema, Export, ExportSchema, IncrementalMixpanelStream, MixpanelStream
+from source_mixpanel.components import iter_dicts
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 
-from .utils import get_url_to_mock, read_incremental, setup_response
+from .utils import get_url_to_mock, init_stream, read_incremental, setup_response
 
 
 logger = logging.getLogger("airbyte")
@@ -25,49 +25,10 @@ logger = logging.getLogger("airbyte")
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/query/"
 
 
-@pytest.fixture
-def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(MixpanelStream, "path", "v0/example_endpoint")
-    mocker.patch.object(MixpanelStream, "primary_key", "test_primary_key")
-    mocker.patch.object(MixpanelStream, "__abstractmethods__", set())
-
-
-@pytest.fixture
-def patch_incremental_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalMixpanelStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalMixpanelStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalMixpanelStream, "cursor_field", "date")
-    mocker.patch.object(IncrementalMixpanelStream, "__abstractmethods__", set())
-
-
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)
     yield time_mock
-
-
-def test_url_base(patch_base_class, config):
-    stream = MixpanelStream(authenticator=MagicMock(), **config)
-
-    assert stream.url_base == "https://mixpanel.com/api/query/"
-
-
-def test_request_headers(patch_base_class, config):
-    stream = MixpanelStream(authenticator=MagicMock(), **config)
-
-    assert stream.request_headers(stream_state={}) == {"Accept": "application/json"}
-
-
-def test_updated_state(patch_incremental_base_class, config):
-    stream = IncrementalMixpanelStream(authenticator=MagicMock(), **config)
-
-    updated_state = stream.get_updated_state(
-        current_stream_state={"date": "2021-01-25T00:00:00Z"}, latest_record={"date": "2021-02-25T00:00:00Z"}
-    )
-
-    assert updated_state == {"date": "2021-02-25T00:00:00Z"}
 
 
 @pytest.fixture
@@ -95,13 +56,6 @@ def cohorts_response():
             },
         ],
     )
-
-
-def init_stream(name="", config=None):
-    streams = SourceMixpanel().streams(config)
-    for stream in streams:
-        if stream.name == name:
-            return stream
 
 
 def test_cohorts_stream_incremental(requests_mock, cohorts_response, config_raw):
@@ -298,7 +252,7 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, confi
 
     assert len(records) == record_count
     new_updated_state = stream.get_updated_state(current_stream_state=state, latest_record=records[-1] if records else None)
-    assert new_updated_state == updated_state
+    assert new_updated_state["states"] == updated_state["states"]
 
 
 def test_cohort_members_stream_pagination(requests_mock, engage_response, config_raw):
@@ -421,12 +375,10 @@ def test_cohort_members_stream_pagination(requests_mock, engage_response, config
     records = list(read_incremental(stream, stream_state={}, cursor_field=["last_seen"]))
     assert len(records) == 5
     new_updated_state = stream.get_updated_state(current_stream_state={}, latest_record=records[-1] if records else None)
-    assert new_updated_state == {
-        "states": [
-            {"cursor": {"last_seen": "2024-03-01T11:20:47"}, "partition": {"id": 71111, "parent_slice": {}}},
-            {"cursor": {"last_seen": "2024-02-01T11:20:47"}, "partition": {"id": 72222, "parent_slice": {}}},
-        ]
-    }
+    assert new_updated_state["states"] == [
+        {"cursor": {"last_seen": "2024-03-01T11:20:47"}, "partition": {"id": 71111, "parent_slice": {}}},
+        {"cursor": {"last_seen": "2024-02-01T11:20:47"}, "partition": {"id": 72222, "parent_slice": {}}},
+    ]
 
 
 @pytest.fixture
@@ -513,16 +465,16 @@ def _minimize_schema(fill_schema, schema_original):
 
 def test_engage_schema(requests_mock, engage_schema_response, config_raw):
     stream = init_stream("engage", config=config_raw)
-    requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config_raw)), engage_schema_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", engage_schema_response)
     type_schema = {}
     _minimize_schema(type_schema, stream.get_json_schema())
 
     assert type_schema == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "additionalProperties": True,
         "properties": {
             "CreatedDate": {"type": ["null", "string"]},
-            "CreatedDateTimestamp": {"multipleOf": 1e-20, "type": ["null", "number"]},
+            "CreatedDateTimestamp": {"type": ["null", "number"]},
             "browser": {"type": ["null", "string"]},
             "browser_version": {"type": ["null", "string"]},
             "city": {"type": ["null", "string"]},
@@ -536,9 +488,9 @@ def test_engage_schema(requests_mock, engage_schema_response, config_raw):
             "last_name": {"type": ["null", "string"]},
             "last_seen": {"format": "date-time", "type": ["null", "string"]},
             "name": {"type": ["null", "string"]},
-            "properties": {"additionalProperties": True, "type": ["null", "object"]},
+            "properties": {"type": ["null", "object"]},
             "region": {"type": ["null", "string"]},
-            "tags": {"items": {}, "required": False, "type": ["null", "array"]},
+            "tags": {"type": ["null", "array"]},
             "timezone": {"type": ["null", "string"]},
             "unblocked": {"type": ["null", "string"]},
         },
@@ -547,10 +499,9 @@ def test_engage_schema(requests_mock, engage_schema_response, config_raw):
 
 
 def test_update_engage_schema(requests_mock, config, config_raw):
-    stream = EngageSchema(authenticator=MagicMock(), **config)
     requests_mock.register_uri(
         "GET",
-        get_url_to_mock(stream),
+        "https://mixpanel.com/api/query/engage/properties",
         setup_response(
             200,
             {
@@ -624,25 +575,30 @@ def export_schema_response():
         200,
         {
             "$DYNAMIC_FIELD": {"count": 6},
+            "$dynamic_field": {"count": 6},
             "$browser_version": {"count": 6},
         },
     )
 
 
-def test_export_schema(requests_mock, export_schema_response, config):
-    stream = ExportSchema(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", get_url_to_mock(stream), export_schema_response)
-
-    records = stream.read_records(sync_mode=SyncMode.full_refresh)
-
-    records_length = sum(1 for _ in records)
-    assert records_length == 2
-
-
-def test_export_get_json_schema(requests_mock, export_schema_response, config):
+def test_export_schema(requests_mock, export_schema_response, config_raw):
+    stream = init_stream("export", config_raw)
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", export_schema_response)
 
-    stream = Export(authenticator=MagicMock(), **config)
+    schema = stream.get_json_schema()
+
+    assert "DYNAMIC_FIELD" in schema["properties"]
+    assert schema["properties"]["DYNAMIC_FIELD"]["type"] == ["null", "string"]
+    assert "_dynamic_field" in schema["properties"]
+    assert schema["properties"]["_dynamic_field"]["type"] == ["null", "string"]
+    assert "browser_version" in schema["properties"]
+    assert schema["properties"]["browser_version"]["type"] == ["null", "string"]
+
+
+def test_export_get_json_schema(requests_mock, export_schema_response, config_raw):
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", export_schema_response)
+
+    stream = init_stream("export", config_raw)
     schema = stream.get_json_schema()
 
     assert "DYNAMIC_FIELD" in schema["properties"]
@@ -670,11 +626,12 @@ def export_response():
     )
 
 
-def test_export_stream(requests_mock, export_response, config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_stream(requests_mock, export_response, config_raw):
+    stream = init_stream("export", config_raw)
 
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-02-25T00:00:00Z"})
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
@@ -682,85 +639,61 @@ def test_export_stream(requests_mock, export_response, config):
     assert records_length == 1
 
 
-def test_export_stream_fail(requests_mock, export_response, config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_stream_fail(requests_mock, export_response, config_raw):
+    stream = init_stream("export", config_raw)
     error_message = ""
     requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-01-25T00:00:00Z"})
     try:
         records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
         records = list(records)
     except Exception as e:
         error_message = str(e)
-    assert "Your credentials might have expired" in error_message
+    assert "Authentication has failed. Please update your config with valid credentials." in error_message
 
 
-def test_handle_time_zone_mismatch(requests_mock, config, caplog):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_handle_time_zone_mismatch(requests_mock, export_config, caplog):
+    stream = init_stream("export", export_config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="to_date cannot be later than today")
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
     records = []
-    for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
-    assert list(records) == []
-    assert (
-        "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. "
-        "Stopping current stream sync." in caplog.text
-    )
+    try:
+        for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+    except MessageRepresentationAirbyteTracedErrors as airbyte_error:
+        assert (
+            "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings."
+        ) in airbyte_error.message
 
 
-def test_export_stream_request_params(config):
-    stream = Export(authenticator=MagicMock(), **config)
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
-
-    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
-    assert "where" not in request_params
-
-    stream_slice["time"] = "2021-06-16T17:00:00"
-    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
-    assert "where" in request_params
-    timestamp = int(pendulum.parse("2021-06-16T17:00:00Z").timestamp())
-    assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'
-
-
-def test_export_terminated_early(requests_mock, config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_terminated_early(requests_mock, export_config):
+    stream = init_stream("export", export_config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), text="terminated early\n")
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
     assert list(read_full_refresh(stream)) == []
 
 
-def test_export_iter_dicts(config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_iter_dicts():
     record = {"key1": "value1", "key2": "value2"}
     record_string = json.dumps(record)
-    assert list(stream.iter_dicts([record_string, record_string])) == [record, record]
+    assert list(iter_dicts([record_string, record_string])) == [record, record]
     # combine record from 2 standing nearby parts
-    assert list(stream.iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
+    assert list(iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
     # drop record parts because they are not standing nearby
-    assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
+    assert list(iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
 
 
 def test_export_stream_lookback_window(requests_mock, export_response, config_raw, mocker):
     """Test that export_lookback_window correctly adjusts the start date during incremental sync and verifies slice parameters"""
+    # max between attribution_window and export_lookback_window will be used, changing  attribution_window value to use export_lookback_window
+
+    config_raw["attribution_window"] = 0
     config_raw["export_lookback_window"] = 7200  # 1 hour lookback
     config_raw["start_date"] = "2021-06-01T00:00:00Z"
     config_raw["end_date"] = "2021-07-10T00:00:00Z"
 
     stream = init_stream("export", config=config_raw)
-
-    # Mock get_json_schema to avoid actual schema fetching
-    mocker.patch.object(
-        Export,
-        "get_json_schema",
-        return_value={
-            "type": "object",
-            "properties": {
-                "event": {"type": "string"},
-                "time": {"type": "string"},
-                "distinct_id": {"type": "string"},
-                "insert_id": {"type": "string"},
-            },
-        },
-    )
 
     # Mock response with two records at different times in JSONL format
     export_response_multiple = (
@@ -774,10 +707,14 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
         content=export_response_multiple,  # Use content directly for bytes
         status_code=200,
     )
-
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", {})
     # State with a timestamp 1 hour ago from the latest record
     stream_state = {"time": "2021-06-16T16:28:00Z"}
-    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state))
+    with mock.patch("airbyte_cdk.sources.declarative.incremental.datetime_based_cursor.DatetimeBasedCursor.get_stream_state") as state_mock:
+        state_mock.return_value = stream_state
+
+        stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+
     assert len(stream_slices) > 0  # Ensure we have at least one slice
     stream_slice = stream_slices[0]
 
@@ -786,9 +723,8 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
     expected_end = pendulum.parse("2021-07-10T00:00:00Z")  # From config end_date
 
     # Note: start_date might differ due to date_window_size slicing, adjust if needed
-    assert pendulum.parse(stream_slice["start_date"]) == pendulum.parse("2021-06-11T00:00:00Z")  # Adjusted by attribution_window
-    assert pendulum.parse(stream_slice["end_date"]) == expected_end
-    assert pendulum.parse(stream_slice["time"]) == expected_start
+    assert pendulum.parse(stream_slice["start_time"]) == expected_start  # Adjusted by attribution_window
+    assert pendulum.parse(stream_slice["end_time"]) == expected_end
 
     # Read records and verify both are included due to lookback
     records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
@@ -797,3 +733,109 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
     # Verify updated state is set to the latest record time
     new_state = stream.get_updated_state(stream_state, records[-1])
     assert new_state["time"] == "2021-06-16T17:28:00Z"
+
+
+@pytest.mark.parametrize(
+    "start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_slices",
+    (
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            None,
+            None,
+            [
+                {"start_time": "2021-01-01T00:00:00Z", "end_time": "2021-01-30T23:59:59Z"},
+                {"start_time": "2021-01-31T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            5,
+            None,
+            [
+                {"start_time": "2021-01-06T00:00:00Z", "end_time": "2021-02-04T23:59:59Z"},
+                {"start_time": "2021-02-05T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            None,
+            5 * 24 * 60 * 60 + 10,
+            [
+                {"start_time": "2021-01-05T23:59:50Z", "end_time": "2021-02-04T23:59:49Z"},
+                {"start_time": "2021-02-04T23:59:50Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            5,
+            5 * 24 * 60 * 60 + 10,
+            [
+                {"start_time": "2021-01-05T23:59:50Z", "end_time": "2021-02-04T23:59:49Z"},
+                {"start_time": "2021-02-04T23:59:50Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            6,
+            5 * 24 * 60 * 60 + 10,
+            [
+                {"start_time": "2021-01-05T00:00:00Z", "end_time": "2021-02-03T23:59:59Z"},
+                {"start_time": "2021-02-04T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            10,
+            None,
+            None,
+            [
+                {"start_time": "2021-01-01T00:00:00Z", "end_time": "2021-01-10T23:59:59Z"},
+                {"start_time": "2021-01-11T00:00:00Z", "end_time": "2021-01-20T23:59:59Z"},
+                {"start_time": "2021-01-21T00:00:00Z", "end_time": "2021-01-30T23:59:59Z"},
+                {"start_time": "2021-01-31T00:00:00Z", "end_time": "2021-02-09T23:59:59Z"},
+                {"start_time": "2021-02-10T00:00:00Z", "end_time": "2021-02-19T23:59:59Z"},
+                {"start_time": "2021-02-20T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+    ),
+    ids=(
+        "when step is default, lookback_window is default, state not provided",
+        "when config.attribution_window is 5 days and state provided",
+        "when config.export_lookback_window is 5 days and state provided",
+        "when config.export_lookback_window is bugger then config.attribution_window",
+        "when config.attribution_window is bugger then config.export_lookback_window",
+        "when config.date_window_size is 10",
+    ),
+)
+def test_export_stream_slices(
+    export_config, start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_slices
+):
+    export_config["start_date"] = start_date
+    export_config["end_date"] = end_date
+    if date_window_size:
+        export_config["date_window_size"] = date_window_size
+
+    with mock.patch("airbyte_cdk.sources.declarative.incremental.datetime_based_cursor.DatetimeBasedCursor.get_stream_state") as state_mock:
+        if attribution_window:
+            export_config["attribution_window"] = attribution_window
+            state_mock.return_value = {"time": (pendulum.parse(start_date) + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S%z")}
+        if export_lookback_window:
+            export_config["export_lookback_window"] = export_lookback_window
+            state_mock.return_value = {"time": (pendulum.parse(start_date) + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S%z")}
+
+        stream = init_stream("export", config=export_config)
+
+        stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+
+        assert stream_slices == expected_slices

@@ -1,30 +1,34 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import time
+import json
+import logging
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath.util
 import requests
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
-from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-
-from .source import SourceMixpanel
-from .streams.engage import EngageSchema
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
+from source_mixpanel.backoff_strategy import DEFAULT_API_BUDGET
+from source_mixpanel.property_transformation import transform_property_names
 
 
 class MixpanelHttpRequester(HttpRequester):
-    reqs_per_hour_limit = 60
-    is_first_request = True
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self.api_budget = DEFAULT_API_BUDGET
+        self.error_handler.backoff_strategies = ConstantBackoffStrategy(
+            backoff_time_in_seconds=60 * 2, config=self.config, parameters=parameters
+        )
+        super().__post_init__(parameters)
 
     def get_request_headers(
         self,
@@ -60,21 +64,6 @@ class MixpanelHttpRequester(HttpRequester):
             page = extra_params.pop("page", {})
             extra_params.update(page)
         return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
-
-    def send_request(self, **kwargs) -> Optional[requests.Response]:
-        if self.reqs_per_hour_limit:
-            if self.is_first_request:
-                self.is_first_request = False
-            else:
-                # we skip this block, if self.reqs_per_hour_limit = 0,
-                # in all other cases wait for X seconds to match API limitations
-                # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-                self.logger.info(
-                    f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}"
-                )
-                time.sleep(3600 / self.reqs_per_hour_limit)
-
-        return super().send_request(**kwargs)
 
 
 class AnnotationsHttpRequester(MixpanelHttpRequester):
@@ -276,7 +265,13 @@ class EngagePaginationStrategy(PageIncrement):
 
     _total = 0
 
-    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
+    def next_page_token(
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any],
+    ) -> Optional[Any]:
         """
         Determines page and subpage numbers for the `items` stream
 
@@ -301,58 +296,100 @@ class EngagePaginationStrategy(PageIncrement):
         self._total = 0
 
 
-class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
-    """Engage schema combines static and dynamic approaches"""
+class EngagePropertiesDpathExtractor(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
+        properties = next(super().extract_records(response))
+        _properties = []
+        for field_name in properties:
+            properties[field_name].update({"name": field_name})
+            _properties.append(properties[field_name])
 
-    schema: Mapping[str, Any]
+        yield _properties
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        if not self.file_path:
-            self.file_path = _default_file_path()
-        self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
-        self.schema = {}
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Dynamically load additional properties from API
-        Add cache to reduce a number of API calls because get_json_schema()
-        is called for each extracted record
-        """
+def iter_dicts(lines, logger=logging.getLogger("airbyte")):
+    """
+    The incoming stream has to be JSON lines format.
+    From time to time for some reason, the one record can be split into multiple lines.
+    We try to combine such split parts into one record only if parts go nearby.
+    """
+    parts = []
+    for record_line in lines:
+        if record_line == "terminated early":
+            logger.warning(f"Couldn't fetch data from Export API. Response: {record_line}")
+            return
+        try:
+            yield json.loads(record_line)
+        except ValueError:
+            parts.append(record_line)
+        else:
+            parts = []
 
-        if self.schema:
-            return self.schema
+        if len(parts) > 1:
+            try:
+                yield json.loads("".join(parts))
+            except ValueError:
+                pass
+            else:
+                parts = []
 
-        schema = super().get_json_schema()
 
-        types = {
-            "boolean": {"type": ["null", "boolean"]},
-            "number": {"type": ["null", "number"], "multipleOf": 1e-20},
-            # no format specified as values can be "2021-12-16T00:00:00", "1638298874", "15/08/53895"
-            "datetime": {"type": ["null", "string"]},
-            "object": {"type": ["null", "object"], "additionalProperties": True},
-            "list": {"type": ["null", "array"], "required": False, "items": {}},
-            "string": {"type": ["null", "string"]},
-        }
+class ExportDpathExtractor(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+        # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
+        records = list(iter_dicts(response.iter_lines(decode_unicode=True)))
+        return records
 
-        params = {"authenticator": SourceMixpanel.get_authenticator(self.config), "region": self.config.get("region")}
-        project_id = self.config.get("credentials", {}).get("project_id")
-        if project_id:
-            params["project_id"] = project_id
 
-        schema["additionalProperties"] = self.config.get("select_properties_by_default", True)
+class ExportErrorHandler(DefaultErrorHandler):
+    """
+    Custom error handler for handling export errors specific to Mixpanel streams.
 
-        # read existing Engage schema from API
-        schema_properties = EngageSchema(**params).read_records(sync_mode=SyncMode.full_refresh)
-        for property_entry in schema_properties:
-            property_name: str = property_entry["name"]
-            property_type: str = property_entry["type"]
-            if property_name.startswith("$"):
-                # Just remove leading '$' for 'reserved' mixpanel properties name, example:
-                # from API: '$browser'
-                # to stream: 'browser'
-                property_name = property_name[1:]
-            # Do not overwrite 'standard' hard-coded properties, add 'custom' properties
-            if property_name not in schema["properties"]:
-                schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
-        self.schema = schema
-        return schema
+    This handler addresses:
+    - 400 status code with "to_date cannot be later than today" message, indicating a potential timezone mismatch.
+    - ConnectionResetError during response parsing, indicating a need to retry the request.
+
+    If the response does not match these specific cases, the handler defers to the parent class's implementation.
+
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response):
+            try:
+                # trying to parse response to avoid ConnectionResetError and retry if it occurs
+                iter_dicts(response_or_exception.iter_lines(decode_unicode=True))
+            except ConnectionResetError:
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                )
+
+        return super().interpret_response(response_or_exception)
+
+
+class PropertiesTransformation(RecordTransformation):
+    properties_field: str = None
+
+    def __init__(self, properties_field: str = None) -> None:
+        self.properties_field = properties_field
+
+    def transform(
+        self,
+        record: Record,
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        updated_record = {}
+        to_transform = record[self.properties_field] if self.properties_field else record
+
+        for result in transform_property_names(to_transform.keys()):
+            updated_record[result.transformed_name] = to_transform[result.source_name]
+
+        if self.properties_field:
+            record[self.properties_field].clear()
+            record[self.properties_field].update(updated_record)
+        else:
+            record.clear()
+            record.update(updated_record)
