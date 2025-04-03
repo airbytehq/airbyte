@@ -56,7 +56,7 @@ The values are generated on netsuite as follows:
    - Client SuiteScript
    - Server SuiteScript
    - Token Based Authentication
-2. Create an integration Record (Setup > Integration > Manage Integrations > New)
+2. Create an Integration Record (Setup > Integration > Manage Integrations > New)
    - Check the "Token Based Authentication" box only. (No need for TBA Authorization Flow)
    - Upon creation copy and save the Consumer Key and Consumer Secret.
 3. Create an access token (Setup > Users/Roles > Access Tokens > New)
