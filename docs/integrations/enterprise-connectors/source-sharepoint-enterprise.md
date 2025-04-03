@@ -1,10 +1,7 @@
-# Source Sharepoint Enterprise
+# Microsoft SharePoint
 
 :::info
-Airbyte Enterprise Connectors are a selection of premium connectors available exclusively for
-Airbyte Self-Managed Enterprise and Airbyte Teams customers. These connectors, built and maintained by the Airbyte team,
-provide enhanced capabilities and support for critical enterprise systems.
-To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
+Airbyte Enterprise Connectors are a selection of premium connectors available exclusively for Airbyte Self-Managed Enterprise and Airbyte Teams customers. These connectors, built and maintained by the Airbyte team, provide enhanced capabilities and support for critical enterprise systems. To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
 :::
 
 <HideInUI>
@@ -25,20 +22,26 @@ This page contains the setup guide and reference information for the [Microsoft 
 
 ### Set up Microsoft SharePoint
 
-1. Click Sources and then click + New source.
-2. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
-3. Enter a name for the Microsoft SharePoint connector.
-4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
-5. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
-7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-8. Add a stream:
+<!-- env:enterprise -->
+
+### For Airbyte:
+
+1. Log into your Airbyte environment account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
+4. Enter a name for the Microsoft SharePoint connector.
+5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
+7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
+8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+9. Add a stream:
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-9. Click **Set up source**
+10. Click **Set up source**
+<!-- /env:cloud -->
 
 
 ### Step 1: Set up SharePoint application
@@ -77,27 +80,8 @@ This source requires **Application permissions**. Follow these [instructions](ht
 14. Click **Add permissions**
 15. Click **Grant admin consent**
 
-### Step 2: Set up the Microsoft SharePoint connector in Airbyte
+<!-- /env:enterprise -->
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
-4. Enter the name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
-6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-7. Switch to **Service Key Authentication**
-8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
-9. Enter **Tenant ID**, **Client ID** and **Client secret**.
-10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-11. Add a stream:
-    1. Write the **File Type**
-    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
-    3. Give a **Name** to the stream
-    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-12. Click **Set up source**
-
-<!-- /env:oss -->
 
 ## Path Patterns
 
@@ -230,7 +214,7 @@ The Document file type format is a special format that allows you to extract tex
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
-Before parsing each document, the connector exports Word Document files to Docx format internally. Excel spreadsheets and Powerpoint presentations are internally exported and parsed by the connector as PDFs.
+Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
 
 <HideInUI>
 
@@ -256,19 +240,29 @@ Format options will not be taken into account. Instead, files will be transferre
 
 </FieldAnchor>
 
-### Replicate Permissions ACL
-
-This mode allows to sync Sharepoint files permissions (ACLs) and Identities (users and groups) from your Sharepoint site. The Identities Stream is enabled by default.
-
-
-#### Preserve Sub-Directories in File Paths
+##### Preserve Sub-Directories in File Paths
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
 ### Multi-Site Support
 
 By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
-The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+The site url should be in the format `https://<tenant_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+To have the connector iterate all sub-sites provide the site url as `https://<tenant_name>.sharepoint.com/sites/`.
+
+### Replicate Permissions ACLs and Identities
+This mode allows to sync Microsoft Sharepoint files permissions (ACLs) and Identities (users, groups, devices, applications) from your Sharepoint Workspace.
+
+To use these features, ensure you have the correct permissions.
+
+#### Authorization for ACLs and Identities
+When setting up this connector, ensure that the following permissions are authorized:  
+
+- User.Read.All
+- Group.Read.All
+- Application.Read.All
+- Device.Read.All
+
 
 ### Supported sync modes
 
@@ -278,7 +272,6 @@ The Microsoft SharePoint source connector supports the following [sync modes](ht
 |:------------------|:---------------------|
 | Full Refresh Sync | Yes                  |
 | Incremental Sync  | Yes                  |
-| Replicate ACLs    | Yes                  |
 
 ### Supported Streams
 
@@ -301,6 +294,10 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 <details>
   <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.1.0 | 2025-04-01 | [11111](https://github.com/airbytehq/airbyte/pull/11111) | New source |
 
 </details>
 
