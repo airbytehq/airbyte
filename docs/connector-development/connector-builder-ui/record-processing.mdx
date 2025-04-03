@@ -60,7 +60,7 @@ Example JSON response body:
 }
 ```
 
-This is the most common response format. APIs usually include a `"Content-Type": "application/json"` response header when returning a JSON body.
+This is the most common response format. APIs usually include a `"Content-Type": "application/json"` response header when returning a JSON body. Consult that API's documentation to verify which content type you should expect.
 
 In this case, no extra decoding needs to happen to convert these responses into JSON because they are already in JSON format.
 
@@ -98,11 +98,12 @@ Example XML response body:
 </weatherdata>
 ```
 
-APIs usually include a `"Content-Type": "application/xml"` response header when returning an XML body.
+APIs usually include a `"Content-Type": "application/xml"` response header when returning an XML body. Consult that API's documentation to verify which content type you should expect.
 
 In this case, the XML body is converted into a normalized JSON format by following the patterns described in [this spec](https://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html) from xml.com.
 
 For the above example, the XML response format setting would result in the following normalized JSON output:
+
 ```json
 {
   "weatherdata": {
@@ -188,7 +189,7 @@ Example JSON Lines response body:
 
 [JSON Lines](https://jsonlines.org/) is a text format that contains one JSON object per line, with newlines in between.
 
-There is no standardized `Content-Type` header for API responses containing JSON Lines, so it is common for APIs to just include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case.
+There is no standardized `Content-Type` header for API responses containing JSON Lines, so it is common for APIs to just include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case. Consult that API's documentation to verify which content type you should expect.
 
 For the above example, the JSON Lines response format setting would result in the following normalized JSON output:
 
@@ -226,7 +227,7 @@ Example iterable response body:
 
 This response format option is used for API response bodies that are text containing strings separated by newlines.
 
-APIs are likely to include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case.
+APIs are likely to include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case. Consult that API's documentation to verify which content type you should expect.
 
 By convention, the connector will wrap each of these strings in a JSON object under a `record` key.
 
@@ -263,7 +264,7 @@ id,name,email,created_at
 3,Bob Johnson,bob.johnson@example.com,2023-01-17T11:45:00Z
 ```
 
-This response format is used for API responses that return data in CSV format. APIs typically include a `"Content-Type": "text/csv"` response header when returning CSV data.
+This response format is used for API responses that return data in CSV format. APIs typically include a `"Content-Type": "text/csv"` response header when returning CSV data. Consult that API's documentation to verify which content type you should expect.
 
 The CSV decoder converts each row of the CSV into a JSON object, using the header row to determine field names. CSV files can be delimited with characters other than commas. Set a different delimiter if your file isn't comma-delimited.
 
