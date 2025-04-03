@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.file.gcs
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
+import com.google.cloud.storage.Storage.ComposeRequest
 import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.util.setOnce
@@ -15,12 +16,14 @@ import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * This class is responsible for uploading individual parts to GSC and compose them at the end.
+ * This class is responsible for uploading individual parts to GCS and composing them at the end.
  *
- * /!\ One thing to note here is that, unlike a multipart upload, which does not render the file
- * until everything has been finalized, this will create all the chunks on storage and they will be
- * visible. This is breaking change for an eventual GCS destination. It should be okay however for
- * BigQuery. We may also decide to add all the chunks under a specific Airbyte controlled folder /!\
+ * /!\ Unlike typical "multipart upload" semantics, each part is visible as a standalone object
+ * until
+ * ```
+ *    it is composed into a final object. That’s usually acceptable for BigQuery usage, but be aware
+ *    if building a pure GCS-based destination.
+ * ```
  */
 class GcsStreamingUpload(
     private val storage: Storage,
@@ -31,90 +34,145 @@ class GcsStreamingUpload(
     private val log = KotlinLogging.logger {}
     private val isComplete = AtomicBoolean(false)
     private val uploadId = generateUploadId()
+
+    /**
+     * Store part references: index => temporary object name. We do not store file contents in
+     * memory.
+     */
     private val parts = ConcurrentSkipListMap<Int, String>()
 
     // GCS requires metadata keys to conform to RFC 2616 (HTTP/1.1)
     private val invalidMetadataCharsRegex = Regex("[^\\w\\-_.]")
 
-    /**
-     * Upload a part to the GCS object as part of a resumable upload. Each part gets its own unique
-     * upload URL within the session.
-     */
+    /** Upload a part to GCS. Each part is stored as a temporary blob. */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
-        // Generate a unique part name using the upload ID and index
         val partName = combinePath("$uploadId-part-$index")
         log.info { "Uploading part #$index => $partName" }
 
-        // Create a temporary blob for each part
         val partBlobId = BlobId.of(config.gcsBucketName, partName)
         val partBlobInfo = BlobInfo.newBuilder(partBlobId).build()
 
-        // Upload the part
         storage.create(partBlobInfo, part)
 
-        // Keep track of the parts in the order they arrived
         parts[index] = partName
 
         log.info { "Uploaded part #$index => $partName, size: ${part.size} bytes" }
     }
 
-    /**
-     * Complete the upload by composing all uploaded parts into the final object. If no parts were
-     * uploaded, create an empty object.
-     */
+    /** Compose all parts into the final object. If no parts exist, create an empty object. */
     override suspend fun complete(): GcsBlob {
-        // Generate final object key based on upload ID
         val finalObjectKey = combinePath("$uploadId-final")
 
-        if (isComplete.setOnce()) {
-            if (parts.isEmpty()) {
-                log.warn {
-                    "No parts uploaded. Creating empty object: gs://${config.gcsBucketName}/$finalObjectKey"
-                }
-                // Create an empty object
-                val blobId = BlobId.of(config.gcsBucketName, finalObjectKey)
-                val blobInfo =
-                    BlobInfo.newBuilder(blobId).setMetadata(filterInvalidMetadata(metadata)).build()
-
-                storage.create(blobInfo, ByteArray(0))
-            } else {
-                log.info {
-                    "Composing parts for gs://${config.gcsBucketName}/$finalObjectKey: ${parts.values}"
-                }
-
-                // Create the final blob with metadata
-                val blobId = BlobId.of(config.gcsBucketName, finalObjectKey)
-                val blobInfo =
-                    BlobInfo.newBuilder(blobId).setMetadata(filterInvalidMetadata(metadata)).build()
-
-                // WARNING We need to keep the order of the upload unchanged when we compose.
-                // Meaning that we will need to ensure that we compose based on the index
-                // I also just remembered that there is a limit of 32 parts at a time when we
-                // compose
-                // I need to deal with that
-
-                // Build the compose request with all part names as sources
-                val composeRequest = Storage.ComposeRequest.newBuilder().setTarget(blobInfo)
-
-                // Add each part as a source
-                parts.values.forEach { partName -> composeRequest.addSource(partName) }
-
-                // Compose all parts into the final object
-                storage.compose(composeRequest.build())
-
-                // Clean up temporary part objects
-                cleanupParts()
-            }
-        } else {
+        if (!isComplete.setOnce()) {
             log.warn {
                 "Complete called multiple times for gs://${config.gcsBucketName}/$finalObjectKey"
             }
+            return GcsBlob(finalObjectKey, config)
         }
+
+        // Prepare the final blob info with metadata
+        val finalBlobId = BlobId.of(config.gcsBucketName, finalObjectKey)
+        val finalBlobInfo =
+            BlobInfo.newBuilder(finalBlobId).setMetadata(filterInvalidMetadata(metadata)).build()
+
+        if (parts.isEmpty()) {
+            // Create an empty object if no parts were uploaded
+            log.warn {
+                "No parts uploaded. Creating empty object: gs://${config.gcsBucketName}/$finalObjectKey"
+            }
+            storage.create(finalBlobInfo, ByteArray(0))
+            return GcsBlob(finalObjectKey, config)
+        }
+
+        // Compose all part objects (possibly more than 32) into one.
+        val allPartNames = parts.values.toList()
+        log.info {
+            "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$finalObjectKey"
+        }
+
+        // multiLevelCompose returns the name of a single object that combines all parts
+        val composedName = multiLevelCompose(allPartNames)
+
+        // If multiLevelCompose did not produce finalObjectKey directly,
+        // compose that single result into the final blob so we can set metadata
+        if (composedName != finalObjectKey) {
+            val composeRequest =
+                ComposeRequest.newBuilder().setTarget(finalBlobInfo).addSource(composedName).build()
+            storage.compose(composeRequest)
+
+            // Clean up that last intermediate
+            storage.delete(BlobId.of(config.gcsBucketName, composedName))
+        } else {
+            // Otherwise, just update metadata on it (in case it was created directly)
+            val existing = storage.get(finalBlobId)
+            existing?.toBuilder()?.setMetadata(filterInvalidMetadata(metadata))?.build()?.also {
+                storage.update(it)
+            }
+        }
+
+        // Clean up the individual part objects
+        cleanupParts()
 
         return GcsBlob(finalObjectKey, config)
     }
 
-    /** Delete all temporary part objects after successful composition */
+    /**
+     * Compose an arbitrary list of object names into one GCS object, respecting the 32-object
+     * limit. We do so in multiple passes ("layers"), chunking up to 32 objects at each step.
+     */
+    private fun multiLevelCompose(sources: List<String>): String {
+        var currentParts = sources
+        var pass = 0
+
+        // Repeat until we have 32 or fewer objects.
+        while (currentParts.size > 32) {
+            val newParts = mutableListOf<String>()
+
+            // In each pass, chunk the list into sublists of up to 32 items,
+            // compose them into a new intermediate object, and collect those intermediates.
+            for ((i, chunk) in currentParts.chunked(32).withIndex()) {
+                val intermediateName = combinePath("$uploadId-intermediate-pass${pass}-$i")
+                val intermediateBlobId = BlobId.of(config.gcsBucketName, intermediateName)
+                val intermediateInfo = BlobInfo.newBuilder(intermediateBlobId).build()
+
+                val composeRequest =
+                    ComposeRequest.newBuilder()
+                        .setTarget(intermediateInfo)
+                        .addSource(chunk) // chunk is an Iterable<String>
+                        .build()
+
+                storage.compose(composeRequest)
+                newParts.add(intermediateName)
+            }
+
+            currentParts = newParts
+            pass++
+        }
+
+        // Now we have 32 or fewer objects left. If it's exactly 1, we're done.
+        if (currentParts.size == 1) {
+            return currentParts[0]
+        }
+
+        // Otherwise, compose them all in one final pass.
+        val finalIntermediate = combinePath("$uploadId-intermediate-pass${pass}-final")
+        val finalBlobId = BlobId.of(config.gcsBucketName, finalIntermediate)
+        val finalBlobInfo = BlobInfo.newBuilder(finalBlobId).build()
+
+        val request =
+            ComposeRequest.newBuilder()
+                .setTarget(finalBlobInfo)
+                .addSource(currentParts) // 2..32 objects
+                .build()
+
+        storage.compose(request)
+        return finalIntermediate
+    }
+
+    /**
+     * Delete all temporary part objects after successful composition. Intermediate objects get
+     * cleaned up in the multi-level composition process or after the final composition.
+     */
     private fun cleanupParts() {
         parts.values.forEach { partName ->
             try {
@@ -129,22 +187,25 @@ class GcsStreamingUpload(
     }
 
     private fun generateUploadId(): String {
-        return "gcs-upload-${System.currentTimeMillis()}-${(1..8).map { ('a'..'z').random() }.joinToString("")}"
+        val randomSuffix = (1..8).map { ('a'..'z').random() }.joinToString("")
+        return "gcs-upload-${System.currentTimeMillis()}-$randomSuffix"
     }
 
+    /** Filter out invalid metadata keys/values and rename invalid chars in keys to underscores. */
     private fun filterInvalidMetadata(metadata: Map<String, String>): Map<String, String> {
         return metadata
             .mapKeys { (key, _) ->
-                // Convert invalid characters to underscore and ensure lowercase
+                // Convert invalid characters to underscore and force lowercase
                 key.lowercase().replace(invalidMetadataCharsRegex, "_")
             }
-            .filter { (key, value) ->
-                // Filter out entries with empty keys or values
-                key.isNotBlank() && value.isNotBlank()
-            }
+            .filter { (key, value) -> key.isNotBlank() && value.isNotBlank() }
     }
 
     private fun combinePath(key: String): String {
-        return if (config.path.isBlank()) key else "${config.path}/$key".replace("//", "/")
+        return if (config.path.isBlank()) {
+            key
+        } else {
+            "${config.path}/$key".replace("//", "/")
+        }
     }
 }
