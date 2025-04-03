@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.teradata.typing_deduping
 
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META
@@ -424,16 +425,17 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
     ): String {
         val query =
             java.lang.String.format(
-                "CREATE TABLE %s AS ( SELECT %s %s, %s %s, CAST(NULL AS TIMESTAMP WITH TIME ZONE) %s, %s %s, CAST(NULL AS JSON) %s FROM %s.%s) WITH DATA",
+                "CREATE TABLE %s AS ( SELECT %s %s, %s %s, CAST(NULL AS TIMESTAMP WITH TIME ZONE) %s, %s %s, CAST(NULL AS JSON) %s, 0 %s FROM %s.%s) WITH DATA",
                 rawTableName,
                 COLUMN_NAME_AB_ID,
                 COLUMN_NAME_AB_RAW_ID,
                 COLUMN_NAME_EMITTED_AT,
                 COLUMN_NAME_AB_EXTRACTED_AT,
                 COLUMN_NAME_AB_LOADED_AT,
-                COLUMN_NAME_DATA,
+                COLUMN_NAME_DATA,   
                 COLUMN_NAME_DATA,
                 COLUMN_NAME_AB_META,
+                COLUMN_NAME_AB_GENERATION_ID,
                 namespace,
                 tableName,
             )
