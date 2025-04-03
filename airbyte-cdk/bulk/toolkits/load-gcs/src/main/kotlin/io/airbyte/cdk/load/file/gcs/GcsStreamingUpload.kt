@@ -73,85 +73,31 @@ class GcsStreamingUpload(
             return GcsBlob(key, config)
         }
 
-        // Compose all part objects (possibly more than 32) into one.
+        // We can assume here that we won't have more than 32 parts. This should be handled
+        // in the configuration (total size / chunk_size <= 32)
         val allPartNames = parts.values.toList()
+        check(allPartNames.size > 32) {
+            "We are attempting to compose more than 32 parts for key $key. GCS is not capable of doing that."
+        }
         log.info { "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$key" }
 
-        // multiLevelCompose returns the name of a single object that combines all parts
-        val composedName = multiLevelCompose(allPartNames)
+        // Create the final blob with metadata
+        val blobId = BlobId.of(config.gcsBucketName, key)
+        val blobInfo = BlobInfo.newBuilder(blobId).setMetadata(metadata).build()
 
-        // If multiLevelCompose did not produce finalObjectKey directly,
-        // compose that single result into the final blob so we can set metadata
-        if (composedName != key) {
-            val composeRequest =
-                ComposeRequest.newBuilder().setTarget(finalBlobInfo).addSource(composedName).build()
-            storage.compose(composeRequest)
+        // Build the compose request with all part names as sources
+        val composeRequest = ComposeRequest.newBuilder().setTarget(blobInfo)
 
-            // Clean up that last intermediate
-            storage.delete(BlobId.of(config.gcsBucketName, composedName))
-        } else {
-            // Otherwise, just update metadata on it (in case it was created directly)
-            val existing = storage.get(finalBlobId)
-            existing?.toBuilder()?.setMetadata(metadata)?.build()?.also { storage.update(it) }
-        }
+        // Add each part as a source
+        parts.values.forEach { partName -> composeRequest.addSource(partName) }
+
+        // Compose it all
+        storage.compose(composeRequest.build())
 
         // Clean up the individual part objects
         cleanupParts()
 
         return GcsBlob(key, config)
-    }
-
-    /**
-     * Compose an arbitrary list of object names into one GCS object, respecting the 32-object
-     * limit. We do so in multiple passes ("layers"), chunking up to 32 objects at each step.
-     */
-    private fun multiLevelCompose(sources: List<String>): String {
-        var currentParts = sources
-        var pass = 0
-
-        // Repeat until we have 32 or fewer objects.
-        while (currentParts.size > 32) {
-            val newParts = mutableListOf<String>()
-
-            // In each pass, chunk the list into sublists of up to 32 items,
-            // compose them into a new intermediate object, and collect those intermediates.
-            for ((i, chunk) in currentParts.chunked(32).withIndex()) {
-                val intermediateName = combinePath("$uploadId-intermediate-pass${pass}-$i")
-                val intermediateBlobId = BlobId.of(config.gcsBucketName, intermediateName)
-                val intermediateInfo = BlobInfo.newBuilder(intermediateBlobId).build()
-
-                val composeRequest =
-                    ComposeRequest.newBuilder()
-                        .setTarget(intermediateInfo)
-                        .addSource(chunk) // chunk is an Iterable<String>
-                        .build()
-
-                storage.compose(composeRequest)
-                newParts.add(intermediateName)
-            }
-
-            currentParts = newParts
-            pass++
-        }
-
-        // Now we have 32 or fewer objects left. If it's exactly 1, we're done.
-        if (currentParts.size == 1) {
-            return currentParts[0]
-        }
-
-        // Otherwise, compose them all in one final pass.
-        val finalIntermediate = combinePath("$uploadId-intermediate-pass${pass}-final")
-        val finalBlobId = BlobId.of(config.gcsBucketName, finalIntermediate)
-        val finalBlobInfo = BlobInfo.newBuilder(finalBlobId).build()
-
-        val request =
-            ComposeRequest.newBuilder()
-                .setTarget(finalBlobInfo)
-                .addSource(currentParts) // 2..32 objects
-                .build()
-
-        storage.compose(request)
-        return finalIntermediate
     }
 
     /**
