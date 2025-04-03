@@ -11,16 +11,16 @@ API Reference: https://www.dingconnect.com/Api/Description
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| getcountries | uuid | DefaultPaginator | ✅ |  ❌  |
-| getcurrencies | uuid | DefaultPaginator | ✅ |  ❌  |
-| getregions | uuid | DefaultPaginator | ✅ |  ❌  |
-| getproducts | uuid | DefaultPaginator | ✅ |  ❌  |
-| getproviders | uuid | DefaultPaginator | ✅ |  ❌  |
-| geterrorcodedescriptions | uuid | DefaultPaginator | ✅ |  ❌  |
-| getpromotions | uuid | DefaultPaginator | ✅ |  ✅  |
-| getproductdescriptions | uuid | DefaultPaginator | ✅ |  ❌  |
+| Stream Name                 | Primary Key | Pagination        | Supports Full Sync | Supports Incremental |
+|-----------------------------|-------------|-------------------|---------------------|----------------------|
+| getcountries                | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| getcurrencies               | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| geterrorcodedescriptions    | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| getproductdescriptions      | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| getproducts                 | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| getpromotions               | uuid        | DefaultPaginator  | ✅                  | ✅                  |
+| getproviders                | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| getregions                  | uuid        | DefaultPaginator  | ✅                  | ❌                  |
 
 ## Changelog
 
@@ -29,6 +29,6 @@ API Reference: https://www.dingconnect.com/Api/Description
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-03 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| 0.0.1 | 2025-04-03 | [56995](https://github.com/airbytehq/airbyte/pull/56995) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
