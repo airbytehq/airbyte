@@ -72,9 +72,9 @@ class GcsStreamingUpload(
         // We can assume here that we won't have more than 32 parts. This should be handled
         // in the configuration (total size / chunk_size <= 32)
         val allPartNames = parts.values.toList()
-        check(allPartNames.size > 32) {
-            "We are attempting to compose more than 32 parts for key $key."
-            "GCS is not capable of doing that."
+        check(allPartNames.size <= 32) {
+            "We are attempting to compose more than 32 parts for key $key. " +
+                "GCS is not capable of doing that."
         }
         log.info { "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$key" }
 
