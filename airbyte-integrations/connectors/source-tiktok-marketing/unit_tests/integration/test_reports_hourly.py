@@ -90,6 +90,20 @@ class TestAdsReportHourly(TestCase):
         "real_time_app_install",
         "real_time_app_install_cost",
         "app_install",
+        "profile_visits_rate",
+        "purchase",
+        "purchase_rate",
+        "registration",
+        "registration_rate",
+        "sales_lead",
+        "sales_lead_rate",
+        "cost_per_app_install",
+        "cost_per_purchase",
+        "cost_per_registration",
+        "cost_per_sales_lead",
+        "cost_per_total_sales_lead",
+        "cost_per_total_app_event_add_to_cart",
+        "total_app_event_add_to_cart",
     ]
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
