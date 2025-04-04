@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.object_storage.LoadedObject
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.BatchAccumulator
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.object_storage.PartToObjectAccumulator
 import io.airbyte.cdk.load.write.object_storage.RecordToPartAccumulator
 import java.io.ByteArrayOutputStream
@@ -39,7 +40,8 @@ class MSSQLBulkLoadStreamLoader(
     private val defaultSchema: String,
     private val azureBlobClient: AzureBlobClient,
     private val validateValuesPreLoad: Boolean,
-    private val recordBatchSizeOverride: Long? = null
+    private val recordBatchSizeOverride: Long? = null,
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     // Bulk-load related collaborators
@@ -64,6 +66,8 @@ class MSSQLBulkLoadStreamLoader(
     override suspend fun start() {
         super.start() // calls ensureTableExists()
         formatFilePath = mssqlFormatFileCreator.createAndUploadFormatFile(defaultSchema).key
+        val state = MSSQLStreamState(dataSource, formatFilePath)
+        streamStateStore.put(stream.descriptor, state)
     }
 
     /**
@@ -193,3 +197,12 @@ class MSSQLBulkLoadStreamLoader(
             )
     }
 }
+
+/**
+ * For use by the new interface (to pass stream state creating during `start` to the BulkLoad
+ * loader.)
+ */
+data class MSSQLStreamState(
+    val dataSource: DataSource,
+    val formatFilePath: String,
+)

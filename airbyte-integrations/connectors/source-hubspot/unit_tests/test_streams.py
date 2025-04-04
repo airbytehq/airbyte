@@ -690,7 +690,7 @@ def test_web_analytics_latest_state(common_params, mocker):
     pendulum_now_mock = mocker.patch("pendulum.now")
     pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=10)
 
-    parent_slicer_mock = mocker.patch("source_hubspot.streams.Stream.read_records")
+    parent_slicer_mock = mocker.patch("source_hubspot.streams.BaseStream.read_records")
     parent_slicer_mock.return_value = (_ for _ in [{"objectId": "1", "occurredAt": "2021-01-02T00:00:00Z"}])
 
     stream = ContactsWebAnalytics(**common_params)

@@ -139,6 +139,7 @@ class DestinationTaskLauncherUTest {
             partitioner,
             updateBatchTaskFactory,
             hasThrown = AtomicBoolean(false),
+            heartbeatTask = mockk(relaxed = true)
         )
     }
 
