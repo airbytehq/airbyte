@@ -1,8 +1,6 @@
 package io.airbyte.cdk.output
 
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.micronaut.context.annotation.Secondary
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.File
@@ -17,7 +15,7 @@ import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
 private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-
+private val logger = KotlinLogging.logger {}
 @Singleton
 //@Secondary
 class UnixDomainSocketOutputConsumer(
@@ -26,13 +24,15 @@ class UnixDomainSocketOutputConsumer(
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     bufferByteSizeThresholdForFlush: Int,
 ) : StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
-    private val socketNum: Int = 1
+    private val socketNum: Int = 0
     val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
     var sc: SocketChannel? = null
 
     override fun withLockFlushRecord() {
         sc ?: let {
+            logger.info { "Using socket..." }
             val socketFile = File(socketPath)
+            logger.info { "Socket File path $socketPath" }
             if (socketFile.exists()) {
                 socketFile.delete()
             }
@@ -40,12 +40,18 @@ class UnixDomainSocketOutputConsumer(
             val serverSocketChannel: ServerSocketChannel =
                 ServerSocketChannel.open(StandardProtocolFamily.UNIX)
             serverSocketChannel.bind(address)
-            sc = ServerSocketChannel.open(StandardProtocolFamily.UNIX).accept()
+            logger.info { "Source : Server socket bound at ${socketFile.absolutePath}" }
+            sc = serverSocketChannel.accept()
         }
         if (buffer.size() > 0) {
             val array: ByteArray = buffer.toByteArray() + "\n".toByteArray(Charsets.UTF_8)
             sc?.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))
             buffer.reset()
         }
+    }
+
+    override fun close() {
+        super.close()
+        sc?.close()
     }
 }
