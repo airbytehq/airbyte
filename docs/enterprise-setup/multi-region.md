@@ -2,7 +2,7 @@
 products: oss-enterprise
 ---
 
-# Set up multiple regions
+# Implement multiple regions
 
 Self-Managed Enterprise customers can use Airbyte's public API to define regions and create self-registering data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment.
 
@@ -12,9 +12,9 @@ By default, Airbyte has a single data plane that any workspace in the organizati
 
 To configure additional data planes and associate them to specific workspaces, you complete the steps below.
 
-1. Create a region.
-2. Create a data plane in that region. The data plane automatically registers with the control plane.
-3. Associate your data plane to your Airbyte workspace. You can tie each workspace to exactly one data plane.
+1. [Create a region](#step-1).
+2. [Create a data plane](#step-2) in that region.
+3. [Associate your data plane to an Airbyte workspace](#step-3). You can tie each workspace to exactly one data plane.
 
 Once you associate a workspace with a data plane, data in that workspace traverses your data plane in the region you've defined.
 
@@ -24,47 +24,45 @@ Once you associate a workspace with a data plane, data in that workspace travers
 
 Before you begin, beware of the following limitations, and consider how they might impact your environment.
 
-#### Data residency
+#### Some data resides in the control plane
 
 While data planes process data in their respective regions, some metadata remains in the control plane.
 
-- Airbyte stores Cursor and Primary Key data in the US control plane regardless of data plane location. If you have data that you can't store in the US, don't use it as a cursor or primary key.
+- Airbyte stores Cursor and Primary Key data in the control plane regardless of data plane location. If you have data that you can't store in the region used by your control plane, don't use it as a cursor or primary key.
 
-- Airbyte stores logs in the US control plane regardless of data plane location.
+- Airbyte stores logs in the control plane regardless of data plane location.
 
-- The Connector Builder processes all data through US data planes, regardless of workspace settings. This limitation applies to the development and testing phase only; published connectors respect workspace data residency settings during syncs.
+- The Connector Builder processes all data through the control plane, regardless of workspace settings. This limitation applies to the development and testing phase only; published connectors respect workspace data residency settings during syncs.
 
-#### Performance
+#### Performance considerations
+
+- Ensure there's sufficient network bandwidth between the control plane and data planes, especially for high-volume data operations.
 
 - Data planes in geographically distant regions may experience increased latency when communicating with the control plane, potentially affecting sync scheduling and status updates.
 
-- Ensure sufficient network bandwidth between the control plane and data planes, especially for high-volume data operations.
-
-- Moving data between regions may incur additional cloud provider costs and latency. <!-- is this a thing? -->
-
-#### Connector compatibility
+#### Keep connectors compatible and globally available
 
 - If you create custom connectors, you must deploy custom connectors to each workspace/region you need to use them.
 
-- Ensure connector versions are consistent across all data planes to prevent unexpected behavior. <!-- is this a thing? -->
+- Ensure connector versions are consistent across all workspaces to prevent unexpected behavior.
 
-- Some connectors with high resource requirements may need special configuration. <!-- I guess this would be like resource provisioning maybe -->
+- Some connectors with high resource requirements might need special [resource allocation](../operator-guides/configuring-connector-resources).
 
 #### Operational constraints
 
-- There's no automatic fail over between data planes. Workspaces only run in one region.
+- Airbyte doesn't provide automatic fail over between regions.
+
+- You can't sync data between different regions. All connections run in a workspace, and all workspaces run in one region.
 
 - Distributed data planes require additional monitoring setup to maintain visibility across all environments.
 
-- Maintenance Windows: Updates and maintenance must be coordinated across all data planes to ensure system consistency.
+- Coordinate updates and maintenance across all workspaces to ensure consistency.
 
-#### Scaling
+#### Scaling and overhead
 
-- While there is no hard limit on the number of data planes, practical management considerations suggest limiting to 10-15 data planes per organization.
+- Consider limiting the number of regions and data planes to the minimum number you expect to use based on your organization's operational needs and data residency obligations.
 
-- Each additional data plane requires its own infrastructure resources, increasing overall system footprint.
-
-- Each data plane adds configuration and maintenance overhead.
+- Each region you use requires its own infrastructure resources, increasing your overall system footprint and maintenance overhead.
 
 ## Prerequisites
 
@@ -76,17 +74,19 @@ Before you begin, make sure you've completed the following.
 
 3. You must be an Organization Administrator to manage regions, data planes, and workspaces.
 
+4. Set up the Cloud or physical infrastructure needed to host your data planes.
+
 <!-- Anything else? -->
 
-## 1. Create a region
+## 1. Create a region {#step-1}
 
 The first step is to create a region. Regions are organization-level objects to which you later associate your workspace.
 
-<!-- I'm a bit unclear how we associate the region with an actual geographical region, this is self-hosted -->
+### Request
 
 ```bash
 curl --request POST \
-  --url https://local.airbyte.dev/api/public/v1/regions \
+  --url https://release-1-6-0.releases.abapp.cloud/api/public/v1/regions \
   --header 'authorization: Bearer $TOKEN' \
   --header 'content-type: application/json' \
   --data '{
@@ -96,9 +96,34 @@ curl --request POST \
 }'
 ```
 
-## 2. Create a data plane
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
 
-Once you have a region, you create a data plane within in.
+Provide these parameters in the request body:
+
+- `name`: the name of your region in Airbyte. For simplicity, you might want to make this the same as the actual cloud region this region runs on.
+
+- `organization ID`: Your Airbyte organization ID. In most cases, this is `00000000-0000-0000-0000-000000000000`.
+
+- `enabled`: set to true.
+
+### Response
+
+```json
+{
+  "regionId": "uuid-string",
+  "name": "region-name",
+  "organizationId": "org-uuid-string",
+  "enabled": true,
+  "createdAt": "timestamp-string",
+  "updatedAt": "timestamp-string"
+}
+```
+
+## 2. Create a data plane {#step-2}
+
+Once you have a region, you create a data plane within it.
+
+### Request
 
 ```bash
 curl --request POST \
@@ -111,36 +136,41 @@ curl --request POST \
 }'
 ```
 
-## 3. Associate a region to a workspace
+### Response
 
-<!-- values.yaml? -->
+## 3. Associate a region to a workspace {#step-3}
 
-You can associate a workspace with a data plane using either the API or the Airbyte UI.
+One you have a region and a data plane, you need to associate that region to your workspace. Your data planes automatically register with the control plane, but you still need to inform Airbyte where you're hosting those data planes.
+
+To do this, override Airbyte's helm chart values by updating your `values.yaml` file, then redeploy your Airbyte instance.
 
 :::note
-You can only associate a workspace with one data plane at a time. To change the data plane for a workspace, simply update the region association using either of the following methods.
+You can only associate a workspace with one data plane at a time.
 :::
 
-### Using the API
+### Update your `values.yaml` file
 
-```bash
-???
+```yaml title="values.yaml"
+TBD
 ```
 
-<!-- values.yaml? -->
+### Redeploy Airbyte
 
-### Using the Airbyte UI
+In your terminal:
 
-1. In Airbyte's user interface, click **Settings**.
-2. Click **Workspace**.
-3. Under **Data Residency**, select the region you want to associate with this workspace from the dropdown menu.
-4. Click **Save**.
+```bash
+helm install \
+--namespace airbyte \
+--values ./values.yaml \
+airbyte-enterprise \
+airbyte/airbyte
+```
 
-Once you've associated a workspace with a region, all data processing for that workspace occurs in the data plane in that region. Existing connections continue to use their current data plane until the next sync.
+## Manage your regions and data planes
 
-## Manage your data planes
+### Check which region your workspaces use
 
-### Check which region your workspaces are in
+#### From Airbyte's UI
 
 You can see a list of your workspaces and the region associated to each from Airbyte's organization settings.
 
@@ -150,7 +180,9 @@ You can see a list of your workspaces and the region associated to each from Air
 
 Airbyte displayed your workspaces and their associated region under **Regions**.
 
-<!-- Is there an API method? -->
+#### From Airbyte's API
+
+<!-- My guess is we can query the workspace API and it's in the dataResidency field -->
 
 ### List all regions
 
