@@ -21,6 +21,12 @@
   white-space: nowrap;
 }
 
+html[data-theme="dark"] .badge {
+  background: var(--color-grey-40);
+  color: var(--ifm-color-emphasis-400);
+  border: none;
+}
+
 .badge:hover {
   text-decoration: none;
 }
@@ -33,6 +39,12 @@
   background: var(--color-green-40);
   color: var(--color-green-800);
   border: 1px solid var(--color-green-600);
+}
+
+html[data-theme="dark"] .available {
+  background: var(--color-grey-40);
+  color: var(--color-gray-40);
+  border: 1px solid var(--color-dark-blue-40);
 }
 
 .helpIcon {
