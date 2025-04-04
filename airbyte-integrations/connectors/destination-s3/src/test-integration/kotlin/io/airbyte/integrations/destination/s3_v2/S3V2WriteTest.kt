@@ -42,7 +42,7 @@ abstract class S3V2WriteTest(
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
-    private val mergesUnions: Boolean = false
+    private val mergesUnions: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -396,7 +396,7 @@ class S3V2WriteTestAvroUncompressed :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestAvroBzip2 :
@@ -411,7 +411,7 @@ class S3V2WriteTestAvroBzip2 :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestParquetUncompressed :
@@ -426,7 +426,7 @@ class S3V2WriteTestParquetUncompressed :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestParquetSnappy :
@@ -441,7 +441,7 @@ class S3V2WriteTestParquetSnappy :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
-        mergesUnions = true
+        mergesUnions = true,
     )
 
 class S3V2WriteTestEndpointURL :
