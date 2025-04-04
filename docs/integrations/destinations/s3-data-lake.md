@@ -2,7 +2,7 @@
 
 This page guides you through setting up the S3 Data Lake destination connector.
 
-This connector writes the Iceberg table format to S3 or an S3-compatible storage backend using a supported Iceberg catalog. This is Airbyte's preferred Iceberg integration. It replaces the older [Iceberg](iceberg) and [S3-Glue](s3-glue) destinations, performs better, and implements Airbyte's newer core features. You should switch to this destination when you can.
+This connector writes the Iceberg table format to S3 or an S3-compatible storage backend using a supported Iceberg catalog and is Airbyte's official support for the Iceberg protocol on S3.
 
 ## Prerequisites
 
