@@ -74,7 +74,7 @@ sealed class FeedBootstrap<T : Feed>(
      */
     private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
         StreamRecordConsumer {
-
+        lateinit var sock: OutputConsumer
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
             if (changes.isNullOrEmpty()) {
 
@@ -97,8 +97,12 @@ sealed class FeedBootstrap<T : Feed>(
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
 //                outputConsumer.accept(reusedMessageWithoutChanges)
-                val socketNum = ((num!!.toInt() - 1) % totalNum!!)
-                outputConsumer.getS(totalNum!!)?.get(socketNum)?.accept(reusedMessageWithoutChanges)
+                if (::sock.isInitialized.not()) {
+                    val socketNum = ((num!!.toInt() - 1) % totalNum!!)
+                    sock = outputConsumer.getS(totalNum!!)?.get(socketNum)!!
+                }
+                sock.accept(reusedMessageWithoutChanges)
+//                outputConsumer.getS(totalNum!!)?.get(socketNum)?.accept(reusedMessageWithoutChanges)
             }
         }
 
