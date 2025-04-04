@@ -21,8 +21,11 @@ class VECTOR(UserDefinedType):
             return 'VECTOR'
         return 'VECTOR(%d)' % self.dim
 
-    # this seems to return a function to convert this column's value (an array) to a string
-    # """Return a conversion function for processing bind values.
+    # the "bind_processor" is for converting the value into something which can be used with parameter binding.
+    # That is, if there is a placeholder ":vec" in the query, the result of this processor would be the value being bound to "vec"
+    # TODO: this should probably return the vector as an "32-bit IEEE 754 floating point number"
+    # see: https://mariadb.com/kb/en/vector-overview/
+    # maybe like this? https://stackoverflow.com/questions/59883083/convert-two-raw-values-to-32-bit-ieee-floating-point-number
     def bind_processor(self, dialect):
         def process(value):
             return self._to_db(value)
@@ -42,7 +45,6 @@ class VECTOR(UserDefinedType):
 
         return '[' + ','.join([str(float(v)) for v in value]) + ']'
 
-    # this should take a value as string, and return it in proper array format
     @classmethod
     def _from_db(cls, value):
         if value is None or isinstance(value, np.ndarray):
@@ -58,7 +60,8 @@ class VECTOR(UserDefinedType):
         # finally, whatever this does
         return as_array.astype(np.float32)
 
-
+    # The "literal_processor" should return a string, which can be inserted into a query as-is.
+    # As opposed to when binding is being used.
     def literal_processor(self, dialect):
         # stolen from String
         def process(value):
@@ -72,7 +75,7 @@ class VECTOR(UserDefinedType):
 
         return process
 
-
+    # The "result_processor" is for taking a result, as it comes from the DB, and returning a python variable representing it
     def result_processor(self, dialect, coltype):
         def process(value):
             return self._from_db(value)

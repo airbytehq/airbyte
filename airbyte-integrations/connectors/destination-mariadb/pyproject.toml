@@ -21,10 +21,11 @@ python = "^3.10,<3.12"
 airbyte-cdk = "^5"
 airbyte = "^0.20.0"
 langchain = "*" # why do I need to specify all of these manually, despite that other packages should pull them? NO IDEA!!
+tiktoken = "*"
 # cached-property = "==1.5.2"
 sqlalchemy = "<2.0"
 pymysql = "^1.1.1"
-pydevd-pycharm = "~243.25659.43"
+pydevd-pycharm = "~243.26053.29"
 # pydantic = "^1.10.8"
 # pydantic = "^2.0.0" # fucking pydantic
 #pydantic = {version = "^2.0.0", extras = ["v1-compat"]}
