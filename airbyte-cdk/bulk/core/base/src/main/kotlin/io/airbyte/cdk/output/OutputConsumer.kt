@@ -107,6 +107,8 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
                 .withAnalytics(analytics),
         )
     }
+
+    abstract fun getS(num: Int): List<OutputConsumer>?
 }
 
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
@@ -117,7 +119,7 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 @Secondary
 open class StdoutOutputConsumer(
     val stdout: PrintStream,
-    private val clock: Clock,
+    val clock: Clock,
     /**
      * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
      * buffer's size (in bytes) grows past this value.
@@ -250,6 +252,10 @@ open class StdoutOutputConsumer(
 
     private val namespacedTemplates = ConcurrentHashMap<String, StreamToTemplateMap>()
     private val unNamespacedTemplates = StreamToTemplateMap()
+
+    override fun getS(num: Int): List<OutputConsumer>? {
+        return null
+    }
 
     companion object {
         const val META_PREFIX = ""","meta":"""

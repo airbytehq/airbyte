@@ -31,6 +31,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
     private val log = KotlinLogging.logger {}
+    private var partitionNum: Long = 0L
 
     val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream
@@ -61,9 +62,12 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             }
             return
         }*/
-        streamRecordConsumer.accept(row.data, row.changes)
+        streamRecordConsumer.accept(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
     }
 
+    override fun setNum(num: Long) {
+        partitionNum = num
+    }
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
     }
