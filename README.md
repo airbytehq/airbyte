@@ -78,3 +78,25 @@ gsutil cp gs://prod-airbyte-cloud-connector-metadata-service/resources/connector
 # Upload the file and pray for the best
 gsutil cp ./connector_stubs.json gs://prod-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v1/connector_stubs.json
 ```
+
+## Hide Enterprise Connectors on Older Versions of Airbyte
+
+We have a mechanism that can restrict which versions of Airbyte a connector can be used on. It's called a "connector compatibility matrix", and it lives in the platform repo.
+
+When you're shipping a new enterprise connector, make sure to hide all of it's versions via [`tools/connectors/platform-compatibility/platform-compatibility.json`](https://github.com/airbytehq/airbyte-platform-internal/blob/master/tools/connectors/platform-compatibility/platform-compatibility.json#L1), and [follow the steps in the readme](https://github.com/airbytehq/airbyte-platform-internal/blob/master/tools/connectors/platform-compatibility/README.md?plain=1#L1), test your changes, and upload them.
+
+Here is an example entry that makes Service Now only run on Airbyte 1.6 and above:
+
+```json
+{
+  "connectorName": "source-servicenow",
+  "connectorType": "source",
+  "connectorDefinitionId": "23867633-144a-4d7f-845a-a8bd9b9b9e5d",
+  "compatibilityMatrix": [
+    {
+      "connectorVersion": "*",
+      "airbyteVersion": ">=1.6.0"
+    }
+  ]
+},
+```
