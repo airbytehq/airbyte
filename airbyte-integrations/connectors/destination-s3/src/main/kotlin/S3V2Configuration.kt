@@ -48,7 +48,8 @@ data class S3V2Configuration<T : OutputStream>(
     val partSizeBytes: Long = 10L * 1024 * 1024,
 
     // TEMPORARY FOR SOCKET TESTS
-    override val numSockets: Int
+    override val numSockets: Int,
+    override val inputSerializationFormat: InputSerializationFormat,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -73,6 +74,7 @@ class S3V2ConfigurationFactory :
             numSockets = pojo.numSockets ?: 1,
             numUploadWorkers = pojo.numPartLoaders ?: 5,
             numPartWorkers = pojo.numSockets ?: 1, // Should be ignored in favor of numsockets
+            inputSerializationFormat = pojo.inputSerializationFormat ?: DestinationConfiguration.InputSerializationFormat.JSONL,
         )
     }
 }

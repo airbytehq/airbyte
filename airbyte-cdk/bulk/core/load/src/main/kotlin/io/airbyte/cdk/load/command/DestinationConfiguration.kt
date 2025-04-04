@@ -104,6 +104,14 @@ abstract class DestinationConfiguration : Configuration {
     /**
      * TEMPORARY FOR SOCKET TEST
      */
+    enum class InputSerializationFormat {
+        JSONL,
+        SMILE,
+        PROTOBUF
+    }
+
+    open val inputSerializationFormat: InputSerializationFormat =
+        InputSerializationFormat.JSONL
     open val numSockets: Int = 4
 
     /**

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedJsonFormatSpecification
@@ -82,6 +83,9 @@ class S3V2Specification :
 
     @get:JsonProperty("num_part_loaders")
     val numPartLoaders: Int? = null
+
+    @get:JsonProperty("input_serialization_format")
+    val inputSerializationFormat: DestinationConfiguration.InputSerializationFormat? = null
 }
 
 @Singleton

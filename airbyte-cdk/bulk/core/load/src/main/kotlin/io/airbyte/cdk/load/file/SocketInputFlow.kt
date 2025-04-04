@@ -4,7 +4,15 @@
 
 package io.airbyte.cdk.load.file
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.MapperFeature.*
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -18,7 +26,6 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -36,6 +43,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
 class SocketInputFlow(
+    private val config: DestinationConfiguration,
     private val catalog: DestinationCatalog,
     private val part: Int,
     private val completions: Array<CompletableDeferred<Unit>>,
@@ -45,10 +53,24 @@ class SocketInputFlow(
 ) : Flow<PipelineEvent<StreamKey, DestinationRecordRaw>> {
     private val log = KotlinLogging.logger {}
 
+    private fun initMapper(): ObjectMapper = configure(ObjectMapper())
+
+    private fun initSmileMapper(): ObjectMapper = configure(SmileMapper())
+
+    private fun configure(objectMapper: ObjectMapper): ObjectMapper {
+        objectMapper
+            .enable(ACCEPT_CASE_INSENSITIVE_ENUMS)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
+            .registerModule(JavaTimeModule())
+            .registerModule(AfterburnerModule())
+        return objectMapper
+    }
+
     override suspend fun collect(
         collector: FlowCollector<PipelineEvent<StreamKey, DestinationRecordRaw>>
     ) {
-        // val socketName = "/Users/jschmidt/.sockets/ab_socket_$part"
+        //val socketName = "/Users/jschmidt/.sockets/ab_socket_$part"
         val socketName = "/var/run/sockets/ab_socket_$part"
         log.info { "About to read from socket file $socketName" }
         val socketFile = File(socketName)
@@ -68,13 +90,20 @@ class SocketInputFlow(
         }
         log.info { "Connected" }
         socketChannel.use { channel ->
-            Channels.newInputStream(channel).bufferedReader(Charsets.UTF_8).use { reader ->
+            Channels.newInputStream(channel).buffered().use { bufferedInputStream ->
                 val factory = DestinationMessageFactory(catalog, false)
                 val streamRecordCounts =
                     catalog.streams.associate { it.descriptor to 0L }.toMutableMap()
-                reader.lineSequence().forEach { line ->
-                    val airbyteMessage = line.deserializeToClass(AirbyteMessage::class.java)
-                    when (val dMessage = factory.fromAirbyteMessage(airbyteMessage, line)) {
+                val mapper = when (config.inputSerializationFormat) {
+                    DestinationConfiguration.InputSerializationFormat.JSONL -> initMapper()
+                    DestinationConfiguration.InputSerializationFormat.SMILE -> initSmileMapper()
+                    else -> throw IllegalStateException(
+                        "Unsupported serialization format ${config.inputSerializationFormat}"
+                    )
+                }
+                val iterator = mapper.readerFor(AirbyteMessage::class.java).readValues<AirbyteMessage>(bufferedInputStream)
+                iterator.forEach { airbyteMessage ->
+                    when (val dMessage = factory.fromAirbyteMessage(airbyteMessage, "")) {
                         is DestinationRecord -> {
                             streamRecordCounts.merge(dMessage.stream.descriptor, 1) { old, _ ->
                                 old + 1

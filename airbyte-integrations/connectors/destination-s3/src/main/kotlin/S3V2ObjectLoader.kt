@@ -12,9 +12,7 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
 class S3V2ObjectLoader(config: S3V2Configuration<*>) : ObjectLoader {
-    // TEMPORARY FOR SOCKET TESTS
-    // override val numPartWorkers: Int = config.numPartWorkers
-    override val numPartWorkers: Int = config.numSockets
+    override val numPartWorkers: Int = config.numPartWorkers
     override val numUploadWorkers: Int = config.numUploadWorkers
     override val maxMemoryRatioReservedForParts: Double = config.maxMemoryRatioReservedForParts
     override val objectSizeBytes: Long = config.objectSizeBytes
