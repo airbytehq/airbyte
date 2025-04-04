@@ -142,8 +142,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 20
@@ -196,8 +196,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 20
@@ -250,8 +250,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 20
@@ -290,7 +290,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /customers/{{ stream_partition['cus_id'] }}/businesses
+          path: customers/{{ stream_partition['cus_id'] }}/businesses
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -396,7 +396,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /event-types
+          path: event-types
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -487,7 +487,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /ips
+          path: ips
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -520,6 +520,104 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ip_addresses"
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('meta', {}).get('pagination', {}).get('next', '')
+              }}
+            stop_condition: >-
+              {{ not response.get('meta', {}).get('pagination',
+              {}).get('has_more', False) }}
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('meta', {}).get('pagination', {}).get('next', '')
+              }}
+            stop_condition: >-
+              {{ not response.get('meta', {}).get('pagination',
+              {}).get('has_more', False) }}
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['environment'] }}.paddle.com/
@@ -538,6 +636,8 @@ streams:
   - $ref: "#/definitions/streams/event_types"
   - $ref: "#/definitions/streams/reports"
   - $ref: "#/definitions/streams/ip_addresses"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/transactions"
 
 spec:
   type: Spec
@@ -556,25 +656,25 @@ spec:
           Developer tools > Authentication > Generate API key. Treat this key
           like a password and keep it secure.
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       environment:
         type: string
         description: The environment for the Paddle API, either 'sandbox' or 'live'.
-        name: environment
-        title: Environment
-        default: api
         enum:
           - api
           - sandbox-api
+        name: environment
         order: 1
+        title: Environment
+        default: api
       start_date:
         type: string
+        order: 2
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 2
     additionalProperties: true
 
 metadata:
@@ -589,75 +689,91 @@ metadata:
     event_types: true
     reports: true
     ip_addresses: true
+    subscriptions: false
+    transactions: false
   testedStreams:
     customers:
+      hasRecords: true
       streamHash: a2c94ea2c6e50f5545f75cdcc8e5691b18b3d8f2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     customer_addresses:
+      hasRecords: true
       streamHash: ce56e248bfcc8207dd6885b311b64d0be81528bb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     discounts:
+      hasRecords: true
       streamHash: 2e606bf0896a153d13bb8d9e51e388f525de3228
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     prices:
+      hasRecords: true
       streamHash: d9d99de4fc8343315bfd7a539bd5f628050cce3d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     products:
+      hasRecords: true
       streamHash: ff1c488e7cee6e56b19b4f7236dd07b4b69c7af2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     businesses:
-      streamHash: d9efafdb70929a5be31f7fcbbb0a1129d841abda
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: a3213e6f6e0c1427258d16f6ce7ec3fb72f80e29
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     events:
+      hasRecords: true
       streamHash: dd91d617711ce44f0036e3ed29905e5b5b4bb678
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     event_types:
-      streamHash: 25124529d6fc83a85920917a30bec3c2ac713252
+      streamHash: 12de1dd453e43c461f05529b04b8b0914d390822
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     reports:
+      hasRecords: true
       streamHash: 11f84a0c2e26331541c8edf4dfa489eee672b993
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ip_addresses:
+      streamHash: ef4d0ca52cc3391140fc624f141d3a6ebce0f9b5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    ip_addresses:
-      streamHash: 963a26e681f7013918c2c5ff1dd6b616bebd8764
+    subscriptions:
+      streamHash: a44f8ede937eb3fd2e56153935fd6cada5ebda2d
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transactions:
+      streamHash: 9c64fad984e747c46d370f09ae1ba1b17c1ef690
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist:
@@ -1386,3 +1502,456 @@ schemas:
         type: string
     required:
       - uuid
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Generated schema for Root
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      address_id:
+        type:
+          - string
+          - "null"
+      business_id:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      first_billed_at:
+        type:
+          - string
+          - "null"
+      next_billed_at:
+        type:
+          - string
+          - "null"
+      paused_at:
+        type:
+          - string
+          - "null"
+      canceled_at:
+        type:
+          - string
+          - "null"
+      collection_mode:
+        type:
+          - string
+          - "null"
+      billing_details:
+        type:
+          - object
+          - "null"
+      current_billing_period:
+        type:
+          - object
+          - "null"
+        properties:
+          starts_at:
+            type:
+              - string
+              - "null"
+          ends_at:
+            type:
+              - string
+              - "null"
+      billing_cycle:
+        type:
+          - object
+          - "null"
+        properties:
+          frequency:
+            type:
+              - number
+              - "null"
+          interval:
+            type:
+              - string
+              - "null"
+      scheduled_change:
+        type:
+          - object
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          properties:
+            status:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            recurring:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            previously_billed_at:
+              type:
+                - string
+                - "null"
+            next_billed_at:
+              type:
+                - string
+                - "null"
+            trial_dates:
+              type:
+                - object
+                - "null"
+            price:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                product_id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                tax_mode:
+                  type:
+                    - string
+                    - "null"
+                billing_cycle:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    frequency:
+                      type:
+                        - number
+                        - "null"
+                    interval:
+                      type:
+                        - string
+                        - "null"
+                trial_period:
+                  type:
+                    - object
+                    - "null"
+                unit_price:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency_code:
+                      type:
+                        - string
+                        - "null"
+                unit_price_overrides:
+                  type:
+                    - array
+                    - "null"
+                  items: {}
+                custom_data:
+                  type:
+                    - object
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                quantity:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    minimum:
+                      type:
+                        - number
+                        - "null"
+                    maximum:
+                      type:
+                        - number
+                        - "null"
+                import_meta:
+                  type:
+                    - object
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+            product:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                tax_category:
+                  type:
+                    - string
+                    - "null"
+                image_url:
+                  type:
+                    - string
+                    - "null"
+                custom_data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    features:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        aircraft_performance:
+                          type:
+                            - boolean
+                            - "null"
+                        compliance_monitoring:
+                          type:
+                            - boolean
+                            - "null"
+                        flight_log_management:
+                          type:
+                            - boolean
+                            - "null"
+                        payment_by_invoice:
+                          type:
+                            - boolean
+                            - "null"
+                        route_planning:
+                          type:
+                            - boolean
+                            - "null"
+                        sso:
+                          type:
+                            - boolean
+                            - "null"
+                    suggested_addons:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    upgrade_description:
+                      type:
+                        - string
+                        - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                import_meta:
+                  type:
+                    - object
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+      custom_data:
+        type:
+          - object
+          - "null"
+      management_urls:
+        type:
+          - object
+          - "null"
+        properties:
+          update_payment_method:
+            type:
+              - string
+              - "null"
+          cancel:
+            type:
+              - string
+              - "null"
+      discount:
+        type:
+          - object
+          - "null"
+      import_meta:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
+  transactions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Generated schema for Root
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - "null"
+      address_id:
+        type:
+          - "null"
+      business_id:
+        type:
+          - "null"
+      custom_data:
+        type:
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      collection_mode:
+        type:
+          - string
+          - "null"
+      subscription_id:
+        type:
+          - "null"
+      invoice_id:
+        type:
+          - "null"
+      invoice_number:
+        type:
+          - "null"
+      billing_details:
+        type:
+          - "null"
+      billing_period:
+        type:
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      discount_id:
+        type:
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      billed_at:
+        type:
+          - "null"
+      revised_at:
+        type:
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          properties:
+            price:
+              type:
+                - object
+                - "null"
+              properties: {}
+            quantity:
+              type:
+                - number
+                - "null"
+      details:
+        type:
+          - object
+          - "null"
+        properties: {}
+      payments:
+        type:
+          - array
+          - "null"
+        items: {}
+      checkout:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+    additionalProperties: true

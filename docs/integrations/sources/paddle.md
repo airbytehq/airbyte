@@ -23,6 +23,8 @@ API Reference: https://developer.paddle.com/api-reference/overview
 | event_types | uuid | DefaultPaginator | ✅ |  ❌  |
 | reports | id | DefaultPaginator | ✅ |  ✅  |
 | ip_addresses | uuid | DefaultPaginator | ✅ |  ❌  |
+| subscriptions | id | DefaultPaginator | ✅ |  ✅  |
+| transactions | id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
