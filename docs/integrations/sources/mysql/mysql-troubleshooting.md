@@ -44,19 +44,19 @@ MariaDB is a fork of MySQL that adds many new features. The MySQL source connect
 
 ### Query Timeout:
 
-**Error**: `java.sql.SQLException: Query execution was interrupted, maximum statement execution time exceeded`
+**Error**: `MySQL Query Timeout: The sync was aborted because the query took too long to return results, will retry.`
+
+**What Happened**:
+Your sync was temporarily interrupted because a query took too long to complete. This is usually caused by MySQL’s query execution time limit set on the server (e.g., `max_execution_time`).
 
 **Resolution**:
-While this error is _transient_ and will not result in sync failure, there are some steps that we recommend performing to
-avoid the error:
-- **For Full Refresh / Incremental:**
-  - Ensure that any execution time limits configured on your MSSQL server (e.g. `max_execution_time`) are set to at least 5 minutes.
-  If you are syncing a large table (with many rows or columns), you may need to increase this timeout further based on log analysis. 
-- **For CDC:**  
-  - Check the `Checkpoint Target Time Interval` source configuration. This setting controls how often Airbyte runs checkpoints in seconds.
-Make sure your MSSQL execution timeout is set higher than this interval. For example, if `Checkpoint Target Time Interval` is set to 300/s (5 minutes),
-then `max_execution_time` should be at least 5 minutes.
-
+While this error is transient and Airbyte will retry the sync automatically, persistent timeouts may cause the sync to fail. To prevent this:
+- Go to the Source Configuration page.
+- Under _Optional Fields_, locate `Checkpoint Target Time Interval`. 
+  - This defines how often Airbyte creates checkpoints (in seconds). The default is 5 minutes. 
+- Set MySQL’s `max_execution_time` (in milliseconds) to a value higher than this interval. 
+  - For example, if `Checkpoint Target Time Interval` is set to 300s (5 minutes),
+  then `max_execution_time` should be at least 300000ms.
 
 ### Under CDC incremental mode, there are still full refresh syncs
 
