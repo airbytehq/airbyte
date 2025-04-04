@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
 import io.airbyte.commons.json.Jsons
+import io.airbyte.commons.map.MoreMaps
 import io.airbyte.integrations.destination.teradata.util.TeradataConstants
 import java.io.IOException
 import java.io.PrintWriter
@@ -55,13 +56,31 @@ class TeradataDestination :
         setQueryBand(getDatabase(dataSource))
         return dataSource
     }
+
+    public override fun getConnectionProperties(config: JsonNode): Map<String, String> {
+        return MoreMaps.merge(appendLogMech(config), super.getConnectionProperties(config))
+    }
+    /** Appends Logging Mechanism to JDBC URL */
+    private fun appendLogMech(config: JsonNode): Map<String, String> {
+        val logmechParams: MutableMap<String, String> = HashMap()
+        if (
+            config.has(TeradataConstants.LOG_MECH) &&
+                config.get(TeradataConstants.LOG_MECH).has(TeradataConstants.AUTH_TYPE) &&
+                config.get(TeradataConstants.LOG_MECH).get(TeradataConstants.AUTH_TYPE).asText() !=
+                    TeradataConstants.TD2_LOG_MECH
+        ) {
+            logmechParams[TeradataConstants.LOG_MECH] =
+                config.get(TeradataConstants.LOG_MECH).get(TeradataConstants.AUTH_TYPE).asText()
+        }
+        return logmechParams
+    }
     /**
      * Retrieves the JdbcDatabase instance based on the provided DataSource.
      *
      * @param dataSource The DataSource to create the JdbcDatabase from.
      * @return The JdbcDatabase instance.
      */
-    override fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    public override fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
     /**
@@ -85,7 +104,7 @@ class TeradataDestination :
      * @param config The configuration settings as a JsonNode.
      * @return A map of default connection properties.
      */
-    override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
+    public override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
         val additionalParameters: MutableMap<String, String> = HashMap()
         if (
             config.has(TeradataConstants.PARAM_SSL) &&
@@ -191,8 +210,8 @@ class TeradataDestination :
     override fun toJdbcConfig(config: JsonNode): JsonNode {
         val schema = config[JdbcUtils.SCHEMA_KEY]?.asText() ?: TeradataConstants.DEFAULT_SCHEMA_NAME
         val jdbcUrl = String.format("jdbc:teradata://%s/", config[JdbcUtils.HOST_KEY].asText())
-        val userName = config[JdbcUtils.USERNAME_KEY]?.asText()
-        val password = config[JdbcUtils.PASSWORD_KEY]?.asText()
+        val userName = config[TeradataConstants.LOG_MECH]?.get(JdbcUtils.USERNAME_KEY)?.asText()
+        val password = config[TeradataConstants.LOG_MECH]?.get(JdbcUtils.PASSWORD_KEY)?.asText()
         val configBuilder =
             ImmutableMap.builder<Any, Any>()
                 .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
