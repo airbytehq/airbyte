@@ -82,11 +82,11 @@
           "sales_lead": 87,
           "sales_lead_rate": 0.021,
           "cost_per_app_install": 2.45,
-          "cost_per_purchase": 12.30,
-          "cost_per_registration": 3.10,
+          "cost_per_purchase": 12.3,
+          "cost_per_registration": 3.1,
           "cost_per_sales_lead": 7.85,
           "cost_per_total_sales_lead": 6.95,
-          "cost_per_total_app_event_add_to_cart": 1.80,
+          "cost_per_total_app_event_add_to_cart": 1.8,
           "total_app_event_add_to_cart": 212
         },
         "advertiser_id": 872746382648
@@ -170,11 +170,11 @@
           "sales_lead": 87,
           "sales_lead_rate": 0.021,
           "cost_per_app_install": 2.45,
-          "cost_per_purchase": 12.30,
-          "cost_per_registration": 3.10,
+          "cost_per_purchase": 12.3,
+          "cost_per_registration": 3.1,
           "cost_per_sales_lead": 7.85,
           "cost_per_total_sales_lead": 6.95,
-          "cost_per_total_app_event_add_to_cart": 1.80,
+          "cost_per_total_app_event_add_to_cart": 1.8,
           "total_app_event_add_to_cart": 212
         },
         "advertiser_id": 872746382648
