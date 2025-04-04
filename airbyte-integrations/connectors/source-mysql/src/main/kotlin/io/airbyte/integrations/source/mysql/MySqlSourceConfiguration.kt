@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
@@ -9,13 +9,38 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
+import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
+import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
+import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
+import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.CLIENT_KEY_STORE_PASS
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.CLIENT_KEY_STORE_TYPE
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.CLIENT_KEY_STORE_URL
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.KEY_STORE_TYPE_PKCS12
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.SSL_MODE
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.TRUST_KEY_STORE_PASS
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.TRUST_KEY_STORE_TYPE
+import io.airbyte.integrations.source.mysql.MySqlSourceConfigurationFactory.Companion.TRUST_KEY_STORE_URL
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.io.OutputStream
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
@@ -28,7 +53,7 @@ import java.util.UUID
 private val log = KotlinLogging.logger {}
 
 /** MySQL-specific implementation of [SourceConfiguration] */
-data class MySqlSourceConfiguration(
+data class MySqlSourceConfiguration<T : OutputStream>(
     override val realHost: String,
     override val realPort: Int,
     override val sshTunnel: SshTunnelMethodConfiguration?,
@@ -45,8 +70,38 @@ data class MySqlSourceConfiguration(
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
     val skipSerializationAndWriting: Boolean,
     val skipWriting: Boolean,
-    val skipSynchronizedCounts: Boolean
-) : JdbcSourceConfiguration, CdcSourceConfiguration {
+    val skipSynchronizedCounts: Boolean,
+    override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
+    override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
+    override val s3BucketConfiguration: S3BucketConfiguration,
+    override val objectStoragePathConfiguration: ObjectStoragePathConfiguration,
+    override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
+    override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
+    // Internal configuration
+    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
+        ObjectStorageUploadConfiguration(),
+    override val numProcessRecordsWorkers: Int = 1,
+    override val estimatedRecordMemoryOverheadRatio: Double = 5.0,
+    override val processEmptyFiles: Boolean = true,
+    /** Below has no effect until [S3V2ObjectLoader] is enabled. */
+    val numPartWorkers: Int,
+    val numUploadWorkers: Int,
+    val maxMemoryRatioReservedForParts: Double = 0.4,
+    val objectSizeBytes: Long = 200L * 1024 * 1024,
+    val partSizeBytes: Long = 10L * 1024 * 1024,
+    // TEMPORARY FOR COMBINED TESTS
+    override val numThreads: Int,
+) :
+    DestinationConfiguration(),
+    JdbcSourceConfiguration,
+    CdcSourceConfiguration,
+    AWSAccessKeyConfigurationProvider,
+    AWSArnRoleConfigurationProvider,
+    S3BucketConfigurationProvider,
+    ObjectStoragePathConfigurationProvider,
+    ObjectStorageFormatConfigurationProvider,
+    ObjectStorageUploadConfigurationProvider,
+    ObjectStorageCompressionConfigurationProvider<T> {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
         get() = (incrementalConfiguration as? CdcIncrementalConfiguration)?.initialLoadTimeout
@@ -58,9 +113,11 @@ data class MySqlSourceConfiguration(
         fun mysqlSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    MySqlSourceConfigurationSpecification, MySqlSourceConfiguration>,
+                    MySqlSourceConfigurationSpecification,
+                    MySqlSourceConfiguration<*>,
+                >,
             supplier: ConfigurationSpecificationSupplier<MySqlSourceConfigurationSpecification>,
-        ): MySqlSourceConfiguration = factory.make(supplier.get())
+        ): MySqlSourceConfiguration<*> = factory.make(supplier.get())
     }
 }
 
@@ -71,7 +128,7 @@ data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
     val serverTimezone: String?,
-    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -80,62 +137,35 @@ enum class InvalidCdcCursorPositionBehavior {
 }
 
 @Singleton
-class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
-    SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
-
+class MySqlSourceConfigurationFactory
+@Inject
+constructor(
+    val featureFlags: Set<FeatureFlag>,
+) :
+    SourceConfigurationFactory<
+        MySqlSourceConfigurationSpecification,
+        MySqlSourceConfiguration<*>,
+    > {
     constructor() : this(emptySet())
 
     override fun makeWithoutExceptionHandling(
         pojo: MySqlSourceConfigurationSpecification,
-    ): MySqlSourceConfiguration {
+    ): MySqlSourceConfiguration<*> {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port
-        val jdbcProperties = mutableMapOf<String, String>()
-        jdbcProperties["user"] = pojo.username
-        pojo.password?.let { jdbcProperties["password"] = it }
-
-        // Parse URL parameters.
-        val pattern = "^([^=]+)=(.*)$".toRegex()
-        for (pair in (pojo.jdbcUrlParams ?: "").trim().split("&".toRegex())) {
-            if (pair.isBlank()) {
-                continue
-            }
-            val result: MatchResult? = pattern.matchEntire(pair)
-            if (result == null) {
-                log.warn { "ignoring invalid JDBC URL param '$pair'" }
-            } else {
-                val key: String = result.groupValues[1].trim()
-                val urlEncodedValue: String = result.groupValues[2].trim()
-                jdbcProperties[key] = URLDecoder.decode(urlEncodedValue, StandardCharsets.UTF_8)
-            }
-        }
 
         // Configure SSH tunneling.
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
 
-        // Configure SSL encryption.
-        if (
-            pojo.getEncryptionValue() is EncryptionPreferred &&
-                sshTunnel is SshNoTunnelMethod &&
-                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
-        ) {
-            throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
-            )
-        }
-        val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
-        jdbcProperties.putAll(sslJdbcProperties)
+        val jdbcProperties = generateJdbcProperties(pojo, sshTunnel, featureFlags)
 
         // Configure cursor.
         val incremental: IncrementalConfiguration = fromIncrementalSpec(pojo.getIncrementalValue())
 
         // Build JDBC URL.
-        val address = "%s:%d"
-        val jdbcUrlFmt = "jdbc:mysql://${address}"
-        jdbcProperties["useCursorFetch"] = "true"
-        jdbcProperties["sessionVariables"] = "autocommit=0"
+        val jdbcUrlFmt = getJdbcFormatUrl()
 
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
@@ -163,119 +193,16 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             skipSerializationAndWriting = pojo.tmpSkipSerializationAndWriting ?: true,
             skipWriting = pojo.tmpSkipWriting ?: true,
             skipSynchronizedCounts = pojo.tmpSkipSynchronizedCounts ?: false,
+            awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
+            awsArnRoleConfiguration = pojo.toAWSArnRoleConfiguration(),
+            s3BucketConfiguration = pojo.toS3BucketConfiguration(),
+            objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
+            objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
+            objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            numThreads = pojo.numThreads ?: 1,
+            numUploadWorkers = pojo.numPartLoaders ?: 5,
+            numPartWorkers = pojo.numThreads ?: 1, // Should be ignored in favor of numThreads
         )
-    }
-
-    private fun fromIncrementalSpec(
-        incrementalSpec: IncrementalConfigurationSpecification
-    ): IncrementalConfiguration =
-        when (incrementalSpec) {
-            UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
-            is Cdc -> {
-                val initialLoadTimeout: Duration =
-                    Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())
-                val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
-                    if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail sync") {
-                        InvalidCdcCursorPositionBehavior.FAIL_SYNC
-                    } else {
-                        InvalidCdcCursorPositionBehavior.RESET_SYNC
-                    }
-                CdcIncrementalConfiguration(
-                    initialLoadTimeout,
-                    incrementalSpec.serverTimezone,
-                    invalidCdcCursorPositionBehavior,
-                )
-            }
-        }
-
-    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
-        val extraJdbcProperties: MutableMap<String, String> = mutableMapOf()
-        val sslData: SslData =
-            when (encryptionSpec) {
-                is EncryptionPreferred -> SslData("preferred")
-                is EncryptionRequired -> SslData("required")
-                is SslVerifyCertificate ->
-                    SslData(
-                        mode = "verify_ca",
-                        caCertificate = encryptionSpec.sslCertificate,
-                        clientCertificate = encryptionSpec.sslClientCertificate,
-                        clientKey = encryptionSpec.sslClientKey,
-                        keyStorePassword = encryptionSpec.sslClientPassword,
-                    )
-                is SslVerifyIdentity ->
-                    SslData(
-                        mode = "verify_identity",
-                        caCertificate = encryptionSpec.sslCertificate,
-                        clientCertificate = encryptionSpec.sslClientCertificate,
-                        clientKey = encryptionSpec.sslClientKey,
-                        keyStorePassword = encryptionSpec.sslClientPassword,
-                    )
-            }
-        extraJdbcProperties[SSL_MODE] = sslData.mode
-        if (sslData.caCertificate.isNullOrBlank()) {
-            // if CA cert is not available - done
-            return extraJdbcProperties
-        }
-        val password: String =
-            sslData.keyStorePassword.takeUnless { it.isNullOrBlank() }
-                ?: UUID.randomUUID().toString()
-        // Make keystore for CA cert with given password or generate a new password.
-        val caCertKeyStoreUrl: URL =
-            buildKeyStore("trust") {
-                SSLCertificateUtils.keyStoreFromCertificate(
-                    sslData.caCertificate,
-                    password,
-                    FileSystems.getDefault(),
-                    directory = "",
-                )
-            }
-        extraJdbcProperties[TRUST_KEY_STORE_URL] = caCertKeyStoreUrl.toString()
-        extraJdbcProperties[TRUST_KEY_STORE_PASS] = password
-        extraJdbcProperties[TRUST_KEY_STORE_TYPE] = KEY_STORE_TYPE_PKCS12
-
-        if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {
-            // if Client cert is not available - done
-            return extraJdbcProperties
-        }
-        // Make keystore for Client cert with given password or generate a new password.
-        val clientCertKeyStoreUrl: URL =
-            buildKeyStore("client") {
-                SSLCertificateUtils.keyStoreFromClientCertificate(
-                    sslData.clientCertificate,
-                    sslData.clientKey,
-                    password,
-                    directory = ""
-                )
-            }
-        extraJdbcProperties[CLIENT_KEY_STORE_URL] = clientCertKeyStoreUrl.toString()
-        extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
-        extraJdbcProperties[CLIENT_KEY_STORE_TYPE] = KEY_STORE_TYPE_PKCS12
-        return extraJdbcProperties
-    }
-
-    private data class SslData(
-        val mode: String,
-        val caCertificate: String? = null,
-        val clientCertificate: String? = null,
-        val clientKey: String? = null,
-        val keyStorePassword: String? = null,
-    )
-
-    private fun buildKeyStore(kind: String, uriSupplier: () -> URI): URL {
-        val keyStoreUri: URI =
-            try {
-                uriSupplier()
-            } catch (ex: Exception) {
-                throw ConfigErrorException("Failed to create keystore for $kind certificate", ex)
-            }
-        val keyStoreUrl: URL =
-            try {
-                keyStoreUri.toURL()
-            } catch (ex: MalformedURLException) {
-                throw ConfigErrorException("Unable to get a URL for $kind key store", ex)
-            }
-        log.debug { "URL for $kind certificate keystore is $keyStoreUrl" }
-        return keyStoreUrl
     }
 
     companion object {
@@ -288,4 +215,217 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         const val KEY_STORE_TYPE_PKCS12: String = "PKCS12"
         const val SSL_MODE: String = "sslMode"
     }
+}
+
+@Singleton
+class S3V2ConfigurationFactory(
+    private val featureFlags: Set<FeatureFlag>,
+) :
+    DestinationConfigurationFactory<
+        MySqlSourceConfigurationSpecification,
+        MySqlSourceConfiguration<*>,
+    > {
+    override fun makeWithoutExceptionHandling(
+        pojo: MySqlSourceConfigurationSpecification,
+    ): MySqlSourceConfiguration<*> {
+        // Configure SSH tunneling.
+        val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
+        val sshOpts: SshConnectionOptions =
+            SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
+
+        return MySqlSourceConfiguration(
+            awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
+            awsArnRoleConfiguration = pojo.toAWSArnRoleConfiguration(),
+            s3BucketConfiguration = pojo.toS3BucketConfiguration(),
+            objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
+            objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
+            objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            realHost = pojo.host,
+            realPort = pojo.port,
+            sshTunnel = pojo.tunnelMethod.asSshTunnelMethod(),
+            sshConnectionOptions = sshOpts,
+            jdbcUrlFmt = getJdbcFormatUrl(),
+            jdbcProperties = generateJdbcProperties(pojo, sshTunnel, featureFlags),
+            namespaces = setOf(pojo.database),
+            incrementalConfiguration = fromIncrementalSpec(pojo.getIncrementalValue()),
+            maxConcurrency = pojo.concurrency ?: 0,
+            checkpointTargetInterval =
+                Duration.ofSeconds(
+                    pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0,
+                ),
+            checkPrivileges = pojo.checkPrivileges ?: true,
+            skipSerializationAndWriting = pojo.tmpSkipSerializationAndWriting ?: true,
+            skipWriting = pojo.tmpSkipWriting ?: true,
+            skipSynchronizedCounts = pojo.tmpSkipSynchronizedCounts ?: false,
+            numPartWorkers = pojo.numThreads ?: 1,
+            numUploadWorkers = pojo.numPartLoaders ?: 5,
+            numThreads = pojo.numThreads ?: 1,
+        )
+    }
+}
+
+private fun fromIncrementalSpec(
+    incrementalSpec: IncrementalConfigurationSpecification,
+): IncrementalConfiguration =
+    when (incrementalSpec) {
+        UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
+        is Cdc -> {
+            val initialLoadTimeout: Duration =
+                Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())
+            val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
+                if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail sync") {
+                    InvalidCdcCursorPositionBehavior.FAIL_SYNC
+                } else {
+                    InvalidCdcCursorPositionBehavior.RESET_SYNC
+                }
+            CdcIncrementalConfiguration(
+                initialLoadTimeout,
+                incrementalSpec.serverTimezone,
+                invalidCdcCursorPositionBehavior,
+            )
+        }
+    }
+
+private fun generateJdbcProperties(
+    pojo: MySqlSourceConfigurationSpecification,
+    sshTunnel: SshTunnelMethodConfiguration?,
+    featureFlags: Set<FeatureFlag>,
+): Map<String, String> {
+    val jdbcProperties = mutableMapOf<String, String>()
+    jdbcProperties["user"] = pojo.username
+    pojo.password?.let { jdbcProperties["password"] = it }
+
+    // Parse URL parameters.
+    val pattern = "^([^=]+)=(.*)$".toRegex()
+    for (pair in (pojo.jdbcUrlParams ?: "").trim().split("&".toRegex())) {
+        if (pair.isBlank()) {
+            continue
+        }
+        val result: MatchResult? = pattern.matchEntire(pair)
+        if (result == null) {
+            log.warn { "ignoring invalid JDBC URL param '$pair'" }
+        } else {
+            val key: String = result.groupValues[1].trim()
+            val urlEncodedValue: String = result.groupValues[2].trim()
+            jdbcProperties[key] = URLDecoder.decode(urlEncodedValue, StandardCharsets.UTF_8)
+        }
+    }
+
+    // Configure SSL encryption.
+    if (
+        pojo.getEncryptionValue() is EncryptionPreferred &&
+            sshTunnel is SshNoTunnelMethod &&
+            featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+    ) {
+        throw ConfigErrorException(
+            "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.",
+        )
+    }
+    val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
+    jdbcProperties.putAll(sslJdbcProperties)
+
+    // Build JDBC URL.
+    jdbcProperties["useCursorFetch"] = "true"
+    jdbcProperties["sessionVariables"] = "autocommit=0"
+    return jdbcProperties
+}
+
+private fun getJdbcFormatUrl(): String {
+    val address = "%s:%d"
+    return "jdbc:mysql://$address"
+}
+
+private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
+    val extraJdbcProperties: MutableMap<String, String> = mutableMapOf()
+    val sslData: SslData =
+        when (encryptionSpec) {
+            is EncryptionPreferred -> SslData("preferred")
+            is EncryptionRequired -> SslData("required")
+            is SslVerifyCertificate ->
+                SslData(
+                    mode = "verify_ca",
+                    caCertificate = encryptionSpec.sslCertificate,
+                    clientCertificate = encryptionSpec.sslClientCertificate,
+                    clientKey = encryptionSpec.sslClientKey,
+                    keyStorePassword = encryptionSpec.sslClientPassword,
+                )
+            is SslVerifyIdentity ->
+                SslData(
+                    mode = "verify_identity",
+                    caCertificate = encryptionSpec.sslCertificate,
+                    clientCertificate = encryptionSpec.sslClientCertificate,
+                    clientKey = encryptionSpec.sslClientKey,
+                    keyStorePassword = encryptionSpec.sslClientPassword,
+                )
+        }
+    extraJdbcProperties[SSL_MODE] = sslData.mode
+    if (sslData.caCertificate.isNullOrBlank()) {
+        // if CA cert is not available - done
+        return extraJdbcProperties
+    }
+    val password: String =
+        sslData.keyStorePassword.takeUnless { it.isNullOrBlank() } ?: UUID.randomUUID().toString()
+    // Make keystore for CA cert with given password or generate a new password.
+    val caCertKeyStoreUrl: URL =
+        buildKeyStore("trust") {
+            SSLCertificateUtils.keyStoreFromCertificate(
+                sslData.caCertificate,
+                password,
+                FileSystems.getDefault(),
+                directory = "",
+            )
+        }
+    extraJdbcProperties[TRUST_KEY_STORE_URL] = caCertKeyStoreUrl.toString()
+    extraJdbcProperties[TRUST_KEY_STORE_PASS] = password
+    extraJdbcProperties[TRUST_KEY_STORE_TYPE] = KEY_STORE_TYPE_PKCS12
+
+    if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {
+        // if Client cert is not available - done
+        return extraJdbcProperties
+    }
+    // Make keystore for Client cert with given password or generate a new password.
+    val clientCertKeyStoreUrl: URL =
+        buildKeyStore("client") {
+            SSLCertificateUtils.keyStoreFromClientCertificate(
+                sslData.clientCertificate,
+                sslData.clientKey,
+                password,
+                directory = "",
+            )
+        }
+    extraJdbcProperties[CLIENT_KEY_STORE_URL] = clientCertKeyStoreUrl.toString()
+    extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
+    extraJdbcProperties[CLIENT_KEY_STORE_TYPE] = KEY_STORE_TYPE_PKCS12
+    return extraJdbcProperties
+}
+
+private data class SslData(
+    val mode: String,
+    val caCertificate: String? = null,
+    val clientCertificate: String? = null,
+    val clientKey: String? = null,
+    val keyStorePassword: String? = null,
+)
+
+private fun buildKeyStore(
+    kind: String,
+    uriSupplier: () -> URI,
+): URL {
+    val keyStoreUri: URI =
+        try {
+            uriSupplier()
+        } catch (ex: Exception) {
+            throw ConfigErrorException(
+                "Failed to create keystore for $kind certificate",
+                ex,
+            )
+        }
+    val keyStoreUrl: URL =
+        try {
+            keyStoreUri.toURL()
+        } catch (ex: MalformedURLException) {
+            throw ConfigErrorException("Unable to get a URL for $kind key store", ex)
+        }
+    log.debug { "URL for $kind certificate keystore is $keyStoreUrl" }
+    return keyStoreUrl
 }

@@ -1,8 +1,9 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.cdk.output
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SequenceWriter
+import io.airbyte.cdk.data.FlowConnector
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteCatalog
@@ -20,7 +21,6 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
@@ -32,9 +32,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
-//@DefaultImplementation(StdoutOutputConsumer::class)
+// @DefaultImplementation(StdoutOutputConsumer::class)
 @DefaultImplementation(UnixDomainSocketOutputConsumer::class)
-abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
+abstract class OutputConsumer(
+    private val clock: Clock,
+) : Consumer<AirbyteMessage>, AutoCloseable {
     /**
      * The constant emittedAt timestamp we use for record timestamps.
      *
@@ -112,9 +114,34 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
 const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 
-/** Default implementation of [OutputConsumer]. */
 @Singleton
-@Secondary
+open class CombinedOutputConsumer(
+    val stdout: PrintStream,
+    val clock: Clock,
+    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
+    val bufferByteSizeThresholdForFlush: Int,
+    val flowConnector: FlowConnector,
+) : OutputConsumer(clock) {
+    private val stdoutOutputConsumer =
+        StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush)
+
+    override fun accept(message: AirbyteMessage) {
+        when (message.type) {
+            AirbyteMessage.Type.RECORD -> flowConnector.pipe(message)
+            AirbyteMessage.Type.STATE -> flowConnector.pipe(message)
+            else -> stdoutOutputConsumer.accept(message)
+        }
+    }
+
+    override fun close() {
+        flowConnector.close()
+        stdoutOutputConsumer.close()
+    }
+}
+
+/** Default implementation of [OutputConsumer]. */
+// @Singleton
+// @Secondary
 open class StdoutOutputConsumer(
     val stdout: PrintStream,
     private val clock: Clock,
@@ -193,8 +220,9 @@ open class StdoutOutputConsumer(
     }
 
     open fun withLockFlushRecord() {
-       withLockFlush()
+        withLockFlush()
     }
+
     override fun accept(record: AirbyteRecordMessage) {
         // The serialization of RECORD messages can become a performance bottleneck for source
         // connectors because they can come in much higher volumes than other message types.
@@ -236,7 +264,10 @@ open class StdoutOutputConsumer(
 
     private val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
 
-    private fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
+    private fun getOrCreateRecordTemplate(
+        stream: String,
+        namespace: String?,
+    ): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
                 unNamespacedTemplates
@@ -265,7 +296,11 @@ private class RecordTemplate(
     val suffix: ByteArray,
 ) {
     companion object {
-        fun create(stream: String, namespace: String?, emittedAt: Instant): RecordTemplate {
+        fun create(
+            stream: String,
+            namespace: String?,
+            emittedAt: Instant,
+        ): RecordTemplate {
             // Generate a dummy AirbyteRecordMessage instance for the given args
             // using an empty object (i.e. '{}') for the "data" field value.
             val recordMessage =
@@ -286,7 +321,7 @@ private class RecordTemplate(
             // and return both parts in a RecordTemplate instance for this stream.
             return RecordTemplate(
                 prefix = (parts.first() + DATA_PREFIX).toByteArray(),
-                suffix = parts.last().toByteArray()
+                suffix = parts.last().toByteArray(),
             )
         }
 
@@ -297,6 +332,5 @@ private class RecordTemplate(
 
 @Factory
 private class PrintStreamFactory {
-
     @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
 }

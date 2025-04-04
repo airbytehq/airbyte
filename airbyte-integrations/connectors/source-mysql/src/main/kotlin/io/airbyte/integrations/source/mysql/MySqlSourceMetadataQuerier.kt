@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
@@ -27,7 +27,6 @@ private val log = KotlinLogging.logger {}
 class MySqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
-
     override fun extraChecks() {
         base.extraChecks()
         if (base.config.global) {
@@ -38,12 +37,12 @@ class MySqlSourceMetadataQuerier(
                     Triple(
                         "binlog_format",
                         "show variables where Variable_name = 'binlog_format'",
-                        "ROW"
+                        "ROW",
                     ),
                     Triple(
                         "binlog_row_image",
                         "show variables where Variable_name = 'binlog_row_image'",
-                        "FULL"
+                        "FULL",
                     ),
                 )
 
@@ -65,7 +64,7 @@ class MySqlSourceMetadataQuerier(
                     }
                 } catch (ex: SQLException) {
                     throw ConfigErrorException(
-                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
+                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode.",
                     )
                 }
             }
@@ -76,7 +75,7 @@ class MySqlSourceMetadataQuerier(
         variable: String,
         sql: String,
         expectedValue: String,
-        conn: Connection
+        conn: Connection,
     ) {
         try {
             conn.createStatement().use { stmt: Statement ->
@@ -121,9 +120,7 @@ class MySqlSourceMetadataQuerier(
             .map { StreamDescriptor().withName(it.name).withNamespace(streamNamespace) }
             .map(StreamIdentifier::from)
 
-    fun findTableName(
-        streamID: StreamIdentifier,
-    ): TableName? =
+    fun findTableName(streamID: StreamIdentifier): TableName? =
         base.memoizedTableNames.find {
             it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
         }
@@ -183,9 +180,7 @@ class MySqlSourceMetadataQuerier(
         }
     }
 
-    override fun primaryKey(
-        streamID: StreamIdentifier,
-    ): List<List<String>> {
+    override fun primaryKey(streamID: StreamIdentifier): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }
@@ -199,7 +194,6 @@ class MySqlSourceMetadataQuerier(
     )
 
     companion object {
-
         const val PK_QUERY_FMTSTR =
             """
    SELECT 
@@ -224,9 +218,9 @@ class MySqlSourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
-    ) : MetadataQuerier.Factory<MySqlSourceConfiguration> {
+    ) : MetadataQuerier.Factory<MySqlSourceConfiguration<*>> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
-        override fun session(config: MySqlSourceConfiguration): MetadataQuerier {
+        override fun session(config: MySqlSourceConfiguration<*>): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             val base =
                 JdbcMetadataQuerier(

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter
@@ -20,6 +20,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
+import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
+import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecification
+import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecificationProvider
+import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification
+import io.airbyte.cdk.load.command.s3.S3BucketRegion
+import io.airbyte.cdk.load.command.s3.S3BucketSpecification
+import io.airbyte.cdk.load.command.s3.S3PathSpecification
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
@@ -40,7 +48,13 @@ import jakarta.inject.Singleton
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
+class MySqlSourceConfigurationSpecification :
+    ConfigurationSpecification(),
+    AWSAccessKeySpecification,
+    AWSArnRoleSpecification,
+    S3BucketSpecification,
+    S3PathSpecification,
+    DeprecatedObjectStorageFormatSpecificationProvider {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -185,11 +199,58 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("tmp_skip_serialization_and_writing")
     val tmpSkipSerializationAndWriting: Boolean? = null
 
-    @JsonProperty("tmp_skip_writing")
-    val tmpSkipWriting: Boolean? = null
+    @JsonProperty("tmp_skip_writing") val tmpSkipWriting: Boolean? = null
 
-    @JsonProperty("tmp_skip_synchronized_counts")
-    val tmpSkipSynchronizedCounts: Boolean? = null
+    @JsonProperty("tmp_skip_synchronized_counts") val tmpSkipSynchronizedCounts: Boolean? = null
+
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true,"order":0}""",
+    )
+    override val accessKeyId: String? = null
+
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true,"order":1}""",
+    )
+    override val secretAccessKey: String? = null
+
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"],"order":2}""",
+    )
+    override val roleArn: String? = null
+
+    @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"],"order":3}""")
+    override val s3BucketName: String = ""
+
+    @get:JsonSchemaInject(json = """{"examples":["data_sync/test"],"order":4}""")
+    override val s3BucketPath: String = ""
+
+    @get:JsonSchemaInject(json = """{"examples":["us-east-1"],"order":5,"default":""}""")
+    override val s3BucketRegion: S3BucketRegion = S3BucketRegion.NO_REGION
+
+    @get:JsonSchemaInject(json = """{"order":6}""")
+    override val format: DeprecatedObjectStorageFormatSpecification = JsonFormatSpecification()
+
+    @get:JsonSchemaInject(json = """{"examples":["http://localhost:9000"],"order":7}""")
+    override val s3Endpoint: String? = null
+
+    @get:JsonSchemaInject(
+        json =
+            "{\"examples\":[\"\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_\"],\"order\":8}",
+    )
+    override val s3PathFormat: String? = null
+
+    @get:JsonSchemaInject(
+        json =
+            "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":9}",
+    )
+    override val fileNamePattern: String? = null
+
+    @get:JsonProperty("num_threads") val numThreads: Int? = null
+
+    @get:JsonProperty("num_part_loaders") val numPartLoaders: Int? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
@@ -217,7 +278,7 @@ data object EncryptionRequired : EncryptionSpecification
 
 @JsonSchemaTitle("verify_ca")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : EncryptionSpecification {
@@ -256,7 +317,7 @@ class SslVerifyCertificate : EncryptionSpecification {
 
 @JsonSchemaTitle("verify_identity")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyIdentity : EncryptionSpecification {
@@ -312,7 +373,7 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
-    JsonSubTypes.Type(value = Cdc::class, name = "CDC")
+    JsonSubTypes.Type(value = Cdc::class, name = "CDC"),
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -350,7 +411,7 @@ class Cdc : IncrementalConfigurationSpecification {
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(
-        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+        json = """{"order":2,"always_show":true, "enum": ["Fail sync","Re-sync data"]}""",
     )
     var invalidCdcCursorPositionBehavior: String? = "Fail sync"
 
@@ -375,4 +436,3 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
             else -> throw ConfigErrorException("invalid value $method")
         }
 }
-

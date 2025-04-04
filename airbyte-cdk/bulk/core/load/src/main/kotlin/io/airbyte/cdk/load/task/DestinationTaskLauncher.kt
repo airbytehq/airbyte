@@ -58,12 +58,24 @@ import kotlinx.coroutines.sync.withLock
 
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
-    suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
+
+    suspend fun handleNewBatch(
+        stream: DestinationStream.Descriptor,
+        wrapped: BatchEnvelope<*>,
+    )
+
     suspend fun handleStreamComplete(stream: DestinationStream.Descriptor)
+
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
+
     suspend fun handleTeardownComplete(success: Boolean = true)
+
     suspend fun handleException(e: Exception)
-    suspend fun handleFailStreamComplete(stream: DestinationStream.Descriptor, e: Exception)
+
+    suspend fun handleFailStreamComplete(
+        stream: DestinationStream.Descriptor,
+        e: Exception,
+    )
 }
 
 /**
@@ -100,19 +112,17 @@ interface DestinationTaskLauncher : TaskLauncher {
 @Secondary
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
-    justification = "arguments are guaranteed to be non-null by Kotlin's type system"
+    justification = "arguments are guaranteed to be non-null by Kotlin's type system",
 )
 class DefaultDestinationTaskLauncher<K : WithStream>(
     private val taskScopeProvider: TaskScopeProvider,
     private val catalog: DestinationCatalog,
     private val config: DestinationConfiguration,
     private val syncManager: SyncManager,
-
     // Internal Tasks
     private val inputConsumerTaskFactory: InputConsumerTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
     private val flushTickTask: FlushTickTask,
-
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
@@ -121,19 +131,15 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
-
     // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
     private val updateCheckpointsTask: UpdateCheckpointsTask,
-
     // Exception handling
     private val failStreamTaskFactory: FailStreamTaskFactory,
     private val failSyncTaskFactory: FailSyncTaskFactory,
-
     // File transfer
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
-
     // Input Consumer requirements
     private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
@@ -142,7 +148,6 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     @Named("fileMessageQueue")
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
-
     // New interface shim
     @Named("recordQueue")
     private val recordQueueForPipeline:
@@ -191,33 +196,35 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
             }
         }
 
-        override fun toString(): String {
-            return "TaskWrapper($innerTask)"
-        }
+        override fun toString(): String = "TaskWrapper($innerTask)"
     }
 
-    private suspend fun launch(task: Task, withExceptionHandling: Boolean = true) {
+    private suspend fun launch(
+        task: Task,
+        withExceptionHandling: Boolean = true,
+    ) {
         val wrapped = if (withExceptionHandling) WrappedTask(task) else task
         taskScopeProvider.launch(wrapped)
     }
 
     override suspend fun run() {
-        // Start the input consumer ASAP
-        log.info { "Starting input consumer task" }
-        val inputConsumerTask =
-            inputConsumerTaskFactory.make(
-                catalog = catalog,
-                inputFlow = inputFlow,
-                recordQueueSupplier = recordQueueSupplier,
-                checkpointQueue = checkpointQueue,
-                fileTransferQueue = fileTransferQueue,
-                destinationTaskLauncher = this,
-                recordQueueForPipeline = recordQueueForPipeline,
-                loadPipeline = loadPipeline,
-                partitioner = partitioner,
-                openStreamQueue = openStreamQueue,
-            )
-        launch(inputConsumerTask)
+        // TEMPORARY FOR COMBINED TEST
+        //        // Start the input consumer ASAP
+        //        log.info { "Starting input consumer task" }
+        //        val inputConsumerTask =
+        //            inputConsumerTaskFactory.make(
+        //                catalog = catalog,
+        //                inputFlow = inputFlow,
+        //                recordQueueSupplier = recordQueueSupplier,
+        //                checkpointQueue = checkpointQueue,
+        //                fileTransferQueue = fileTransferQueue,
+        //                destinationTaskLauncher = this,
+        //                recordQueueForPipeline = recordQueueForPipeline,
+        //                loadPipeline = loadPipeline,
+        //                partitioner = partitioner,
+        //                openStreamQueue = openStreamQueue,
+        //            )
+        //        launch(inputConsumerTask)
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
@@ -273,8 +280,9 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
             launch(flushTickTask)
         }
 
-        log.info { "Starting checkpoint update task" }
-        launch(updateCheckpointsTask)
+        // TEMPORARY FOR COMBINED TEST
+        //        log.info { "Starting checkpoint update task" }
+        //        launch(updateCheckpointsTask)
 
         // Await completion
         val result = succeeded.receive()
@@ -304,7 +312,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
      */
     override suspend fun handleNewBatch(
         stream: DestinationStream.Descriptor,
-        wrapped: BatchEnvelope<*>
+        wrapped: BatchEnvelope<*>,
     ) {
         batchUpdateLock.withLock {
             val streamManager = syncManager.getStreamManager(stream)
@@ -354,7 +362,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
 
     override suspend fun handleFailStreamComplete(
         stream: DestinationStream.Descriptor,
-        e: Exception
+        e: Exception,
     ) {
         if (failSyncIsEnqueued.setOnce()) {
             launch(failSyncTaskFactory.make(this, e))

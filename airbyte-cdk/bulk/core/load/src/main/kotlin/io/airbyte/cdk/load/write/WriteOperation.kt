@@ -29,23 +29,21 @@ interface WriteOpOverride : Task
  * Write operation. Executed by the core framework when the operation is "write". Launches the core
  * services and awaits completion.
  */
-@Singleton
-@Requires(property = Operation.PROPERTY, value = "write")
 class WriteOperation(
     private val taskLauncher: TaskLauncher,
     private val syncManager: SyncManager,
-    private val writeOpOverride: WriteOpOverride? = null
+    private val writeOpOverride: WriteOpOverride? = null,
 ) : Operation {
     val log = KotlinLogging.logger {}
 
-    override fun execute() = runBlocking {
+    override suspend fun execute() = runBlocking {
         if (writeOpOverride != null) {
             val now = System.currentTimeMillis()
             log.info { "Running override task" }
             writeOpOverride.execute()
             log.info { "Write operation override took ${System.currentTimeMillis() - now} ms" }
             throw IllegalStateException(
-                "WriteOpOverride is not intended for production use. This exception exists to prevent accidental release. To create a test tag, comment out this exception and uncomment `return @runBlocking` below."
+                "WriteOpOverride is not intended for production use. This exception exists to prevent accidental release. To create a test tag, comment out this exception and uncomment `return @runBlocking` below.",
             )
             // return@runBlocking
         }
@@ -76,7 +74,5 @@ class InputStreamProvider {
     @Singleton
     @Secondary
     @Requires(property = Operation.PROPERTY, value = "write")
-    fun make(): InputStream {
-        return System.`in`
-    }
+    fun make(): InputStream = System.`in`
 }

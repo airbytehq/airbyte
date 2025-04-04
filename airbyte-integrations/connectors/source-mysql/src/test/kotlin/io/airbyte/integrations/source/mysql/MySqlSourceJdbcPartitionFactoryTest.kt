@@ -4,38 +4,40 @@
 
 package io.airbyte.integrations.source.mysql
 
-import com.fasterxml.jackson.databind.node.BinaryNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.ClockFactory
-import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.MetaField
-import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.jdbc.BinaryStreamFieldType
-import io.airbyte.cdk.jdbc.DefaultJdbcConstants
-import io.airbyte.cdk.jdbc.IntFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
-import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
-import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.read.ConcurrencyResource
-import io.airbyte.cdk.read.ConfiguredSyncMode
-import io.airbyte.cdk.read.DefaultJdbcSharedState
-import io.airbyte.cdk.read.SelectQuerier
-import io.airbyte.cdk.read.StateManager
-import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.mockk.mockk
-import java.time.OffsetDateTime
-import java.util.Base64
-import kotlin.test.assertNull
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
 class MySqlSourceJdbcPartitionFactoryTest {
@@ -202,8 +204,8 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 "id"
               ],
               "stream_namespace": "test",
-              "cursor_record_count": 1 
-              } 
+              "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -241,8 +243,8 @@ class MySqlSourceJdbcPartitionFactoryTest {
                     "id2"
                   ],
                   "stream_namespace": "test",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -272,8 +274,8 @@ class MySqlSourceJdbcPartitionFactoryTest {
                     "id4"
                   ],
                   "stream_namespace": "test",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -299,7 +301,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                       "pk_name": "id",
                       "version": 2,
                       "state_type": "primary_key",
-                      "incremental_state": {}  
+                      "incremental_state": {}
                       }
         """.trimIndent()
             )
@@ -362,8 +364,8 @@ class MySqlSourceJdbcPartitionFactoryTest {
                     "id3"
                   ],
                   "stream_namespace": "test",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 

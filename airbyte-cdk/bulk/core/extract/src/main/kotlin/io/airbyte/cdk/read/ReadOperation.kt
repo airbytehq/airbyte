@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.cdk.read
 
 import hu.webarticum.treeprinter.SimpleTreeNode
@@ -9,6 +9,10 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.cdk.load.task.TaskLauncher
+import io.airbyte.cdk.load.write.WriteOpOverride
+import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -35,10 +39,15 @@ class ReadOperation(
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    taskLauncher: TaskLauncher,
+    syncManager: SyncManager,
+    writeOpOverride: WriteOpOverride? = null,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
-    override fun execute() {
+    private val writeOperation = WriteOperation(taskLauncher, syncManager, writeOpOverride)
+
+    override suspend fun execute() {
         val stateManager: StateManager =
             stateManagerFactory.create(config, configuredCatalog, inputState)
         val rootReader =
@@ -58,7 +67,9 @@ class ReadOperation(
                     while (feedJobs.any { it.isActive }) {
                         val currentJobTree: String = renderTree(rootJob)
                         if (currentJobTree != previousJobTree) {
-                            log.info { "Mem ${Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()} / ${Runtime.getRuntime().totalMemory()}" }
+                            log.info {
+                                "Mem ${Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()} / ${Runtime.getRuntime().totalMemory()}"
+                            }
                             log.info { "coroutine state:\n$currentJobTree" }
                             previousJobTree = currentJobTree
                         }
@@ -66,6 +77,7 @@ class ReadOperation(
                     }
                 }
             }
+            launch(Job()) { writeOperation.execute() }
         }
     }
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output
 
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -16,8 +20,9 @@ import java.time.Clock
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
 private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
+
 @Singleton
-//@Secondary
+// @Secondary
 class UnixDomainSocketOutputConsumer(
     clock: Clock,
     stdout: PrintStream,
@@ -29,20 +34,21 @@ class UnixDomainSocketOutputConsumer(
     var sc: SocketChannel? = null
 
     override fun withLockFlushRecord() {
-        sc ?: let {
-            logger.info { "Using socket..." }
-            val socketFile = File(socketPath)
-            logger.info { "Socket File path $socketPath" }
-            if (socketFile.exists()) {
-                socketFile.delete()
+        sc
+            ?: let {
+                logger.info { "Using socket..." }
+                val socketFile = File(socketPath)
+                logger.info { "Socket File path $socketPath" }
+                if (socketFile.exists()) {
+                    socketFile.delete()
+                }
+                val address = UnixDomainSocketAddress.of(socketFile.toPath())
+                val serverSocketChannel: ServerSocketChannel =
+                    ServerSocketChannel.open(StandardProtocolFamily.UNIX)
+                serverSocketChannel.bind(address)
+                logger.info { "Source : Server socket bound at ${socketFile.absolutePath}" }
+                sc = serverSocketChannel.accept()
             }
-            val address = UnixDomainSocketAddress.of(socketFile.toPath())
-            val serverSocketChannel: ServerSocketChannel =
-                ServerSocketChannel.open(StandardProtocolFamily.UNIX)
-            serverSocketChannel.bind(address)
-            logger.info { "Source : Server socket bound at ${socketFile.absolutePath}" }
-            sc = serverSocketChannel.accept()
-        }
         if (buffer.size() > 0) {
             val array: ByteArray = buffer.toByteArray() + "\n".toByteArray(Charsets.UTF_8)
             sc?.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))

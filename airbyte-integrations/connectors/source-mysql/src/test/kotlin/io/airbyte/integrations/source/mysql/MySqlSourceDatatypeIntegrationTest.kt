@@ -20,14 +20,12 @@ import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
 
 class MySqlSourceDatatypeIntegrationTest {
-
     @TestFactory
     @Timeout(300)
     fun syncTests(): Iterable<DynamicNode> =
         DynamicDatatypeTestFactory(MySqlSourceDatatypeTestOperations).build(dbContainer)
 
     companion object {
-
         lateinit var dbContainer: MySQLContainer<*>
 
         @JvmStatic
@@ -43,29 +41,28 @@ object MySqlSourceDatatypeTestOperations :
     DatatypeTestOperations<
         MySQLContainer<*>,
         MySqlSourceConfigurationSpecification,
-        MySqlSourceConfiguration,
+        MySqlSourceConfiguration<*>,
         MySqlSourceConfigurationFactory,
-        MySqlSourceDatatypeTestCase
+        MySqlSourceDatatypeTestCase,
     > {
-
     private val log = KotlinLogging.logger {}
 
     override val withGlobal: Boolean = true
     override val globalCursorMetaField: MetaField = MySqlSourceCdcMetaFields.CDC_CURSOR
 
     override fun streamConfigSpec(
-        container: MySQLContainer<*>
+        container: MySQLContainer<*>,
     ): MySqlSourceConfigurationSpecification =
         MySqlContainerFactory.config(container).also { it.setIncrementalValue(UserDefinedCursor) }
 
     override fun globalConfigSpec(
-        container: MySQLContainer<*>
+        container: MySQLContainer<*>,
     ): MySqlSourceConfigurationSpecification =
         MySqlContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
 
     override val configFactory: MySqlSourceConfigurationFactory = MySqlSourceConfigurationFactory()
 
-    override fun createStreams(config: MySqlSourceConfiguration) {
+    override fun createStreams(config: MySqlSourceConfiguration<*>) {
         JdbcConnectionFactory(config).get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { it.execute("CREATE DATABASE IF NOT EXISTS test") }
@@ -79,7 +76,7 @@ object MySqlSourceDatatypeTestOperations :
         }
     }
 
-    override fun populateStreams(config: MySqlSourceConfiguration) {
+    override fun populateStreams(config: MySqlSourceConfiguration<*>) {
         JdbcConnectionFactory(config).get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { it.execute("USE test") }
@@ -170,7 +167,7 @@ object MySqlSourceDatatypeTestOperations :
             "'2022-01-01'" to """"2022-01-01"""",
             "'0600-12-02'" to """"0600-12-02"""",
             "'1752-09-09'" to """"1752-09-09"""",
-            "NULL" to """"2020-03-30""""
+            "NULL" to """"2020-03-30"""",
         )
 
     val timeValues =
@@ -262,7 +259,8 @@ object MySqlSourceDatatypeTestOperations :
                     "FLOAT(7,4)",
                     floatValues,
                     LeafAirbyteSchemaType.NUMBER,
-                    isGlobal = false // 123.4567 renders as 123.45670318603516 with CDC, which is OK
+                    isGlobal =
+                        false, // 123.4567 renders as 123.45670318603516 with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "FLOAT(53,8)",
@@ -366,7 +364,7 @@ object MySqlSourceDatatypeTestOperations :
                     "JSON",
                     jsonValues,
                     LeafAirbyteSchemaType.STRING, // TODO: fix this bug, should be JSONB
-                    isGlobal = false // different, more compact rendering with CDC, which is OK
+                    isGlobal = false, // different, more compact rendering with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "ENUM('a', 'b', 'c')",
@@ -383,7 +381,6 @@ data class MySqlSourceDatatypeTestCase(
     override val expectedAirbyteSchemaType: AirbyteSchemaType,
     override val isGlobal: Boolean = true,
 ) : DatatypeTestCase {
-
     override val isStream: Boolean
         get() = true
 
@@ -402,7 +399,7 @@ data class MySqlSourceDatatypeTestCase(
         get() = "col_$typeName"
 
     override val expectedData: List<String>
-        get() = sqlToAirbyte.values.map { """{"${fieldName}":$it}""" }
+        get() = sqlToAirbyte.values.map { """{"$fieldName":$it}""" }
 
     val ddl: List<String>
         get() =

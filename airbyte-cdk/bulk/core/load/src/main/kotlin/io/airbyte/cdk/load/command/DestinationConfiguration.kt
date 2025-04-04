@@ -92,6 +92,9 @@ abstract class DestinationConfiguration : Configuration {
     open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
 
+    /** TEMPORARY FOR COMBINED TEST */
+    open val numThreads: Int = 4
+
     companion object {
         const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
     }

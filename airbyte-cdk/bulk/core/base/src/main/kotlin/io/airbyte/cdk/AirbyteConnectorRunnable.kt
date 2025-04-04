@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.cdk
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
@@ -8,6 +8,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Provider
+import kotlinx.coroutines.runBlocking
 
 private val log = KotlinLogging.logger {}
 
@@ -31,7 +32,7 @@ class AirbyteConnectorRunnable : Runnable {
                 throw ConfigErrorException("Failed to initialize connector operation", e)
             }
             log.info { "Executing ${operation::class} operation." }
-            operation.execute()
+            runBlocking { operation.execute() }
         } catch (e: Throwable) {
             log.error(e) {
                 if (operation == null) {
