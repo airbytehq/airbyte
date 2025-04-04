@@ -12,6 +12,7 @@ import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstant
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.ENABLE_SSL_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
@@ -70,7 +71,10 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     if (config.has(AUTH_SOURCE_CONFIGURATION_KEY)) {
       properties.setProperty(MONGODB_AUTHSOURCE_KEY, config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText());
     }
-    properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
+    if (config.has(ENABLE_SSL_KEY)) {
+      properties.setProperty(MONGODB_SSL_ENABLED_KEY, config.get(ENABLE_SSL_KEY).asText());
+    }
+    //properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
     if (config.has(UPDATE_CAPTURE_MODE) && config.get(UPDATE_CAPTURE_MODE).asText().equals(CAPTURE_MODE_POST_IMAGE_OPTION)) {
       properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
     }
