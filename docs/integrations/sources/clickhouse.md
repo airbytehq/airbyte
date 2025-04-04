@@ -80,10 +80,11 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| 0.2.2   | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235)   | Adopt CDK 0.20.4                                                                                          |
-| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)   | bump CDK version                                                                                          |
-| 0.1.17  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)   | Removed redundant date-time datatypes formatting                                                          |
-| 0.1.16  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)   | For network isolation, source connector accepts a list of hosts it is allowed to connect to               |
+| 0.2.3 | 2024-12-18 | [49901](https://github.com/airbytehq/airbyte/pull/49901) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.2.2 | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235) | Adopt CDK 0.20.4 |
+| 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.1.17 | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting |
+| 0.1.16 | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
 | 0.1.15  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                                                     |
 | 0.1.14  | 2022-09-27 | [17031](https://github.com/airbytehq/airbyte/pull/17031)   | Added custom jdbc url parameters field                                                                    |
 | 0.1.13  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238)   | Emit state messages more frequently                                                                       |

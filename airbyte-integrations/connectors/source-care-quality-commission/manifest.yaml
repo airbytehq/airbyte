@@ -1,0 +1,1004 @@
+version: 5.8.1
+
+type: DeclarativeSource
+
+description: |-
+  A manifest-only source for Care Quality Commission
+  https://www.cqc.org.uk/
+
+check:
+  type: CheckStream
+  stream_names:
+    - inspection_areas
+
+definitions:
+  streams:
+    inspection_areas:
+      type: DeclarativeStream
+      name: inspection_areas
+      primary_key:
+        - inspectionAreaId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /inspection-areas
+          http_method: GET
+          request_headers:
+            User-Agent: PostmanRuntime/7.42.0
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - inspectionAreas
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inspection_areas"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - locationId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /locations
+          http_method: GET
+          request_headers:
+            User-Agent: PostmanRuntime/7.42.0
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - locations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    providers:
+      type: DeclarativeStream
+      name: providers
+      primary_key:
+        - providerId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /providers
+          http_method: GET
+          request_headers:
+            User-Agent: PostmanRuntime/7.42.0
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - providers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/providers"
+    provider_locations:
+      type: DeclarativeStream
+      name: provider_locations
+      primary_key:
+        - organisationId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /providers/{{ stream_partition['providerId'] }}/locations
+          http_method: GET
+          request_headers:
+            User-Agent: PostmanRuntime/7.42.0
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - locations
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: providerId
+              partition_field: providerId
+              stream:
+                $ref: "#/definitions/streams/providers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/provider_locations"
+    locations_detailed:
+      type: DeclarativeStream
+      name: locations_detailed
+      primary_key:
+        - locationId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /locations/{{ stream_partition['locationId'] }}
+          http_method: GET
+          request_headers:
+            User-Agent: PostmanRuntime/7.42.0
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: locationId
+              partition_field: locationId
+              stream:
+                $ref: "#/definitions/streams/locations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations_detailed"
+    providers_detailed:
+      type: DeclarativeStream
+      name: providers_detailed
+      primary_key:
+        - providerId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /providers/{{ stream_partition['providerId'] }}
+          http_method: GET
+          request_headers:
+            User-Agent: PostmanRuntime/7.42.0
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: providerId
+              partition_field: providerId
+              stream:
+                $ref: "#/definitions/streams/providers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/providers_detailed"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.service.cqc.org.uk/public/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Ocp-Apim-Subscription-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/inspection_areas"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/providers"
+  - $ref: "#/definitions/streams/provider_locations"
+  - $ref: "#/definitions/streams/locations_detailed"
+  - $ref: "#/definitions/streams/providers_detailed"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your CQC Primary Key. See
+          https://www.cqc.org.uk/about-us/transparency/using-cqc-data#api for
+          steps to generate one.
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    inspection_areas: true
+    locations: true
+    providers: true
+    provider_locations: true
+    locations_detailed: true
+    providers_detailed: true
+  testedStreams:
+    inspection_areas:
+      streamHash: 3968ade03213106695603929de84e2a7e4e88d84
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      streamHash: 63c124c07b9d7d28dd2dcba586eedc65f6aba3dd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    providers:
+      streamHash: 9541bf5fd90e169dac38ea1180cabf344f731772
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    provider_locations:
+      streamHash: 0e7e18777a7ead748fedfa417354b9c2f1ca62fb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations_detailed:
+      streamHash: fa69d659d9eb932d0890315623608953033e47f8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    providers_detailed:
+      streamHash: a8e137488c1ae05254758d3ac2d3c165b30152a1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://api-portal.service.cqc.org.uk/api-details#api=syndication
+
+schemas:
+  inspection_areas:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      endDate:
+        type:
+          - string
+          - "null"
+      inspectionAreaId:
+        type: string
+      inspectionAreaName:
+        type:
+          - string
+          - "null"
+      inspectionAreaType:
+        type:
+          - string
+          - "null"
+      inspectionCategories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            coreFlag:
+              type:
+                - string
+                - "null"
+            endDate:
+              type:
+                - string
+                - "null"
+            inspectionCategoryName:
+              type:
+                - string
+                - "null"
+            orgInspectionAreaRetirementDate:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      orgInspectionAreaRetirementDate:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      supersededBy:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - inspectionAreaId
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      locationId:
+        type: string
+      locationName:
+        type:
+          - string
+          - "null"
+      postalCode:
+        type:
+          - string
+          - "null"
+    required:
+      - locationId
+  providers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      providerId:
+        type: string
+      providerName:
+        type:
+          - string
+          - "null"
+    required:
+      - providerId
+  provider_locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      organisationId:
+        type: string
+    required:
+      - organisationId
+  locations_detailed:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      brandId:
+        type:
+          - string
+          - "null"
+      brandName:
+        type:
+          - string
+          - "null"
+      careHome:
+        type:
+          - string
+          - "null"
+      constituency:
+        type:
+          - string
+          - "null"
+      currentRatings:
+        type:
+          - object
+          - "null"
+        properties:
+          overall:
+            type:
+              - object
+              - "null"
+            properties:
+              keyQuestionRatings:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    rating:
+                      type:
+                        - string
+                        - "null"
+                    reportDate:
+                      type:
+                        - string
+                        - "null"
+                    reportLinkId:
+                      type:
+                        - string
+                        - "null"
+              rating:
+                type:
+                  - string
+                  - "null"
+              reportDate:
+                type:
+                  - string
+                  - "null"
+              reportLinkId:
+                type:
+                  - string
+                  - "null"
+          reportDate:
+            type:
+              - string
+              - "null"
+      deregistrationDate:
+        type:
+          - string
+          - "null"
+      dormancy:
+        type:
+          - string
+          - "null"
+      gacServiceTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      historicRatings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            organisationId:
+              type:
+                - string
+                - "null"
+            overall:
+              type:
+                - object
+                - "null"
+              properties:
+                keyQuestionRatings:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      rating:
+                        type:
+                          - string
+                          - "null"
+                rating:
+                  type:
+                    - string
+                    - "null"
+            reportDate:
+              type:
+                - string
+                - "null"
+            reportLinkId:
+              type:
+                - string
+                - "null"
+      inspectionAreas:
+        type:
+          - array
+          - "null"
+      inspectionCategories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            primary:
+              type:
+                - string
+                - "null"
+      inspectionDirectorate:
+        type:
+          - string
+          - "null"
+      lastInspection:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+      lastReport:
+        type:
+          - object
+          - "null"
+        properties:
+          publicationDate:
+            type:
+              - string
+              - "null"
+      localAuthority:
+        type:
+          - string
+          - "null"
+      locationId:
+        type: string
+      locationTypes:
+        type:
+          - array
+          - "null"
+      mainPhoneNumber:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      numberOfBeds:
+        type:
+          - number
+          - "null"
+      odsCode:
+        type:
+          - string
+          - "null"
+      onspdCcgCode:
+        type:
+          - string
+          - "null"
+      onspdCcgName:
+        type:
+          - string
+          - "null"
+      onspdIcbCode:
+        type:
+          - string
+          - "null"
+      onspdIcbName:
+        type:
+          - string
+          - "null"
+      onspdLatitude:
+        type:
+          - number
+          - "null"
+      onspdLongitude:
+        type:
+          - number
+          - "null"
+      organisationType:
+        type:
+          - string
+          - "null"
+      postalAddressCounty:
+        type:
+          - string
+          - "null"
+      postalAddressLine1:
+        type:
+          - string
+          - "null"
+      postalAddressLine2:
+        type:
+          - string
+          - "null"
+      postalAddressTownCity:
+        type:
+          - string
+          - "null"
+      postalCode:
+        type:
+          - string
+          - "null"
+      providerId:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      registrationDate:
+        type:
+          - string
+          - "null"
+      registrationStatus:
+        type:
+          - string
+          - "null"
+      regulatedActivities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            contacts:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  personFamilyName:
+                    type:
+                      - string
+                      - "null"
+                  personGivenName:
+                    type:
+                      - string
+                      - "null"
+                  personRoles:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  personTitle:
+                    type:
+                      - string
+                      - "null"
+            name:
+              type:
+                - string
+                - "null"
+      relationships:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            reason:
+              type:
+                - string
+                - "null"
+            relatedLocationId:
+              type:
+                - string
+                - "null"
+            relatedLocationName:
+              type:
+                - string
+                - "null"
+      reports:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            firstVisitDate:
+              type:
+                - string
+                - "null"
+            linkId:
+              type:
+                - string
+                - "null"
+            reportDate:
+              type:
+                - string
+                - "null"
+            reportType:
+              type:
+                - string
+                - "null"
+            reportUri:
+              type:
+                - string
+                - "null"
+      specialisms:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      uprn:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - locationId
+  providers_detailed:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      companiesHouseNumber:
+        type:
+          - string
+          - "null"
+      constituency:
+        type:
+          - string
+          - "null"
+      contacts:
+        type:
+          - array
+          - "null"
+      deregistrationDate:
+        type:
+          - string
+          - "null"
+      inspectionAreas:
+        type:
+          - array
+          - "null"
+      inspectionCategories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            primary:
+              type:
+                - string
+                - "null"
+      inspectionDirectorate:
+        type:
+          - string
+          - "null"
+      lastInspection:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+      localAuthority:
+        type:
+          - string
+          - "null"
+      locationIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      mainPhoneNumber:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      odsCode:
+        type:
+          - string
+          - "null"
+      onspdIcbCode:
+        type:
+          - string
+          - "null"
+      onspdIcbName:
+        type:
+          - string
+          - "null"
+      onspdLatitude:
+        type:
+          - number
+          - "null"
+      onspdLongitude:
+        type:
+          - number
+          - "null"
+      organisationType:
+        type:
+          - string
+          - "null"
+      ownershipType:
+        type:
+          - string
+          - "null"
+      postalAddressLine1:
+        type:
+          - string
+          - "null"
+      postalAddressLine2:
+        type:
+          - string
+          - "null"
+      postalAddressTownCity:
+        type:
+          - string
+          - "null"
+      postalCode:
+        type:
+          - string
+          - "null"
+      providerId:
+        type: string
+      region:
+        type:
+          - string
+          - "null"
+      registrationDate:
+        type:
+          - string
+          - "null"
+      registrationStatus:
+        type:
+          - string
+          - "null"
+      regulatedActivities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            nominatedIndividual:
+              type:
+                - object
+                - "null"
+              properties:
+                personFamilyName:
+                  type:
+                    - string
+                    - "null"
+                personGivenName:
+                  type:
+                    - string
+                    - "null"
+                personTitle:
+                  type:
+                    - string
+                    - "null"
+      relationships:
+        type:
+          - array
+          - "null"
+      uprn:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - providerId

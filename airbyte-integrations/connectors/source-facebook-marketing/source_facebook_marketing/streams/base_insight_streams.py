@@ -3,21 +3,23 @@
 #
 
 import logging
-from functools import cache
+from functools import cache, cached_property
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-import airbyte_cdk.sources.utils.casing as casing
 import pendulum
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
+
+import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
 
 from .base_streams import FBMarketingIncrementalStream
+
 
 logger = logging.getLogger("airbyte")
 
@@ -102,7 +104,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._next_cursor_values = self._get_start_date()
         self._completed_slices = {account_id: set() for account_id in self._account_ids}
 
-    @property
+    @cached_property
     def name(self) -> str:
         """We override stream name to let the user change it via configuration."""
         name = self._new_class_name or self.__class__.__name__
@@ -189,13 +191,13 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = {d.isoformat() for d in self._completed_slices[account_id]}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
             new_state["time_increment"] = self.time_increment
             return new_state
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = {d.isoformat() for d in self._completed_slices[account_id]}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
 
             new_state["time_increment"] = self.time_increment
             return new_state

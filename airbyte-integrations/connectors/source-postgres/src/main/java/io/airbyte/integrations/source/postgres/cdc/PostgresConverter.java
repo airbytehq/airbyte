@@ -106,35 +106,41 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private void registerNumber(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
+        Object defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+        return defaultValue == null ? null : getNumberConvertedValue(defaultValue);
       }
-      // Bad solution
-      // We applied a solution like this for several reasons:
-      // 1. Regarding #13608, CDC and nor-CDC data output format should be the same.
-      // 2. In the non-CDC mode 'decimal' and 'numeric' values are put to JSON node as BigDecimal value.
-      // According to Jackson Object mapper configuration, all trailing zeros are omitted and
-      // numbers with decimal places are deserialized with exponent. (e.g. 1234567890.1234567 would
-      // be deserialized as 1.2345678901234567E9).
-      // 3. In the CDC mode 'decimal' and 'numeric' values are deserialized as a regular number (e.g.
-      // 1234567890.1234567 would be deserialized as 1234567890.1234567). Numbers without
-      // decimal places (e.g 1, 24, 354) are represented with trailing zero (e.g 1.0, 24.0, 354.0).
-      // One of solution to align deserialization for these 2 modes is setting
-      // DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS as true for ObjectMapper. But this breaks
-      // deserialization for other data-types.
-      // A worked solution was to keep deserialization for non-CDC mode as it is and change it for CDC
-      // one.
-      // The code below strips trailing zeros for integer numbers and represents number with exponent
-      // if this number has decimals point.
-      final double doubleValue = Double.parseDouble(x.toString());
-      final String valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toPlainString();
-      return valueWithTruncatedZero.contains(".") ? String.valueOf(doubleValue) : valueWithTruncatedZero;
+      return getNumberConvertedValue(x);
     });
+  }
+
+  private String getNumberConvertedValue(final Object x) {
+    // Bad solution
+    // We applied a solution like this for several reasons:
+    // 1. Regarding #13608, CDC and nor-CDC data output format should be the same.
+    // 2. In the non-CDC mode 'decimal' and 'numeric' values are put to JSON node as BigDecimal value.
+    // According to Jackson Object mapper configuration, all trailing zeros are omitted and
+    // numbers with decimal places are deserialized with exponent. (e.g. 1234567890.1234567 would
+    // be deserialized as 1.2345678901234567E9).
+    // 3. In the CDC mode 'decimal' and 'numeric' values are deserialized as a regular number (e.g.
+    // 1234567890.1234567 would be deserialized as 1234567890.1234567). Numbers without
+    // decimal places (e.g 1, 24, 354) are represented with trailing zero (e.g 1.0, 24.0, 354.0).
+    // One of solution to align deserialization for these 2 modes is setting
+    // DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS as true for ObjectMapper. But this breaks
+    // deserialization for other data-types.
+    // A worked solution was to keep deserialization for non-CDC mode as it is and change it for CDC
+    // one.
+    // The code below strips trailing zeros for integer numbers and represents number with exponent
+    // if this number has decimals point.
+    final double doubleValue = Double.parseDouble(x.toString());
+    final String valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toPlainString();
+    return valueWithTruncatedZero.contains(".") ? String.valueOf(doubleValue) : valueWithTruncatedZero;
   }
 
   private void registerBytea(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
+        Object defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+        return defaultValue == null ? null : "\\x" + Hex.encodeHexString((byte[]) defaultValue);
       }
       return "\\x" + Hex.encodeHexString((byte[]) x);
     });
@@ -143,21 +149,30 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private void registerText(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
+        Object defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+        return defaultValue == null ? null : getTextConvertedValue(defaultValue);
       }
-
-      if (x instanceof byte[]) {
-        return new String((byte[]) x, StandardCharsets.UTF_8);
-      } else {
-        return x.toString();
-      }
+      return getTextConvertedValue(x);
     });
+  }
+
+  private String getTextConvertedValue(final Object x) {
+    if (x instanceof byte[]) {
+      return new String((byte[]) x, StandardCharsets.UTF_8);
+    } else {
+      return x.toString();
+    }
   }
 
   private Object convertArray(final Object x, final RelationalColumn field) {
     if (x == null) {
-      return DebeziumConverterUtils.convertDefaultValue(field);
+      Object defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+      return defaultValue == null ? null : getArrayConvertedValue(field, defaultValue);
     }
+    return getArrayConvertedValue(field, x);
+  }
+
+  private Object getArrayConvertedValue(final RelationalColumn field, final Object x) {
     final String fieldType = field.typeName().toUpperCase();
     switch (fieldType) {
       // debezium currently cannot handle MONEY[] datatype and it's not implemented
@@ -246,57 +261,61 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   // Ref :
   // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-temporal-types
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    final var fieldType = field.typeName();
     registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
+        Object defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+        return defaultValue == null ? null : getDateConvertedValue(field, defaultValue);
       }
-      switch (fieldType.toUpperCase(Locale.ROOT)) {
-        case "TIMETZ":
-          return DateTimeConverter.convertToTimeWithTimezone(x);
-        case "TIMESTAMPTZ":
-          if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_OFFSET_DATE_TIME)) {
-            return NEGATIVE_INFINITY_VALUE;
-          }
-          if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_OFFSET_DATE_TIME)) {
-            return POSITIVE_INFINITY_VALUE;
-          }
-          return DateTimeConverter.convertToTimestampWithTimezone(x);
-        case "TIMESTAMP":
-          if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_INSTANT)) {
-            return NEGATIVE_INFINITY_VALUE;
-          }
-          if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_INSTANT)) {
-            return POSITIVE_INFINITY_VALUE;
-          }
-          if (x instanceof final Long l) {
-            if (getTimePrecision(field) <= 3) {
-              return convertToTimestamp(Conversions.toInstantFromMillis(l));
-            }
-            if (getTimePrecision(field) <= 6) {
-              return convertToTimestamp(Conversions.toInstantFromMicros(l));
-            }
-          }
-          return convertToTimestamp(x);
-        case "DATE":
-          if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_LOCAL_DATE)) {
-            return NEGATIVE_INFINITY_VALUE;
-          }
-          if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_LOCAL_DATE)) {
-            return POSITIVE_INFINITY_VALUE;
-          }
-          if (x instanceof Integer) {
-            return convertToDate(LocalDate.ofEpochDay((Integer) x));
-          }
-          return convertToDate(x);
-        case "TIME":
-          return resolveTime(field, x);
-        case "INTERVAL":
-          return convertInterval((PGInterval) x);
-        default:
-          throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
-      }
+      return getDateConvertedValue(field, x);
     });
+  }
+
+  private String getDateConvertedValue(final RelationalColumn field, final Object x) {
+    switch (field.typeName().toUpperCase(Locale.ROOT)) {
+      case "TIMETZ":
+        return DateTimeConverter.convertToTimeWithTimezone(x);
+      case "TIMESTAMPTZ":
+        if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_OFFSET_DATE_TIME)) {
+          return NEGATIVE_INFINITY_VALUE;
+        }
+        if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_OFFSET_DATE_TIME)) {
+          return POSITIVE_INFINITY_VALUE;
+        }
+        return DateTimeConverter.convertToTimestampWithTimezone(x);
+      case "TIMESTAMP":
+        if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_INSTANT)) {
+          return NEGATIVE_INFINITY_VALUE;
+        }
+        if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_INSTANT)) {
+          return POSITIVE_INFINITY_VALUE;
+        }
+        if (x instanceof final Long l) {
+          if (getTimePrecision(field) <= 3) {
+            return convertToTimestamp(Conversions.toInstantFromMillis(l));
+          }
+          if (getTimePrecision(field) <= 6) {
+            return convertToTimestamp(Conversions.toInstantFromMicros(l));
+          }
+        }
+        return convertToTimestamp(x);
+      case "DATE":
+        if (x.equals(PostgresValueConverter.NEGATIVE_INFINITY_LOCAL_DATE)) {
+          return NEGATIVE_INFINITY_VALUE;
+        }
+        if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_LOCAL_DATE)) {
+          return POSITIVE_INFINITY_VALUE;
+        }
+        if (x instanceof Integer) {
+          return convertToDate(LocalDate.ofEpochDay((Integer) x));
+        }
+        return convertToDate(x);
+      case "TIME":
+        return resolveTime(field, x);
+      case "INTERVAL":
+        return convertInterval((PGInterval) x);
+      default:
+        throw new IllegalArgumentException("Unknown field type  " + field.typeName().toUpperCase(Locale.ROOT));
+    }
   }
 
   private String resolveTime(RelationalColumn field, Object x) {
@@ -326,18 +345,24 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private void registerMoney(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
-      } else if (x instanceof Double) {
-        final BigDecimal result = BigDecimal.valueOf((Double) x);
-        if (result.compareTo(new BigDecimal("999999999999999")) == 1
-            || result.compareTo(new BigDecimal("-999999999999999")) == -1) {
-          return null;
-        }
-        return result.toString();
-      } else {
-        return x.toString();
+        Object defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+        return defaultValue == null ? null : getMoneyConvertedValue(defaultValue);
       }
+      return getMoneyConvertedValue(x);
     });
+  }
+
+  private String getMoneyConvertedValue(final Object x) {
+    if (x instanceof Double) {
+      final BigDecimal result = BigDecimal.valueOf((Double) x);
+      if (result.compareTo(new BigDecimal("999999999999999")) == 1
+          || result.compareTo(new BigDecimal("-999999999999999")) == -1) {
+        return null;
+      }
+      return result.toString();
+    } else {
+      return x.toString();
+    }
   }
 
   private void formatDateUnit(final StringBuilder resultInterval, final int dateUnit, final String s) {

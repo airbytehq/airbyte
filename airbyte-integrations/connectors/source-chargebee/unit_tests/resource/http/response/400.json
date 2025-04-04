@@ -1,7 +1,0 @@
-{
-  "message": "Resource has expired",
-  "api_error_code": "resource_limit_exhausted",
-  "error_code": "resource_limit_exhausted",
-  "error_msg": "Resource has expired",
-  "http_status_code": 400
-}

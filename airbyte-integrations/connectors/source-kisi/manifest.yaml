@@ -1,0 +1,1552 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the setup for the Kisi source connector that ingests data from the
+  Kisi API.
+  
+  Kisi's sturdy hardware and user-friendly software work in perfect harmony to
+  enhance the security of your spaces. Remotely manage your locations,
+  streamline operations, and stay compliant while enjoying mobile unlocks.
+  https://www.getkisi.com/
+
+  In order to use this source, you must first create an account with Kisi.
+
+  On the top right corner, click on your name and click on My Account.
+
+  Next, select the API tab and click on Add API key. Enter your name, your Kisi
+  password, and your verification code and click Add. Copy the API key shown on
+  the screen.
+
+  You can learn more about the API key here https://api.kisi.io/docs#/
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    locks:
+      type: DeclarativeStream
+      name: locks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /locks
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locks"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    floors:
+      type: DeclarativeStream
+      name: floors
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /floors
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+          request_parameters:
+            place_id: "{{stream_partition.parent_id}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/places"
+              parent_key: id
+              partition_field: parent_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/floors"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /groups
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    logins:
+      type: DeclarativeStream
+      name: logins
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /logins
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/logins"
+    places:
+      type: DeclarativeStream
+      name: places
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /places
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/places"
+    members:
+      type: DeclarativeStream
+      name: members
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /members
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    reports:
+      type: DeclarativeStream
+      name: reports
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports"
+    elevators:
+      type: DeclarativeStream
+      name: elevators
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /elevators
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+          request_parameters:
+            place_id: "{{stream_partition.parent_id}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/places"
+              parent_key: id
+              partition_field: parent_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/elevators"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    role_assignments:
+      type: DeclarativeStream
+      name: role_assignments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: role_assignments
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/role_assignments"
+    scheduled_reports:
+      type: DeclarativeStream
+      name: scheduled_reports
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /scheduled_reports
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scheduled_reports"
+    user_export_reporters:
+      type: DeclarativeStream
+      name: user_export_reporters
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user_export_reporters
+          http_method: GET
+          request_headers:
+            Authorization: KISI-LOGIN {{ config["api_key"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_export_reporters"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.kisi.io
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/user_export_reporters"
+  - $ref: "#/definitions/streams/scheduled_reports"
+  - $ref: "#/definitions/streams/role_assignments"
+  - $ref: "#/definitions/streams/places"
+  - $ref: "#/definitions/streams/reports"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/logins"
+  - $ref: "#/definitions/streams/locks"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/floors"
+  - $ref: "#/definitions/streams/elevators"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: Your KISI API Key
+        order: 0
+        title: API Key
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    locks:
+      hasRecords: true
+      streamHash: b6590f8e5716b23ef1c2df8e329ac31b404c1110
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 6655b1fa3ff18e66f82bbebb403aec85e263c06c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    floors:
+      hasRecords: true
+      streamHash: 21dd5fd53c9f5ac35b77ff91f07b9de8cae7c0b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: 3a4f058e976d148de06bd7f869452e163d502bfe
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    logins:
+      hasRecords: true
+      streamHash: 5304b8540ee7caae03ac5ac254ee94e24849b979
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    places:
+      hasRecords: true
+      streamHash: f98ab82ec63855267b0f04a60606ef83afa77d52
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    members:
+      hasRecords: true
+      streamHash: 2f50be02b95b16a8a5bff82ed8357e7d3a76de61
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    reports:
+      hasRecords: true
+      streamHash: c54937b4edc69d1b6288643318ed909f4c4624d0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    elevators:
+      hasRecords: true
+      streamHash: ba788c4de0fab272ed5f59ee5b754bf87ef08735
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organizations:
+      hasRecords: true
+      streamHash: 13fde4ab4b10ca1b3b2a84b27bee57e1c4407dfc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    role_assignments:
+      hasRecords: true
+      streamHash: 2d56b0e033811ff10bf5ba4dd5d52e5949dfbbf2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    scheduled_reports:
+      hasRecords: true
+      streamHash: 13cb55c00ca649518f587b69779d813dcb5a978d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_export_reporters:
+      hasRecords: true
+      streamHash: 273e9e4392cdf0d6b16d09f6377f631d95238767
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    locks: true
+    users: true
+    floors: true
+    groups: true
+    logins: true
+    places: true
+    members: true
+    reports: true
+    elevators: true
+    organizations: true
+    role_assignments: true
+    scheduled_reports: true
+    user_export_reporters: true
+
+schemas:
+  locks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      open:
+        type:
+          - boolean
+          - "null"
+      place:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      online:
+        type:
+          - boolean
+          - "null"
+      place_id:
+        type:
+          - number
+          - "null"
+      unlocked:
+        type:
+          - boolean
+          - "null"
+      configured:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      locked_down:
+        type:
+          - boolean
+          - "null"
+      groups_count:
+        type:
+          - number
+          - "null"
+      on_scheduled_unlock:
+        type:
+          - boolean
+          - "null"
+      time_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+      first_to_arrive_satisfied:
+        type:
+          - boolean
+          - "null"
+      reader_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+      time_restriction_time_zone:
+        type:
+          - string
+          - "null"
+      geofence_restriction_radius:
+        type:
+          - number
+          - "null"
+      geofence_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      confirmed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      groups_count:
+        type:
+          - number
+          - "null"
+      access_enabled:
+        type:
+          - boolean
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+      scim_access_enabled:
+        type:
+          - boolean
+          - "null"
+      password_flow_enabled:
+        type:
+          - boolean
+          - "null"
+      otp_required_for_login:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  floors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      place_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      locks_count:
+        type:
+          - number
+          - "null"
+      users_count:
+        type:
+          - number
+          - "null"
+      login_enabled:
+        type:
+          - boolean
+          - "null"
+      members_count:
+        type:
+          - number
+          - "null"
+      elevator_stops_count:
+        type:
+          - number
+          - "null"
+      time_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+      reader_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+      time_restriction_time_zone:
+        type:
+          - string
+          - "null"
+      geofence_restriction_radius:
+        type:
+          - number
+          - "null"
+      geofence_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+      managed_device_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+      primary_device_restriction_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  logins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      os:
+        type:
+          - object
+          - "null"
+        properties:
+          version:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      app:
+        type:
+          - object
+          - "null"
+        properties:
+          version:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+      device:
+        type:
+          - object
+          - "null"
+        properties:
+          size:
+            type:
+              - string
+              - "null"
+          brand:
+            type:
+              - string
+              - "null"
+          model:
+            type:
+              - string
+              - "null"
+      expire:
+        type:
+          - boolean
+          - "null"
+      os_name:
+        type:
+          - string
+          - "null"
+      primary:
+        type:
+          - boolean
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user_agent:
+        type:
+          - object
+          - "null"
+        properties:
+          version:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      device_brand:
+        type:
+          - string
+          - "null"
+      device_model:
+        type:
+          - string
+          - "null"
+      last_used_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  places:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - number
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      locked_down:
+        type:
+          - boolean
+          - "null"
+      locks_count:
+        type:
+          - number
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+      tz_time_zone:
+        type:
+          - string
+          - "null"
+      members_count:
+        type:
+          - number
+          - "null"
+      occupancy_rate:
+        type:
+          - number
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+      integrations_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          otp_required_for_login:
+            type:
+              - boolean
+              - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      confirmed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      shares_count:
+        type:
+          - number
+          - "null"
+      access_enabled:
+        type:
+          - boolean
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+      scim_access_enabled:
+        type:
+          - boolean
+          - "null"
+      password_flow_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      interval:
+        type:
+          - string
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      reporter_id:
+        type:
+          - number
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+      reporter_type:
+        type:
+          - string
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  elevators:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      place_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      elevator_stops_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      send_emails:
+        type:
+          - boolean
+          - "null"
+      places_count:
+        type:
+          - number
+          - "null"
+      scim_enabled:
+        type:
+          - boolean
+          - "null"
+      sso_flow_enabled:
+        type:
+          - boolean
+          - "null"
+      apple_pass_enabled:
+        type:
+          - boolean
+          - "null"
+      sso_expiration_override:
+        type:
+          - number
+          - "null"
+      web_authentication_api_enabled:
+        type:
+          - boolean
+          - "null"
+      sso_expiration_override_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  role_assignments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+      scope:
+        type:
+          - string
+          - "null"
+      notify:
+        type:
+          - boolean
+          - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  scheduled_reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      period:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      frequency:
+        type:
+          - number
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      reporter_id:
+        type:
+          - number
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+      scheduled_at:
+        type:
+          - string
+          - "null"
+      reporter_type:
+        type:
+          - string
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  user_export_reporters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true

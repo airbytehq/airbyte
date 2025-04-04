@@ -63,10 +63,8 @@ public class CloudDeploymentPostgresSourceTest {
   private static final String SSL_MODE_REQUIRE = "require";
 
   private Source source() {
-    PostgresSource source = new PostgresSource();
-    source.setFeatureFlags(
-        FeatureFlagsWrapper.overridingDeploymentMode(
-            new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
+    PostgresSource source = new PostgresSource(FeatureFlagsWrapper.overridingDeploymentMode(
+        new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
     return PostgresSource.sshWrappedSource(source);
   }
 

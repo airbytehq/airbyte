@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "profileId": {
+      "type": ["null", "integer"]
+    },
+    "reportDate": {
+      "type": ["null", "string"]
+    },
+    "promotedAsin": {
+      "type": ["null", "string"]
+    },
+
+    "adGroupId": {
+      "type": ["null", "integer"]
+    },
+    "adGroupName": {
+      "type": ["null", "string"]
+    },
+    "asinBrandHalo": {
+      "type": ["null", "string"]
+    },
+    "addToList": {
+      "type": ["null", "integer"]
+    },
+    "addToListFromClicks": {
+      "type": ["null", "integer"]
+    },
+    "qualifiedBorrowsFromClicks": {
+      "type": ["null", "integer"]
+    },
+    "royaltyQualifiedBorrowsFromClicks": {
+      "type": ["null", "integer"]
+    },
+    "addToListFromViews": {
+      "type": ["null", "integer"]
+    },
+    "qualifiedBorrows": {
+      "type": ["null", "integer"]
+    },
+    "qualifiedBorrowsFromViews": {
+      "type": ["null", "integer"]
+    },
+    "royaltyQualifiedBorrows": {
+      "type": ["null", "integer"]
+    },
+    "royaltyQualifiedBorrowsFromViews": {
+      "type": ["null", "integer"]
+    },
+    "campaignBudgetCurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "integer"]
+    },
+    "campaignName": {
+      "type": ["null", "string"]
+    },
+    "conversionsBrandHalo": {
+      "type": ["null", "integer"]
+    },
+    "conversionsBrandHaloClicks": {
+      "type": ["null", "integer"]
+    },
+    "endDate": {
+      "type": ["null", "string"]
+    },
+    "promotedSku": {
+      "type": ["null", "string"]
+    },
+    "salesBrandHalo": {
+      "type": ["null", "integer"]
+    },
+    "salesBrandHaloClicks": {
+      "type": ["null", "integer"]
+    },
+    "startDate": {
+      "type": ["null", "string"]
+    },
+    "unitsSoldBrandHalo": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldBrandHaloClicks": {
+      "type": ["null", "integer"]
+    }
+  },
+  "title": "sponsored_display_asins_report_stream",
+  "type": ["null", "object"]
+}

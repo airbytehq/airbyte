@@ -1,0 +1,35 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_avro",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "station": {
+              "type": ["null", "string"]
+            },
+            "time": {
+              "type": ["null", "integer"]
+            },
+            "temp": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"],
+        "is_resumable": true
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

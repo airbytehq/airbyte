@@ -24,7 +24,7 @@ private val log = KotlinLogging.logger {}
 object JsonSchemas {
     private const val JSON_SCHEMA_ENUM_KEY = "enum"
     private const val JSON_SCHEMA_TYPE_KEY = "type"
-    private const val JSON_SCHEMA_PROPERTIES_KEY = "properties"
+    const val JSON_SCHEMA_PROPERTIES_KEY = "properties"
     private const val JSON_SCHEMA_ITEMS_KEY = "items"
 
     // all JSONSchema types.

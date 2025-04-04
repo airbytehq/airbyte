@@ -7,10 +7,13 @@
 # Generated files
 .docusaurus
 .cache-loader
+src/data/declarative_component_schema.yaml
 
 # Misc
 .DS_Store
+.env
 .env.local
+.env
 .env.development.local
 .env.test.local
 .env.production.local

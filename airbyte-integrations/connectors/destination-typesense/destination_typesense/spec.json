@@ -24,7 +24,7 @@
       "port": {
         "title": "Port",
         "type": "string",
-        "description": "Port of the Typesense instance. Ex: 8108, 80, 443. Default is 443",
+        "description": "Port of the Typesense instance. Ex: 8108, 80, 443. Default is 8108",
         "order": 2
       },
       "protocol": {

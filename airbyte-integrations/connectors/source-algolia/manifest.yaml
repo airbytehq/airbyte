@@ -1,0 +1,2173 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://dashboard.algolia.com/
+
+  API Docs: https://www.algolia.com/doc/rest-api/search/
+
+  Auth Docs:
+  https://www.algolia.com/doc/rest-api/search/#section/Authentication 
+
+  API Keys page: https://dashboard.algolia.com/account/overview
+
+check:
+  type: CheckStream
+  stream_names:
+    - indices
+
+definitions:
+  streams:
+    indices:
+      type: DeclarativeStream
+      name: indices
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: 1/indexes
+          http_method: GET
+          request_headers:
+            x-algolia-application-id: "{{ config['application_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: hitsPerPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1
+            start_from_page: 0
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/indices"
+    indexes_query:
+      type: DeclarativeStream
+      name: indexes_query
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: 1/indexes/{{ stream_partition.indexName }}/query
+          http_method: POST
+          request_headers:
+            x-algolia-application-id: "{{ config['application_id'] }}"
+          request_body_json:
+            params: "{{ config['search_query'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - hits
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: name
+              partition_field: indexName
+              stream:
+                $ref: "#/definitions/streams/indices"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/indexes_query"
+    available_languages:
+      type: DeclarativeStream
+      name: available_languages
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: 1/dictionaries/*/languages
+          http_method: GET
+          request_headers:
+            x-algolia-application-id: "{{ config['application_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/available_languages"
+    logs:
+      type: DeclarativeStream
+      name: logs
+      primary_key:
+        - sha1
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: 1/logs
+          http_method: GET
+          request_headers:
+            x-algolia-application-id: "{{ config['application_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - logs
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: timestamp
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/logs"
+    indexes_settings:
+      type: DeclarativeStream
+      name: indexes_settings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: 1/indexes/{{ stream_partition.indexName }}/settings
+          http_method: GET
+          request_headers:
+            x-algolia-application-id: "{{ config['application_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: name
+              partition_field: indexName
+              stream:
+                $ref: "#/definitions/streams/indices"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/indexes_settings"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config["application_id"] }}-1.algolianet.com/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: X-Algolia-API-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/indices"
+  - $ref: "#/definitions/streams/indexes_query"
+  - $ref: "#/definitions/streams/available_languages"
+  - $ref: "#/definitions/streams/logs"
+  - $ref: "#/definitions/streams/indexes_settings"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - application_id
+      - start_date
+    properties:
+      api_key:
+        type: string
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      application_id:
+        type: string
+        description: The application ID for your application found in settings
+        order: 1
+        title: Application ID
+      search_query:
+        type: string
+        description: >-
+          Search query to be used with indexes_query stream with format defined
+          in
+          `https://www.algolia.com/doc/rest-api/search/#tag/Search/operation/searchSingleIndex`
+        order: 2
+        title: Indexes Search query
+        default: hitsPerPage=2&getRankingInfo=1
+      start_date:
+        type: string
+        order: 3
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      object_id:
+        type: string
+        description: Object ID within index for search queries
+        order: 4
+        title: Object ID
+        default: ecommerce-sample-data-9999996
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    indices: true
+    indexes_query: true
+    available_languages: true
+    logs: true
+    indexes_settings: true
+  testedStreams:
+    indices:
+      streamHash: f02755aadd719c84871ec5dc115a8e87402500ec
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    indexes_query:
+      streamHash: 02b8d9e861ce0c2532a4d49e7b65a5351aa7e4b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    available_languages:
+      streamHash: 20338eb3c7cdaff9d577bed21eba45b5e7e7e599
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    logs:
+      streamHash: e22e9310f604a9a5086907f95251cbce635d7973
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    indexes_settings:
+      hasRecords: true
+      streamHash: fac8b6d8fddd19175eea6b66f7e6b1a6b956c553
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: "https://www.algolia.com/doc/rest-api/search/#section/Authentication "
+
+schemas:
+  indices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      dataSize:
+        type:
+          - number
+          - "null"
+      entries:
+        type:
+          - number
+          - "null"
+      fileSize:
+        type:
+          - number
+          - "null"
+      lastBuildTimeS:
+        type:
+          - number
+          - "null"
+      name:
+        type: string
+      numberOfPendingTasks:
+        type:
+          - number
+          - "null"
+      pendingTask:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - name
+      - updatedAt
+  indexes_query:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _highlightResult:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              matchLevel:
+                type:
+                  - string
+                  - "null"
+              matchedWords:
+                type:
+                  - array
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          original_language:
+            type:
+              - object
+              - "null"
+            properties:
+              matchLevel:
+                type:
+                  - string
+                  - "null"
+              matchedWords:
+                type:
+                  - array
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          original_title:
+            type:
+              - object
+              - "null"
+            properties:
+              matchLevel:
+                type:
+                  - string
+                  - "null"
+              matchedWords:
+                type:
+                  - array
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          overview:
+            type:
+              - object
+              - "null"
+            properties:
+              matchLevel:
+                type:
+                  - string
+                  - "null"
+              matchedWords:
+                type:
+                  - array
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          shortDescription:
+            type:
+              - object
+              - "null"
+            properties:
+              matchLevel:
+                type:
+                  - string
+                  - "null"
+              matchedWords:
+                type:
+                  - array
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+      _rankingInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          filters:
+            type:
+              - number
+              - "null"
+          firstMatchedWord:
+            type:
+              - number
+              - "null"
+          geoDistance:
+            type:
+              - number
+              - "null"
+          geoPrecision:
+            type:
+              - number
+              - "null"
+          nbExactWords:
+            type:
+              - number
+              - "null"
+          nbTypos:
+            type:
+              - number
+              - "null"
+          proximityDistance:
+            type:
+              - number
+              - "null"
+          userScore:
+            type:
+              - number
+              - "null"
+          words:
+            type:
+              - number
+              - "null"
+      attribution:
+        type:
+          - string
+          - "null"
+      backdrop_path:
+        type:
+          - string
+          - "null"
+      bestSellingRank:
+        type:
+          - number
+          - "null"
+      cast:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            character:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - "null"
+            - "null"
+      crew:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            job:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      genres:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type:
+          - number
+          - "null"
+      keywords:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objectID:
+        type:
+          - string
+          - "null"
+      original_language:
+        type:
+          - string
+          - "null"
+      original_title:
+        type:
+          - string
+          - "null"
+      overview:
+        type:
+          - string
+          - "null"
+      popularity:
+        type:
+          - number
+          - "null"
+      poster_path:
+        type:
+          - string
+          - "null"
+      release_date:
+        type:
+          - string
+          - "null"
+      salePrice:
+        type:
+          - number
+          - "null"
+      salePrice_range:
+        type:
+          - string
+          - "null"
+      shipping:
+        type:
+          - string
+          - "null"
+      shortDescription:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      vote_average:
+        type:
+          - number
+          - "null"
+      vote_count:
+        type:
+          - number
+          - "null"
+  available_languages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      af:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ar:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      az:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      bg:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      bn:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ca:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      cs:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      cy:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      da:
+        type:
+          - object
+          - "null"
+        properties:
+          compounds:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      de:
+        type:
+          - object
+          - "null"
+        properties:
+          compounds:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      el:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      en:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      eo:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      es:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      et:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      eu:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      fa:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      fi:
+        type:
+          - object
+          - "null"
+        properties:
+          compounds:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      fo:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      fr:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ga:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      gl:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      he:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      hi:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      hu:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      hy:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      id:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      is:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      it:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ja:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ka:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      kk:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ko:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ku:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ky:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      lt:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      lv:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      mi:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      mn:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      mr:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ms:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      mt:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      nb:
+        type:
+          - object
+          - "null"
+        properties:
+          compounds:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      nl:
+        type:
+          - object
+          - "null"
+        properties:
+          compounds:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      "no":
+        type:
+          - object
+          - "null"
+        properties:
+          compounds:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ns:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      pl:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ps:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      pt:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      pt-br:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      qu:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ro:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ru:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      sk:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      sq:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      sv:
+        type:
+          - object
+          - "null"
+        properties:
+          compounds:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      sw:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ta:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      te:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      th:
+        type:
+          - object
+          - "null"
+        properties:
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      tl:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      tn:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      tr:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      tt:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      uk:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      ur:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      uz:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+      zh:
+        type:
+          - object
+          - "null"
+        properties:
+          plurals:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+          stopwords:
+            type:
+              - object
+              - "null"
+            properties:
+              nbCustomEntries:
+                type:
+                  - number
+                  - "null"
+  logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      answer:
+        type:
+          - string
+          - "null"
+      answer_code:
+        type:
+          - string
+          - "null"
+      index:
+        type:
+          - string
+          - "null"
+      inner_queries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            index_name:
+              type:
+                - string
+                - "null"
+            user_token:
+              type:
+                - string
+                - "null"
+      ip:
+        type:
+          - string
+          - "null"
+      method:
+        type:
+          - string
+          - "null"
+      nb_api_calls:
+        type:
+          - string
+          - "null"
+      processing_time_ms:
+        type:
+          - string
+          - "null"
+      query_body:
+        type:
+          - string
+          - "null"
+      query_headers:
+        type:
+          - string
+          - "null"
+      query_nb_hits:
+        type:
+          - string
+          - "null"
+      query_params:
+        type:
+          - string
+          - "null"
+      sha1:
+        type: string
+      timestamp:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - sha1
+      - timestamp
+  indexes_settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      alternativesAsExact:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      attributesForFaceting:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      customRanking:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      exactOnSingleWordQuery:
+        type:
+          - string
+          - "null"
+      highlightPostTag:
+        type:
+          - string
+          - "null"
+      highlightPreTag:
+        type:
+          - string
+          - "null"
+      hitsPerPage:
+        type:
+          - number
+          - "null"
+      maxValuesPerFacet:
+        type:
+          - number
+          - "null"
+      minWordSizefor1Typo:
+        type:
+          - number
+          - "null"
+      minWordSizefor2Typos:
+        type:
+          - number
+          - "null"
+      paginationLimitedTo:
+        type:
+          - number
+          - "null"
+      queryType:
+        type:
+          - string
+          - "null"
+      ranking:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      removeWordsIfNoResults:
+        type:
+          - string
+          - "null"
+      searchableAttributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      separatorsToIndex:
+        type:
+          - string
+          - "null"

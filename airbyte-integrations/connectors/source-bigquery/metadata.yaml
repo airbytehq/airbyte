@@ -2,10 +2,26 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: credentials.json
+          name: SECRET_SOURCE-BIGQUERY_CREDENTIALS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: sat-config.json
+          name: SECRET_SOURCE-BIGQUERY_SAT__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   dockerRepository: airbyte/source-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
   githubIssueLabel: source-bigquery
@@ -21,18 +37,4 @@ data:
   supportLevel: community
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-BIGQUERY_CREDENTIALS__CREDS
-          fileName: credentials.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-BIGQUERY_SAT__CREDS
-          fileName: sat-config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

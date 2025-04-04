@@ -9,6 +9,7 @@ import re
 from typing import TYPE_CHECKING
 
 import requests
+
 from connectors_insights.hacks import get_ci_on_master_report
 from connectors_insights.models import ConnectorInsights
 from connectors_insights.pylint import get_pylint_output

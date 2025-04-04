@@ -1,43 +1,66 @@
----
-products: all
----
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
 
 # Airbyte Overview
 
-Airbyte is an open-source data integration platform designed to help you consolidate data from various sources into your data warehouses, lakes, and databases.
+Airbyte is an open-source data integration platform. It helps you consolidate data from various sources into your data warehouses, lakes, and databases.
 
-Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data for a personal project, Airbyte can work for you! We offer flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise-grade solutions. 
+Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you! Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
 
-There are two options to consider to run Airbyte: 
-- **Airbyte Cloud** (recommended): allows you to focus on moving data while we take care of managing the infrastructure. 
-- **Self-Managed Airbyte**: can be deployed either locally or in an infrastructure you've set up. Our Self-Managed solution can be used as a free Community product or implemented with support of Enterprise operations. 
+## Airbyte Products
 
-:::tip
-If you have already deployed Airbyte or you've signed up to use Airbyte Cloud, and you're familiar with [Airbyte's core concepts](../../using-airbyte/core-concepts/), jump ahead to [Building Connections](../../cloud/managing-airbyte-cloud/configuring-connections.md).
+Airbyte is available as a Self-Managed or Cloud product, depending on your needs.
+
+### Self-Managed options
+
+<Grid columns="2">
+
+<CardWithIcon title="Self-Managed Enterprise" description="Highly available, secure data movement for your entire organization. To start with Self-Managed Enterprise, you need a license key. For more details, read the enterprise setup guide." ctaText="Enterprise Setup" ctaLink="../../enterprise-setup" icon="fa-lock" />
+
+<CardWithIcon title="Self-Managed Community" description="Our open-source version of Airbyte. Deploy locally or in your own infrastructure. Get started immediately and keep your data on your premises." ctaText="Quickstart" ctaLink="oss-quickstart" icon="fa-download" />
+
+</Grid>
+
+### Cloud options
+
+<Grid columns="2">
+
+<CardWithIcon title="Cloud" description="A Cloud-native version of Airbyte that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 14-day trial." ctaText="Sign Up for Cloud" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
+
+<CardWithIcon title="Cloud Teams" description="For organizations
+looking to scale efficiently. Role based access control, single sign on, and more ensure Cloud is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+
+</Grid>
+
+## Ways to work with Airbyte
+
+Once your Airbyte instance is up and running, there's a way to use Airbyte that's appropriate for any skill level.
+
+### User interface
+
+Self-Managed and Cloud versions of Airbyte come with a carefully-crafted user interface that walks you through setting up connections and automating syncs. This is a great choice if you're not a developer, aren't concerned about version control, or you're just seeing what Airbyte can do for you.
+
+### API and Python SDK {#api-sdk}
+
+These are great choices for developers who want to automate the way you work with Airbyte and use version control to preserve a history of changes.
+
+- Airbyte's [API documentation](https://reference.airbyte.com) gives you programmatic access to Airbyte with code snippets in all common languages.
+- Airbyte's [Python SDK](https://github.com/airbytehq/airbyte-api-python-sdk) lets you programmatically control your Airbyte instance with Python.
+
+### Terraform
+
+Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](../../terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
+
+### PyAirbyte
+
+If you want to use Python to move data, our Python library, [PyAirbyte](../pyairbyte/getting-started.mdx), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
+
+:::note
+PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
 :::
 
-## Airbyte Cloud
+## Contribute
 
-To use Airbyte Cloud, [sign up](https://cloud.airbyte.io/signup) with your email address, Google login, or GitHub login. Upon signing up, you'll be taken to your workspace. There, you can collaborate with team members and share resources across your team under a single billing account.
+Airbyte began as an open-source product. This is vital to Airbyte's vision of data movement. There are seemingly infinite data sources in the world, and only through community collaboration can we address that long tail of data sources.
 
-Airbyte Cloud offers a 14-day free trial that begins after your first successful sync. You can find more details about Airbyte Cloud for practitioners and teams, as well as a tool for evaluating costs on our [pricing page](https://www.airbyte.com/pricing).
-
-To start setting up a data pipeline, see how to [set up a source](./add-a-source.md).
-
-## Self-Managed Community (OSS) 
-
-When self-managing Airbyte, your data never leaves your premises. You can use our [OSS Quickstart](oss-quickstart.md) to get started immediately by deploying locally using abctl. 
-
-:::tip
-If you're trying Airbyte out for the first time, we'd recommend you sign up for the [Airbyte Cloud trial](https://cloud.airbyte.io/signup) or deploy OSS locally.
-:::
-
-To deploy Airbyte in production, Airbyte recommends deploying on [Kubernetes via Helm](../../deploying-airbyte/on-kubernetes-via-helm.md). 
-
-## Self-Managed Enterprise
-
-Airbyte Self-Managed Enterprise is the most robust way to run Airbyte yourself. With this option, you'll have access to all 300+ pre-built connectors and data will never  need to leave your environment. Enterprise setup means that Airbyte becomes self-serve in your organization with new tools to manage multiple users, and the ability to set up multiple teams using Airbyte all in one place.
-
-:::tip
-To start with Self-Managed Enterprise, you'll need a license key. [Talk to sales](https://airbyte.com/company/talk-to-sales) to get started with Enterprise. For more details, review our [Enterprise setup guide](/enterprise-setup/README.md).
-:::
+If you don't see the data source you need in our collection, [you can build one](../../connector-development/). Airbyte comes with no-code, low-code, and programmatic builder options. If you're interested in giving back to the community, documenting your connector and publishing it in the [Marketplace](../../integrations) will help others like you move data in the future.

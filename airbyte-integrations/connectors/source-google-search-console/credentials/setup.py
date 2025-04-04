@@ -5,12 +5,13 @@
 
 from setuptools import find_packages, setup
 
+
 MAIN_REQUIREMENTS = [
     "requests",
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
+    "pytest~=8.0",
 ]
 
 setup(

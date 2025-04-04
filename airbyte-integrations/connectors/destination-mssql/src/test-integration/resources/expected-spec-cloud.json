@@ -1,0 +1,200 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/mssql",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "MSSQL Destination Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "host" : {
+        "type" : "string",
+        "description" : "The host name of the MSSQL database.",
+        "title" : "Host",
+        "order" : 0
+      },
+      "port" : {
+        "type" : "integer",
+        "description" : "The port of the MSSQL database.",
+        "title" : "Port",
+        "minimum" : 0,
+        "maximum" : 65536,
+        "examples" : [ "1433" ],
+        "order" : 1
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "The name of the MSSQL database.",
+        "title" : "DB Name",
+        "order" : 2
+      },
+      "schema" : {
+        "type" : "string",
+        "description" : "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
+        "title" : "Default Schema",
+        "examples" : [ "public" ],
+        "default" : "public",
+        "order" : 3
+      },
+      "user" : {
+        "type" : "string",
+        "description" : "The username which is used to access the database.",
+        "title" : "User",
+        "order" : 4
+      },
+      "password" : {
+        "type" : "string",
+        "description" : "The password associated with this username.",
+        "title" : "Password",
+        "airbyte_secret" : true,
+        "order" : 5
+      },
+      "jdbc_url_params" : {
+        "type" : "string",
+        "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title" : "JDBC URL Params",
+        "order" : 6
+      },
+      "ssl_method" : {
+        "oneOf" : [ {
+          "title" : "Unencrypted",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "The data transfer will not be encrypted.",
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "enum" : [ "unencrypted" ],
+              "default" : "unencrypted"
+            }
+          },
+          "required" : [ "name" ]
+        }, {
+          "title" : "Encrypted (trust server certificate)",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Use the certificate provided by the server without verification. (For testing purposes only!)",
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "enum" : [ "encrypted_trust_server_certificate" ],
+              "default" : "encrypted_trust_server_certificate"
+            }
+          },
+          "required" : [ "name" ]
+        }, {
+          "title" : "Encrypted (verify certificate)",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Verify and use the certificate provided by the server.",
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "enum" : [ "encrypted_verify_certificate" ],
+              "default" : "encrypted_verify_certificate"
+            },
+            "trustStoreName" : {
+              "type" : "string",
+              "description" : "Specifies the name of the trust store.",
+              "title" : "Trust Store Name",
+              "order" : 1
+            },
+            "trustStorePassword" : {
+              "type" : "string",
+              "description" : "Specifies the password of the trust store.",
+              "title" : "Trust Store Password",
+              "airbyte_secret" : true,
+              "order" : 2
+            },
+            "hostNameInCertificate" : {
+              "type" : "string",
+              "description" : "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
+              "title" : "Host Name In Certificate",
+              "order" : 3
+            }
+          },
+          "required" : [ "name" ]
+        } ],
+        "description" : "The encryption method which is used to communicate with the database.",
+        "title" : "SSL Method",
+        "order" : 7,
+        "type" : "object"
+      },
+      "load_type" : {
+        "oneOf" : [ {
+          "title" : "Insert Load",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for using the INSERT loading mechanism.",
+          "properties" : {
+            "load_type" : {
+              "type" : "string",
+              "enum" : [ "INSERT" ],
+              "default" : "INSERT"
+            }
+          },
+          "required" : [ "load_type" ]
+        }, {
+          "title" : "Bulk Load",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for using the BULK loading mechanism.",
+          "properties" : {
+            "load_type" : {
+              "type" : "string",
+              "enum" : [ "BULK" ],
+              "default" : "BULK"
+            },
+            "azure_blob_storage_account_name" : {
+              "type" : "string",
+              "description" : "The name of the Azure Blob Storage account. See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts",
+              "title" : "Azure Blob Storage Account Name",
+              "examples" : [ "mystorageaccount" ]
+            },
+            "azure_blob_storage_container_name" : {
+              "type" : "string",
+              "description" : "The name of the Azure Blob Storage container. See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#containers",
+              "title" : "Azure Blob Storage Container Name",
+              "examples" : [ "mycontainer" ]
+            },
+            "shared_access_signature" : {
+              "type" : "string",
+              "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview",
+              "title" : "Shared Access Signature",
+              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "airbyte_secret" : true,
+              "always_show" : true
+            },
+            "bulk_load_data_source" : {
+              "type" : "string",
+              "description" : "Specifies the external data source name configured in MSSQL, which references the Azure Blob container. See: https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql",
+              "title" : "BULK Load Data Source",
+              "examples" : [ "MyAzureBlobStorage" ],
+              "order" : 4,
+              "always_show" : true
+            },
+            "bulk_load_validate_values_pre_load" : {
+              "type" : "boolean",
+              "description" : "When enabled, Airbyte will validate all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.",
+              "title" : "Pre-Load Value Validation",
+              "examples" : [ "false" ],
+              "default" : false,
+              "order" : 5,
+              "always_show" : false
+            }
+          },
+          "required" : [ "load_type", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "shared_access_signature", "bulk_load_data_source" ]
+        } ],
+        "description" : "Specifies the type of load mechanism (e.g., BULK, INSERT) and its associated configuration.",
+        "title" : "Load Type",
+        "always_show" : true,
+        "order" : 8,
+        "type" : "object"
+      }
+    },
+    "required" : [ "host", "port", "database", "schema", "user", "ssl_method", "load_type" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

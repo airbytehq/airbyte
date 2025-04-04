@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have right permissions",
+    "status": "NOT_PERMISSIONS"
+  }
+}

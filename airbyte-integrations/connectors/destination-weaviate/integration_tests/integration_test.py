@@ -8,13 +8,15 @@ import time
 
 import docker
 import weaviate
-from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
-from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
-from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_weaviate.destination import DestinationWeaviate
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Weaviate
 from pytest_docker.plugin import get_docker_ip
+
+from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
+from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
+from airbyte_cdk.models import DestinationSyncMode, Status
+
 
 WEAVIATE_CONTAINER_NAME = "weaviate-test-container-will-get-deleted"
 

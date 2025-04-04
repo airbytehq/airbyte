@@ -15,17 +15,14 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.time.Clock
-import java.time.Instant
 
 /** [OutputConsumer] implementation for unit tests. Collects everything into thread-safe buffers. */
 @Singleton
 @Requires(notEnv = [Environment.CLI])
-@Requires(missingProperty = CONNECTOR_OUTPUT_FILE)
 @Replaces(OutputConsumer::class)
 class BufferingOutputConsumer(
     clock: Clock,
-) : OutputConsumer {
-    override val emittedAt: Instant = Instant.now(clock)
+) : OutputConsumer(clock) {
 
     private val records = mutableListOf<AirbyteRecordMessage>()
     private val states = mutableListOf<AirbyteStateMessage>()
@@ -35,6 +32,12 @@ class BufferingOutputConsumer(
     private val catalogs = mutableListOf<AirbyteCatalog>()
     private val traces = mutableListOf<AirbyteTraceMessage>()
     private val messages = mutableListOf<AirbyteMessage>()
+    private var messagesIndex: Int = 0
+
+    var callback: (AirbyteMessage) -> Unit = {}
+        set(value) {
+            synchronized(this) { field = value }
+        }
 
     override fun accept(input: AirbyteMessage) {
         // Deep copy the input, which may be reused and mutated later on.
@@ -52,6 +55,7 @@ class BufferingOutputConsumer(
                 AirbyteMessage.Type.TRACE -> traces.add(m.trace)
                 else -> TODO("${m.type} not supported")
             }
+            callback(m)
         }
     }
 
@@ -74,4 +78,15 @@ class BufferingOutputConsumer(
     fun traces(): List<AirbyteTraceMessage> = synchronized(this) { listOf(*traces.toTypedArray()) }
 
     fun messages(): List<AirbyteMessage> = synchronized(this) { listOf(*messages.toTypedArray()) }
+
+    fun newMessages(): List<AirbyteMessage> =
+        synchronized(this) {
+            val newMessages = messages.subList(messagesIndex, messages.size)
+            messagesIndex = messages.size
+            newMessages
+        }
+
+    fun resetNewMessagesCursor() {
+        synchronized(this) { messagesIndex = 0 }
+    }
 }

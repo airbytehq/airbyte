@@ -6,9 +6,10 @@ import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_milvus.config import ConfigModel
 from destination_milvus.destination import DestinationMilvus
+
+from airbyte_cdk.models import ConnectorSpecification, Status
 
 
 class TestDestinationMilvus(unittest.TestCase):

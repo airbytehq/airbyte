@@ -12,6 +12,8 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
+from requests.exceptions import HTTPError
+
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.checkpoint.checkpoint_reader import FULL_REFRESH_COMPLETE_STATE
@@ -21,10 +23,10 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from requests.exceptions import HTTPError
 from source_jira.type_transfromer import DateTimeTransformer
 
 from .utils import read_full_refresh, read_incremental, safe_max
+
 
 API_VERSION = 3
 
@@ -173,7 +175,6 @@ class JiraStream(HttpStream, ABC):
 
 
 class FullRefreshJiraStream(JiraStream):
-
     """
     This is a temporary solution to avoid incorrect state handling.
     See comments below for more info:
@@ -224,8 +225,8 @@ class IncrementalJiraStream(StartDateJiraStream, CheckpointMixin, ABC):
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         compare_date = self.get_starting_point(stream_state)
         if compare_date:
-            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
-            return f"{self.cursor_field} >= '{compare_date}'"
+            compare_date_epoch = compare_date.int_timestamp * 1000
+            return f"{self.cursor_field} >= {compare_date_epoch}"
 
     def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
         if self.cursor_field not in self._starting_point_cache:
@@ -377,70 +378,6 @@ class Projects(FullRefreshJiraStream):
         for project in super().read_records(**kwargs):
             if not self._projects or project["key"] in self._projects:
                 yield project
-
-
-class IssueWorklogs(IncrementalJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
-
-    Cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
-    """
-
-    extract_field = "worklogs"
-    cursor_field = "updated"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self._http_client._session.auth,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/worklog"
-
-    def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
-            stream_slice = {"key": issue["key"]}
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
-
-
-class IssueComments(IncrementalJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
-
-    Cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
-    """
-
-    extract_field = "comments"
-    cursor_field = "updated"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self._http_client._session.auth,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        return f"issue/{stream_slice['key']}/comment"
-
-    def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
-            stream_slice = {"key": issue["key"]}
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["issueId"] = stream_slice["key"]
-        return record
 
 
 class PullRequests(IncrementalJiraStream):

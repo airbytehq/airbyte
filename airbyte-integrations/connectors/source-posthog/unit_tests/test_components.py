@@ -3,11 +3,13 @@
 #
 
 import pytest as pytest
+from source_posthog.components import EventsCartesianProductStreamSlicer
+
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
-from source_posthog.components import EventsCartesianProductStreamSlicer
+
 
 stream_slicers = [
     ListPartitionRouter(values=[2331], cursor_field="project_id", config={}, parameters={}),

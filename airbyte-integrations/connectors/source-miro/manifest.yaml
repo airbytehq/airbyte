@@ -1,0 +1,1025 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector, Miro's API could be used to extract data related to board
+  content, user activities, and collaboration metrics, enabling integration with
+  data warehouses and further analysis of team interactions and productivity.
+
+check:
+  type: CheckStream
+  stream_names:
+    - boards
+
+definitions:
+  streams:
+    boards:
+      type: DeclarativeStream
+      name: boards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/boards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/boards"
+    board_users:
+      type: DeclarativeStream
+      name: board_users
+      primary_key:
+        - id
+        - board_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/boards/{{ stream_partition.board_id }}/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: board_id
+              stream:
+                $ref: "#/definitions/streams/boards"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - board_id
+              value: "{{ stream_slice.board_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/board_users"
+    board_items:
+      type: DeclarativeStream
+      name: board_items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/boards/{{ stream_partition.board_id }}/items
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: board_id
+              stream:
+                $ref: "#/definitions/streams/boards"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - board_id
+              value: "{{ stream_slice.board_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/board_items"
+    board_tags:
+      type: DeclarativeStream
+      name: board_tags
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/boards/{{ stream_partition.board_id }}/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: board_id
+              stream:
+                $ref: "#/definitions/streams/boards"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - board_id
+              value: "{{ stream_slice.board_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/board_tags"
+    board_groups:
+      type: DeclarativeStream
+      name: board_groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/boards/{{ stream_partition.board_id }}/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: board_id
+              stream:
+                $ref: "#/definitions/streams/boards"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - board_id
+              value: "{{ stream_slice.board_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/board_groups"
+    board_connectors:
+      type: DeclarativeStream
+      name: board_connectors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/boards/{{ stream_partition.board_id }}/connectors
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: board_id
+              stream:
+                $ref: "#/definitions/streams/boards"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - board_id
+              value: "{{ stream_slice.board_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/board_connectors"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.miro.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/boards"
+  - $ref: "#/definitions/streams/board_users"
+  - $ref: "#/definitions/streams/board_items"
+  - $ref: "#/definitions/streams/board_tags"
+  - $ref: "#/definitions/streams/board_groups"
+  - $ref: "#/definitions/streams/board_connectors"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    boards: true
+    board_users: false
+    board_items: false
+    board_tags: false
+    board_groups: false
+    board_connectors: false
+  testedStreams:
+    boards:
+      streamHash: 26137569ff693a052abc2ee607eca4c9449947a5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    board_users:
+      streamHash: a01ce17994b85e3537874f5131c7412be618a3ce
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    board_items:
+      streamHash: 02ae9521b2179346315a503f8a96d9ddd6ed3b26
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    board_tags:
+      streamHash: 4e20dcdc125625593cac6ac4c1e14d4a2804d9b2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    board_groups:
+      streamHash: 87ccbd3c50b3c4d9b9b9f1559cfbec411eb69e29
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    board_connectors:
+      streamHash: 80fcd3cb25ec98960d401b89c3d5b8e163ebc151
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.miro.com/reference
+
+schemas:
+  boards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      currentUserMembership:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      lastOpenedAt:
+        type:
+          - string
+          - "null"
+      lastOpenedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      permissionsPolicy:
+        type:
+          - object
+          - "null"
+        properties:
+          collaborationToolsStartAccess:
+            type:
+              - string
+              - "null"
+          copyAccess:
+            type:
+              - string
+              - "null"
+          copyAccessLevel:
+            type:
+              - string
+              - "null"
+          sharingAccess:
+            type:
+              - string
+              - "null"
+      picture:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          imageURL:
+            type:
+              - string
+              - "null"
+      policy:
+        type:
+          - object
+          - "null"
+        properties:
+          permissionsPolicy:
+            type:
+              - object
+              - "null"
+            properties:
+              collaborationToolsStartAccess:
+                type:
+                  - string
+                  - "null"
+              copyAccess:
+                type:
+                  - string
+                  - "null"
+              copyAccessLevel:
+                type:
+                  - string
+                  - "null"
+              sharingAccess:
+                type:
+                  - string
+                  - "null"
+          sharingPolicy:
+            type:
+              - object
+              - "null"
+            properties:
+              access:
+                type:
+                  - string
+                  - "null"
+              inviteToAccountAndBoardLinkAccess:
+                type:
+                  - string
+                  - "null"
+              organizationAccess:
+                type:
+                  - string
+                  - "null"
+              teamAccess:
+                type:
+                  - string
+                  - "null"
+      sharingPolicy:
+        type:
+          - object
+          - "null"
+        properties:
+          access:
+            type:
+              - string
+              - "null"
+          inviteToAccountAndBoardLinkAccess:
+            type:
+              - string
+              - "null"
+          organizationAccess:
+            type:
+              - string
+              - "null"
+          teamAccess:
+            type:
+              - string
+              - "null"
+      team:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      viewLink:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  board_users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+  board_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          format:
+            type:
+              - string
+              - "null"
+          imageUrl:
+            type:
+              - string
+              - "null"
+          shape:
+            type:
+              - string
+              - "null"
+          showContent:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      geometry:
+        type:
+          - object
+          - "null"
+        properties:
+          height:
+            type:
+              - number
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isSupported:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          related:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      parent:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+      position:
+        type:
+          - object
+          - "null"
+        properties:
+          origin:
+            type:
+              - string
+              - "null"
+          relativeTo:
+            type:
+              - string
+              - "null"
+          x:
+            type:
+              - number
+              - "null"
+          "y":
+            type:
+              - number
+              - "null"
+      style:
+        type:
+          - object
+          - "null"
+        properties:
+          cardTheme:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          fillColor:
+            type:
+              - string
+              - "null"
+          fillOpacity:
+            type:
+              - string
+              - "null"
+          fontFamily:
+            type:
+              - string
+              - "null"
+          fontSize:
+            type:
+              - string
+              - "null"
+          textAlign:
+            type:
+              - string
+              - "null"
+          textAlignVertical:
+            type:
+              - string
+              - "null"
+  board_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      fillColor:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      title:
+        type:
+          - string
+          - "null"
+  board_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      id:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+  board_connectors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      endItem:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      shape:
+        type:
+          - string
+          - "null"
+      startItem:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - string
+                  - "null"
+      style:
+        type:
+          - object
+          - "null"
+        properties:
+          endStrokeCap:
+            type:
+              - string
+              - "null"
+          startStrokeCap:
+            type:
+              - string
+              - "null"
+          strokeColor:
+            type:
+              - string
+              - "null"
+          strokeStyle:
+            type:
+              - string
+              - "null"
+          strokeWidth:
+            type:
+              - string
+              - "null"
+    required:
+      - id

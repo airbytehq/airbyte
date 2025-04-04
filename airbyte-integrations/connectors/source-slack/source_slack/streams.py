@@ -8,12 +8,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+from pendulum import DateTime
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from pendulum import DateTime
 from source_slack.components.slack_backoff_strategy import SlackBackoffStrategy
 
 from .components.join_channels import JoinChannelsStream

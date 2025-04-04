@@ -34,7 +34,13 @@
         "REACH": 99
       },
       "bid_strategy": "COST_CAP",
-      "bid_amount": 99.0
+      "bid_amount": 99.0,
+      "learning_stage_info": {
+        "status": "LEARNING",
+        "conversions": 12,
+        "last_sig_edit_ts": 1734947501,
+        "attribution_windows": ["7d_click", "1d_view"]
+      }
     }
   ]
 }

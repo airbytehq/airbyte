@@ -1,4 +1,4 @@
-# Timeplus source connector
+# Timeplus destination connector
 
 
 This is the repository for the Timeplus source connector, written in Python.
@@ -7,7 +7,7 @@ For information about how to use this connector within Airbyte, see [the documen
 ## Local development
 
 ### Prerequisites
-* Python (~=3.9)
+* Python (~=3.10)
 * Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
 
@@ -29,8 +29,7 @@ See `sample_files/sample_config.json` for a sample config file.
 ```
 poetry run destination-timeplus spec
 poetry run destination-timeplus check --config secrets/config.json
-poetry run destination-timeplus discover --config secrets/config.json
-poetry run destination-timeplus read --config secrets/config.json --catalog sample_files/configured_catalog.json
+cat integration_tests/messages.jsonl | poetry run destination-timeplus write --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests
@@ -54,8 +53,7 @@ Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/destination-timeplus:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-timeplus:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-timeplus:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-timeplus:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+cat integration_tests/messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-timeplus:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running our CI test suite
@@ -69,7 +67,7 @@ Customize `acceptance-test-config.yml` file to configure acceptance tests. See [
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ### Dependency Management
-All of your dependencies should be managed via Poetry. 
+All of your dependencies should be managed via Poetry.
 To add a new dependency, run:
 ```bash
 poetry add <package-name>
@@ -80,7 +78,7 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-timeplus test`
-2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.

@@ -2599,6 +2599,17 @@ spec:
         title: Organization Export IDs
         description: Globally unique identifiers for the organization exports
         type: array
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 25
+        default: 10
+        examples: [1, 2, 3]
+        description: >-
+          The number of worker threads to use for the sync.
+          The performance upper boundary is based on the limit of your Asana pricing plan.
+          More info about the rate limit tiers can be found on Asana's API <a href="https://developers.asana.com/docs/rate-limits">docs</a>.
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -2654,3 +2665,19 @@ metadata:
     custom_fields: false
     organization_exports: false
     events: false
+
+# Asana rate limiting has two tiers:
+# - Free: 2.5 req/s, 150 req/min
+# - Paid: 25 req/s, 1500 req/min
+#
+# In addition, Asana has a cap on the maximum number of requests in progress concurrently depending
+# on the endpoint HTTP method:
+# - GET: 50 concurrent requests (We're already capping at 25 req/sec, but 50 should be the absolute ceiling)
+# - POST/PUT/PATCH/DELETE: 5 concurrent requests (We don't have any streams using these methods)
+#
+# Lastly, a few specific endpoints have stricter limitation although neither are used at the moment:
+# - /search: 60 req/min
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 25

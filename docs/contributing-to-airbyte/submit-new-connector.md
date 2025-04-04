@@ -11,11 +11,31 @@ To contribute a new connector in Connector Builder:
 4. Builder will make a new pull request on your behalf automatically!
 5. Airbyte Marketplace team will review the PR.
 
+### Obtaining your Github Access Token
+In order to contribute a new connector from the Airbyte UI, you'll need to obtain your [GitHub Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic). This will allow your GitHub user to author the contribution.
+
+The token must be a (classic) token with repo scope enabled. Follow these directions to create a new token with the required scopes.
+1. In the upper-right corner of any page on GitHub, click your profile photo, then click  Settings.
+2. In the left sidebar, click `Developer settings`.
+3. In the left sidebar, under  Personal access tokens, click `Tokens (classic)`.
+
+![Select Tokens Classic](./assets/token-classic.png)
+
+4. Select Generate new token, then click `Generate new token (classic)`.
+
+![Generate Tokens Classic](./assets/token-classic-select.png)
+
+5. Add the `repo` scope. Click `Generate Token`.
+
+![Generate Tokens Classic](./assets/token-classic-scope.png)
+
+6. Make sure to copy your personal access token. You won’t be able to see it again! Paste the personal access token to the Airbyte UI, and click "Contribute" to contribute the connector.
+
 ## Custom Python CDK or Java CDK connectors
 
 ### Find or start a Github Discussion about the connector
 
-While Connector Builder is great, some [connectors won't work in the Builder just yet](../connector-development/connector-builder-ui/connector-builder-compatibility.md).
+While our Connector Builder is constantly growing and evolving in flexibility and supported use cases, some connector implementations won't work in the Builder just yet.
 See the [Connector Development guide](../connector-development/README.md) for more details on how to build a connector. If you're building a custom Python CDK or Database (Java CDK) connector, please start with filing a discussion or an issue:
 
 1. Check to see if there is an existing [Discussion](https://github.com/airbytehq/airbyte/discussions/categories/new-connector-request) for a connector you have in mind

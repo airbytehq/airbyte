@@ -6,6 +6,7 @@ from pathlib import Path
 
 import asyncclick as click
 import pytest
+
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, python_connectors
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import BUILD_PLATFORMS
@@ -124,7 +125,7 @@ class TestBuildConnectorImage:
         step = python_connectors.BuildConnectorImages(test_context_with_connector_with_base_image)
         step_result = await step._run()
         assert step._build_from_base_image.call_count == len(all_platforms)
-        container_built_from_base.with_exec.assert_called_with(["spec"])
+        container_built_from_base.with_exec.assert_called_with(["spec"], use_entrypoint=True)
         assert step_result.status is StepStatus.SUCCESS
         for platform in all_platforms:
             assert step_result.output[platform] == container_built_from_base
@@ -168,7 +169,7 @@ class TestBuildConnectorImage:
         step = python_connectors.BuildConnectorImages(test_context_with_connector_without_base_image)
         step_result = await step._run()
         assert step._build_from_dockerfile.call_count == len(all_platforms)
-        container_built_from_dockerfile.with_exec.assert_called_with(["spec"])
+        container_built_from_dockerfile.with_exec.assert_called_with(["spec"], use_entrypoint=True)
         assert step_result.status is StepStatus.SUCCESS
         for platform in all_platforms:
             assert step_result.output[platform] == container_built_from_dockerfile

@@ -1,5 +1,5 @@
 import React from 'react';
-import schema from "../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml";
+import schema from "../data/declarative_component_schema.yaml";
 import ReactMarkdown from 'react-markdown'
 import Heading from '@theme/Heading';
 
@@ -37,7 +37,7 @@ function Definition({ name, definition }) {
           <Heading as="h4"><Name name={name} definition={property} /></Heading>
           <Description text={property.description} />
           {name === "$parameters" &&
-          <Description text={"Set parameters that are inherited to all children. See the [section in the advanced topics](/connector-development/config-based/advanced-topics#parameters) for more details."} />
+          <Description text={"Set parameters that are inherited to all children. See the [section in the advanced topics](/connector-development/config-based/advanced-topics/parameters) for more details."} />
           }
           {property.anyOf && <>Type: <ul>
             {property.anyOf.map((type, index) => <li key={index}>

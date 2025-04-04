@@ -3,25 +3,27 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
-  registryOverrides:
-    cloud:
-      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
-    oss:
-      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: source
   definitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
-  dockerImageTag: 0.5.2
+  dockerImageTag: 0.5.3
   dockerRepository: airbyte/source-oracle-strict-encrypt
+  documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   githubIssueLabel: source-oracle
   icon: oracle.svg
   license: ELv2
   name: Oracle DB
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
 metadataSpecVersion: "1.0"

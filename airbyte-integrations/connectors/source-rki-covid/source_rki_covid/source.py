@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -15,7 +16,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 # Basic full refresh stream
 class RkiCovidStream(HttpStream, ABC):
-
     url_base = "https://api.corona-zahlen.org/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -106,7 +106,6 @@ class GermanyStatesAgeGroups(RkiCovidStream):
 
 # Basic incremental stream
 class IncrementalRkiCovidStream(RkiCovidStream, ABC):
-
     state_checkpoint_interval = None
 
     @property

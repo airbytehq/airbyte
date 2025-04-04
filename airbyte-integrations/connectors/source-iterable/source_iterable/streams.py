@@ -10,17 +10,19 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
+from pendulum.datetime import DateTime
+from requests import HTTPError
+from requests.exceptions import ChunkedEncodingError
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from pendulum.datetime import DateTime
-from requests import HTTPError
-from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
 from source_iterable.utils import dateutil_parse
+
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -202,7 +204,6 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
         stream_slice: StreamSlice,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         params = super().request_params(stream_state=stream_state)
         params.update(
             {
@@ -250,7 +251,6 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
-
         start_datetime = self.get_start_date(stream_state)
         return [StreamSlice(start_datetime, self._end_date or pendulum.now("UTC"))]
 
@@ -268,7 +268,6 @@ class IterableExportStreamRanged(IterableExportStream, ABC):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
-
         start_datetime = self.get_start_date(stream_state)
 
         return RangeSliceGenerator(start_datetime, self._end_date)
@@ -303,7 +302,6 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
-
         start_datetime = self.get_start_date(stream_state)
         self._adjustable_generator = AdjustableSliceGenerator(start_datetime, self._end_date)
         return self._adjustable_generator
@@ -318,7 +316,6 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         start_time = pendulum.now()
         for _ in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
             try:
-
                 self.logger.info(
                     f"Processing slice of {(stream_slice.end_date - stream_slice.start_date).total_days()} days for stream {self.name}"
                 )

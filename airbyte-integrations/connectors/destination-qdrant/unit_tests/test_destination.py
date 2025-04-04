@@ -6,9 +6,10 @@ import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_qdrant.config import ConfigModel
 from destination_qdrant.destination import DestinationQdrant
+
+from airbyte_cdk.models import ConnectorSpecification, Status
 
 
 class TestDestinationQdrant(unittest.TestCase):

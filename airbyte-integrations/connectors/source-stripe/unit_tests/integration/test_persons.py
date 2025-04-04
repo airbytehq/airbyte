@@ -1,4 +1,6 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from datetime import datetime, timedelta, timezone
 from typing import List
@@ -6,6 +8,9 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
+from source_stripe import SourceStripe
+
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStreamStatus, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -20,22 +25,18 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob, AirbyteStreamStatus, FailureType, Level, StreamDescriptor, SyncMode
 from integration.config import ConfigBuilder
 from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
-from source_stripe import SourceStripe
+
 
 _STREAM_NAME = "persons"
 _ACCOUNT_ID = "acct_1G9HZLIEn49ers"
 _CLIENT_SECRET = "ConfigBuilder default client secret"
 _NOW = datetime.now(timezone.utc)
-_CONFIG = {
-    "client_secret": _CLIENT_SECRET,
-    "account_id": _ACCOUNT_ID,
-}
+_CONFIG = {"client_secret": _CLIENT_SECRET, "account_id": _ACCOUNT_ID}
 _NO_STATE = StateBuilder().build()
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
 
@@ -64,16 +65,13 @@ def _create_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template("accounts", __file__),
         records_path=FieldPath("data"),
-        pagination_strategy=StripePaginationStrategy()
+        pagination_strategy=StripePaginationStrategy(),
     )
 
 
 def _create_record(resource: str) -> RecordBuilder:
     return create_record_builder(
-        find_template(resource, __file__),
-        FieldPath("data"),
-        record_id_path=FieldPath("id"),
-        record_cursor_path=FieldPath("created")
+        find_template(resource, __file__), FieldPath("data"), record_id_path=FieldPath("id"), record_cursor_path=FieldPath("created")
     )
 
 
@@ -86,18 +84,19 @@ def _create_persons_event_record(event_type: str) -> RecordBuilder:
     )
 
     person_record = create_record_builder(
-        find_template("persons", __file__),
-        FieldPath("data"),
-        record_id_path=FieldPath("id"),
-        record_cursor_path=FieldPath("created")
+        find_template("persons", __file__), FieldPath("data"), record_id_path=FieldPath("id"), record_cursor_path=FieldPath("created")
     )
 
     return event_record.with_field(NestedPath(["data", "object"]), person_record.build()).with_field(NestedPath(["type"]), event_type)
 
 
 def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:
-    return (len(status_messages) == 3 and status_messages[0] == AirbyteStreamStatus.STARTED
-            and status_messages[1] == AirbyteStreamStatus.RUNNING and status_messages[2] == AirbyteStreamStatus.COMPLETE)
+    return (
+        len(status_messages) == 3
+        and status_messages[0] == AirbyteStreamStatus.STARTED
+        and status_messages[1] == AirbyteStreamStatus.RUNNING
+        and status_messages[2] == AirbyteStreamStatus.COMPLETE
+    )
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -157,14 +156,17 @@ class PersonsTest(TestCase):
         # Persons stream first page request
         http_mocker.get(
             _create_persons_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons").with_id("last_page_record_id")).with_pagination().build(),
+            _create_response()
+            .with_record(record=_create_record("persons"))
+            .with_record(record=_create_record("persons").with_id("last_page_record_id"))
+            .with_pagination()
+            .build(),
         )
 
         # Persons stream second page request
         http_mocker.get(
             _create_persons_request().with_limit(100).with_starting_after("last_page_record_id").build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(
-                record=_create_record("persons")).build(),
+            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
@@ -259,8 +261,12 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
@@ -276,7 +282,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -285,8 +291,12 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
         )
 
@@ -313,8 +323,12 @@ class PersonsTest(TestCase):
         config = _create_config().with_start_date(start_datetime).build()
 
         http_mocker.get(
-            _create_events_request().with_created_gte(start_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(start_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
@@ -330,7 +344,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -366,7 +380,7 @@ class PersonsTest(TestCase):
             [
                 a_response_with_status(429),
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-            ]
+            ],
         )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
@@ -381,12 +395,16 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             [
                 a_response_with_status(429),
                 _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
-            ]
+            ],
         )
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
@@ -401,7 +419,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name="persons")
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -413,7 +431,7 @@ class PersonsTest(TestCase):
 
         http_mocker.get(
             _create_persons_request().with_limit(100).build(),
-                a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
+            a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
         )
 
         with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
@@ -421,7 +439,10 @@ class PersonsTest(TestCase):
             actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
             # first error is the actual error, second is to break the Python app with code != 0
-            assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
+            assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [
+                FailureType.system_error,
+                FailureType.config_error,
+            ]
             assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.internal_message
 
     @HttpMocker()
@@ -430,8 +451,12 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
         )
 
@@ -463,7 +488,6 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
@@ -482,9 +506,8 @@ class PersonsTest(TestCase):
             [
                 a_response_with_status(500),
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-            ]
+            ],
         )
-
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
@@ -494,14 +517,14 @@ class PersonsTest(TestCase):
 
     @HttpMocker()
     def test_server_error_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            _create_accounts_request().with_limit(100).build(),
-            a_response_with_status(500)
-        )
+        http_mocker.get(_create_accounts_request().with_limit(100).build(), a_response_with_status(500))
 
         with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
             source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
             actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         # first error is the actual error, second is to break the Python app with code != 0
-        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
+        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [
+            FailureType.system_error,
+            FailureType.config_error,
+        ]
