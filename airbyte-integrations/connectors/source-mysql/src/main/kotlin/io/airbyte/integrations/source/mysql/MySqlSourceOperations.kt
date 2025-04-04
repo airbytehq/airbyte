@@ -216,17 +216,20 @@ class MySqlSourceOperations :
                 // To prevent that from happening and resulted for skipping the table altogether,
                 // the minimum count is set to 10.
 
-/*
-	SELECT GREATEST(5.0E-6, (
-		SELECT CAST(1024 / table_rows AS DOUBLE) FROM information_schema.tables WHERE table_schema = '10gb' AND table_name = 'users')))
+                /*
+                SELECT GREATEST(5.0E-6, (
+                	SELECT CAST(1024 / table_rows AS DOUBLE) FROM information_schema.tables WHERE table_schema = '10gb' AND table_name = 'users')))
 
- */
-//                val quickCount =
-//                    "SELECT GREATEST(10, COALESCE(table_rows, ($fullCount))) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
-                val greatest = "GREATEST($greatestRate, (SELECT CAST($sampleSize / GREATEST(10, COALESCE(table_rows, ($fullCount))) AS DOUBLE) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'))"
+                */
+                //                val quickCount =
+                //                    "SELECT GREATEST(10, COALESCE(table_rows, ($fullCount))) FROM
+                // information_schema.tables WHERE table_schema = '$namespace' AND table_name =
+                // '$name'"
+                val greatest =
+                    "GREATEST($greatestRate, (SELECT CAST($sampleSize / GREATEST(10, COALESCE(table_rows, ($fullCount))) AS DOUBLE) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'))"
                 // Rand returns a value between 0 and 1
                 val where = "WHERE RAND() < $greatest "
-//                "$from $where"
+                //                "$from $where"
                 from
             }
         }

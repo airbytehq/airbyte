@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.cdk.spec
 
 import io.airbyte.cdk.Operation
@@ -19,7 +19,7 @@ class SpecOperation(
     val extendSpecification: SpecificationExtender,
     val outputConsumer: OutputConsumer,
 ) : Operation {
-    override fun execute() {
+    override suspend fun execute() {
         val spec =
             ConnectorSpecification()
                 .withDocumentationUrl(URI.create(documentationUrl))
@@ -33,7 +33,6 @@ interface SpecificationExtender : (ConnectorSpecification) -> ConnectorSpecifica
 @Singleton
 @DefaultImplementation
 class IdentitySpecificationExtender : SpecificationExtender {
-    override fun invoke(specification: ConnectorSpecification): ConnectorSpecification {
-        return specification
-    }
+    override fun invoke(specification: ConnectorSpecification): ConnectorSpecification =
+        specification
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.Operation
@@ -21,7 +21,7 @@ class DiscoverOperation(
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
-    override fun execute() {
+    override suspend fun execute() {
         val airbyteStreams = mutableListOf<AirbyteStream>()
         metadataQuerierFactory.session(config).use { metadataQuerier: MetadataQuerier ->
             val namespaces: List<String?> =

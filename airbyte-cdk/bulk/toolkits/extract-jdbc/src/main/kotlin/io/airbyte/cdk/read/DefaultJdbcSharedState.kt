@@ -8,11 +8,6 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.io.File
-import java.nio.file.FileSystem
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Instant
 
 /** Default implementation of [JdbcSharedState]. */
@@ -37,7 +32,7 @@ class DefaultJdbcSharedState(
         constants.expectedThroughputBytesPerSecond / configuration.maxConcurrency
 
     override val targetPartitionByteSize: Long = 400L shl 20 // TEMP: hardcode partition size to 1GB
-//        maxPartitionThroughputBytesPerSecond * configuration.checkpointTargetInterval.seconds
+    //        maxPartitionThroughputBytesPerSecond * configuration.checkpointTargetInterval.seconds
 
     override fun jdbcFetchSizeEstimator(): JdbcSharedState.JdbcFetchSizeEstimator =
         DefaultJdbcFetchSizeEstimator(

@@ -29,7 +29,7 @@ class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguratio
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer,
 ) : Operation {
-    override fun execute() {
+    override suspend fun execute() {
         try {
             val pojo = configJsonObjectSupplier.get()
             val config = configFactory.make(pojo)
@@ -39,7 +39,7 @@ class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguratio
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
                     .withConnectionStatus(
                         AirbyteConnectionStatus()
-                            .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
+                            .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED),
                     )
             outputConsumer.accept(successMessage)
         } catch (t: Throwable) {

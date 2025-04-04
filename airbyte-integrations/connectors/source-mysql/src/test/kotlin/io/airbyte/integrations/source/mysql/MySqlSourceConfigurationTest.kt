@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
@@ -22,7 +22,10 @@ class MySqlSourceConfigurationTest {
 
     @Inject
     lateinit var factory:
-        SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration>
+        SourceConfigurationFactory<
+            MySqlSourceConfigurationSpecification,
+            MySqlSourceConfiguration<*>,
+        >
 
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
@@ -33,7 +36,8 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.ssl_mode.mode", value = "required")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
-        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+        value =
+            "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
     )
     fun testParseJdbcParameters() {
         val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
@@ -90,14 +94,13 @@ class MySqlSourceConfigurationTest {
         Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
         Assertions.assertEquals(
             cdcCursor.invalidCdcCursorPositionBehavior,
-            InvalidCdcCursorPositionBehavior.RESET_SYNC
+            InvalidCdcCursorPositionBehavior.RESET_SYNC,
         )
 
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
 
     companion object {
-
         const val CONFIG_V1: String =
             """
 {

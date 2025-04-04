@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+// Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 package io.airbyte.cdk.check
 
 import io.airbyte.cdk.ConfigErrorException
@@ -28,7 +28,7 @@ class CheckOperation<T : ConfigurationSpecification>(
     private val log = KotlinLogging.logger {}
 
     /** Wraps all checks in exception handling because CHECK must always exit cleanly. */
-    override fun execute() {
+    override suspend fun execute() {
         try {
             log.info { "Parsing connector configuration JSON object." }
             val pojo: T = configJsonObjectSupplier.get()

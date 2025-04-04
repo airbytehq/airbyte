@@ -40,7 +40,6 @@ import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import scala.math.BigInt
 
 @Primary
 @Singleton
@@ -48,14 +47,13 @@ class MySqlSourceJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val handler: CatalogValidationFailureHandler,
     val selectQueryGenerator: MySqlSourceOperations,
-    val config: MySqlSourceConfiguration,
+    val config: MySqlSourceConfiguration<*>,
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
         DefaultJdbcStreamState,
         MySqlSourceJdbcPartition,
     > {
-
     private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
     override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
@@ -63,7 +61,10 @@ class MySqlSourceJdbcPartitionFactory(
             DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
         }
 
-    private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+    private fun findPkUpperBound(
+        stream: Stream,
+        pkChosenFromCatalog: List<Field>,
+    ): JsonNode {
         // find upper bound using maxPk query
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
@@ -103,7 +104,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = null,
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             } else {
                 return MySqlSourceJdbcRfrSnapshotPartition(
@@ -111,7 +112,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = null,
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
         }
@@ -135,7 +136,7 @@ class MySqlSourceJdbcPartitionFactory(
                 cursorChosenFromCatalog,
                 skipWritingAndSerialization = config.skipSerializationAndWriting,
                 skipWriting = config.skipWriting,
-                skipSynchronizedCounts = config.skipSerializationAndWriting
+                skipSynchronizedCounts = config.skipSerializationAndWriting,
             )
         }
         return MySqlSourceJdbcSnapshotWithCursorPartition(
@@ -210,7 +211,7 @@ class MySqlSourceJdbcPartitionFactory(
             val sv: MySqlSourceCdcInitialSnapshotStateValue =
                 Jsons.treeToValue(
                     opaqueStateValue,
-                    MySqlSourceCdcInitialSnapshotStateValue::class.java
+                    MySqlSourceCdcInitialSnapshotStateValue::class.java,
                 )
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
@@ -225,7 +226,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
 
@@ -250,7 +251,7 @@ class MySqlSourceJdbcPartitionFactory(
                         streamState,
                         pkChosenFromCatalog,
                         lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                        upperBound = listOf(upperBound)
+                        upperBound = listOf(upperBound),
                     )
                 }
                 return MySqlSourceJdbcCdcSnapshotPartition(
@@ -277,7 +278,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
 
@@ -325,7 +326,10 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    private fun stateValueToJsonNode(
+        field: Field,
+        stateValue: String?,
+    ): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
@@ -356,7 +360,7 @@ class MySqlSourceJdbcPartitionFactory(
 
                             Jsons.textNode(
                                 LocalDateTime.parse(stateValue, formatter)
-                                    .format(LocalDateTimeCodec.formatter)
+                                    .format(LocalDateTimeCodec.formatter),
                             )
                         } catch (_: RuntimeException) {
                             // Resolve to use the new format.
@@ -397,7 +401,7 @@ class MySqlSourceJdbcPartitionFactory(
                 }
             else ->
                 throw IllegalStateException(
-                    "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
+                    "PK field must be leaf type but is ${field.type.airbyteSchemaType}.",
                 )
         }
     }
@@ -406,26 +410,33 @@ class MySqlSourceJdbcPartitionFactory(
 
     override fun split(
         unsplitPartition: MySqlSourceJdbcPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<MySqlSourceJdbcPartition> {
         log.info { "Splitting partition $unsplitPartition" }
         val splitPartitionBoundries: List<MySqlSourceJdbcStreamStateValue> by lazy {
-            opaqueStateValues.map { Jsons.treeToValue(it, MySqlSourceJdbcStreamStateValue::class.java) }
+            opaqueStateValues.map {
+                Jsons.treeToValue(
+                    it,
+                    MySqlSourceJdbcStreamStateValue::class.java,
+                )
+            }
         }
 
         return when (unsplitPartition) {
-            is MySqlSourceJdbcSnapshotWithCursorPartition -> unsplitPartition.split(splitPartitionBoundries)
+            is MySqlSourceJdbcSnapshotWithCursorPartition ->
+                unsplitPartition.split(
+                    splitPartitionBoundries,
+                )
             else -> listOf(unsplitPartition) // TEMP
         }
     }
 
     private fun MySqlSourceJdbcSnapshotWithCursorPartition.split(
-        splitPointValues: List<MySqlSourceJdbcStreamStateValue>
+        splitPointValues: List<MySqlSourceJdbcStreamStateValue>,
     ): List<MySqlSourceJdbcResumablePartition> {
         var inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
-        inners =
-            redoInners(inners, 6658729623L/*50827485*/)
+        inners = redoInners(inners, 6658729623L /*50827485*/)
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lBound, uBound) ->
@@ -440,31 +451,41 @@ class MySqlSourceJdbcPartitionFactory(
                 null,
                 skipWriting = config.skipWriting,
                 skipWritingAndSerialization = config.skipSerializationAndWriting,
-                skipSynchronizedCounts = config.skipSynchronizedCounts
+                skipSynchronizedCounts = config.skipSynchronizedCounts,
             )
         }
     }
 
-    private fun redoInners(inners: List<List<JsonNode>>, upperBound: Long): List<List<JsonNode>> {
+    private fun redoInners(
+        inners: List<List<JsonNode>>,
+        upperBound: Long,
+    ): List<List<JsonNode>> {
         var queryPlan: MutableList<Long> = mutableListOf()
         val eachStep: Long = upperBound / inners.size
         for (i in 1..inners.size) {
             queryPlan.add((i) * eachStep)
         }
-        return inners.mapIndexed { index, inner -> listOf(stateValueToJsonNode(Field("id", BigIntegerFieldType), queryPlan[index].toString())) }
+        return inners.mapIndexed { index, inner,
+            ->
+            listOf(
+                stateValueToJsonNode(Field("id", BigIntegerFieldType), queryPlan[index].toString()),
+            )
+        }
     }
 
     private fun MySqlSourceJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? =
         pkName?.let { pkName ->
             val fields = stream.configuredPrimaryKey ?: listOf()
-            if (!fields.map {it.id}.toSet().contains(pkName)) {
+            if (!fields.map { it.id }.toSet().contains(pkName)) {
                 handler.accept(
-                    InvalidPrimaryKey(stream.id, listOf(pkName))
+                    InvalidPrimaryKey(stream.id, listOf(pkName)),
                 )
                 null
             }
 
-            fields.associateWith { stateValueToJsonNode(fields.first(), pkValue) } //TODO: check here
-        } ?: mapOf()
-
+            fields.associateWith {
+                stateValueToJsonNode(fields.first(), pkValue)
+            } // TODO: check here
+        }
+            ?: mapOf()
 }

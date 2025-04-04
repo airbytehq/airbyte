@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output
 
 import com.fasterxml.jackson.core.JsonGenerator
@@ -11,7 +15,6 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
-import jakarta.inject.Singleton
 import java.io.File
 import java.io.PrintStream
 import java.net.StandardProtocolFamily
@@ -24,24 +27,19 @@ import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
 private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-//private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
+
+// private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
-public val SMILE_MAPPER: ObjectMapper = initSmileMapper();
+public val SMILE_MAPPER: ObjectMapper = initSmileMapper()
 
-fun initSmileMapper(): ObjectMapper {
-    return configure(SmileMapper())
-}
+fun initSmileMapper(): ObjectMapper = configure(SmileMapper())
 
-fun configure(objectMapper: ObjectMapper): ObjectMapper {
-    return objectMapper
+fun configure(objectMapper: ObjectMapper): ObjectMapper =
+    objectMapper
         .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
         .registerModule(JavaTimeModule())
         .registerModule(AfterburnerModule())
 
-
-}
-
-@Singleton
 class UnixDomainSocketOutputConsumer(
     clock: Clock,
     stdout: PrintStream,
@@ -52,11 +50,16 @@ class UnixDomainSocketOutputConsumer(
     var sc: SocketChannel? = null
     lateinit var ll: List<UnixDomainSocketOutputConsumer>
     private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
-    private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
+    private val smileSequenceWriter: SequenceWriter =
+        SMILE_MAPPER.writer().writeValues(
+            smileGenerator,
+        )
+
     fun setSocketNum(num: Int) {
         socketNum = num
     }
 
+    @Suppress("ktlint:standard:no-consecutive-comments")
     override fun accept(record: AirbyteRecordMessage) {
         // The serialization of RECORD messages can become a performance bottleneck for source
         // connectors because they can come in much higher volumes than other message types.
@@ -100,9 +103,25 @@ class UnixDomainSocketOutputConsumer(
             withLockFlushRecord()
         }
 //        }
-
     }
+
     override fun withLockFlushRecord() {
+        sc
+            ?: let {
+                logger.info { "Using socket..." }
+                val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
+                val socketFile = File(socketPath)
+                logger.info { "Socket File path $socketPath" }
+                if (socketFile.exists()) {
+                    socketFile.delete()
+                }
+                val address = UnixDomainSocketAddress.of(socketFile.toPath())
+                val serverSocketChannel: ServerSocketChannel =
+                    ServerSocketChannel.open(StandardProtocolFamily.UNIX)
+                serverSocketChannel.bind(address)
+                logger.info { "Source : Server socket bound at ${socketFile.absolutePath}" }
+                sc = serverSocketChannel.accept()
+            }
         synchronized(this) {
             sc ?: let {
                 val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
@@ -121,7 +140,7 @@ class UnixDomainSocketOutputConsumer(
             }
         }
         if (buffer.size() > 0) {
-            val array: ByteArray = buffer.toByteArray()// + "\n".toByteArray(Charsets.UTF_8)
+            val array: ByteArray = buffer.toByteArray() // + "\n".toByteArray(Charsets.UTF_8)
             sc?.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))
             buffer.reset()
         }
@@ -135,11 +154,17 @@ class UnixDomainSocketOutputConsumer(
     override fun getS(num: Int): List<OutputConsumer>? {
         synchronized(this) {
             if (!::ll.isInitialized) {
-                ll = List(num) { index ->
-                    val udsoc = UnixDomainSocketOutputConsumer(clock, stdout, bufferByteSizeThresholdForFlush)
-                    udsoc.setSocketNum(index)
-                    udsoc
-                }
+                ll =
+                    List(num) { index ->
+                        val udsoc =
+                            UnixDomainSocketOutputConsumer(
+                                clock,
+                                stdout,
+                                bufferByteSizeThresholdForFlush,
+                            )
+                        udsoc.setSocketNum(index)
+                        udsoc
+                    }
             }
         }
         return ll
