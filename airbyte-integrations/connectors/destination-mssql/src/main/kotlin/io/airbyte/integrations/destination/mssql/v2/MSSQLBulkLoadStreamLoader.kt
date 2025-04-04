@@ -7,11 +7,8 @@ package io.airbyte.integrations.destination.mssql.v2
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.object_storage.MSSQLCSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
@@ -21,12 +18,12 @@ import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.object_storage.LoadedObject
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.BatchAccumulator
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.object_storage.PartToObjectAccumulator
 import io.airbyte.cdk.load.write.object_storage.RecordToPartAccumulator
 import java.io.ByteArrayOutputStream
@@ -43,7 +40,8 @@ class MSSQLBulkLoadStreamLoader(
     private val defaultSchema: String,
     private val azureBlobClient: AzureBlobClient,
     private val validateValuesPreLoad: Boolean,
-    private val recordBatchSizeOverride: Long? = null
+    private val recordBatchSizeOverride: Long? = null,
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     // Bulk-load related collaborators
@@ -68,6 +66,8 @@ class MSSQLBulkLoadStreamLoader(
     override suspend fun start() {
         super.start() // calls ensureTableExists()
         formatFilePath = mssqlFormatFileCreator.createAndUploadFormatFile(defaultSchema).key
+        val state = MSSQLStreamState(dataSource, formatFilePath)
+        streamStateStore.put(stream.descriptor, state)
     }
 
     /**
@@ -86,7 +86,7 @@ class MSSQLBulkLoadStreamLoader(
     override suspend fun createBatchAccumulator(): BatchAccumulator {
         val writerFactory =
             BufferedFormattingWriterFactory(
-                ObjectStorageFormattingWriterFactory(CsvFormatProvider(validateValuesPreLoad)),
+                MssqlObjectStorageFormattingWriterFactory(validateValuesPreLoad),
                 NoOpCompressionProvider()
             )
 
@@ -187,13 +187,6 @@ class MSSQLBulkLoadStreamLoader(
             ObjectStorageCompressionConfiguration(compressor = NoopProcessor)
     }
 
-    /** Provides a CSV format configuration for object storage. */
-    private class CsvFormatProvider(validateValuesPreLoad: Boolean) :
-        ObjectStorageFormatConfigurationProvider {
-        override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration =
-            MSSQLCSVFormatConfiguration(validateValuesPreLoad = validateValuesPreLoad)
-    }
-
     /** Defines how blob paths are constructed. For example, "blob/.../{timestamp}/..." etc. */
     private class PathProvider : ObjectStoragePathConfigurationProvider {
         override val objectStoragePathConfiguration =
@@ -204,3 +197,12 @@ class MSSQLBulkLoadStreamLoader(
             )
     }
 }
+
+/**
+ * For use by the new interface (to pass stream state creating during `start` to the BulkLoad
+ * loader.)
+ */
+data class MSSQLStreamState(
+    val dataSource: DataSource,
+    val formatFilePath: String,
+)
