@@ -1,0 +1,291 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.cdk.load.file.gcs
+
+import GcsBlob
+import GcsClient
+import com.google.cloud.storage.Blob
+import com.google.cloud.storage.BlobId
+import com.google.cloud.storage.BlobInfo
+import com.google.cloud.storage.CopyWriter
+import com.google.cloud.storage.Storage
+import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
+import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
+import io.airbyte.cdk.load.command.gcs.GcsRegion
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+class GcsClientTest {
+    private lateinit var storage: Storage
+    private lateinit var config: GcsClientConfiguration
+    private lateinit var gcsClient: GcsClient
+
+    private val bucketName = "test-bucket"
+    private val bucketPath = "test-path"
+    private val region = GcsRegion.US_WEST1
+
+    private fun mockBlob(name: String): Blob {
+        val blob = mockk<Blob>()
+        every { blob.name } returns name
+        return blob
+    }
+
+    @BeforeEach
+    fun setup() {
+        storage = mockk()
+        val auth = GcsHmacKeyConfiguration("test-access-key", "test-secret-key")
+        config = GcsClientConfiguration(bucketName, bucketPath, auth, region)
+        gcsClient = GcsClient(storage, config)
+    }
+
+    @Test
+    fun `test list with empty prefix`() = runBlocking {
+        val blob1 = mockBlob("test-file1")
+        val blob2 = mockBlob("test-file2")
+        val blobs = mockk<Iterable<Blob>>()
+
+        every { storage.list(bucketName, any()) } returns
+            mockk { every { iterateAll() } returns blobs }
+        every { blobs.iterator() } returns listOf(blob1, blob2).iterator()
+
+        val results = gcsClient.list("").toList()
+
+        assertEquals(2, results.size)
+        assertEquals("test-file1", results[0].key)
+        assertEquals("test-file2", results[1].key)
+        assertEquals(config, results[0].storageConfig)
+        assertEquals(config, results[1].storageConfig)
+
+        verify { storage.list(bucketName, any()) }
+    }
+
+    @Test
+    fun `test list with prefix`() = runBlocking {
+        val prefix = "subfolder"
+        val fullPrefix = "$bucketPath/$prefix"
+        val blob1 = mockBlob("$fullPrefix/test-file1")
+        val blobs = mockk<Iterable<Blob>>()
+
+        every { storage.list(bucketName, any()) } returns
+            mockk { every { iterateAll() } returns blobs }
+        every { blobs.iterator() } returns listOf(blob1).iterator()
+
+        val results = gcsClient.list(prefix).toList()
+
+        assertEquals(1, results.size)
+        assertEquals("$fullPrefix/test-file1", results[0].key)
+
+        verify { storage.list(bucketName, any()) }
+    }
+
+    @Test
+    fun `test move`() = runBlocking {
+        val sourceKey = "source-file"
+        val targetKey = "target-file"
+        val fullSourceKey = "$bucketPath/$sourceKey"
+        val fullTargetKey = "$bucketPath/$targetKey"
+
+        val sourceBlobId = BlobId.of(bucketName, fullSourceKey)
+        val targetBlobId = BlobId.of(bucketName, fullTargetKey)
+        val copyRequestSlot = slot<Storage.CopyRequest>()
+        val copyWriter = mockk<CopyWriter>()
+
+        every { storage.copy(capture(copyRequestSlot)) } returns copyWriter
+        every { storage.delete(sourceBlobId) } returns true
+
+        val result = gcsClient.move(sourceKey, targetKey)
+
+        assertEquals(targetKey, result.key)
+        assertEquals(config, result.storageConfig)
+
+        assertEquals(sourceBlobId.bucket, copyRequestSlot.captured.source.bucket)
+        assertEquals(sourceBlobId.name, copyRequestSlot.captured.source.name)
+        assertEquals(targetBlobId.bucket, copyRequestSlot.captured.target.bucket)
+        assertEquals(targetBlobId.name, copyRequestSlot.captured.target.name)
+
+        verify { storage.delete(sourceBlobId) }
+    }
+
+    @Test
+    fun `test move with remoteObject`() = runBlocking {
+        val sourceKey = "source-file"
+        val targetKey = "target-file"
+        val fullSourceKey = "$bucketPath/$sourceKey"
+        val fullTargetKey = "$bucketPath/$targetKey"
+
+        val sourceBlobId = BlobId.of(bucketName, fullSourceKey)
+        val targetBlobId = BlobId.of(bucketName, fullTargetKey)
+        val copyRequestSlot = slot<Storage.CopyRequest>()
+        val copyWriter = mockk<CopyWriter>()
+
+        every { storage.copy(capture(copyRequestSlot)) } returns copyWriter
+        every { storage.delete(sourceBlobId) } returns true
+
+        val sourceBlob = GcsBlob(sourceKey, config)
+
+        val result = gcsClient.move(sourceBlob, targetKey)
+
+        assertEquals(targetKey, result.key)
+        assertEquals(config, result.storageConfig)
+
+        assertEquals(sourceBlobId.bucket, copyRequestSlot.captured.source.bucket)
+        assertEquals(sourceBlobId.name, copyRequestSlot.captured.source.name)
+        assertEquals(targetBlobId.bucket, copyRequestSlot.captured.target.bucket)
+        assertEquals(targetBlobId.name, copyRequestSlot.captured.target.name)
+
+        verify { storage.delete(sourceBlobId) }
+    }
+
+    @Test
+    fun `test getMetadata`() = runBlocking {
+        val key = "test-file"
+        val fullKey = "$bucketPath/$key"
+        val blobId = BlobId.of(bucketName, fullKey)
+        val blob = mockk<Blob>()
+        val metadata = mapOf("key1" to "value1", "key2" to "value2")
+
+        every { storage.get(blobId) } returns blob
+        every { blob.metadata } returns metadata
+
+        val result = gcsClient.getMetadata(key)
+
+        assertEquals(metadata, result)
+
+        verify { storage.get(blobId) }
+        verify { blob.metadata }
+    }
+
+    @Test
+    fun `test getMetadata with null values`() = runBlocking {
+        val key = "test-file"
+        val fullKey = "$bucketPath/$key"
+        val blobId = BlobId.of(bucketName, fullKey)
+        val blob = mockk<Blob>()
+        val metadata = mapOf("key1" to "value1", "key2" to null)
+
+        every { storage.get(blobId) } returns blob
+        every { blob.metadata } returns metadata
+
+        val result = gcsClient.getMetadata(key)
+
+        assertEquals(mapOf("key1" to "value1"), result)
+
+        verify { storage.get(blobId) }
+        verify { blob.metadata }
+    }
+
+    @Test
+    fun `test getMetadata with null metadata`() = runBlocking {
+        val key = "test-file"
+        val fullKey = "$bucketPath/$key"
+        val blobId = BlobId.of(bucketName, fullKey)
+        val blob = mockk<Blob>()
+
+        every { storage.get(blobId) } returns blob
+        every { blob.metadata } returns null
+
+        val result = gcsClient.getMetadata(key)
+
+        assertEquals(emptyMap<String, String>(), result)
+
+        verify { storage.get(blobId) }
+        verify { blob.metadata }
+    }
+
+    @Test
+    fun `test put`() = runBlocking {
+        val key = "test-file"
+        val fullKey = "$bucketPath/$key"
+        val blobId = BlobId.of(bucketName, fullKey)
+        val blobInfoSlot = slot<BlobInfo>()
+        val content = "test content".toByteArray()
+
+        every { storage.create(capture(blobInfoSlot), content) } returns mockBlob(fullKey)
+
+        val result = gcsClient.put(key, content)
+
+        assertEquals(key, result.key)
+        assertEquals(config, result.storageConfig)
+        assertEquals(blobId, blobInfoSlot.captured.blobId)
+
+        verify { storage.create(any(), content) }
+    }
+
+    @Test
+    fun `test delete with key`() = runBlocking {
+        val key = "test-file"
+        val fullKey = "$bucketPath/$key"
+        val blobId = BlobId.of(bucketName, fullKey)
+
+        every { storage.delete(blobId) } returns true
+
+        gcsClient.delete(key)
+
+        verify { storage.delete(blobId) }
+    }
+
+    @Test
+    fun `test delete with remoteObject`() = runBlocking {
+        val key = "test-file"
+        val fullKey = "$bucketPath/$key"
+        val blobId = BlobId.of(bucketName, fullKey)
+        val blob = GcsBlob(key, config)
+
+        every { storage.delete(blobId) } returns true
+
+        gcsClient.delete(blob)
+
+        verify { storage.delete(blobId) }
+    }
+
+    @Test
+    fun `test combinePath with empty path`() = runBlocking {
+        val config =
+            GcsClientConfiguration(
+                bucketName,
+                "",
+                GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
+                region
+            )
+        val gcsClient = GcsClient(storage, config)
+        val key = "test-file"
+        val blobId = BlobId.of(bucketName, key)
+
+        every { storage.delete(blobId) } returns true
+
+        gcsClient.delete(key)
+
+        verify { storage.delete(blobId) }
+    }
+
+    @Test
+    fun `test combinePath removes double slashes`() = runBlocking {
+        val config =
+            GcsClientConfiguration(
+                bucketName,
+                "path",
+                GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
+                region
+            )
+        val gcsClient = GcsClient(storage, config)
+        val key = "/test-file"
+
+        val expectedPath = "path/test-file"
+        val blobId = BlobId.of(bucketName, expectedPath)
+
+        every { storage.delete(blobId) } returns true
+
+        gcsClient.delete(key)
+
+        verify { storage.delete(blobId) }
+    }
+}
