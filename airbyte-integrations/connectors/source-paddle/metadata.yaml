@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:*.paddle.com"
+      - "https://*.paddle.com"
   registryOverrides:
     oss:
       enabled: true
