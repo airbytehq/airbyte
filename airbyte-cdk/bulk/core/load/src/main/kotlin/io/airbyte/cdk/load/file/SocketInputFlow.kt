@@ -14,6 +14,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -41,6 +42,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import io.airbyte.protocol.Protocol
 
 class SocketInputFlow(
     private val config: DestinationConfiguration,
@@ -52,10 +54,18 @@ class SocketInputFlow(
     private val syncManager: SyncManager
 ) : Flow<PipelineEvent<StreamKey, DestinationRecordRaw>> {
     private val log = KotlinLogging.logger {}
+    private val factory = DestinationMessageFactory(catalog, false)
 
     private fun initMapper(): ObjectMapper = configure(ObjectMapper())
 
     private fun initSmileMapper(): ObjectMapper = configure(SmileMapper())
+
+    private val mapper =
+        if (config.inputSerializationFormat == DestinationConfiguration.InputSerializationFormat.SMILE) {
+            initSmileMapper()
+        } else {
+            initMapper()
+        }
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         objectMapper
@@ -70,13 +80,36 @@ class SocketInputFlow(
     override suspend fun collect(
         collector: FlowCollector<PipelineEvent<StreamKey, DestinationRecordRaw>>
     ) {
-        //val socketName = "/Users/jschmidt/.sockets/ab_socket_$part"
-        val socketName = "/var/run/sockets/ab_socket_$part"
+        val socketName = "${config.socketPrefix}$part"
         log.info { "About to read from socket file $socketName" }
+
+        readSocket(socketName, collector, config.socketWaitTimeoutSeconds)
+
+        completions[part].complete(Unit)
+
+        // If I'm master, finish up
+        if (part == 0) {
+            completions.forEach { completion -> completion.await() }
+            syncManager.markInputConsumed()
+            syncManager.markCheckpointsProcessed()
+        }
+    }
+
+    private suspend fun readSocket(
+        socketName: String,
+        collector: FlowCollector<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+        timeoutSeconds: Int
+    ) {
         val socketFile = File(socketName)
+        var timeoutRemaining = timeoutSeconds
         while (!socketFile.exists()) {
             log.info { "Waiting for socket file $socketName to be created" }
             delay(1000L)
+            timeoutRemaining -= 1
+            if (timeoutRemaining <= 0) {
+                log.error { "Socket file $socketName not created in time" }
+                return
+            }
         }
         Files.setPosixFilePermissions(
             socketFile.toPath(),
@@ -89,73 +122,83 @@ class SocketInputFlow(
             throw IllegalStateException("Failed to connect to socket")
         }
         log.info { "Connected" }
+        val parser = Protocol.AirbyteMessage.parser()
         socketChannel.use { channel ->
             Channels.newInputStream(channel).buffered().use { bufferedInputStream ->
-                val factory = DestinationMessageFactory(catalog, false)
                 val streamRecordCounts =
                     catalog.streams.associate { it.descriptor to 0L }.toMutableMap()
-                val mapper = when (config.inputSerializationFormat) {
-                    DestinationConfiguration.InputSerializationFormat.JSONL -> initMapper()
-                    DestinationConfiguration.InputSerializationFormat.SMILE -> initSmileMapper()
-                    else -> throw IllegalStateException(
-                        "Unsupported serialization format ${config.inputSerializationFormat}"
-                    )
-                }
-                val iterator = mapper.readerFor(AirbyteMessage::class.java).readValues<AirbyteMessage>(bufferedInputStream)
-                iterator.forEach { airbyteMessage ->
-                    when (val dMessage = factory.fromAirbyteMessage(airbyteMessage, "")) {
-                        is DestinationRecord -> {
-                            streamRecordCounts.merge(dMessage.stream.descriptor, 1) { old, _ ->
-                                old + 1
+                when (config.inputSerializationFormat) {
+                    DestinationConfiguration.InputSerializationFormat.JSONL,
+                    DestinationConfiguration.InputSerializationFormat.SMILE ->
+                        mapper
+                            .readerFor(AirbyteMessage::class.java)
+                            .readValues<AirbyteMessage>(bufferedInputStream)
+                            .forEach {
+                                val destinationMessage = factory.fromAirbyteMessage(it, "")
+                                handleDestinationMessage(destinationMessage, streamRecordCounts, collector)
                             }
-                            collector.emit(
-                                PipelineMessage(
-                                    mapOf(CheckpointId(0) to 1),
-                                    StreamKey(dMessage.stream.descriptor),
-                                    dMessage.asDestinationRecordRaw()
-                                )
-                            )
+                    DestinationConfiguration.InputSerializationFormat.PROTOBUF -> {
+                        while (true) {
+                            val protoMessage =
+                                parser.parseDelimitedFrom(bufferedInputStream) ?: break
+                            val destinationMessage = factory.fromProtobufAirbyteMessage(protoMessage, initMapper())
+                            handleDestinationMessage(destinationMessage, streamRecordCounts, collector)
                         }
-                        is DestinationRecordStreamComplete -> {
-                            log.info {
-                                "Stream complete message received for ${dMessage.stream.descriptor}"
-                            }
-                            val myCounts = streamRecordCounts[dMessage.stream.descriptor] ?: 0L
-                            syncManager
-                                .getStreamManager(dMessage.stream.descriptor)
-                                .incrementReadCount(myCounts)
-                            // Everybody sends end-of-stream, but only the last guy completes.
-                            if (
-                                streamCompletionCounts[dMessage.stream.descriptor]
-                                    ?.decrementAndGet() == 0
-                            ) {
-                                log.info { "Closing stream ${dMessage.stream.descriptor}" }
-                                syncManager
-                                    .getStreamManager(dMessage.stream.descriptor)
-                                    .markEndOfStream(true)
-                            }
-                            collector.emit(PipelineEndOfStream(dMessage.stream.descriptor))
-                        }
-                        is GlobalCheckpoint,
-                        is StreamCheckpoint -> {
-                            log.warn { "Ignoring state message " }
-                        }
-                        else ->
-                            throw IllegalStateException(
-                                "Unsupported message type ${airbyteMessage.type}"
-                            )
                     }
                 }
-
-                completions[part].complete(Unit)
-
-                // If I'm master, finish up
-                if (part == 0) {
-                    completions.forEach { completion -> completion.await() }
-                    syncManager.markInputConsumed()
-                    syncManager.markCheckpointsProcessed()
-                }
             }
+        }
+    }
+
+    private suspend fun handleDestinationMessage(
+        destinationMessage: DestinationMessage,
+        streamRecordCounts: MutableMap<DestinationStream.Descriptor, Long>,
+        collector: FlowCollector<PipelineEvent<StreamKey, DestinationRecordRaw>>
+    ) {
+        when (destinationMessage) {
+            is DestinationRecord -> {
+                streamRecordCounts.merge(destinationMessage.stream.descriptor, 1) { old, _ ->
+                    old + 1
+                }
+                collector.emit(
+                    PipelineMessage(
+                        mapOf(CheckpointId(0) to 1),
+                        StreamKey(destinationMessage.stream.descriptor),
+                        destinationMessage.asDestinationRecordRaw()
+                    )
+                )
+            }
+
+            is DestinationRecordStreamComplete -> {
+                log.info {
+                    "Stream complete message received for ${destinationMessage.stream.descriptor}"
+                }
+                val myCounts = streamRecordCounts[destinationMessage.stream.descriptor] ?: 0L
+                syncManager
+                    .getStreamManager(destinationMessage.stream.descriptor)
+                    .incrementReadCount(myCounts)
+                // Everybody sends end-of-stream, but only the last guy completes.
+                if (
+                    streamCompletionCounts[destinationMessage.stream.descriptor]
+                        ?.decrementAndGet() == 0
+                ) {
+                    log.info { "Closing stream ${destinationMessage.stream.descriptor}" }
+                    syncManager
+                        .getStreamManager(destinationMessage.stream.descriptor)
+                        .markEndOfStream(true)
+                }
+                collector.emit(PipelineEndOfStream(destinationMessage.stream.descriptor))
+            }
+
+            is GlobalCheckpoint,
+            is StreamCheckpoint -> {
+                log.warn { "Ignoring state message " }
+            }
+
+            else ->
+                throw IllegalStateException(
+                    "Unsupported message type ${destinationMessage::class.java}"
+                )
         }
     }
 }

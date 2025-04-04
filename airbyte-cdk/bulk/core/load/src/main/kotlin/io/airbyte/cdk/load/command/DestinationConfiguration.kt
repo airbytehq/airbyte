@@ -113,6 +113,9 @@ abstract class DestinationConfiguration : Configuration {
     open val inputSerializationFormat: InputSerializationFormat =
         InputSerializationFormat.JSONL
     open val numSockets: Int = 4
+    open val inputBufferByteSizePerSocket: Long = 8 * 1024L
+    open val socketPrefix: String = "/var/run/sockets/ab_socket"
+    open val socketWaitTimeoutSeconds: Int = 5 * 60
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

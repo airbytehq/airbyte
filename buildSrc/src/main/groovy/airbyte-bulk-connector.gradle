@@ -134,6 +134,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
 
         project.plugins.apply('application')
 
+
         project.application {
             applicationDefaultJvmArgs = [
                     '-XX:+ExitOnOutOfMemoryError',

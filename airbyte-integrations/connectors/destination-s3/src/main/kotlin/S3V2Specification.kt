@@ -86,6 +86,21 @@ class S3V2Specification :
 
     @get:JsonProperty("input_serialization_format")
     val inputSerializationFormat: DestinationConfiguration.InputSerializationFormat? = null
+
+    @get:JsonProperty("max_memory_ratio_reserved_for_parts")
+    val maxMemoryRatioReservedForParts: Double? = null
+
+    @get:JsonProperty("part_size_mb")
+    val partSizeMb: Int? = null
+
+    @get:JsonProperty("input_buffer_byte_size_per_socket")
+    val inputBufferByteSizePerSocket: Long? = null
+
+    @get:JsonProperty("socket_prefix")
+    val socketPrefix: String? = null
+
+    @get:JsonProperty("socket_wait_timeout_seconds")
+    val socketWaitTimeoutSeconds: Int? = null
 }
 
 @Singleton

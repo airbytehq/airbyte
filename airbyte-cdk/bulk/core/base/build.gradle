@@ -1,4 +1,58 @@
 
+plugins {
+    id 'com.google.protobuf' version '0.9.4'
+}
+
+// Protobuf source sets
+kotlin {
+    sourceSets {
+        main {
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/grpc"
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/grpckt"
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/kotlin"
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/java"
+        }
+    }
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir "${project.projectDir}/src/main/proto"
+        }
+    }
+}
+
+// Protobuf tasks
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:4.30.0"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.71.0"
+        }
+        create("grpckt") {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
+        }
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("kotlin")
+            }
+            task.plugins {
+                create("grpc")
+                create("grpckt")
+            }
+        }
+    }
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 dependencies {
 
     api 'com.fasterxml.jackson.core:jackson-annotations'
@@ -18,6 +72,9 @@ dependencies {
     api 'org.apache.sshd:sshd-mina:2.13.2'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
 
+    implementation "io.grpc:grpc-kotlin-stub:1.4.1"
+    implementation "io.grpc:grpc-protobuf:1.71.0"
+    api "com.google.protobuf:protobuf-kotlin:4.30.0"
     implementation 'com.datadoghq:dd-trace-api:1.39.0'
     implementation 'com.datadoghq:dd-trace-ot:1.39.0'
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
@@ -50,6 +107,8 @@ dependencies {
     testFixturesApi 'io.micronaut.test:micronaut-test-core:4.5.0'
     testFixturesApi 'io.micronaut.test:micronaut-test-junit5:4.5.0'
     testFixturesApi 'io.github.deblockt:json-diff:1.1.0'
+
+
 }
 
 test {
