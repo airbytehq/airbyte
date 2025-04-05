@@ -13,13 +13,13 @@ API Reference: https://docs.imagga.com/#introduction
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| categorizers | id | DefaultPaginator | ✅ |  ❌  |
-| croppings | uuid | DefaultPaginator | ✅ |  ❌  |
-| colors | uuid | DefaultPaginator | ✅ |  ❌  |
-| faces_detections | uuid | DefaultPaginator | ✅ |  ❌  |
-| text | uuid | DefaultPaginator | ✅ |  ❌  |
-| usage | uuid | DefaultPaginator | ✅ |  ❌  |
-| barcodes | uuid | DefaultPaginator | ✅ |  ❌  |
+| categorizers | id | DefaultPaginator | ❌ |  ❌  |
+| croppings | uuid | DefaultPaginator | ❌ |  ❌  |
+| colors | uuid | DefaultPaginator | ❌ |  ❌  |
+| faces_detections | uuid | DefaultPaginator | ❌ |  ❌  |
+| text | uuid | DefaultPaginator | ❌ |  ❌  |
+| usage | uuid | DefaultPaginator | ❌ |  ❌  |
+| barcodes | uuid | DefaultPaginator | ❌ |  ❌  |
 
 ## Changelog
 
