@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 
 /**
  * The [JavaTimeModule] allows mappers to accommodate different varieties of serialised date time
@@ -19,6 +20,7 @@ object MoreMappers {
     @JvmStatic
     fun initMapper(): ObjectMapper {
         val result = ObjectMapper().registerModule(JavaTimeModule())
+        result.registerModule(AfterburnerModule())
         result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         result.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
         return result
