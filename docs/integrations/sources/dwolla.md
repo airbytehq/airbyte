@@ -27,6 +27,7 @@ API Reference: https://developers.dwolla.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2025-04-05 | [57266](https://github.com/airbytehq/airbyte/pull/57266) | Update dependencies |
 | 0.0.1 | 2025-04-04 | [57004](https://github.com/airbytehq/airbyte/pull/57004) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
