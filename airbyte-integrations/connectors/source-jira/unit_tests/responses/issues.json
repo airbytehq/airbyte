@@ -242,7 +242,7 @@
           "total": 0,
           "worklogs": []
         },
-        "PrIssueId": "PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1}"
+        "PrIssueId": "PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1} \"byInstanceType\": {\"GitHub\": {\"name\": \"GitHub\"}}"
       },
       "projectId": "10016",
       "projectKey": "TESTKEY13",
