@@ -263,7 +263,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         outputQueue?.let {
             val outputKey = outputPartitioner!!.getOutputKey(inputKey, output)
             val message = PipelineMessage(checkpointCounts.toMap(), outputKey, output)
-            val outputPart = outputPartitioner.getPart(outputKey, it.partitions)
+            val outputPart = outputPartitioner.getPart(outputKey, part, it.partitions)
             it.publish(message, outputPart)
         }
 
