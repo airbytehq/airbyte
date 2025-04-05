@@ -97,6 +97,10 @@ html[data-theme="dark"] {
   transform: translateY(-2px);
 }
 
+span.DocSearch-Button-Placeholder {
+  color: var(--ifm-menu-color);
+}
+
 .navbar__items--right {
   gap: 4px;
 }
