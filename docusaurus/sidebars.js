@@ -620,6 +620,7 @@ module.exports = {
         "enterprise-setup/api-access-config",
         "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
+        "enterprise-setup/upgrade-service-account",
         {
           type: "category",
           label: "Enterprise Connectors",
