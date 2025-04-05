@@ -26,6 +26,7 @@ API Reference: https://studio.nebius.com/docs/api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2025-04-05 | [57348](https://github.com/airbytehq/airbyte/pull/57348) | Update dependencies |
 | 0.0.1 | 2025-04-03 | [56989](https://github.com/airbytehq/airbyte/pull/56989) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
