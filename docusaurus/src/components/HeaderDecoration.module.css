@@ -57,6 +57,10 @@ div.connectorMetadataCallout  {
   color: var(--ifm-color-primary-dark);
 }
 
+html[data-theme="dark"] .metadataStatValue a {
+  color: var(--ifm-link-color);
+}
+
 .metadataStatValue > * {
   display: inline-flex;
   align-items: center;
