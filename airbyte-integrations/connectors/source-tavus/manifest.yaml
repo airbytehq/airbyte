@@ -209,6 +209,68 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/personas"
+    speeches:
+      type: DeclarativeStream
+      name: speeches
+      primary_key:
+        - speech_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/speech
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: Need subscription plan
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+            page_size: 50
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/speeches"
   base_requester:
     type: HttpRequester
     url_base: https://tavusapi.com
@@ -225,6 +287,7 @@ streams:
   - $ref: "#/definitions/streams/videos"
   - $ref: "#/definitions/streams/conversations"
   - $ref: "#/definitions/streams/personas"
+  - $ref: "#/definitions/streams/speeches"
 
 spec:
   type: Spec
@@ -258,6 +321,7 @@ metadata:
     videos: true
     conversations: true
     personas: true
+    speeches: false
   testedStreams:
     replicas:
       streamHash: b6efe99d3299c020caf56090b321cb8c97eeaace
@@ -285,6 +349,13 @@ metadata:
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    speeches:
+      streamHash: e7fa1db12b0e769b212e7675c27f08cf699b3a17
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist:
@@ -556,3 +627,25 @@ schemas:
     required:
       - persona_id
       - updated_at
+  speeches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Generated schema for Root
+    properties:
+      speech_id:
+        type:
+          - string
+          - "null"
+      speech_name:
+        type:
+          - string
+          - "null"
+      speech_file_url:
+        type:
+          - string
+          - "null"
+      replica_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
