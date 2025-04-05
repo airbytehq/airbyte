@@ -240,8 +240,8 @@ const ConnectorMetadataCallout = ({
         <div className={styles.availability}>
           {isEnterprise ? (
             <>
-              <Chip className={isCloud ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isCloud} /> Cloud
+              <Chip className={styles.available}>
+                <EnabledIcon isEnabled={true} /> Cloud <b>with Teams add-on</b>
               </Chip>
               <Chip className={isOss ? styles.available : styles.unavailable}>
                 <EnabledIcon isEnabled={isOss} /> Self-Managed Community
@@ -305,6 +305,11 @@ const ConnectorMetadataCallout = ({
         <MetadataStat label="Usage Rate">
           <MetricIcon iconComponent={USAGE_ICON} level={usageRate} />
         </MetadataStat>
+      )}
+      {isEnterprise && (
+        <MetadataStat label="Enterprise Connector">
+          This premium connector is only available with a license. <a href="https://airbyte.com/company/talk-to-sales" target="_blank">Talk to Sales </a>.
+        </MetadataStat> 
       )}
     </dl>
   </Callout>
