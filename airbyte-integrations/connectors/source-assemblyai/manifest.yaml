@@ -198,6 +198,38 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/transcript_subtitle"
+    lemur_response:
+      type: DeclarativeStream
+      name: lemur_response
+      primary_key:
+        - request_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lemur/v3/{{ config['request_id'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Paid plan required
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lemur_response"
   base_requester:
     type: HttpRequester
     url_base: https://api.assemblyai.com
@@ -210,6 +242,7 @@ streams:
   - $ref: "#/definitions/streams/transcript_sentences"
   - $ref: "#/definitions/streams/paragraphs"
   - $ref: "#/definitions/streams/transcript_subtitle"
+  - $ref: "#/definitions/streams/lemur_response"
 
 spec:
   type: Spec
@@ -245,6 +278,11 @@ spec:
         order: 2
         title: Subtitle format
         default: srt
+      request_id:
+        type: string
+        description: The request ID for LeMur responses
+        title: Request Id
+        order: 3
     additionalProperties: true
 
 metadata:
@@ -253,14 +291,15 @@ metadata:
     transcript_sentences: true
     paragraphs: true
     transcript_subtitle: true
+    lemur_response: false
   testedStreams:
     transcripts:
+      hasRecords: true
       streamHash: 06e1b92194bb0c57832a1387c3e8a6a91d6b4916
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     transcript_sentences:
       hasRecords: true
       streamHash: e1b38b8145f420209c42103d3d493e32945ec59a
@@ -276,10 +315,17 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     transcript_subtitle:
+      hasRecords: true
       streamHash: 47770f6ed7a302ac2c5e8e20e52f78623b771912
       hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
       responsesAreSuccessful: true
-      hasRecords: true
+    lemur_response:
+      streamHash: 9092a38b58acab23480e89d66e4e21bc02c1b03d
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist:
@@ -435,3 +481,30 @@ schemas:
         type: string
     required:
       - uuid
+  lemur_response:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      request_id:
+        type:
+          - string
+          - "null"
+      response:
+        type:
+          - string
+          - "null"
+      usage:
+        type:
+          - object
+          - "null"
+        properties:
+          input_tokens:
+            type:
+              - number
+              - "null"
+          output_tokens:
+            type:
+              - number
+              - "null"
+    title: Generated schema for Root

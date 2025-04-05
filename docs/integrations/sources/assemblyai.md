@@ -25,6 +25,6 @@ API Reference: https://www.assemblyai.com/docs/api-reference/overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-05 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| 0.0.1 | 2025-04-05 | [57210](http://github.com/airbytehq/airbyte/pull/57210) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
