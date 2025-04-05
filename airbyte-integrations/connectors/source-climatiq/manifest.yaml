@@ -1,0 +1,558 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.climatiq.io/
+  API Reference: http://climatiq.io/docs/api-reference/
+
+check:
+  type: CheckStream
+  stream_names:
+    - search
+
+definitions:
+  streams:
+    search:
+      type: DeclarativeStream
+      name: search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /data/v1/search
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+            data_version: ^20
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: results_per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search"
+    unit_types:
+      type: DeclarativeStream
+      name: unit_types
+      primary_key:
+        - unit_type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /data/v1/unit-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - unit_types
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: results_per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/unit_types"
+    data_versions:
+      type: DeclarativeStream
+      name: data_versions
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /data/v1/data-versions
+          http_method: GET
+          request_parameters:
+            data_version: ^20
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/data_versions"
+    compute_metadata:
+      type: DeclarativeStream
+      name: compute_metadata
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /compute/v1/metadata
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - cloud_providers
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/compute_metadata"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.climatiq.io
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/search"
+  - $ref: "#/definitions/streams/unit_types"
+  - $ref: "#/definitions/streams/data_versions"
+  - $ref: "#/definitions/streams/compute_metadata"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - query
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your Climatiq API key. You can find it by logging into your Climatiq
+          account and navigating to the API key section. Refer to
+          https://www.climatiq.io/docs/guides/how-tos/getting-api-key for more
+          details.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      query:
+        type: string
+        description: Search queries could include name for search endpoints
+        title: Search query for search streams
+        default: Carbon
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    search: true
+    unit_types: true
+    data_versions: true
+    compute_metadata: true
+  testedStreams:
+    search:
+      streamHash: 2dc4b89ea9aa964b97777c118737dba444c821ce
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    unit_types:
+      streamHash: eaa95d6398d5f4d93f40aff6690264efeacf4608
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    data_versions:
+      streamHash: 26de4504c91119ac8bf3cf5fa6b842e7ed962f6a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    compute_metadata:
+      streamHash: c07bf43b78680f7ebb1618bf4402ee420e677fe3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.climatiq.io/docs/api-reference
+
+schemas:
+  search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      access_type:
+        type:
+          - string
+          - "null"
+      activity_id:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      constituent_gases:
+        type:
+          - object
+          - "null"
+        properties: {}
+      data_quality_flags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      data_version:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+      data_version_information:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      region_name:
+        type:
+          - string
+          - "null"
+      sector:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      source_dataset:
+        type:
+          - string
+          - "null"
+      source_lca_activity:
+        type:
+          - string
+          - "null"
+      source_link:
+        type:
+          - string
+          - "null"
+      supported_calculation_methods:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uncertainty:
+        type:
+          - number
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+      unit_type:
+        type:
+          - string
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+      year_released:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  unit_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      unit_type:
+        type: string
+      units:
+        type:
+          - object
+          - "null"
+        properties:
+          area_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          data_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          distance_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          energy_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          money_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          power_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          time_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          volume_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          weight_unit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+    required:
+      - unit_type
+  data_versions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      latest:
+        type:
+          - string
+          - "null"
+      latest_major:
+        type:
+          - number
+          - "null"
+      latest_minor:
+        type:
+          - number
+          - "null"
+      latest_release:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  compute_metadata:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      aws:
+        type:
+          - object
+          - "null"
+        properties:
+          provider_full_name:
+            type:
+              - string
+              - "null"
+          provider_id:
+            type:
+              - string
+              - "null"
+          regions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          virtual_machine_instances:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      azure:
+        type:
+          - object
+          - "null"
+        properties:
+          provider_full_name:
+            type:
+              - string
+              - "null"
+          provider_id:
+            type:
+              - string
+              - "null"
+          regions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          virtual_machine_instances:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      gcp:
+        type:
+          - object
+          - "null"
+        properties:
+          provider_full_name:
+            type:
+              - string
+              - "null"
+          provider_id:
+            type:
+              - string
+              - "null"
+          regions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          virtual_machine_instances:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
