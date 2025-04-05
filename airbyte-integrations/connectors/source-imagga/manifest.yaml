@@ -1,0 +1,833 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://imagga.com/
+  API Reference: https://docs.imagga.com/#introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - categorizers
+
+definitions:
+  streams:
+    categorizers:
+      type: DeclarativeStream
+      name: categorizers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/categorizers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - categorizers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categorizers"
+    croppings:
+      type: DeclarativeStream
+      name: croppings
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/croppings?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - croppings
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/croppings"
+    colors:
+      type: DeclarativeStream
+      name: colors
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/colors?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - colors
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/colors"
+    faces_detections:
+      type: DeclarativeStream
+      name: faces_detections
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/faces/detections?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - faces
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/faces_detections"
+    text:
+      type: DeclarativeStream
+      name: text
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/text?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - text
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/text"
+    usage:
+      type: DeclarativeStream
+      name: usage
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/usage
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/usage"
+    barcodes:
+      type: DeclarativeStream
+      name: barcodes
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/barcodes?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - barcodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/barcodes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.imagga.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"api_secret\"] }}"
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/categorizers"
+  - $ref: "#/definitions/streams/croppings"
+  - $ref: "#/definitions/streams/colors"
+  - $ref: "#/definitions/streams/faces_detections"
+  - $ref: "#/definitions/streams/text"
+  - $ref: "#/definitions/streams/usage"
+  - $ref: "#/definitions/streams/barcodes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - api_secret
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your Imagga API key, available in your Imagga dashboard. Could be
+          found at `https://imagga.com/profile/dashboard`
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      api_secret:
+        type: string
+        description: >-
+          Your Imagga API secret, available in your Imagga dashboard. Could be
+          found at `https://imagga.com/profile/dashboard`
+        name: api_secret
+        title: API Secret
+        airbyte_secret: true
+        order: 1
+      img_for_detection:
+        type: string
+        description: An image for detection endpoints
+        title: Image URL for detection endpoints
+        default: https://imagga.com/static/images/categorization/child-476506_640.jpg
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    categorizers: true
+    croppings: true
+    colors: true
+    faces_detections: true
+    text: true
+    usage: true
+    barcodes: true
+  testedStreams:
+    categorizers:
+      streamHash: 67da9d0dd1e6e6f89b020b3b791fc8aab3433d7d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    croppings:
+      streamHash: 88ecadccf852c0b95a48c12ca5d199462ac7bb36
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    colors:
+      streamHash: 92f83c84fc4e72588f77bd004ab19fc208267c80
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    faces_detections:
+      streamHash: 5a1d81f311ae5c0556f4fe3ba63b11f28e0856e0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    text:
+      streamHash: b5d5aac5709a13c917a25d7d768708fe52e0081f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    usage:
+      streamHash: 5c273b1a5a1570696f54dbd33aac5ec85c9ebe4e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    barcodes:
+      streamHash: 9a954adedd6e1d9b48be6a1a060431c813882e46
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.imagga.com/#categorizers
+
+schemas:
+  categorizers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  croppings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      target_height:
+        type:
+          - number
+          - "null"
+      target_width:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+      x1:
+        type:
+          - number
+          - "null"
+      x2:
+        type:
+          - number
+          - "null"
+      y1:
+        type:
+          - number
+          - "null"
+      y2:
+        type:
+          - number
+          - "null"
+    required:
+      - uuid
+  colors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      background_colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            b:
+              type:
+                - number
+                - "null"
+            closest_palette_color:
+              type:
+                - string
+                - "null"
+            closest_palette_color_html_code:
+              type:
+                - string
+                - "null"
+            closest_palette_color_parent:
+              type:
+                - string
+                - "null"
+            closest_palette_distance:
+              type:
+                - number
+                - "null"
+            g:
+              type:
+                - number
+                - "null"
+            html_code:
+              type:
+                - string
+                - "null"
+            percent:
+              type:
+                - number
+                - "null"
+            r:
+              type:
+                - number
+                - "null"
+      color_percent_threshold:
+        type:
+          - number
+          - "null"
+      color_variance:
+        type:
+          - number
+          - "null"
+      foreground_colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            b:
+              type:
+                - number
+                - "null"
+            closest_palette_color:
+              type:
+                - string
+                - "null"
+            closest_palette_color_html_code:
+              type:
+                - string
+                - "null"
+            closest_palette_color_parent:
+              type:
+                - string
+                - "null"
+            closest_palette_distance:
+              type:
+                - number
+                - "null"
+            g:
+              type:
+                - number
+                - "null"
+            html_code:
+              type:
+                - string
+                - "null"
+            percent:
+              type:
+                - number
+                - "null"
+            r:
+              type:
+                - number
+                - "null"
+      image_colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            b:
+              type:
+                - number
+                - "null"
+            closest_palette_color:
+              type:
+                - string
+                - "null"
+            closest_palette_color_html_code:
+              type:
+                - string
+                - "null"
+            closest_palette_color_parent:
+              type:
+                - string
+                - "null"
+            closest_palette_distance:
+              type:
+                - number
+                - "null"
+            g:
+              type:
+                - number
+                - "null"
+            html_code:
+              type:
+                - string
+                - "null"
+            percent:
+              type:
+                - number
+                - "null"
+            r:
+              type:
+                - number
+                - "null"
+      object_percentage:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  faces_detections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - array
+          - "null"
+      confidence:
+        type:
+          - number
+          - "null"
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          height:
+            type:
+              - number
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+          xmax:
+            type:
+              - number
+              - "null"
+          xmin:
+            type:
+              - number
+              - "null"
+          ymax:
+            type:
+              - number
+              - "null"
+          ymin:
+            type:
+              - number
+              - "null"
+      face_id:
+        type:
+          - string
+          - "null"
+      landmarks:
+        type:
+          - array
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  text:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          height:
+            type:
+              - number
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+          xmax:
+            type:
+              - number
+              - "null"
+          xmin:
+            type:
+              - number
+              - "null"
+          ymax:
+            type:
+              - number
+              - "null"
+          ymin:
+            type:
+              - number
+              - "null"
+      data:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  usage:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billing_period_end:
+        type:
+          - string
+          - "null"
+      billing_period_start:
+        type:
+          - string
+          - "null"
+      daily_for:
+        type:
+          - string
+          - "null"
+      daily_processed:
+        type:
+          - number
+          - "null"
+      daily_requests:
+        type:
+          - number
+          - "null"
+      last_usage:
+        type:
+          - number
+          - "null"
+      monthly_limit:
+        type:
+          - number
+          - "null"
+      monthly_processed:
+        type:
+          - number
+          - "null"
+      monthly_requests:
+        type:
+          - number
+          - "null"
+      rps_limit:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+      weekly_processed:
+        type:
+          - number
+          - "null"
+      weekly_requests:
+        type:
+          - number
+          - "null"
+    required:
+      - uuid
+  barcodes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      x1:
+        type:
+          - number
+          - "null"
+      x2:
+        type:
+          - number
+          - "null"
+      y1:
+        type:
+          - number
+          - "null"
+      y2:
+        type:
+          - number
+          - "null"
+    required:
+      - uuid
