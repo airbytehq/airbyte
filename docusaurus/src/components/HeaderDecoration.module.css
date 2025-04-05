@@ -20,6 +20,14 @@ div.connectorMetadataCallout  {
   row-gap: 8px;
 }
 
+.connectorMetadata dt, .connectorMetadata dd {
+  display: inline-block;
+}
+
+.connectorMetadata dt {
+  width: 150px;
+}
+
 .metadataStat {
   display: flex;
   align-items: center;

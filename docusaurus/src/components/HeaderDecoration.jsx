@@ -211,7 +211,7 @@ const MetricIcon = ({ iconComponent, level }) => {
 
 const MetadataStat = ({ label, children }) => (
   <div className={styles.metadataStat}>
-    <dt className={styles.metadataStatLabel}>{`${label}: `}</dt>
+    <dt className={styles.metadataStatLabel}>{`${label}`}</dt>
     <dd className={styles.metadataStatValue}>{children}</dd>
   </div>
 );
@@ -261,11 +261,11 @@ const ConnectorMetadataCallout = ({
               <Chip className={isOss ? styles.available : styles.unavailable}>
                 <EnabledIcon isEnabled={isOss} /> Self-Managed Community
               </Chip>
-              <Chip className={styles.available}>
+              <Chip className={isOss ? styles.available : styles.unavailable}>
                 <EnabledIcon isEnabled={isOss} /> Self-Managed Enterprise
               </Chip>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> PyAirbyte
+              <Chip className={isOss ? styles.available : styles.unavailable}>
+                <EnabledIcon isEnabled={isOss} /> PyAirbyte
               </Chip>
             </>
           )}
@@ -279,10 +279,10 @@ const ConnectorMetadataCallout = ({
       {supportLevel !== "archived" && (
         <MetadataStat label="Connector Version">
           <a href={github_url} target="_blank">
-            {dockerImageTag}
+            {dockerImageTag}&nbsp;
           </a>
           {lastUpdated && (
-            <span>{`(Last updated ${dayjs(
+            <span>{`(last updated ${dayjs(
               lastUpdated,
             ).fromNow()})`}</span>
           )}
