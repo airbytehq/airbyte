@@ -6,9 +6,11 @@ import logging
 import time
 from typing import TYPE_CHECKING, Iterator, List
 
+from facebook_business.adobjects.adaccount import AdAccount
+
 from source_facebook_marketing.streams.common import JobException
 
-from .async_job import AsyncJob, ParentAsyncJob, update_in_batch
+from .async_job import AsyncJob, InsightAsyncJob, ParentAsyncJob, update_in_batch
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -55,8 +57,14 @@ class InsightAsyncJobManager:
             if not job:
                 self._empty = True
                 break
-            job.start()
-            self._running_jobs.append(job)
+            if isinstance(job, InsightAsyncJob) and isinstance(job._edge_object, AdAccount):
+                jobs = job.split_job()
+                for job in jobs:
+                    job.start()
+                    self._running_jobs.append(job)
+            else:
+                job.start()
+                self._running_jobs.append(job)
 
         logger.info(
             f"Added: {len(self._running_jobs) - prev_jobs_count} jobs. "
