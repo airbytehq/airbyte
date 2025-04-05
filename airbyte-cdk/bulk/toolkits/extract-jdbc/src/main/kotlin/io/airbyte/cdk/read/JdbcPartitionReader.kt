@@ -31,6 +31,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
     private val log = KotlinLogging.logger {}
+    private var partitionNum: Long = 0L
 
     val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream
@@ -55,15 +56,18 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     fun out(row: SelectQuerier.ResultRow) {
-        if (partition.skipWritingAndSerialization || partition.skipWriting) {
+        /*if (partition.skipWritingAndSerialization || partition.skipWriting) {
             if(++devNulledRows % 100_000L == 0L) {
                 log.info { "Discarded $devNulledRows rows" }
             }
             return
-        }
-        streamRecordConsumer.accept(row.data, row.changes)
+        }*/
+        streamRecordConsumer.accept(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
     }
 
+    override fun setNum(num: Long) {
+        partitionNum = num
+    }
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
     }

@@ -74,10 +74,11 @@ sealed class FeedBootstrap<T : Feed>(
      */
     private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
         StreamRecordConsumer {
-
-        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
+        lateinit var sock: OutputConsumer
+        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData)
+
+                acceptWithoutChanges(recordData, totalNum, num)
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
                     changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
@@ -90,12 +91,18 @@ sealed class FeedBootstrap<T : Feed>(
             }
         }
 
-        private fun acceptWithoutChanges(recordData: ObjectNode) {
+        private fun acceptWithoutChanges(recordData: ObjectNode, totalNum: Int?, num: Long?) {
             synchronized(this) {
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
-                outputConsumer.accept(reusedMessageWithoutChanges)
+//                outputConsumer.accept(reusedMessageWithoutChanges)
+                if (::sock.isInitialized.not()) {
+                    val socketNum = ((num!!.toInt() - 1) % totalNum!!)
+                    sock = outputConsumer.getS(totalNum!!)?.get(socketNum)!!
+                }
+                sock.accept(reusedMessageWithoutChanges)
+//                outputConsumer.getS(totalNum!!)?.get(socketNum)?.accept(reusedMessageWithoutChanges)
             }
         }
 
@@ -246,7 +253,7 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
+    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int? = null, num: Long? = null)
 }
 
 /**
