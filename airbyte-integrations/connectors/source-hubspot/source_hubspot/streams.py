@@ -1159,7 +1159,7 @@ class IncrementalStream(BaseStream, ABC):
 
 
 class CRMSearchStream(IncrementalStream, ABC):
-    limit = 100  # This value is used only when state is None.
+    limit = 1000  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
     last_modified_field: str = None
