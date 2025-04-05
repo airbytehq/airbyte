@@ -273,6 +273,20 @@ By providing a url to the site URL field, the connector will be able to access t
 The site url should be in the format `https://<tenant_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
 To have the connector iterate all sub-sites provide the site url as `https://<tenant_name>.sharepoint.com/sites/`.
 
+### Replicate Permissions ACL
+This mode allows to sync Microsoft Sharepoint files permissions (ACLs) and Identities (users, groups, devices, applications) from your Sharepoint Workspace.
+
+To use these features, ensure you have the correct permissions.
+
+#### Authorization
+When setting up this connector, ensure that the following permissions are authorized:  
+
+- User.Read.All
+- Group.Read.All
+- Application.Read.All
+- Device.Read.All
+
+
 ### Supported sync modes
 
 The Microsoft SharePoint source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):

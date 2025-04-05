@@ -13,11 +13,11 @@ from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.search.service import SearchService
 from requests.exceptions import HTTPError
 from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
+from source_microsoft_sharepoint.sharepoint_client import SourceMicrosoftSharePointClient
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
     MicrosoftSharePointRemoteFile,
-    SourceMicrosoftSharePointClient,
     SourceMicrosoftSharePointStreamReader,
 )
 from wcmatch.glob import GLOBSTAR, globmatch
@@ -50,7 +50,7 @@ def setup_reader_class():
     reader.config = config  # Set up the necessary configuration
 
     # Mock the client creation
-    with patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointClient") as mock_client_class:
+    with patch("source_microsoft_sharepoint.sharepoint_client.SourceMicrosoftSharePointClient") as mock_client_class:
         mock_client = mock_client_class.return_value
         mock_client.client = Mock()  # Mock the client attribute of SourceMicrosoftSharePointClient
         yield reader
@@ -62,8 +62,8 @@ def create_mock_drive_files():
     Provides mock data for SharePoint drive files (personal drive).
     """
     return [
-        ("file1.csv", "https://example.com/file1.csv", datetime(2021, 1, 1)),
-        ("file2.txt", "https://example.com/file2.txt", datetime(2021, 1, 1)),
+        ("file1.csv", "https://example.com/file1.csv", datetime(2021, 1, 1), "item_id_1", "drive_id_1", False),
+        ("file2.txt", "https://example.com/file2.txt", datetime(2021, 1, 1), "item_id_2", "drive_id_1", False),
     ]
 
 
@@ -73,8 +73,8 @@ def create_mock_shared_drive_files():
     Provides mock data for SharePoint drive files (shared drives).
     """
     return [
-        ("file3.csv", "https://example.com/file3.csv", datetime(2021, 3, 1)),
-        ("file4.txt", "https://example.com/file4.txt", datetime(2021, 4, 1)),
+        ("file3.csv", "https://example.com/file3.csv", datetime(2021, 3, 1), "item_id_3", "drive_id_2", True),
+        ("file4.txt", "https://example.com/file4.txt", datetime(2021, 4, 1), "item_id_4", "drive_id_2", True),
     ]
 
 
@@ -85,7 +85,7 @@ def setup_client_class():
     config.folder_path = "."
     config.credentials.auth_type = "Client"
 
-    with patch("source_microsoft_sharepoint.stream_reader.ConfidentialClientApplication") as mock_client_class:
+    with patch("source_microsoft_sharepoint.sharepoint_client.ConfidentialClientApplication") as mock_client_class:
         mock_msal_app_instance = Mock()
         mock_client_class.return_value = mock_msal_app_instance
 
@@ -133,30 +133,42 @@ def test_get_matching_files(mock_filter_files, mock_execute_query, setup_reader_
     instance._get_files_by_drive_name = Mock(return_value=mock_drive_files)
     instance._get_shared_files_from_all_drives = Mock(return_value=mock_shared_drive_files)
 
-    # Set up mocks
-    mock_drive = Mock()
-    mock_drive.get.return_value = mock_drive
-    mock_execute_query.return_value = mock_drive
-    mock_filter_files.side_effect = lambda files, globs: (f for f in files if any(globmatch(f.uri, g, flags=GLOBSTAR) for g in globs))
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "auth_client", new_callable=PropertyMock) as mock_auth_client,
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_one_drive_client,
+        patch.object(SourceMicrosoftSharePointStreamReader, "drives", new_callable=PropertyMock) as mock_drives,
+    ):
+        mock_auth_client_instance = Mock()
+        mock_auth_client.return_value = mock_auth_client_instance
 
-    # Define test parameters
-    globs = ["*.csv"]
-    prefix = None
-    logger = Mock()
+        mock_one_drive_client_instance = Mock()
+        mock_one_drive_client.return_value = mock_one_drive_client_instance
 
-    # Call the method
-    files = list(instance.get_matching_files(globs, prefix, logger))
+        mock_drives.return_value = []
 
-    # Assertions
-    assert len(files) == 2
+        mock_drive = Mock()
+        mock_drive.get.return_value = mock_drive
+        mock_execute_query.return_value = mock_drive
+        mock_filter_files.side_effect = lambda files, globs: (f for f in files if any(globmatch(f.uri, g, flags=GLOBSTAR) for g in globs))
 
-    assert isinstance(files[0], MicrosoftSharePointRemoteFile)
-    assert files[0].uri == "file1.csv"
-    assert "https://example.com/file1.csv" in files[0].download_url
+        # Define test parameters
+        globs = ["*.csv"]
+        prefix = None
+        logger = Mock()
 
-    assert isinstance(files[1], MicrosoftSharePointRemoteFile)
-    assert files[1].uri == "file3.csv"
-    assert "https://example.com/file3.csv" in files[1].download_url
+        # Call the get_matching_files method
+        files = list(instance.get_matching_files(globs, prefix, logger))
+
+        # Assertions
+        assert len(files) == 2
+
+        assert isinstance(files[0], MicrosoftSharePointRemoteFile)
+        assert files[0].uri == "file1.csv"
+        assert "https://example.com/file1.csv" in files[0].download_url
+
+        assert isinstance(files[1], MicrosoftSharePointRemoteFile)
+        assert files[1].uri == "file3.csv"
+        assert "https://example.com/file3.csv" in files[1].download_url
 
 
 def test_get_matching_files_empty_drive(setup_reader_class):
@@ -362,12 +374,12 @@ def test_list_directories_and_files():
 
     stream_reader = SourceMicrosoftSharePointStreamReader()
 
-    result = list(stream_reader._list_directories_and_files(mock_root_folder, "https://example.com/root"))
+    result = list(stream_reader._list_directories_and_files(mock_root_folder, "https://example.com/root", "drive_id_1"))
 
     assert len(result) == 2
     assert result == [
-        ("https://example.com/root/folder1/file1.txt", "test_url", "1991-08-24"),
-        ("https://example.com/root/file2.txt", "test_url", "1991-08-24"),
+        ("https://example.com/root/folder1/file1.txt", "test_url", "1991-08-24", ANY, "drive_id_1", False),
+        ("https://example.com/root/file2.txt", "test_url", "1991-08-24", ANY, "drive_id_1", False),
     ]
 
 
@@ -507,6 +519,9 @@ not_empty_subfolder_response = {
                     "http://example.com/TestFile.txt",
                     "http://example.com/download",
                     datetime.strptime("2021-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    None,
+                    "dummy_drive_id",
+                    True,
                 )
             ],
             False,
@@ -528,6 +543,9 @@ not_empty_subfolder_response = {
                     "http://example.com/subfolder2/NestedFile.txt",
                     "http://example.com/nested",
                     datetime.strptime("2021-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    None,
+                    "dummy_drive_id",
+                    True,
                 )
             ],
             False,
@@ -806,7 +824,7 @@ def test_get_all_sites_returns_sites_successfully():
     query_filter = "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
 
     with (
-        patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
+        patch("source_microsoft_sharepoint.sharepoint_base_reader.get_site_prefix") as mock_get_site_prefix,
         patch.object(reader, "_get_client_context") as mock_get_client_context,
         patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
@@ -877,7 +895,7 @@ def test_get_all_sites_with_no_results(test_case, search_job_value, primary_quer
     reader._one_drive_client = MagicMock()
 
     with (
-        patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
+        patch("source_microsoft_sharepoint.sharepoint_base_reader.get_site_prefix") as mock_get_site_prefix,
         patch.object(reader, "_get_client_context") as mock_get_client_context,
         patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
