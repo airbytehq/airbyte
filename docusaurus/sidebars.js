@@ -309,6 +309,7 @@ const buildAConnector = {
         "connector-development/cdk-python/incremental-stream",
         "connector-development/cdk-python/http-streams",
         "connector-development/cdk-python/stream-slices",
+        "connector-development/cdk-python/migration-to-base-image",
         {
           type: "category",
           label: "Tutorials",
@@ -526,6 +527,7 @@ const understandingAirbyte = {
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",
+    "understanding-airbyte/heartbeats",
   ],
 };
 

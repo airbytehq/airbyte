@@ -2,7 +2,7 @@
 
 ### General Limitations
 
-- Use MySQL Server versions `8.0`, `5.7`, or `5.6`.
+- Use MySQL Server versions `8.4`, `8.0`, `5.7`, or `5.6`.
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
@@ -41,6 +41,22 @@ MariaDB is a fork of MySQL that adds many new features. The MySQL source connect
 - Mapping MySQL's DateTime field: There may be problems with mapping values in MySQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting `zerodatetimebehavior=Converttonull`.
 - Amazon RDS MySQL or MariaDB connection issues: If you see the following `Cannot create a PoolableConnectionFactory` error, please add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
 - Amazon RDS MySQL connection issues: If you see `Error: HikariPool-1 - Connection is not available, request timed out after 30001ms.`, many times this due to your VPC not allowing public traffic. We recommend going through [this AWS troubleshooting checklist](https://aws.amazon.com/premiumsupport/knowledge-center/rds-cannot-connect/) to ensure the correct permissions/settings have been granted to allow Airbyte to connect to your database.
+
+### Query Timeout:
+
+**Error**: `MySQL Query Timeout: The sync was aborted because the query took too long to return results, will retry.`
+
+**What Happened**:
+Your sync was temporarily interrupted because a query took too long to complete. This is usually caused by MySQL’s query execution time limit set on the server (e.g., `max_execution_time`).
+
+**Resolution**:
+While this error is transient and Airbyte will retry the sync automatically, persistent timeouts may cause the sync to fail. To prevent this:
+- Go to the Source Configuration page.
+- Under _Optional Fields_, locate `Checkpoint Target Time Interval`. 
+  - This defines how often Airbyte creates checkpoints (in seconds). The default is 5 minutes. 
+- Set MySQL’s `max_execution_time` (in milliseconds) to a value higher than this interval. 
+  - For example, if `Checkpoint Target Time Interval` is set to 300s (5 minutes),
+  then `max_execution_time` should be at least 300000ms.
 
 ### Under CDC incremental mode, there are still full refresh syncs
 
