@@ -1,5 +1,16 @@
 package io.airbyte.cdk.output
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SequenceWriter
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule
+import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
@@ -14,9 +25,24 @@ import java.nio.channels.SocketChannel
 import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
-private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-//private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
+//private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
+public val SMILE_MAPPER: ObjectMapper = initSmileMapper();
+
+fun initSmileMapper(): ObjectMapper {
+    return configure(SmileMapper())
+}
+
+fun configure(objectMapper: ObjectMapper): ObjectMapper {
+    return objectMapper
+        .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
+        .registerModule(JavaTimeModule())
+        .registerModule(AfterburnerModule())
+
+
+}
+
 @Singleton
 class UnixDomainSocketOutputConsumer(
     clock: Clock,
@@ -27,11 +53,57 @@ class UnixDomainSocketOutputConsumer(
     private var socketNum: Int = -1
     var sc: SocketChannel? = null
     lateinit var ll: List<UnixDomainSocketOutputConsumer>
-
+    private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
+    private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
     fun setSocketNum(num: Int) {
         socketNum = num
     }
 
+    override fun accept(record: AirbyteRecordMessage) {
+        // The serialization of RECORD messages can become a performance bottleneck for source
+        // connectors because they can come in much higher volumes than other message types.
+        // Specifically, with jackson, the bottleneck is in the object mapping logic.
+        // As it turns out, this object mapping logic is not particularly useful for RECORD messages
+        // because within a given stream the only variations occur in the "data" and the "meta"
+        // fields:
+        // - the "data" field is already an ObjectNode and is cheap to serialize,
+        // - the "meta" field is often unset.
+        // For this reason, this method builds and reuses a JSON template for each stream.
+        // Then, for each record, it serializes just "data" and "meta" to populate the template.
+        val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
+
+        val tmplt = String(template.prefix + "{}".toByteArray() + template.suffix)
+        val tt = Jsons.readTree(tmplt)
+        val rec = tt.get("record") as ObjectNode
+        rec.set<ObjectNode>("data", record.data)
+//        synchronized(this) {
+        // Write a newline character to the buffer if it's not empty.
+        withLockMaybeWriteNewline()
+        // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
+//        buffer.write(template.prefix)
+        // Serialize the record data ObjectNode to JSON, writing it to the buffer.
+//        Jsons.writeTree(smileGenerator, record.data)
+        Jsons.writeTree(smileGenerator, tt)
+        smileGenerator.flush()
+        // If the record has a AirbyteRecordMessageMeta instance set,
+        // write ',"meta":' followed by the serialized meta.
+        /*val meta: AirbyteRecordMessageMeta? = record.meta
+        if (meta != null) {
+            buffer.write(metaPrefixBytes)
+            smileSequenceWriter.write(meta)
+            smileSequenceWriter.flush()
+        }*/
+        // Write ',"emitted_at":...}}'.
+//        buffer.write(template.suffix)
+        // Flush the buffer to stdout only once it has reached a certain size.
+        // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
+        // which otherwise becomes very apparent when lots of tiny records are involved.
+        if (buffer.size() >= bufferByteSizeThresholdForFlush) {
+            withLockFlushRecord()
+        }
+//        }
+
+    }
     override fun withLockFlushRecord() {
         synchronized(this) {
             sc ?: let {

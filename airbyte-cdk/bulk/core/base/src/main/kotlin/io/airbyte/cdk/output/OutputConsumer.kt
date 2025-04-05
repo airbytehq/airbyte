@@ -173,7 +173,7 @@ open class StdoutOutputConsumer(
         }
     }
 
-    private fun withLockMaybeWriteNewline() {
+    protected fun withLockMaybeWriteNewline() {
         if (buffer.size() > 0) {
             buffer.write('\n'.code)
         }
@@ -236,9 +236,9 @@ open class StdoutOutputConsumer(
 //        }
     }
 
-    private val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
+    protected val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
 
-    private fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
+    protected fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
                 unNamespacedTemplates
@@ -264,7 +264,7 @@ open class StdoutOutputConsumer(
 
 private typealias StreamToTemplateMap = ConcurrentHashMap<String, RecordTemplate>
 
-private class RecordTemplate(
+class RecordTemplate(
     /** [prefix] is '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":' */
     val prefix: ByteArray,
     /** [suffix] is ',"emitted_at":...}}' */

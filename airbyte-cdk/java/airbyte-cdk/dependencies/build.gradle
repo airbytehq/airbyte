@@ -41,6 +41,7 @@ dependencies {
     implementation 'me.andrz.jackson:jackson-json-reference-core:0.3.2' // needed so that we can follow $ref when parsing json
     implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-smile:2.18.3'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
