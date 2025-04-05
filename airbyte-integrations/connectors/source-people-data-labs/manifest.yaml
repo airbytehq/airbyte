@@ -1,0 +1,3092 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://dashboard.peopledatalabs.com/
+  API Reference: https://docs.peopledatalabs.com/docs
+
+check:
+  type: CheckStream
+  stream_names:
+    - person_enrich
+
+definitions:
+  streams:
+    person_enrich:
+      type: DeclarativeStream
+      name: person_enrich
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v5/person/enrich
+          http_method: GET
+          request_parameters:
+            name: "{{ config['name_filter'] }}"
+            email: "{{ config['email_filter'] }}"
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: location_last_updated
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/person_enrich"
+    person_identify:
+      type: DeclarativeStream
+      name: person_identify
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v5/person/identify
+          http_method: GET
+          request_parameters:
+            name: "{{ config['name_filter'] }}"
+            email: "{{ config['email_filter'] }}"
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - matches
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/person_identify"
+    company_clean:
+      type: DeclarativeStream
+      name: company_clean
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v5/company/clean
+          http_method: GET
+          request_parameters:
+            name: "{{ config['company_name_filter'] }}"
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_clean"
+    location_clean:
+      type: DeclarativeStream
+      name: location_clean
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v5/location/clean
+          http_method: GET
+          request_parameters:
+            location: "{{ config['location_name_filter'] }}"
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/location_clean"
+    company_enrich:
+      type: DeclarativeStream
+      name: company_enrich
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v5/company/enrich
+          http_method: GET
+          request_parameters:
+            name: "{{ config['company_name_filter'] }}"
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_enrich"
+    ip_enrich:
+      type: DeclarativeStream
+      name: ip_enrich
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v5/ip/enrich
+          http_method: GET
+          request_parameters:
+            ip: "{{ config['ip_addr'] }}"
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ip_enrich"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.peopledatalabs.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Api-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/person_enrich"
+  - $ref: "#/definitions/streams/person_identify"
+  - $ref: "#/definitions/streams/company_clean"
+  - $ref: "#/definitions/streams/location_clean"
+  - $ref: "#/definitions/streams/company_enrich"
+  - $ref: "#/definitions/streams/ip_enrich"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+      - name_filter
+      - email_filter
+      - company_name_filter
+      - location_name_filter
+      - ip_addr
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API key for authenticating with the People Data Labs API. You can
+          find or generate your API key in your People Data Labs account
+          dashboard at https://peopledatalabs.com/signup/.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      name_filter:
+        type: string
+        description: Name filter for searching streams
+        title: Name filter for search
+        default: Rick Morty
+        order: 2
+      email_filter:
+        type: string
+        description: Email filter for search endpoints
+        title: Email filter for search
+        default: test@gmail.com
+        order: 3
+      company_name_filter:
+        type: string
+        description: Company Name for search streams
+        title: Company name filter
+        default: Google
+        order: 4
+      location_name_filter:
+        type: string
+        description: The location name filter for search streams
+        title: Location name filter
+        default: boston
+        order: 5
+      ip_addr:
+        type: string
+        description: IP address for enrich stream
+        title: IP Address
+        default: 76.155.190.200
+        order: 6
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    person_enrich: true
+    person_identify: true
+    company_clean: true
+    location_clean: true
+    company_enrich: true
+    ip_enrich: true
+  testedStreams:
+    person_enrich:
+      streamHash: 698ac762dfe56a614d87489242ec6d5d34cb1157
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    person_identify:
+      streamHash: d182e968ad90866faeafd1c18e50690edb52ca50
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    company_clean:
+      streamHash: 3c707a999593c914a2f37104ba838195af426b82
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    location_clean:
+      streamHash: acf78cdadead7be3f11221d93d32d80b6f921626
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    company_enrich:
+      streamHash: 933118e57a2940f908a3ac3b3bd7068ecf99dde9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ip_enrich:
+      streamHash: 41f792e26e9e27eddb7d5d1fc2006ff13722515f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.peopledatalabs.com/docs/intro
+
+schemas:
+  person_enrich:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      birth_date:
+        type:
+          - boolean
+          - "null"
+      birth_year:
+        type:
+          - boolean
+          - "null"
+      certifications:
+        type:
+          - array
+          - "null"
+      countries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dataset_version:
+        type:
+          - string
+          - "null"
+      education:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            degrees:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            end_date:
+              type:
+                - string
+                - "null"
+            majors:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            minors:
+              type:
+                - array
+                - "null"
+            raw:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            school:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                domain:
+                  type:
+                    - string
+                    - "null"
+                facebook_url:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                linkedin_id:
+                  type:
+                    - string
+                    - "null"
+                linkedin_url:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    continent:
+                      type:
+                        - string
+                        - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    locality:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    region:
+                      type:
+                        - string
+                        - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                raw:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                twitter_url:
+                  type:
+                    - string
+                    - "null"
+                website:
+                  type:
+                    - string
+                    - "null"
+            start_date:
+              type:
+                - string
+                - "null"
+            summary:
+              type:
+                - string
+                - "null"
+      emails:
+        type:
+          - boolean
+          - "null"
+      experience:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            company:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                facebook_url:
+                  type:
+                    - string
+                    - "null"
+                founded:
+                  type:
+                    - number
+                    - "null"
+                fuzzy_match:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                industry:
+                  type:
+                    - string
+                    - "null"
+                linkedin_id:
+                  type:
+                    - string
+                    - "null"
+                linkedin_url:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    continent:
+                      type:
+                        - string
+                        - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    geo:
+                      type:
+                        - string
+                        - "null"
+                    locality:
+                      type:
+                        - string
+                        - "null"
+                    metro:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    postal_code:
+                      type:
+                        - string
+                        - "null"
+                    region:
+                      type:
+                        - string
+                        - "null"
+                    street_address:
+                      type:
+                        - string
+                        - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                raw:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                size:
+                  type:
+                    - string
+                    - "null"
+                twitter_url:
+                  type:
+                    - string
+                    - "null"
+                website:
+                  type:
+                    - string
+                    - "null"
+            end_date:
+              type:
+                - string
+                - "null"
+            first_seen:
+              type:
+                - string
+                - "null"
+            is_primary:
+              type:
+                - boolean
+                - "null"
+            last_seen:
+              type:
+                - string
+                - "null"
+            location_names:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            num_sources:
+              type:
+                - number
+                - "null"
+            start_date:
+              type:
+                - string
+                - "null"
+            summary:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - object
+                - "null"
+              properties:
+                class:
+                  type:
+                    - string
+                    - "null"
+                levels:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                raw:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                role:
+                  type:
+                    - string
+                    - "null"
+                sub_role:
+                  type:
+                    - string
+                    - "null"
+      facebook_id:
+        type:
+          - string
+          - "null"
+      facebook_url:
+        type:
+          - string
+          - "null"
+      facebook_username:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      github_url:
+        type:
+          - string
+          - "null"
+      github_username:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      industry:
+        type:
+          - string
+          - "null"
+      interests:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      job_company_facebook_url:
+        type:
+          - string
+          - "null"
+      job_company_founded:
+        type:
+          - number
+          - "null"
+      job_company_id:
+        type:
+          - string
+          - "null"
+      job_company_industry:
+        type:
+          - string
+          - "null"
+      job_company_linkedin_id:
+        type:
+          - string
+          - "null"
+      job_company_linkedin_url:
+        type:
+          - string
+          - "null"
+      job_company_location_continent:
+        type:
+          - string
+          - "null"
+      job_company_location_country:
+        type:
+          - string
+          - "null"
+      job_company_location_geo:
+        type:
+          - string
+          - "null"
+      job_company_location_locality:
+        type:
+          - string
+          - "null"
+      job_company_location_metro:
+        type:
+          - string
+          - "null"
+      job_company_location_name:
+        type:
+          - string
+          - "null"
+      job_company_location_region:
+        type:
+          - string
+          - "null"
+      job_company_name:
+        type:
+          - string
+          - "null"
+      job_company_size:
+        type:
+          - string
+          - "null"
+      job_company_twitter_url:
+        type:
+          - string
+          - "null"
+      job_company_website:
+        type:
+          - string
+          - "null"
+      job_history:
+        type:
+          - array
+          - "null"
+      job_last_changed:
+        type:
+          - string
+          - "null"
+      job_last_verified:
+        type:
+          - string
+          - "null"
+      job_start_date:
+        type:
+          - string
+          - "null"
+      job_title:
+        type:
+          - string
+          - "null"
+      job_title_class:
+        type:
+          - string
+          - "null"
+      job_title_levels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      job_title_role:
+        type:
+          - string
+          - "null"
+      languages:
+        type:
+          - array
+          - "null"
+      last_initial:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      linkedin_id:
+        type:
+          - string
+          - "null"
+      linkedin_url:
+        type:
+          - string
+          - "null"
+      linkedin_username:
+        type:
+          - string
+          - "null"
+      location_address_line_2:
+        type:
+          - boolean
+          - "null"
+      location_continent:
+        type:
+          - string
+          - "null"
+      location_country:
+        type:
+          - string
+          - "null"
+      location_geo:
+        type:
+          - boolean
+          - "null"
+      location_last_updated:
+        type: string
+      location_locality:
+        type:
+          - boolean
+          - "null"
+      location_metro:
+        type:
+          - boolean
+          - "null"
+      location_name:
+        type:
+          - boolean
+          - "null"
+      location_names:
+        type:
+          - boolean
+          - "null"
+      location_postal_code:
+        type:
+          - boolean
+          - "null"
+      location_region:
+        type:
+          - boolean
+          - "null"
+      location_street_address:
+        type:
+          - boolean
+          - "null"
+      mobile_phone:
+        type:
+          - boolean
+          - "null"
+      name_aliases:
+        type:
+          - array
+          - "null"
+      personal_emails:
+        type:
+          - boolean
+          - "null"
+      phone_numbers:
+        type:
+          - boolean
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+      possible_birth_dates:
+        type:
+          - array
+          - "null"
+      possible_emails:
+        type:
+          - array
+          - "null"
+      possible_location_names:
+        type:
+          - array
+          - "null"
+      possible_phones:
+        type:
+          - array
+          - "null"
+      possible_profiles:
+        type:
+          - array
+          - "null"
+      possible_street_addresses:
+        type:
+          - array
+          - "null"
+      profiles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            first_seen:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            last_seen:
+              type:
+                - string
+                - "null"
+            network:
+              type:
+                - string
+                - "null"
+            num_sources:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+            username:
+              type:
+                - string
+                - "null"
+      recommended_personal_email:
+        type:
+          - boolean
+          - "null"
+      regions:
+        type:
+          - boolean
+          - "null"
+      skills:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      street_addresses:
+        type:
+          - boolean
+          - "null"
+      twitter_url:
+        type:
+          - string
+          - "null"
+      twitter_username:
+        type:
+          - string
+          - "null"
+      work_email:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - location_last_updated
+  person_identify:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          birth_date:
+            type:
+              - boolean
+              - "null"
+          birth_year:
+            type:
+              - boolean
+              - "null"
+          certifications:
+            type:
+              - array
+              - "null"
+          countries:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          dataset_version:
+            type:
+              - string
+              - "null"
+          education:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                degrees:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                end_date:
+                  type:
+                    - string
+                    - "null"
+                majors:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                minors:
+                  type:
+                    - array
+                    - "null"
+                raw:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                school:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    domain:
+                      type:
+                        - string
+                        - "null"
+                    facebook_url:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    linkedin_id:
+                      type:
+                        - string
+                        - "null"
+                    linkedin_url:
+                      type:
+                        - string
+                        - "null"
+                    location:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        continent:
+                          type:
+                            - string
+                            - "null"
+                        country:
+                          type:
+                            - string
+                            - "null"
+                        locality:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        region:
+                          type:
+                            - string
+                            - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    raw:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    twitter_url:
+                      type:
+                        - string
+                        - "null"
+                    website:
+                      type:
+                        - string
+                        - "null"
+                start_date:
+                  type:
+                    - string
+                    - "null"
+                summary:
+                  type:
+                    - string
+                    - "null"
+          emails:
+            type:
+              - boolean
+              - "null"
+          experience:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                company:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    facebook_url:
+                      type:
+                        - string
+                        - "null"
+                    founded:
+                      type:
+                        - number
+                        - "null"
+                    fuzzy_match:
+                      type:
+                        - boolean
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    industry:
+                      type:
+                        - string
+                        - "null"
+                    linkedin_id:
+                      type:
+                        - string
+                        - "null"
+                    linkedin_url:
+                      type:
+                        - string
+                        - "null"
+                    location:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        continent:
+                          type:
+                            - string
+                            - "null"
+                        country:
+                          type:
+                            - string
+                            - "null"
+                        geo:
+                          type:
+                            - string
+                            - "null"
+                        locality:
+                          type:
+                            - string
+                            - "null"
+                        metro:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        postal_code:
+                          type:
+                            - string
+                            - "null"
+                        region:
+                          type:
+                            - string
+                            - "null"
+                        street_address:
+                          type:
+                            - string
+                            - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    raw:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    size:
+                      type:
+                        - string
+                        - "null"
+                    twitter_url:
+                      type:
+                        - string
+                        - "null"
+                    website:
+                      type:
+                        - string
+                        - "null"
+                end_date:
+                  type:
+                    - string
+                    - "null"
+                first_seen:
+                  type:
+                    - string
+                    - "null"
+                is_primary:
+                  type:
+                    - boolean
+                    - "null"
+                last_seen:
+                  type:
+                    - string
+                    - "null"
+                location_names:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                num_sources:
+                  type:
+                    - number
+                    - "null"
+                start_date:
+                  type:
+                    - string
+                    - "null"
+                summary:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    class:
+                      type:
+                        - string
+                        - "null"
+                    levels:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    raw:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+                    sub_role:
+                      type:
+                        - string
+                        - "null"
+          facebook_id:
+            type:
+              - string
+              - "null"
+          facebook_url:
+            type:
+              - string
+              - "null"
+          facebook_username:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          full_name:
+            type:
+              - string
+              - "null"
+          github_url:
+            type:
+              - string
+              - "null"
+          github_username:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          interests:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          job_company_facebook_url:
+            type:
+              - string
+              - "null"
+          job_company_founded:
+            type:
+              - number
+              - "null"
+          job_company_id:
+            type:
+              - string
+              - "null"
+          job_company_industry:
+            type:
+              - string
+              - "null"
+          job_company_linkedin_id:
+            type:
+              - string
+              - "null"
+          job_company_linkedin_url:
+            type:
+              - string
+              - "null"
+          job_company_location_continent:
+            type:
+              - string
+              - "null"
+          job_company_location_country:
+            type:
+              - string
+              - "null"
+          job_company_location_geo:
+            type:
+              - string
+              - "null"
+          job_company_location_locality:
+            type:
+              - string
+              - "null"
+          job_company_location_metro:
+            type:
+              - string
+              - "null"
+          job_company_location_name:
+            type:
+              - string
+              - "null"
+          job_company_location_region:
+            type:
+              - string
+              - "null"
+          job_company_name:
+            type:
+              - string
+              - "null"
+          job_company_size:
+            type:
+              - string
+              - "null"
+          job_company_twitter_url:
+            type:
+              - string
+              - "null"
+          job_company_website:
+            type:
+              - string
+              - "null"
+          job_history:
+            type:
+              - array
+              - "null"
+          job_last_changed:
+            type:
+              - string
+              - "null"
+          job_last_verified:
+            type:
+              - string
+              - "null"
+          job_start_date:
+            type:
+              - string
+              - "null"
+          job_title:
+            type:
+              - string
+              - "null"
+          job_title_class:
+            type:
+              - string
+              - "null"
+          job_title_levels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          job_title_role:
+            type:
+              - string
+              - "null"
+          languages:
+            type:
+              - array
+              - "null"
+          last_initial:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          linkedin_id:
+            type:
+              - string
+              - "null"
+          linkedin_url:
+            type:
+              - string
+              - "null"
+          linkedin_username:
+            type:
+              - string
+              - "null"
+          location_address_line_2:
+            type:
+              - boolean
+              - "null"
+          location_continent:
+            type:
+              - string
+              - "null"
+          location_country:
+            type:
+              - string
+              - "null"
+          location_geo:
+            type:
+              - boolean
+              - "null"
+          location_last_updated:
+            type:
+              - string
+              - "null"
+          location_locality:
+            type:
+              - boolean
+              - "null"
+          location_metro:
+            type:
+              - boolean
+              - "null"
+          location_name:
+            type:
+              - boolean
+              - "null"
+          location_names:
+            type:
+              - boolean
+              - "null"
+          location_postal_code:
+            type:
+              - boolean
+              - "null"
+          location_region:
+            type:
+              - boolean
+              - "null"
+          location_street_address:
+            type:
+              - boolean
+              - "null"
+          mobile_phone:
+            type:
+              - boolean
+              - "null"
+          name_aliases:
+            type:
+              - array
+              - "null"
+          personal_emails:
+            type:
+              - boolean
+              - "null"
+          phone_numbers:
+            type:
+              - boolean
+              - "null"
+          phones:
+            type:
+              - array
+              - "null"
+          possible_birth_dates:
+            type:
+              - array
+              - "null"
+          possible_emails:
+            type:
+              - array
+              - "null"
+          possible_location_names:
+            type:
+              - array
+              - "null"
+          possible_phones:
+            type:
+              - array
+              - "null"
+          possible_profiles:
+            type:
+              - array
+              - "null"
+          possible_street_addresses:
+            type:
+              - array
+              - "null"
+          profiles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                first_seen:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                last_seen:
+                  type:
+                    - string
+                    - "null"
+                network:
+                  type:
+                    - string
+                    - "null"
+                num_sources:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                username:
+                  type:
+                    - string
+                    - "null"
+          recommended_personal_email:
+            type:
+              - boolean
+              - "null"
+          regions:
+            type:
+              - boolean
+              - "null"
+          skills:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          street_addresses:
+            type:
+              - boolean
+              - "null"
+          twitter_url:
+            type:
+              - string
+              - "null"
+          twitter_username:
+            type:
+              - string
+              - "null"
+          work_email:
+            type:
+              - boolean
+              - "null"
+      match_score:
+        type:
+          - number
+          - "null"
+      matched_on:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  company_clean:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      facebook_url:
+        type:
+          - string
+          - "null"
+      founded:
+        type:
+          - number
+          - "null"
+      fuzzy_match:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      industry:
+        type:
+          - string
+          - "null"
+      linkedin_id:
+        type:
+          - string
+          - "null"
+      linkedin_url:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          continent:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          geo:
+            type:
+              - string
+              - "null"
+          locality:
+            type:
+              - string
+              - "null"
+          metro:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          street_address:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      raw:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      score:
+        type:
+          - number
+          - "null"
+      size:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      twitter_url:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  location_clean:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      continent:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      geo:
+        type:
+          - string
+          - "null"
+      locality:
+        type:
+          - string
+          - "null"
+      metro:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      subregion:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  company_enrich:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      affiliated_profiles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      all_subsidiaries:
+        type:
+          - array
+          - "null"
+      alternative_domains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      alternative_names:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dataset_version:
+        type:
+          - string
+          - "null"
+      direct_subsidiaries:
+        type:
+          - array
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      employee_count:
+        type:
+          - number
+          - "null"
+      employee_count_by_country:
+        type:
+          - object
+          - "null"
+        properties:
+          afghanistan:
+            type:
+              - number
+              - "null"
+          albania:
+            type:
+              - number
+              - "null"
+          algeria:
+            type:
+              - number
+              - "null"
+          american samoa:
+            type:
+              - number
+              - "null"
+          andorra:
+            type:
+              - number
+              - "null"
+          angola:
+            type:
+              - number
+              - "null"
+          anguilla:
+            type:
+              - number
+              - "null"
+          antigua and barbuda:
+            type:
+              - number
+              - "null"
+          argentina:
+            type:
+              - number
+              - "null"
+          armenia:
+            type:
+              - number
+              - "null"
+          aruba:
+            type:
+              - number
+              - "null"
+          australia:
+            type:
+              - number
+              - "null"
+          austria:
+            type:
+              - number
+              - "null"
+          azerbaijan:
+            type:
+              - number
+              - "null"
+          bahamas:
+            type:
+              - number
+              - "null"
+          bahrain:
+            type:
+              - number
+              - "null"
+          bangladesh:
+            type:
+              - number
+              - "null"
+          belarus:
+            type:
+              - number
+              - "null"
+          belgium:
+            type:
+              - number
+              - "null"
+          belize:
+            type:
+              - number
+              - "null"
+          benin:
+            type:
+              - number
+              - "null"
+          bermuda:
+            type:
+              - number
+              - "null"
+          bhutan:
+            type:
+              - number
+              - "null"
+          bolivia:
+            type:
+              - number
+              - "null"
+          bosnia and herzegovina:
+            type:
+              - number
+              - "null"
+          botswana:
+            type:
+              - number
+              - "null"
+          brazil:
+            type:
+              - number
+              - "null"
+          british indian ocean territory:
+            type:
+              - number
+              - "null"
+          british virgin islands:
+            type:
+              - number
+              - "null"
+          brunei:
+            type:
+              - number
+              - "null"
+          bulgaria:
+            type:
+              - number
+              - "null"
+          burkina faso:
+            type:
+              - number
+              - "null"
+          burundi:
+            type:
+              - number
+              - "null"
+          cambodia:
+            type:
+              - number
+              - "null"
+          cameroon:
+            type:
+              - number
+              - "null"
+          canada:
+            type:
+              - number
+              - "null"
+          cape verde:
+            type:
+              - number
+              - "null"
+          cayman islands:
+            type:
+              - number
+              - "null"
+          chad:
+            type:
+              - number
+              - "null"
+          chile:
+            type:
+              - number
+              - "null"
+          china:
+            type:
+              - number
+              - "null"
+          cocos (keeling) islands:
+            type:
+              - number
+              - "null"
+          colombia:
+            type:
+              - number
+              - "null"
+          costa rica:
+            type:
+              - number
+              - "null"
+          croatia:
+            type:
+              - number
+              - "null"
+          cuba:
+            type:
+              - number
+              - "null"
+          cyprus:
+            type:
+              - number
+              - "null"
+          czechia:
+            type:
+              - number
+              - "null"
+          côte d'ivoire:
+            type:
+              - number
+              - "null"
+          democratic republic of the congo:
+            type:
+              - number
+              - "null"
+          denmark:
+            type:
+              - number
+              - "null"
+          dominican republic:
+            type:
+              - number
+              - "null"
+          ecuador:
+            type:
+              - number
+              - "null"
+          egypt:
+            type:
+              - number
+              - "null"
+          el salvador:
+            type:
+              - number
+              - "null"
+          eritrea:
+            type:
+              - number
+              - "null"
+          estonia:
+            type:
+              - number
+              - "null"
+          eswatini:
+            type:
+              - number
+              - "null"
+          ethiopia:
+            type:
+              - number
+              - "null"
+          faroe islands:
+            type:
+              - number
+              - "null"
+          fiji:
+            type:
+              - number
+              - "null"
+          finland:
+            type:
+              - number
+              - "null"
+          france:
+            type:
+              - number
+              - "null"
+          french polynesia:
+            type:
+              - number
+              - "null"
+          gabon:
+            type:
+              - number
+              - "null"
+          georgia:
+            type:
+              - number
+              - "null"
+          germany:
+            type:
+              - number
+              - "null"
+          ghana:
+            type:
+              - number
+              - "null"
+          gibraltar:
+            type:
+              - number
+              - "null"
+          greece:
+            type:
+              - number
+              - "null"
+          grenada:
+            type:
+              - number
+              - "null"
+          guadeloupe:
+            type:
+              - number
+              - "null"
+          guam:
+            type:
+              - number
+              - "null"
+          guatemala:
+            type:
+              - number
+              - "null"
+          guernsey:
+            type:
+              - number
+              - "null"
+          guinea:
+            type:
+              - number
+              - "null"
+          guinea-bissau:
+            type:
+              - number
+              - "null"
+          guyana:
+            type:
+              - number
+              - "null"
+          haiti:
+            type:
+              - number
+              - "null"
+          honduras:
+            type:
+              - number
+              - "null"
+          hong kong:
+            type:
+              - number
+              - "null"
+          hungary:
+            type:
+              - number
+              - "null"
+          iceland:
+            type:
+              - number
+              - "null"
+          india:
+            type:
+              - number
+              - "null"
+          indonesia:
+            type:
+              - number
+              - "null"
+          iran:
+            type:
+              - number
+              - "null"
+          iraq:
+            type:
+              - number
+              - "null"
+          ireland:
+            type:
+              - number
+              - "null"
+          israel:
+            type:
+              - number
+              - "null"
+          italy:
+            type:
+              - number
+              - "null"
+          jamaica:
+            type:
+              - number
+              - "null"
+          japan:
+            type:
+              - number
+              - "null"
+          jordan:
+            type:
+              - number
+              - "null"
+          kazakhstan:
+            type:
+              - number
+              - "null"
+          kenya:
+            type:
+              - number
+              - "null"
+          kosovo:
+            type:
+              - number
+              - "null"
+          kuwait:
+            type:
+              - number
+              - "null"
+          kyrgyzstan:
+            type:
+              - number
+              - "null"
+          laos:
+            type:
+              - number
+              - "null"
+          latvia:
+            type:
+              - number
+              - "null"
+          lebanon:
+            type:
+              - number
+              - "null"
+          lesotho:
+            type:
+              - number
+              - "null"
+          liberia:
+            type:
+              - number
+              - "null"
+          libya:
+            type:
+              - number
+              - "null"
+          liechtenstein:
+            type:
+              - number
+              - "null"
+          lithuania:
+            type:
+              - number
+              - "null"
+          luxembourg:
+            type:
+              - number
+              - "null"
+          macau:
+            type:
+              - number
+              - "null"
+          madagascar:
+            type:
+              - number
+              - "null"
+          malawi:
+            type:
+              - number
+              - "null"
+          malaysia:
+            type:
+              - number
+              - "null"
+          maldives:
+            type:
+              - number
+              - "null"
+          mali:
+            type:
+              - number
+              - "null"
+          malta:
+            type:
+              - number
+              - "null"
+          marshall islands:
+            type:
+              - number
+              - "null"
+          martinique:
+            type:
+              - number
+              - "null"
+          mauritania:
+            type:
+              - number
+              - "null"
+          mauritius:
+            type:
+              - number
+              - "null"
+          mexico:
+            type:
+              - number
+              - "null"
+          moldova:
+            type:
+              - number
+              - "null"
+          monaco:
+            type:
+              - number
+              - "null"
+          mongolia:
+            type:
+              - number
+              - "null"
+          montenegro:
+            type:
+              - number
+              - "null"
+          morocco:
+            type:
+              - number
+              - "null"
+          mozambique:
+            type:
+              - number
+              - "null"
+          myanmar:
+            type:
+              - number
+              - "null"
+          namibia:
+            type:
+              - number
+              - "null"
+          nepal:
+            type:
+              - number
+              - "null"
+          netherlands:
+            type:
+              - number
+              - "null"
+          new caledonia:
+            type:
+              - number
+              - "null"
+          new zealand:
+            type:
+              - number
+              - "null"
+          nicaragua:
+            type:
+              - number
+              - "null"
+          niger:
+            type:
+              - number
+              - "null"
+          nigeria:
+            type:
+              - number
+              - "null"
+          north korea:
+            type:
+              - number
+              - "null"
+          north macedonia:
+            type:
+              - number
+              - "null"
+          norway:
+            type:
+              - number
+              - "null"
+          oman:
+            type:
+              - number
+              - "null"
+          other_uncategorized:
+            type:
+              - number
+              - "null"
+          pakistan:
+            type:
+              - number
+              - "null"
+          palau:
+            type:
+              - number
+              - "null"
+          palestine:
+            type:
+              - number
+              - "null"
+          panama:
+            type:
+              - number
+              - "null"
+          papua new guinea:
+            type:
+              - number
+              - "null"
+          paraguay:
+            type:
+              - number
+              - "null"
+          peru:
+            type:
+              - number
+              - "null"
+          philippines:
+            type:
+              - number
+              - "null"
+          poland:
+            type:
+              - number
+              - "null"
+          portugal:
+            type:
+              - number
+              - "null"
+          puerto rico:
+            type:
+              - number
+              - "null"
+          qatar:
+            type:
+              - number
+              - "null"
+          republic of the congo:
+            type:
+              - number
+              - "null"
+          romania:
+            type:
+              - number
+              - "null"
+          russia:
+            type:
+              - number
+              - "null"
+          rwanda:
+            type:
+              - number
+              - "null"
+          saint kitts and nevis:
+            type:
+              - number
+              - "null"
+          saint lucia:
+            type:
+              - number
+              - "null"
+          saint vincent and the grenadines:
+            type:
+              - number
+              - "null"
+          san marino:
+            type:
+              - number
+              - "null"
+          saudi arabia:
+            type:
+              - number
+              - "null"
+          senegal:
+            type:
+              - number
+              - "null"
+          serbia:
+            type:
+              - number
+              - "null"
+          seychelles:
+            type:
+              - number
+              - "null"
+          sierra leone:
+            type:
+              - number
+              - "null"
+          singapore:
+            type:
+              - number
+              - "null"
+          slovakia:
+            type:
+              - number
+              - "null"
+          slovenia:
+            type:
+              - number
+              - "null"
+          solomon islands:
+            type:
+              - number
+              - "null"
+          somalia:
+            type:
+              - number
+              - "null"
+          south africa:
+            type:
+              - number
+              - "null"
+          south korea:
+            type:
+              - number
+              - "null"
+          south sudan:
+            type:
+              - number
+              - "null"
+          spain:
+            type:
+              - number
+              - "null"
+          sri lanka:
+            type:
+              - number
+              - "null"
+          sudan:
+            type:
+              - number
+              - "null"
+          suriname:
+            type:
+              - number
+              - "null"
+          sweden:
+            type:
+              - number
+              - "null"
+          switzerland:
+            type:
+              - number
+              - "null"
+          syria:
+            type:
+              - number
+              - "null"
+          são tomé and príncipe:
+            type:
+              - number
+              - "null"
+          taiwan:
+            type:
+              - number
+              - "null"
+          tajikistan:
+            type:
+              - number
+              - "null"
+          tanzania:
+            type:
+              - number
+              - "null"
+          thailand:
+            type:
+              - number
+              - "null"
+          the gambia:
+            type:
+              - number
+              - "null"
+          timor-leste:
+            type:
+              - number
+              - "null"
+          togo:
+            type:
+              - number
+              - "null"
+          tokelau:
+            type:
+              - number
+              - "null"
+          trinidad and tobago:
+            type:
+              - number
+              - "null"
+          tunisia:
+            type:
+              - number
+              - "null"
+          turkey:
+            type:
+              - number
+              - "null"
+          turkmenistan:
+            type:
+              - number
+              - "null"
+          turks and caicos islands:
+            type:
+              - number
+              - "null"
+          u.s. virgin islands:
+            type:
+              - number
+              - "null"
+          uganda:
+            type:
+              - number
+              - "null"
+          ukraine:
+            type:
+              - number
+              - "null"
+          united arab emirates:
+            type:
+              - number
+              - "null"
+          united kingdom:
+            type:
+              - number
+              - "null"
+          united states:
+            type:
+              - number
+              - "null"
+          uruguay:
+            type:
+              - number
+              - "null"
+          uzbekistan:
+            type:
+              - number
+              - "null"
+          vatican city:
+            type:
+              - number
+              - "null"
+          venezuela:
+            type:
+              - number
+              - "null"
+          vietnam:
+            type:
+              - number
+              - "null"
+          yemen:
+            type:
+              - number
+              - "null"
+          zambia:
+            type:
+              - number
+              - "null"
+          zimbabwe:
+            type:
+              - number
+              - "null"
+          åland islands:
+            type:
+              - number
+              - "null"
+      facebook_url:
+        type:
+          - string
+          - "null"
+      founded:
+        type:
+          - number
+          - "null"
+      funding_details:
+        type:
+          - array
+          - "null"
+      funding_stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      headline:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      industry:
+        type:
+          - string
+          - "null"
+      last_funding_date:
+        type:
+          - string
+          - "null"
+      latest_funding_stage:
+        type:
+          - string
+          - "null"
+      likelihood:
+        type:
+          - number
+          - "null"
+      linkedin_id:
+        type:
+          - string
+          - "null"
+      linkedin_slug:
+        type:
+          - string
+          - "null"
+      linkedin_url:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          continent:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          geo:
+            type:
+              - string
+              - "null"
+          locality:
+            type:
+              - string
+              - "null"
+          metro:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          street_address:
+            type:
+              - string
+              - "null"
+      naics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            industry_group:
+              type:
+                - string
+                - "null"
+            naics_code:
+              type:
+                - string
+                - "null"
+            naics_industry:
+              type:
+                - string
+                - "null"
+            national_industry:
+              type:
+                - string
+                - "null"
+            sector:
+              type:
+                - string
+                - "null"
+            sub_sector:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number_funding_rounds:
+        type:
+          - number
+          - "null"
+      profiles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      sic:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            industry_group:
+              type:
+                - string
+                - "null"
+            industry_sector:
+              type:
+                - string
+                - "null"
+            major_group:
+              type:
+                - string
+                - "null"
+            sic_code:
+              type:
+                - string
+                - "null"
+      size:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      total_funding_raised:
+        type:
+          - number
+          - "null"
+      twitter_url:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - uuid
+  ip_enrich:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          confidence:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          employee_count:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          inferred_revenue:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              address_line_2:
+                type:
+                  - string
+                  - "null"
+              continent:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              geo:
+                type:
+                  - string
+                  - "null"
+              locality:
+                type:
+                  - string
+                  - "null"
+              metro:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+              region:
+                type:
+                  - string
+                  - "null"
+              street_address:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+          size:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          website:
+            type:
+              - string
+              - "null"
+      dataset_version:
+        type:
+          - string
+          - "null"
+      ip:
+        type:
+          - object
+          - "null"
+        properties:
+          address:
+            type:
+              - string
+              - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
