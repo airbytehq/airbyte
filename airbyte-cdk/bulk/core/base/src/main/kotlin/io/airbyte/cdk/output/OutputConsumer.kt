@@ -142,7 +142,7 @@ open class StdoutOutputConsumer(
      * the output as TCP packets. While socat is buffered, its buffer size is only 8 kB. In any
      * case, TCP packet sized (capped by the MTU) are also in the low kilobytes.
      */
-    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
+    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush}")
     val bufferByteSizeThresholdForFlush: Int,
 ) : OutputConsumer(clock) {
     protected val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
@@ -209,7 +209,7 @@ open class StdoutOutputConsumer(
         // For this reason, this method builds and reuses a JSON template for each stream.
         // Then, for each record, it serializes just "data" and "meta" to populate the template.
         val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
-        synchronized(this) {
+//        synchronized(this) {
             // Write a newline character to the buffer if it's not empty.
             withLockMaybeWriteNewline()
             // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
@@ -233,7 +233,7 @@ open class StdoutOutputConsumer(
             if (buffer.size() >= bufferByteSizeThresholdForFlush) {
                 withLockFlushRecord()
             }
-        }
+//        }
     }
 
     private val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()

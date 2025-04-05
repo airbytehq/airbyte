@@ -15,14 +15,14 @@ import java.nio.channels.SocketChannel
 import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
-private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-//private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
+//private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
 @Singleton
 class UnixDomainSocketOutputConsumer(
     clock: Clock,
     stdout: PrintStream,
-    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
+    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush}")
     bufferByteSizeThresholdForFlush: Int,
 ) : StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private var socketNum: Int = -1
