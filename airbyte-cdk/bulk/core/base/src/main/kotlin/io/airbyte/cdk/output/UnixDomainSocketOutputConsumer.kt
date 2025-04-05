@@ -1,7 +1,6 @@
 package io.airbyte.cdk.output
 
 import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SequenceWriter
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -10,7 +9,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
@@ -25,8 +23,8 @@ import java.nio.channels.SocketChannel
 import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
-//private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
+private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+//private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
 public val SMILE_MAPPER: ObjectMapper = initSmileMapper();
 
