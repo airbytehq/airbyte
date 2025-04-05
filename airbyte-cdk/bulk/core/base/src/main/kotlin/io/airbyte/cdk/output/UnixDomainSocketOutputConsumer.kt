@@ -5,7 +5,6 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.PrintStream
-import java.lang.module.Configuration
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
 import java.nio.ByteBuffer
@@ -15,7 +14,7 @@ import java.nio.channels.SocketChannel
 import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
-private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+private const val SOCKET_FULL_PATH = "/var/run/.sockets/$SOCKET_NAME_TEMPLATE"
 //private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
 @Singleton
@@ -52,7 +51,7 @@ class UnixDomainSocketOutputConsumer(
             }
         }
         if (buffer.size() > 0) {
-            val array: ByteArray = buffer.toByteArray() + "\n".toByteArray(Charsets.UTF_8)
+            val array: ByteArray = buffer.toByteArray()// + "\n".toByteArray(Charsets.UTF_8)
             sc?.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))
             buffer.reset()
         }
