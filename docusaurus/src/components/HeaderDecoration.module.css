@@ -72,8 +72,8 @@ div.connectorMetadataCallout  {
   column-gap: 2px;
   flex: 0 1 auto;
   background-color: var(--color-green-40);
-  border: 1px solid var(--color-green-600);
-  color: var(--color-green-600);
+  border: 1px solid var(--color-green-800);
+  color: var(--color-green-800);
   font-size: 12px;
 }
 

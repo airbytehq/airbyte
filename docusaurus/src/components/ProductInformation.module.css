@@ -9,7 +9,7 @@
 
 .badge {
   background: var(--color-dark-blue-40);
-  color: var(--color-grey-400);
+  color: var(--color-dark-blue-700);
   padding: 3px 8px;
   border: 1px solid var(--color-dark-blue-40);
   border-radius: 4px;
@@ -38,7 +38,7 @@ html[data-theme="dark"] .badge {
 .available {
   background: var(--color-green-40);
   color: var(--color-green-800);
-  border: 1px solid var(--color-green-600);
+  border: 1px solid var(--color-green-800);
 }
 
 html[data-theme="dark"] .available {
