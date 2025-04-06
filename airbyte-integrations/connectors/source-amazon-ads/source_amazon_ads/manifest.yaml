@@ -2192,7 +2192,7 @@ definitions:
         $ref: "#/definitions/report_creation_error_handler"
     polling_requester:
       type: HttpRequester
-      path: /reporting/reports/{{ stream_slice.extra_fields['creation_response'].reportId }}
+      path: /reporting/reports/{{ creation_response['reportId'] }}
       url_base: >-
         {%- set URL_MAPPING = {
             "NA": "https://advertising-api.amazon.com/",
@@ -2203,6 +2203,8 @@ definitions:
       authenticator: "#/definitions/oauth_authenticator"
       http_method: GET
       request_headers:
+        # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+        # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
         Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       error_handler:
@@ -2218,8 +2220,10 @@ definitions:
     download_decoder:
       type: GzipDecoder
       decoder:
-        type: JsonDecoder
-        encoding: utf
+        type: GzipDecoder
+        decoder:
+          type: JsonDecoder
+          encoding: utf
     download_extractor:
       type: DpathExtractor
       field_path: []
