@@ -2,10 +2,6 @@ version: 6.44.0
 
 type: DeclarativeSource
 
-description: |-
-  Website: https://dashboard.svix.com/
-  API Reference: https://api.svix.com/docs#section/Introduction
-
 check:
   type: CheckStream
   stream_names:
@@ -217,6 +213,62 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/endpoints"
+    integrations:
+      type: DeclarativeStream
+      name: integrations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/app/{{ stream_partition['app_id'] }}/integration
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: iterator
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('iterator', '') }}"
+            stop_condition: "{{ response.get('done', False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/integrations"
     ingest_source:
       type: DeclarativeStream
       name: ingest_source
@@ -320,6 +372,53 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ingest_source_endpoint"
+    webhook_endpoint:
+      type: DeclarativeStream
+      name: webhook_endpoint
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/operational-webhook/endpoint
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: iterator
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('iterator', '') }}"
+            stop_condition: "{{ response.get('done', False) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhook_endpoint"
   base_requester:
     type: HttpRequester
     url_base: https://api.eu.svix.com/
@@ -332,8 +431,10 @@ streams:
   - $ref: "#/definitions/streams/event_types"
   - $ref: "#/definitions/streams/tokens"
   - $ref: "#/definitions/streams/endpoints"
+  - $ref: "#/definitions/streams/integrations"
   - $ref: "#/definitions/streams/ingest_source"
   - $ref: "#/definitions/streams/ingest_source_endpoint"
+  - $ref: "#/definitions/streams/webhook_endpoint"
 
 spec:
   type: Spec
@@ -365,8 +466,10 @@ metadata:
     event_types: true
     tokens: true
     endpoints: true
+    integrations: false
     ingest_source: true
     ingest_source_endpoint: true
+    webhook_endpoint: false
   testedStreams:
     applications:
       streamHash: 63f2d6eed13c222cd2a5391ff79a117bce0fa023
@@ -396,6 +499,13 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+    integrations:
+      streamHash: 889667135d44a683c2ad60ab6127ab31ced12de1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     ingest_source:
       streamHash: e624187d060b2647509ccc3a46eb34c282948b5e
       hasResponse: true
@@ -408,6 +518,13 @@ metadata:
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhook_endpoint:
+      streamHash: 26cb9530b2131ebf154bc83c5d325b0b55e8b511
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist:
@@ -534,6 +651,33 @@ schemas:
     required:
       - id
       - updatedAt
+  integrations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      featureFlags:
+        type:
+          - array
+          - "null"
+        items: {}
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
   ingest_source:
     type: object
     $schema: http://json-schema.org/schema#
@@ -603,3 +747,60 @@ schemas:
     required:
       - id
       - updatedAt
+  webhook_endpoint:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          property1:
+            type:
+              - string
+              - "null"
+          property2:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      disabled:
+        type:
+          - boolean
+          - "null"
+      filterTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      id:
+        type:
+          - string
+          - "null"
+      rateLimit:
+        type:
+          - number
+          - "null"
+      uid:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
