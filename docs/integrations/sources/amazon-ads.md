@@ -154,6 +154,7 @@ Information about expected report generation waiting time can be found [here](ht
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 7.2.0 | 2025-03-17 | [55806](https://github.com/airbytehq/airbyte/pull/55806) | Update AsyncRetriever |
+| 7.1.6 | 2025-04-05 | [57138](https://github.com/airbytehq/airbyte/pull/57138) | Update dependencies |
 | 7.1.5 | 2025-03-29 | [56554](https://github.com/airbytehq/airbyte/pull/56554) | Update dependencies |
 | 7.1.4 | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies |
 | 7.1.3 | 2025-03-08 | [55352](https://github.com/airbytehq/airbyte/pull/55352) | Update dependencies |
