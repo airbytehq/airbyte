@@ -21,7 +21,7 @@ google-api-python-client = "==2.104.0"
 google-auth-httplib2 = "==0.1.1"
 google-auth-oauthlib = "==1.1.0"
 google-api-python-client-stubs = "==1.18.0"
-airbyte-cdk = {extras = ["file-based"], version = "^6.38.5"}
+airbyte-cdk = {extras = ["file-based"], version = "6.45.0.dev04101"}
 
 
 [tool.poetry.scripts]
@@ -38,3 +38,8 @@ include = [
     # Run `poe` or `poe --help` to see the list of available tasks.
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
+
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+priority = "supplemental"

@@ -6,27 +6,26 @@
 import io
 import json
 import logging
-import uuid
+import os
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-import pytz
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceGoogleDriveSpec
+from .spec import SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -245,7 +244,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 
-    def get_file(self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+    def upload(self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from Google Drive to a specified local directory.
 
@@ -265,15 +264,18 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         try:
-            file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+            file_paths = self._get_file_transfer_paths(file, local_directory)
+            local_file_path = file_paths[self.LOCAL_FILE_PATH]
+            file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
+            file_name = file_paths[self.FILE_NAME]
 
             if self._is_exportable_document(file.original_mime_type):
                 request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
 
                 file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
                 local_file_path += file_extension
-                absolute_file_path += file_extension
                 file_relative_path += file_extension
+                file_name += file_extension
             else:
                 request = self.google_drive_service.files().get_media(fileId=file.id)
 
@@ -288,7 +290,21 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             # native google objects seems to be reporting lower size through the api than the final download size
             file_size = getsize(local_file_path)
 
-            return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+            file_record_data = FileRecordData(
+                folder = file_paths[self.FILE_FOLDER],
+                filename = file_name,
+                bytes = file_size,
+
+                id = file.id,
+                mime_type=file.mime_type,
+                updated_at = int(file.last_modified.timestamp() * 1000),
+            )
+            file_reference = AirbyteRecordMessageFileReference(
+                staging_file_url = local_file_path,
+                source_file_relative_path = file_relative_path,
+                file_size_bytes = file_size,
+            )
+            return file_record_data, file_reference
 
         except Exception as e:
             raise ErrorDownloadingFile(f"There was an error while trying to download the file {file.uri}: {str(e)}")

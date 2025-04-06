@@ -4,6 +4,7 @@
 
 
 import datetime
+from os import path
 from typing import Dict
 from unittest.mock import ANY, MagicMock, call, patch
 
@@ -654,7 +655,7 @@ def test_open_file(
     [
         pytest.param(
             GoogleDriveRemoteFile(
-                uri="test.jsonl",
+                uri="some/path/in/source/test.jsonl",
                 last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
                 mime_type="application/octet-stream",
                 id="1",
@@ -663,7 +664,7 @@ def test_open_file(
             b"test",
             False,
             None,
-            {"file_url": f"{TEST_LOCAL_DIRECTORY}/test.jsonl", "bytes": ANY, "file_relative_path": "test.jsonl"},
+            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/some/path/in/source/test.jsonl", "bytes": ANY, "file_relative_path": "some/path/in/source/test.jsonl"},
             False,
             id="Get jsonl",
         ),
@@ -678,7 +679,7 @@ def test_open_file(
             b"test",
             False,
             None,
-            {"file_url": f"{TEST_LOCAL_DIRECTORY}/subfolder/test2.jsonl", "bytes": ANY, "file_relative_path": "subfolder/test2.jsonl"},
+            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/subfolder/test2.jsonl", "bytes": ANY, "file_relative_path": "subfolder/test2.jsonl"},
             False,
             id="Get json2l",
         ),
@@ -693,7 +694,7 @@ def test_open_file(
             b"test",
             False,
             None,
-            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_docx.docx", "bytes": ANY, "file_relative_path": "testdoc_docx.docx"},
+            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_docx.docx", "bytes": ANY, "file_relative_path": "testdoc_docx.docx"},
             False,
             id="Get testdoc_docx",
         ),
@@ -708,7 +709,7 @@ def test_open_file(
             b"test",
             False,
             None,
-            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_pdf.pdf", "bytes": ANY, "file_relative_path": "testdoc_pdf.pdf"},
+            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_pdf.pdf", "bytes": ANY, "file_relative_path": "testdoc_pdf.pdf"},
             False,
             id="Read testdoc_pdf",
         ),
@@ -723,7 +724,7 @@ def test_open_file(
             b"test",
             False,
             None,
-            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_ocr_pdf.pdf", "bytes": ANY, "file_relative_path": "testdoc_ocr_pdf.pdf"},
+            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_ocr_pdf.pdf", "bytes": ANY, "file_relative_path": "testdoc_ocr_pdf.pdf"},
             False,
             id="Read testdoc_ocr_pdf",
         ),
@@ -738,7 +739,7 @@ def test_open_file(
             b"test",
             True,
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_google.docx", "bytes": ANY, "file_relative_path": "testdoc_google.docx"},
+            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_google.docx", "bytes": ANY, "file_relative_path": "testdoc_google.docx"},
             False,
             id="Read testdoc_google",
         ),
@@ -754,7 +755,7 @@ def test_open_file(
             True,
             "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             {
-                "file_url": "/tmp/airbyte-file-transfer/testdoc_presentation.pptx",
+                "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_presentation.pptx",
                 "bytes": ANY,
                 "file_relative_path": "testdoc_presentation.pptx",
             },
@@ -813,14 +814,21 @@ def test_download_file(
 
     if expect_raise:
         with pytest.raises(ValueError):
-            create_reader().get_file(file, local_directory="tmp/airbyte-transfer", logger=MagicMock())
+            create_reader().upload(file, local_directory="tmp/airbyte-transfer", logger=MagicMock())
     else:
-        file_paths = create_reader().get_file(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
-        assert expected_paths["file_url"] in file_paths["file_url"]
-        assert expected_paths["file_relative_path"] == file_paths["file_relative_path"]
+        file_record_data, file_reference = create_reader().upload(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
+        assert expected_paths["staging_file_url"] in file_reference.staging_file_url
+        assert expected_paths["file_relative_path"] == file_reference.source_file_relative_path
+        assert file.mime_type == file_record_data.mime_type
+        
+        assert path.basename(expected_paths["staging_file_url"]) == file_record_data.filename
+        assert path.dirname(expected_paths["staging_file_url"].replace(f"{TEST_LOCAL_DIRECTORY}/", "")) == file_record_data.folder
+
 
         assert mock_downloader.next_chunk.call_count == 2
         if expect_export:
             files_service.export_media.assert_has_calls([call(fileId=file.id, mimeType=expected_mime_type)])
+            assert expected_mime_type == file_record_data.mime_type
         else:
             files_service.get_media.assert_has_calls([call(fileId=file.id)])
+            assert file.mime_type == file_record_data.mime_type
