@@ -20,8 +20,8 @@ from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
@@ -244,7 +244,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 
-    def upload(self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+    def upload(
+        self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from Google Drive to a specified local directory.
 
@@ -291,18 +293,17 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             file_size = getsize(local_file_path)
 
             file_record_data = FileRecordData(
-                folder = file_paths[self.FILE_FOLDER],
-                filename = file_name,
-                bytes = file_size,
-
-                id = file.id,
+                folder=file_paths[self.FILE_FOLDER],
+                filename=file_name,
+                bytes=file_size,
+                id=file.id,
                 mime_type=file.mime_type,
-                updated_at = int(file.last_modified.timestamp() * 1000),
+                updated_at=int(file.last_modified.timestamp() * 1000),
             )
             file_reference = AirbyteRecordMessageFileReference(
-                staging_file_url = local_file_path,
-                source_file_relative_path = file_relative_path,
-                file_size_bytes = file_size,
+                staging_file_url=local_file_path,
+                source_file_relative_path=file_relative_path,
+                file_size_bytes=file_size,
             )
             return file_record_data, file_reference
 

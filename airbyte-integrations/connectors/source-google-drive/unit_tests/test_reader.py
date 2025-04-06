@@ -664,7 +664,11 @@ def test_open_file(
             b"test",
             False,
             None,
-            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/some/path/in/source/test.jsonl", "bytes": ANY, "file_relative_path": "some/path/in/source/test.jsonl"},
+            {
+                "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/some/path/in/source/test.jsonl",
+                "bytes": ANY,
+                "file_relative_path": "some/path/in/source/test.jsonl",
+            },
             False,
             id="Get jsonl",
         ),
@@ -679,7 +683,11 @@ def test_open_file(
             b"test",
             False,
             None,
-            {"staging_file_url": f"{TEST_LOCAL_DIRECTORY}/subfolder/test2.jsonl", "bytes": ANY, "file_relative_path": "subfolder/test2.jsonl"},
+            {
+                "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/subfolder/test2.jsonl",
+                "bytes": ANY,
+                "file_relative_path": "subfolder/test2.jsonl",
+            },
             False,
             id="Get json2l",
         ),
@@ -820,10 +828,9 @@ def test_download_file(
         assert expected_paths["staging_file_url"] in file_reference.staging_file_url
         assert expected_paths["file_relative_path"] == file_reference.source_file_relative_path
         assert file.mime_type == file_record_data.mime_type
-        
+
         assert path.basename(expected_paths["staging_file_url"]) == file_record_data.filename
         assert path.dirname(expected_paths["staging_file_url"].replace(f"{TEST_LOCAL_DIRECTORY}/", "")) == file_record_data.folder
-
 
         assert mock_downloader.next_chunk.call_count == 2
         if expect_export:
