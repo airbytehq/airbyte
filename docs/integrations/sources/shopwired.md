@@ -35,6 +35,6 @@ API Reference: https://api.shopwired.co.uk/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-06 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| 0.0.1 | 2025-04-06 | [57493](https://github.com/airbytehq/airbyte/pull/57493) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
