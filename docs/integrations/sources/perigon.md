@@ -1,0 +1,32 @@
+# Perigon
+Website: https://www.perigon.io/
+API Reference: https://docs.perigon.io/reference/all-news
+
+## Configuration
+
+| Input | Type | Description | Default Value |
+|-------|------|-------------|---------------|
+| `api_key` | `string` | API Key. Your API key for authenticating with the Perigon API. Obtain it by creating an account at https://www.perigon.io/sign-up and verifying your email. The API key will be visible on your account dashboard. |  |
+| `start_date` | `string` | Start date.  |  |
+
+## Streams
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|-------------|------------|---------------------|----------------------|
+| articles | articleId | DefaultPaginator | ✅ |  ✅  |
+| stories | id | DefaultPaginator | ✅ |  ✅  |
+| journalists | id | No pagination | ✅ |  ✅  |
+| sources | id | No pagination | ✅ |  ✅  |
+| people | wikidataId | No pagination | ✅ |  ✅  |
+| companies | id | No pagination | ✅ |  ✅  |
+| topics | id | DefaultPaginator | ✅ |  ✅  |
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 0.0.1 | 2025-04-06 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+
+</details>
