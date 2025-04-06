@@ -27,6 +27,6 @@ API Reference: https://apidocs.stackhawk.com/reference/getalertmessages
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-06 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| 0.0.1 | 2025-04-06 | [57491](https://github.com/airbytehq/airbyte/pull/57491) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
