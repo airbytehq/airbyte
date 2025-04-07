@@ -112,6 +112,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.4.20 | 2025-04-05 | [57270](https://github.com/airbytehq/airbyte/pull/57270) | Update dependencies |
 | 0.4.19 | 2025-03-29 | [56473](https://github.com/airbytehq/airbyte/pull/56473) | Update dependencies |
 | 0.4.18 | 2025-03-22 | [56099](https://github.com/airbytehq/airbyte/pull/56099) | Update dependencies |
 | 0.4.17 | 2025-03-08 | [55403](https://github.com/airbytehq/airbyte/pull/55403) | Update dependencies |

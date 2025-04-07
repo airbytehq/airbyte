@@ -1,0 +1,1096 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.shutterstock.com/
+  API Reference: https://api-reference.shutterstock.com/#overview
+
+check:
+  type: CheckStream
+  stream_names:
+    - images_categories
+
+definitions:
+  streams:
+    images_categories:
+      type: DeclarativeStream
+      name: images_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/images/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/images_categories"
+    images_search:
+      type: DeclarativeStream
+      name: images_search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/images/search
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query_for_image_search']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/images_search"
+    videos_search:
+      type: DeclarativeStream
+      name: videos_search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/videos/search
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query_for_video_search']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/videos_search"
+    videos_categories:
+      type: DeclarativeStream
+      name: videos_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/videos/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/videos_categories"
+    audio_search:
+      type: DeclarativeStream
+      name: audio_search
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/audio/search
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query_for_audio_search']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: published_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audio_search"
+    audio_genres:
+      type: DeclarativeStream
+      name: audio_genres
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/audio/genres
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audio_genres"
+    audio_instruments:
+      type: DeclarativeStream
+      name: audio_instruments
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/audio/instruments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audio_instruments"
+    audio_moods:
+      type: DeclarativeStream
+      name: audio_moods
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/audio/moods
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audio_moods"
+    user_details:
+      type: DeclarativeStream
+      name: user_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/user
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_details"
+    user_subscriptions:
+      type: DeclarativeStream
+      name: user_subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/user/subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_subscriptions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.shutterstock.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/images_categories"
+  - $ref: "#/definitions/streams/images_search"
+  - $ref: "#/definitions/streams/videos_search"
+  - $ref: "#/definitions/streams/videos_categories"
+  - $ref: "#/definitions/streams/audio_search"
+  - $ref: "#/definitions/streams/audio_genres"
+  - $ref: "#/definitions/streams/audio_instruments"
+  - $ref: "#/definitions/streams/audio_moods"
+  - $ref: "#/definitions/streams/user_details"
+  - $ref: "#/definitions/streams/user_subscriptions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_date
+      - query_for_image_search
+      - query_for_video_search
+      - query_for_audio_search
+      - query_for_catalog_search
+    properties:
+      api_token:
+        type: string
+        description: >-
+          Your OAuth 2.0 token for accessing the Shutterstock API. Obtain this
+          token from your Shutterstock developer account.
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      query_for_image_search:
+        type: string
+        description: The query for image search
+        order: 2
+        title: Query for image search
+        default: mountain
+      query_for_video_search:
+        type: string
+        description: The Query for `videos_search` stream
+        title: Query for video search
+        default: mountain
+        order: 3
+      query_for_audio_search:
+        type: string
+        description: The query for image search
+        title: Query for audio search
+        default: mountain
+        order: 4
+      query_for_catalog_search:
+        type: string
+        description: The query for catalog search
+        title: Query for catalog search
+        default: mountain
+        order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    images_categories: true
+    images_search: true
+    videos_search: true
+    videos_categories: true
+    audio_search: true
+    audio_genres: true
+    audio_instruments: true
+    audio_moods: true
+    user_details: true
+    user_subscriptions: true
+  testedStreams:
+    images_categories:
+      hasRecords: true
+      streamHash: f4cf0b2187095f4270b904713589579ceecc7ed2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    images_search:
+      hasRecords: true
+      streamHash: 5b772d989f585100e567cabf4579208a5b14b02a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    videos_search:
+      streamHash: 3f9ab534140a6033ff33b20c70b667f18911d922
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    videos_categories:
+      streamHash: b0ae33112b94c9c44e4e60a1f318fd2b08dc7866
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    audio_search:
+      streamHash: af99a0c871fccdc1147282aa5ac71a86f47da4c7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    audio_genres:
+      streamHash: d034070da317b213f8bd4f70629fce78a0024821
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    audio_instruments:
+      streamHash: 4f5c21f2c680e6af785583855de905a3107f54d8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    audio_moods:
+      streamHash: 4fb8afef566781a0c9e6c618811b4dd7f18277b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_details:
+      streamHash: e98526c58466b2fca3a3e6c296594a5303cad73c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_subscriptions:
+      streamHash: 4c487e2fe9b401b8de769515f09075e0a362e057
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://api-reference.shutterstock.com/#overview
+
+schemas:
+  images_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  images_search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      aspect:
+        type:
+          - number
+          - "null"
+      assets:
+        type:
+          - object
+          - "null"
+        properties:
+          huge_thumb:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          large_thumb:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          mosaic:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          preview:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          preview_1000:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          preview_1500:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          small_thumb:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+      contributor:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      has_model_release:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      image_type:
+        type:
+          - string
+          - "null"
+      media_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  videos_search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      aspect:
+        type:
+          - number
+          - "null"
+      aspect_ratio:
+        type:
+          - string
+          - "null"
+      assets:
+        type:
+          - object
+          - "null"
+        properties:
+          preview_jpg:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          preview_mp4:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          preview_webm:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          thumb_jpg:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          thumb_mp4:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          thumb_webm:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+      contributor:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      has_model_release:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      media_type:
+        type:
+          - string
+          - "null"
+      original_filename:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  videos_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  audio_search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      added_date:
+        type:
+          - string
+          - "null"
+      assets:
+        type:
+          - object
+          - "null"
+        properties:
+          clean_audio:
+            type:
+              - object
+              - "null"
+            properties:
+              file_size:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          preview_mp3:
+            type:
+              - object
+              - "null"
+            properties:
+              file_size:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          preview_ogg:
+            type:
+              - object
+              - "null"
+            properties:
+              file_size:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          waveform:
+            type:
+              - object
+              - "null"
+            properties:
+              file_size:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+      contributor:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      media_type:
+        type:
+          - string
+          - "null"
+      published_time:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - published_time
+  audio_genres:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  audio_instruments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  audio_moods:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  user_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      customer_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_premier:
+        type:
+          - boolean
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      only_enhanced_license:
+        type:
+          - boolean
+          - "null"
+      only_sensitive_use:
+        type:
+          - boolean
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  user_subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      allotment:
+        type:
+          - object
+          - "null"
+        properties:
+          content_tiers:
+            type:
+              - object
+              - "null"
+            properties:
+              standard_images:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  downloads_left:
+                    type:
+                      - number
+                      - "null"
+                  downloads_limit:
+                    type:
+                      - number
+                      - "null"
+          downloads_left:
+            type:
+              - number
+              - "null"
+          downloads_limit:
+            type:
+              - number
+              - "null"
+          end_time:
+            type:
+              - string
+              - "null"
+          start_time:
+            type:
+              - string
+              - "null"
+      asset_type:
+        type:
+          - string
+          - "null"
+      expiration_time:
+        type:
+          - string
+          - "null"
+      formats:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            format:
+              type:
+                - string
+                - "null"
+            media_type:
+              type:
+                - string
+                - "null"
+            min_resolution:
+              type:
+                - number
+                - "null"
+            size:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      license:
+        type:
+          - string
+          - "null"
+      portfolio:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
