@@ -1,8 +1,8 @@
-version: 6.41.5
+version: 6.44.0
 
 type: DeclarativeSource
 
-description: test010
+description: test_new_desc
 
 check:
   type: CheckStream
@@ -13,7 +13,7 @@ definitions:
   streams:
     pokemon:
       type: DeclarativeStream
-      name: pokemon
+      name: pokemon2
       primary_key:
         - id
       retriever:
@@ -965,6 +965,13 @@ metadata:
   testedStreams:
     pokemon:
       streamHash: abbff0528a3e0a0344fcb191f1cc63f4aa624367
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pokemon2:
+      streamHash: d3bccade5e6d1a576ed0164e147fe6224d9a2ba8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
