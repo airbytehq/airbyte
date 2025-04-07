@@ -34,6 +34,7 @@ API Reference: https://docs.signnow.com/docs/signnow/welcome
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2025-04-05 | [57430](https://github.com/airbytehq/airbyte/pull/57430) | Update dependencies |
 | 0.0.1 | 2025-04-02 | [56977](https://github.com/airbytehq/airbyte/pull/56977) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

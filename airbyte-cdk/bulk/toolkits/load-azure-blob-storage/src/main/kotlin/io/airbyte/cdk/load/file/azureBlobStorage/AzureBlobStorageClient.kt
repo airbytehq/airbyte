@@ -82,7 +82,7 @@ class AzureBlobClient(
         return props?.metadata ?: emptyMap()
     }
 
-    suspend fun getProperties(key: String): OffsetDateTime? {
+    fun getProperties(key: String): OffsetDateTime? {
         val blobClient =
             serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
 
