@@ -1,0 +1,1695 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://app.gologin.com/
+
+  Postman API Reference:
+  https://documenter.getpostman.com/view/21126834/Uz5GnvaL#intro
+
+check:
+  type: CheckStream
+  stream_names:
+    - profiles
+
+definitions:
+  streams:
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: browser/v2
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - profiles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profiles"
+    browser_history:
+      type: DeclarativeStream
+      name: browser_history
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /browser/{{ stream_partition['br_id'] }}/history
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: br_id
+              stream:
+                $ref: "#/definitions/streams/profiles"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/browser_history"
+    browser_cookies:
+      type: DeclarativeStream
+      name: browser_cookies
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /browser/{{ stream_partition['br_id'] }}/cookies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: br_id
+              stream:
+                $ref: "#/definitions/streams/profiles"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: creationDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%s"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/browser_cookies"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /folders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    user:
+      type: DeclarativeStream
+      name: user
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user"
+    user_metadata:
+      type: DeclarativeStream
+      name: user_metadata
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: user/metadata
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_metadata"
+    user_balance:
+      type: DeclarativeStream
+      name: user_balance
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/balance
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_balance"
+    user_timezones:
+      type: DeclarativeStream
+      name: user_timezones
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /timezone
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 30
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_timezones"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.gologin.com/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/browser_history"
+  - $ref: "#/definitions/streams/browser_cookies"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/user"
+  - $ref: "#/definitions/streams/user_metadata"
+  - $ref: "#/definitions/streams/user_balance"
+  - $ref: "#/definitions/streams/user_timezones"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: API Key found at `https://app.gologin.com/personalArea/TokenApi`
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    profiles: true
+    browser_history: true
+    browser_cookies: true
+    folders: true
+    tags: true
+    user: true
+    user_metadata: true
+    user_balance: true
+    user_timezones: true
+  testedStreams:
+    profiles:
+      streamHash: bf27440ade08ab7d1c389c34a2be35c2a16b9446
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    browser_history:
+      streamHash: 05966ce7f2fb69984a36e74524322930e6f0aeaf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    browser_cookies:
+      streamHash: f4d3bb99cb7df389c87f945d3ffc749b4bdd44b2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    folders:
+      streamHash: 80c511583c8769597b95bfb4ed2ad07249a04fe0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: 68d1988c5490357ad39b2655e40c6785273edd00
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user:
+      streamHash: a596b8ebebca96506a7f1868e4a017da870be903
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_metadata:
+      streamHash: e87ca8aff58e960aaa5c075db8b34ea0f37b9faf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_balance:
+      streamHash: d1b61a18e4e0bb57bf167be8b46e65a9c8ae91c0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_timezones:
+      streamHash: 8dfda5926ef083c75e729b1e92cfa1ae7edc2052
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://documenter.getpostman.com/view/21126834/Uz5GnvaL
+
+schemas:
+  profiles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      autoLang:
+        type:
+          - boolean
+          - "null"
+      browserType:
+        type:
+          - string
+          - "null"
+      canBeRunning:
+        type:
+          - boolean
+          - "null"
+      chromeExtensions:
+        type:
+          - array
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      defaultProps:
+        type:
+          - object
+          - "null"
+        properties:
+          profileNameIsDefault:
+            type:
+              - boolean
+              - "null"
+          profileNotesIsDefault:
+            type:
+              - boolean
+              - "null"
+      folders:
+        type:
+          - array
+          - "null"
+      geolocation:
+        type:
+          - object
+          - "null"
+        properties:
+          accuracy:
+            type:
+              - number
+              - "null"
+          customize:
+            type:
+              - boolean
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          fillBasedOnIp:
+            type:
+              - boolean
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          mode:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      isAutoGenerated:
+        type:
+          - boolean
+          - "null"
+      isBookmarksSynced:
+        type:
+          - boolean
+          - "null"
+      isM1:
+        type:
+          - boolean
+          - "null"
+      isPinned:
+        type:
+          - boolean
+          - "null"
+      lastActivity:
+        type:
+          - string
+          - "null"
+      lockEnabled:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      navigator:
+        type:
+          - object
+          - "null"
+        properties:
+          language:
+            type:
+              - string
+              - "null"
+          resolution:
+            type:
+              - string
+              - "null"
+          userAgent:
+            type:
+              - string
+              - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      osSpec:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          addProfileTag:
+            type:
+              - boolean
+              - "null"
+          addVpnUfoProxy:
+            type:
+              - boolean
+              - "null"
+          cloneProfile:
+            type:
+              - boolean
+              - "null"
+          createShareLinks:
+            type:
+              - boolean
+              - "null"
+          deleteProfile:
+            type:
+              - boolean
+              - "null"
+          deleteShareLinks:
+            type:
+              - boolean
+              - "null"
+          editProfile:
+            type:
+              - boolean
+              - "null"
+          exportProfile:
+            type:
+              - boolean
+              - "null"
+          manageFolders:
+            type:
+              - boolean
+              - "null"
+          removeProfileTag:
+            type:
+              - boolean
+              - "null"
+          runProfile:
+            type:
+              - boolean
+              - "null"
+          runProfileWeb:
+            type:
+              - boolean
+              - "null"
+          shareProfile:
+            type:
+              - boolean
+              - "null"
+          transferProfile:
+            type:
+              - boolean
+              - "null"
+          transferToMyWorkspace:
+            type:
+              - boolean
+              - "null"
+          updateShareLinks:
+            type:
+              - boolean
+              - "null"
+          updateUA:
+            type:
+              - boolean
+              - "null"
+          viewCustomExtensions:
+            type:
+              - boolean
+              - "null"
+          viewProfile:
+            type:
+              - boolean
+              - "null"
+          viewShareLinks:
+            type:
+              - boolean
+              - "null"
+      proxy:
+        type:
+          - object
+          - "null"
+        properties:
+          autoProxyRegion:
+            type:
+              - string
+              - "null"
+          customName:
+            type:
+              - string
+              - "null"
+          host:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          mode:
+            type:
+              - string
+              - "null"
+          password:
+            type:
+              - string
+              - "null"
+          port:
+            type:
+              - number
+              - "null"
+          torProxyRegion:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      proxyEnabled:
+        type:
+          - boolean
+          - "null"
+      proxyRegion:
+        type:
+          - string
+          - "null"
+      proxyType:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      sharedEmails:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            _id:
+              type:
+                - string
+                - "null"
+            color:
+              type:
+                - string
+                - "null"
+            field:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      timezone:
+        type:
+          - object
+          - "null"
+        properties:
+          fillBasedOnIp:
+            type:
+              - boolean
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      updatedAt:
+        type: string
+      userChromeExtensions:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - updatedAt
+  browser_history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      lastModified:
+        type: string
+      size:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - lastModified
+  browser_cookies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      creationDate:
+        type: number
+      domain:
+        type:
+          - string
+          - "null"
+      expirationDate:
+        type:
+          - number
+          - "null"
+      hostOnly:
+        type:
+          - boolean
+          - "null"
+      httpOnly:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      path:
+        type:
+          - string
+          - "null"
+      sameSite:
+        type:
+          - string
+          - "null"
+      secure:
+        type:
+          - boolean
+          - "null"
+      session:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      value:
+        type:
+          - string
+          - "null"
+    required:
+      - uuid
+      - creationDate
+  folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      associatedProfiles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      shared:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      color:
+        type:
+          - string
+          - "null"
+      field:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+  user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      affLinkDomain:
+        type:
+          - string
+          - "null"
+      card:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type: string
+      defaultWorkspace:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstPlanSelected:
+        type:
+          - boolean
+          - "null"
+      firstProfileStarted:
+        type:
+          - boolean
+          - "null"
+      folders:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            associatedProfiles:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            shared:
+              type:
+                - boolean
+                - "null"
+      forceOldPricing:
+        type:
+          - boolean
+          - "null"
+      gologinMetadata:
+        type:
+          - object
+          - "null"
+      googleClientId:
+        type:
+          - string
+          - "null"
+      hasSuccessPayment:
+        type:
+          - boolean
+          - "null"
+      hintPreferences:
+        type:
+          - object
+          - "null"
+        properties:
+          locationChanged:
+            type:
+              - string
+              - "null"
+          locationIsUnmasked:
+            type:
+              - string
+              - "null"
+      hints:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            articleId:
+              type:
+                - string
+                - "null"
+            subtitleTranslationKey:
+              type:
+                - string
+                - "null"
+            titleTranslationKey:
+              type:
+                - string
+                - "null"
+      invitedByLink:
+        type:
+          - string
+          - "null"
+      invitedByUser:
+        type:
+          - string
+          - "null"
+      isCorrectlyRegistered:
+        type:
+          - boolean
+          - "null"
+      isEmailConfirmed:
+        type:
+          - boolean
+          - "null"
+      isLastPaymentTrialEnded:
+        type:
+          - boolean
+          - "null"
+      isProxyServerCheckEnabled:
+        type:
+          - boolean
+          - "null"
+      isQuickSettingsEnabled:
+        type:
+          - boolean
+          - "null"
+      isQuickSettingsStepsVisible:
+        type:
+          - boolean
+          - "null"
+      isTwoFaEnabled:
+        type:
+          - boolean
+          - "null"
+      lastAppVersion:
+        type:
+          - string
+          - "null"
+      lastBrowserVersion:
+        type:
+          - string
+          - "null"
+      migrationData:
+        type:
+          - object
+          - "null"
+      newFeatures:
+        type:
+          - object
+          - "null"
+        properties:
+          automationParameters:
+            type:
+              - boolean
+              - "null"
+          cloudBrowser:
+            type:
+              - boolean
+              - "null"
+          differentProvider:
+            type:
+              - boolean
+              - "null"
+          dragAndDrop:
+            type:
+              - boolean
+              - "null"
+          drawer:
+            type:
+              - boolean
+              - "null"
+          header:
+            type:
+              - boolean
+              - "null"
+          hideTorAndFreeProxy:
+            type:
+              - boolean
+              - "null"
+          hideTorAndFreeProxyV2:
+            type:
+              - boolean
+              - "null"
+          migrationToWorkspace:
+            type:
+              - boolean
+              - "null"
+          newStripeCheckout:
+            type:
+              - boolean
+              - "null"
+          objectPool:
+            type:
+              - boolean
+              - "null"
+          pricingGeoProxyTraffic:
+            type:
+              - boolean
+              - "null"
+          pricingGeoProxyTrafficV2:
+            type:
+              - boolean
+              - "null"
+          proxyEditForm:
+            type:
+              - boolean
+              - "null"
+          proxyEditFormCities:
+            type:
+              - boolean
+              - "null"
+          proxyGroups:
+            type:
+              - boolean
+              - "null"
+          proxyGroupsV2:
+            type:
+              - boolean
+              - "null"
+          proxyPagination:
+            type:
+              - boolean
+              - "null"
+          renameProxyToLocation:
+            type:
+              - boolean
+              - "null"
+          replaceIntercomCall:
+            type:
+              - boolean
+              - "null"
+          showUpgrade:
+            type:
+              - boolean
+              - "null"
+          workspaceInviteInFolders:
+            type:
+              - boolean
+              - "null"
+          workspacePayments:
+            type:
+              - boolean
+              - "null"
+          workspaces:
+            type:
+              - boolean
+              - "null"
+      payment:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          additionalParams:
+            type:
+              - object
+              - "null"
+            properties:
+              amountInCurrency:
+                type:
+                  - string
+                  - "null"
+              receiptUrl:
+                type:
+                  - string
+                  - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          discountId:
+            type:
+              - string
+              - "null"
+          expiresIn:
+            type:
+              - string
+              - "null"
+          isTrial:
+            type:
+              - boolean
+              - "null"
+          paymentMethod:
+            type:
+              - string
+              - "null"
+      paypalSubsCount:
+        type:
+          - number
+          - "null"
+      paypalSubscriptionId:
+        type:
+          - string
+          - "null"
+      plan:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          maxFingerprints:
+            type:
+              - number
+              - "null"
+          maxProfiles:
+            type:
+              - number
+              - "null"
+          maxShares:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          priceForMonth:
+            type:
+              - number
+              - "null"
+          restEnabled:
+            type:
+              - boolean
+              - "null"
+      planExpireDate:
+        type:
+          - string
+          - "null"
+      profiles:
+        type:
+          - number
+          - "null"
+      profilesCountWithShares:
+        type:
+          - number
+          - "null"
+      proxyCheckerIgnoreCodes:
+        type:
+          - array
+          - "null"
+      registrationLead:
+        type:
+          - object
+          - "null"
+        properties:
+          referer:
+            type:
+              - string
+              - "null"
+          registerType:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      runProfilesInSyncMinOrbitaVer:
+        type:
+          - number
+          - "null"
+      sharedFolders:
+        type:
+          - array
+          - "null"
+      subscription:
+        type:
+          - object
+          - "null"
+        properties:
+          payment:
+            type:
+              - object
+              - "null"
+            properties:
+              _id:
+                type:
+                  - string
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              discountId:
+                type:
+                  - string
+                  - "null"
+              expiresIn:
+                type:
+                  - string
+                  - "null"
+              isTrial:
+                type:
+                  - boolean
+                  - "null"
+              paymentMethod:
+                type:
+                  - string
+                  - "null"
+      targetPageShown:
+        type:
+          - boolean
+          - "null"
+      templates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            browser:
+              type:
+                - object
+                - "null"
+              properties:
+                autoLang:
+                  type:
+                    - boolean
+                    - "null"
+                bookmarks:
+                  type:
+                    - object
+                    - "null"
+                dns:
+                  type:
+                    - string
+                    - "null"
+                language:
+                  type:
+                    - string
+                    - "null"
+                launchArguments:
+                  type:
+                    - string
+                    - "null"
+                maxResolution:
+                  type:
+                    - string
+                    - "null"
+                minResolution:
+                  type:
+                    - string
+                    - "null"
+                navigator:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    userAgent:
+                      type:
+                        - string
+                        - "null"
+                os:
+                  type:
+                    - string
+                    - "null"
+                osSpec:
+                  type:
+                    - string
+                    - "null"
+                startUrl:
+                  type:
+                    - string
+                    - "null"
+                storage:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    bookmarks:
+                      type:
+                        - boolean
+                        - "null"
+                    enableExternalExtensions:
+                      type:
+                        - boolean
+                        - "null"
+                    extensions:
+                      type:
+                        - boolean
+                        - "null"
+                    history:
+                      type:
+                        - boolean
+                        - "null"
+                    indexedDb:
+                      type:
+                        - boolean
+                        - "null"
+                    local:
+                      type:
+                        - boolean
+                        - "null"
+                    passwords:
+                      type:
+                        - boolean
+                        - "null"
+                    session:
+                      type:
+                        - boolean
+                        - "null"
+                uaUserVersion:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            profileName:
+              type:
+                - object
+                - "null"
+              properties:
+                dropFiles:
+                  type:
+                    - string
+                    - "null"
+            proxy:
+              type:
+                - object
+                - "null"
+              properties:
+                quickProfileCreate:
+                  type:
+                    - string
+                    - "null"
+            user:
+              type:
+                - string
+                - "null"
+    required:
+      - _id
+      - createdAt
+  user_metadata:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      googleClientId:
+        type:
+          - string
+          - "null"
+      isCorrectlyRegistered:
+        type:
+          - boolean
+          - "null"
+      payment:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          expiresIn:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      plan:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          maxAccountShares:
+            type:
+              - number
+              - "null"
+          maxProfiles:
+            type:
+              - number
+              - "null"
+          maxShares:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      profiles:
+        type:
+          - object
+          - "null"
+        properties:
+          count:
+            type:
+              - number
+              - "null"
+      quiz:
+        type:
+          - object
+          - "null"
+      shares:
+        type:
+          - object
+          - "null"
+      sharingTookMs:
+        type:
+          - number
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+    required:
+      - _id
+      - createdAt
+  user_balance:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      available:
+        type:
+          - number
+          - "null"
+      totalEarned:
+        type:
+          - number
+          - "null"
+      totalWithdraw:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  user_timezones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accuracy:
+        type:
+          - number
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      ip:
+        type:
+          - string
+          - "null"
+      languages:
+        type:
+          - string
+          - "null"
+      ll:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      stateProv:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid

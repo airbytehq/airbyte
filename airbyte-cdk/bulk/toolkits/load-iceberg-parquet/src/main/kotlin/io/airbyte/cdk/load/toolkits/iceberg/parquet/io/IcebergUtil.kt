@@ -215,7 +215,10 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
 
     private fun nullOutOfRangeNumber(numberValue: AirbyteValue): ChangedValue? {
         return if (
-            BigDecimal(Double.MIN_VALUE) <= (numberValue as NumberValue).value &&
+            // Double.MIN_VALUE is the smallest positive number.
+            // Floats/doubles spend one bit on the sign, so we can just negate MAX_VALUE to get the
+            // actual MIN_VALUE.
+            BigDecimal(-Double.MAX_VALUE) <= (numberValue as NumberValue).value &&
                 numberValue.value <= BigDecimal(Double.MAX_VALUE)
         ) {
             null
@@ -248,7 +251,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     ): Operation =
         if (
             record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.value !is NullValue
+                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.abValue !is NullValue
         ) {
             Operation.DELETE
         } else if (importType is Dedupe) {
@@ -297,7 +300,14 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
             )
         } else {
             // If we're at a leaf node, call the transformer.
-            val transformedValue = transformer(currentValue, currentType) ?: return currentValue
+            val coercedValue = AirbyteValueCoercer.coerce(currentValue, currentType)
+            if (coercedValue == null) {
+                changes.add(
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                )
+                return NullValue
+            }
+            val transformedValue = transformer(coercedValue, currentType) ?: return coercedValue
             val (newValue, changeDescription) = transformedValue
             changeDescription?.let { (change, reason) ->
                 changes.add(Meta.Change(path, change, reason))
@@ -306,7 +316,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         }
     }
 
-    value = recurseArray(value, type, name)
+    abValue = recurseArray(abValue, type, name)
 }
 
 data class ChangeDescription(val change: Change, val reason: Reason)

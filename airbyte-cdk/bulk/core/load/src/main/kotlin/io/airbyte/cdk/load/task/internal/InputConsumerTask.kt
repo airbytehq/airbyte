@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -134,7 +134,7 @@ class DefaultInputConsumerTask(
                 manager.markEndOfStream(true)
                 val envelope =
                     BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
+                        SimpleBatch(BatchState.COMPLETE),
                         streamDescriptor = message.stream.descriptor,
                     )
                 destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)
@@ -149,10 +149,12 @@ class DefaultInputConsumerTask(
     ) {
         val stream = reserved.value.stream
         unopenedStreams.remove(stream.descriptor)?.let {
-            log.info { "Saw first record for stream $stream; initializing" }
+            log.info { "Saw first record for stream $stream; awaiting setup complete" }
+            syncManager.awaitSetupComplete()
             // Note, since we're not spilling to disk, there is nothing to do with
             // any records before initialization is complete, so we'll wait here
             // for it to finish.
+            log.info { "Setup complete, starting stream $stream" }
             openStreamQueue.publish(it)
             syncManager.getOrAwaitStreamLoader(stream.descriptor)
             log.info { "Initialization for stream $stream complete" }
@@ -195,7 +197,7 @@ class DefaultInputConsumerTask(
                 manager.markEndOfStream(true)
                 val envelope =
                     BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
+                        SimpleBatch(BatchState.COMPLETE),
                         streamDescriptor = message.stream.descriptor,
                     )
                 destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)
