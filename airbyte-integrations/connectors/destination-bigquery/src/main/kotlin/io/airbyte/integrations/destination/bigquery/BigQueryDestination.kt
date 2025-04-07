@@ -11,7 +11,6 @@ import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
-import com.google.common.base.Charsets
 import io.airbyte.cdk.AirbyteDestinationRunner
 import io.airbyte.cdk.integrations.BaseConnector
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addAllStringsInConfigForDeinterpolation
@@ -62,6 +61,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.function.Consumer
 
@@ -553,7 +553,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                 if (serviceAccountKey.isObject) serialize(serviceAccountKey)
                 else serviceAccountKey.asText()
             return GoogleCredentials.fromStream(
-                ByteArrayInputStream(credentialsString.toByteArray(Charsets.UTF_8)),
+                ByteArrayInputStream(credentialsString.toByteArray(StandardCharsets.UTF_8)),
             )
         }
     }
