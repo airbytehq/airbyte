@@ -23,8 +23,10 @@ from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.search.service import SearchService
 
 from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
@@ -419,24 +421,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             logger.exception(f"Error opening file {file.uri}: {e}")
 
-    def _get_file_transfer_paths(self, file: RemoteFile, local_directory: str) -> List[str]:
-        preserve_directory_structure = self.preserve_directory_structure()
-        file_path = file.uri
-        match = re.search(r"sharepoint\.com(?:/sites/[^/]+)?/Shared%20Documents(.*)", file_path)
-        if match:
-            file_path = match.group(1)
-
-        if preserve_directory_structure:
-            # Remove left slashes from source path format to make relative path for writing locally
-            file_relative_path = file_path.lstrip("/")
-        else:
-            file_relative_path = path.basename(file_path)
-        local_file_path = path.join(local_directory, file_relative_path)
-
-        # Ensure the local directory exists
-        makedirs(path.dirname(local_file_path), exist_ok=True)
-        absolute_file_path = path.abspath(local_file_path)
-        return [file_relative_path, local_file_path, absolute_file_path]
+    @staticmethod
+    def _parse_file_path_from_uri(file_uri: str) -> str:
+        match = re.search(r"sharepoint\.com(?:/sites/[^/]+)?/Shared%20Documents(.*)", file_uri)
+        file_path = match.group(1)
+        return file_path
 
     def _get_headers(self) -> Dict[str, str]:
         access_token = self.get_access_token()
@@ -462,7 +451,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 
-    def get_file(self, file: MicrosoftSharePointRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+    def upload(self, file: MicrosoftSharePointRemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from Microsoft SharePoint to a specified local directory.
 
@@ -480,7 +469,10 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         try:
-            file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+            file_paths = self._get_file_transfer_paths(file, local_directory, parse_file_path_from_uri=self._parse_file_path_from_uri)
+            local_file_path = file_paths[self.LOCAL_FILE_PATH]
+            file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
+            file_name = file_paths[self.FILE_NAME]
 
             headers = self._get_headers()
 
@@ -495,11 +487,24 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 for chunk in response.iter_content(chunk_size=10_485_760):
                     if chunk:
                         local_file.write(chunk)
-
+            logger.info(f"Finished uploading file {file.uri} to {local_file_path}")
             # Get the file size
             file_size = getsize(local_file_path)
 
-            return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+            file_record_data = FileRecordData(
+                folder=file_paths[self.FILE_FOLDER],
+                filename=file_name,
+                bytes=file_size,
+                updated_at=int(file.last_modified.timestamp() * 1000),
+            )
+
+            file_reference = AirbyteRecordMessageFileReference(
+                staging_file_url=local_file_path,
+                source_file_relative_path=file_relative_path,
+                file_size_bytes=file_size,
+            )
+
+            return file_record_data, file_reference
 
         except Exception as e:
             raise AirbyteTracedException(

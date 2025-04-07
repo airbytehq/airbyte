@@ -204,32 +204,32 @@ def test_open_file(mock_smart_open, file_extension, expected_compression):
         (
             "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
             "txt.gz",
-            {"bytes": ANY, "file_relative_path": "file.txt.gz", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
+            {"bytes": ANY, "source_file_relative_path": "file.txt.gz", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
         ),
         (
             "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
             "txt.bz2",
-            {"bytes": ANY, "file_relative_path": "file.txt.bz2", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
+            {"bytes": ANY, "source_file_relative_path": "file.txt.bz2", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
         ),
         (
             "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
             "txt",
-            {"bytes": ANY, "file_relative_path": "file.txt", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"},
+            {"bytes": ANY, "source_file_relative_path": "file.txt", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"},
         ),
         (
             "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
             "txt.gz",
-            {"bytes": ANY, "file_relative_path": "file.txt.gz", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
+            {"bytes": ANY, "source_file_relative_path": "file.txt.gz", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
         ),
         (
             "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
             "txt.bz2",
-            {"bytes": ANY, "file_relative_path": "file.txt.bz2", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
+            {"bytes": ANY, "source_file_relative_path": "file.txt.bz2", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
         ),
         (
-            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
+            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/some/path/to/file",
             "txt",
-            {"bytes": ANY, "file_relative_path": "file.txt", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"},
+            {"bytes": ANY, "source_file_relative_path": "some/path/to/file.txt", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/some/path/to/file.txt"},
         ),
     ],
 )
@@ -253,6 +253,7 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
     """
     file_uri = f"{file_uri}.{file_extension}"
     mock_file = Mock(download_url=f"https://example.com/file.{file_extension}", uri=file_uri)
+    mock_file.last_modified = datetime(2021, 1, 1)
     mock_logger = Mock()
     mock_get_access_token.return_value = "dummy_access_token"
 
@@ -271,12 +272,21 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
     stream_reader = SourceMicrosoftSharePointStreamReader()
     stream_reader._config = Mock()  # Assuming _config is required
 
-    result = stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+    file_record_data, file_reference = stream_reader.upload(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
 
-    assert result == expected_paths
+    expected_file_bytes = expected_paths["bytes"]
+    expected_source_file_relative_path = expected_paths["source_file_relative_path"]
+    expected_staging_file_url = expected_paths["staging_file_url"]
+
+    assert file_reference.source_file_relative_path == expected_source_file_relative_path
+    assert file_reference.staging_file_url == expected_staging_file_url
+    assert file_reference.file_size_bytes == expected_file_bytes
+
+    assert os.path.basename(expected_staging_file_url) == file_record_data.filename
+    assert os.path.dirname(expected_staging_file_url.replace(f"{TEST_LOCAL_DIRECTORY}", "")) == file_record_data.folder
 
     # Check if the file exists at the file_url path
-    assert os.path.exists(result["file_url"])
+    assert os.path.exists(file_reference.staging_file_url)
 
 
 @patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
@@ -296,7 +306,7 @@ def test_get_file_size_error_fetching_metadata_for_missing_header(mock_requests_
     stream_reader = SourceMicrosoftSharePointStreamReader()
     stream_reader._config = Mock()  # Assuming _config is required
     with pytest.raises(ErrorFetchingMetadata, match="Size was expected in metadata response but was missing"):
-        stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+        stream_reader.upload(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
 
 
 @patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
@@ -321,7 +331,7 @@ def test_get_file_size_error_fetching_metadata(mock_requests_head, mock_get_acce
     stream_reader._config = Mock()  # Assuming _config is required
 
     with pytest.raises(ErrorFetchingMetadata, match="An error occurred while retrieving file size: 500 Server Error"):
-        stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+        stream_reader.upload(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
 
 
 def test_microsoft_sharepoint_client_initialization(requests_mock):
