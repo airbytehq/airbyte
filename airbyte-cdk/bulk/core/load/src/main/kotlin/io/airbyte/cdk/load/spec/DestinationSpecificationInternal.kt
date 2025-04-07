@@ -44,6 +44,14 @@ class DestinationSpecificationExtender(private val spec: DestinationSpecificatio
 }
 
 interface DestinationSpecificationExtension {
+    /**
+     * A connector's spec can specify "groups", which the UI will use to put related spec options in
+     * the same place. To do this, you should:
+     * * add a [Group] to the [groups] list (e.g. `Group(id = "foo", title = "Foo")`
+     * * inject `{"group": "foo"}` to the generated JSONSchema for the relevant spec options
+     * (`@JsonSchemaInject(json = """{"group": "foo"}""") val theOption: String`
+     * * note that this should be the id of the group, not the title.
+     */
     data class Group(
         /** A computer-friendly ID for the group */
         val id: String,
