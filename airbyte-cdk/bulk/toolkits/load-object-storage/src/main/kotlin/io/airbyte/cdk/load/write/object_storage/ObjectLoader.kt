@@ -65,6 +65,7 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * [io.airbyte.cdk.load.pipeline.object_storage.ObjectLoaderCompletedUploadPartitioner] to partition
  * it. (See [io.airbyte.cdk.load.pipeline.db.BulkLoadCompletedUploadQueue] and
  * [io.airbyte.cdk.load.pipeline.db.BulkLoadCompletedUploadPartitioner] for an example.
+ *
  * Additionally, CDK devs building new interfaces will should set [stateAfterUpload] to something
  * other than [BatchState.COMPLETE] to avoid prematurely closing the stream. Specifically, if the
  * destination can recover a loaded object after a failed sync, use [BatchState.PERSISTED] to
