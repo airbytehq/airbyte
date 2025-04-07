@@ -139,3 +139,15 @@ airbyte:
             output: The sync was aborted because the query took too long to return results, will retry.
             group: MySQL Query Timeout
             reference-links: https://dev.mysql.com/doc/mysql-errors/5.7/en/server-error-reference.html#error_er_query_timeout
+  destination:
+    core:
+      record-batch-size-override: ${AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE:null}
+      file-transfer:
+        enabled: ${USE_FILE_TRANSFER:false}
+        staging-path: ${AIRBYTE_STAGING_DIRECTORY:/staging/files}
+      resources:
+        disk:
+          bytes: ${CONNECTOR_STORAGE_LIMIT_BYTES:5368709120} # 5GB
+      flush:
+        rate-ms: 900000 # 15 minutes
+        window-ms: 900000 # 15 minutes

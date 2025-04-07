@@ -15,11 +15,6 @@ airbyteBulkConnector {
 dependencies {
     implementation 'com.mysql:mysql-connector-j:9.1.0'
     implementation 'io.debezium:debezium-connector-mysql'
-//    implementation 'io.airbyte.bulk-cdk:bulk-cdk-core-load:0.344'
-//    implementation 'io.airbyte.bulk-cdk:bulk-cdk-toolkit-load-s3:0.344'
-//    implementation 'io.airbyte.bulk-cdk:bulk-cdk-toolkit-load-avro:0.344'
-//    implementation 'io.airbyte.bulk-cdk:bulk-cdk-toolkit-load-aws:0.344'
-//    implementation 'io.airbyte.bulk-cdk:bulk-cdk-toolkit-load-object-storage:0.344'
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
     implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-s3')
