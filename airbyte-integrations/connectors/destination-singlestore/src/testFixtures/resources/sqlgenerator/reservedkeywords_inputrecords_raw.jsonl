@@ -1,0 +1,2 @@
+// A column name that is a reserved keyword should be added for each typing & deduping destination.
+{"_airbyte_raw_id": "b2e0efc4-38a8-47ba-970c-8103f09f08d5", "_airbyte_extracted_at": "2023-01-01T00:00:00", "_airbyte_data": {"current_date":  "foo", "join":  "bar"}}

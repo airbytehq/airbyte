@@ -75,6 +75,17 @@ class ReservationManager(val totalCapacityBytes: Long) {
         }
     }
 
+    suspend fun <T> reserveOrThrow(bytes: Long, reservedFor: T): Reserved<T> {
+        reserveLock.withLock {
+            check(usedBytes.get() + bytes <= totalCapacityBytes) {
+                "Not enough memory to reserve $bytes bytes"
+            }
+            usedBytes.addAndGet(bytes)
+        }
+
+        return Reserved(this, bytes, reservedFor)
+    }
+
     suspend fun release(bytes: Long) {
         updateChannel.value = usedBytes.addAndGet(-bytes)
     }

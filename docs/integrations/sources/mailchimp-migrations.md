@@ -51,7 +51,7 @@ Depending on the destination type, you may not be prompted to reset your data
 
 - The `._links` field, which contained non-user-relevant Mailchimp metadata, has been removed from all streams.
 - All instances of datetime fields have had their type changed from `string` to airbyte-type `timestamp-with-timezone`. This change should ensure greater precision and consistency in how datetime information is represented and processed by destinations.
-- The Mailchimp API returns many fields without data as empty strings. To accomodate the above changes, empty strings are now converted to null values:
+- The Mailchimp API returns many fields without data as empty strings. To accommodate the above changes, empty strings are now converted to null values:
 
 ```md
 {"id": "record_id", "last_opened": ""} -> {"id": "record_id", "last_opened": null}

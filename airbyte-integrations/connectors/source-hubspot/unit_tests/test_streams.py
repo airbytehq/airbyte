@@ -690,7 +690,7 @@ def test_web_analytics_latest_state(common_params, mocker):
     pendulum_now_mock = mocker.patch("pendulum.now")
     pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=10)
 
-    parent_slicer_mock = mocker.patch("source_hubspot.streams.Stream.read_records")
+    parent_slicer_mock = mocker.patch("source_hubspot.streams.BaseStream.read_records")
     parent_slicer_mock.return_value = (_ for _ in [{"objectId": "1", "occurredAt": "2021-01-02T00:00:00Z"}])
 
     stream = ContactsWebAnalytics(**common_params)
@@ -739,3 +739,120 @@ def test_contacts_membership_transform(common_params):
         }
     ]
     assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))
+
+
+@pytest.mark.parametrize(
+    "stream, cursor_value, data_to_cast, expected_casted_data",
+    [
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": 123456}, {"rootMicId": "123456"}),
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": None}, {"rootMicId": None}),
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": "123456"}, {"rootMicId": "123456"}),
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": 1234.56}, {"rootMicId": "1234.56"}),
+    ],
+)
+def test_cast_record_fields_with_schema_if_needed(stream, cursor_value, requests_mock, common_params, data_to_cast, expected_casted_data):
+    """
+    Test that the stream cast record fields with stream json schema if needed
+    """
+    stream = stream(**common_params)
+    responses = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-02-25T16:43:11Z",
+                    }
+                    | data_to_cast
+                    | cursor_value
+                ],
+            }
+        }
+    ]
+
+    is_form_submission = isinstance(stream, FormSubmissions)
+    stream._sync_mode = SyncMode.full_refresh
+    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    stream._sync_mode = None
+
+    requests_mock.register_uri("GET", stream_url, responses)
+    records = read_full_refresh(stream)
+    record = records[0]
+    for casted_key, casted_value in expected_casted_data.items():
+        assert record[casted_key] == casted_value
+
+
+@pytest.mark.parametrize(
+    "stream, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
+    [
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "string")],
+            {"hs_closed_amount": 123456},
+            {"hs_closed_amount": "123456"},
+        ),
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "integer")],
+            {"hs_closed_amount": "123456"},
+            {"hs_closed_amount": 123456},
+        ),
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "number")],
+            {"hs_closed_amount": "123456.10"},
+            {"hs_closed_amount": 123456.10},
+        ),
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "boolean")],
+            {"hs_closed_amount": "1"},
+            {"hs_closed_amount": True},
+        ),
+    ],
+)
+def test_cast_record_fields_if_needed(
+    stream, endpoint, cursor_value, fake_properties_list_response, requests_mock, common_params, data_to_cast, expected_casted_data
+):
+    """
+    Test that the stream cast record fields in properties key with properties endpoint response if needed
+    """
+    stream = stream(**common_params)
+    responses = [
+        {
+            "json": {
+                stream.data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "properties": data_to_cast} | cursor_value],
+            }
+        }
+    ]
+
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": property_type, "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name, property_type in fake_properties_list_response
+            ],
+            "status_code": 200,
+        }
+    ]
+
+    is_form_submission = isinstance(stream, FormSubmissions)
+    stream._sync_mode = SyncMode.full_refresh
+    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    stream._sync_mode = None
+
+    requests_mock.register_uri("GET", stream_url, responses)
+    requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
+    records = read_full_refresh(stream)
+    assert records
+    record = records[0]
+    for casted_key, casted_value in expected_casted_data.items():
+        assert record["properties"][casted_key] == casted_value
