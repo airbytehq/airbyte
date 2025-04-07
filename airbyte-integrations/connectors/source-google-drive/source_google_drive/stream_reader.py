@@ -289,6 +289,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     progress = status.resumable_progress / status.total_size * 100 if status.total_size else 0
                     logger.info(f"Processing file {file.uri}, progress: {progress:.2f}%")
 
+            logger.info(f"Finished uploading file {file.uri} to {local_file_path}")
             # native google objects seems to be reporting lower size through the api than the final download size
             file_size = getsize(local_file_path)
 
