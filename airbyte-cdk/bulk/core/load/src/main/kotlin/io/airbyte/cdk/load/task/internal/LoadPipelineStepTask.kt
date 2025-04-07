@@ -33,8 +33,12 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.shareIn
 
 /**
  * Accumulator state with the checkpoint counts (Checkpoint Id -> Records Seen) seen since the state

@@ -107,7 +107,8 @@ abstract class DestinationConfiguration : Configuration {
     enum class InputSerializationFormat {
         JSONL,
         SMILE,
-        PROTOBUF
+        PROTOBUF,
+        DEVNULL,
     }
 
     open val inputSerializationFormat: InputSerializationFormat =
@@ -116,6 +117,7 @@ abstract class DestinationConfiguration : Configuration {
     open val inputBufferByteSizePerSocket: Long = 8 * 1024L
     open val socketPrefix: String = "/var/run/sockets/ab_socket"
     open val socketWaitTimeoutSeconds: Int = 5 * 60
+    open val devNullAfterDeserialization: Boolean = false
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

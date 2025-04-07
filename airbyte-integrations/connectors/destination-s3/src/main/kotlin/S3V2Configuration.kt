@@ -52,7 +52,10 @@ data class S3V2Configuration<T : OutputStream>(
     override val inputSerializationFormat: InputSerializationFormat,
     override val inputBufferByteSizePerSocket: Long,
     override val socketPrefix: String,
-    override val socketWaitTimeoutSeconds: Int
+    override val socketWaitTimeoutSeconds: Int,
+    override val devNullAfterDeserialization: Boolean,
+    val skipUpload: Boolean,
+    val useGarbagePart: Boolean
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -74,15 +77,18 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            numSockets = pojo.numSockets ?: 1,
+            numSockets = pojo.numSockets ?: 4,
             numUploadWorkers = pojo.numPartLoaders ?: 10,
-            numPartWorkers = pojo.numSockets ?: 1, // Should be ignored in favor of numsockets
+            numPartWorkers = pojo.numSockets ?: 4, // Should be ignored in favor of numsockets
             inputSerializationFormat = pojo.inputSerializationFormat ?: DestinationConfiguration.InputSerializationFormat.JSONL,
             partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
             maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 0.4,
             inputBufferByteSizePerSocket = pojo.inputBufferByteSizePerSocket ?: (8 * 1024L),
             socketPrefix = pojo.socketPrefix ?: "/Users/jschmidt/.sockets/ab_socket_", // "/var/run/sockets/ab_socket_",
             socketWaitTimeoutSeconds = pojo.socketWaitTimeoutSeconds ?: 60,
+            devNullAfterDeserialization = pojo.devNullAfterDeserialization ?: false,
+            skipUpload = pojo.skipUpload ?: false,
+            useGarbagePart = pojo.useGarbagePart ?: false,
         )
     }
 }

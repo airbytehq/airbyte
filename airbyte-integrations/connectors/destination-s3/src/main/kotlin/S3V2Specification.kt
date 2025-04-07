@@ -101,6 +101,15 @@ class S3V2Specification :
 
     @get:JsonProperty("socket_wait_timeout_seconds")
     val socketWaitTimeoutSeconds: Int? = null
+
+    @get:JsonProperty("dev_null_after_deserialization")
+    val devNullAfterDeserialization: Boolean? = null
+
+    @get:JsonProperty("skip_upload")
+    val skipUpload: Boolean? = null
+
+    @get:JsonProperty("use_garbage_part")
+    val useGarbagePart: Boolean? = null
 }
 
 @Singleton
