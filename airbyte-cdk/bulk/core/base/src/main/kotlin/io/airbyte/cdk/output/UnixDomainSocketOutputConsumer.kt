@@ -100,8 +100,14 @@ class UnixDomainSocketOutputConsumer(
         // Serialize the record data ObjectNode to JSON, writing it to the buffer.
 //        Jsons.writeTree(smileGenerator, record.data)
 
-        Jsons.writeTree(smileGenerator, templateRecord)
-        smileGenerator.flush()
+//        Jsons.writeTree(smileGenerator, templateRecord)
+        try {
+            smileGenerator.writeTree(templateRecord)
+            smileGenerator.flush()
+        } catch (e: Exception) {
+            logger.error(e) { "Error serializing $templateRecord" }
+            throw e
+        }
         // If the record has a AirbyteRecordMessageMeta instance set,
         // write ',"meta":' followed by the serialized meta.
         /*val meta: AirbyteRecordMessageMeta? = record.meta
