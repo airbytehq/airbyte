@@ -65,9 +65,11 @@ class DestinationPGVector(Destination):
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         _ = logger  # Unused
         try:
+            """
             parsed_config = ConfigModel.parse_obj(config)
             self._init_sql_processor(config=parsed_config)
             self.sql_processor.sql_config.connect()
+            """
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(

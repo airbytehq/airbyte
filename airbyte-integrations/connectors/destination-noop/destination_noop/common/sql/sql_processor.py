@@ -76,15 +76,7 @@ class SqlConfig(BaseModel, abc.ABC):
 
     def connect(self) -> None:
         """Attempt to connect, and raise `AirbyteConnectionError` if the connection fails."""
-        engine = self.get_sql_engine()
-        try:
-            connection = engine.connect()
-            connection.close()
-        except Exception as ex:
-            raise exc.AirbyteConnectionError(
-                message="Could not connect to the database.",
-                guidance="Check the connection settings and try again.",
-            ) from ex
+        return None
 
     def get_sql_engine(self) -> Engine:
         """Return a new SQL engine to use."""
@@ -154,7 +146,7 @@ class SqlProcessorBase(RecordProcessorBase):
         )
         self.type_converter = self.type_converter_class()
         self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
-        self._ensure_schema_exists()
+        # self._ensure_schema_exists() # Disabled for testing
 
     # Public interface:
 
@@ -175,7 +167,8 @@ class SqlProcessorBase(RecordProcessorBase):
     @final
     def get_sql_engine(self) -> Engine:
         """Return a new SQL engine to use."""
-        return self.sql_config.get_sql_engine()
+        # return self.sql_config.get_sql_engine()
+        return None
 
     @contextmanager
     def get_sql_connection(self) -> Generator[sqlalchemy.engine.Connection, None, None]:
@@ -209,9 +202,7 @@ class SqlProcessorBase(RecordProcessorBase):
         stream_name: str,
     ) -> sqlalchemy.Table:
         """Return the main table object for the stream."""
-        return self._get_table_by_name(
-            self.get_sql_table_name(stream_name),
-        )
+        return None
 
     # Record processing:
 
@@ -357,6 +348,7 @@ class SqlProcessorBase(RecordProcessorBase):
     def _get_tables_list(
         self,
     ) -> list[str]:
+        return []
         """Return a list of all tables in the database."""
         with self.get_sql_connection() as conn:
             inspector: Inspector = sqlalchemy.inspect(conn)
@@ -366,16 +358,8 @@ class SqlProcessorBase(RecordProcessorBase):
         self,
         database_name: str | None = None,
     ) -> list[str]:
-        """Return a list of all tables in the database."""
-        inspector: Inspector = sqlalchemy.inspect(self.get_sql_engine())
-        database_name = database_name or self.database_name
-        found_schemas = inspector.get_schema_names()
-        return [
-            found_schema.split(".")[-1].strip('"')
-            for found_schema in found_schemas
-            if "." not in found_schema
-            or (found_schema.split(".")[0].lower().strip('"') == database_name.lower())
-        ]
+        return []
+
 
     def _ensure_final_table_exists(
         self,
@@ -383,22 +367,8 @@ class SqlProcessorBase(RecordProcessorBase):
         *,
         create_if_missing: bool = True,
     ) -> str:
-        """Create the final table if it doesn't already exist.
 
-        Return the table name.
-        """
-        table_name = self.get_sql_table_name(stream_name)
-        did_exist = self._table_exists(table_name)
-        if not did_exist and create_if_missing:
-            column_definition_str = ",\n  ".join(
-                f"{self._quote_identifier(column_name)} {sql_type}"
-                for column_name, sql_type in self._get_sql_column_definitions(
-                    stream_name,
-                ).items()
-            )
-            self._create_table(table_name, column_definition_str)
-
-        return table_name
+        return stream_name
 
     def _ensure_compatible_table_schema(
         self,
@@ -476,7 +446,7 @@ class SqlProcessorBase(RecordProcessorBase):
 
         with self.finalizing_batches(stream_name) as batches_to_finalize:
             # Make sure the target schema and target table exist.
-            self._ensure_schema_exists()
+            # self._ensure_schema_exists() # Disabled for testing
             final_table_name = self._ensure_final_table_exists(
                 stream_name,
                 create_if_missing=True,
@@ -493,6 +463,8 @@ class SqlProcessorBase(RecordProcessorBase):
             # Use the max batch ID as the batch ID for table names.
             max_batch_id = max(batch.batch_id for batch in batches_to_finalize)
 
+            # disabled for testing
+            """
             temp_table_name = self._write_files_to_new_table(
                 files=files,
                 stream_name=stream_name,
@@ -507,6 +479,7 @@ class SqlProcessorBase(RecordProcessorBase):
                 )
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
+            """
 
         progress.log_stream_finalized(stream_name)
 
@@ -547,25 +520,8 @@ class SqlProcessorBase(RecordProcessorBase):
         self._finalized_state_messages[stream_name] += state_messages_to_finalize
 
     def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
-        """Execute the given SQL statement."""
-        if isinstance(sql, str):
-            sql = text(sql)
-        if isinstance(sql, TextClause):
-            sql = sql.execution_options(
-                autocommit=True,
-            )
+        return None # fuck this for now
 
-        with self.get_sql_connection() as conn:
-            try:
-                result = conn.execute(sql)
-            except (
-                sqlalchemy.exc.ProgrammingError,
-                sqlalchemy.exc.SQLAlchemyError,
-            ) as ex:
-                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
-                raise SQLRuntimeError(msg) from None  # from ex
-
-        return result
 
     def _drop_temp_table(
         self,
@@ -643,35 +599,7 @@ class SqlProcessorBase(RecordProcessorBase):
         stream_name: str,
         table_name: str,
     ) -> None:
-        """Add missing columns to the table.
-
-        This is a no-op if all columns are already present.
-        """
-        columns = self._get_sql_column_definitions(stream_name)
-        # First check without forcing a refresh of the cache (faster). If nothing is missing,
-        # then we're done.
-        table = self._get_table_by_name(
-            table_name,
-            force_refresh=False,
-        )
-        missing_columns: bool = any(column_name not in table.columns for column_name in columns)
-
-        if missing_columns:
-            # If we found missing columns, refresh the cache and then take action on anything
-            # that's still confirmed missing.
-            columns_added = False
-            table = self._get_table_by_name(
-                table_name,
-                force_refresh=True,
-            )
-            for column_name, column_type in columns.items():
-                if column_name not in table.columns:
-                    self._add_column_to_table(table, column_name, column_type)
-                    columns_added = True
-
-            if columns_added:
-                # We've added columns, so invalidate the cache.
-                self._invalidate_table_cache(table_name)
+        return
 
     @final
     def _write_temp_table_to_final_table(
@@ -681,6 +609,7 @@ class SqlProcessorBase(RecordProcessorBase):
         final_table_name: str,
         write_strategy: WriteStrategy,
     ) -> None:
+        return # for testing
         """Write the temp table into the final table using the provided write strategy."""
         has_pks: bool = bool(self._get_primary_keys(stream_name))
         has_incremental_key: bool = bool(self._get_incremental_key(stream_name))
@@ -866,23 +795,7 @@ class SqlProcessorBase(RecordProcessorBase):
         )
 
     def _get_column_by_name(self, table: str | Table, column_name: str) -> Column:
-        """Return the column object for the given column name.
-
-        This method is case-insensitive.
-        """
-        if isinstance(table, str):
-            table = self._get_table_by_name(table)
-        try:
-            # Try to get the column in a case-insensitive manner
-            return next(col for col in table.c if col.name.lower() == column_name.lower())
-        except StopIteration:
-            raise exc.PyAirbyteInternalError(
-                message="Could not find matching column.",
-                context={
-                    "table": table,
-                    "column_name": column_name,
-                },
-            ) from None
+        return None
 
     def _emulated_merge_temp_table_to_final_table(
         self,
@@ -890,61 +803,8 @@ class SqlProcessorBase(RecordProcessorBase):
         temp_table_name: str,
         final_table_name: str,
     ) -> None:
-        """Emulate the merge operation using a series of SQL commands.
+        return
 
-        This is a fallback implementation for databases that do not support MERGE.
-        """
-        final_table = self._get_table_by_name(final_table_name)
-        temp_table = self._get_table_by_name(temp_table_name)
-        pk_columns = self._get_primary_keys(stream_name)
-
-        columns_to_update: set[str] = self._get_sql_column_definitions(
-            stream_name=stream_name
-        ).keys() - set(pk_columns)
-
-        # Create a dictionary mapping columns in users_final to users_stage for updating
-        update_values = {
-            self._get_column_by_name(final_table, column): (
-                self._get_column_by_name(temp_table, column)
-            )
-            for column in columns_to_update
-        }
-
-        # Craft the WHERE clause for composite primary keys
-        join_conditions = [
-            self._get_column_by_name(final_table, pk_column)
-            == self._get_column_by_name(temp_table, pk_column)
-            for pk_column in pk_columns
-        ]
-        join_clause = and_(*join_conditions)
-
-        # Craft the UPDATE statement
-        update_stmt = update(final_table).values(update_values).where(join_clause)
-
-        # Define a join between temp_table and final_table
-        joined_table = temp_table.outerjoin(final_table, join_clause)
-
-        # Define a condition that checks for records in temp_table that do not have a corresponding
-        # record in final_table
-        where_not_exists_clause = self._get_column_by_name(final_table, pk_columns[0]) == null()
-
-        # Select records from temp_table that are not in final_table
-        select_new_records_stmt = (
-            select([temp_table]).select_from(joined_table).where(where_not_exists_clause)
-        )
-
-        # Craft the INSERT statement using the select statement
-        insert_new_records_stmt = insert(final_table).from_select(
-            names=[column.name for column in temp_table.columns], select=select_new_records_stmt
-        )
-
-        if DEBUG_MODE:
-            print(str(update_stmt))
-            print(str(insert_new_records_stmt))
-
-        with self.get_sql_connection() as conn:
-            conn.execute(update_stmt)
-            conn.execute(insert_new_records_stmt)
 
     def _table_exists(
         self,
