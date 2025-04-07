@@ -26,8 +26,8 @@ from airbyte_cdk import FailureType
 from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
@@ -224,7 +224,9 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return progress_handler
 
     @override
-    def upload(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+    def upload(
+        self, file: RemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from an S3 bucket to a specified local directory.
 
