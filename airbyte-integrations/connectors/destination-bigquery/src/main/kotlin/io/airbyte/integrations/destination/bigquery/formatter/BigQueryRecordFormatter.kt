@@ -16,7 +16,6 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordM
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.serializeToString
@@ -51,11 +50,7 @@ class BigQueryRecordFormatter {
         enrichedRecord.airbyteMetaFields.forEach { (key, value) ->
             when (key) {
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT -> {
-                    val extractedAtMillis =
-                        (value.abValue as TimestampWithTimezoneValue)
-                            .value
-                            .toInstant()
-                            .toEpochMilli()
+                    val extractedAtMillis = (value.abValue as IntegerValue).value.longValueExact()
                     outputRecord[key] = getExtractedAt(extractedAtMillis)
                 }
                 Meta.COLUMN_NAME_AB_META -> {

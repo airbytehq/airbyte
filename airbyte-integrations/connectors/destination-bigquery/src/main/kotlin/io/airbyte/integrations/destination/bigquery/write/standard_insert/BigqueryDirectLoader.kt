@@ -10,7 +10,6 @@ import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.TableDataWriteChannel
-import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
@@ -23,6 +22,7 @@ import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoad
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_FORBIDDEN
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_NOT_FOUND
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import jakarta.inject.Singleton
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -60,11 +60,9 @@ class BigqueryDirectLoaderFactory(
         part: Int
     ): BigqueryDirectLoader {
         // TODO there was a RateLimiter here for some reason...?
-        // TODO we need to handle special chars in stream name/namespace
         val writeChannelConfiguration =
-            WriteChannelConfiguration.newBuilder(
-                    TableId.of(streamDescriptor.namespace, streamDescriptor.name)
-                )
+        // TODO need to write to raw vs final table appropriately
+        WriteChannelConfiguration.newBuilder(TempUtils.rawTableId(config, streamDescriptor))
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setFormatOptions(FormatOptions.json())
