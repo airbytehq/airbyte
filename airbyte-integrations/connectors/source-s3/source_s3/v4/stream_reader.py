@@ -7,7 +7,8 @@ import time
 from datetime import datetime
 from io import IOBase
 from os import getenv
-from typing import Dict, Iterable, List, Optional, Set, cast
+from os.path import basename, dirname
+from typing import Dict, Iterable, List, Optional, Set, Tuple, cast
 
 import boto3.session
 import pendulum
@@ -22,9 +23,11 @@ from botocore.session import get_session
 from typing_extensions import override
 
 from airbyte_cdk import FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
@@ -221,7 +224,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return progress_handler
 
     @override
-    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+    def upload(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from an S3 bucket to a specified local directory.
 
@@ -231,11 +234,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             logger (logging.Logger): Logger for logging information and errors.
 
         Returns:
-            dict: A dictionary containing the following:
-                - "file_url" (str): The absolute path of the downloaded file.
-                - "bytes" (int): The file size in bytes.
-                - "file_relative_path" (str): The relative path of the file for local storage. Is relative to local_directory as
-                this a mounted volume in the pod container.
+            Tuple[FileRecordData, AirbyteRecordMessageFileReference]: Contains file record data and file reference for Airbyte protocol.
 
         Raises:
             FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
@@ -246,7 +245,10 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             message = "File size exceeds the 1 GB limit."
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
-        file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+        file_paths = self._get_file_transfer_paths(file, local_directory)
+        local_file_path = file_paths[self.LOCAL_FILE_PATH]
+        file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
+        file_name = file_paths[self.FILE_NAME]
 
         logger.info(
             f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
@@ -258,7 +260,20 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         write_duration = time.time() - start_download_time
         logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
 
-        return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+        file_record_data = FileRecordData(
+            folder=file_paths[self.FILE_FOLDER],
+            filename=file_name,
+            bytes=file_size,
+            updated_at=int(file.last_modified.timestamp() * 1000),
+        )
+
+        file_reference = AirbyteRecordMessageFileReference(
+            staging_file_url=local_file_path,
+            source_file_relative_path=file_relative_path,
+            file_size_bytes=file_size,
+        )
+
+        return file_record_data, file_reference
 
     @override
     def file_size(self, file: RemoteFile) -> int:
