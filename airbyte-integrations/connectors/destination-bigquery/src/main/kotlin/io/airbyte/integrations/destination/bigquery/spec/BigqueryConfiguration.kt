@@ -37,8 +37,6 @@ class BigqueryConfigurationFactory :
     override fun makeWithoutExceptionHandling(pojo: BigquerySpecification): BigqueryConfiguration {
         val loadingMethodConfig =
             when (pojo.loadingMethod) {
-                is BatchedStandardInsertSpecification,
-                null -> BatchedStandardInsertConfiguration
                 is GcsStagingSpecification -> {
                     val gcsStagingSpec = pojo.loadingMethod as GcsStagingSpecification
                     GcsStagingConfiguration(
@@ -46,6 +44,8 @@ class BigqueryConfigurationFactory :
                         gcsStagingSpec.filePostProcessing ?: GcsFilePostProcessing.DELETE,
                     )
                 }
+                is BatchedStandardInsertSpecification,
+                null -> BatchedStandardInsertConfiguration
             }
         return BigqueryConfiguration(
             projectId = pojo.projectId,
