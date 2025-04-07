@@ -286,7 +286,7 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
     assert file_record_data.bytes == 100
     assert file_record_data.folder == file_folder
     assert file_record_data.filename == file_name
-    
+
     assert file_reference.file_size_bytes == 100
     assert file_reference.source_file_relative_path == ANY
     assert file_reference.staging_file_url.endswith(test_file_path)
