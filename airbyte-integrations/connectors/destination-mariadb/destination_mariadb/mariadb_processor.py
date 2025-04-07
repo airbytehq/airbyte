@@ -123,7 +123,7 @@ class HackedStdOutStateWriter(StdOutStateWriter):
         # Don't believe your IDE, attempting to call it actually causes an exception.
         #print(state_message.model_dump_json())
         logger.info("Attempting to dump a message as JSON")
-        print(self.hacked_model_dump_json(state_message))
+        # print(self.hacked_model_dump_json(state_message))
         logger.info("Seems like we didn't die at least")
 
 
