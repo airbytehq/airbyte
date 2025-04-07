@@ -1,0 +1,8 @@
+extends: existence
+message: "'%s' should be capitalized."
+link: "https://developers.google.com/style/capitalization"
+ignorecase: false
+nonword: true
+level: error
+scope: table.cell
+tokens: '(?<=(^|[.!?-]\s))([a-z])'
