@@ -13,7 +13,6 @@ import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
@@ -29,15 +28,14 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 class BigqueryDirectLoader(
-    private val stream: DestinationStream,
     private val writer: TableDataWriteChannel,
 ) : DirectLoader {
+    private val recordFormatter = BigQueryRecordFormatter()
+
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
-        // TODO wtf is a bigquery record formatter
+        val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
-            "${bigQueryRecordFormatter.formatRecord(record, stream.generationId)} ${System.lineSeparator()}".toByteArray(
-                StandardCharsets.UTF_8,
-            )
+            "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
         writer.write(ByteBuffer.wrap(byteArray))
         return DirectLoader.Incomplete
     }
@@ -54,7 +52,6 @@ class BigqueryDirectLoader(
 
 @Singleton
 class BigqueryDirectLoaderFactory(
-    private val catalog: DestinationCatalog,
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
 ) : DirectLoaderFactory<BigqueryDirectLoader> {
@@ -91,6 +88,6 @@ class BigqueryDirectLoaderFactory(
                 }
             }
 
-        return BigqueryDirectLoader(catalog.getStream(streamDescriptor), writer)
+        return BigqueryDirectLoader(writer)
     }
 }

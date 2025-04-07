@@ -13,10 +13,15 @@ import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
-import io.airbyte.commons.json.Jsons
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.commons.json.Jsons.emptyObject
 import io.airbyte.commons.json.Jsons.serialize
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -34,20 +39,52 @@ class BigQueryRecordFormatter {
         )
         record.set<JsonNode>(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, NullNode.instance)
         record.put(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.serialized)
-        record.put(
-            JavaBaseConstants.COLUMN_NAME_AB_META,
-            Jsons.serialize<AirbyteRecordMessageMeta>(recordMessage.record!!.meta!!)
-        )
+        record.put(JavaBaseConstants.COLUMN_NAME_AB_META, serialize(recordMessage.record!!.meta!!))
         record.put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, generationId)
         return serialize(record)
     }
 
+    fun formatRecord(record: DestinationRecordRaw): String {
+        val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
+
+        val outputRecord = mutableMapOf<String, Any?>()
+        enrichedRecord.airbyteMetaFields.forEach { (key, value) ->
+            when (key) {
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT -> {
+                    val extractedAtMillis =
+                        (value.abValue as TimestampWithTimezoneValue)
+                            .value
+                            .toInstant()
+                            .toEpochMilli()
+                    outputRecord[key] = getExtractedAt(extractedAtMillis)
+                }
+                Meta.COLUMN_NAME_AB_META -> {
+                    val serializedAirbyteMeta = (value.abValue as ObjectValue).serializeToString()
+                    outputRecord[key] = serializedAirbyteMeta
+                }
+                Meta.COLUMN_NAME_AB_RAW_ID ->
+                    outputRecord[key] = (value.abValue as StringValue).value
+                Meta.COLUMN_NAME_AB_GENERATION_ID ->
+                    outputRecord[key] = (value.abValue as IntegerValue).value
+            }
+        }
+        // TODO let's try not doing this for now
+        // record.set<JsonNode>(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, NullNode.instance)
+
+        outputRecord[JavaBaseConstants.COLUMN_NAME_DATA] = record.asRawJson().serializeToString()
+
+        return outputRecord.serializeToString()
+    }
+
     private fun getEmittedAtField(recordMessage: PartialAirbyteRecordMessage?): String? {
+        return getExtractedAt(recordMessage!!.emittedAt)
+    }
+
+    private fun getExtractedAt(extractedAtMillis: Long): String? {
         // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds
-        // then
-        // use BQ helpers to string-format correctly.
+        // then use BQ helpers to string-format correctly.
         val emittedAtMicroseconds =
-            TimeUnit.MICROSECONDS.convert(recordMessage!!.emittedAt, TimeUnit.MILLISECONDS)
+            TimeUnit.MICROSECONDS.convert(extractedAtMillis, TimeUnit.MILLISECONDS)
         return QueryParameterValue.timestamp(emittedAtMicroseconds).value
     }
 
