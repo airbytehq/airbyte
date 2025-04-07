@@ -46,6 +46,9 @@
     },
 		"recordingSessionId": {
       "type": ["null", "string"]
+    },
+    "appName": {
+      "type": ["null", "string"]
     }
   }
 }

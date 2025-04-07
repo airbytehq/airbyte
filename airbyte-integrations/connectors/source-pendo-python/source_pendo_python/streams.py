@@ -141,17 +141,24 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream, CheckpointMixin):
         start_timestamp = stream_slice.get("start_timestamp") or self.start_date_in_unix()
 
         request_body = {
-            "response": { "mimeType": "application/json" },
+            "response": {"mimeType": "application/json"},
             "request": {
                 "pipeline": [
                     {
                         "source": {
-                            self.source_name: { "appId": 'expandAppIds("*")' },
+                            self.source_name: {"appId": 'expandAppIds("*")'},
                             "timeSeries": {
                                 "first": start_timestamp,
                                 "count": self.day_page_size,
                                 "period": "dayRange"
                             },
+                        }
+                    },
+                    {
+                        "merge": {
+                            "fields": ["appId"],
+                            "mappings": {"appId": "id", "appName": "name"},
+                            "pipeline": [{"source": {"apps": None}}],
                         }
                     },
                 ],
