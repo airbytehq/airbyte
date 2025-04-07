@@ -2,18 +2,18 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.45.0.dev4103"
+version = "6.45.0.dev4106"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.45.0.dev4103-py3-none-any.whl", hash = "sha256:7fb93f8f75ec2c4093ed5c0163ff545d0100b2c4cf23b9fd41a3d78ddc5070c9"},
-    {file = "airbyte_cdk-6.45.0.dev4103.tar.gz", hash = "sha256:f8cab1ac5438065132ebc9b098a0a119b24ae9280a92ab81716410b7e27c4ca4"},
+    {file = "airbyte_cdk-6.45.0.dev4106-py3-none-any.whl", hash = "sha256:03bb031f1da5b0faf0d9b35d668d23acbb314a2d1aeb66ae393080253cf1549f"},
+    {file = "airbyte_cdk-6.45.0.dev4106.tar.gz", hash = "sha256:c44a1a7addca274c161a7cc94b0e13637c67b5070625dfa92a3cee73c7a2a9d2"},
 ]
 
 [package.dependencies]
-airbyte-protocol-models-dataclasses = "0.14.4.dev1743719077"
+airbyte-protocol-models-dataclasses = ">=0.15,<0.16"
 anyascii = ">=0.3.2,<0.4.0"
 avro = {version = ">=1.11.2,<1.13.0", optional = true, markers = "extra == \"file-based\""}
 backoff = "*"
@@ -66,20 +66,15 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
-version = "0.14.4.dev1743719077"
+version = "0.15.0"
 description = "Declares the Airbyte Protocol using Python Dataclasses. Dataclasses in Python have less performance overhead compared to Pydantic models, making them a more efficient choice for scenarios where speed and memory usage are critical"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "airbyte_protocol_models_dataclasses-0.14.4.dev1743719077-py3-none-any.whl", hash = "sha256:415d79f7971c9f9ae0b5f7c0ffe1852cae438848b0714e468115295f6a90575f"},
-    {file = "airbyte_protocol_models_dataclasses-0.14.4.dev1743719077.tar.gz", hash = "sha256:ac9b8109b6c0cbca78f1e97dd90d6d8ca9e63be05386578b514ec61026359054"},
+    {file = "airbyte_protocol_models_dataclasses-0.15.0-py3-none-any.whl", hash = "sha256:0fe8d7c2863c348b350efcf5f1af5872dc9071060408285e4708d97a9be5e2fb"},
+    {file = "airbyte_protocol_models_dataclasses-0.15.0.tar.gz", hash = "sha256:a5bad4ee7ae0a04f1436967b7afd3306d28e1cd2e5acedf0cce588f0c80ed001"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://test.pypi.org/simple"
-reference = "testpypi"
 
 [[package]]
 name = "annotated-types"
@@ -3752,4 +3747,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "b92ed6f698ea0a834f95290be13c3b45a8794baeff382ba4b41ba9d411b2f254"
+content-hash = "4f2bd6f305a14d144a33a73d757e6406026bf2f108e08e3698a54914264c4da8"
