@@ -1,0 +1,18 @@
+{
+  "spreadsheet_id": "your_test_spreadsheet_id",
+  "credentials": {
+    "auth_type": "service",
+    "service_account_info": {
+      "type": "service_account",
+      "project_id": "your_project_id",
+      "private_key_id": "key_id",
+      "private_key": "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n",
+      "client_email": "service-account@project.iam.gserviceaccount.com",
+      "client_id": "client_id",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/service-account%40project.iam.gserviceaccount.com"
+    }
+  }
+}
