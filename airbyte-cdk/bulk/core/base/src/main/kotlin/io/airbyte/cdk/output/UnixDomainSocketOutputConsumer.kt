@@ -1,6 +1,7 @@
 package io.airbyte.cdk.output
 
 import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SequenceWriter
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -55,7 +56,8 @@ class UnixDomainSocketOutputConsumer(
     var sc: SocketChannel? = null
     lateinit var ll: List<UnixDomainSocketOutputConsumer>
     private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
-    private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
+//    private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
+    private lateinit var templateRecord: JsonNode
 
     fun setSocketNum(num: Int) {
         socketNum = num
@@ -72,16 +74,19 @@ class UnixDomainSocketOutputConsumer(
         // - the "meta" field is often unset.
         // For this reason, this method builds and reuses a JSON template for each stream.
         // Then, for each record, it serializes just "data" and "meta" to populate the template.
-        val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
+        if (::templateRecord.isInitialized.not()) {
+            val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
 
-        val tmplt = String(template.prefix + "{}".toByteArray() + template.suffix)
-        val tt = Jsons.readTree(tmplt)
-        val rec = tt.get("record") as ObjectNode
+            val tmplt = String(template.prefix + "{}".toByteArray() + template.suffix)
+
+            templateRecord = Jsons.readTree(tmplt)
+        }
+        val rec = templateRecord.get("record") as ObjectNode
         rec.set<ObjectNode>("data", record.data)
 
-        val tb = ByteArrayOutputStream()
-        val gen = SMILE_MAPPER.createGenerator(tb)
-        Jsons.writeTree(gen, tt)
+//        val tb = ByteArrayOutputStream()
+//        val gen = SMILE_MAPPER.createGenerator(tb)
+//        Jsons.writeTree(gen, tt)
 
 //        val rr = SMILE_MAPPER.readTree(tb.toByteArray())
 //        val rr = SMILE_MAPPER.readerFor(AirbyteMessage::class.java).readTree(tb.toByteArray())
@@ -94,7 +99,8 @@ class UnixDomainSocketOutputConsumer(
 //        buffer.write(template.prefix)
         // Serialize the record data ObjectNode to JSON, writing it to the buffer.
 //        Jsons.writeTree(smileGenerator, record.data)
-        Jsons.writeTree(smileGenerator, tt)
+
+        Jsons.writeTree(smileGenerator, templateRecord)
         smileGenerator.flush()
         // If the record has a AirbyteRecordMessageMeta instance set,
         // write ',"meta":' followed by the serialized meta.
