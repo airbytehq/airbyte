@@ -30,7 +30,6 @@ private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
 private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
 //private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
-public val SMILE_MAPPER: ObjectMapper = initSmileMapper();
 
 fun initSmileMapper(): ObjectMapper {
     return configure(SmileMapper())
@@ -55,6 +54,7 @@ class UnixDomainSocketOutputConsumer(
     private var socketNum: Int = -1
     var sc: SocketChannel? = null
     lateinit var ll: List<UnixDomainSocketOutputConsumer>
+    public val SMILE_MAPPER: ObjectMapper = initSmileMapper();
     private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
 //    private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
     private lateinit var templateRecord: JsonNode
