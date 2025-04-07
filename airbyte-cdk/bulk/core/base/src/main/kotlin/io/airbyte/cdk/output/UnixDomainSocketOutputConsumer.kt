@@ -89,7 +89,7 @@ class UnixDomainSocketOutputConsumer(
 //        assert(rr == tt)
 //        synchronized(this) {
         // Write a newline character to the buffer if it's not empty.
-        withLockMaybeWriteNewline()
+//        withLockMaybeWriteNewline()
         // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
 //        buffer.write(template.prefix)
         // Serialize the record data ObjectNode to JSON, writing it to the buffer.
