@@ -250,9 +250,8 @@ const config = {
           // --- Right side ---
           // Platform docs version selector
           {
-            type: 'docsVersion',
+            type: 'docsVersionDropdown',
             position: 'right',
-            to: '/platform',
             docsPluginId: 'platform',
             label: 'Version',
             dropdownActiveClassDisabled: true, // do not style the dropdown as active when viewing platform docs
