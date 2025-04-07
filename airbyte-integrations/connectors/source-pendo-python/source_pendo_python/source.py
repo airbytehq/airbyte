@@ -83,7 +83,7 @@ class SourcePendoPython(AbstractSource):
         ]
 
         report_allowlist = config.get("report_allowlist")
-        if reports and len(report_allowlist) > 0:
+        if report_allowlist and len(report_allowlist) > 0:
             for report_id in report_allowlist:
                 result.append(ReportResult(report=report_id, authenticator=auth))
         else:
