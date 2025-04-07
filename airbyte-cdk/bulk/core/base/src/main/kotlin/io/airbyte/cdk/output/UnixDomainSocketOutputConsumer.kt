@@ -4,14 +4,17 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SequenceWriter
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.dataformat.smile.SmileFactory
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
 import java.net.StandardProtocolFamily
@@ -53,6 +56,7 @@ class UnixDomainSocketOutputConsumer(
     lateinit var ll: List<UnixDomainSocketOutputConsumer>
     private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
     private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
+
     fun setSocketNum(num: Int) {
         socketNum = num
     }
@@ -74,6 +78,15 @@ class UnixDomainSocketOutputConsumer(
         val tt = Jsons.readTree(tmplt)
         val rec = tt.get("record") as ObjectNode
         rec.set<ObjectNode>("data", record.data)
+
+        val tb = ByteArrayOutputStream()
+        val gen = SMILE_MAPPER.createGenerator(tb)
+        Jsons.writeTree(gen, tt)
+
+//        val rr = SMILE_MAPPER.readTree(tb.toByteArray())
+//        val rr = SMILE_MAPPER.readerFor(AirbyteMessage::class.java).readTree(tb.toByteArray())
+//        logger.info { rr }
+//        assert(rr == tt)
 //        synchronized(this) {
         // Write a newline character to the buffer if it's not empty.
         withLockMaybeWriteNewline()
@@ -121,7 +134,7 @@ class UnixDomainSocketOutputConsumer(
             }
         }
         if (buffer.size() > 0) {
-            val array: ByteArray = buffer.toByteArray()// + "\n".toByteArray(Charsets.UTF_8)
+            val array: ByteArray = buffer.toByteArray()
             sc?.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))
             buffer.reset()
         }
