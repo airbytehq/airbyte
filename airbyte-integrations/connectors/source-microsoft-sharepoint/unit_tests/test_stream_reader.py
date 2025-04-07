@@ -229,7 +229,11 @@ def test_open_file(mock_smart_open, file_extension, expected_compression):
         (
             "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/some/path/to/file",
             "txt",
-            {"bytes": ANY, "source_file_relative_path": "some/path/to/file.txt", "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/some/path/to/file.txt"},
+            {
+                "bytes": ANY,
+                "source_file_relative_path": "some/path/to/file.txt",
+                "staging_file_url": f"{TEST_LOCAL_DIRECTORY}/some/path/to/file.txt",
+            },
         ),
     ],
 )

@@ -451,7 +451,9 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 
-    def upload(self, file: MicrosoftSharePointRemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+    def upload(
+        self, file: MicrosoftSharePointRemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from Microsoft SharePoint to a specified local directory.
 
