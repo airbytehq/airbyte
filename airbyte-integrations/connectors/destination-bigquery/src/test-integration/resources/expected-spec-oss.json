@@ -58,7 +58,6 @@
                 "title" : "HMAC key",
                 "type" : "object",
                 "additionalProperties" : true,
-                "description" : "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
                 "properties" : {
                   "credential_type" : {
                     "type" : "string",
@@ -84,6 +83,7 @@
                 },
                 "required" : [ "credential_type", "hmac_key_access_id", "hmac_key_secret" ]
               } ],
+              "description" : "arst An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
               "title" : "Credential",
               "order" : 0,
               "type" : "object"
