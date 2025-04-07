@@ -306,7 +306,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.10.0 | 2025-04-07 | [55555](https://github.com/airbytehq/airbyte/pull/55555) | Adapt file-trasnfer records to latest protocol |
+| 0.10.0 | 2025-04-07 | [57507](https://github.com/airbytehq/airbyte/pull/57507) | Adapt file-trasnfer records to latest protocol |
 | 0.9.1 | 2025-04-05 | [57065](https://github.com/airbytehq/airbyte/pull/57065) | Update dependencies |
 | 0.9.0 | 2025-04-01 | [55912](https://github.com/airbytehq/airbyte/pull/55912) | Provide ability to iterate all sharepoint sites |
 | 0.8.2 | 2025-03-29 | [56712](https://github.com/airbytehq/airbyte/pull/56712) | Update dependencies |
