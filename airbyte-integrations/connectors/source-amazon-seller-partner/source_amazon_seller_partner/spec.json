@@ -215,13 +215,8 @@
         "order": 12
       },
       "financial_events_step": {
-<<<<<<< HEAD
-        "title": "Financial Events Step Size",
-        "description": "The time window size for fetching financial events data in chunks. Options are 1 day (P1D), 7 days (P7D), 14 days (P14D), 30 days (P30D), 60 days (P60D), 90 days (P90D), or 180 days (P180D, default) based on API limitations.\n\n- **Smaller step sizes (e.g., 1 day)** are better for large data volumes. They fetch smaller chunks per request, reducing the risk of timeouts or overwhelming the API, though more requests may slow syncing and increase the chance of hitting rate limits.\n- **Larger step sizes (e.g., 14 days)** are better for smaller data volumes. They fetch more data per request, speeding up syncing and reducing the number of API calls, which minimizes strain on rate limits.\n\nSelect a step size that matches your data volume to optimize syncing speed and API performance.",
-=======
         "title": "Financial Events Step Size (in days)",
         "description": "The time window size (in days) for fetching financial events data in chunks. Options are 1 day, 7 days, 14 days, 30 days, 60 days, and 190 days, based on API limitations.\n\n- **Smaller step sizes (e.g., 1 day)** are better for large data volumes. They fetch smaller chunks per request, reducing the risk of timeouts or overwhelming the API, though more requests may slow syncing and increase the chance of hitting rate limits.\n- **Larger step sizes (e.g., 14 days)** are better for smaller data volumes. They fetch more data per request, speeding up syncing and reducing the number of API calls, which minimizes strain on rate limits.\n\nSelect a step size that matches your data volume to optimize syncing speed and API performance.",
->>>>>>> fec8a8b3d60 (final changes before adding tests)
         "type": "string",
         "enum": ["1", "7", "14", "30", "60", "90", "180"],
         "default": "180",
