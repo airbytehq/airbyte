@@ -12,12 +12,12 @@ import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import com.google.common.base.Charsets
+import io.airbyte.cdk.AirbyteDestinationRunner
 import io.airbyte.cdk.integrations.BaseConnector
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addAllStringsInConfigForDeinterpolation
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addThrowableForDeinterpolation
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.Destination
-import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns.*
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
@@ -561,8 +561,5 @@ class BigQueryDestination : BaseConnector(), Destination {
 
 fun main(args: Array<String>) {
     addThrowableForDeinterpolation(BigQueryException::class.java)
-    val destination: Destination = BigQueryDestination()
-    log.info { "Starting Destination : ${destination.javaClass}" }
-    IntegrationRunner(destination).run(args)
-    log.info { "Completed Destination : ${destination.javaClass}" }
+    AirbyteDestinationRunner.run(*args)
 }
