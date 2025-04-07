@@ -280,7 +280,7 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
         raise exc
     file_folder = "directory"
     file_name = "file.txt"
-    test_file_path = f"{file_folder}/{file_name}
+    test_file_path = f"{file_folder}/{file_name}"
     file_record_data, file_reference = reader.upload(RemoteFile(uri=test_file_path, last_modified=datetime.now()), test_file_path, logger)
 
     assert file_record_data.bytes == 100
