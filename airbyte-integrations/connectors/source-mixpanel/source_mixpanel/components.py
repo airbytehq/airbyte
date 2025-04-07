@@ -3,13 +3,17 @@
 import json
 import logging
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath.util
+import pendulum
 import requests
 
 from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
@@ -20,6 +24,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from source_mixpanel.backoff_strategy import DEFAULT_API_BUDGET
 from source_mixpanel.property_transformation import transform_property_names
+from source_mixpanel.source import raise_config_error
 
 
 class MixpanelHttpRequester(HttpRequester):
@@ -305,6 +310,65 @@ class EngagePropertiesDpathExtractor(DpathExtractor):
             _properties.append(properties[field_name])
 
         yield _properties
+
+
+class ExportHttpRequester(MixpanelHttpRequester):
+    cursor_field = "time"
+    default_project_timezone = "US/Pacific"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+
+        self._from_date_lookback_window = max(
+            self.config.get("export_lookback_window", 0), self.config.get("attribution_window", 0) * 24 * 60 * 60
+        )
+        self._to_date_lookback_window = 1
+        self._time_lookback_window = self.config.get("export_lookback_window", 0)
+
+        if self.config.get("end_date"):
+            self._validate_end_date()
+            self._end_date = pendulum.parse(self.config.get("end_date")).date()
+        else:
+            self._validate_project_timezone()
+            self._end_date = (
+                pendulum.today(tz=self.config.get("project_timezone", self.default_project_timezone))
+                - timedelta(days=self._to_date_lookback_window)
+            ).date()
+
+    def _validate_project_timezone(self) -> None:
+        if self.config.get("project_timezone"):
+            try:
+                pendulum.timezone(self.config["project_timezone"])
+            except pendulum.tz.zoneinfo.exceptions.InvalidTimezone as e:
+                raise_config_error(f"Could not parse time zone: {self.config['project_timezone']}, please enter a valid timezone.", e)
+
+    def _validate_end_date(self) -> None:
+        date_str = self.config.get("end_date")
+        try:
+            return pendulum.parse(date_str).date()
+        except pendulum.parsing.exceptions.ParserError as e:
+            raise_config_error(f"time data '{date_str}' does not match format '%Y-%m-%dT%H:%M:%SZ'", e)
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        request_params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        start_time = stream_slice.cursor_slice.get("start_time")
+
+        from_date_value = (pendulum.parse(start_time) - timedelta(seconds=self._from_date_lookback_window)).date()
+        to_date_value = self._end_date
+        time_value = int((pendulum.parse(start_time) - timedelta(seconds=self._time_lookback_window)).timestamp())
+
+        request_params["from_date"] = from_date_value.format("YYYY-MM-DD")
+        request_params["to_date"] = to_date_value.format("YYYY-MM-DD")
+        request_params["where"] = f'properties["$time"]>=datetime({time_value})'
+
+        return request_params
 
 
 def iter_dicts(lines, logger=logging.getLogger("airbyte")):

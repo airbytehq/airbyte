@@ -91,11 +91,11 @@ def test_streams_string_date(requests_mock, config_raw):
 @pytest.mark.parametrize(
     "config, expected_is_success, expected_error_message",
     (
-        # (
-        #     {"credentials": {"api_secret": "secret"}, "project_timezone": "Miami"},
-        #     False,
-        #     "Could not parse time zone: Miami, please enter a valid timezone.",
-        # ),
+        (
+            {"credentials": {"api_secret": "secret"}, "project_timezone": "Miami"},
+            False,
+            "Could not parse time zone: Miami, please enter a valid timezone.",
+        ),
         (
             {"credentials": {"api_secret": "secret"}, "start_date": "20 Jan 2021"},
             False,

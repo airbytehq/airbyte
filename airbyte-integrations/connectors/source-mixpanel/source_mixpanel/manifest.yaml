@@ -494,10 +494,12 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        $ref: "#/definitions/requester"
+        type: CustomRequester
+        class_name: "source_mixpanel.components.ExportHttpRequester"
         path: export
         http_method: GET
         url_base: "https://data{{ '-eu' if config.region == 'EU' else '' }}.mixpanel.com/api/2.0/"
+        authenticator: "#/definitions/authenticator"
         error_handler:
           type: CustomErrorHandler
           class_name: "source_mixpanel.components.ExportErrorHandler"
@@ -520,24 +522,9 @@ definitions:
         - "%Y-%m-%d %H:%M:%S"
         - "%Y-%m-%d"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      lookback_window: 'PT{{ max(config.get("attribution_window", 5) * 24 * 60 * 60, config.get("export_lookback_window", 0)) }}S'
-      step: 'P{{ config.get("date_window_size", 30) }}D'
-      cursor_granularity: PT1S
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_time_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: from_date
-      end_time_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: to_date
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', day_delta(-1, format='%Y-%m-%dT%H:%M:%SZ')) }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - type: CustomTransformation

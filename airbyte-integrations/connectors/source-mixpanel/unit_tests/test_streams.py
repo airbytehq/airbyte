@@ -4,18 +4,33 @@
 
 import json
 import logging
+import urllib.parse
 from datetime import timedelta
 from unittest import mock
-from unittest.mock import MagicMock
 
 import pendulum
 import pytest
+import responses
+import source_mixpanel
+from source_mixpanel import SourceMixpanel
 from source_mixpanel.components import iter_dicts
 from source_mixpanel.utils import read_full_refresh
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    StreamDescriptor,
+    SyncMode,
+)
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .utils import get_url_to_mock, init_stream, read_incremental, setup_response
 
@@ -684,59 +699,8 @@ def test_export_iter_dicts():
     assert list(iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
 
 
-def test_export_stream_lookback_window(requests_mock, export_response, config_raw, mocker):
-    """Test that export_lookback_window correctly adjusts the start date during incremental sync and verifies slice parameters"""
-    # max between attribution_window and export_lookback_window will be used, changing  attribution_window value to use export_lookback_window
-
-    config_raw["attribution_window"] = 0
-    config_raw["export_lookback_window"] = 7200  # 1 hour lookback
-    config_raw["start_date"] = "2021-06-01T00:00:00Z"
-    config_raw["end_date"] = "2021-07-10T00:00:00Z"
-
-    stream = init_stream("export", config=config_raw)
-
-    # Mock response with two records at different times in JSONL format
-    export_response_multiple = (
-        b'{"event": "Viewed Page", "properties": {"time": 1623860880, "distinct_id": "user1", "$insert_id": "insert1"}}\n'
-        b'{"event": "Clicked Button", "properties": {"time": 1623864480, "distinct_id": "user2", "$insert_id": "insert2"}}'
-    )
-
-    requests_mock.register_uri(
-        "GET",
-        get_url_to_mock(stream),
-        content=export_response_multiple,  # Use content directly for bytes
-        status_code=200,
-    )
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", {})
-    # State with a timestamp 1 hour ago from the latest record
-    stream_state = {"time": "2021-06-16T16:28:00Z"}
-    with mock.patch("airbyte_cdk.sources.declarative.incremental.datetime_based_cursor.DatetimeBasedCursor.get_stream_state") as state_mock:
-        state_mock.return_value = stream_state
-
-        stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
-
-    assert len(stream_slices) > 0  # Ensure we have at least one slice
-    stream_slice = stream_slices[0]
-
-    # Verify slice parameters
-    expected_start = pendulum.parse("2021-06-16T14:28:00Z")  # 16:28:00 - 2 hours due to lookback
-    expected_end = pendulum.parse("2021-07-10T00:00:00Z")  # From config end_date
-
-    # Note: start_date might differ due to date_window_size slicing, adjust if needed
-    assert pendulum.parse(stream_slice["start_time"]) == expected_start  # Adjusted by attribution_window
-    assert pendulum.parse(stream_slice["end_time"]) == expected_end
-
-    # Read records and verify both are included due to lookback
-    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
-    assert len(records) == 2
-
-    # Verify updated state is set to the latest record time
-    new_state = stream.get_updated_state(stream_state, records[-1])
-    assert new_state["time"] == "2021-06-16T17:28:00Z"
-
-
 @pytest.mark.parametrize(
-    "start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_slices",
+    "start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_params",
     (
         (
             "2021-01-01T00:00:00Z",
@@ -744,10 +708,7 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
             None,
             None,
             None,
-            [
-                {"start_time": "2021-01-01T00:00:00Z", "end_time": "2021-01-30T23:59:59Z"},
-                {"start_time": "2021-01-31T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
-            ],
+            {"from_date": "2020-12-27", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609459200)'},
         ),
         (
             "2021-01-01T00:00:00Z",
@@ -755,10 +716,7 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
             None,
             5,
             None,
-            [
-                {"start_time": "2021-01-06T00:00:00Z", "end_time": "2021-02-04T23:59:59Z"},
-                {"start_time": "2021-02-05T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
-            ],
+            {"from_date": "2021-01-06", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1610323200)'},
         ),
         (
             "2021-01-01T00:00:00Z",
@@ -766,10 +724,7 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
             None,
             None,
             5 * 24 * 60 * 60 + 10,
-            [
-                {"start_time": "2021-01-05T23:59:50Z", "end_time": "2021-02-04T23:59:49Z"},
-                {"start_time": "2021-02-04T23:59:50Z", "end_time": "2021-03-01T00:00:00Z"},
-            ],
+            {"from_date": "2021-01-05", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609891190)'},
         ),
         (
             "2021-01-01T00:00:00Z",
@@ -777,10 +732,7 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
             None,
             5,
             5 * 24 * 60 * 60 + 10,
-            [
-                {"start_time": "2021-01-05T23:59:50Z", "end_time": "2021-02-04T23:59:49Z"},
-                {"start_time": "2021-02-04T23:59:50Z", "end_time": "2021-03-01T00:00:00Z"},
-            ],
+            {"from_date": "2021-01-05", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609891190)'},
         ),
         (
             "2021-01-01T00:00:00Z",
@@ -788,10 +740,7 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
             None,
             6,
             5 * 24 * 60 * 60 + 10,
-            [
-                {"start_time": "2021-01-05T00:00:00Z", "end_time": "2021-02-03T23:59:59Z"},
-                {"start_time": "2021-02-04T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
-            ],
+            {"from_date": "2021-01-05", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609891190)'},
         ),
         (
             "2021-01-01T00:00:00Z",
@@ -799,18 +748,11 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
             10,
             None,
             None,
-            [
-                {"start_time": "2021-01-01T00:00:00Z", "end_time": "2021-01-10T23:59:59Z"},
-                {"start_time": "2021-01-11T00:00:00Z", "end_time": "2021-01-20T23:59:59Z"},
-                {"start_time": "2021-01-21T00:00:00Z", "end_time": "2021-01-30T23:59:59Z"},
-                {"start_time": "2021-01-31T00:00:00Z", "end_time": "2021-02-09T23:59:59Z"},
-                {"start_time": "2021-02-10T00:00:00Z", "end_time": "2021-02-19T23:59:59Z"},
-                {"start_time": "2021-02-20T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
-            ],
+            {"from_date": "2020-12-27", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609459200)'},
         ),
     ),
     ids=(
-        "when step is default, lookback_window is default, state not provided",
+        "when lookback_window is default, state not provided",
         "when config.attribution_window is 5 days and state provided",
         "when config.export_lookback_window is 5 days and state provided",
         "when config.export_lookback_window is bugger then config.attribution_window",
@@ -818,8 +760,8 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
         "when config.date_window_size is 10",
     ),
 )
-def test_export_stream_slices(
-    export_config, start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_slices
+def test_export_request_params(
+    export_config, start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_params
 ):
     export_config["start_date"] = start_date
     export_config["end_date"] = end_date
@@ -837,5 +779,143 @@ def test_export_stream_slices(
         stream = init_stream("export", config=export_config)
 
         stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+        assert len(stream_slices) == 1
+        request_params = stream.retriever.requester.get_request_params(stream_state={}, stream_slice=stream_slices[0])
 
-        assert stream_slices == expected_slices
+        assert request_params == expected_params
+
+
+@responses.activate
+def test_export_incremental_read(export_config, engage_response):
+    config = export_config.copy()
+    config["start_date"] = "2022-01-01T00:00:00Z"
+    config["end_date"] = "2022-06-01T00:00:00Z"
+    config["attribution_window"] = 5
+    config["export_lookback_window"] = 60
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+                stream=AirbyteStream(name="export", json_schema={}, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]),
+            )
+        ]
+    )
+    state_value = "2022-03-25T00:00:00Z"
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="export"), stream_state=AirbyteStateBlob(**{"time": state_value})
+            ),
+        )
+    ]
+
+    responses.add(
+        responses.GET,
+        url="https://mixpanel.com/api/query/engage/properties",
+        json={
+            "computed_at": "time",
+            "results": {
+                "$email": {"count": 2, "type": "string"},
+                "$last_seen": {"count": 3, "type": "datetime"},
+                "$name": {"count": 3, "type": "string"},
+            },
+            "session_id": "session",
+            "status": "ok",
+        },
+        status=200,
+    )
+    responses.add(responses.GET, url="https://mixpanel.com/api/query/events/properties/top", json={}, status=200)
+
+    start_from_date = (pendulum.parse(state_value) - timedelta(days=config["attribution_window"])).format("YYYY-MM-DD")
+    request_params = [
+        ({"from_date": start_from_date, "to_date": "2022-06-01"}, {"properties": {"time": "2022-04-18T21:59:59Z"}}),
+    ]
+
+    time_ts = (pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp()
+
+    for params, json_data in request_params:
+        params.update({"where": f'properties["$time"]>=datetime({int(time_ts)})'})
+        responses.add(
+            responses.GET, url="https://data.mixpanel.com/api/2.0/export?" + urllib.parse.urlencode(params), json=json_data, status=200
+        )
+
+    output = read(SourceMixpanel(config=config, catalog=catalog, state=state), config, catalog, state)
+    assert len(output.records) == 1
+    assert output.state_messages[-1].state.stream.stream_state.time == "2022-04-18T21:59:59Z"
+
+
+@responses.activate
+def test_export_lookback_window(export_config):
+    """Test that export_lookback_window correctly adjusts the start date during incremental sync and verifies slice parameters"""
+    config = export_config.copy()
+    config["export_lookback_window"] = 7200  # 1 hour lookback
+    config["start_date"] = "2021-06-01T00:00:00Z"
+    config["end_date"] = "2021-07-10T00:00:00Z"
+
+    responses.add(
+        responses.GET,
+        url="https://mixpanel.com/api/query/engage/properties",
+        json={
+            "computed_at": "time",
+            "results": {
+                "$email": {"count": 2, "type": "string"},
+                "$last_seen": {"count": 3, "type": "datetime"},
+                "$name": {"count": 3, "type": "string"},
+            },
+            "session_id": "session",
+            "status": "ok",
+        },
+        status=200,
+    )
+    responses.add(responses.GET, url="https://mixpanel.com/api/query/events/properties/top", json={}, status=200)
+
+    state_value = "2021-06-16T16:28:00Z"
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+                stream=AirbyteStream(name="export", json_schema={}, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]),
+            )
+        ]
+    )
+
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="export"), stream_state=AirbyteStateBlob(**{"time": state_value})
+            ),
+        )
+    ]
+
+    # Verify slice parameters
+    expected_end = pendulum.parse("2021-07-10T00:00:00Z").format("YYYY-MM-DD")  # From config end_date
+    expected_start = (pendulum.parse(state_value) - timedelta(days=config["attribution_window"])).format(
+        "YYYY-MM-DD"
+    )  # 16:28:00 - 2 hours due to lookback
+
+    # Mock response with two records at different times in JSONL format
+    export_response_multiple = (
+        b'{"event": "Viewed Page", "properties": {"time": 1623860880, "distinct_id": "user1", "$insert_id": "insert1"}}\n'
+        b'{"event": "Clicked Button", "properties": {"time": 1623864480, "distinct_id": "user2", "$insert_id": "insert2"}}'
+    )
+
+    request_params = [
+        ({"from_date": expected_start, "to_date": expected_end}, export_response_multiple),
+    ]
+
+    time_ts = (pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp()
+
+    for params, body_data in request_params:
+        params.update({"where": f'properties["$time"]>=datetime({int(time_ts)})'})
+        responses.add(
+            responses.GET, url="https://data.mixpanel.com/api/2.0/export?" + urllib.parse.urlencode(params), body=body_data, status=200
+        )
+
+    output = read(SourceMixpanel(config=config, catalog=catalog, state=state), config, catalog, state)
+    # Verify updated state is set to the latest record time
+    assert output.state_messages[-1].state.stream.stream_state.time == "2021-06-16T17:28:00Z"
