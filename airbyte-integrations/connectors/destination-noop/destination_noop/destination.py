@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
     ConnectorSpecification,
     DestinationSyncMode,
     Status,
+    Type,
 )
 
 from destination_noop import pgvector_processor
@@ -30,6 +31,7 @@ BATCH_SIZE = 150
 class DestinationPGVector(Destination):
     sql_processor: pgvector_processor.PGVectorProcessor
 
+    """
     def _init_sql_processor(
         self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
     ) -> None:
@@ -48,6 +50,7 @@ class DestinationPGVector(Destination):
             temp_dir=Path(tempfile.mkdtemp()),
             temp_file_cleanup=True,
         )
+        """
 
     def write(
         self,
@@ -55,12 +58,19 @@ class DestinationPGVector(Destination):
         configured_catalog: ConfiguredAirbyteCatalog,
         input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
+        for message in input_messages:
+            if message.type is Type.STATE:
+                yield message
+
+
+        """
         parsed_config = ConfigModel.parse_obj(config)
         self._init_sql_processor(config=parsed_config, configured_catalog=configured_catalog)
         yield from self.sql_processor.process_airbyte_messages_as_generator(
             messages=input_messages,
             write_strategy=WriteStrategy.AUTO,
         )
+        """
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         _ = logger  # Unused
@@ -70,6 +80,7 @@ class DestinationPGVector(Destination):
             self._init_sql_processor(config=parsed_config)
             self.sql_processor.sql_config.connect()
             """
+            # return AirbyteConnectionStatus(status=Status.FAILED)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(
@@ -87,3 +98,5 @@ class DestinationPGVector(Destination):
             ],
             connectionSpecification=ConfigModel.schema(),  # type: ignore[attr-defined]
         )
+"""
+"""
