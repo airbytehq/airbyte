@@ -28,12 +28,19 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.config.validate_config_transfer_modes import use_file_transfer, preserve_directory_structure
+
 from source_s3.source import SourceS3Spec
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
+from source_s3.v4.flattenable_stream import FlattenableFileBasedStream
 
 
 _V3_DEPRECATION_FIELD_MAPPING = {
@@ -47,6 +54,34 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 class SourceS3(FileBasedSource):
     _concurrency_level = DEFAULT_CONCURRENCY
+    
+    # Store the parsed main config for later use
+    def _get_parsed_config(self, config: Mapping[str, Any]) -> AbstractFileBasedSpec:
+        self.main_config = self.spec_class(**config)
+        return self.main_config
+
+    def _make_default_stream(
+        self,
+        stream_config: FileBasedStreamConfig,
+        cursor: Optional[AbstractFileBasedCursor],
+        parsed_config: AbstractFileBasedSpec,
+    ) -> AbstractFileBasedStream:
+        """Override to use our custom FlattenableFileBasedStream class that supports the flatten_records_key parameter"""
+        # Pass the flatten_records_key from the main config to the stream
+        return FlattenableFileBasedStream(
+            config=stream_config,
+            catalog_schema=self.stream_schemas.get(stream_config.name),
+            stream_reader=self.stream_reader,
+            availability_strategy=self.availability_strategy,
+            discovery_policy=self.discovery_policy,
+            parsers=self.parsers,
+            validation_policy=self._validate_and_get_validation_policy(stream_config),
+            errors_collector=self.errors_collector,
+            cursor=cursor,
+            use_file_transfer=use_file_transfer(parsed_config),
+            preserve_directory_structure=preserve_directory_structure(parsed_config),
+            flatten_records_key=getattr(parsed_config, 'flatten_records_key', None)
+        )
 
     @classmethod
     def read_config(cls, config_path: str) -> Mapping[str, Any]:
