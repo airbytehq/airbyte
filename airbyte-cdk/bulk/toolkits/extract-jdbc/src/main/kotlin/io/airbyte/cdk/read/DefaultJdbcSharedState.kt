@@ -59,7 +59,7 @@ class DefaultJdbcSharedState(
     private val log = KotlinLogging.logger {}
     override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? {
 
-//        log.info { "Skipping staging area inspection" }
+        //        log.info { "Skipping staging area inspection" }
 
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire() ?: return null

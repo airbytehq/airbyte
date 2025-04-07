@@ -49,7 +49,12 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             }
             return
         }*/
-        streamRecordConsumer.accept(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
+        streamRecordConsumer.accept(
+            row.data,
+            row.changes,
+            sharedState.configuration.maxConcurrency,
+            partitionNum
+        )
     }
 
     override fun setNum(num: Long) {

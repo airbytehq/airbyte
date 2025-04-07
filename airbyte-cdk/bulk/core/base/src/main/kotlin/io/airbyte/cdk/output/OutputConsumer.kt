@@ -35,8 +35,7 @@ import java.util.function.Consumer
 @DefaultImplementation(CombinedOutputConsumer::class)
 abstract class OutputConsumer(
     private val clock: Clock,
-) : Consumer<AirbyteMessage>,
-    AutoCloseable {
+) : Consumer<AirbyteMessage>, AutoCloseable {
     /**
      * The constant emittedAt timestamp we use for record timestamps.
      *
@@ -238,7 +237,7 @@ open class StdoutOutputConsumer(
         // For this reason, this method builds and reuses a JSON template for each stream.
         // Then, for each record, it serializes just "data" and "meta" to populate the template.
         val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
-//        synchronized(this) {
+        //        synchronized(this) {
         // Write a newline character to the buffer if it's not empty.
         withLockMaybeWriteNewline()
         // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
@@ -262,7 +261,7 @@ open class StdoutOutputConsumer(
         if (buffer.size() >= bufferByteSizeThresholdForFlush) {
             withLockFlushRecord()
         }
-//        }
+        //        }
     }
 
     protected val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
@@ -337,7 +336,5 @@ class RecordTemplate(
 
 @Factory
 private class PrintStreamFactory {
-    @Singleton
-    @Requires(notEnv = [Environment.TEST])
-    fun stdout(): PrintStream = System.out
+    @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
 }

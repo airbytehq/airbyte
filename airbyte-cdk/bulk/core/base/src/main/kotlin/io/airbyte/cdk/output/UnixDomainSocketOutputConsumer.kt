@@ -51,9 +51,10 @@ class UnixDomainSocketOutputConsumer(
     lateinit var ll: List<UnixDomainSocketOutputConsumer>
     private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
     private val smileSequenceWriter: SequenceWriter =
-        SMILE_MAPPER.writer().writeValues(
-            smileGenerator,
-        )
+        SMILE_MAPPER.writer()
+            .writeValues(
+                smileGenerator,
+            )
 
     fun setSocketNum(num: Int) {
         socketNum = num
@@ -77,13 +78,13 @@ class UnixDomainSocketOutputConsumer(
         val tt = Jsons.readTree(tmplt)
         val rec = tt.get("record") as ObjectNode
         rec.set<ObjectNode>("data", record.data)
-//        synchronized(this) {
+        //        synchronized(this) {
         // Write a newline character to the buffer if it's not empty.
         withLockMaybeWriteNewline()
         // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
-//        buffer.write(template.prefix)
+        //        buffer.write(template.prefix)
         // Serialize the record data ObjectNode to JSON, writing it to the buffer.
-//        Jsons.writeTree(smileGenerator, record.data)
+        //        Jsons.writeTree(smileGenerator, record.data)
         Jsons.writeTree(smileGenerator, tt)
         smileGenerator.flush()
         // If the record has a AirbyteRecordMessageMeta instance set,
@@ -95,14 +96,14 @@ class UnixDomainSocketOutputConsumer(
             smileSequenceWriter.flush()
         }*/
         // Write ',"emitted_at":...}}'.
-//        buffer.write(template.suffix)
+        //        buffer.write(template.suffix)
         // Flush the buffer to stdout only once it has reached a certain size.
         // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
         // which otherwise becomes very apparent when lots of tiny records are involved.
         if (buffer.size() >= bufferByteSizeThresholdForFlush) {
             withLockFlushRecord()
         }
-//        }
+        //        }
     }
 
     override fun withLockFlushRecord() {
@@ -123,21 +124,22 @@ class UnixDomainSocketOutputConsumer(
                 sc = serverSocketChannel.accept()
             }
         synchronized(this) {
-            sc ?: let {
-                val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
-                logger.info { "Using socket..." }
-                val socketFile = File(socketPath)
-                logger.info { "Socket File path $socketPath" }
-                if (socketFile.exists()) {
-                    socketFile.delete()
+            sc
+                ?: let {
+                    val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
+                    logger.info { "Using socket..." }
+                    val socketFile = File(socketPath)
+                    logger.info { "Socket File path $socketPath" }
+                    if (socketFile.exists()) {
+                        socketFile.delete()
+                    }
+                    val address = UnixDomainSocketAddress.of(socketFile.toPath())
+                    val serverSocketChannel: ServerSocketChannel =
+                        ServerSocketChannel.open(StandardProtocolFamily.UNIX)
+                    serverSocketChannel.bind(address)
+                    logger.info { "Source : Server socket bound at ${socketFile.absolutePath}" }
+                    sc = serverSocketChannel.accept()
                 }
-                val address = UnixDomainSocketAddress.of(socketFile.toPath())
-                val serverSocketChannel: ServerSocketChannel =
-                    ServerSocketChannel.open(StandardProtocolFamily.UNIX)
-                serverSocketChannel.bind(address)
-                logger.info { "Source : Server socket bound at ${socketFile.absolutePath}" }
-                sc = serverSocketChannel.accept()
-            }
         }
         if (buffer.size() > 0) {
             val array: ByteArray = buffer.toByteArray() // + "\n".toByteArray(Charsets.UTF_8)
