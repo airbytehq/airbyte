@@ -63,8 +63,6 @@ class BigQueryRecordFormatter {
                     outputRecord[key] = (value.abValue as IntegerValue).value
             }
         }
-        // TODO let's try not doing this for now
-        // record.set<JsonNode>(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, NullNode.instance)
 
         outputRecord[JavaBaseConstants.COLUMN_NAME_DATA] = record.asRawJson().serializeToString()
 

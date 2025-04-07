@@ -48,6 +48,7 @@ class BigQueryStandardInsertsRawOverrideDisableTypingDedupingTest :
 
         val messages = readMessages("dat/sync1_messages.jsonl")
         runSync(catalog, messages)
+        println()
     }
 
     @Disabled
