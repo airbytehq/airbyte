@@ -128,11 +128,10 @@ class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
     METRICS_BY_PERIOD = {
         "day": [
             "follower_count",
-            "impressions",
             "reach",
         ],
-        "week": ["impressions", "reach"],
-        "days_28": ["impressions", "reach"],
+        "week": ["reach"],
+        "days_28": ["reach"],
         "lifetime": ["online_followers"],
     }
 
