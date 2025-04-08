@@ -69,7 +69,7 @@ class MSSQLBulkLoadStreamLoader(
     override suspend fun start() {
         super.start() // calls ensureTableExists()
         formatFilePath = mssqlFormatFileCreator.createAndUploadFormatFile(defaultSchema).key
-        val state = MSSQLStreamState(dataSource, formatFilePath)
+        val state = MSSQLBulkLoaderStreamState(dataSource, formatFilePath)
         streamStateStore.put(stream.descriptor, state)
     }
 
@@ -205,7 +205,16 @@ class MSSQLBulkLoadStreamLoader(
  * For use by the new interface (to pass stream state creating during `start` to the BulkLoad
  * loader.)
  */
-data class MSSQLStreamState(
-    val dataSource: DataSource,
-    val formatFilePath: String,
-)
+sealed interface MSSQLStreamState {
+    val dataSource: DataSource
+}
+
+data class MSSQLBulkLoaderStreamState(
+    override val dataSource: DataSource,
+    val formatFilePath: String
+) : MSSQLStreamState
+
+data class MSSQLDirectLoaderStreamState(
+    override val dataSource: DataSource,
+    val sqlBuilder: MSSQLQueryBuilder
+) : MSSQLStreamState

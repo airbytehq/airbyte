@@ -294,6 +294,8 @@ data class DestinationRecordRaw(
     private val serialized: String,
     private val schema: AirbyteType
 ) {
+    val serializedSizeBytes = serialized.length
+
     fun asRawJson(): JsonNode {
         return rawData.record.data
     }

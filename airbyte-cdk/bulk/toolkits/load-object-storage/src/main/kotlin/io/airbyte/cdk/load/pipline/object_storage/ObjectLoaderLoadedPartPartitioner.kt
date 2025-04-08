@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.pipeline.OutputPartitioner
  */
 class ObjectLoaderLoadedPartPartitioner<K : WithStream, T, U : RemoteObject<*>> :
     OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartLoader.PartResult<U>> {
+
     override fun getOutputKey(
         inputKey: K,
         output: ObjectLoaderPartLoader.PartResult<U>

@@ -58,6 +58,7 @@ class ObjectLoaderPartQueueFactory(
     @Named("objectLoaderPartQueue")
     @Requires(bean = ObjectLoader::class)
     fun objectLoaderPartQueue(
+        objectLoader: ObjectLoader,
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ResourceReservingPartitionedQueue<
         PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
