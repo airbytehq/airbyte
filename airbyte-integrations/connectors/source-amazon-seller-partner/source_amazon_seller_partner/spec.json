@@ -213,6 +213,14 @@
         "description": "For report based streams with known amount of requests per time period, this option will use waiting time between requests to avoid fatal statuses in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting\" target=\"_blank\">Troubleshooting</a> section for more details",
         "default": false,
         "order": 12
+      },
+      "financial_events_step": {
+        "title": "Financial Events Step Size (in days)",
+        "description": "The time window size (in days) for fetching financial events data in chunks. Options are 1 day, 7 days, 14 days, 30 days, 60 days, and 190 days, based on API limitations.\n\n- **Smaller step sizes (e.g., 1 day)** are better for large data volumes. They fetch smaller chunks per request, reducing the risk of timeouts or overwhelming the API, though more requests may slow syncing and increase the chance of hitting rate limits.\n- **Larger step sizes (e.g., 14 days)** are better for smaller data volumes. They fetch more data per request, speeding up syncing and reducing the number of API calls, which minimizes strain on rate limits.\n\nSelect a step size that matches your data volume to optimize syncing speed and API performance.",
+        "type": "string",
+        "enum": ["1", "7", "14", "30", "60", "90", "180"],
+        "default": "180",
+        "order": 13
       }
     }
   },

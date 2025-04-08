@@ -8,16 +8,23 @@
 }
 
 .badge {
-  background: var(--color-grey-40);
-  color: var(--color-grey-400);
+  background: var(--color-dark-blue-40);
+  color: var(--color-dark-blue-700);
   padding: 3px 8px;
-  border-radius: 32px;
+  border: 1px solid var(--color-dark-blue-40);
+  border-radius: 4px;
   font-size: 0.75rem;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   text-decoration: none;
   white-space: nowrap;
+}
+
+html[data-theme="dark"] .badge {
+  background: var(--color-grey-40);
+  color: var(--ifm-color-emphasis-400);
+  border: none;
 }
 
 .badge:hover {
@@ -29,13 +36,21 @@
 }
 
 .available {
-  background:var(--color-green-50);
-  color: var(--ifm-font-color-base);
+  background: var(--color-green-40);
+  color: var(--color-green-800);
+  border: 1px solid var(--color-green-800);
+}
+
+html[data-theme="dark"] .available {
+  background: var(--color-grey-40);
+  color: var(--color-gray-40);
+  border: 1px solid var(--color-dark-blue-40);
 }
 
 .helpIcon {
-  color: var(--color-grey-400);
+  color: var(--ifm-font-color-base);
   transition: color 0.2s ease;
+  font-size: 0.75rem;
 }
 
 .helpIcon:hover {

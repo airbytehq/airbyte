@@ -92,36 +92,20 @@ object BigQueryUtils {
     @JvmStatic
     fun createPartitionedTableIfNotExists(bigquery: BigQuery, tableId: TableId?, schema: Schema?) {
         try {
-            // Partition by generation ID. This will be useful for when we want to build
-            // hybrid refreshes.
             val partitioning =
-                RangePartitioning.newBuilder()
-                    .setField(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
-                    .setRange(
-                        RangePartitioning.Range.newBuilder()
-                            .setStart(
-                                0L
-                            ) // Bigquery allows a table to have up to 10_000 partitions.
-                            .setEnd(
-                                10000L
-                            ) // Somewhat conservative estimate. This should avoid issues with
-                            // users running many merge refreshes.
-                            .setInterval(5L)
-                            .build()
-                    )
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+                    .setField(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)
                     .build()
 
             val clustering =
                 Clustering.newBuilder()
-                    .setFields(
-                        ImmutableList.of<String>(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)
-                    )
+                    .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
                     .build()
 
             val tableDefinition =
                 StandardTableDefinition.newBuilder()
                     .setSchema(schema)
-                    .setRangePartitioning(partitioning)
+                    .setTimePartitioning(partitioning)
                     .setClustering(clustering)
                     .build()
             val tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build()

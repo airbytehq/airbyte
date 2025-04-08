@@ -7,6 +7,9 @@
 
 div.connectorMetadataCallout  {
   margin-bottom: 15px;
+  padding: 14px 20px;
+  background-color: var(--color-grey-40);
+  border-radius: 0px;
 }
 
 .connectorMetadata {
@@ -14,13 +17,21 @@ div.connectorMetadataCallout  {
   margin: 0;
   display: flex;
   flex-direction: column;
-  row-gap: 2px;
+  row-gap: 8px;
+}
+
+.connectorMetadata dt, .connectorMetadata dd {
+  display: inline-block;
+}
+
+.connectorMetadata dt {
+  width: 150px;
 }
 
 .metadataStat {
   display: flex;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: var(--ifm-font-weight-normal);
   flex-wrap: wrap;
 }
@@ -42,9 +53,12 @@ div.connectorMetadataCallout  {
   width: fit-content;
 }
 
-.deemphasizeText {
-  color: var(--color-grey-400);
-  white-space: nowrap;
+.metadataStatValue a {
+  color: var(--ifm-color-primary-dark);
+}
+
+html[data-theme="dark"] .metadataStatValue a {
+  color: var(--ifm-link-color);
 }
 
 .metadataStatValue > * {
@@ -59,15 +73,38 @@ div.connectorMetadataCallout  {
   flex-wrap: wrap;
 }
 
+
 .connectorMetadata .availability > span {
   display: inline-flex;
   align-items: center;
   column-gap: 2px;
   flex: 0 1 auto;
+  background-color: var(--color-green-40);
+  border: 1px solid var(--color-green-800);
+  color: var(--color-green-800);
+  font-size: 12px;
 }
 
 .connectorMetadata .availability .unavailable {
+  color: var(--color-dark-blue-700);
+  background-color: var(--color-dark-blue-40);
+  border: 1px solid var(--color-dark-blue-40);
+}
+
+html[data-theme="dark"] .connectorMetadata .availability > span {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 2px;
+  flex: 0 1 auto;
+  background-color: var(--color-grey-40);
+  border: 1px solid var(--color-green-40);
+  color: var(--color-gray-40);
+  font-size: 12px;
+}
+
+html[data-theme="dark"] .connectorMetadata .availability .unavailable {
   color: var(--ifm-color-emphasis-600);
+  border: none;
 }
 
 [data-theme="dark"] .connectorMetadata .availability .unavailable {
