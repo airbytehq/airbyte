@@ -74,50 +74,38 @@ sealed class FeedBootstrap<T : Feed>(
      */
     private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
         StreamRecordConsumer {
-        lateinit var sock: OutputConsumer
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
-            if (changes.isNullOrEmpty()) {
-
-                acceptWithoutChanges(recordData, totalNum, num)
-            } else {
-                val protocolChanges: List<AirbyteRecordMessageMetaChange> =
-                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
-                        AirbyteRecordMessageMetaChange()
-                            .withField(field.id)
-                            .withChange(fieldValueChange.protocolChange())
-                            .withReason(fieldValueChange.protocolReason())
-                    }
-                acceptWithChanges(recordData, protocolChanges)
-            }
+            outputConsumer.getSocketConsumer(num!!.toInt() % totalNum!!).accept(recordData, stream.namespace ?: "", stream.name)
         }
 
-        private fun acceptWithoutChanges(recordData: ObjectNode, totalNum: Int?, num: Long?) {
-            synchronized(this) {
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
-                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
-                }
-//                outputConsumer.accept(reusedMessageWithoutChanges)
-                if (::sock.isInitialized.not()) {
-                    val socketNum = ((num!!.toInt() - 1) % totalNum!!)
-                    sock = outputConsumer.getS(totalNum!!)?.get(socketNum)!!
-                }
-                sock.accept(reusedMessageWithoutChanges)
-//                outputConsumer.getS(totalNum!!)?.get(socketNum)?.accept(reusedMessageWithoutChanges)
-            }
-        }
-
-        private fun acceptWithChanges(
-            recordData: ObjectNode,
-            changes: List<AirbyteRecordMessageMetaChange>
-        ) {
-            synchronized(this) {
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
-                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
-                }
-                reusedRecordMeta.changes = changes
-                outputConsumer.accept(reusedMessageWithChanges)
-            }
-        }
+//        private fun acceptWithoutChanges(recordData: ObjectNode, totalNum: Int?, num: Long?) {
+//            outputConsumer.getSocketConsumer(num!!.toInt()).accept(recordData)
+//            synchronized(this) {
+//                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+//                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+//                }
+//////                outputConsumer.accept(reusedMessageWithoutChanges)
+////                if (::sock.isInitialized.not()) {
+////                    val socketNum = ((num!!.toInt() - 1) % totalNum!!)
+////                    sock = outputConsumer.getS(totalNum!!)?.get(socketNum)!!
+////                }
+////                sock.accept(reusedMessageWithoutChanges)
+////                outputConsumer.getS(totalNum!!)?.get(socketNum)?.accept(reusedMessageWithoutChanges)
+//            }
+//        }
+//
+//        private fun acceptWithChanges(
+//            recordData: ObjectNode,
+//            changes: List<AirbyteRecordMessageMetaChange>
+//        ) {
+//            synchronized(this) {
+//                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+//                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
+//                }
+//                reusedRecordMeta.changes = changes
+//                outputConsumer.accept(reusedMessageWithChanges)
+//            }
+//        }
 
         private val precedingGlobalFeed: Global? =
             stateManager.feeds

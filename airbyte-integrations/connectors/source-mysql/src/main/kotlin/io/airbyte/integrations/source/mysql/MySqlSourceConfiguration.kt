@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.output.SocketConfig
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -45,11 +46,16 @@ data class MySqlSourceConfiguration(
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
     val skipSerializationAndWriting: Boolean,
     val skipWriting: Boolean,
-    val skipSynchronizedCounts: Boolean
-) : JdbcSourceConfiguration, CdcSourceConfiguration {
+    val skipSynchronizedCounts: Boolean,
+    override val bufferByteSize: Int,
+    override val outputFormat: String,
+    override val devNullAfterSerialization: Boolean
+) : JdbcSourceConfiguration, CdcSourceConfiguration, SocketConfig {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
         get() = (incrementalConfiguration as? CdcIncrementalConfiguration)?.initialLoadTimeout
+
+    override val numSockets = maxConcurrency
 
     /** Required to inject [MySqlSourceConfiguration] directly. */
     @Factory
@@ -163,6 +169,9 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             skipSerializationAndWriting = pojo.tmpSkipSerializationAndWriting ?: true,
             skipWriting = pojo.tmpSkipWriting ?: true,
             skipSynchronizedCounts = pojo.tmpSkipSynchronizedCounts ?: false,
+            bufferByteSize = pojo.bufferByteSize ?: (8 * 1024),
+            outputFormat = pojo.outputFormat ?: "jsonl",
+            devNullAfterSerialization = pojo.devNullAfterSerialization ?: false,
         )
     }
 

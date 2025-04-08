@@ -183,13 +183,28 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     }
 
     @JsonProperty("tmp_skip_serialization_and_writing")
+    @JsonSchemaDefault("false")
     val tmpSkipSerializationAndWriting: Boolean? = null
 
     @JsonProperty("tmp_skip_writing")
+    @JsonSchemaDefault("false")
     val tmpSkipWriting: Boolean? = null
 
     @JsonProperty("tmp_skip_synchronized_counts")
+    @JsonSchemaDefault("false")
     val tmpSkipSynchronizedCounts: Boolean? = null
+
+    @JsonProperty("buffer_byte_size")
+    @JsonSchemaDefault("8192")
+    val bufferByteSize: Int? = null
+
+    @JsonProperty("output_format")
+    @JsonSchemaDefault("jsonl")
+    val outputFormat: String? = null
+
+    @JsonProperty("dev_null_after_serialization")
+    @JsonSchemaDefault("false")
+    val devNullAfterSerialization: Boolean? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

@@ -23,6 +23,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -33,7 +34,7 @@ import java.util.function.Consumer
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
 //@DefaultImplementation(StdoutOutputConsumer::class)
-@DefaultImplementation(UnixDomainSocketOutputConsumer::class)
+@DefaultImplementation(UnixDomainSocketOutputConsumerProvider::class)
 abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
     /**
      * The constant emittedAt timestamp we use for record timestamps.
@@ -108,7 +109,9 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
         )
     }
 
-    abstract fun getS(num: Int): List<OutputConsumer>?
+    open fun getSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
+        throw UnsupportedOperationException("Not implemented")
+    }
 }
 
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
@@ -117,6 +120,7 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
+@Named("stdoutOutputConsumer")
 open class StdoutOutputConsumer(
     val stdout: PrintStream,
     val clock: Clock,
@@ -252,10 +256,6 @@ open class StdoutOutputConsumer(
 
     private val namespacedTemplates = ConcurrentHashMap<String, StreamToTemplateMap>()
     private val unNamespacedTemplates = StreamToTemplateMap()
-
-    override fun getS(num: Int): List<OutputConsumer>? {
-        return null
-    }
 
     companion object {
         const val META_PREFIX = ""","meta":"""
