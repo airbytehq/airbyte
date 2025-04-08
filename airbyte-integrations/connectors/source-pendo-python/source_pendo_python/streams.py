@@ -186,6 +186,9 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream, CheckpointMixin):
         for slice_timestamp in range(start_timestamp, end_timestamp, self.DAY_MILLISECONDS * self.day_page_size):
             yield {"start_timestamp": slice_timestamp}
 
+    def start_date_in_unix(self):
+        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%S"))) * 1000
+
 class Feature(PendoPythonStream):
     name = "feature"
 
@@ -393,9 +396,6 @@ class PageEvents(PendoTimeSeriesAggregationStream):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.day_page_size = day_page_size
-    
-    def start_date_in_unix(self):
-        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
 
 class FeatureEvents(PendoTimeSeriesAggregationStream):
     name = "feature_events"
@@ -406,10 +406,6 @@ class FeatureEvents(PendoTimeSeriesAggregationStream):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.day_page_size = day_page_size
-    
-    def start_date_in_unix(self):
-        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
-
 class GuideEvents(PendoTimeSeriesAggregationStream):
     name = "guide_events"
     source_name = "guideEvents"
@@ -419,6 +415,3 @@ class GuideEvents(PendoTimeSeriesAggregationStream):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.day_page_size = day_page_size
-    
-    def start_date_in_unix(self):
-        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
