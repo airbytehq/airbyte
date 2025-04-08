@@ -4,19 +4,20 @@
 
 
 import logging
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import freezegun
-from freezegun import freeze_time
 import pytest
+import requests_mock
+from freezegun import freeze_time
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 from source_amazon_seller_partner.components import AmazonSPOauthAuthenticator
 from source_amazon_seller_partner.utils import AmazonConfigException
 
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, SyncMode, DestinationSyncMode
-import requests_mock
-from datetime import datetime, timedelta
+
 
 logger = logging.getLogger("airbyte")
 
@@ -225,58 +226,40 @@ def test_replication_dates_validation(config, should_raise):
 mock_catalog = ConfiguredAirbyteCatalog(
     streams=[
         ConfiguredAirbyteStream(
-            stream=AirbyteStream(
-                name="Orders",
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
-            ),
+            stream=AirbyteStream(name="Orders", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
             sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.overwrite
+            destination_sync_mode=DestinationSyncMode.overwrite,
+        ),
+        ConfiguredAirbyteStream(
+            stream=AirbyteStream(name="OrderItems", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
+            sync_mode=SyncMode.full_refresh,
+            destination_sync_mode=DestinationSyncMode.overwrite,
         ),
         ConfiguredAirbyteStream(
             stream=AirbyteStream(
-                name="OrderItems",
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+                name="ListFinancialEventGroups", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
             ),
             sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.overwrite
+            destination_sync_mode=DestinationSyncMode.overwrite,
         ),
         ConfiguredAirbyteStream(
             stream=AirbyteStream(
-                name="ListFinancialEventGroups",
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+                name="ListFinancialEvents", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
             ),
             sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.overwrite
+            destination_sync_mode=DestinationSyncMode.overwrite,
         ),
         ConfiguredAirbyteStream(
             stream=AirbyteStream(
-                name="ListFinancialEvents",
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+                name="VendorDirectFulfillmentShipping", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
             ),
             sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.overwrite
+            destination_sync_mode=DestinationSyncMode.overwrite,
         ),
         ConfiguredAirbyteStream(
-            stream=AirbyteStream(
-                name="VendorDirectFulfillmentShipping",
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
-            ),
+            stream=AirbyteStream(name="VendorOrders", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
             sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.overwrite
-        ),
-        ConfiguredAirbyteStream(
-            stream=AirbyteStream(
-                name="VendorOrders",
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
-            ),
-            sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.overwrite
+            destination_sync_mode=DestinationSyncMode.overwrite,
         ),
     ]
 )
@@ -292,17 +275,19 @@ STREAM_NAMES = [
 
 
 END_DATETIME_LOGIC = {
-    "Orders": "now_minus_1s",                  # now_utc() - PT1S
-    "OrderItems": "now",                       # now_utc()
-    "ListFinancialEventGroups": "now_minus_1s", # now_utc() - PT1S
-    "ListFinancialEvents": "now_minus_1s",      # now_utc() - PT1S
-    "VendorDirectFulfillmentShipping": "now",   # now_utc()
-    "VendorOrders": "now",                     # now_utc()
+    "Orders": "now_minus_1s",  # now_utc() - PT1S
+    "OrderItems": "now",  # now_utc()
+    "ListFinancialEventGroups": "now_minus_1s",  # now_utc() - PT1S
+    "ListFinancialEvents": "now_minus_1s",  # now_utc() - PT1S
+    "VendorDirectFulfillmentShipping": "now",  # now_utc()
+    "VendorOrders": "now",  # now_utc()
 }
+
 
 # Helper function to calculate default start date (now - 730 days)
 def default_start_date(now):
     return (now - timedelta(days=730)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
 
 # Helper function to calculate default end date based on stream logic
 def default_end_date(stream_name, now):
@@ -310,11 +295,8 @@ def default_end_date(stream_name, now):
         return (now - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     return now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-@pytest.mark.parametrize(
-    "stream_name",
-    STREAM_NAMES,
-    ids=STREAM_NAMES
-)
+
+@pytest.mark.parametrize("stream_name", STREAM_NAMES, ids=STREAM_NAMES)
 @pytest.mark.parametrize(
     "config, expected_start_base, expected_end_base",
     [
@@ -396,7 +378,7 @@ def default_end_date(stream_name, now):
         "only_start_date",
         "no_dates",
         "start_date_before_default",
-    ]
+    ],
 )
 @freeze_time("2023-01-01T00:00:00Z")
 def test_stream_slice_dates(config, expected_start_base, expected_end_base, stream_name, requests_mock):
@@ -414,9 +396,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
 
     # Mock the token refresh endpoint
     requests_mock.post(
-        "https://api.amazon.com/auth/o2/token",
-        json={"access_token": "fake_access_token", "expires_in": 3600},
-        status_code=200
+        "https://api.amazon.com/auth/o2/token", json={"access_token": "fake_access_token", "expires_in": 3600}, status_code=200
     )
 
     # Mock the Orders API endpoint for OrderItems stream
@@ -432,11 +412,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
             f"MarketplaceIds={config['marketplace_id']}&MaxResultsPerPage=100&"
             f"LastUpdatedAfter={start_date}&LastUpdatedBefore={end_date}"
         )
-        requests_mock.get(
-            orders_url,
-            json={"payload": {"Orders": [{"AmazonOrderId": "123-4567890-1234567"}]}},
-            status_code=200
-        )
+        requests_mock.get(orders_url, json={"payload": {"Orders": [{"AmazonOrderId": "123-4567890-1234567"}]}}, status_code=200)
 
     # Initialize the source with the mock catalog, test config, and no state
     source = SourceAmazonSellerPartner(catalog=mock_catalog, config=config, state=None)
@@ -459,9 +435,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
     last_slice = slices[-1]
 
     # Assert start and end times match expectations
-    assert first_slice["start_time"] == expected_start_base, (
-        f"Stream '{stream_name}': Expected start time {expected_start_base}, got {first_slice['start_time']}"
-    )
-    assert last_slice["end_time"] == expected_end, (
-        f"Stream '{stream_name}': Expected end time {expected_end}, got {last_slice['end_time']}"
-    )
+    assert (
+        first_slice["start_time"] == expected_start_base
+    ), f"Stream '{stream_name}': Expected start time {expected_start_base}, got {first_slice['start_time']}"
+    assert last_slice["end_time"] == expected_end, f"Stream '{stream_name}': Expected end time {expected_end}, got {last_slice['end_time']}"
