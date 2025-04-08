@@ -23,6 +23,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -119,6 +120,7 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
+@Named("stdoutOutputConsumer")
 open class StdoutOutputConsumer(
     val stdout: PrintStream,
     val clock: Clock,
