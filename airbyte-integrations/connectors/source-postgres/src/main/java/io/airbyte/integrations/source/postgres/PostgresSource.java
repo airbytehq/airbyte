@@ -352,11 +352,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     // to constants somewhere
     String entraAuthConfigKey = "entra_service_principal_auth";
     String entraTenantIdKey = "entra_tenant_id";
+    String entraClientIdKey = "entra_client_id";
 
     Boolean useSpAuth = jdbcConfig.has(entraAuthConfigKey) && jdbcConfig.get(entraAuthConfigKey).booleanValue();
     if (useSpAuth) {
       String tenantId = jdbcConfig.has(entraTenantIdKey) ? jdbcConfig.get(entraTenantIdKey).asText() : null;
-      String clientId = jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null;
+      String clientId = jdbcConfig.has(entraClientIdKey) ? jdbcConfig.get(entraClientIdKey).asText() : null;
       String clientSecret = jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null;
 
       ClientSecretCredential credential = new ClientSecretCredentialBuilder()

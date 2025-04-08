@@ -354,6 +354,12 @@
         "description": "If using entra service principal, the ID of the tenant",
         "type": "string",
         "group": "auth"
+      },
+      "entra_client_id": {
+        "title": "Entra client id",
+        "description": "If using entra service principal, the application ID of the service principal",
+        "type": "string",
+        "group": "auth"
       }
     },
     "groups": [
