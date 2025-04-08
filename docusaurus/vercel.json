@@ -1,0 +1,5 @@
+{
+    "redirects": [
+        { "source": "/robin", "destination": "/batman/robin", "permanent": false }
+    ]
+}
