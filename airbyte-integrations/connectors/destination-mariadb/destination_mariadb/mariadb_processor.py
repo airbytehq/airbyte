@@ -11,8 +11,8 @@ from typing import Any, Iterable
 
 import dpath
 import sqlalchemy
-from airbyte._writers import JsonlWriter
-from airbyte.shared.state_writers import StateWriterBase, StdOutStateWriter
+# from airbyte._writers import JsonlWriter
+# from airbyte.shared.state_writers import StateWriterBase, StdOutStateWriter
 from pydantic_core import SchemaSerializer, CoreSchema, to_json
 from sqlalchemy.engine.reflection import Inspector
 from airbyte.strategies import WriteStrategy
@@ -22,6 +22,7 @@ logger = logging.getLogger("airbyte")
 # from airbyte._processors.file.jsonl import JsonlWriter
 
 # from airbyte.secrets import SecretString
+from airbyte.secrets import SecretString
 from airbyte.types import SQLTypeConverter
 from airbyte_cdk.destinations.vector_db_based.embedder import Document
 from airbyte_cdk.models import (
@@ -47,16 +48,15 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
 # from airbyte_cdk.models import AirbyteRecordMessage
-from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared import SqlProcessorBase
-from airbyte_cdk.sql.shared.sql_processor import SqlConfig
+
+
 from airbyte_protocol.models import DestinationSyncMode
 from overrides import overrides
 from typing_extensions import Protocol
 
 from destination_mariadb.common.catalog.catalog_providers import CatalogProvider
 from destination_mariadb.common.sql.mariadb_types import VECTOR
-# from destination_mariadb.common.sql.sql_processor import SqlConfig, SqlProcessorBase
+from destination_mariadb.common.sql.sql_processor import SqlConfig, SqlProcessorBase
 
 from destination_mariadb.globals import (
     CHUNK_ID_COLUMN,
@@ -83,6 +83,7 @@ class DatabaseConfig(SqlConfig):
     database: str
     username: str
     password: SecretString | str
+
 
 
     @overrides
@@ -113,57 +114,6 @@ class EmbeddingConfig(Protocol):
 
     mode: str
 
-class HackedStdOutStateWriter(StdOutStateWriter):
-    def _write_state(
-        self,
-        state_message: AirbyteStateMessage,
-    ) -> None:
-        """Save or 'write' a state artifact."""
-        # I have no idea why, but model_dump_json doesn't actually exist.
-        # Don't believe your IDE, attempting to call it actually causes an exception.
-        #print(state_message.model_dump_json())
-        logger.info("Attempting to dump a message as JSON")
-        # print(self.hacked_model_dump_json(state_message))
-        logger.info("Seems like we didn't die at least")
-
-
-    def hacked_model_dump_json(
-        self,
-        state_message: AirbyteStateMessage,
-    ) -> str:
-        # needs a "CoreSchema", whatever that is
-        # I hope this works. Nope, this doesn't.
-
-
-
-        """!!! abstract "Usage Documentation"
-            [`model_dump_json`](../concepts/serialization.md#modelmodel_dump_json)
-
-        Generates a JSON representation of the model using Pydantic's `to_json` method.
-
-        Args:
-            indent: Indentation to use in the JSON output. If None is passed, the output will be compact.
-            include: Field(s) to include in the JSON output.
-            exclude: Field(s) to exclude from the JSON output.
-            context: Additional context to pass to the serializer.
-            by_alias: Whether to serialize using field aliases.
-            exclude_unset: Whether to exclude fields that have not been explicitly set.
-            exclude_defaults: Whether to exclude fields that are set to their default value.
-            exclude_none: Whether to exclude fields that have a value of `None`.
-            round_trip: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
-            warnings: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors,
-                "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
-            fallback: A function to call when an unknown value is encountered. If not provided,
-                a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
-            serialize_as_any: Whether to serialize fields with duck-typing serialization behavior.
-
-        Returns:
-            A JSON string representation of the model.
-        """
-        return to_json(
-            state_message
-        ).decode()
-
 
 class MariaDBProcessor(SqlProcessorBase):
     """A MariaDB implementation of the SQL Processor."""
@@ -177,13 +127,11 @@ class MariaDBProcessor(SqlProcessorBase):
     splitter_config: DocumentSplitterConfig
     """The configuration for the document splitter."""
 
-    file_writer_class = JsonlWriter
+    # file_writer_class = JsonlWriter
 
     sql_engine = None
     """Allow the engine to be overwritten"""
 
-
-    _state_writer: StateWriterBase | None
 
     # No need to override `type_converter_class`.
 
@@ -200,7 +148,7 @@ class MariaDBProcessor(SqlProcessorBase):
         self.temp_tables = {}
         self.splitter_config = splitter_config
         self.embedder_config = embedder_config
-        self._state_writer = HackedStdOutStateWriter() # for now
+
         super().__init__(
             sql_config=sql_config,
             catalog_provider=catalog_provider,
@@ -208,6 +156,7 @@ class MariaDBProcessor(SqlProcessorBase):
             # temp_file_cleanup=temp_file_cleanup,
         )
 
+    # YES
     # No, I will override it. Go away with your @final...
     def _get_sql_column_definitions(
             self,
@@ -228,32 +177,6 @@ class MariaDBProcessor(SqlProcessorBase):
             EMBEDDING_COLUMN: VECTOR(self.embedding_dimensions)  # Vector(self.embedding_dimensions),
         }
 
-    def _ensure_schema_exists(self):
-        pass
-
-    def _merge_temp_table_to_final_table(
-            self,
-            stream_name: str,
-            temp_table_name: str,
-            final_table_name: str,
-    ) -> None:
-        columns_list: list[str] = list(
-            self._get_sql_column_definitions(stream_name=stream_name).keys()
-        )
-
-        # for MariaDB, this can probably be replaced by INSERT ... ON DUPLICATE KEY UPDATE
-        statement = dedent(
-            f"""
-            INSERT INTO {final_table_name}
-                ({", ".join(columns_list)})
-            SELECT {", ".join(columns_list)}
-            FROM {temp_table_name}
-            ON DUPLICATE KEY UPDATE;
-            """
-        )
-
-        with self.get_sql_connection() as conn:
-            conn.execute(text(statement))
 
     def _fully_qualified(
             self,
@@ -262,174 +185,16 @@ class MariaDBProcessor(SqlProcessorBase):
         """Return the fully qualified name of the given table."""
         return f"{self._quote_identifier(table_name)}"
 
-    def _emulated_merge_temp_table_to_final_table(
-            self,
-            stream_name: str,
-            temp_table_name: str,
-            final_table_name: str,
-    ) -> None:
-        """Emulate the merge operation using a series of SQL commands.
 
-        This method varies from the default SqlProcessor implementation in that multiple rows will exist for each
-        primary key. And we need to remove all rows (chunks) for a given primary key before inserting new ones.
-
-        So instead of using UPDATE and then INSERT, we will DELETE all rows for included primary keys and then call
-        the append implementation to insert new rows.
-        """
-        columns_list: list[str] = list(
-            self._get_sql_column_definitions(stream_name=stream_name).keys()
-        )
-
-        delete_statement = dedent(
-            f"""
-            DELETE FROM {final_table_name}
-            WHERE {DOCUMENT_ID_COLUMN} IN (
-                SELECT {DOCUMENT_ID_COLUMN}
-                FROM {temp_table_name}
-            );
-            """
-        )
-        append_statement = dedent(
-            f"""
-            INSERT INTO {final_table_name}
-                ({", ".join(columns_list)})
-            SELECT {", ".join(columns_list)}
-            FROM {temp_table_name};
-            """
-        )
-
-        with self.get_sql_connection() as conn:
-            # This is a transactional operation to avoid "outages", in case
-            # a user queries the data during the operation.
-            conn.execute(text(delete_statement))
-            conn.execute(text(append_statement))
-
+    #yes
     def _get_placeholder_name(self, identifier: str) -> str:
         return f'{identifier}_val'
 
-
+    # yes
     def _quote_identifier(self, identifier: str) -> str:
         """Return the given identifier, quoted."""
         return f'`{identifier}`'
 
-    def process_record_message(
-            self,
-            record_msg: AirbyteRecordMessage,
-            stream_schema: dict | None = None,
-    ) -> None:
-        """Write a record to the cache.
-
-        We override the SQLProcessor implementation in order to handle chunking, embedding, etc.
-
-        This method is called for each record message, before the record is written to local file.
-        """
-        document_chunks, _ = self.splitter.process(record_msg)
-
-        # _ = id_to_delete  # unused
-
-        # WTF is this even? The docblock says "Embed the text of each CHUNK, so why does it demand Documents?"
-        # TODO try to convert chunks to documents, I guess? Basically throw away some of the properties
-        embeddings = self.embedder.embed_documents(
-            documents=document_chunks,
-
-        )
-        for i, chunk in enumerate(document_chunks, start=0):
-            new_data: dict[str, Any] = {
-                DOCUMENT_ID_COLUMN: self._create_document_id(record_msg),
-                CHUNK_ID_COLUMN: str(uuid.uuid4().int),
-                METADATA_COLUMN: chunk.metadata,
-                DOCUMENT_CONTENT_COLUMN: chunk.page_content,
-                EMBEDDING_COLUMN: embeddings[i],
-            }
-
-            # self.ins
-
-            self.file_writer.process_record_message(
-                record_msg=AirbyteRecordMessage(
-                    namespace=record_msg.namespace,
-                    stream=record_msg.stream,
-                    data=new_data,
-                    emitted_at=record_msg.emitted_at,
-                ),
-                stream_schema={
-                    "type": "object",
-                    "properties": {
-                        DOCUMENT_ID_COLUMN: {"type": "string"},
-                        CHUNK_ID_COLUMN: {"type": "string"},
-                        METADATA_COLUMN: {"type": "object"},
-                        DOCUMENT_CONTENT_COLUMN: {"type": "string"},
-                        EMBEDDING_COLUMN: {
-                            "type": "array",
-                            "items": {"type": "float"},
-                        },
-                    },
-                },
-            )
-
-    def process_airbyte_messages(
-            self,
-            messages: Iterable[AirbyteMessage],
-            *,
-            write_strategy: WriteStrategy,
-    ) -> None:
-        # TODO
-        """Process a stream of Airbyte messages.
-        if not isinstance(write_strategy, WriteStrategy):
-            raise exc.AirbyteInternalError(
-                message="Invalid `write_strategy` argument. Expected instance of WriteStrategy.",
-                context={"write_strategy": write_strategy},
-            )
-        """
-
-        stream_schemas: dict[str, dict] = {}
-
-        # Process messages, writing to batches as we go
-        for message in messages:
-            if message.type is Type.RECORD:
-                record_msg = cast(AirbyteRecordMessage, message.record)
-                stream_name = record_msg.stream
-
-                # TODO is this relevant for me?
-                if stream_name not in stream_schemas:
-                    stream_schemas[stream_name] = self.catalog_provider.get_stream_json_schema(
-                        stream_name=stream_name
-                    )
-
-                self.process_record_message(
-                    record_msg
-                    # stream_schema=stream_schemas[stream_name],
-                )
-
-            elif message.type is Type.STATE:
-                state_msg = cast(AirbyteStateMessage, message.state)
-                if state_msg.type in {AirbyteStateType.GLOBAL, AirbyteStateType.LEGACY}:
-                    self._pending_state_messages[f"_{state_msg.type}"].append(state_msg)
-                elif state_msg.type is AirbyteStateType.STREAM:
-                    stream_state = cast(AirbyteStreamState, state_msg.stream)
-                    stream_name = stream_state.stream_descriptor.name
-                    self._pending_state_messages[stream_name].append(state_msg)
-                else:
-                    # TODO
-                    """
-                    warnings.warn(
-                        f"Unexpected state message type. State message was: {state_msg}",
-                        stacklevel=2,
-                    )
-                    """
-                    self._pending_state_messages[f"_{state_msg.type}"].append(state_msg)
-
-            else:
-                # Ignore unexpected or unhandled message types:
-                # Type.LOG, Type.TRACE, Type.CONTROL, etc.
-                pass
-
-        # We've finished processing input data.
-        # Finalize all received records and state messages:
-        self.write_all_stream_data(
-            write_strategy=write_strategy,
-        )
-
-        # self.cleanup_all()
 
     def _add_missing_columns_to_table(
             self,
@@ -438,8 +203,7 @@ class MariaDBProcessor(SqlProcessorBase):
     ) -> None:
         """Add missing columns to the table.
 
-        This is a no-op because metadata scans do not work with the `VECTOR` data type.
-        ^ that's what it said in PGVector
+        @TODO implement
         """
         pass
 
@@ -462,6 +226,7 @@ class MariaDBProcessor(SqlProcessorBase):
             catalog=self.catalog_provider.configured_catalog,
         )
 
+    # yes
     def _create_document_id(self, record_msg: AirbyteRecordMessage) -> str:
         """Create document id based on the primary key values. Returns a random uuid if no primary key is found"""
         stream_name = record_msg.stream
@@ -470,6 +235,7 @@ class MariaDBProcessor(SqlProcessorBase):
             return f"Stream_{stream_name}_Key_{primary_key}"
         return str(uuid.uuid4().int)
 
+    # yes
     def _get_record_primary_key(self, record_msg: AirbyteRecordMessage) -> str | None:
         """Create primary key for the record by appending the primary keys."""
         stream_name = record_msg.stream
@@ -488,6 +254,7 @@ class MariaDBProcessor(SqlProcessorBase):
         stringified_primary_key = "_".join(primary_key)
         return stringified_primary_key
 
+    # yes
     def _get_primary_keys(
         self,
         stream_name: str,
@@ -504,6 +271,7 @@ class MariaDBProcessor(SqlProcessorBase):
 
         return joined_pks
 
+    # yes
     def get_writing_strategy(
             self,
             stream_name
@@ -520,6 +288,7 @@ class MariaDBProcessor(SqlProcessorBase):
         return WriteStrategy.APPEND
 
 
+    #yes
     def insert_airbyte_message(
             self,
             stream_name: str,
@@ -591,14 +360,12 @@ class MariaDBProcessor(SqlProcessorBase):
                         cur_val = new_data[placeholder_name]
                         new_data[placeholder_name] = bindproc(cur_val)
 
-                # I do not know why, but this doesn't seem to do actual binding. Instead, values are escaped and put
+                # This doesn't seem to do actual binding. Instead, values are escaped and put
                 # into the query as strings. This circumvents any "smart" ideas like putting Vec_FromText() into
                 # the vector's bind_processor
                 conn.execute(text(query), new_data)
 
-
-    #def encode_
-
+    # yes
     def chunks_to_documents(self, chunks: list[Chunk]) -> list[Document]:
         result = []
         for chunk in chunks:
@@ -609,26 +376,7 @@ class MariaDBProcessor(SqlProcessorBase):
             pass
         return result
 
-    # foo
-    def insert_airbyte_messages(
-            self,
-            stream_name: str,
-            table_name: str,
-            input_messages: Iterable[AirbyteMessage],
-            merge: bool
-    ):
-
-        for message in input_messages:
-            # So basically, if it's a record, process it as such. If it's a state, yield it back out
-
-            if message.type is Type.RECORD:
-                self.insert_airbyte_message(stream_name, table_name, cast(AirbyteRecordMessage, message), merge)
-                pass
-            elif message.type is Type.STATE:
-                yield cast(AirbyteStateMessage, message)
-            else:
-                pass
-
+    # yes
     def _ensure_temp_table(self, stream_name):
         """
         Creates a new temp table for the given stream, or returns an existing name
@@ -640,6 +388,7 @@ class MariaDBProcessor(SqlProcessorBase):
         self.temp_tables[stream_name] = temp_table_name
         return temp_table_name
 
+    # yes
     def _finalize_temp_tables(self):
         for stream_name, temp_table in self.temp_tables:
             final_table_name = self.get_sql_table_name(stream_name)
@@ -650,6 +399,7 @@ class MariaDBProcessor(SqlProcessorBase):
             )
         pass
 
+    # yes
     def _get_tables_list(
         self,
     ) -> list[str]:
@@ -659,6 +409,7 @@ class MariaDBProcessor(SqlProcessorBase):
             return inspector.get_table_names()  # type: ignore
 
 
+    # YES
     def process_airbyte_record_message(
             self,
             message: AirbyteRecordMessage,
@@ -692,10 +443,12 @@ class MariaDBProcessor(SqlProcessorBase):
             self.insert_airbyte_message(stream_name, real_table_name, message, False)
             return
 
+    # YES
     def _finalize_writing(self):
         self._finalize_temp_tables()
 
 
+    # YES
     def process_airbyte_messages_as_generator(
             self,
             input_messages: Iterable[AirbyteMessage],

@@ -17,7 +17,7 @@ import ulid
 from airbyte import exceptions as exc
 from airbyte._util.name_normalizers import LowerCaseNormalizer
 from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
-from airbyte.progress import progress
+# from airbyte.progress import progress
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
@@ -136,7 +136,7 @@ class SqlProcessorBase(RecordProcessorBase):
         state_writer: StateWriterBase | None = None,
         file_writer: FileWriterBase | None = None,
         temp_dir: Path | None = None,
-        temp_file_cleanup: bool,
+        #temp_file_cleanup: bool,
     ) -> None:
         if not temp_dir and not file_writer:
             raise exc.PyAirbyteInternalError(
@@ -151,10 +151,12 @@ class SqlProcessorBase(RecordProcessorBase):
             state_writer=state_writer,
             catalog_provider=catalog_provider,
         )
+        """
         self.file_writer = file_writer or self.file_writer_class(
             cache_dir=cast(Path, temp_dir),
             cleanup=temp_file_cleanup,
         )
+        """
         self.type_converter = self.type_converter_class()
         self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
         # self._ensure_schema_exists()
@@ -324,7 +326,7 @@ class SqlProcessorBase(RecordProcessorBase):
         self,
         /,
         stream_name: str,
-        batch_id: str,
+        batch_id: str | None,
     ) -> str:
         """Create a new table for loading data."""
         temp_table_name = self._get_temp_table_name(stream_name, batch_id)
@@ -423,6 +425,7 @@ class SqlProcessorBase(RecordProcessorBase):
 
         return columns
 
+    # no
     @final
     def write_stream_data(
         self,
@@ -476,7 +479,7 @@ class SqlProcessorBase(RecordProcessorBase):
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
 
-        progress.log_stream_finalized(stream_name)
+        # progress.log_stream_finalized(stream_name)
 
         # Return the batch handles as measure of work completed.
         return batches_to_finalize
@@ -641,6 +644,7 @@ class SqlProcessorBase(RecordProcessorBase):
                 # We've added columns, so invalidate the cache.
                 self._invalidate_table_cache(table_name)
 
+    # no
     @final
     def _write_temp_table_to_final_table(
         self,
@@ -795,6 +799,7 @@ class SqlProcessorBase(RecordProcessorBase):
         ])
         self._execute_sql(commands)
 
+    # no
     def _merge_temp_table_to_final_table(
         self,
         stream_name: str,
@@ -852,6 +857,7 @@ class SqlProcessorBase(RecordProcessorBase):
                 },
             ) from None
 
+    # todo remove
     def _emulated_merge_temp_table_to_final_table(
         self,
         stream_name: str,

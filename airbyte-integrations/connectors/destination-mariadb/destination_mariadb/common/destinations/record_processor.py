@@ -114,6 +114,7 @@ class RecordProcessorBase(abc.ABC):
 
         return self._state_writer
 
+    # is this special? but seem unused
     @final
     def process_stdin(
         self,
@@ -138,6 +139,7 @@ class RecordProcessorBase(abc.ABC):
         """Yield messages from a buffer."""
         yield from (AirbyteMessage.parse_raw(line) for line in buffer)
 
+    # no
     @final
     def process_input_stream(
         self,
@@ -169,6 +171,7 @@ class RecordProcessorBase(abc.ABC):
         the file processor.
         """
 
+    # NO
     def process_airbyte_messages_as_generator(
         self,
         messages: Iterable[AirbyteMessage],
@@ -211,6 +214,7 @@ class RecordProcessorBase(abc.ABC):
         # Yield all messages from the output queue
         yield from output_queue.queue
 
+    # no
     @final
     def process_airbyte_messages(
         self,
@@ -271,6 +275,7 @@ class RecordProcessorBase(abc.ABC):
 
         self.cleanup_all()
 
+    # no
     def write_all_stream_data(self, write_strategy: WriteStrategy) -> None:
         """Finalize any pending writes."""
         for stream_name in self.catalog_provider.stream_names:
@@ -279,6 +284,7 @@ class RecordProcessorBase(abc.ABC):
                 write_strategy=write_strategy,
             )
 
+    # no
     @abc.abstractmethod
     def write_stream_data(
         self,
