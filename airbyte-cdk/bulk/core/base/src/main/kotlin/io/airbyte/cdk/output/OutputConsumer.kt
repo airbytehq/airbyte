@@ -33,7 +33,7 @@ import java.util.function.Consumer
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
 //@DefaultImplementation(StdoutOutputConsumer::class)
-@DefaultImplementation(UnixDomainSocketOutputConsumer::class)
+@DefaultImplementation(UnixDomainSocketOutputConsumerProvider::class)
 abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
     /**
      * The constant emittedAt timestamp we use for record timestamps.
@@ -108,7 +108,9 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
         )
     }
 
-    abstract fun getS(num: Int): List<OutputConsumer>?
+    open fun getSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
+        throw UnsupportedOperationException("Not implemented")
+    }
 }
 
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
@@ -252,10 +254,6 @@ open class StdoutOutputConsumer(
 
     private val namespacedTemplates = ConcurrentHashMap<String, StreamToTemplateMap>()
     private val unNamespacedTemplates = StreamToTemplateMap()
-
-    override fun getS(num: Int): List<OutputConsumer>? {
-        return null
-    }
 
     companion object {
         const val META_PREFIX = ""","meta":"""
