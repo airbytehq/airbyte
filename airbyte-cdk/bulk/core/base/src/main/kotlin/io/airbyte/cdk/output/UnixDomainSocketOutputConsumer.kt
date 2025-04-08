@@ -1,6 +1,8 @@
 package io.airbyte.cdk.output
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SequenceWriter
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -27,22 +31,9 @@ import java.nio.channels.SocketChannel
 import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
-private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-//private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
+//private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
-
-fun initSmileMapper(): ObjectMapper {
-    return configure(SmileMapper())
-}
-
-fun configure(objectMapper: ObjectMapper): ObjectMapper {
-    return objectMapper
-        .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
-        .registerModule(JavaTimeModule())
-        .registerModule(AfterburnerModule())
-
-
-}
 
 @Singleton
 class UnixDomainSocketOutputConsumer(
@@ -57,7 +48,22 @@ class UnixDomainSocketOutputConsumer(
     public val SMILE_MAPPER: ObjectMapper = initSmileMapper();
     private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
 //    private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
-    private lateinit var templateRecord: JsonNode
+//    private lateinit var templateRecord: JsonNode
+
+
+    fun initSmileMapper(): ObjectMapper {
+        return configure(SmileMapper())
+    }
+
+    fun configure(objectMapper: ObjectMapper): ObjectMapper {
+        return objectMapper
+            .registerModule(JavaTimeModule())
+            .registerModule(AfterburnerModule())
+            .registerModule(kotlinModule())
+            .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    }
 
     fun setSocketNum(num: Int) {
         socketNum = num
@@ -74,13 +80,13 @@ class UnixDomainSocketOutputConsumer(
         // - the "meta" field is often unset.
         // For this reason, this method builds and reuses a JSON template for each stream.
         // Then, for each record, it serializes just "data" and "meta" to populate the template.
-        if (::templateRecord.isInitialized.not()) {
+//        if (::templateRecord.isInitialized.not()) {
             val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
 
             val tmplt = String(template.prefix + "{}".toByteArray() + template.suffix)
 
-            templateRecord = Jsons.readTree(tmplt)
-        }
+            val templateRecord = Jsons.readTree(tmplt)
+//        }
         val rec = templateRecord.get("record") as ObjectNode
         rec.set<ObjectNode>("data", record.data)
 
