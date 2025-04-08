@@ -2,9 +2,11 @@ package io.airbyte.cdk.output
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.databind.SequenceWriter
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
@@ -19,6 +21,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
@@ -26,6 +29,7 @@ import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.channels.Channels
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
 import java.time.Clock
@@ -44,10 +48,12 @@ class UnixDomainSocketOutputConsumer(
 ) : StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private var socketNum: Int = -1
     var sc: SocketChannel? = null
+    var bufferedOutputStream: BufferedOutputStream? = null
     lateinit var ll: List<UnixDomainSocketOutputConsumer>
     public val SMILE_MAPPER: ObjectMapper = initSmileMapper();
     private val smileGenerator: JsonGenerator = SMILE_MAPPER.createGenerator(buffer)
-//    private val smileSequenceWriter: SequenceWriter = SMILE_MAPPER.writer().writeValues(smileGenerator)
+    private val smileWriter: ObjectWriter? = SMILE_MAPPER.writerFor(AirbyteMessage::class.java).with(
+        MinimalPrettyPrinter(System.lineSeparator()))
 //    private lateinit var templateRecord: JsonNode
 
 
@@ -69,72 +75,8 @@ class UnixDomainSocketOutputConsumer(
         socketNum = num
     }
 
-    override fun accept(record: AirbyteRecordMessage) {
-        // The serialization of RECORD messages can become a performance bottleneck for source
-        // connectors because they can come in much higher volumes than other message types.
-        // Specifically, with jackson, the bottleneck is in the object mapping logic.
-        // As it turns out, this object mapping logic is not particularly useful for RECORD messages
-        // because within a given stream the only variations occur in the "data" and the "meta"
-        // fields:
-        // - the "data" field is already an ObjectNode and is cheap to serialize,
-        // - the "meta" field is often unset.
-        // For this reason, this method builds and reuses a JSON template for each stream.
-        // Then, for each record, it serializes just "data" and "meta" to populate the template.
-//        if (::templateRecord.isInitialized.not()) {
-            val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
-
-            val tmplt = String(template.prefix + "{}".toByteArray() + template.suffix)
-
-            val templateRecord = Jsons.readTree(tmplt)
-//        }
-        val rec = templateRecord.get("record") as ObjectNode
-        rec.set<ObjectNode>("data", record.data)
-
-//        val tb = ByteArrayOutputStream()
-//        val gen = SMILE_MAPPER.createGenerator(tb)
-//        Jsons.writeTree(gen, tt)
-
-//        val rr = SMILE_MAPPER.readTree(tb.toByteArray())
-//        val rr = SMILE_MAPPER.readerFor(AirbyteMessage::class.java).readTree(tb.toByteArray())
-//        logger.info { rr }
-//        assert(rr == tt)
-//        synchronized(this) {
-        // Write a newline character to the buffer if it's not empty.
-//        withLockMaybeWriteNewline()
-        // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
-//        buffer.write(template.prefix)
-        // Serialize the record data ObjectNode to JSON, writing it to the buffer.
-//        Jsons.writeTree(smileGenerator, record.data)
-
-//        Jsons.writeTree(smileGenerator, templateRecord)
-        try {
-            smileGenerator.writeTree(templateRecord)
-            smileGenerator.flush()
-        } catch (e: Exception) {
-            logger.error(e) { "Error serializing $templateRecord" }
-            throw e
-        }
-        // If the record has a AirbyteRecordMessageMeta instance set,
-        // write ',"meta":' followed by the serialized meta.
-        /*val meta: AirbyteRecordMessageMeta? = record.meta
-        if (meta != null) {
-            buffer.write(metaPrefixBytes)
-            smileSequenceWriter.write(meta)
-            smileSequenceWriter.flush()
-        }*/
-        // Write ',"emitted_at":...}}'.
-//        buffer.write(template.suffix)
-        // Flush the buffer to stdout only once it has reached a certain size.
-        // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
-        // which otherwise becomes very apparent when lots of tiny records are involved.
-        if (buffer.size() >= bufferByteSizeThresholdForFlush) {
-            withLockFlushRecord()
-        }
-//        }
-
-    }
-    override fun withLockFlushRecord() {
-        synchronized(this) {
+    override fun accept(airbyteMessage: AirbyteMessage) {
+        if (airbyteMessage.type == AirbyteMessage.Type.RECORD) {
             sc ?: let {
                 val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
                 logger.info { "Using socket..." }
@@ -149,8 +91,18 @@ class UnixDomainSocketOutputConsumer(
                 serverSocketChannel.bind(address)
                 logger.info { "Source : Server socket bound at ${socketFile.absolutePath}" }
                 sc = serverSocketChannel.accept()
+
+                bufferedOutputStream = Channels.newOutputStream(sc).buffered()
             }
+            val seqWriter = smileWriter!!.writeValues(bufferedOutputStream)
+            seqWriter.write(airbyteMessage)
+            bufferedOutputStream!!.flush()
+
+        } else {
+            super.accept(airbyteMessage)
         }
+    }
+    override fun withLockFlushRecord() {
         if (buffer.size() > 0) {
             val array: ByteArray = buffer.toByteArray()
             sc?.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))
