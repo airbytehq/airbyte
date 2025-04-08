@@ -1,5 +1,6 @@
 {
-    "redirects": [
-        { "source": "/robin", "destination": "/batman/robin", "permanent": false }
-    ]
+  "redirects": [
+    { "source": "/robin", "destination": "/batman/robin", "permanent": false }
+  ]
 }
+
