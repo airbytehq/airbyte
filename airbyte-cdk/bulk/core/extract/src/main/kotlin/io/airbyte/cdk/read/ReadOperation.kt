@@ -33,7 +33,7 @@ class ReadOperation(
     val configuredCatalog: ConfiguredAirbyteCatalog,
     val inputState: InputState,
     val stateManagerFactory: StateManagerFactory,
-    @Named("stdoutOutputConsumer") val outputConsumer: OutputConsumer,
+    val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) : Operation {
