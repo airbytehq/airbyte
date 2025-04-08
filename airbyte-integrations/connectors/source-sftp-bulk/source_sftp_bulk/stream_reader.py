@@ -120,9 +120,10 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
 
         return progress_handler
 
-
     @override
-    def upload(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+    def upload(
+        self, file: RemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
         """
         Downloads a file from SFTP server to a specified local directory.
 
