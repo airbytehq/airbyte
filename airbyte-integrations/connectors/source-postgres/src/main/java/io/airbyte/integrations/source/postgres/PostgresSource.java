@@ -389,7 +389,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        getPassword(jdbcConfig),
+        getPassword(sourceConfig),
         driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
