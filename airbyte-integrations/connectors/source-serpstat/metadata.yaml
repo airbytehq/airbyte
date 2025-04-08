@@ -1,27 +1,35 @@
+metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - api.serpstat.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-serpstat
-  registries:
+      - "api.serpstat.com"
+  registryOverrides:
     oss:
       enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-serpstat
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.0@sha256:0508eca3b3193ba7883a80f0f739073f5bd99a8f565720c2f95286d5b4f48cb6
   connectorSubtype: api
   connectorType: source
   definitionId: 3b2e8fb2-9137-41ff-a1e1-83ecb39e26c8
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-serpstat
   githubIssueLabel: source-serpstat
-  icon: serpstat.svg
+  icon: icon.svg
   license: MIT
   name: Serpstat
-  releaseDate: 2023-12-12
+  releaseDate: 2025-04-08
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/serpstat
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
-metadataSpecVersion: "1.0"
+  ab_internal:
+    ql: 100
+    sl: 100
