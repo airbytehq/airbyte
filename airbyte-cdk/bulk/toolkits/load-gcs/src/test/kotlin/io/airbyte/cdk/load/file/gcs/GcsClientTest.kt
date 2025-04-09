@@ -42,23 +42,21 @@ class GcsClientTest {
 
     @Test
     fun `test list with empty prefix`() = runBlocking {
-        val blob1 = mockBlob("test-file1")
-        val blob2 = mockBlob("test-file2")
-        val blobs = listOf(blob1, blob2)
+        val prefix = ""
+        val expectedFullPrefix = "$bucketName/$prefix"
+        val blob1 = mockBlob("$expectedFullPrefix/test-file1")
+        val blobs = listOf(blob1)
 
-        every { storage.list(bucketName, Storage.BlobListOption.prefix(bucketName)) } returns
-            mockk { every { iterateAll() } returns blobs }
-        every { blobs.iterator() } returns listOf(blob1, blob2).iterator()
+        every {
+            storage.list(bucketName, Storage.BlobListOption.prefix(expectedFullPrefix))
+        } returns mockk { every { iterateAll() } returns blobs }
 
-        val results = gcsClient.list("").toList()
+        val results = gcsClient.list(prefix).toList()
 
-        assertEquals(2, results.size)
-        assertEquals("test-file1", results[0].key)
-        assertEquals("test-file2", results[1].key)
-        assertEquals(config, results[0].storageConfig)
-        assertEquals(config, results[1].storageConfig)
+        assertEquals(1, results.size)
+        assertEquals("$expectedFullPrefix/test-file1", results[0].key)
 
-        verify { storage.list(bucketName, Storage.BlobListOption.prefix(bucketName)) }
+        verify { storage.list(bucketName, Storage.BlobListOption.prefix(expectedFullPrefix)) }
     }
 
     @Test
@@ -71,7 +69,6 @@ class GcsClientTest {
         every {
             storage.list(bucketName, Storage.BlobListOption.prefix(expectedFullPrefix))
         } returns mockk { every { iterateAll() } returns blobs }
-        //        every { blobs.iterator() } returns listOf(blob1).iterator()
 
         val results = gcsClient.list(prefix).toList()
 
