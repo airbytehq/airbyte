@@ -21,8 +21,12 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.CONFIG_ERROR_MSG
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_FORBIDDEN
 import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_NOT_FOUND
+import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.TempUtils
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.condition.Condition
+import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Singleton
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -50,6 +54,14 @@ class BigqueryDirectLoader(
     }
 }
 
+class BigqueryConfiguredForDirectLoad : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        val config = context.beanContext.getBean(BigqueryConfiguration::class.java)
+        return config.loadingMethod is BatchedStandardInsertConfiguration
+    }
+}
+
+@Requires(condition = BigqueryConfiguredForDirectLoad::class)
 @Singleton
 class BigqueryDirectLoaderFactory(
     private val bigquery: BigQuery,
