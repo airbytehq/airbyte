@@ -5,12 +5,15 @@
 package io.airbyte.cdk.load.file.gcs
 
 import com.google.auth.oauth2.AwsCredentials
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.storage.StorageOptions
+import com.google.common.base.Charsets
 import io.airbyte.cdk.load.command.gcs.GcsClientConfigurationProvider
 import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.io.ByteArrayInputStream
 
 @Factory
 class GcsClientFactory(
@@ -30,7 +33,7 @@ class GcsClientFactory(
                 .build()
 
         // For HMAC authentication, we use StorageOptions with AwsCredentials
-        val storage = StorageOptions.newBuilder().setCredentials(awsCredentials).build().service
+        val storage = StorageOptions.newBuilder().setCredentials(creds).build().service
 
         return GcsClient(storage, config)
     }
