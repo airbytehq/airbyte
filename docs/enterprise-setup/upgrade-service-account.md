@@ -2,7 +2,7 @@
 products: oss-enterprise
 ---
 
-# Update your service account for 1.6
+# Update service account for 1.6
 
 Airbyte version 1.6 introduced a breaking change for service account permissions. If you're a Self-Managed Enterprise customer upgrading from 1.5.1 or earlier to 1.6 or later, follow the directions in this article before you upgrade to 1.6. If you're a Self-Managed Community user, this information isn't relevant to you.
 
@@ -21,9 +21,13 @@ java.lang.IllegalStateException: Upgrade to version AirbyteVersion{version='1.6.
 
 Airbyte does not begin the upgrade process, and you can continue using your old version until you're ready to update permissions.
 
+<!-- Do we need to undo anything locally, or does this fail gracefully? -->
+
 ## Update permissions and begin the upgrade
 
 Follow the steps below to update your service account permissions.
+
+<!-- Alex says it's not values.yaml change, we need to change the actual service acount. What happens if they're using the default Airbyte service worker? -->
 
 1. Update your `values.yaml` file.
 
