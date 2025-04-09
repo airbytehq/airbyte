@@ -14,10 +14,10 @@ from source_sftp_bulk import SourceSFTPBulk
 
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import (
+    AirbyteRecordMessageFileReference,
     FailureType,
     Status,
 )
-from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -107,9 +107,9 @@ def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_file_transfer, state=None)
     output = read(source=source, config=config_fixture_use_file_transfer, catalog=configured_catalog)
     expected_file_data = AirbyteRecordMessageFileReference(
-        file_size_bytes =  46_754_266,
-        source_file_relative_path ="files/file_transfer/file_transfer_1.csv",
-        staging_file_url = "/tmp/airbyte-file-transfer/files/file_transfer/file_transfer_1.csv",
+        file_size_bytes=46_754_266,
+        source_file_relative_path="files/file_transfer/file_transfer_1.csv",
+        staging_file_url="/tmp/airbyte-file-transfer/files/file_transfer/file_transfer_1.csv",
     )
     assert len(output.records) == 1
     assert list(map(lambda record: record.record.file_reference, output.records)) == [expected_file_data]
