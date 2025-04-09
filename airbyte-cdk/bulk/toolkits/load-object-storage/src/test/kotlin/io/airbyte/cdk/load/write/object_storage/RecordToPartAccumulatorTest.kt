@@ -5,12 +5,15 @@
 package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.object_storage.*
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -40,15 +43,18 @@ class RecordToPartAccumulatorTest {
         coEvery { bufferedWriter.close() } returns Unit
     }
 
-    private fun makeRecord(): DestinationRecordAirbyteValue =
-        DestinationRecordAirbyteValue(
+    private fun makeRecord(): DestinationRecordRaw =
+        DestinationRecordRaw(
             stream,
-            ObjectValue(linkedMapOf()),
-            0L,
-            null,
+            AirbyteMessage()
+                .withRecord(
+                    AirbyteRecordMessage().withEmittedAt(42).withData(Jsons.createObjectNode())
+                ),
+            serialized = "",
+            ObjectTypeWithEmptySchema,
         )
 
-    private fun makeRecords(n: Int): Iterator<DestinationRecordAirbyteValue> =
+    private fun makeRecords(n: Int): Iterator<DestinationRecordRaw> =
         (0 until n).map { makeRecord() }.listIterator()
 
     private fun makeBytes(n: Int): ByteArray? =

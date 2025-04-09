@@ -1,9 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const {
-  parseMarkdownContentTitle,
-  parseMarkdownFile,
-} = require("@docusaurus/utils");
+const { parseMarkdownContentTitle, parseMarkdownFile } = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -20,7 +17,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
           fileName.endsWith("-migrations.md") ||
           fileName.endsWith(".js") ||
           fileName === "low-code.md"
-        )
+        ),
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
@@ -28,20 +25,20 @@ function getFilenamesInDir(prefix, dir, excludes) {
       // Get the first header of the markdown document
       try {
         const filePath = path.join(dir, `${filename}.md`);
-        const fileContent = fs.readFileSync(filePath, 'utf8');
-        const firstLine = fileContent.split('\n').find(line => line.trim().startsWith('# '));
-        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, '').trim() : filename;
+        const fileContent = fs.readFileSync(filePath, "utf8");
+        const firstLine = fileContent.split("\n").find((line) => line.trim().startsWith("# "));
+        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, "").trim() : filename;
         return {
-          type: 'doc',
+          type: "doc",
           id: prefix + filename,
-          label: contentTitle || filename
+          label: contentTitle || filename,
         };
       } catch (error) {
         console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
         return {
-          type: 'doc',
+          type: "doc",
           id: prefix + filename,
-          label: filename
+          label: filename,
         };
       }
 
@@ -89,10 +86,9 @@ function getDestinationConnectors() {
 }
 
 function getEnterpriseConnectors() {
-  return getFilenamesInDir(
-    "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs, ["readme"]
-  );
+  return getFilenamesInDir("integrations/enterprise-connectors/", enterpriseConnectorDocs, [
+    "readme",
+  ]);
 }
 
 const sourcePostgres = {
@@ -222,7 +218,7 @@ const buildAConnector = {
   items: [
     {
       type: "category",
-      label: "No-Code Connector Builder",
+      label: "Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/tutorial",
@@ -241,29 +237,10 @@ const buildAConnector = {
             "connector-development/connector-builder-ui/async-streams",
           ],
         },
-      ],
-    },
-    {
-      type: "category",
-      label: "Low-Code CDK",
-      items: [
         {
           label: "Low-Code CDK Intro",
           type: "doc",
           id: "connector-development/config-based/low-code-cdk-overview",
-        },
-        {
-          type: "category",
-          label: "Tutorial",
-          items: [
-            "connector-development/config-based/tutorial/getting-started",
-            "connector-development/config-based/tutorial/create-source",
-            "connector-development/config-based/tutorial/install-dependencies",
-            "connector-development/config-based/tutorial/connecting-to-the-API-source",
-            "connector-development/config-based/tutorial/reading-data",
-            "connector-development/config-based/tutorial/incremental-reads",
-            "connector-development/config-based/tutorial/testing",
-          ],
         },
         {
           type: "category",
@@ -306,7 +283,7 @@ const buildAConnector = {
             "connector-development/config-based/advanced-topics/parameters",
             "connector-development/config-based/advanced-topics/references",
             "connector-development/config-based/advanced-topics/string-interpolation",
-          ]
+          ],
         },
       ],
     },
@@ -325,29 +302,21 @@ const buildAConnector = {
         "connector-development/cdk-python/resumable-full-refresh-stream",
         "connector-development/cdk-python/incremental-stream",
         "connector-development/cdk-python/http-streams",
-        "connector-development/cdk-python/python-concepts",
-        "connector-development/cdk-python/migration-to-base-image",
         "connector-development/cdk-python/stream-slices",
+        "connector-development/cdk-python/migration-to-base-image",
         {
           type: "category",
-          label: "Tutorials",
+          label: "Tutorial: Creating a connector with Python CDK",
           items: [
-            "connector-development/tutorials/cdk-speedrun",
-            {
-              type: "category",
-              label: "Python CDK: Creating a Python Source",
-              items: [
-                "connector-development/tutorials/custom-python-connector/getting-started",
-                "connector-development/tutorials/custom-python-connector/environment-setup",
-                "connector-development/tutorials/custom-python-connector/reading-a-page",
-                "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
-                "connector-development/tutorials/custom-python-connector/check-and-error-handling",
-                "connector-development/tutorials/custom-python-connector/discover",
-                "connector-development/tutorials/custom-python-connector/incremental-reads",
-                "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
-                "connector-development/tutorials/custom-python-connector/concurrency",
-              ],
-            },
+            "connector-development/tutorials/custom-python-connector/getting-started",
+            "connector-development/tutorials/custom-python-connector/environment-setup",
+            "connector-development/tutorials/custom-python-connector/reading-a-page",
+            "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
+            "connector-development/tutorials/custom-python-connector/check-and-error-handling",
+            "connector-development/tutorials/custom-python-connector/discover",
+            "connector-development/tutorials/custom-python-connector/incremental-reads",
+            "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
+            "connector-development/tutorials/custom-python-connector/concurrency",
           ],
         },
       ],
@@ -359,9 +328,7 @@ const buildAConnector = {
         type: "doc",
         id: "connector-development/testing-connectors/README",
       },
-      items: [
-        "connector-development/testing-connectors/connector-acceptance-tests-reference",
-      ],
+      items: ["connector-development/testing-connectors/connector-acceptance-tests-reference"],
     },
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
@@ -396,8 +363,8 @@ const connectorCatalog = {
         sourceMssql,
         ...getSourceConnectors(),
       ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || '';
-        const labelB = itemB?.label || '';
+        const labelA = itemA?.label || "";
+        const labelB = itemB?.label || "";
         return labelA.localeCompare(labelB);
       }),
     },
@@ -408,15 +375,13 @@ const connectorCatalog = {
         type: "doc",
         id: "integrations/destinations/README",
       },
-      items: [
-        destinationS3,
-        destinationPostgres,
-        ...getDestinationConnectors(),
-      ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || '';
-        const labelB = itemB?.label || '';
-        return labelA.localeCompare(labelB);
-      }),
+      items: [destinationS3, destinationPostgres, ...getDestinationConnectors()].sort(
+        (itemA, itemB) => {
+          const labelA = itemA?.label || "";
+          const labelB = itemB?.label || "";
+          return labelA.localeCompare(labelB);
+        },
+      ),
     },
     {
       type: "doc",
@@ -549,6 +514,7 @@ const understandingAirbyte = {
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",
+    "understanding-airbyte/heartbeats",
   ],
 };
 
@@ -651,8 +617,8 @@ module.exports = {
             id: "integrations/enterprise-connectors/README",
           },
           items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
-            const labelA = itemA?.label || '';
-            const labelB = itemB?.label || '';
+            const labelA = itemA?.label || "";
+            const labelB = itemB?.label || "";
             return labelA.localeCompare(labelB);
           }),
         },
@@ -674,10 +640,7 @@ module.exports = {
         type: "doc",
         id: "operator-guides/configuring-airbyte",
       },
-      items: [
-        "operator-guides/configuring-connector-resources",
-        "operator-guides/telemetry",
-      ],
+      items: ["operator-guides/configuring-connector-resources", "operator-guides/telemetry"],
     },
 
     {
@@ -708,7 +671,7 @@ module.exports = {
           items: [
             {
               type: "doc",
-              id: "access-management/role-mapping"
+              id: "access-management/role-mapping",
             },
           ],
         },
@@ -791,7 +754,8 @@ module.exports = {
       label: "Release Notes",
       link: {
         type: "generated-index",
-        description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
+        description:
+          "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
         "release_notes/v-1.5",
@@ -805,7 +769,8 @@ module.exports = {
           label: "Historical release notes",
           link: {
             type: "generated-index",
-            description: "Historical release notes from before Airbyte 1.0 are preserved here for posterity."
+            description:
+              "Historical release notes from before Airbyte 1.0 are preserved here for posterity.",
           },
           items: [
             "release_notes/aug_2024",
@@ -834,7 +799,7 @@ module.exports = {
             "release_notes/september_2022",
             "release_notes/august_2022",
             "release_notes/july_2022",
-          ]
+          ],
         },
       ],
     },
