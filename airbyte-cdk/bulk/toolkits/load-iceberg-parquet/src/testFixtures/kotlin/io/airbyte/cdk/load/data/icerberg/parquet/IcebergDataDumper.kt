@@ -113,7 +113,7 @@ class IcebergDataDumper(
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
+    ): Map<String, String> {
         throw NotImplementedError("Iceberg doesn't support universal file transfer")
     }
 }
