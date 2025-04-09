@@ -1,0 +1,54 @@
+{
+  "name": "fined",
+  "version": "2.0.0",
+  "description": "Find a file given a declaration of locations.",
+  "author": "Gulp Team <team@gulpjs.com> (https://gulpjs.com/)",
+  "contributors": [
+    "Takayuki Sato <sttk.xslet@gmail.com>",
+    "Blaine Bublitz <blaine.bublitz@gmail.com>"
+  ],
+  "repository": "gulpjs/fined",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "nyc mocha --async-only"
+  },
+  "dependencies": {
+    "expand-tilde": "^2.0.2",
+    "is-plain-object": "^5.0.0",
+    "object.defaults": "^1.1.0",
+    "object.pick": "^1.3.0",
+    "parse-filepath": "^1.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-gulp": "^5.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "expect": "^27.3.1",
+    "mocha": "^8.4.0",
+    "nyc": "^15.1.0"
+  },
+  "nyc": {
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true
+  },
+  "keywords": [
+    "find",
+    "lookup",
+    "config"
+  ]
+}

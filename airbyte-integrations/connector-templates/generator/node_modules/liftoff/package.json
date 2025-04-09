@@ -1,0 +1,60 @@
+{
+  "name": "liftoff",
+  "version": "4.0.0",
+  "description": "Launch your command line tool with ease.",
+  "author": "Gulp Team <team@gulpjs.com> (https://gulpjs.com/)",
+  "contributors": [
+    "Blaine Bublitz <blaine.bublitz@gmail.com> (https://github.com/phated)",
+    "Tyler Kellen <tyler@sleekcode.net> (https://github.com/tkellen)",
+    "Takayuki Sato (https://github.com/sttk)"
+  ],
+  "repository": "gulpjs/liftoff",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10.13.0"
+  },
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "lib",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "nyc mocha --async-only"
+  },
+  "dependencies": {
+    "extend": "^3.0.2",
+    "findup-sync": "^5.0.0",
+    "fined": "^2.0.0",
+    "flagged-respawn": "^2.0.0",
+    "is-plain-object": "^5.0.0",
+    "object.map": "^1.0.1",
+    "rechoir": "^0.8.0",
+    "resolve": "^1.20.0"
+  },
+  "devDependencies": {
+    "coffeescript": "^2.6.1",
+    "eslint": "^7.0.0",
+    "eslint-config-gulp": "^5.0.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-node": "^11.1.0",
+    "expect": "^27.0.0",
+    "mocha": "^8.0.0",
+    "nyc": "^15.0.0",
+    "sinon": "^11.0.0"
+  },
+  "nyc": {
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true
+  },
+  "keywords": [
+    "command line"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    // Required
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    // Not required
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "plop": ["../../src/plop.d.ts"]
+    }
+  }
+}

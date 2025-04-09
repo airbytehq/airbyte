@@ -96,7 +96,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   public static final String HIERARCHYID = "hierarchyid";
-  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 20_000;
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
   public static final String TUNNEL_METHOD = "tunnel_method";
   public static final String NO_TUNNEL = "NO_TUNNEL";

@@ -1,0 +1,65 @@
+{
+  "name": "is-primitive",
+  "description": "Returns `true` if the value is a primitive. ",
+  "version": "3.0.1",
+  "homepage": "https://github.com/jonschlinkert/is-primitive",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "contributors": [
+    "hemanth.hm (http://h3manth.com)",
+    "Jon Schlinkert (http://twitter.com/jonschlinkert)",
+    "Jordan Harband (https://twitter.com/ljharb)",
+    "Nick Bottomley (https://github.com/bttmly)"
+  ],
+  "repository": "jonschlinkert/is-primitive",
+  "bugs": {
+    "url": "https://github.com/jonschlinkert/is-primitive/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "benchmark": "^2.1.4",
+    "gulp-format-md": "^1.0.0",
+    "mocha": "^3.5.3"
+  },
+  "keywords": [
+    "boolean",
+    "check",
+    "is",
+    "number",
+    "primitive",
+    "string",
+    "symbol",
+    "type",
+    "typeof",
+    "util"
+  ],
+  "verb": {
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "related": {
+      "list": [
+        "is-number",
+        "is-plain-object",
+        "kind-of"
+      ]
+    },
+    "lint": {
+      "reflinks": true
+    }
+  }
+}

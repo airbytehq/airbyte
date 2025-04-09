@@ -1,0 +1,53 @@
+{
+  "name": "v8flags",
+  "version": "4.0.0",
+  "description": "Get available v8 and Node.js flags.",
+  "author": "Gulp Team <team@gulpjs.com> (https://gulpjs.com/)",
+  "contributors": [
+    "Tyler Kellen <tyler@sleekcode.net>",
+    "Blaine Bublitz <blaine.bublitz@gmail.com>",
+    "Nicolò Ribaudo <nicolo.ribaudo@gmail.com>",
+    "Selwyn <talk@selwyn.cc>",
+    "Leo Zhang <leo@leozhang.me>"
+  ],
+  "repository": "gulpjs/v8flags",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "config-path.js",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "nyc mocha --async-only"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "async": "^3.2.2",
+    "eslint": "^7.32.0",
+    "eslint-config-gulp": "^5.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "expect": "^27.3.1",
+    "mocha": "^8.4.0",
+    "nyc": "^15.1.0",
+    "proxyquire": "^2.1.3"
+  },
+  "nyc": {
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true
+  },
+  "keywords": [
+    "v8 flags",
+    "harmony flags"
+  ]
+}

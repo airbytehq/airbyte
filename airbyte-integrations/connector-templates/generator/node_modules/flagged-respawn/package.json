@@ -1,0 +1,50 @@
+{
+  "name": "flagged-respawn",
+  "version": "2.0.0",
+  "description": "A tool for respawning node binaries when special flags are present.",
+  "author": "Gulp Team <team@gulpjs.com> (http://gulpjs.com/)",
+  "contributors": [
+    "Takayuki Sato <sttk.xslet@gmail.com>",
+    "Bertrand Marron <bertrand.marron@ionisx.com>",
+    "Tyler Kellen <tyler@sleekcode.net>",
+    "Blaine Bublitz <blaine.bublitz@gmail.com>"
+  ],
+  "repository": "gulpjs/flagged-respawn",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "lib/",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "nyc mocha --async-only"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-gulp": "^5.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "expect": "^27.3.1",
+    "mocha": "^8.4.0",
+    "nyc": "^15.1.0",
+    "v8flags": "^4.0.0"
+  },
+  "nyc": {
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true
+  },
+  "keywords": [
+    "respawn",
+    "flags"
+  ]
+}

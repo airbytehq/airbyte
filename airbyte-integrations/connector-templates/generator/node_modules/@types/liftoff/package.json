@@ -1,0 +1,33 @@
+{
+    "name": "@types/liftoff",
+    "version": "4.0.0",
+    "description": "TypeScript definitions for liftoff",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/liftoff",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "BendingBender",
+            "url": "https://github.com/BendingBender",
+            "githubUsername": "BendingBender"
+        },
+        {
+            "name": "Corbin Crutchley",
+            "url": "https://github.com/crutchcorn",
+            "githubUsername": "crutchcorn"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/liftoff"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/fined": "*",
+        "@types/node": "*"
+    },
+    "typesPublisherContentHash": "fdb1eac2f2824dc522c4f504989471a0cdf5e0f371a4e989c36363decfa4d36d",
+    "typeScriptVersion": "3.8"
+}

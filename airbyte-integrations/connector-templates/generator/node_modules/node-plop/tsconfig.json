@@ -1,0 +1,9 @@
+// Used by eslint for linting
+{
+	"extends": "./types/tsconfig.json"
+	// We're just using this for index.d.ts
+	"include": [
+	  "types/index.d.ts",
+	  "types/test.ts"
+    ]
+}

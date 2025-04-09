@@ -1,0 +1,6 @@
+{
+  "name": "plop-example",
+  "dependencies": {
+    "typescript": "^4.4.4"
+  }
+}
