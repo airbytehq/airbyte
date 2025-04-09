@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.SimpleBatch
@@ -39,10 +40,10 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     }
 
     data class LocalBatch(val records: List<DestinationRecordRaw>) : MockBatch() {
-        override val state = Batch.State.STAGED
+        override val state = BatchState.STAGED
     }
     data class LocalFileBatch(val file: DestinationFile) : MockBatch() {
-        override val state = Batch.State.STAGED
+        override val state = BatchState.STAGED
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
@@ -107,7 +108,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 // in a real sync, because we would always either get more
                 // data or an end-of-stream that would force a final flush.
                 delay(100L)
-                SimpleBatch(state = Batch.State.COMPLETE)
+                SimpleBatch(state = BatchState.COMPLETE)
             }
             else -> throw IllegalStateException("Unexpected batch type: $batch")
         }
