@@ -5,14 +5,10 @@ from __future__ import annotations
 
 import json
 import uuid
-from typing import TYPE_CHECKING, cast, Callable
+from typing import Callable
 from typing import Any, Iterable
 
 import dpath
-import sqlalchemy
-from sqlalchemy.engine.reflection import Inspector
-from airbyte.strategies import WriteStrategy
-from sqlalchemy import text, insert, delete
 
 
 from airbyte.secrets import SecretString
@@ -22,7 +18,6 @@ from airbyte_cdk.models import (
 )
 from airbyte_protocol.models import (
     AirbyteMessage,
-    AirbyteRecordMessage,
 )
 
 from airbyte_cdk.destinations.vector_db_based import embedder
@@ -33,13 +28,11 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
 
-from airbyte_protocol.models import DestinationSyncMode
 from overrides import overrides
 from typing_extensions import Protocol
 
-from destination_mariadb.common.catalog.catalog_providers import CatalogProvider
 from destination_mariadb.common.sql.mariadb_types import VECTOR
-from destination_mariadb.common.sql.sql_processor import SqlConfig, SqlProcessorBase
+from destination_mariadb.common.sql.sql_processor import SqlConfig, SQLRuntimeError
 
 from destination_mariadb.globals import (
     CHUNK_ID_COLUMN,
@@ -48,6 +41,31 @@ from destination_mariadb.globals import (
     EMBEDDING_COLUMN,
     METADATA_COLUMN,
 )
+import abc
+
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, cast, final
+
+import sqlalchemy
+import ulid
+from airbyte import exceptions as exc
+from airbyte._util.name_normalizers import LowerCaseNormalizer
+from airbyte.strategies import WriteStrategy
+from airbyte.types import SQLTypeConverter
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from sqlalchemy import text
+from sqlalchemy.sql.elements import TextClause
+
+
+
+from collections.abc import Generator
+from airbyte_cdk.models import AirbyteRecordMessage
+from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.engine.cursor import CursorResult
+from sqlalchemy.engine.reflection import Inspector
+from sqlalchemy.sql.base import Executable
+
+from destination_mariadb.common.catalog.catalog_providers import CatalogProvider
 
 import logging
 logger = logging.getLogger("airbyte")
@@ -89,7 +107,8 @@ class EmbeddingConfig(Protocol):
     mode: str
 
 
-class MariaDBProcessor(SqlProcessorBase):
+
+class MariaDBProcessor(abc.ABC):
     """A MariaDB implementation of the SQL Processor."""
 
     supports_merge_insert = True
@@ -104,6 +123,17 @@ class MariaDBProcessor(SqlProcessorBase):
     sql_engine = None
     """Allow the engine to be overwritten"""
 
+    type_converter_class: type[SQLTypeConverter] = SQLTypeConverter
+    """The type converter class to use for converting JSON schema types to SQL types."""
+
+    normalizer = LowerCaseNormalizer
+    """The name normalizer to user for table and column name normalization."""
+
+
+    """The file writer class to use for writing files to the cache."""
+
+
+
     def __init__(
             self,
             sql_config: DatabaseConfig,
@@ -116,13 +146,20 @@ class MariaDBProcessor(SqlProcessorBase):
         self.splitter_config = splitter_config
         self.embedder_config = embedder_config
 
-        super().__init__(
-            sql_config=sql_config,
-            catalog_provider=catalog_provider,
-        )
+
+
+
+        # state_writer = state_writer or StdOutStateWriter()
+
+        self._sql_config: SqlConfig = sql_config
+        self._catalog_provider: CatalogProvider | None = catalog_provider # move up
+        # self._state_writer: StateWriterBase | None = state_writer or StdOutStateWriter()
+
+        self.type_converter = self.type_converter_class()
+        self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
+
 
     # YES
-    # No, I will override it. Go away with your @final...
     def _get_sql_column_definitions(
             self,
             stream_name: str,
@@ -162,16 +199,6 @@ class MariaDBProcessor(SqlProcessorBase):
         return f'`{identifier}`'
 
 
-    def _add_missing_columns_to_table(
-            self,
-            stream_name: str,
-            table_name: str,
-    ) -> None:
-        """Add missing columns to the table.
-
-        @TODO implement
-        """
-        pass
 
     @property
     def embedder(self) -> embedder.Embedder:
@@ -473,3 +500,219 @@ class MariaDBProcessor(SqlProcessorBase):
         self._finalize_writing()
 
         yield from queued_messages
+
+
+
+
+    # Public interface:
+    # yes
+    @property
+    def catalog_provider(
+        self,
+    ) -> CatalogProvider:
+        """Return the catalog manager.
+
+        Subclasses should set this property to a valid catalog manager instance if one
+        is not explicitly passed to the constructor.
+
+        Raises:
+            PyAirbyteInternalError: If the catalog manager is not set.
+        """
+        if not self._catalog_provider:
+            raise exc.PyAirbyteInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+
+        return self._catalog_provider
+
+
+    # yes
+    @property
+    def sql_config(self) -> SqlConfig:
+        return self._sql_config
+
+
+
+
+    # yes
+    @final
+    def get_sql_engine(self) -> Engine:
+        """Return a new SQL engine to use."""
+        return self.sql_config.get_sql_engine()
+
+    # yes
+    @contextmanager
+    def get_sql_connection(self) -> Generator[sqlalchemy.engine.Connection, None, None]:
+        """A context manager which returns a new SQL connection for running queries.
+
+        If the connection needs to close, it will be closed automatically.
+        """
+        with self.get_sql_engine().begin() as connection:
+            yield connection
+
+        connection.close()
+        del connection
+
+    # yes
+    def get_sql_table_name(
+        self,
+        stream_name: str,
+    ) -> str:
+        """Return the name of the SQL table for the given stream."""
+        table_prefix = self.sql_config.table_prefix
+
+        # TODO: Add default prefix based on the source name.
+        # ^ what did airbyte even mean by this?
+
+        return self.normalizer.normalize(
+            f"{table_prefix}{stream_name}",
+        )
+
+
+
+
+
+
+
+    # yes
+    @final
+    def _get_temp_table_name(
+        self,
+        stream_name: str,
+        batch_id: str | None = None,  # ULID of the batch
+    ) -> str:
+        """Return a new (unique) temporary table name."""
+        batch_id = batch_id or str(ulid.ULID())
+        return self.normalizer.normalize(f"{stream_name}_{batch_id}")
+
+
+
+    # yes
+    @final
+    def _create_table_for_loading(
+        self,
+        /,
+        stream_name: str,
+        batch_id: str | None,
+    ) -> str:
+        """Create a new table for loading data."""
+        temp_table_name = self._get_temp_table_name(stream_name, batch_id)
+        column_definition_str = ",\n  ".join(
+            f"{self._quote_identifier(column_name)} {sql_type}"
+            for column_name, sql_type in self._get_sql_column_definitions(stream_name).items()
+        )
+        self._create_table(temp_table_name, column_definition_str)
+
+        return temp_table_name
+
+
+    # yes
+    def _ensure_final_table_exists(
+        self,
+        stream_name: str,
+        *,
+        create_if_missing: bool = True,
+    ) -> str:
+        """Create the final table if it doesn't already exist.
+
+        Return the table name.
+        """
+        table_name = self.get_sql_table_name(stream_name)
+        did_exist = self._table_exists(table_name)
+        if not did_exist and create_if_missing:
+            column_definition_str = ",\n  ".join(
+                f"{self._quote_identifier(column_name)} {sql_type}"
+                for column_name, sql_type in self._get_sql_column_definitions(
+                    stream_name,
+                ).items()
+            )
+            self._create_table(table_name, column_definition_str, [DOCUMENT_ID_COLUMN])
+
+        return table_name
+
+
+    @final
+    def _create_table(
+        self,
+        table_name: str,
+        column_definition_str: str,
+        primary_keys: list[str] | None = None,
+    ) -> None:
+        if primary_keys:
+            pk_str = ", ".join(primary_keys)
+            column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
+
+        cmd = f"""
+        CREATE TABLE {self._fully_qualified(table_name)} (
+            {column_definition_str}
+        )
+        """
+        _ = self._execute_sql(cmd)
+
+
+
+    # Finalizing context manager
+
+    # yes
+    def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
+        """Execute the given SQL statement."""
+        if isinstance(sql, str):
+            sql = text(sql)
+        if isinstance(sql, TextClause):
+            sql = sql.execution_options(
+                autocommit=True,
+            )
+
+        with self.get_sql_connection() as conn:
+            try:
+                result = conn.execute(sql)
+            except (
+                sqlalchemy.exc.ProgrammingError,
+                sqlalchemy.exc.SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+        return result
+
+
+
+    # yes
+    def _swap_temp_table_with_final_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+    ) -> None:
+        """Merge the temp table into the main one.
+
+        This implementation requires MERGE support in the SQL DB.
+        Databases that do not support this syntax can override this method.
+        """
+        if final_table_name is None:
+            raise exc.PyAirbyteInternalError(message="Arg 'final_table_name' cannot be None.")
+        if temp_table_name is None:
+            raise exc.PyAirbyteInternalError(message="Arg 'temp_table_name' cannot be None.")
+
+        _ = stream_name
+        deletion_name = f"{final_table_name}_deleteme"
+        commands = "\n".join([
+            f"ALTER TABLE {self._fully_qualified(final_table_name)} RENAME TO {deletion_name};",
+            f"ALTER TABLE {self._fully_qualified(temp_table_name)} RENAME TO {final_table_name};",
+            f"DROP TABLE {self._fully_qualified(deletion_name)};",
+        ])
+        self._execute_sql(commands)
+
+
+
+
+    # yes
+    def _table_exists(
+        self,
+        table_name: str,
+    ) -> bool:
+        """Return true if the given table exists.
+
+        Subclasses may override this method to provide a more efficient implementation.
+        """
+        return table_name in self._get_tables_list()
