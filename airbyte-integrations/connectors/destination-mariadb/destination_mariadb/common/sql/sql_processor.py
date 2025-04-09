@@ -134,14 +134,12 @@ class SqlProcessorBase(RecordProcessorBase):
         sql_config: SqlConfig,
         catalog_provider: CatalogProvider,
         state_writer: StateWriterBase | None = None,
-        file_writer: FileWriterBase | None = None,
-        temp_dir: Path | None = None,
+        # file_writer: FileWriterBase | None = None,
+        # temp_dir: Path | None = None,
         #temp_file_cleanup: bool,
     ) -> None:
-        if not temp_dir and not file_writer:
-            raise exc.PyAirbyteInternalError(
-                message="Either `temp_dir` or `file_writer` must be provided.",
-            )
+
+
 
         state_writer = state_writer or StdOutStateWriter()
 

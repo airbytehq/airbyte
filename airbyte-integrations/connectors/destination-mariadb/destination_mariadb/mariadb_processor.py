@@ -16,7 +16,7 @@ import sqlalchemy
 from pydantic_core import SchemaSerializer, CoreSchema, to_json
 from sqlalchemy.engine.reflection import Inspector
 from airbyte.strategies import WriteStrategy
-from sqlalchemy import text
+from sqlalchemy import text, insert, delete
 import logging
 logger = logging.getLogger("airbyte")
 # from airbyte._processors.file.jsonl import JsonlWriter
@@ -325,12 +325,25 @@ class MariaDBProcessor(SqlProcessorBase):
                 ({", ".join(column_values)}) 
             """
 
+            # try later to make this work
+            # insert_statement = insert(self._fully_qualified(table_name)).values()
+
+            delete_statement = None
+
+            document_id = self._create_document_id(input_message)
+
             if merge:
-                query += f"""{nl} WHERE NOT EXISTS (
-                    SELECT {DOCUMENT_ID_COLUMN} 
-                    FROM {self._fully_qualified(table_name)}
-                    WHERE {DOCUMENT_ID_COLUMN} = {self._get_placeholder_name(DOCUMENT_ID_COLUMN)}
-                )"""
+                delete_statement = text(f"""
+                    DELETE FROM {self._fully_qualified(table_name)} 
+                    WHERE {DOCUMENT_ID_COLUMN} = :document_id_val
+                """)
+
+                delete_statement = delete_statement.bindparams(
+                    document_id_val=document_id
+                )
+
+
+
 
             document_chunks, _ = self.splitter.process(input_message)
 
@@ -343,7 +356,7 @@ class MariaDBProcessor(SqlProcessorBase):
             for i, chunk in enumerate(document_chunks, start=0):
 
                 new_data: dict[str, Any] = {
-                    self._get_placeholder_name(DOCUMENT_ID_COLUMN): self._create_document_id(input_message),
+                    self._get_placeholder_name(DOCUMENT_ID_COLUMN): document_id,
                     self._get_placeholder_name(CHUNK_ID_COLUMN): str(uuid.uuid4().int),
                     self._get_placeholder_name(METADATA_COLUMN): json.dumps(chunk.metadata),
                     self._get_placeholder_name(DOCUMENT_CONTENT_COLUMN): chunk.page_content,
@@ -363,6 +376,9 @@ class MariaDBProcessor(SqlProcessorBase):
                 # This doesn't seem to do actual binding. Instead, values are escaped and put
                 # into the query as strings. This circumvents any "smart" ideas like putting Vec_FromText() into
                 # the vector's bind_processor
+                if delete_statement is not None:
+                    conn.execute(delete_statement)
+
                 conn.execute(text(query), new_data)
 
     # yes
