@@ -9,7 +9,7 @@ python-versions = ">=3.10,<3.13"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 airbyte-protocol-models-dataclasses = "^0.14"
@@ -51,8 +51,10 @@ sql = ["sqlalchemy (>=2.0,<3.0,!=2.0.36)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
 
 [package.source]
-type = "directory"
-url = "../../../../airbyte-python-cdk"
+type = "git"
+url = "https://github.com/airbytehq/airbyte-python-cdk.git"
+reference = "aj/feat/mini-cat-test-suites"
+resolved_reference = "8918bfe2dc5d1ff8601bf9a93ba565bf40f4a020"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -1816,4 +1818,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "329a6790393659cbb21ce829c032d207e081cfcf9a0c054dcb0d47fcea3f2409"
+content-hash = "6d4826e156f90d7e18c6a24fccd9b4948e7ab6c2eae84d601ce1f6281ccbeda8"
