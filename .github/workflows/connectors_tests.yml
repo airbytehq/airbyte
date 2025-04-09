@@ -16,7 +16,7 @@ on:
     inputs:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
-        default: "--modified"
+        default: "--modified --concurrency=10"
   pull_request:
     types:
       - opened
