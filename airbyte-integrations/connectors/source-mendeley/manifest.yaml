@@ -1,0 +1,790 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.mendeley.com/
+  API Reference: https://dev.mendeley.com/methods/#introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - annotations
+
+definitions:
+  streams:
+    files:
+      type: DeclarativeStream
+      name: files
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: files
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-file.1+json
+            Content-Type: application/vnd.mendeley-file.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-group.1+json
+            Content-Type: application/vnd.mendeley-group.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: folders
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-folder.1+json
+            Content-Type: application/vnd.mendeley-folder.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    profile:
+      type: DeclarativeStream
+      name: profile
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: profiles/me
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-profiles.1+json
+            Content-Type: application/vnd.mendeley-profiles.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profile"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    trashed:
+      type: DeclarativeStream
+      name: trashed
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: trash
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-document.1+json
+            Content-Type: application/vnd.mendeley-document.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trashed"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_modified
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    documents:
+      type: DeclarativeStream
+      name: documents
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: documents
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-document.1+json
+            Content-Type: application/vnd.mendeley-document.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/documents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    annotations:
+      type: DeclarativeStream
+      name: annotations
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: annotations
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-annotation.1+json
+            Content-Type: application/vnd.mendeley-annotation.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/annotations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_modified
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    institutions:
+      type: DeclarativeStream
+      name: institutions
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: institutions
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-institution.1+json
+            Content-Type: application/vnd.mendeley-institution.1+json
+          request_parameters:
+            name: "{{ config['name_for_institution'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/institutions"
+    subject_areas:
+      type: DeclarativeStream
+      name: subject_areas
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: subject_areas
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-subject-area.1+json
+            Content-Type: application/vnd.mendeley-subject-area.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - uuid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subject_areas"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+    catalog_search:
+      type: DeclarativeStream
+      name: catalog_search
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: search/catalog
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-document.1+json
+            Content-Type: application/vnd.mendeley-document.1+json
+          request_parameters:
+            query: "{{ config['query_for_catalog'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/catalog_search"
+    identifier_types:
+      type: DeclarativeStream
+      name: identifier_types
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url', '') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: identifier_types
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.mendeley-document-identifier.1+json
+            Content-Type: application/vnd.mendeley-document-identifier.1+json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - uuid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/identifier_types"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.mendeley.com/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://api.mendeley.com/oauth/token
+
+streams:
+  - $ref: "#/definitions/streams/annotations"
+  - $ref: "#/definitions/streams/catalog_search"
+  - $ref: "#/definitions/streams/identifier_types"
+  - $ref: "#/definitions/streams/profile"
+  - $ref: "#/definitions/streams/trashed"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/documents"
+  - $ref: "#/definitions/streams/subject_areas"
+  - $ref: "#/definitions/streams/institutions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - start_date
+      - query_for_catalog
+      - name_for_institution
+    properties:
+      client_id:
+        type: string
+        description: Could be found at `https://dev.mendeley.com/myapps.html`
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 3
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      client_secret:
+        type: string
+        description: Could be found at `https://dev.mendeley.com/myapps.html`
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      query_for_catalog:
+        type: string
+        description: Query for catalog search
+        order: 4
+        title: Query for catalog search
+        default: Polar Bear
+      client_refresh_token:
+        type: string
+        description: >-
+          Use cURL or Postman with the OAuth 2.0 Authorization tab. Set the Auth
+          URL to https://api.mendeley.com/oauth/authorize, the Token URL to
+          https://api.mendeley.com/oauth/token, and use all as the scope.
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      name_for_institution:
+        type: string
+        description: The name parameter for institutions search
+        order: 5
+        title: Name for institution
+        default: City University
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://dev.mendeley.com/methods/#introduction
+  testedStreams:
+    files:
+      hasRecords: true
+      streamHash: 7db5e836701ee0d959cacccf4ea4e88b0c720c7b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: 9d552c057d6ffb80844f005c1d4dbd17a12bada9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    folders:
+      hasRecords: true
+      streamHash: f1b5d1b434bfe266f7c3d29d5b5f3d1699508f7c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    profile:
+      hasRecords: true
+      streamHash: df8814850254afc712b380531ba4fd82a416243e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    trashed:
+      hasRecords: true
+      streamHash: 2f9d44ca89135791ce2163af6a1e14dcd1f6a141
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    documents:
+      hasRecords: true
+      streamHash: 86fa0e69d386fcf763843a08ab5d82f85159163f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    annotations:
+      hasRecords: true
+      streamHash: 49a471dae0e8c1f3c53862c14a5c526f1972f5a3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    institutions:
+      hasRecords: true
+      streamHash: 0439eb3b4289c4f827028586060969bc62a67b7c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subject_areas:
+      hasRecords: true
+      streamHash: a7c3a486e384e630c4f5a721b038581596802766
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    catalog_search:
+      hasRecords: true
+      streamHash: 96d282f996c8fe5d7e6881dbd1ff56282f960306
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    identifier_types:
+      hasRecords: true
+      streamHash: b626d8aee56c263aab77a4398cf4e1f33278b3a8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    files: false
+    groups: false
+    folders: false
+    profile: false
+    trashed: false
+    documents: false
+    annotations: false
+    institutions: false
+    subject_areas: false
+    catalog_search: false
+    identifier_types: false
+
+schemas:
+  files:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  folders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  profile:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  trashed:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  documents:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  annotations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  institutions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  subject_areas:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  catalog_search:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  identifier_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true

@@ -218,7 +218,7 @@ const buildAConnector = {
   items: [
     {
       type: "category",
-      label: "No-Code Connector Builder",
+      label: "Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/tutorial",
@@ -237,12 +237,6 @@ const buildAConnector = {
             "connector-development/connector-builder-ui/async-streams",
           ],
         },
-      ],
-    },
-    {
-      type: "category",
-      label: "Low-Code CDK",
-      items: [
         {
           label: "Low-Code CDK Intro",
           type: "doc",
@@ -309,26 +303,20 @@ const buildAConnector = {
         "connector-development/cdk-python/incremental-stream",
         "connector-development/cdk-python/http-streams",
         "connector-development/cdk-python/stream-slices",
+        "connector-development/cdk-python/migration-to-base-image",
         {
           type: "category",
-          label: "Tutorials",
+          label: "Tutorial: Creating a connector with Python CDK",
           items: [
             "connector-development/tutorials/custom-python-connector/getting-started",
-            {
-              type: "category",
-              label: "Python CDK: Creating a Python Source",
-              items: [
-                "connector-development/tutorials/custom-python-connector/getting-started",
-                "connector-development/tutorials/custom-python-connector/environment-setup",
-                "connector-development/tutorials/custom-python-connector/reading-a-page",
-                "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
-                "connector-development/tutorials/custom-python-connector/check-and-error-handling",
-                "connector-development/tutorials/custom-python-connector/discover",
-                "connector-development/tutorials/custom-python-connector/incremental-reads",
-                "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
-                "connector-development/tutorials/custom-python-connector/concurrency",
-              ],
-            },
+            "connector-development/tutorials/custom-python-connector/environment-setup",
+            "connector-development/tutorials/custom-python-connector/reading-a-page",
+            "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
+            "connector-development/tutorials/custom-python-connector/check-and-error-handling",
+            "connector-development/tutorials/custom-python-connector/discover",
+            "connector-development/tutorials/custom-python-connector/incremental-reads",
+            "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
+            "connector-development/tutorials/custom-python-connector/concurrency",
           ],
         },
       ],
@@ -526,6 +514,7 @@ const understandingAirbyte = {
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",
+    "understanding-airbyte/heartbeats",
   ],
 };
 
