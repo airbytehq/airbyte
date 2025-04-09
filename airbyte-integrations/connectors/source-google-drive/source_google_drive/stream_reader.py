@@ -299,7 +299,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 bytes=file_size,
                 id=file.id,
                 mime_type=file.mime_type,
-                updated_at=int(file.last_modified.timestamp() * 1000),
+                updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             )
             file_reference = AirbyteRecordMessageFileReference(
                 staging_file_url=local_file_path,
