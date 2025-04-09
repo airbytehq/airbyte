@@ -29,8 +29,8 @@ import java.nio.channels.SocketChannel
 import java.time.Clock
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
-    private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-//private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
+//    private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
 
 interface SocketConfig {
@@ -104,7 +104,7 @@ class UnixDomainSocketOutputConsumer(
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
-    private val writer: SequenceWriter
+    private var writer: SequenceWriter
     private var numRecords: Int = 0
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
@@ -181,7 +181,13 @@ class UnixDomainSocketOutputConsumer(
         writer.write(airbyteMessage)
         if (++ numRecords == 100_000) {
             bufferedOutputStream.flush()
+            buffer.reset()
             numRecords = 0
+
+            writer = SMILE_MAPPER.writerFor(AirbyteMessage::class.java)
+                .with(MinimalPrettyPrinter(System.lineSeparator()))
+                .writeValues(bufferedOutputStream)
+
         }
     }
 }
