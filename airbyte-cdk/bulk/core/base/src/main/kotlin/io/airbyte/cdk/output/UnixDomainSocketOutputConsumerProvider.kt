@@ -108,7 +108,7 @@ class UnixDomainSocketOutputConsumer(
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
-    private var writer: SequenceWriter
+    private val writer: SequenceWriter
     private var numRecords: Int = 0
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
