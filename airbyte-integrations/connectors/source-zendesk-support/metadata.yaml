@@ -69,6 +69,7 @@ data:
       - tickets
       - users
   supportLevel: certified
+  supportsFileTransfer: true
   tags:
     - language:python
     - cdk:low-code
