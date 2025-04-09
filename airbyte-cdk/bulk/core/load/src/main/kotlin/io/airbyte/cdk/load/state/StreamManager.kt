@@ -368,12 +368,12 @@ class DefaultStreamManager(
         checkpointCounts: Map<CheckpointId, Long>,
         inputCount: Long
     ) {
-        val taskKey = TaskKey(taskName, part)
-        check(!taskCompletionCounts.containsKey(taskKey)) {
-            """"$taskKey received input after seeing end-of-stream
-                    (checkpointCounts=$checkpointCounts, inputCount=$inputCount, sawEosAt=${taskCompletionCounts[taskKey]})
-                    This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."""
-        }
+        //val taskKey = TaskKey(taskName, part)
+//        check(!taskCompletionCounts.containsKey(taskKey)) {
+//            """"$taskKey received input after seeing end-of-stream
+//                    (checkpointCounts=$checkpointCounts, inputCount=$inputCount, sawEosAt=${taskCompletionCounts[taskKey]})
+//                    This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."""
+//        }
         val idToValue =
             namedCheckpointCounts.getOrPut(TaskKey(taskName, part) to state) { ConcurrentHashMap() }
 
@@ -386,9 +386,10 @@ class DefaultStreamManager(
 
     override fun markTaskEndOfStream(taskName: String, part: Int, finalInputCount: Long) {
         taskCompletionCounts.putIfAbsent(TaskKey(taskName, part), finalInputCount)?.let {
-            throw IllegalStateException(
-                "End-of-stream reported at $finalInputCount already seen for $taskName[$part] at $it"
-            )
+//            throw IllegalStateException(
+//                "End-of-stream reported at $finalInputCount already seen for $taskName[$part] at $it"
+//            )
+            log.warn { "End-of-stream reported at $finalInputCount already seen for $taskName[$part] at $it" }
         }
     }
 

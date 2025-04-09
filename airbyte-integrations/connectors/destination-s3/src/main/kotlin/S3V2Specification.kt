@@ -110,6 +110,9 @@ class S3V2Specification :
 
     @get:JsonProperty("use_garbage_part")
     val useGarbagePart: Boolean? = null
+
+    @get:JsonProperty("num_part_formatters")
+    val numPartFormatters: Int? = null
 }
 
 @Singleton
