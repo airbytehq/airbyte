@@ -43,6 +43,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
+          #- duration('PT2M') is so when start_date and end_date are the same, we can still get data. Otherwise, we will get this error from the API: HTTP 400 - please provide a date that is at least 2 minutes before current time and try again.
           datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else (now_utc() - duration('PT2M')).strftime('%Y-%m-%dT%H:%M:%SZ'), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
@@ -340,6 +341,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
+          #- duration('PT2M') is so when start_date and end_date are the same, we can still get data. Otherwise, we will get this error from the API: HTTP 400 - please provide a date that is at least 2 minutes before current time and try again.
           datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('PT2M') , '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
@@ -410,6 +412,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
+          #- duration('PT2M') is so when start_date and end_date are the same, we can still get data. Otherwise, we will get this error from the API: HTTP 400 - please provide a date that is at least 2 minutes before current time and try again.
           datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('PT2M') , '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
