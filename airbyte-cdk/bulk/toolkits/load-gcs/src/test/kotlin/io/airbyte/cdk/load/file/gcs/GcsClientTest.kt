@@ -21,39 +21,32 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GcsClientTest {
-    private lateinit var storage: Storage
-    private lateinit var config: GcsClientConfiguration
-    private lateinit var gcsClient: GcsClient
-
     private val bucketName = "test-bucket"
     private val bucketPath = "test-path"
     private val region = GcsRegion.US_WEST1
 
-    private fun mockBlob(name: String): Blob {
-        val blob = mockk<Blob>()
-        every { blob.name } returns name
-        return blob
-    }
+    private fun mockBlob(name: String): Blob = mockk<Blob> { every { name } returns name }
 
-    @BeforeEach
-    fun setup() {
-        storage = mockk()
-        val auth = GcsHmacKeyConfiguration("test-access-key", "test-secret-key")
-        config = GcsClientConfiguration(bucketName, bucketPath, auth, region)
-        gcsClient = GcsClient(storage, config)
-    }
+    private val storage: Storage = mockk()
+    private val config =
+        GcsClientConfiguration(
+            bucketName,
+            bucketPath,
+            GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
+            region
+        )
+    private val gcsClient = GcsClient(storage, config)
 
     @Test
     fun `test list with empty prefix`() = runBlocking {
         val blob1 = mockBlob("test-file1")
         val blob2 = mockBlob("test-file2")
-        val blobs = mockk<Iterable<Blob>>()
+        val blobs = listOf(blob1, blob2)
 
-        every { storage.list(bucketName, any()) } returns
+        every { storage.list(bucketName, Storage.BlobListOption.prefix(bucketName)) } returns
             mockk { every { iterateAll() } returns blobs }
         every { blobs.iterator() } returns listOf(blob1, blob2).iterator()
 
@@ -65,26 +58,30 @@ class GcsClientTest {
         assertEquals(config, results[0].storageConfig)
         assertEquals(config, results[1].storageConfig)
 
-        verify { storage.list(bucketName, any()) }
+        verify { storage.list(bucketName, Storage.BlobListOption.prefix(bucketName)) }
     }
 
     @Test
     fun `test list with prefix`() = runBlocking {
         val prefix = "subfolder"
-        val fullPrefix = "$bucketPath/$prefix"
-        val blob1 = mockBlob("$fullPrefix/test-file1")
-        val blobs = mockk<Iterable<Blob>>()
+        // In the GcsClient.list method, the fullPrefix is calculated as
+        // combinePath(config.gcsBucketName, prefix)
+        val expectedFullPrefix = "$bucketName/$prefix"
+        val blob1 = mockk<Blob>()
+        every { blob1.name } returns "$expectedFullPrefix/test-file1"
+        val blobs = listOf(blob1)
 
-        every { storage.list(bucketName, any()) } returns
-            mockk { every { iterateAll() } returns blobs }
+        every {
+            storage.list(bucketName, Storage.BlobListOption.prefix(expectedFullPrefix))
+        } returns mockk { every { iterateAll() } returns blobs }
         every { blobs.iterator() } returns listOf(blob1).iterator()
 
         val results = gcsClient.list(prefix).toList()
 
         assertEquals(1, results.size)
-        assertEquals("$fullPrefix/test-file1", results[0].key)
+        assertEquals("$expectedFullPrefix/test-file1", results[0].key)
 
-        verify { storage.list(bucketName, any()) }
+        verify { storage.list(bucketName, Storage.BlobListOption.prefix(expectedFullPrefix)) }
     }
 
     @Test
@@ -208,8 +205,10 @@ class GcsClientTest {
         val blobId = BlobId.of(bucketName, fullKey)
         val blobInfoSlot = slot<BlobInfo>()
         val content = "test content".toByteArray()
+        val mockResultBlob = mockk<Blob>()
+        every { mockResultBlob.name } returns fullKey
 
-        every { storage.create(capture(blobInfoSlot), content) } returns mockBlob(fullKey)
+        every { storage.create(capture(blobInfoSlot), content) } returns mockResultBlob
 
         val result = gcsClient.put(key, content)
 
