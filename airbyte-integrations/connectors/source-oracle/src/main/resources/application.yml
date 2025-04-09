@@ -59,6 +59,14 @@ airbyte:
             reference-links:
               - https://docs.oracle.com/javase/8/docs/api/java/net/SocketException.html
 
+          - pattern: Supplemental logging not properly configured
+            input-example: "Caused by: io.debezium.DebeziumException: Supplemental logging not properly configured. Use: ALTER DATABASE ADD SUPPLEMENTAL LOG DATA"
+            error: config
+            group: Configuration error
+            output: "Supplemental logging must be enabled on the Oracle database."
+            reference-links:
+              - https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle-enterprise#2-if-using-cdc-make-sure-your-database-can-run-logminer-and-that-supplemental-logging-is-enabled-for-all-relevant-tables
+
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
         # SQLException's vendor error code [1]. The vendor error code is printed in the exception
