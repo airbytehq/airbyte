@@ -26,7 +26,7 @@ from pydantic import BaseModel
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 from sqlalchemy.sql.elements import TextClause
 
-from destination_mariadb.common.destinations.record_processor import RecordProcessorBase
+
 from destination_mariadb.common.state.state_writers import StdOutStateWriter
 from destination_mariadb.globals import DOCUMENT_ID_COLUMN
 
@@ -50,6 +50,8 @@ if TYPE_CHECKING:
 class RecordDedupeMode(enum.Enum):
     APPEND = "append"
     REPLACE = "replace"
+
+
 
 
 class SQLRuntimeError(Exception):
@@ -111,7 +113,7 @@ class SqlConfig(BaseModel, abc.ABC):
         )
 
 # TODO: this class should probably be merged into the proper processor
-class SqlProcessorBase(RecordProcessorBase):
+class SqlProcessorBase(abc.ABC):
     """A base class to be used for SQL Caches."""
 
     type_converter_class: type[SQLTypeConverter] = SQLTypeConverter
@@ -144,10 +146,12 @@ class SqlProcessorBase(RecordProcessorBase):
         state_writer = state_writer or StdOutStateWriter()
 
         self._sql_config: SqlConfig = sql_config
+        self._catalog_provider: CatalogProvider | None = catalog_provider # move up
+        self._state_writer: StateWriterBase | None = state_writer or StdOutStateWriter()
 
         super().__init__(
-            state_writer=state_writer,
-            catalog_provider=catalog_provider,
+
+
         )
         """
         self.file_writer = file_writer or self.file_writer_class(
@@ -160,6 +164,25 @@ class SqlProcessorBase(RecordProcessorBase):
         # self._ensure_schema_exists()
 
     # Public interface:
+    @property
+    def catalog_provider(
+        self,
+    ) -> CatalogProvider:
+        """Return the catalog manager.
+
+        Subclasses should set this property to a valid catalog manager instance if one
+        is not explicitly passed to the constructor.
+
+        Raises:
+            PyAirbyteInternalError: If the catalog manager is not set.
+        """
+        if not self._catalog_provider:
+            raise exc.PyAirbyteInternalError(
+                message="Catalog manager should exist but does not.",
+            )
+
+        return self._catalog_provider
+
 
     @property
     def sql_config(self) -> SqlConfig:
@@ -423,97 +446,11 @@ class SqlProcessorBase(RecordProcessorBase):
 
         return columns
 
-    # no
-    @final
-    def write_stream_data(
-        self,
-        stream_name: str,
-        write_strategy: WriteStrategy,
-    ) -> list[BatchHandle]:
-        """Finalize all uncommitted batches.
 
-        This is a generic 'final' SQL implementation, which should not be overridden.
 
-        Returns a mapping of batch IDs to batch handles, for those processed batches.
-
-        TODO: Add a dedupe step here to remove duplicates from the temp table.
-              Some sources will send us duplicate records within the same stream,
-              although this is a fairly rare edge case we can ignore in V1.
-        """
-        # Flush any pending writes
-        self.file_writer.flush_active_batches()
-
-        with self.finalizing_batches(stream_name) as batches_to_finalize:
-            # # Make sure the target schema and target table exist.
-            # self._ensure_schema_exists()
-            final_table_name = self._ensure_final_table_exists(
-                stream_name,
-                create_if_missing=True,
-            )
-
-            if not batches_to_finalize:
-                # If there are no batches to finalize, return after ensuring the table exists.
-                return []
-
-            files: list[Path] = []
-            # Get a list of all files to finalize from all pending batches.
-            for batch_handle in batches_to_finalize:
-                files += batch_handle.files
-            # Use the max batch ID as the batch ID for table names.
-            max_batch_id = max(batch.batch_id for batch in batches_to_finalize)
-
-            temp_table_name = self._write_files_to_new_table(
-                files=files,
-                stream_name=stream_name,
-                batch_id=max_batch_id,
-            )
-            try:
-                self._write_temp_table_to_final_table(
-                    stream_name=stream_name,
-                    temp_table_name=temp_table_name,
-                    final_table_name=final_table_name,
-                    write_strategy=write_strategy,
-                )
-            finally:
-                self._drop_temp_table(temp_table_name, if_exists=True)
-
-        # progress.log_stream_finalized(stream_name)
-
-        # Return the batch handles as measure of work completed.
-        return batches_to_finalize
-
-    @final
-    def cleanup_all(self) -> None:
-        """Clean resources."""
-        self.file_writer.cleanup_all()
 
     # Finalizing context manager
 
-    @final
-    @contextlib.contextmanager
-    def finalizing_batches(
-        self,
-        stream_name: str,
-    ) -> Generator[list[BatchHandle], str, None]:
-        """Context manager to use for finalizing batches, if applicable.
-
-        Returns a mapping of batch IDs to batch handles, for those processed batches.
-        """
-        batches_to_finalize: list[BatchHandle] = self.file_writer.get_pending_batches(stream_name)
-        state_messages_to_finalize: list[AirbyteStateMessage] = self._pending_state_messages[
-            stream_name
-        ].copy()
-        self._pending_state_messages[stream_name].clear()
-
-        progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
-        yield batches_to_finalize
-        self._finalize_state_messages(state_messages_to_finalize)
-        progress.log_batches_finalized(stream_name, len(batches_to_finalize))
-
-        for batch_handle in batches_to_finalize:
-            batch_handle.finalized = True
-
-        self._finalized_state_messages[stream_name] += state_messages_to_finalize
 
     def _execute_sql(self, sql: str | TextClause | Executable) -> CursorResult:
         """Execute the given SQL statement."""

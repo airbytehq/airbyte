@@ -5,39 +5,24 @@ from __future__ import annotations
 
 import json
 import uuid
-from typing import TYPE_CHECKING, cast, final, Callable
-from textwrap import dedent
+from typing import TYPE_CHECKING, cast, Callable
 from typing import Any, Iterable
 
 import dpath
 import sqlalchemy
-# from airbyte._writers import JsonlWriter
-# from airbyte.shared.state_writers import StateWriterBase, StdOutStateWriter
-from pydantic_core import SchemaSerializer, CoreSchema, to_json
 from sqlalchemy.engine.reflection import Inspector
 from airbyte.strategies import WriteStrategy
 from sqlalchemy import text, insert, delete
-import logging
-logger = logging.getLogger("airbyte")
-# from airbyte._processors.file.jsonl import JsonlWriter
 
-# from airbyte.secrets import SecretString
+
 from airbyte.secrets import SecretString
-from airbyte.types import SQLTypeConverter
 from airbyte_cdk.destinations.vector_db_based.embedder import Document
 from airbyte_cdk.models import (
-    #AirbyteMessage,
-    #AirbyteRecordMessage,
-    #AirbyteStateMessage,
-    #AirbyteStateType,
-    AirbyteStreamState,
     Type,
 )
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStateType,
 )
 
 from airbyte_cdk.destinations.vector_db_based import embedder
@@ -47,8 +32,6 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
-# from airbyte_cdk.models import AirbyteRecordMessage
-
 
 from airbyte_protocol.models import DestinationSyncMode
 from overrides import overrides
@@ -66,18 +49,10 @@ from destination_mariadb.globals import (
     METADATA_COLUMN,
 )
 
-from sqlalchemy.engine import Connection, Engine
-
+import logging
+logger = logging.getLogger("airbyte")
 
 class DatabaseConfig(SqlConfig):
-    """
-    # can I somehow just erase it?
-    schema_name: str = Field(default="airbyte_raw")
-
-    """
-
-
-
     host: str
     port: int
     database: str
@@ -95,7 +70,6 @@ class DatabaseConfig(SqlConfig):
         conn_str = f"mysql+pymysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
 
         return SecretString(
-            # this is one of the few places here which is actually DB-specific...
             conn_str
         )
 
@@ -127,13 +101,8 @@ class MariaDBProcessor(SqlProcessorBase):
     splitter_config: DocumentSplitterConfig
     """The configuration for the document splitter."""
 
-    # file_writer_class = JsonlWriter
-
     sql_engine = None
     """Allow the engine to be overwritten"""
-
-
-    # No need to override `type_converter_class`.
 
     def __init__(
             self,
@@ -141,8 +110,6 @@ class MariaDBProcessor(SqlProcessorBase):
             splitter_config: DocumentSplitterConfig,
             embedder_config: EmbeddingConfig,
             catalog_provider: CatalogProvider,
-            # temp_dir: Path,
-            # temp_file_cleanup: bool = True,
     ) -> None:
         """Initialize the MariaDB processor."""
         self.temp_tables = {}
@@ -152,8 +119,6 @@ class MariaDBProcessor(SqlProcessorBase):
         super().__init__(
             sql_config=sql_config,
             catalog_provider=catalog_provider,
-            # temp_dir=temp_dir,
-            # temp_file_cleanup=temp_file_cleanup,
         )
 
     # YES
@@ -187,7 +152,8 @@ class MariaDBProcessor(SqlProcessorBase):
 
 
     #yes
-    def _get_placeholder_name(self, identifier: str) -> str:
+    @staticmethod
+    def _get_placeholder_name(identifier: str) -> str:
         return f'{identifier}_val'
 
     # yes
@@ -300,7 +266,6 @@ class MariaDBProcessor(SqlProcessorBase):
         nl = "\n"
         column_names = []
         column_values = []
-        #column_bindprocs = []
 
         with self.get_sql_connection() as conn:
 
