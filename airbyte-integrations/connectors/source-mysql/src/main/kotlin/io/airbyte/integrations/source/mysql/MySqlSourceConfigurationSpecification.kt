@@ -206,8 +206,15 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaDefault("false")
     val devNullAfterSerialization: Boolean? = null
 
-    @JsonProperty("recreate_every_n_records")
-    val recreateEveryNRecords: Int? = null
+    @JsonProperty("input_channel_capacity_rows")
+    val inputChannelCapacity: Int? = 20_000
+
+    @JsonProperty("dev_null_before_posting")
+    @JsonSchemaDefault("false")
+    val devNullBeforePosting: Boolean? = null
+
+    @JsonProperty("num_sockets")
+    val numSockets: Int? = 1
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

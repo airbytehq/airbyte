@@ -50,13 +50,13 @@ data class MySqlSourceConfiguration(
     override val bufferByteSize: Int,
     override val outputFormat: String,
     override val devNullAfterSerialization: Boolean,
-    override val recreateWriterEveryNRecords: Int
+    override val inputChannelCapacity: Int,
+    override val devNullBeforePosting: Boolean,
+    override val numSockets: Int
 ) : JdbcSourceConfiguration, CdcSourceConfiguration, SocketConfig {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
         get() = (incrementalConfiguration as? CdcIncrementalConfiguration)?.initialLoadTimeout
-
-    override val numSockets = maxConcurrency
 
     /** Required to inject [MySqlSourceConfiguration] directly. */
     @Factory
@@ -171,10 +171,11 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             skipWriting = pojo.tmpSkipWriting ?: true,
             skipSynchronizedCounts = pojo.tmpSkipSynchronizedCounts ?: false,
             bufferByteSize = pojo.bufferByteSize ?: (8 * 1024),
-            outputFormat = pojo.outputFormat ?: "jsonl",
+            outputFormat = pojo.outputFormat ?: "json",
             devNullAfterSerialization = pojo.devNullAfterSerialization ?: false,
-            recreateWriterEveryNRecords =
-                pojo.recreateEveryNRecords ?: 100_000,
+            inputChannelCapacity = pojo.inputChannelCapacity ?: 20_000,
+            devNullBeforePosting = pojo.devNullBeforePosting ?: false,
+            numSockets = pojo.numSockets ?: 1,
         )
     }
 

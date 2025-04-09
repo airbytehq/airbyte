@@ -31,9 +31,16 @@ import java.nio.channels.Channels
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
 import java.time.Clock
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
     private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+//private const val SOCKET_FULL_PATH = "/Users/jschmidt/.sockets/$SOCKET_NAME_TEMPLATE"
 //private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
 
@@ -42,7 +49,8 @@ interface SocketConfig {
     val bufferByteSize: Int
     val outputFormat: String
     val devNullAfterSerialization: Boolean
-    val recreateWriterEveryNRecords: Int
+    val inputChannelCapacity: Int
+    val devNullBeforePosting: Boolean
 }
 
 @Singleton
@@ -52,7 +60,8 @@ class DefaultSocketConfig: SocketConfig {
     override val bufferByteSize: Int = 8 * 1024
     override val outputFormat: String = "jsonl"
     override val devNullAfterSerialization: Boolean = false
-    override val recreateWriterEveryNRecords: Int = 100_000
+    override val inputChannelCapacity: Int = 20_000
+    override val devNullBeforePosting: Boolean = false
 }
 
 @Singleton
@@ -61,7 +70,7 @@ class UnixDomainSocketOutputConsumerProvider(
     stdout: PrintStream,
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush}")
     bufferByteSizeThresholdForFlush: Int,
-    configuration: SocketConfig,
+    val configuration: SocketConfig,
 ) : StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     val numSockets = configuration.numSockets
     val bufferByteSize = configuration.bufferByteSize
@@ -76,7 +85,7 @@ class UnixDomainSocketOutputConsumerProvider(
             stdout,
             bufferByteSizeThresholdForFlush,
             configuration.devNullAfterSerialization,
-            configuration.recreateWriterEveryNRecords
+            configuration.inputChannelCapacity
         )
     }
 
@@ -87,6 +96,19 @@ class UnixDomainSocketOutputConsumerProvider(
 
     override fun getSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
         return socketConsumers[part]
+    }
+
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+
+    suspend fun startAll() {
+        socketConsumers.forEachIndexed { i, socketConsumer ->
+            logger.info {
+                "Starting socket consumer $i with capacity ${configuration.inputChannelCapacity} and buffer size ${configuration.bufferByteSize}"
+            }
+            ioScope.launch {
+                socketConsumer.readSocketUntilComplete()
+            }
+        }
     }
 }
 
@@ -101,19 +123,27 @@ class DevNullOutputStream: OutputStream() {
 }
 
 class UnixDomainSocketOutputConsumer(
-    socketNum: Int,
+    val socketNum: Int,
     bufferSize: Int = DEFAULT_BUFFER_SIZE,
     val outputFormat: String,
     clock: Clock,
     stdout: PrintStream,
     bufferByteSizeThresholdForFlush: Int,
     val devNullAfterSerialization: Boolean = false,
-    val recreateWriterEveryNRecords: Int = 100_000,
+    val inputChannelCapacity: Int = 20_000,
+    val devNullBeforePosting: Boolean = false,
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
     private var writer: SequenceWriter
     private var numRecords: Int = 0
+
+    data class NamedNode(
+        val namespace: String,
+        val streamName: String,
+        val recordData: ObjectNode
+    )
+    private val inputChannel: Channel<NamedNode> = Channel(inputChannelCapacity)
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         return objectMapper
@@ -168,14 +198,6 @@ class UnixDomainSocketOutputConsumer(
         }.writeValues(bufferedOutputStream)
     }
 
-    override fun accept(airbyteMessage: AirbyteMessage) {
-        writer.write(airbyteMessage)
-        if (++ numRecords == 100_000) {
-            bufferedOutputStream.flush()
-            numRecords = 0
-        }
-    }
-
     fun accept(recordData: ObjectNode, namespace: String, streamName: String) {
         if (outputFormat == "devnull") {
             return
@@ -195,7 +217,6 @@ class UnixDomainSocketOutputConsumer(
                 .build()
             pMessage?.writeDelimitedTo(bufferedOutputStream)
         } else {
-
             val airbyteMessage = AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
@@ -207,15 +228,30 @@ class UnixDomainSocketOutputConsumer(
                 )
             writer.write(airbyteMessage)
         }
-        numRecords ++
-        if (numRecords % recreateWriterEveryNRecords == 0) {
-            writer = writerForMapper()
-        }
-
+        numRecords++
         if (numRecords == 100_000) {
             bufferedOutputStream.flush()
-            buffer.reset()
             numRecords = 0
         }
+    }
+
+
+    suspend fun acceptAsync(recordData: ObjectNode, namespace: String, streamName: String) {
+        val namedNode = NamedNode(namespace, streamName, recordData)
+        if (devNullBeforePosting) {
+            return
+        }
+        inputChannel.send(namedNode)
+    }
+
+    suspend fun readSocketUntilComplete() {
+        while (true) {
+            val (namespace, name, recordData) = inputChannel.receive()
+            accept(recordData, namespace, name)
+        }
+    }
+
+    override fun accept(airbyteMessage: AirbyteMessage) {
+        throw UnsupportedOperationException("Not supported")
     }
 }

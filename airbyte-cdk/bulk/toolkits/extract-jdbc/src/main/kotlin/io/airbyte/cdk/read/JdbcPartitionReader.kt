@@ -55,14 +55,14 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
-    fun out(row: SelectQuerier.ResultRow) {
+    suspend fun out(row: SelectQuerier.ResultRow) {
         /*if (partition.skipWritingAndSerialization || partition.skipWriting) {
             if(++devNulledRows % 100_000L == 0L) {
                 log.info { "Discarded $devNulledRows rows" }
             }
             return
         }*/
-        streamRecordConsumer.accept(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
+        streamRecordConsumer.acceptAsync(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
     }
 
     override fun setNum(num: Long) {

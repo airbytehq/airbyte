@@ -74,8 +74,8 @@ sealed class FeedBootstrap<T : Feed>(
      */
     private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
         StreamRecordConsumer {
-        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
-            outputConsumer.getSocketConsumer(num!!.toInt() % totalNum!!).accept(recordData, stream.namespace ?: "", stream.name)
+        override suspend fun acceptAsync(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
+            outputConsumer.getSocketConsumer(num!!.toInt() % totalNum!!).acceptAsync(recordData, stream.namespace ?: "", stream.name)
         }
 
 //        private fun acceptWithoutChanges(recordData: ObjectNode, totalNum: Int?, num: Long?) {
@@ -164,6 +164,15 @@ sealed class FeedBootstrap<T : Feed>(
                         .withData(reusedRecordData)
                         .withMeta(reusedRecordMeta)
                 )
+
+        override fun accept(
+            recordData: ObjectNode,
+            changes: Map<Field, FieldValueChange>?,
+            totalNum: Int?,
+            num: Long?
+        ) {
+            throw NotImplementedError("This method is not implemented. Use acceptAsync instead.")
+        }
     }
 
     companion object {
@@ -242,6 +251,10 @@ interface StreamRecordConsumer {
     val stream: Stream
 
     fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int? = null, num: Long? = null)
+
+    suspend fun acceptAsync(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int? = null, num: Long? = null) {
+        accept(recordData, changes, totalNum, num)
+    }
 }
 
 /**
