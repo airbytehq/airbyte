@@ -10,7 +10,7 @@ Self-Managed Enterprise customers can use Airbyte's public API to define regions
 
 By default, Airbyte has a single data plane that any workspace in the organization can access, and it's automatically tied to the default workspace when Airbyte first starts.
 
-To configure additional data planes and associate them to specific workspaces, you complete the steps below.
+To configure additional data planes and regions, you complete the steps below.
 
 1. [Create a region](#step-1).
 2. [Create a data plane](#step-2) in that region.
@@ -22,7 +22,7 @@ Once you associate a workspace with a data plane, data in that workspace travers
 
 ### Limitations and considerations
 
-Before you begin, beware of the following limitations, and consider how they might impact your environment.
+Before you begin, consider the following points and how they might impact your environment.
 
 #### Some data resides in the control plane
 
@@ -38,7 +38,7 @@ While data planes process data in their respective regions, some metadata remain
 
 - Ensure there's sufficient network bandwidth between the control plane and data planes, especially for high-volume data operations.
 
-- Data planes in geographically distant regions may experience increased latency when communicating with the control plane, potentially affecting sync scheduling and status updates.
+- Data planes in geographically distant regions may experience increased latency when communicating with the control plane.
 
 #### Keep connectors compatible and globally available
 
@@ -60,33 +60,41 @@ While data planes process data in their respective regions, some metadata remain
 
 #### Scaling and overhead
 
-- Consider limiting the number of regions and data planes to the minimum number you expect to use based on your organization's operational needs and data residency obligations.
-
-- Each region you use requires its own infrastructure resources, increasing your overall system footprint and maintenance overhead.
+- Consider limiting the number of regions and data planes to the minimum number you expect to use based on your organization's operational needs and data residency obligations. Each region you use requires its own infrastructure resources, increasing your overall system footprint and maintenance overhead.
 
 ## Prerequisites
 
 Before you begin, make sure you've completed the following.
 
+### Deploy Airbyte
+
 1. Deploy your Self-Managed Enterprise version of Airbyte as described in the [implementation guide](implementation-guide).
 
-2. As part of that deployment, you must have configured an external secrets manager. Airbyte relies on client IDs and client secrets to communicate between the control plane and the data plane.
+2. As part of that deployment, you must have configured an external secrets manager. Airbyte relies on this to facilitate communication between the control plane and the data plane.
 
 3. You must be an Organization Administrator to manage regions, data planes, and workspaces.
 
-4. Set up the Cloud or physical infrastructure needed to host your data planes.
+### Set up your infrastructure
 
-<!-- Anything else? -->
+Set up the Cloud or physical infrastructure needed to host your data planes.
+
+<!-- Anything else? We should specify exactly what we expect. -->
+
+### Get API access
+
+To use the Airbyte API, if you haven't already, create an application and generate an access token. For help, see [Configuring API access](../enterprise-setup/api-access-config).
 
 ## 1. Create a region {#step-1}
 
-The first step is to create a region. Regions are organization-level objects to which you later associate your workspace.
+The first step is to create a region. Regions are objects to which you later associate your workspace.
 
-### Request
+### Region request
+
+Send a POST request to /v1/regions/.
 
 ```bash
 curl --request POST \
-  --url https://release-1-6-0.releases.abapp.cloud/api/public/v1/regions \
+  --url https://example.com/api/public/v1/regions \
   --header 'authorization: Bearer $TOKEN' \
   --header 'content-type: application/json' \
   --data '{
@@ -96,20 +104,23 @@ curl --request POST \
 }'
 ```
 
+Include the following parameters in your request.
+
+| Body parameter   | Description                                                                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`           | The name of your region in Airbyte. For simplicity, you might want to make this the same as the actual cloud region this region runs on. |
+| `organizationId` | Your Airbyte organization ID. In most cases, this is `00000000-0000-0000-0000-000000000000`.                                             |
+| `enabled`        | Set this to true.                                                                                                                        |
+
 For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
 
-Provide these parameters in the request body:
+### Region response
 
-- `name`: the name of your region in Airbyte. For simplicity, you might want to make this the same as the actual cloud region this region runs on.
+Make note of your `regionId`. You need it to create a data plane.
 
-- `organization ID`: Your Airbyte organization ID. In most cases, this is `00000000-0000-0000-0000-000000000000`.
-
-- `enabled`: set to true.
-
-### Response
-
-```json
+```json title="200 Successful operation"
 {
+  //highlight-next-line
   "regionId": "uuid-string",
   "name": "region-name",
   "organizationId": "org-uuid-string",
@@ -123,11 +134,13 @@ Provide these parameters in the request body:
 
 Once you have a region, you create a data plane within it.
 
-### Request
+### Data plane request
+
+Send a POST request to /v1/regions/`<REGION_ID>`/dataplanes.
 
 ```bash
 curl --request POST \
-  --url https://local.airbyte.dev/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes \
+  --url https://example.com/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes \
   --header 'authorization: Bearer $TOKEN' \
   --header 'content-type: application/json' \
   --data '{
@@ -136,16 +149,38 @@ curl --request POST \
 }'
 ```
 
-### Response
+Include the following parameters in your request.
+
+| Body parameter | Description                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `name`         | The name of your data plane. For simplicity, you might want to name it based on the region in which you created it. |
+| `enabled`      | Set this to true.                                                                                                   |
+
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
+
+### Data plane response
+
+Make note of your `dataplaneId`, `clientId` and `clientSecret`.
+
+```json title="200 Successful operation"
+json
+{
+  "dataplaneId": "uuid-string",
+  "clientId": "client-id-string",
+  "clientSecret": "client-secret-string"
+}
+```
 
 ## 3. Associate a region to a workspace {#step-3}
 
-One you have a region and a data plane, you need to associate that region to your workspace. Your data planes automatically register with the control plane, but you still need to inform Airbyte where you're hosting those data planes.
+One you have a region and a data plane, you need to associate that region to your workspace. Your data planes self-register with the control plane, but you still need to inform Airbyte where you're hosting those data planes.
+
+<!-- Where are we supposed to put the client ID and client secret? -->
 
 To do this, override Airbyte's helm chart values by updating your `values.yaml` file, then redeploy your Airbyte instance.
 
 :::note
-You can only associate a workspace with one data plane at a time.
+You can only associate a workspace with one region at a time.
 :::
 
 ### Update your `values.yaml` file
@@ -178,46 +213,119 @@ You can see a list of your workspaces and the region associated to each from Air
 
 2. Click **General**.
 
-Airbyte displayed your workspaces and their associated region under **Regions**.
+Airbyte displays your workspaces and each workspace's region under **Regions**.
 
 #### From Airbyte's API
 
 <!-- My guess is we can query the workspace API and it's in the dataResidency field -->
 
+Request:
+
+```bash
+bash
+curl -X GET "https://example.com/api/public/v1/workspaces/{workspaceId}" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+Response:
+
+```json
+{
+  "workspaceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+  "name": "Acme Company",
+  //highlight-next-line
+  "dataResidency": "auto",
+}
+```
+
 ### List all regions
 
 List all regions in your organization.
 
+Request:
+
 ```bash
 curl --request GET \
-  --url 'https://local.airbyte.dev/api/public/v1/regions?organizationId=00000000-0000-0000-0000-000000000000' \
+  --url 'https://example.com/api/public/v1/regions?organizationId=00000000-0000-0000-0000-000000000000' \
   --header 'authorization: Bearer $TOKEN' \
   --header 'content-type: application/json'
+```
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "regionId": "uuid-string",
+      "name": "region-name",
+      "organizationId": "org-uuid-string",
+      "enabled": true,
+      "createdAt": "timestamp-string",
+      "updatedAt": "timestamp-string"
+    }
+  ]
+}
 ```
 
 ### Get a region
 
 Get information about a region.
 
+Request:
+
 ```bash
 curl --request GET \
-  --url https://local.airbyte.dev/api/public/v1/regions/96129828-e006-4fd6-820f-132dc00a10f2 \
+  --url https://example.com/api/public/v1/regions/96129828-e006-4fd6-820f-132dc00a10f2 \
   --header 'authorization: Bearer $TOKEN' \
   --header 'content-type: application/json'
 ```
 
+Response:
+
+```json
+{
+  "data": [
+    {
+      "regionId": "uuid-string",
+      "name": "region-name",
+      "organizationId": "org-uuid-string",
+      "enabled": true,
+      "createdAt": "timestamp-string",
+      "updatedAt": "timestamp-string"
+    }
+  ]
+}
+```
+
 ### Update a region
 
-Update, enable, or turn off a region.
+Update, turn on, or turn off a region.
+
+Request:
 
 ```bash
-curl --request PATCH \
-  --url https://local.airbyte.dev/api/public/v1/regions/96129828-e006-4fd6-820f-132dc00a10f2 \
-  --header 'authorization: Bearer $TOKEN' \
-  --header 'content-type: application/json' \
-  --data '{
-  "enabled": false
-}'
+curl -X PATCH "https://example.com/api/public/v1/regions/{regionId}" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "updated-region-name",
+    "enabled": true
+  }'
+```
+
+Response:
+
+```json
+{
+  "regionId": "uuid-string",
+  "name": "updated-region-name",
+  "organizationId": "org-uuid-string",
+  "enabled": true,
+  "createdAt": "timestamp-string",
+  "updatedAt": "timestamp-string"
+}
 ```
 
 ### Delete a region
@@ -226,7 +334,7 @@ Delete a region.
 
 ```bash
 curl --request DELETE \
-  --url https://local.airbyte.dev/api/public/v1/regions/8fee0404-6d56-442a-bb54-e28edada1405 \
+  --url https://example.com/api/public/v1/regions/8fee0404-6d56-442a-bb54-e28edada1405 \
   --header 'authorization: Bearer $TOKEN' \
   --header 'content-type: application/json'
 ```
@@ -237,7 +345,7 @@ List all data planes in a region.
 
 ```bash
 curl --request GET \
-  --url https://local.airbyte.dev/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes \
+  --url https://example.com/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes \
   --header 'authorization: Bearer $TOKEN'
 ```
 
@@ -247,7 +355,7 @@ Get information about a data plane.
 
 ```bash
 curl --request GET \
-  --url https://local.airbyte.dev/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes/312b4641-2edc-4dc9-9933-41b759d3b2d8 \
+  --url https://example.com/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes/312b4641-2edc-4dc9-9933-41b759d3b2d8 \
   --header 'authorization: Bearer $TOKEN'
 ```
 
@@ -257,6 +365,6 @@ Delete a data plane from a region.
 
 ```bash
 curl --request DELETE \
-  --url https://local.airbyte.dev/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes/f1482a93-4786-4662-800e-ff07363418b1 \
+  --url https://example.com/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes/f1482a93-4786-4662-800e-ff07363418b1 \
   --header 'authorization: Bearer $TOKEN'
 ```
