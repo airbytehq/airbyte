@@ -1,0 +1,172 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - marketing_emails
+
+definitions:
+  # Authenticator Definitions
+  api_token_auth:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+
+  oauth_auth:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://api.hubapi.com/oauth/v1/token"
+
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "credentials_title"]
+    authenticators:
+      OAuth Credentials: "#/definitions/oauth_auth"
+      Private App Credentials: "#/definitions/api_token_auth"
+
+  # Reusable Components
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_hubspot/schemas/{{ parameters['name'] }}.json"
+
+  base_requester:
+    type: HttpRequester
+    url_base: "https://api.hubapi.com"
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    http_method: GET
+    path: "{{ parameters['path'] }}"
+    request_headers:
+      Content-Type: application/json
+      User-Agent: Airbyte
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+
+  base_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      # 429 => RETRY
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      # 502, 503 => RETRY
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      # 401, 530 => FAIL
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 401
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      # 403 => FAIL
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
+      # 404 => FAIL
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 404
+        error_message: >-
+          Resource not found (404). Confirm the endpoint or resource ID.
+      # 400 => FAIL
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: >-
+          Bad request (400). Please verify your credentials and try again.
+
+  base_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 250
+
+  base_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "{{ parameters['extractor_field_path'] }}"
+
+  base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+    record_selector:
+      $ref: "#/definitions/base_selector"
+    paginator:
+      $ref: "#/definitions/base_paginator"
+    decoder:
+      type: JsonDecoder
+
+  retriever_without_pagination:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+    record_selector:
+      $ref: "#/definitions/base_selector"
+    decoder:
+      type: JsonDecoder
+
+  stream_base:
+    type: DeclarativeStream
+    primary_key:
+      - id
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+
+  stream_without_pagination:
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/retriever_without_pagination"
+
+  # Stream Definitions
+  marketing_emails_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: marketing_emails
+      path: /marketing-emails/v1/emails/with-statistics
+      extractor_field_path: objects
+
+  email_subscriptions_stream:
+    $ref: "#/definitions/stream_without_pagination"
+    $parameters:
+      name: email_subscriptions
+      path: /email/public/v1/subscriptions
+      extractor_field_path: subscriptionDefinitions
+
+streams:
+  - "#/definitions/marketing_emails_stream"
+  - "#/definitions/email_subscriptions_stream"
