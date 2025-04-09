@@ -37,6 +37,7 @@ class BigqueryDirectLoader(
     private val recordFormatter = BigQueryRecordFormatter()
 
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        // TODO there was a RateLimiter here for some reason...?
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
@@ -71,7 +72,6 @@ class BigqueryDirectLoaderFactory(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int
     ): BigqueryDirectLoader {
-        // TODO there was a RateLimiter here for some reason...?
         val writeChannelConfiguration =
         // TODO need to write to raw vs final table appropriately
         WriteChannelConfiguration.newBuilder(TempUtils.rawTableId(config, streamDescriptor))
