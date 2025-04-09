@@ -28,7 +28,7 @@ class GcsClientTest {
     private val bucketPath = "test-path"
     private val region = GcsRegion.US_WEST1
 
-    private fun mockBlob(name: String): Blob = mockk<Blob> { every { name } returns name }
+    private fun mockBlob(mockName: String): Blob = mockk<Blob> { every { name } returns mockName }
 
     private val storage: Storage = mockk()
     private val config =
@@ -64,17 +64,14 @@ class GcsClientTest {
     @Test
     fun `test list with prefix`() = runBlocking {
         val prefix = "subfolder"
-        // In the GcsClient.list method, the fullPrefix is calculated as
-        // combinePath(config.gcsBucketName, prefix)
         val expectedFullPrefix = "$bucketName/$prefix"
-        val blob1 = mockk<Blob>()
-        every { blob1.name } returns "$expectedFullPrefix/test-file1"
+        val blob1 = mockBlob("$expectedFullPrefix/test-file1")
         val blobs = listOf(blob1)
 
         every {
             storage.list(bucketName, Storage.BlobListOption.prefix(expectedFullPrefix))
         } returns mockk { every { iterateAll() } returns blobs }
-        every { blobs.iterator() } returns listOf(blob1).iterator()
+        //        every { blobs.iterator() } returns listOf(blob1).iterator()
 
         val results = gcsClient.list(prefix).toList()
 
