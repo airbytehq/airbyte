@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+ */
+    syntax = "proto3";
+import "airbyte_commons.proto";
+package io.airbyte.protocol;
+enum AirbyteTraceMessageType {
+  TRACE_ERROR = 0;
+  ESTIMATE = 1;
+  STREAM_STATUS = 2;
+  ANALYTICS = 3;
+};
+enum AirbyteTraceFailureType {
+  SYSTEM_ERROR = 0;
+  CONFIG_ERROR = 1;
+  TRANSIENT_ERROR = 2;
+}
+enum AirbyteTraceEstimateType {
+  STREAM_ESTIMATE = 0;
+  SYNC_ESTIMATE = 1;
+}
+enum AirbyteStreamStatus {
+  STARTED = 0;
+  RUNNING = 1;
+  COMPLETE = 2;
+  INCOMPLETE = 3;
+}
+enum AirbyteStreamStatusReason {
+  RATE_LIMITED = 0;
+}
+/**
+ * A message to communicate usage information about the connector which is not captured by regular sync analytics
+ * because it's specific to the connector internals.  This is useful to understand how the connector is used and how
+ * to improve it.  Each message is an event with a type and an optional payload value (both of them being strings).
+ * The event types should not be dynamically generated but defined statically.  The payload value is optional and can
+ * contain arbitrary strings.
+ */
+message AirbyteAnalyticsTraceMessage {
+  // The event type - should be a static string. Keep in mind that all strings are shared across all connectors.
+  string type = 1;
+  // The value of the event - can be an arbitrary string. In case the value is numeric, it should be converted to a
+  // string. Casting for analytics purposes can happen in the warehouse.
+  optional string value = 2;
+}
+message AirbyteErrorTraceMessage {
+  string message = 1;
+  optional string internal_message = 2;
+  optional string stack_trace = 3;
+  optional AirbyteTraceFailureType failure_type = 4;
+  optional AirbyteStreamDescriptor stream_descriptor = 5;
+}
+message AirbyteEstimateTraceMessage {
+  string name = 1;
+  AirbyteTraceEstimateType type = 2;
+  optional string namespace = 3;
+  optional int64 row_estimate = 4;
+  optional int64 byte_estimate = 5;
+}
+message AirbyteStreamStatusTraceMessage {
+  AirbyteStreamDescriptor stream_descriptor = 1;
+  AirbyteStreamStatus status = 2;
+  repeated AirbyteStreamStatusReason reasons = 3;
+}
+message AirbyteTraceMessage {
+  AirbyteTraceMessageType type = 1;
+  int64 emitted_at = 2;
+  oneof payload {
+    AirbyteErrorTraceMessage error = 3;
+    AirbyteEstimateTraceMessage estimate = 4;
+    AirbyteStreamStatusTraceMessage stream_status = 5;
+    AirbyteAnalyticsTraceMessage analytics = 6;
+  }
+};
