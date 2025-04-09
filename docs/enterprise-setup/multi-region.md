@@ -2,7 +2,7 @@
 products: oss-enterprise
 ---
 
-# Implement multiple regions
+# Multiple region deployments
 
 Self-Managed Enterprise customers can use Airbyte's public API to define regions and create self-registering data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment.
 
