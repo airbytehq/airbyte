@@ -673,6 +673,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversation_parts"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.SubstreamStateMigration
     company_segments:
       type: DeclarativeStream
       name: company_segments
@@ -731,6 +734,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/company_segments"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.SubstreamStateMigration
     tickets:
       type: DeclarativeStream
       name: tickets
