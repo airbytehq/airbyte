@@ -6,25 +6,30 @@ products: oss-enterprise
 
 Self-Managed Enterprise customers can use Airbyte's public API to define regions and create self-registering data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment.
 
+![Stylized diagram showing a control plane above multiple data planes in different global regions](assets/data-planes.png)
+
 ## How it works
 
-By default, Airbyte has a single data plane that any workspace in the organization can access, and it's automatically tied to the default workspace when Airbyte first starts.
+If you're not very familiar with Kubernetes, think of the control plane as the brain and data planes as the muscles doing work the brain tells them to do.
 
-To configure additional data planes and regions, you complete the steps below.
+- The control plane is responsible for Airbyte's user interface, APIs, Terraform provider, and orchestrating work.
+- The data plane initiates jobs, syncs data, completes jobs, and reports its status back to the control plane.
+
+This separation of duties is what allows a single Airbyte deployment to ensure your data remains segregated and compliant.
+
+By default, Airbyte has a single data plane that any workspace in the organization can access, and it's automatically tied to the default workspace when Airbyte first starts. To configure additional data planes and regions, you complete the steps below.
 
 1. [Create a region](#step-1).
 2. [Create a data plane](#step-2) in that region.
-3. [Associate your data plane to an Airbyte workspace](#step-3). You can tie each workspace to exactly one data plane.
+3. [Associate your data plane to an Airbyte workspace](#step-3). You can tie each workspace to exactly one region.
 
 Once you associate a workspace with a data plane, data in that workspace traverses your data plane in the region you've defined.
-
-<!-- Diagram of what is in control plane and what is in data plane? -->
 
 ### Limitations and considerations
 
 Before you begin, consider the following points and how they might impact your environment.
 
-#### Some data resides in the control plane
+#### Some metadata resides in the control plane
 
 While data planes process data in their respective regions, some metadata remains in the control plane.
 
@@ -70,25 +75,20 @@ Before you begin, make sure you've completed the following.
 
 1. Deploy your Self-Managed Enterprise version of Airbyte as described in the [implementation guide](implementation-guide).
 
-2. As part of that deployment, you must have configured an external secrets manager. Airbyte relies on this to facilitate communication between the control plane and the data plane.
+2. As part of that deployment, you must have configured an external secrets manager.
 
-3. You must be an Organization Administrator to manage regions, data planes, and workspaces.
-
-### Set up your infrastructure
-
-Set up the Cloud or physical infrastructure needed to host your data planes.
-
-<!-- Anything else? We should specify exactly what we expect. -->
+3. You must be an Organization Administrator.
 
 ### Get API access
 
-To use the Airbyte API, if you haven't already, create an application and generate an access token. For help, see [Configuring API access](../enterprise-setup/api-access-config).
+If you haven't already, create an application and generate an access token. For help, see [Configuring API access](../enterprise-setup/api-access-config).
 
 ## 1. Create a region {#step-1}
 
-The first step is to create a region. Regions are objects to which you later associate your workspace.
+The first step is to create a region. Regions are objects that contain data planes, and which you associate to workspaces.
 
-### Region request
+<details>
+  <summary>Request</summary>
 
 Send a POST request to /v1/regions/.
 
@@ -114,7 +114,10 @@ Include the following parameters in your request.
 
 For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
 
-### Region response
+</details>
+
+<details>
+  <summary>Response</summary>
 
 Make note of your `regionId`. You need it to create a data plane.
 
@@ -130,11 +133,14 @@ Make note of your `regionId`. You need it to create a data plane.
 }
 ```
 
+</details>
+
 ## 2. Create a data plane {#step-2}
 
 Once you have a region, you create a data plane within it.
 
-### Data plane request
+<details>
+  <summary>Request</summary>
 
 Send a POST request to /v1/regions/`<REGION_ID>`/dataplanes.
 
@@ -158,9 +164,12 @@ Include the following parameters in your request.
 
 For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
 
-### Data plane response
+</details>
 
-Make note of your `dataplaneId`, `clientId` and `clientSecret`.
+<details>
+  <summary>Response</summary>
+
+Make note of your `dataplaneId`, `clientId` and `clientSecret`. You need them to associate your workspace to a region.
 
 ```json title="200 Successful operation"
 json
@@ -171,25 +180,35 @@ json
 }
 ```
 
+</details>
+
 ## 3. Associate a region to a workspace {#step-3}
 
-One you have a region and a data plane, you need to associate that region to your workspace. Your data planes self-register with the control plane, but you still need to inform Airbyte where you're hosting those data planes.
+One you have a region and a data plane, you need to associate that region to your workspace.
 
-<!-- Where are we supposed to put the client ID and client secret? -->
-
-To do this, override Airbyte's helm chart values by updating your `values.yaml` file, then redeploy your Airbyte instance.
+Your data planes self-register with the control plane, but you still need to inform Airbyte where you're hosting those data planes. Override Airbyte's helm chart values by updating your `values.yaml` file, then redeploy your Airbyte instance.
 
 :::note
-You can only associate a workspace with one region at a time.
+You can only associate each workspace with one region.
 :::
 
-### Update your `values.yaml` file
+### Update your deployment values
+
+Add the following overrides to the `values.yaml` file you use to deploy Airbyte.
 
 ```yaml title="values.yaml"
-TBD
+dataPlane:
+  secretName: "data-plane-creds"
+  id: "preview-data-plane"
+  clientIdSecretName: "data-plane-creds"
+  clientIdSecretKey: "DATA_PLANE_CLIENT_ID" # Use the client ID returned in step 2
+  clientSecretSecretName: "data-plane-creds"
+  clientSecretSecretKey: "DATA_PLANE_CLIENT_SECRET" # Use the client secret returned in step 2
 ```
 
-### Redeploy Airbyte
+<!-- I'm still a bit unsure how this is associating a region to a DP -->
+
+### Redeploy Airbyte with your new values
 
 In your terminal:
 
@@ -216,8 +235,6 @@ You can see a list of your workspaces and the region associated to each from Air
 Airbyte displays your workspaces and each workspace's region under **Regions**.
 
 #### From Airbyte's API
-
-<!-- My guess is we can query the workspace API and it's in the dataResidency field -->
 
 Request:
 
