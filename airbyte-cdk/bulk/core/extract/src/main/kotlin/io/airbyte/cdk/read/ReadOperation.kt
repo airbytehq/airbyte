@@ -14,6 +14,7 @@ import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineScope

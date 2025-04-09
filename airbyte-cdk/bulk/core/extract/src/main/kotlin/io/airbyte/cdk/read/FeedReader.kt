@@ -207,6 +207,7 @@ class FeedReader(
                 log.info {
                     "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
                 }
+                partitionReader.setNum(partitionReaderID)
                 withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
             }
             log.info {

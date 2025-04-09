@@ -8,6 +8,7 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
@@ -17,7 +18,7 @@ class DiscoverOperation(
     val config: SourceConfiguration,
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
     val airbyteStreamFactory: AirbyteStreamFactory,
-    val outputConsumer: OutputConsumer,
+    @Named("stdoutOutputConsumer") val outputConsumer: OutputConsumer,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
