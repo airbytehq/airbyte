@@ -1,0 +1,97 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/azure-blob-storage",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Azure Blob Storage Destination Spec",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "azure_blob_storage_endpoint_domain_name" : {
+        "type" : "string",
+        "description" : "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+        "title" : "Azure Blob Storage Endpoint Domain Name"
+      },
+      "azure_blob_storage_account_name" : {
+        "type" : "string",
+        "description" : "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>.",
+        "title" : "Azure Blob Storage Account Name",
+        "examples" : [ "mystorageaccount" ]
+      },
+      "azure_blob_storage_container_name" : {
+        "type" : "string",
+        "description" : "The name of the Azure Blob Storage Container. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#containers\">here</a>.",
+        "title" : "Azure Blob Storage Container Name",
+        "examples" : [ "mycontainer" ]
+      },
+      "shared_access_signature" : {
+        "type" : "string",
+        "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the account key.",
+        "title" : "Shared Access Signature",
+        "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+        "airbyte_secret" : true,
+        "always_show" : true
+      },
+      "azure_blob_storage_account_key" : {
+        "type" : "string",
+        "description" : "The Azure blob storage account key. If you set this value, you must not set the Shared Access Signature.",
+        "title" : "Azure Blob Storage account key",
+        "examples" : [ "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd==" ],
+        "airbyte_secret" : true,
+        "always_show" : true
+      },
+      "azure_blob_storage_spill_size" : {
+        "type" : "integer",
+        "description" : "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable.",
+        "title" : "Azure Blob Storage target blob size (Megabytes)",
+        "default" : 500
+      },
+      "format" : {
+        "oneOf" : [ {
+          "title" : "CSV: Comma-Separated Values",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "CSV" ],
+              "default" : "CSV"
+            },
+            "flattening" : {
+              "type" : "string",
+              "default" : "No flattening",
+              "enum" : [ "No flattening", "Root level flattening" ],
+              "title" : "Flattening"
+            }
+          },
+          "required" : [ "format_type", "flattening" ]
+        }, {
+          "title" : "JSON Lines: Newline-delimited JSON",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "JSONL" ],
+              "default" : "JSONL"
+            },
+            "flattening" : {
+              "type" : "string",
+              "default" : "No flattening",
+              "enum" : [ "No flattening", "Root level flattening" ],
+              "title" : "Flattening"
+            }
+          },
+          "required" : [ "format_type" ]
+        } ],
+        "description" : "Format of the data output.",
+        "title" : "Output Format",
+        "type" : "object"
+      }
+    },
+    "required" : [ "azure_blob_storage_account_name", "azure_blob_storage_container_name", "format" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append" ]
+}
