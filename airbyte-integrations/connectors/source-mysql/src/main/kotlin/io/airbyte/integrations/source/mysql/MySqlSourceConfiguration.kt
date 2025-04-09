@@ -49,7 +49,8 @@ data class MySqlSourceConfiguration(
     val skipSynchronizedCounts: Boolean,
     override val bufferByteSize: Int,
     override val outputFormat: String,
-    override val devNullAfterSerialization: Boolean
+    override val devNullAfterSerialization: Boolean,
+    override val recreateWriterEveryNRecords: Int
 ) : JdbcSourceConfiguration, CdcSourceConfiguration, SocketConfig {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
@@ -172,6 +173,8 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             bufferByteSize = pojo.bufferByteSize ?: (8 * 1024),
             outputFormat = pojo.outputFormat ?: "jsonl",
             devNullAfterSerialization = pojo.devNullAfterSerialization ?: false,
+            recreateWriterEveryNRecords =
+                pojo.recreateEveryNRecords ?: 100_000,
         )
     }
 

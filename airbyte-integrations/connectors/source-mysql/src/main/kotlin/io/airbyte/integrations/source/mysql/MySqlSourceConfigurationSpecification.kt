@@ -205,6 +205,9 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("dev_null_after_serialization")
     @JsonSchemaDefault("false")
     val devNullAfterSerialization: Boolean? = null
+
+    @JsonProperty("recreate_every_n_records")
+    val recreateEveryNRecords: Int? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

@@ -38,6 +38,7 @@ interface SocketConfig {
     val bufferByteSize: Int
     val outputFormat: String
     val devNullAfterSerialization: Boolean
+    val recreateWriterEveryNRecords: Int
 }
 
 @Singleton
@@ -47,6 +48,7 @@ class DefaultSocketConfig: SocketConfig {
     override val bufferByteSize: Int = 8 * 1024
     override val outputFormat: String = "jsonl"
     override val devNullAfterSerialization: Boolean = false
+    override val recreateWriterEveryNRecords: Int = 100_000
 }
 
 @Singleton
@@ -69,7 +71,8 @@ class UnixDomainSocketOutputConsumerProvider(
             clock,
             stdout,
             bufferByteSizeThresholdForFlush,
-            configuration.devNullAfterSerialization
+            configuration.devNullAfterSerialization,
+            configuration.recreateWriterEveryNRecords
         )
     }
 
@@ -101,6 +104,7 @@ class UnixDomainSocketOutputConsumer(
     stdout: PrintStream,
     bufferByteSizeThresholdForFlush: Int,
     val devNullAfterSerialization: Boolean = false,
+    val recreateWriterEveryNRecords: Int = 100_000,
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
@@ -147,13 +151,16 @@ class UnixDomainSocketOutputConsumer(
             Channels.newOutputStream(socketChannel).buffered(bufferSize)
         }
 
-        writer = if (outputFormat == "json") {
+        writer = writerForMapper()
+    }
+
+    private fun writerForMapper(): SequenceWriter {
+        return if (outputFormat == "json") {
             OBJECT_MAPPER.writerFor(AirbyteMessage::class.java).with(
                 MinimalPrettyPrinter(System.lineSeparator())
             )
         } else {
             SMILE_MAPPER.writerFor(AirbyteMessage::class.java)
-                .with(MinimalPrettyPrinter(System.lineSeparator()))
         }.writeValues(bufferedOutputStream)
     }
 
@@ -178,16 +185,15 @@ class UnixDomainSocketOutputConsumer(
                     .withData(recordData)
                     .withEmittedAt(clock.millis())
             )
+        numRecords ++
+        if (numRecords % recreateWriterEveryNRecords == 0) {
+            writer = writerForMapper()
+        }
         writer.write(airbyteMessage)
-        if (++ numRecords == 100_000) {
+        if (numRecords == 100_000) {
             bufferedOutputStream.flush()
             buffer.reset()
             numRecords = 0
-
-            writer = SMILE_MAPPER.writerFor(AirbyteMessage::class.java)
-                .with(MinimalPrettyPrinter(System.lineSeparator()))
-                .writeValues(bufferedOutputStream)
-
         }
     }
 }
