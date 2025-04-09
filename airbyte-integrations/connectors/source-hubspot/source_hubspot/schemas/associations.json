@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "fromObjectId": {
+      "type": "string"
+    },
+    "toObjectId": {
+      "type": "string"
+    },
+    "fromObjectType": {
+      "type": "string"
+    },
+    "toObjectType": {
+      "type": "string"
+    },
+    "associationCategory": {
+      "type": "string"
+    },
+    "associationTypeId": {
+      "type": "integer"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "id",
+    "fromObjectId",
+    "toObjectId",
+    "fromObjectType",
+    "toObjectType",
+    "associationTypeId"
+  ]
+} 

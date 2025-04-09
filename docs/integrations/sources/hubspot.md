@@ -57,6 +57,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `associations`              | `crm.objects.contacts.read`, `crm.objects.companies.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
 | `campaigns`                 | `content`                                                                                                    |
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
 | `contact_lists`             | `crm.lists.read`                                                                                             |
@@ -155,6 +156,7 @@ There are two types of incremental sync:
 
 The HubSpot source connector supports the following streams:
 
+- [Associations](https://developers.hubspot.com/docs/api/crm/associations) \(Incremental\)
 - [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
 - [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
