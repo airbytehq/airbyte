@@ -266,7 +266,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             folder=file_paths[self.FILE_FOLDER],
             filename=file_name,
             bytes=file_size,
-            updated_at=int(file.last_modified.timestamp() * 1000),
+            updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         )
 
         file_reference = AirbyteRecordMessageFileReference(
