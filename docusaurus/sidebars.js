@@ -218,7 +218,7 @@ const buildAConnector = {
   items: [
     {
       type: "category",
-      label: "No-Code Connector Builder",
+      label: "Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/tutorial",
@@ -237,12 +237,6 @@ const buildAConnector = {
             "connector-development/connector-builder-ui/async-streams",
           ],
         },
-      ],
-    },
-    {
-      type: "category",
-      label: "Low-Code CDK",
-      items: [
         {
           label: "Low-Code CDK Intro",
           type: "doc",
