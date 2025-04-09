@@ -153,6 +153,7 @@ class UnixDomainSocketOutputConsumer(
             )
         } else {
             SMILE_MAPPER.writerFor(AirbyteMessage::class.java)
+                .with(MinimalPrettyPrinter(System.lineSeparator()))
         }.writeValues(bufferedOutputStream)
     }
 
