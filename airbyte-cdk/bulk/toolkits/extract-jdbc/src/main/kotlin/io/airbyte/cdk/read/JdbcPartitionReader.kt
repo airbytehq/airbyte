@@ -104,7 +104,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                 q = partition.nonResumableQuery,
                 parameters =
                     SelectQuerier.Parameters(
-                        reuseResultObject = true,
+                        reuseResultObject = false,
                         fetchSize = streamState.fetchSize
                     ),
             )
