@@ -497,7 +497,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 folder=file_paths[self.FILE_FOLDER],
                 filename=file_name,
                 bytes=file_size,
-                updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             )
 
             file_reference = AirbyteRecordMessageFileReference(
