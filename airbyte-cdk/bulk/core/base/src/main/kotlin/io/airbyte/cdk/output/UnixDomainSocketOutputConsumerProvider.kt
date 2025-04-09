@@ -11,6 +11,10 @@ import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.google.protobuf.ByteString
+import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.AirbyteRecord
+import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -176,20 +180,38 @@ class UnixDomainSocketOutputConsumer(
         if (outputFormat == "devnull") {
             return
         }
-        val airbyteMessage = AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                AirbyteRecordMessage()
-                    .withNamespace(namespace)
-                    .withStream(streamName)
-                    .withData(recordData)
-                    .withEmittedAt(clock.millis())
-            )
+
+        if (outputFormat in listOf("proto", "protobuf")) {
+            val pMessage: Protocol.AirbyteMessage? = Protocol.AirbyteMessage.newBuilder()
+                .setType(Protocol.AirbyteMessageType.RECORD)
+                .setRecord(
+                    AirbyteRecord.AirbyteRecordMessage.newBuilder()
+                        .setStream(streamName)
+                        .setNamespace(namespace)
+                        .setData(ByteString.copyFrom(Jsons.writeValueAsBytes(recordData)))
+                        .setEmittedAt(clock.millis())
+                        .build()
+                )
+                .build()
+            pMessage?.writeDelimitedTo(bufferedOutputStream)
+        } else {
+
+            val airbyteMessage = AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withNamespace(namespace)
+                        .withStream(streamName)
+                        .withData(recordData)
+                        .withEmittedAt(clock.millis())
+                )
+            writer.write(airbyteMessage)
+        }
         numRecords ++
         if (numRecords % recreateWriterEveryNRecords == 0) {
             writer = writerForMapper()
         }
-        writer.write(airbyteMessage)
+
         if (numRecords == 100_000) {
             bufferedOutputStream.flush()
             buffer.reset()
