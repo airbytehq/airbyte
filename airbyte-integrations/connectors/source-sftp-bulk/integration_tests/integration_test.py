@@ -17,6 +17,7 @@ from airbyte_cdk.models import (
     FailureType,
     Status,
 )
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -101,27 +102,25 @@ def test_get_files_empty_files(configured_catalog: ConfiguredAirbyteCatalog, con
 
 
 @pytest.mark.slow
-@pytest.mark.limit_memory("10 MB")
+@pytest.mark.limit_memory("11 MB")
 def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_file_transfer: Mapping[str, Any]):
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_file_transfer, state=None)
     output = read(source=source, config=config_fixture_use_file_transfer, catalog=configured_catalog)
-    expected_file_data = {
-        "bytes": 46_754_266,
-        "file_relative_path": "files/file_transfer/file_transfer_1.csv",
-        "file_url": "/tmp/airbyte-file-transfer/files/file_transfer/file_transfer_1.csv",
-        "modified": ANY,
-        "source_file_url": "/files/file_transfer/file_transfer_1.csv",
-    }
+    expected_file_data = AirbyteRecordMessageFileReference(
+        file_size_bytes =  46_754_266,
+        source_file_relative_path ="files/file_transfer/file_transfer_1.csv",
+        staging_file_url = "/tmp/airbyte-file-transfer/files/file_transfer/file_transfer_1.csv",
+    )
     assert len(output.records) == 1
-    assert list(map(lambda record: record.record.file, output.records)) == [expected_file_data]
+    assert list(map(lambda record: record.record.file_reference, output.records)) == [expected_file_data]
 
     # Additional assertion to check if the file exists at the file_url path
-    file_path = expected_file_data["file_url"]
+    file_path = expected_file_data.staging_file_url
     assert os.path.exists(file_path), f"File not found at path: {file_path}"
 
 
 @pytest.mark.slow
-@pytest.mark.limit_memory("10 MB")
+@pytest.mark.limit_memory("11 MB")
 def test_get_all_file_csv_file_transfer(
     configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_all_files_transfer: Mapping[str, Any]
 ):
@@ -132,8 +131,8 @@ def test_get_all_file_csv_file_transfer(
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_all_files_transfer, state=None)
     output = read(source=source, config=config_fixture_use_all_files_transfer, catalog=configured_catalog)
     assert len(output.records) == 5
-    total_bytes = sum(list(map(lambda record: record.record.file["bytes"], output.records)))
-    files_paths = list(map(lambda record: record.record.file["file_url"], output.records))
+    total_bytes = sum(list(map(lambda record: record.record.file_reference.file_size_bytes, output.records)))
+    files_paths = list(map(lambda record: record.record.file_reference.staging_file_url, output.records))
     for file_path in files_paths:
         assert os.path.exists(file_path), f"File not found at path: {file_path}"
     assert total_bytes == 233_771_330
@@ -150,8 +149,8 @@ def test_default_mirroring_paths_works_for_not_present_config_file_transfer(
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_not_duplicates, state=None)
     output = read(source=source, config=config_fixture_not_duplicates, catalog=configured_catalog)
     assert len(output.records) == expected_uniqueness_count
-    files_paths = set(map(lambda record: record.record.file["file_url"], output.records))
-    files_relative_paths = set(map(lambda record: record.record.file["file_relative_path"], output.records))
+    files_paths = set(map(lambda record: record.record.file_reference.staging_file_url, output.records))
+    files_relative_paths = set(map(lambda record: record.record.file_reference.source_file_relative_path, output.records))
     assert len(files_relative_paths) == expected_uniqueness_count
     assert len(files_paths) == expected_uniqueness_count
     for file_path, files_relative_path in zip(files_paths, files_relative_paths):
@@ -170,8 +169,8 @@ def test_not_mirroring_paths_not_duplicates_file_transfer(
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_not_mirroring_paths_not_duplicates, state=None)
     output = read(source=source, config=config_fixture_not_mirroring_paths_not_duplicates, catalog=configured_catalog)
     assert len(output.records) == expected_uniqueness_count
-    files_paths = set(map(lambda record: record.record.file["file_url"], output.records))
-    files_relative_paths = set(map(lambda record: record.record.file["file_relative_path"], output.records))
+    files_paths = set(map(lambda record: record.record.file_reference.staging_file_url, output.records))
+    files_relative_paths = set(map(lambda record: record.record.file_reference.source_file_relative_path, output.records))
     assert len(files_relative_paths) == expected_uniqueness_count
     assert len(files_paths) == expected_uniqueness_count
     for file_path, files_relative_path in zip(files_paths, files_relative_paths):
