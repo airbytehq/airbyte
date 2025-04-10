@@ -118,7 +118,7 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
 
     @property
     def retry_factor(self) -> float:
-        return 120.0
+        return 240.0
 
     @property
     def max_time(self) -> float:
