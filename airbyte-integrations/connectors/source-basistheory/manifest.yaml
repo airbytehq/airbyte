@@ -1,0 +1,970 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://portal.basistheory.com/
+  API Reference: https://developers.basistheory.com/docs/api/
+
+check:
+  type: CheckStream
+  stream_names:
+    - applications
+
+definitions:
+  streams:
+    applications:
+      type: DeclarativeStream
+      name: applications
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /applications
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at
+              value: "{{ record['created_at'].split(\".\")[0] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/applications"
+    application-templates:
+      type: DeclarativeStream
+      name: application-templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /application-templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/application-templates"
+    logs:
+      type: DeclarativeStream
+      name: logs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /logs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at
+              value: "{{ record['created_at'].split(\".\")[0] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/logs"
+    reactors:
+      type: DeclarativeStream
+      name: reactors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reactors
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at
+              value: "{{ record['created_at'].split(\".\")[0] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reactors"
+    tenants:
+      type: DeclarativeStream
+      name: tenants
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tenants/self
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at
+              value: "{{ record['created_at'].split(\".\")[0] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tenants"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at
+              value: "{{ record['created_at'].split(\".\")[0] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.basistheory.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: BT-API-KEY
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/applications"
+  - $ref: "#/definitions/streams/application-templates"
+  - $ref: "#/definitions/streams/logs"
+  - $ref: "#/definitions/streams/reactors"
+  - $ref: "#/definitions/streams/tenants"
+  - $ref: "#/definitions/streams/webhooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API key for authenticating with the Basis Theory API. You can
+          find this key when you create an application in the Basis Theory
+          dashboard.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    applications: true
+    application-templates: true
+    logs: true
+    reactors: true
+    tenants: true
+    webhooks: true
+  testedStreams:
+    applications:
+      streamHash: c966e285b4f0f9922282ee5a953e422653533911
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    application-templates:
+      streamHash: a3405efee901144a644caf5b6bbd6b4cbc5cc3e0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    logs:
+      streamHash: 92dfd5ca1ef75653ed18af2d6e9940af2c6426de
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reactors:
+      streamHash: 8e0230c6f3065d47aa78aac0c16ec92fd3d221f4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tenants:
+      streamHash: 1851b624b010a330655ae2359e000b8af7ffe774
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: 0823105c768aa44c61850a9e31f4015cfee67fe8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.basistheory.com/docs/api/applications/#request-1
+
+schemas:
+  applications:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      created_by:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      keys:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            version:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            created_by:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      modified_by:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      rules:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            conditions:
+              type:
+                - array
+                - "null"
+            container:
+              type:
+                - string
+                - "null"
+            permissions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            priority:
+              type:
+                - number
+                - "null"
+            transform:
+              type:
+                - string
+                - "null"
+      tenant_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  application-templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      application_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_starter:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      rules:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            conditions:
+              type:
+                - array
+                - "null"
+            container:
+              type:
+                - string
+                - "null"
+            permissions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            priority:
+              type:
+                - number
+                - "null"
+            transform:
+              type:
+                - string
+                - "null"
+      template_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actor_id:
+        type:
+          - string
+          - "null"
+      actor_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      entity_id:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      message:
+        type:
+          - string
+          - "null"
+      operation:
+        type:
+          - string
+          - "null"
+      tenant_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  reactors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      application:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          keys:
+            type:
+              - array
+              - "null"
+          modified_at:
+            type:
+              - string
+              - "null"
+          modified_by:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          permissions:
+            type:
+              - array
+              - "null"
+          rules:
+            type:
+              - array
+              - "null"
+          tenant_id:
+            type:
+              - string
+              - "null"
+      code:
+        type:
+          - string
+          - "null"
+      configuration:
+        type:
+          - object
+          - "null"
+        properties:
+          CIPHER_VISA_PUBLIC_KEY:
+            type:
+              - string
+              - "null"
+      created_at:
+        type: string
+      created_by:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      tenant_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  tenants:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      created_by:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          allowed_login_providers:
+            type:
+              - string
+              - "null"
+          apple_pay_domains:
+            type:
+              - string
+              - "null"
+          bank_verify:
+            type:
+              - string
+              - "null"
+          container_settings:
+            type:
+              - string
+              - "null"
+          cvc_ttl_hours:
+            type:
+              - string
+              - "null"
+          deduplicate_tokens:
+            type:
+              - string
+              - "null"
+          detokenize_limit:
+            type:
+              - string
+              - "null"
+          disable_ephemeral_proxy:
+            type:
+              - string
+              - "null"
+          enable_3ds:
+            type:
+              - string
+              - "null"
+          enable_account_updater:
+            type:
+              - string
+              - "null"
+          enable_async_reactors:
+            type:
+              - string
+              - "null"
+          enable_network_tokens:
+            type:
+              - string
+              - "null"
+          enable_verify_bank_account:
+            type:
+              - string
+              - "null"
+          enforce_mfa:
+            type:
+              - string
+              - "null"
+          enforce_sso:
+            type:
+              - string
+              - "null"
+          enrichments_bin_details:
+            type:
+              - string
+              - "null"
+          enterprise_contract:
+            type:
+              - string
+              - "null"
+          fingerprint_tokens:
+            type:
+              - string
+              - "null"
+          has_payment_method:
+            type:
+              - string
+              - "null"
+          include_cvc_in_token_conversion:
+            type:
+              - string
+              - "null"
+          included_monthly_active_tokens:
+            type:
+              - string
+              - "null"
+          log_history_limit:
+            type:
+              - string
+              - "null"
+          login_domain_whitelist:
+            type:
+              - string
+              - "null"
+          member_invite_limit:
+            type:
+              - string
+              - "null"
+          plan_name:
+            type:
+              - string
+              - "null"
+          rate_limit:
+            type:
+              - string
+              - "null"
+          sso_connection:
+            type:
+              - string
+              - "null"
+          stripe_customer_id:
+            type:
+              - string
+              - "null"
+          stripe_subscription_id:
+            type:
+              - string
+              - "null"
+          test_card_number_whitelist:
+            type:
+              - string
+              - "null"
+          token_deduplication_behavior:
+            type:
+              - string
+              - "null"
+          token_intent_ttl_hours:
+            type:
+              - string
+              - "null"
+          tokenize_limit:
+            type:
+              - string
+              - "null"
+          use_3ds_sandbox:
+            type:
+              - string
+              - "null"
+          use_account_updater_sandbox:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - created_at
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type:
+          - string
+          - "null"
+      events:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      notify_email:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tenant_id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
