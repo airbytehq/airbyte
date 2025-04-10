@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
     AirbyteStreamState,
     Type,
 )
-from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
+#from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, \
     AirbyteStream
 

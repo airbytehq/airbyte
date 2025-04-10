@@ -1,13 +1,9 @@
-# Mostly stolen from sqlalchemy's pgvector...
 import numpy as np
 from sqlalchemy.dialects.postgresql.base import ischema_names
-from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.type_api import TypeEngine
 from sqlalchemy.types import UserDefinedType, Float, String
-# from ..utils import Vector
 
 # this is for airbyte's column definition
-# doesn't even need to be PGVector or MariaDB specific, but doesn't seem to exist in shared
 class VECTOR(UserDefinedType):
     cache_ok = True
     _string = String()

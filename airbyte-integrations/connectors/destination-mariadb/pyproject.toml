@@ -18,8 +18,9 @@ include = "destination_mariadb"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^5"
-airbyte = "^0.20.0"
+airbyte-cdk = "*"
+# this seems to be the last version which still works without that ominous java.lang.Integer.intValue() error
+airbyte = "^0.16.0"
 langchain = "*" # why do I need to specify all of these manually, despite that other packages should pull them? NO IDEA!!
 tiktoken = "*"
 # cached-property = "==1.5.2"
