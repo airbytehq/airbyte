@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.storage.blob.specialized.BlockBlobClient
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -18,7 +18,7 @@ private const val BLOB_ID_PREFIX = "block"
 
 class AzureBlobStreamingUpload(
     private val blockBlobClient: BlockBlobClient,
-    private val config: AzureBlobStorageConfiguration,
+    private val config: AzureBlobStorageClientConfiguration,
     private val metadata: Map<String, String>
 ) : StreamingUpload<AzureBlob> {
 
