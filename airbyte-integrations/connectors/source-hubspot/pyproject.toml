@@ -17,7 +17,7 @@ include = "source_hubspot"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^6"
+airbyte-cdk = "6.45.0.post24.dev14387467928"
 pendulum = "<3.0.0"
 
 [tool.poetry.scripts]
@@ -30,6 +30,7 @@ pytest-mock = "^3.6"
 pytest = "^8.0.0"
 pytz = "2024.2"
 freezegun = "0.3.4"
+pytest-cov = "^6.1.1"
 
 
 [tool.poe]
