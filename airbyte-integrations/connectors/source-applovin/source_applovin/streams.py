@@ -124,6 +124,26 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
     def max_time(self) -> float:
         return 14400
 
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if stream_slice is None:
+            return []
+
+        try:
+            for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+                yield record
+        except Exception as e:
+            logging.error(f"Issue by reading records: {e}")
+            logging.error(f"Stream slice: {stream_slice}")
+            # On relève l'exception pour ne pas masquer l'erreur
+            raise
+
+
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(authenticator=self._session.auth, config=self.config)
         campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
