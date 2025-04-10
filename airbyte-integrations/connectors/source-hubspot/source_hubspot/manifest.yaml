@@ -162,7 +162,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "rootMicId" ]
+          - path: ["rootMicId"]
             value: "{{ record['rootMicId'] | string }}"
 
   email_subscriptions_stream:

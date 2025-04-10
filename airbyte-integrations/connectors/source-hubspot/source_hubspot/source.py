@@ -84,8 +84,7 @@ scopes = {
 }
 
 
-properties_scopes = {
-}
+properties_scopes = {}
 
 
 def scope_is_granted(stream, granted_scopes):
@@ -112,6 +111,7 @@ def properties_scope_is_granted(stream, granted_scopes):
 
 class SourceHubspot(YamlDeclarativeSource):
     logger = logging.getLogger("airbyte")
+
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
@@ -240,7 +240,14 @@ class SourceHubspot(YamlDeclarativeSource):
             unavailable_streams = [stream for stream in streams if not scope_is_granted(stream, granted_scopes)]
             self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
             partially_available_streams = [stream for stream in streams if not properties_scope_is_granted(stream, granted_scopes)]
-            required_scoped = set(chain(*[properties_scopes.get(x.name, set()) if isinstance(x, DeclarativeStream) else x.properties_scopes for x in partially_available_streams]))
+            required_scoped = set(
+                chain(
+                    *[
+                        properties_scopes.get(x.name, set()) if isinstance(x, DeclarativeStream) else x.properties_scopes
+                        for x in partially_available_streams
+                    ]
+                )
+            )
             self.logger.info(
                 f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
                 f"add the following scopes to download all available data: {required_scoped}"
