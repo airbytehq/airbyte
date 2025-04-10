@@ -95,7 +95,7 @@ class UnixDomainSocketOutputConsumerProvider(
     }
 
     override fun getSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
-        return socketConsumers[part]
+        return socketConsumers[part % socketConsumers.size]
     }
 
     private val ioScope = CoroutineScope(Dispatchers.IO)

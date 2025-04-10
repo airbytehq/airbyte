@@ -75,7 +75,7 @@ sealed class FeedBootstrap<T : Feed>(
     private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
         StreamRecordConsumer {
         override suspend fun acceptAsync(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
-            outputConsumer.getSocketConsumer(num!!.toInt() % totalNum!!).acceptAsync(recordData, stream.namespace ?: "", stream.name)
+            outputConsumer.getSocketConsumer(num!!.toInt()).acceptAsync(recordData, stream.namespace ?: "", stream.name)
         }
 
 //        private fun acceptWithoutChanges(recordData: ObjectNode, totalNum: Int?, num: Long?) {
