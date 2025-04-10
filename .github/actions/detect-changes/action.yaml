@@ -1,0 +1,40 @@
+name: "Detect Changed Connectors"
+description: "Detects changed connectors between the base commit and the latest commit."
+inputs:
+  base_commit:
+    description: "Base commit to compare changes against"
+    required: true
+  head_commit:
+    description: "Head commit (latest commit) in the PR or push"
+    required: true
+outputs:
+  connectors_list:
+    description: "List of changed connectors"
+    value: ${{ steps.detect.outputs.connectors_list }}
+  connectors_list_json:
+    description: "List of changed connectors in JSON array format"
+    value: ${{ steps.detect.outputs.connectors_list_json }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect Changed Connectors
+      id: detect
+      shell: bash
+      run: |
+        echo "Comparing commits: ${{ inputs.base_commit }} -> ${{ inputs.head_commit }}"
+
+        # Detect changed connectors
+        CHANGED_DIRS=$(git diff --name-only "${{ inputs.base_commit }}" "${{ inputs.head_commit }}" | grep '^airbyte-integrations/connectors/' | cut -d/ -f3 | sort -u || true)
+
+        if [[ -z "$CHANGED_DIRS" ]]; then
+          echo "⚠️ No changed connectors detected."
+          echo "connectors_list=" >> $GITHUB_ENV
+          echo "connectors_list_json=[]" >> "$GITHUB_OUTPUT"
+        else
+          echo "Changed connectors: $CHANGED_DIRS"
+          echo "connectors_list=$CHANGED_DIRS" >> $GITHUB_ENV
+          JSON=$(echo "$CHANGED_DIRS" | tr ' ' '\n' | jq -R . | jq -s -c .)
+          echo "🧪 JSON array: $JSON"
+          echo "connectors_list_json=$JSON" >> "$GITHUB_OUTPUT"
+        fi
