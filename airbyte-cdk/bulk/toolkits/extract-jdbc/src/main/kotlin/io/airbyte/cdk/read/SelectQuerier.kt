@@ -3,9 +3,12 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.data.ArrayAirbyteSchemaType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.output.SocketConfig
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
@@ -47,11 +50,13 @@ interface SelectQuerier {
 @Singleton
 class JdbcSelectQuerier(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
+    private val socketConfig: SocketConfig,
 ) : SelectQuerier {
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters)
+    ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters,
+        skipMarshalingToJson = socketConfig.skipJsonNodeAndUseFakeRecord)
 
     data class ResultRow(
         override var data: ObjectNode = Jsons.objectNode(),
@@ -62,6 +67,7 @@ class JdbcSelectQuerier(
         val jdbcConnectionFactory: JdbcConnectionFactory,
         val q: SelectQuery,
         val parameters: SelectQuerier.Parameters,
+        val skipMarshalingToJson: Boolean = false,
     ) : SelectQuerier.Result {
         private val log = KotlinLogging.logger {}
 
@@ -134,7 +140,26 @@ class JdbcSelectQuerier(
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-                    resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+                    if (!skipMarshalingToJson) {
+                        resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+                    } else {
+                        // Fetch and discard the data w/o marshaling to JSON
+                        when (column.type.airbyteSchemaType) {
+                            is ArrayAirbyteSchemaType -> TODO()
+                            LeafAirbyteSchemaType.BOOLEAN -> rs?.getBoolean(colIdx)
+                            LeafAirbyteSchemaType.STRING -> rs?.getString(colIdx)
+                            LeafAirbyteSchemaType.BINARY -> { /* do nothing */ }
+                            LeafAirbyteSchemaType.DATE -> rs?.getDate(colIdx)
+                            LeafAirbyteSchemaType.TIME_WITH_TIMEZONE -> rs?.getTime(colIdx)
+                            LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE -> rs?.getTime(colIdx)
+                            LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> rs?.getTimestamp(colIdx)
+                            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> rs?.getTimestamp(colIdx)
+                            LeafAirbyteSchemaType.INTEGER -> rs?.getInt(colIdx)
+                            LeafAirbyteSchemaType.NUMBER -> rs?.getDouble(colIdx)
+                            LeafAirbyteSchemaType.NULL -> { /* do nothing */ }
+                            LeafAirbyteSchemaType.JSONB -> { /* do nothing */ }
+                        }
+                    }
                 } catch (e: Exception) {
                     resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())
                     if (!hasLoggedException) {

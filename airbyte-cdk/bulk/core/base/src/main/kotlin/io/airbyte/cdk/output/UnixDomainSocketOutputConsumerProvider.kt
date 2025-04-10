@@ -51,6 +51,7 @@ interface SocketConfig {
     val inputChannelCapacity: Int
     val devNullBeforePosting: Boolean
     val writeAsync: Boolean
+    val skipJsonNodeAndUseFakeRecord: Boolean
 }
 
 @Singleton
@@ -63,6 +64,7 @@ class DefaultSocketConfig: SocketConfig {
     override val inputChannelCapacity: Int = 20_000
     override val devNullBeforePosting: Boolean = false
     override val writeAsync: Boolean = false
+    override val skipJsonNodeAndUseFakeRecord: Boolean = false
 }
 
 @Singleton
@@ -90,7 +92,8 @@ class UnixDomainSocketOutputConsumerProvider(
             configuration.devNullAfterSerialization,
             configuration.devNullBeforePosting,
             inputChannel,
-            configuration.writeAsync
+            configuration.writeAsync,
+            configuration.skipJsonNodeAndUseFakeRecord
         )
     }
 
@@ -148,12 +151,15 @@ class UnixDomainSocketOutputConsumer(
     val devNullBeforePosting: Boolean = false,
     private val inputChannel: Channel<NamedNode>,
     private val writeAsync: Boolean,
+    private val fakeRecord: Boolean,
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
     private var writer: SequenceWriter
     private var numRecords: Int = 0
     var busy: Boolean = false
+
+    val fakeRecordJson = """{"id":1,"age":50,"name":"Tomoko","email":"corrections1854+2@live.com","title":"Prof.","gender":"Female","height":1.53,"weight":61,"language":"Czech","global_id":13679213,"telephone":"357-652-0612","blood_type":"O+","created_at":"2009-02-27T13:44:37z","occupation":"MachineSetter","updated_at":"2009-07-12T16:12:23z","nationality":"Cameroonian","academic_degree":"Bachelor"}""".toByteArray(charset = Charsets.UTF_8)
 
     data class NamedNode(
         val namespace: String,
@@ -226,7 +232,9 @@ class UnixDomainSocketOutputConsumer(
                     AirbyteRecord.AirbyteRecordMessage.newBuilder()
                         .setStream(streamName)
                         .setNamespace(namespace)
-                        .setData(ByteString.copyFrom(Jsons.writeValueAsBytes(recordData)))
+                        .setData(ByteString.copyFrom(
+                            if (fakeRecord) { fakeRecordJson } else { Jsons.writeValueAsBytes(recordData) }
+                        ))
                         .setEmittedAt(clock.millis())
                         .build()
                 )

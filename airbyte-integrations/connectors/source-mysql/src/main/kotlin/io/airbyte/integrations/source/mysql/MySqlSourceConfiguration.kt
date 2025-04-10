@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystems
 import java.time.Duration
 import java.util.UUID
-import kotlin.math.max
 
 private val log = KotlinLogging.logger {}
 
@@ -53,6 +52,7 @@ data class MySqlSourceConfiguration(
     override val devNullBeforePosting: Boolean,
     override val numSockets: Int,
     override val writeAsync: Boolean = false,
+    override val skipJsonNodeAndUseFakeRecord: Boolean = false,
 ) : JdbcSourceConfiguration, CdcSourceConfiguration, SocketConfig {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
@@ -175,6 +175,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             devNullBeforePosting = pojo.devNullBeforePosting ?: false,
             numSockets = pojo.numSockets ?: 1,
             writeAsync = pojo.writeAsync ?: false,
+            skipJsonNodeAndUseFakeRecord = pojo.skipJsonNodeAndUseFakeRecord ?: false,
         )
     }
 

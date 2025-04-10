@@ -210,6 +210,9 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("write_async")
     val writeAsync: Boolean? = false
+
+    @JsonProperty("skip_json_node_and_use_fake_record")
+    val skipJsonNodeAndUseFakeRecord: Boolean? = false
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

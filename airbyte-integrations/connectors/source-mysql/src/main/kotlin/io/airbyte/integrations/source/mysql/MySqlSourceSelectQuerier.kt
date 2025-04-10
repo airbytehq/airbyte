@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.output.SocketConfig
 import io.airbyte.cdk.read.JdbcSelectQuerier
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
@@ -17,7 +18,8 @@ import jakarta.inject.Singleton
 @Primary
 class MySqlSourceSelectQuerier(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
-) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory) {
+    private val socketConfig: SocketConfig,
+) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory, socketConfig) {
     private val log = KotlinLogging.logger {}
 
     inner class MySqlResult(
