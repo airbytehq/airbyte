@@ -90,41 +90,6 @@ class VECTOR(UserDefinedType):
 
         def l1_distance(self, other):
             return self.op('<+>', return_type=Float)(other)
-        """
-        # the robot also suggested this, but I don't get it
-        def cosine_similarity(self, other):
-            return func.cosine_similarity(self.expr, other)
-        
-        def euclidean_distance(self, other):
-            return func.euclidean_distance(self.expr, other)
-            
-        def dot_product(self, other):
-            return func.dot_product(self.expr, other)
-            
-        def nearest_neighbors(self, other, k=10):
-            # Example of a function that might find k nearest neighbors
-            return func.nearest_neighbors(self.expr, other, k)
-        
-        @compiles(func.cosine_similarity)
-        def compile_cosine_similarity(element, compiler, **kw):
-            return f"COSINE_SIMILARITY({compiler.process(element.clauses.clauses[0])}, {compiler.process(element.clauses.clauses[1])})"
-        
-        @compiles(func.euclidean_distance)
-        def compile_euclidean_distance(element, compiler, **kw):
-            return f"EUCLIDEAN_DISTANCE({compiler.process(element.clauses.clauses[0])}, {compiler.process(element.clauses.clauses[1])})"
-        
-        @compiles(func.dot_product)
-        def compile_dot_product(element, compiler, **kw):
-            return f"DOT_PRODUCT({compiler.process(element.clauses.clauses[0])}, {compiler.process(element.clauses.clauses[1])})"
-        
-        @compiles(func.nearest_neighbors)
-        def compile_nearest_neighbors(element, compiler, **kw):
-            if len(element.clauses.clauses) == 3:
-                return f"NEAREST_NEIGHBORS({compiler.process(element.clauses.clauses[0])}, {compiler.process(element.clauses.clauses[1])}, {compiler.process(element.clauses.clauses[2])})"
-            else:
-                return f"NEAREST_NEIGHBORS({compiler.process(element.clauses.clauses[0])}, {compiler.process(element.clauses.clauses[1])})"
-        
-        """
 
     comparator_factory = ComparatorFactory
 

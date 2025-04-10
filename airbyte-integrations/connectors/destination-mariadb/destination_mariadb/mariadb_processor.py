@@ -433,7 +433,7 @@ class MariaDBProcessor(abc.ABC):
 
 
     def _finalize_temp_tables(self):
-        for stream_name, temp_table in self.temp_tables:
+        for stream_name, temp_table in self.temp_tables.items():
             final_table_name = self.get_sql_table_name(stream_name)
             self._swap_temp_table_with_final_table(
                 stream_name=stream_name,

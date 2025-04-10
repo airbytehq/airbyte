@@ -20,7 +20,9 @@ from airbyte_cdk.models import (
 #from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, \
     AirbyteStream
+from sqlalchemy.dialects.mysql.pymysql import MySQLDialect_pymysql
 
+from destination_mariadb.common.catalog.catalog_providers import CatalogProvider
 from destination_mariadb.config import ConfigModel
 from destination_mariadb.mariadb_processor import DatabaseConfig
 from destination_mariadb.mariadb_processor import MariaDBProcessor
@@ -66,6 +68,22 @@ class TestDestinationMariaDB(unittest.TestCase):
         self.fake_embedder = FakeEmbeddingConfigModel(
             mode="fake"
         )
+
+        # mocks testProcessor.get_sql_connection()
+        self.get_sql_conn_mock = MagicMock()
+
+        # mocks "with testProcessor.get_sql_connection() as conn:"
+        self.sql_conn_mock_enter = MagicMock()
+
+        # This is how you mock away a "with get_sql_conn_mock() as sql_conn_mock_enter:" call
+        self.get_sql_conn_mock.return_value.__enter__.return_value = self.sql_conn_mock_enter
+
+        # we need a "dialect", must be instance of MySQLDialect_pymysql
+        dialect = MySQLDialect_pymysql(
+            is_mariadb = True
+        )
+        self.sql_conn_mock_enter.dialect = dialect
+
 
         # ok, we actually need a catalog provider
         self.configured_catalog = ConfiguredAirbyteCatalog(
@@ -162,8 +180,6 @@ class TestDestinationMariaDB(unittest.TestCase):
             test_message
         ]
 
-        self.fileWriterMock = Mock()
-
         self.sql_config = DatabaseConfig(
             host=self.config_model.indexing.host,
             port=self.config_model.indexing.port,
@@ -181,50 +197,9 @@ class TestDestinationMariaDB(unittest.TestCase):
 
 
 
-        # The batch_id is used later down the line for the name of the temp table
-        self.batches_to_finalize = [BatchHandle(
-            stream_name="users",
-            batch_id="123",
-            files=[Path(
-                '/no/such/thing'
-            )],
-            file_opener=Mock(),
-        )]
 
-        # is is what it would write into the temp file
-        self.document_content = """academic_degree: Master
-            address: 
-            city: Austin
-            country_code: UG
-            postal_code: 49893
-            province: North Carolina
-            state: Kentucky
-            street_name: Princeton
-            street_number: 789
-            
-            age: 53
-            blood_type: B−
-            created_at: 2012-07-02T08:32:31+00:00
-            email: reason1932+1@protonmail.com
-            gender: Male
-            height: 1.55
-            id: 1
-            language: Tamil
-            name: Patria
-            nationality: Italian
-            occupation: Word Processing Operator
-            telephone: +1-(110)-795-7610
-            title: M.A.
-            updated_at: 2025-03-27T14:37:27+00:00
-            weight: 58"""
-
-        self.stream_schema_expected = {
-            'properties': {'chunk_id': {'type': 'string'}, 'document_content': {'type': 'string'},
-                           'document_id': {'type': 'string'},
-                           'embedding': {'items': {'type': 'float'}, 'type': 'array'},
-                           'metadata': {'type': 'object'}}, 'type': 'object'}
-
-    def _multiline_trim(self, text):
+    @staticmethod
+    def _multiline_trim(text):
         lines = text.split("\n")
 
         result_lines = []
@@ -238,33 +213,13 @@ class TestDestinationMariaDB(unittest.TestCase):
         self.assertMultiLineEqual(self._multiline_trim(expected), self._multiline_trim(actual), msg)
         pass
 
-    def find_mock_call(self, mock: Mock, call_name):
-        for call in mock.mock_calls:
-            if call[0] == call_name:
-                return call
-
-        return None
-
-    def get_mock_call_argument(self, mock: Mock, call_name, arg_nr):
-        call = self.find_mock_call(mock, call_name)
-        if call is None:
-            return None
-
-        if len(call.args) <= arg_nr:
-            return None
-
-        return call.args[0]
-
-    #airbyte_cdk.sql.shared.sqlalchemy?
-
 
     @patch("sqlalchemy.inspect")
     def test_create_database(self, sqlalchemy_inspect):
-
+        # TODO can we mock away the logger?
         inspector_mock = MagicMock()
         sqlalchemy_inspect.return_value = inspector_mock
 
-        # probably should return the name of the DB for tests where we don't want the DB creation code to run
         inspector_mock.get_schema_names = Mock(return_value=[])
 
 
@@ -282,195 +237,170 @@ class TestDestinationMariaDB(unittest.TestCase):
                 `chunk_id` VARCHAR(255),
                 `metadata` JSON,
                 `document_content` TEXT,
-                `embedding` VECTOR(1536)
+                `embedding` VECTOR(1536),
+                PRIMARY KEY (document_id)
             )
         """
-        # Without any PK for now... PRIMARY KEY (document_id)
 
 
         self.assertMultilineTrimmed(actual_qry, expected_qry)
 
-    @patch("destination_mariadb.common.sql.sql_processor.pd")
-    def test_write_stragegy_append(self, sqlproc_pd):
-        # in append mode, the processor will fire INSERT queries directly
+
+    def test_write_stragegy_append(self):
+
+        # use the connection mock
+        self.testProcessor.get_sql_connection = self.get_sql_conn_mock
+
+
+        # make sure it doesn't attempt to create the tables again
         self.testProcessor._table_exists = Mock(return_value=True)
-
-        # see sql_processor._write_temp_table_to_final_table, we should definitely test all 3 WriteStrategys
-        mock_dataframe = MagicMock()  # dataframe
-        sqlproc_pd.read_json = Mock(return_value=mock_dataframe)
-
-        # Mock away the batch handles. The batch_id is also used later down the line for the name of the temp table
-        self.fileWriterMock.get_pending_batches = Mock(return_value=self.batches_to_finalize)
-
-        # Mock away the _execute_sql
-        sql_mock = Mock()
-        self.testProcessor._execute_sql = sql_mock
-
-
 
         # Process the message
         for _ in self.testProcessor.process_airbyte_messages_as_generator(
-                messages=self.input_messages,
+                input_messages=self.input_messages,
                 write_strategy=WriteStrategy.APPEND,
         ):
             pass
 
         # Test that the SQL statements are correct
+        self.assertEqual(self.sql_conn_mock_enter.execute.call_count, 1)
 
-        self.assertEqual(sql_mock.call_count, 3)
-        # now, check the sql statements which have been used, they are in .call_args_list
 
-        sql_create = SQL_CREATE_STATEMENT
+        textclause = self.sql_conn_mock_enter.execute.call_args_list[0].args[0]
+        binds = self.sql_conn_mock_enter.execute.call_args_list[0].args[1]
 
-        # TODO: is this valid MariaDB?
-        sql_insert = """
-        INSERT INTO `users` (
-            `document_id`,
+        # should we compare the binds? probably not entirely, just that all the keys are present
+        self.assertIn('document_id_val', binds)
+        self.assertIn('chunk_id_val', binds)
+        self.assertIn('metadata_val', binds)
+        self.assertIn('document_content_val', binds)
+        self.assertIn('embedding_val', binds)
+
+        sql_actual = str(textclause)
+
+        sql_expected = """        
+        INSERT INTO `users`
+            (`document_id`,
             `chunk_id`,
             `metadata`,
             `document_content`,
-            `embedding`
-        )
-        SELECT
-            `document_id`,
-            `chunk_id`,
-            `metadata`,
-            `document_content`,
-            `embedding`
-        FROM `users_123`
+            `embedding`)
+        VALUES
+            (:document_id_val, :chunk_id_val, :metadata_val, :document_content_val, Vec_FromText(:embedding_val)) 
         """
 
-        sql_drop = SQL_DESTORY_STATEMENT
+        self.assertMultilineTrimmed(sql_expected, sql_actual)
 
-        self.assertMultilineTrimmed(sql_mock.call_args_list[0].args[0], sql_create)
-        self.assertMultilineTrimmed(sql_mock.call_args_list[1].args[0], sql_insert)
-        self.assertMultilineTrimmed(sql_mock.call_args_list[2].args[0], sql_drop)
+    def test_write_stragegy_merge(self):
 
-        # Test what the mock_dataframe's to_sql was called
-        self.assertEqual(1, mock_dataframe.to_sql.call_count, "to_sql should be called exactly once")
+        # use the connection mock
+        self.testProcessor.get_sql_connection = self.get_sql_conn_mock
 
-        # Testing that the attempt to write the temporary file is correct
-        self.assertEqual(1, self.fileWriterMock.process_record_message.call_count)
-        file_writer_kwargs = self.fileWriterMock.process_record_message.call_args_list[0].kwargs
 
-        record_msg = file_writer_kwargs['record_msg']
-        stream_schema = file_writer_kwargs['stream_schema']
-
-        self.assertEqual(stream_schema, self.stream_schema_expected)
-
-        self.assertMultilineTrimmed(record_msg.data['document_content'], self.document_content)
-
-    @patch("destination_mariadb.common.sql.sql_processor.pd")
-    def test_write_stragegy_merge(self, sqlproc_pd):
+        # make sure it doesn't attempt to create the tables again
         self.testProcessor._table_exists = Mock(return_value=True)
-
-        # see sql_processor._write_temp_table_to_final_table, we should definitely test all 3 WriteStrategys
-        mock_dataframe = MagicMock()  # dataframe
-        sqlproc_pd.read_json = Mock(return_value=mock_dataframe)
-
-        # Mock away the batch handles.
-        self.fileWriterMock.get_pending_batches = Mock(return_value=self.batches_to_finalize)
-
-        # Mock away the _execute_sql
-        sql_mock = Mock()
-        self.testProcessor._execute_sql = sql_mock
-
-        sql_conn_mock = MagicMock()
-        self.testProcessor.get_sql_connection = MagicMock(return_value=sql_conn_mock)
 
         # Process the message
         for _ in self.testProcessor.process_airbyte_messages_as_generator(
-                messages=self.input_messages,
+                input_messages=self.input_messages,
                 write_strategy=WriteStrategy.MERGE,
         ):
             pass
 
         # Test that the SQL statements are correct
+        self.assertEqual(self.sql_conn_mock_enter.execute.call_count, 2)
 
-        # TODO is this valid MariaDB?
-        sql_insert = """
-            INSERT INTO users
-                (document_id, chunk_id, metadata, document_content, embedding)
-            SELECT document_id, chunk_id, metadata, document_content, embedding
-            FROM users_123
-            ON DUPLICATE KEY UPDATE;
+        # first call, delete
+        textclause_delete = self.sql_conn_mock_enter.execute.call_args_list[0].args[0]
+        sql_expected = """
+            DELETE FROM `users` 
+            WHERE document_id = :document_id_val
+        """
+        self.assertMultilineTrimmed(sql_expected, str(textclause_delete))
+
+
+        # second call, insert
+        textclause = self.sql_conn_mock_enter.execute.call_args_list[1].args[0]
+        binds = self.sql_conn_mock_enter.execute.call_args_list[1].args[1]
+
+        # should we compare the binds? probably not entirely, just that all the keys are present
+        self.assertIn('document_id_val', binds)
+        self.assertIn('chunk_id_val', binds)
+        self.assertIn('metadata_val', binds)
+        self.assertIn('document_content_val', binds)
+        self.assertIn('embedding_val', binds)
+
+        sql_actual = str(textclause)
+
+        sql_expected = """        
+        INSERT INTO `users`
+            (`document_id`,
+            `chunk_id`,
+            `metadata`,
+            `document_content`,
+            `embedding`)
+        VALUES
+            (:document_id_val, :chunk_id_val, :metadata_val, :document_content_val, Vec_FromText(:embedding_val)) 
         """
 
-        self.assertEqual(sql_mock.call_count, 2)
+        self.assertMultilineTrimmed(sql_expected, sql_actual)
 
 
-        # I have tried to do this in some sane way, but failed. If you know how to improve this, go ahead
-        relevant_entry = self.find_mock_call(sql_conn_mock, '__enter__().execute')
-        self.assertIsNotNone(relevant_entry, "There must have been a call to conn.execute()")
+    def test_write_stragegy_replace(self):
+
+        # use the connection mock
+        self.testProcessor.get_sql_connection = self.get_sql_conn_mock
 
 
-        self.assertMultilineTrimmed(sql_mock.call_args_list[0].args[0], SQL_CREATE_STATEMENT)
-        self.assertMultilineTrimmed(relevant_entry.args[0], sql_insert)
-        self.assertMultilineTrimmed(sql_mock.call_args_list[1].args[0], SQL_DESTORY_STATEMENT)
-
-
-
-        # Test what the mock_dataframe's to_sql was called
-        self.assertEqual(1, mock_dataframe.to_sql.call_count, "to_sql should be called exactly once")
-
-        # Testing that the attempt to write the temporary file is correct
-        self.assertEqual(1, self.fileWriterMock.process_record_message.call_count)
-        file_writer_kwargs = self.fileWriterMock.process_record_message.call_args_list[0].kwargs
-
-        record_msg = file_writer_kwargs['record_msg']
-        stream_schema = file_writer_kwargs['stream_schema']
-
-        self.assertEqual(stream_schema, self.stream_schema_expected)
-
-        self.assertMultilineTrimmed(record_msg.data['document_content'], self.document_content)
-
-    @patch("destination_mariadb.common.sql.sql_processor.pd")
-    def test_write_stragegy_replace(self, sqlproc_pd):
+        # make sure it doesn't attempt to create the tables again
         self.testProcessor._table_exists = Mock(return_value=True)
 
-        mock_dataframe = MagicMock()  # dataframe
-        sqlproc_pd.read_json = Mock(return_value=mock_dataframe)
+        # try overriding _get_temp_table_name for determinism
+        self.testProcessor._get_temp_table_name = Mock(return_value="users_foobar")
 
-        # Mock away the batch handles.
-        self.fileWriterMock.get_pending_batches = Mock(return_value=self.batches_to_finalize)
-
-        # Mock away the _execute_sql
-        sql_mock = Mock()
-        self.testProcessor._execute_sql = sql_mock
+        # now here this should:
+        # - create a new table
+        # - write the messages into it
+        # - drop the original table
+        # - rename the new table to the original table
 
         # Process the message
         for _ in self.testProcessor.process_airbyte_messages_as_generator(
-                messages=self.input_messages,
+                input_messages=self.input_messages,
                 write_strategy=WriteStrategy.REPLACE,
         ):
             pass
 
         # Test that the SQL statements are correct
+        self.assertEqual(self.sql_conn_mock_enter.execute.call_count, 3)
 
-        self.assertEqual(sql_mock.call_count, 3)
-        # now, check the sql statements which have been used, they are in .call_args_list
-
-
-        sql_alter = """
-            ALTER TABLE `users` RENAME TO users_deleteme;
-            ALTER TABLE `users_123` RENAME TO users;
-            DROP TABLE `users_deleteme`;
+        sql_expected1 = """        
+            CREATE TABLE `users_foobar` (
+                `document_id` VARCHAR(255),
+                `chunk_id` VARCHAR(255),
+                `metadata` JSON,
+                `document_content` TEXT,
+                `embedding` VECTOR(1536)
+            )
         """
 
-        self.assertMultilineTrimmed(sql_mock.call_args_list[0].args[0], SQL_CREATE_STATEMENT)
-        self.assertMultilineTrimmed(sql_mock.call_args_list[1].args[0], sql_alter)
-        self.assertMultilineTrimmed(sql_mock.call_args_list[2].args[0], SQL_DESTORY_STATEMENT)
+        sql_expected2 = """
+        INSERT INTO `users_foobar`
+            (`document_id`,
+            `chunk_id`,
+            `metadata`,
+            `document_content`,
+            `embedding`)
+        VALUES
+            (:document_id_val, :chunk_id_val, :metadata_val, :document_content_val, Vec_FromText(:embedding_val)) 
+        """
 
-        # Test what the mock_dataframe's to_sql was called
-        self.assertEqual(1, mock_dataframe.to_sql.call_count, "to_sql should be called exactly once")
+        sql_expected3 = """
+        ALTER TABLE `users` RENAME TO users_deleteme;
+        ALTER TABLE `users_foobar` RENAME TO users;
+        DROP TABLE `users_deleteme`;
+        """
 
-        # Testing that the attempt to write the temporary file is correct
-        self.assertEqual(1, self.fileWriterMock.process_record_message.call_count)
-        file_writer_kwargs = self.fileWriterMock.process_record_message.call_args_list[0].kwargs
-
-        record_msg = file_writer_kwargs['record_msg']
-        stream_schema = file_writer_kwargs['stream_schema']
-
-        self.assertEqual(stream_schema, self.stream_schema_expected)
-
-        self.assertMultilineTrimmed(record_msg.data['document_content'], self.document_content)
+        self.assertMultilineTrimmed(sql_expected1, str(self.sql_conn_mock_enter.execute.call_args_list[0].args[0]))
+        self.assertMultilineTrimmed(sql_expected2, str(self.sql_conn_mock_enter.execute.call_args_list[1].args[0]))
+        self.assertMultilineTrimmed(sql_expected3, str(self.sql_conn_mock_enter.execute.call_args_list[2].args[0]))
