@@ -149,29 +149,45 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
         campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
         tracking_method_filter = self.config.get("filter_campaigns_tracking_methods")
 
-        # Calculer la date d'il y a 2 jours
+        # Calculate the date from 2 days ago
         two_days_ago = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
 
+        # Determine if we should do a full sync today
+        # Check the hour - if it's between midnight and 1am, sync all campaigns
+        current_hour = datetime.now().hour
+        is_full_sync_window = 0 <= current_hour < 4
+
+        if is_full_sync_window:
+            logging.info("Full sync period (between midnight and 1am): synchronizing all campaigns with tracking_method filter only")
+
         for campaign in campaigns_records:
-            # Filtrer uniquement les campagnes actives ou créées dans les 2 derniers jours
+            # Always apply the tracking_method filter
+            if tracking_method_filter and campaign["tracking_method"] not in tracking_method_filter:
+                continue
+
+            # If we're in the full sync window, include all campaigns that pass the tracking_method filter
+            if is_full_sync_window:
+                logging.info(f"Full sync: including campaign ID={campaign['campaign_id']}, tracking_method={campaign.get('tracking_method')}")
+                yield {"campaign_id": campaign["campaign_id"]}
+                continue
+
+            # Otherwise, also apply status and creation date filters
             is_active = campaign.get("status") == "ACTIVE"
             is_recent = False
 
             if "created_at" in campaign:
                 try:
-                    created_at = campaign["created_at"].split(" ")[0]  # Format ISO "2023-04-10T14:30:00Z" -> "2023-04-10"
+                    # Handle date format like "2016-05-25 00:00:00"
+                    created_at = campaign["created_at"].split(" ")[0] # Extract just the date part "2016-05-25"
+
                     is_recent = created_at >= two_days_ago
-                except (IndexError, AttributeError):
-                    logging.warning(f"Format de date invalide pour la campagne {campaign.get('campaign_id')}: {campaign.get('created_at')}")
+                except (IndexError, AttributeError) as e:
+                    logging.warning(f"Invalid date format for campaign {campaign.get('campaign_id')}: {campaign.get('created_at')}")
 
-            # Appliquer les filtres : tracking method + (active OU récent)
-            if ((not tracking_method_filter or
-                (tracking_method_filter and campaign["tracking_method"] in tracking_method_filter)) and
-                (is_active or is_recent)):
-
-                logging.info(f"Campagne incluse: ID={campaign['campaign_id']}, Active={is_active}, Récente={is_recent}")
+            # Apply filters: (active OR recent)
+            if is_active or is_recent:
+                logging.info(f"Frequent sync: including campaign ID={campaign['campaign_id']}, tracking_method={campaign.get('tracking_method')}, Active={is_active}, Recent={is_recent}")
                 yield {"campaign_id": campaign["campaign_id"]}
-                continue
 
 
 class Creatives(CampaignsSubStream):
