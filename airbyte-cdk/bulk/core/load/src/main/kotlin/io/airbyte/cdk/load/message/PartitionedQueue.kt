@@ -5,9 +5,7 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.util.CloseableCoroutine
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.merge
 
 interface PartitionedQueue<T> : CloseableCoroutine {
     val partitions: Int
@@ -37,29 +35,5 @@ class StrictPartitionedQueue<T>(private val queues: Array<MessageQueue<T>>) : Pa
 
     override suspend fun close() {
         queues.forEach { it.close() }
-    }
-}
-
-/**
- * This is for the use case where you want workers to grab work as it becomes available but still be
- * able to receive notifications that are guaranteed to be consumed by every partition.
- */
-class SinglePartitionQueueWithMultiPartitionBroadcast<T>(
-    private val sharedQueue: MessageQueue<T>,
-    override val partitions: Int
-) : PartitionedQueue<T> {
-    private val broadcastChannels =
-        StrictPartitionedQueue(
-            (0 until partitions).map { ChannelMessageQueue<T>(Channel(1)) }.toTypedArray()
-        )
-
-    override fun consume(partition: Int): Flow<T> =
-        merge(sharedQueue.consume(), broadcastChannels.consume(partition))
-    override suspend fun publish(value: T, partition: Int) = sharedQueue.publish(value)
-    override suspend fun broadcast(value: T) = broadcastChannels.broadcast(value)
-
-    override suspend fun close() {
-        sharedQueue.close()
-        broadcastChannels.close()
     }
 }

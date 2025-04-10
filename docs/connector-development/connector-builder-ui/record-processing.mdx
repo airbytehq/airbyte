@@ -11,16 +11,6 @@ Connectors built with the connector builder always make HTTP requests, receive t
 
 ## Response Decoding
 
-<iframe
-  width="800"
-  height="490"
-  src="https://www.loom.com/embed/ae6dce06ccb24795a8eddcdf0fe33a84"
-  frameborder="0"
-  webkitallowfullscreen
-  mozallowfullscreen
-  allowfullscreen
-></iframe>
-
 The first step in converting an HTTP response into records is decoding the response body into normalized JSON objects, as the rest of the record processing logic performed by the connector expects to operate on JSON objects.
 
 The HTTP Response Format is used to configure this decoding by declaring what the encoding of the response body is.
@@ -30,6 +20,7 @@ Each of the supported formats are explained below.
 ### JSON
 
 Example JSON response body:
+
 ```json
 {
   "cod": "200",
@@ -69,13 +60,14 @@ Example JSON response body:
 }
 ```
 
-This is the most common response format. APIs usually include a `"Content-Type": "application/json"` response header when returning a JSON body.
+This is the most common response format. APIs usually include a `"Content-Type": "application/json"` response header when returning a JSON body. Consult that API's documentation to verify which content type you should expect.
 
 In this case, no extra decoding needs to happen to convert these responses into JSON because they are already in JSON format.
 
 ### XML
 
 Example XML response body:
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <weatherdata>
@@ -106,11 +98,12 @@ Example XML response body:
 </weatherdata>
 ```
 
-APIs usually include a `"Content-Type": "application/xml"` response header when returning an XML body.
+APIs usually include a `"Content-Type": "application/xml"` response header when returning an XML body. Consult that API's documentation to verify which content type you should expect.
 
 In this case, the XML body is converted into a normalized JSON format by following the patterns described in [this spec](https://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html) from xml.com.
 
 For the above example, the XML response format setting would result in the following normalized JSON output:
+
 ```json
 {
   "weatherdata": {
@@ -187,7 +180,8 @@ For the above example, the XML response format setting would result in the follo
 ### JSON Lines
 
 Example JSON Lines response body:
-```jsonlines
+
+```json
 {"name": "John", "age": 30, "city": "New York"}
 {"name": "Alice", "age": 25, "city": "Los Angeles"}
 {"name": "Bob", "age": 50, "city": "Las Vegas"}
@@ -195,10 +189,11 @@ Example JSON Lines response body:
 
 [JSON Lines](https://jsonlines.org/) is a text format that contains one JSON object per line, with newlines in between.
 
-There is no standardized `Content-Type` header for API responses containing JSON Lines, so it is common for APIs to just include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case.
+There is no standardized `Content-Type` header for API responses containing JSON Lines, so it is common for APIs to just include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case. Consult that API's documentation to verify which content type you should expect.
 
 For the above example, the JSON Lines response format setting would result in the following normalized JSON output:
-```
+
+```json
 [
   {
     "name": "John",
@@ -221,7 +216,8 @@ For the above example, the JSON Lines response format setting would result in th
 ### Iterable
 
 Example iterable response body:
-```
+
+```text
 2021-04-14 16:52:18 +00:00
 2021-04-14 16:52:23 +00:00
 2021-04-14 16:52:21 +00:00
@@ -231,12 +227,13 @@ Example iterable response body:
 
 This response format option is used for API response bodies that are text containing strings separated by newlines.
 
-APIs are likely to include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case.
+APIs are likely to include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case. Consult that API's documentation to verify which content type you should expect.
 
 By convention, the connector will wrap each of these strings in a JSON object under a `record` key.
 
 For the above example, the Iterable response format setting would result in the following normalized JSON output:
-```
+
+```json
 [
   {
     "record": "2021-04-14 16:52:18 +00:00"
@@ -255,6 +252,52 @@ For the above example, the Iterable response format setting would result in the 
   }
 ]
 ```
+
+### CSV
+
+Example CSV (Comma-Separated Values) response body:
+
+```csv
+id,name,email,created_at
+1,John Doe,john.doe@example.com,2023-01-15T09:30:00Z
+2,Jane Smith,jane.smith@example.com,2023-01-16T14:20:00Z
+3,Bob Johnson,bob.johnson@example.com,2023-01-17T11:45:00Z
+```
+
+This response format is used for API responses that return data in CSV format. APIs typically include a `"Content-Type": "text/csv"` response header when returning CSV data. Consult that API's documentation to verify which content type you should expect.
+
+The CSV decoder converts each row of the CSV into a JSON object, using the header row to determine field names. CSV files can be delimited with characters other than commas. Set a different delimiter if your file isn't comma-delimited.
+
+For the preceding example, the CSV response format would result in the following normalized JSON output:
+
+```json
+[
+  {
+    "id": "1",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "created_at": "2023-01-15T09:30:00Z"
+  },
+  {
+    "id": "2",
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "created_at": "2023-01-16T14:20:00Z"
+  },
+  {
+    "id": "3",
+    "name": "Bob Johnson",
+    "email": "bob.johnson@example.com",
+    "created_at": "2023-01-17T11:45:00Z"
+  }
+]
+```
+
+### ZIP and gzip
+
+Some APIs respond with a compressed ZIP or gzip file. This is more common when you're dealing with large, reporting-based datasets. Amplitude's [Export API](https://amplitude.com/docs/apis/analytics/export) is an example. Occasionally, APIs nest compressed zip files within each other, like a zip file that contains gzip files, which themselves contain more files.
+
+When you set your HTTP response format to ZIP or gzip, you can nest another decoder inside it. You can do this recursively if you need Airbyte to work through a number of layers of compressed files to access the data within.
 
 ## Record Selection
 
