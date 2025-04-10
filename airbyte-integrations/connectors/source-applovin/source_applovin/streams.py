@@ -163,16 +163,17 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
         for campaign in campaigns_records:
             # Always apply the tracking_method filter
             if tracking_method_filter and campaign["tracking_method"] not in tracking_method_filter:
+                logging.info(f"Skipping campaign ID={campaign['campaign_id']} due to tracking_method filter")
                 continue
 
             # If we're in the full sync window, include all campaigns that pass the tracking_method filter
             if is_full_sync_window:
-                logging.info(f"Full sync: including campaign ID={campaign['campaign_id']}, tracking_method={campaign.get('tracking_method')}")
+                logging.info(f"Full sync: including campaign ID={campaign['campaign_id']}, tracking_method={campaign['tracking_method']}")
                 yield {"campaign_id": campaign["campaign_id"]}
                 continue
 
             # Otherwise, also apply status and creation date filters
-            is_active = campaign.get("status") == "ACTIVE"
+            is_active = campaign["status"] == True
             is_recent = False
 
             if "created_at" in campaign:
@@ -182,11 +183,12 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
 
                     is_recent = created_at >= two_days_ago
                 except (IndexError, AttributeError) as e:
-                    logging.warning(f"Invalid date format for campaign {campaign.get('campaign_id')}: {campaign.get('created_at')}")
+                    logging.warning(f"Invalid date format for campaign {campaign['campaign_id']}: {campaign['created_at']}")
 
+            logging.info(f"Debug: Campaign ID={campaign['campaign_id']}, Status={is_active}, Created At={campaign['created_at']}, Is Recent={is_recent}")
             # Apply filters: (active OR recent)
             if is_active or is_recent:
-                logging.info(f"Frequent sync: including campaign ID={campaign['campaign_id']}, tracking_method={campaign.get('tracking_method')}, Active={is_active}, Recent={is_recent}")
+                logging.info(f"Frequent sync: including campaign ID={campaign['campaign_id']}, tracking_method={campaign['tracking_method']}, Active={is_active}, Recent={is_recent}")
                 yield {"campaign_id": campaign["campaign_id"]}
 
 
