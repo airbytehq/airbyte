@@ -209,10 +209,16 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     val numSockets: Int? = 1
 
     @JsonProperty("write_async")
+    @JsonSchemaDefault("false")
     val writeAsync: Boolean? = false
 
     @JsonProperty("skip_json_node_and_use_fake_record")
+    @JsonSchemaDefault("false")
     val skipJsonNodeAndUseFakeRecord: Boolean? = false
+
+    @JsonProperty("use_shared_input_channel")
+    @JsonSchemaDefault("false")
+    val useSharedInputChannel: Boolean? = false
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

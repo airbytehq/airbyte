@@ -35,6 +35,9 @@ import java.time.Clock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
@@ -52,6 +55,7 @@ interface SocketConfig {
     val devNullBeforePosting: Boolean
     val writeAsync: Boolean
     val skipJsonNodeAndUseFakeRecord: Boolean
+    val sharedInputChannel: Boolean
 }
 
 @Singleton
@@ -65,6 +69,7 @@ class DefaultSocketConfig: SocketConfig {
     override val devNullBeforePosting: Boolean = false
     override val writeAsync: Boolean = false
     override val skipJsonNodeAndUseFakeRecord: Boolean = false
+    override val sharedInputChannel: Boolean = false
 }
 
 @Singleton
@@ -79,22 +84,33 @@ class UnixDomainSocketOutputConsumerProvider(
     val bufferByteSize = configuration.bufferByteSize
     val outputFormat: String = configuration.outputFormat
 
-    private val inputChannel: Channel<NamedNode> = Channel(configuration.inputChannelCapacity)
+    private val sharedInputChannel: Channel<NamedNode> = Channel(configuration.inputChannelCapacity)
 
-    private val socketConsumers = (0 until numSockets).map {
-        UnixDomainSocketOutputConsumer(
-            it,
-            bufferByteSize,
-            outputFormat,
-            clock,
-            stdout,
-            bufferByteSizeThresholdForFlush,
-            configuration.devNullAfterSerialization,
-            configuration.devNullBeforePosting,
-            inputChannel,
-            configuration.writeAsync,
-            configuration.skipJsonNodeAndUseFakeRecord
-        )
+    private val socketConsumers = (0 until numSockets).map { socketNum ->
+        if (configuration.sharedInputChannel) {
+            sharedInputChannel
+        } else {
+            Channel(configuration.inputChannelCapacity)
+        }.let {
+            UnixDomainSocketOutputConsumer(
+                socketNum,
+                bufferByteSize,
+                outputFormat,
+                clock,
+                stdout,
+                bufferByteSizeThresholdForFlush,
+                configuration.devNullAfterSerialization,
+                configuration.devNullBeforePosting,
+                configuration.writeAsync,
+                configuration.skipJsonNodeAndUseFakeRecord,
+                it,
+                if (configuration.sharedInputChannel) {
+                    it.receiveAsFlow()
+                } else {
+                    it.consumeAsFlow()
+                },
+            )
+        }
     }
 
     override fun close() {
@@ -149,9 +165,10 @@ class UnixDomainSocketOutputConsumer(
     bufferByteSizeThresholdForFlush: Int,
     val devNullAfterSerialization: Boolean = false,
     val devNullBeforePosting: Boolean = false,
-    private val inputChannel: Channel<NamedNode>,
     private val writeAsync: Boolean,
     private val fakeRecord: Boolean,
+    private val outputChannel: Channel<NamedNode>,
+    private val inputFlow: Flow<NamedNode>,
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
@@ -270,12 +287,11 @@ class UnixDomainSocketOutputConsumer(
         if (devNullBeforePosting) {
             return
         }
-        inputChannel.send(namedNode)
+        outputChannel.send(namedNode)
     }
 
     suspend fun readSocketUntilComplete() {
-        while (true) {
-            val (namespace, name, recordData) = inputChannel.receive()
+        inputFlow.collect { (namespace, name, recordData) ->
             accept(recordData, namespace, name)
         }
     }

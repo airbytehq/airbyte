@@ -53,6 +53,7 @@ data class MySqlSourceConfiguration(
     override val numSockets: Int,
     override val writeAsync: Boolean = false,
     override val skipJsonNodeAndUseFakeRecord: Boolean = false,
+    override val sharedInputChannel: Boolean = false,
 ) : JdbcSourceConfiguration, CdcSourceConfiguration, SocketConfig {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
@@ -176,6 +177,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             numSockets = pojo.numSockets ?: 1,
             writeAsync = pojo.writeAsync ?: false,
             skipJsonNodeAndUseFakeRecord = pojo.skipJsonNodeAndUseFakeRecord ?: false,
+            sharedInputChannel = pojo.useSharedInputChannel ?: false,
         )
     }
 
