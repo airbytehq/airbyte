@@ -12,6 +12,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.google.protobuf.ByteString
+import io.airbyte.cdk.output.UnixDomainSocketOutputConsumer.NamedNode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.AirbyteRecord
 import io.airbyte.protocol.Protocol
@@ -33,10 +34,8 @@ import java.nio.channels.SocketChannel
 import java.time.Clock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
     private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
@@ -51,6 +50,7 @@ interface SocketConfig {
     val devNullAfterSerialization: Boolean
     val inputChannelCapacity: Int
     val devNullBeforePosting: Boolean
+    val writeAsync: Boolean
 }
 
 @Singleton
@@ -62,6 +62,7 @@ class DefaultSocketConfig: SocketConfig {
     override val devNullAfterSerialization: Boolean = false
     override val inputChannelCapacity: Int = 20_000
     override val devNullBeforePosting: Boolean = false
+    override val writeAsync: Boolean = false
 }
 
 @Singleton
@@ -76,6 +77,8 @@ class UnixDomainSocketOutputConsumerProvider(
     val bufferByteSize = configuration.bufferByteSize
     val outputFormat: String = configuration.outputFormat
 
+    private val inputChannel: Channel<NamedNode> = Channel(configuration.inputChannelCapacity)
+
     private val socketConsumers = (0 until numSockets).map {
         UnixDomainSocketOutputConsumer(
             it,
@@ -85,7 +88,9 @@ class UnixDomainSocketOutputConsumerProvider(
             stdout,
             bufferByteSizeThresholdForFlush,
             configuration.devNullAfterSerialization,
-            configuration.inputChannelCapacity
+            configuration.devNullBeforePosting,
+            inputChannel,
+            configuration.writeAsync
         )
     }
 
@@ -95,16 +100,22 @@ class UnixDomainSocketOutputConsumerProvider(
     }
 
     override fun getNextFreeSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
+        if (configuration.writeAsync) {
+            return socketConsumers[part % socketConsumers.size]
+        }
+
         synchronized(this) {
             return socketConsumers.first { it.busy.not() }.use { it.busy = true; it }
         }
-
-//        return socketConsumers[part % socketConsumers.size]
     }
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
-/*    suspend fun startAll() {
+    suspend fun startAll() {
+        if (!configuration.writeAsync) {
+            return
+        }
+
         socketConsumers.forEachIndexed { i, socketConsumer ->
             logger.info {
                 "Starting socket consumer $i with capacity ${configuration.inputChannelCapacity} and buffer size ${configuration.bufferByteSize}"
@@ -113,7 +124,7 @@ class UnixDomainSocketOutputConsumerProvider(
                 socketConsumer.readSocketUntilComplete()
             }
         }
-    }*/
+    }
 }
 
 class DevNullOutputStream: OutputStream() {
@@ -134,8 +145,9 @@ class UnixDomainSocketOutputConsumer(
     stdout: PrintStream,
     bufferByteSizeThresholdForFlush: Int,
     val devNullAfterSerialization: Boolean = false,
-    val inputChannelCapacity: Int = 20_000,
     val devNullBeforePosting: Boolean = false,
+    private val inputChannel: Channel<NamedNode>,
+    private val writeAsync: Boolean,
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
@@ -148,7 +160,6 @@ class UnixDomainSocketOutputConsumer(
         val streamName: String,
         val recordData: ObjectNode
     )
-    private val inputChannel: Channel<NamedNode> = Channel(inputChannelCapacity)
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         return objectMapper
@@ -241,15 +252,18 @@ class UnixDomainSocketOutputConsumer(
     }
 
 
-/*
-    suspend fun acceptAsync(recordData: ObjectNode, namespace: String, streamName: String) {
+    suspend fun acceptAsyncMaybe(recordData: ObjectNode, namespace: String, streamName: String) {
+        if (!writeAsync) {
+            accept(recordData, namespace, streamName)
+            return
+        }
+
         val namedNode = NamedNode(namespace, streamName, recordData)
         if (devNullBeforePosting) {
             return
         }
         inputChannel.send(namedNode)
     }
-*/
 
     suspend fun readSocketUntilComplete() {
         while (true) {

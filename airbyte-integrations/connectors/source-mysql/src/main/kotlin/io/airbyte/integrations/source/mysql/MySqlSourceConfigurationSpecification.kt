@@ -207,6 +207,9 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("num_sockets")
     val numSockets: Int? = 1
+
+    @JsonProperty("write_async")
+    val writeAsync: Boolean? = false
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

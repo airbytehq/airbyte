@@ -80,8 +80,7 @@ sealed class FeedBootstrap<T : Feed>(
                 socketOutputConsumer = outputConsumer.getNextFreeSocketConsumer(0)
                 // get consumer
             }
-//            outputConsumer.getSocketConsumer(num!!.toInt()).acceptAsync(recordData, stream.namespace ?: "", stream.name)
-            socketOutputConsumer.accept(recordData, stream.namespace ?: "", stream.name)
+            socketOutputConsumer.acceptAsyncMaybe(recordData, stream.namespace ?: "", stream.name)
         }
 
 //        private fun acceptWithoutChanges(recordData: ObjectNode, totalNum: Int?, num: Long?) {

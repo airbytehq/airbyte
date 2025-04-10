@@ -53,8 +53,9 @@ class ReadOperation(
                 metaFieldDecorator,
                 partitionsCreatorFactories,
             )
+
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
-//            unixDomainSocketOutputConsumerProvider.startAll()
+            unixDomainSocketOutputConsumerProvider.startAll()
             rootReader.read { /*no-op*/ }
         }
     }
