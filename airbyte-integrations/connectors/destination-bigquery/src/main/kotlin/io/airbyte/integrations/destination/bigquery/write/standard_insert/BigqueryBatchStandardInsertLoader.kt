@@ -31,7 +31,7 @@ import jakarta.inject.Singleton
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
-class BigqueryDirectLoader(
+class BigqueryBatchStandardInsertsLoader(
     private val writer: TableDataWriteChannel,
 ) : DirectLoader {
     private val recordFormatter = BigQueryRecordFormatter()
@@ -55,23 +55,23 @@ class BigqueryDirectLoader(
     }
 }
 
-class BigqueryConfiguredForDirectLoad : Condition {
+class BigqueryConfiguredForBatchStandardInserts : Condition {
     override fun matches(context: ConditionContext<*>): Boolean {
         val config = context.beanContext.getBean(BigqueryConfiguration::class.java)
         return config.loadingMethod is BatchedStandardInsertConfiguration
     }
 }
 
-@Requires(condition = BigqueryConfiguredForDirectLoad::class)
+@Requires(condition = BigqueryConfiguredForBatchStandardInserts::class)
 @Singleton
-class BigqueryDirectLoaderFactory(
+class BigqueryBatchStandardInsertsLoaderFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
-) : DirectLoaderFactory<BigqueryDirectLoader> {
+) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int
-    ): BigqueryDirectLoader {
+    ): BigqueryBatchStandardInsertsLoader {
         val writeChannelConfiguration =
         // TODO need to write to raw vs final table appropriately
         WriteChannelConfiguration.newBuilder(TempUtils.rawTableId(config, streamDescriptor))
@@ -98,6 +98,6 @@ class BigqueryDirectLoaderFactory(
                 }
             }
 
-        return BigqueryDirectLoader(writer)
+        return BigqueryBatchStandardInsertsLoader(writer)
     }
 }
