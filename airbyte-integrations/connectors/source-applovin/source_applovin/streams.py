@@ -148,9 +148,28 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
         campaigns = Campaigns(authenticator=self._session.auth, config=self.config)
         campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
         tracking_method_filter = self.config.get("filter_campaigns_tracking_methods")
+
+        # Calculer la date d'il y a 2 jours
+        two_days_ago = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+
         for campaign in campaigns_records:
-            if (not tracking_method_filter or
-                    (tracking_method_filter and campaign["tracking_method"] in tracking_method_filter)):
+            # Filtrer uniquement les campagnes actives ou créées dans les 2 derniers jours
+            is_active = campaign.get("status") == "ACTIVE"
+            is_recent = False
+
+            if "created_at" in campaign:
+                try:
+                    created_at = campaign["created_at"].split(" ")[0]  # Format ISO "2023-04-10T14:30:00Z" -> "2023-04-10"
+                    is_recent = created_at >= two_days_ago
+                except (IndexError, AttributeError):
+                    logging.warning(f"Format de date invalide pour la campagne {campaign.get('campaign_id')}: {campaign.get('created_at')}")
+
+            # Appliquer les filtres : tracking method + (active OU récent)
+            if ((not tracking_method_filter or
+                (tracking_method_filter and campaign["tracking_method"] in tracking_method_filter)) and
+                (is_active or is_recent)):
+
+                logging.info(f"Campagne incluse: ID={campaign['campaign_id']}, Active={is_active}, Récente={is_recent}")
                 yield {"campaign_id": campaign["campaign_id"]}
                 continue
 
