@@ -13,7 +13,7 @@ API Reference: https://straddle.dev/api-reference
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| customers | id | DefaultPaginator | ✅ |  ❌  |
+| customers | id | DefaultPaginator | ✅ |  ✅  |
 | organizations | id | DefaultPaginator | ✅ |  ✅  |
 | accounts | id | DefaultPaginator | ✅ |  ✅  |
 | representatives | id | DefaultPaginator | ✅ |  ✅  |
