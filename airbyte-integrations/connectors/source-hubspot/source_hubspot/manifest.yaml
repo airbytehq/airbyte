@@ -155,6 +155,13 @@ definitions:
   # Stream Definitions
   marketing_emails_stream:
     $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      record_selector:
+        $ref: "#/definitions/base_selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['updated'] | int > format_datetime(config['start_date'], '%ms') | int }}"
     $parameters:
       name: marketing_emails
       path: /marketing-emails/v1/emails/with-statistics
@@ -164,6 +171,8 @@ definitions:
         fields:
           - path: ["rootMicId"]
             value: "{{ record['rootMicId'] | string }}"
+          - path: [ "updated" ]
+            value: "{{ record['created'] if record['updated'] is none else record['updated'] }}"
 
   email_subscriptions_stream:
     $ref: "#/definitions/stream_without_pagination"

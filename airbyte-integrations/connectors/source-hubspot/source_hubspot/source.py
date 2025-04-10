@@ -161,7 +161,7 @@ class SourceHubspot(YamlDeclarativeSource):
         return API(credentials=credentials)
 
     def get_common_params(self, config) -> Mapping[str, Any]:
-        start_date = config.get("start_date", DEFAULT_START_DATE)
+        start_date = config["start_date"]
         credentials = config["credentials"]
         api = self.get_api(config=config)
         # Additional configuration is necessary for testing certain streams due to their specific restrictions.
@@ -169,6 +169,7 @@ class SourceHubspot(YamlDeclarativeSource):
         return dict(api=api, start_date=start_date, credentials=credentials, acceptance_test_config=acceptance_test_config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config["start_date"] = config.get("start_date", DEFAULT_START_DATE)
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
         streams = super().streams(config=config)
