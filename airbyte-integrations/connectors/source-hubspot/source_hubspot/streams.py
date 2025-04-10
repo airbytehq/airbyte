@@ -2634,3 +2634,33 @@ class ProductsWebAnalytics(WebAnalyticsStream):
 class FeedbackSubmissionsWebAnalytics(WebAnalyticsStream):
     def __init__(self, **kwargs: Any):
         super().__init__(parent=FeedbackSubmissions(**kwargs), **kwargs)
+
+
+class Associations(CRMSearchStream):
+    """Associations between CRM objects, API v3
+    Docs: https://developers.hubspot.com/docs/api/crm/associations
+    """
+
+    entity = "associations"
+    last_modified_field = "updatedAt"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}  # Base scope, will be expanded based on object types
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.scopes = self._get_required_scopes()
+
+    def _get_required_scopes(self) -> Set[str]:
+        """Get required scopes based on all possible CRM object types"""
+        base_scopes = {
+            "crm.objects.contacts.read",
+            "crm.objects.companies.read",
+            "crm.objects.deals.read",
+            "tickets",
+            "e-commerce"
+        }
+        return base_scopes
+
+    @property
+    def url(self):
+        return f"/crm/v3/associations"
