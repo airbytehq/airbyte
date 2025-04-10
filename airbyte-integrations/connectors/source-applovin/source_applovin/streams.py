@@ -149,11 +149,11 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
         campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
         tracking_method_filter = self.config.get("filter_campaigns_tracking_methods")
 
-        # Calculate the date from 2 days ago
-        two_days_ago = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+        # Calculate the date from 7 days ago
+        two_days_ago = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
 
         # Determine if we should do a full sync today
-        # Check the hour - if it's between midnight and 1am, sync all campaigns
+        # Check the hour - if it's between midnight and 4am, sync all campaigns
         current_hour = datetime.now().hour
         is_full_sync_window = 0 <= current_hour < 4
 
