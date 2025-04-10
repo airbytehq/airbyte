@@ -171,7 +171,7 @@ definitions:
         fields:
           - path: ["rootMicId"]
             value: "{{ record['rootMicId'] | string }}"
-          - path: [ "updated" ]
+          - path: ["updated"]
             value: "{{ record['created'] if record['updated'] is none else record['updated'] }}"
 
   email_subscriptions_stream:
