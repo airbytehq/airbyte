@@ -26,6 +26,6 @@ API Reference: https://docs.signeasy.com/reference/introduction-to-signeasy-apis
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-10 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| 0.0.1 | 2025-04-10 | [57562](https://github.com/airbytehq/airbyte/pull/57562) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
