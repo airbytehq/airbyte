@@ -16,13 +16,13 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_s3"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.11,<3.12"
 pytz = "^2024.2"
 wcmatch = "^10.0"
 dill = "^0.3.4"
 transformers = "^4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "6.45.0.dev04103"}
+airbyte-cdk = {extras = ["file-based"], version = "6.45.0.post23.dev14384860031"}
 pendulum = "^3.0.0"
 
 [tool.poetry.scripts]
