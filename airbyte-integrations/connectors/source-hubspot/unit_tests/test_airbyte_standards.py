@@ -29,6 +29,7 @@ def pytest_generate_tests(metafunc) -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.requires_creds
 class TestAirbyteStandardTests(SourceTestSuiteBase):
     """Test suite for the Airbyte standard tests.
 
