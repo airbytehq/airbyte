@@ -70,6 +70,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
+        streamRecordConsumer.close()
     }
 
     /** If configured max feed read time elapsed we exit with a transient error */

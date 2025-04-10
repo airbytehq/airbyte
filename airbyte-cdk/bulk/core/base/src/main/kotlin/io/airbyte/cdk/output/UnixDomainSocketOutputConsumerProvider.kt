@@ -94,13 +94,17 @@ class UnixDomainSocketOutputConsumerProvider(
         socketConsumers.forEach { it.close() }
     }
 
-    override fun getSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
-        return socketConsumers[part % socketConsumers.size]
+    override fun getNextFreeSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
+        synchronized(this) {
+            return socketConsumers.first { it.busy.not() }.use { it.busy = true; it }
+        }
+
+//        return socketConsumers[part % socketConsumers.size]
     }
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
-    suspend fun startAll() {
+/*    suspend fun startAll() {
         socketConsumers.forEachIndexed { i, socketConsumer ->
             logger.info {
                 "Starting socket consumer $i with capacity ${configuration.inputChannelCapacity} and buffer size ${configuration.bufferByteSize}"
@@ -109,7 +113,7 @@ class UnixDomainSocketOutputConsumerProvider(
                 socketConsumer.readSocketUntilComplete()
             }
         }
-    }
+    }*/
 }
 
 class DevNullOutputStream: OutputStream() {
@@ -137,6 +141,7 @@ class UnixDomainSocketOutputConsumer(
     private val bufferedOutputStream: BufferedOutputStream
     private var writer: SequenceWriter
     private var numRecords: Int = 0
+    var busy: Boolean = false
 
     data class NamedNode(
         val namespace: String,
@@ -236,6 +241,7 @@ class UnixDomainSocketOutputConsumer(
     }
 
 
+/*
     suspend fun acceptAsync(recordData: ObjectNode, namespace: String, streamName: String) {
         val namedNode = NamedNode(namespace, streamName, recordData)
         if (devNullBeforePosting) {
@@ -243,6 +249,7 @@ class UnixDomainSocketOutputConsumer(
         }
         inputChannel.send(namedNode)
     }
+*/
 
     suspend fun readSocketUntilComplete() {
         while (true) {

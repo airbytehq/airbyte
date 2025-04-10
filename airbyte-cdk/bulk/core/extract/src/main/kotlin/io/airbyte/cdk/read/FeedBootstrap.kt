@@ -4,13 +4,13 @@
 
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.UnixDomainSocketOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -28,7 +28,7 @@ import java.time.ZoneOffset
  * [OutputConsumer], leveraging the fact that all records for a given stream share the same schema.
  */
 sealed class FeedBootstrap<T : Feed>(
-    /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
+//    /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
     val outputConsumer: OutputConsumer,
     /**
      * The [MetaFieldDecorator] instance which [StreamRecordConsumer] will use to decorate records.
@@ -74,8 +74,14 @@ sealed class FeedBootstrap<T : Feed>(
      */
     private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
         StreamRecordConsumer {
+            lateinit var socketOutputConsumer: UnixDomainSocketOutputConsumer
         override suspend fun acceptAsync(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
-            outputConsumer.getSocketConsumer(num!!.toInt()).acceptAsync(recordData, stream.namespace ?: "", stream.name)
+            if (::socketOutputConsumer.isInitialized.not()) {
+                socketOutputConsumer = outputConsumer.getNextFreeSocketConsumer(0)
+                // get consumer
+            }
+//            outputConsumer.getSocketConsumer(num!!.toInt()).acceptAsync(recordData, stream.namespace ?: "", stream.name)
+            socketOutputConsumer.accept(recordData, stream.namespace ?: "", stream.name)
         }
 
 //        private fun acceptWithoutChanges(recordData: ObjectNode, totalNum: Int?, num: Long?) {
@@ -173,6 +179,10 @@ sealed class FeedBootstrap<T : Feed>(
         ) {
             throw NotImplementedError("This method is not implemented. Use acceptAsync instead.")
         }
+
+        override fun close() {
+            socketOutputConsumer.busy = false
+        }
     }
 
     companion object {
@@ -246,7 +256,7 @@ sealed class FeedBootstrap<T : Feed>(
  *    b) field value changes and the motivating reason for these in the record metadata.
  * ```
  */
-interface StreamRecordConsumer {
+interface StreamRecordConsumer: AutoCloseable {
 
     val stream: Stream
 
@@ -254,6 +264,10 @@ interface StreamRecordConsumer {
 
     suspend fun acceptAsync(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int? = null, num: Long? = null) {
         accept(recordData, changes, totalNum, num)
+    }
+
+    override fun close() {
+        /* no-op */
     }
 }
 

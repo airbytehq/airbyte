@@ -109,7 +109,7 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
         )
     }
 
-    open fun getSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
+    open fun getNextFreeSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
         throw UnsupportedOperationException("Not implemented")
     }
 }
