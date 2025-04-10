@@ -6,6 +6,7 @@ protocol standards.
 
 from pathlib import Path
 
+import pytest
 from source_hubspot import SourceHubspot
 
 from airbyte_cdk.test.declarative.test_suites import (
@@ -27,6 +28,7 @@ def pytest_generate_tests(metafunc) -> None:
     generate_tests(metafunc)
 
 
+@pytest.mark.slow
 class TestAirbyteStandardTests(SourceTestSuiteBase):
     """Test suite for the Airbyte standard tests.
 
