@@ -635,7 +635,7 @@ internal class BigQueryDestinationTest {
 
             // all successful configs use the same project ID
             projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText()
-            this.config = config
+            Companion.config = config
 
             // configWithProjectId - config that uses project:dataset notation for rawNamespace
             val dataSetWithProjectId = String.format("%s:%s", projectId, datasetId)
