@@ -157,7 +157,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.1.5 | 2025-04-10 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams |
+| 7.1.7 | 2025-04-10 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams |
 | 7.1.6 | 2025-04-05 | [57138](https://github.com/airbytehq/airbyte/pull/57138) | Update dependencies |
 | 7.1.5 | 2025-03-29 | [56554](https://github.com/airbytehq/airbyte/pull/56554) | Update dependencies |
 | 7.1.4 | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies |

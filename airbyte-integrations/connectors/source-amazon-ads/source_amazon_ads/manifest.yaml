@@ -1235,42 +1235,38 @@ definitions:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "purchasedAsin report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_BRANDS
               groupBy: ["purchasedAsin"]
               columns:
-                [
-                  "campaignBudgetCurrencyCode",
-                  "campaignName",
-                  "adGroupName",
-                  "attributionType",
-                  "purchasedAsin",
-                  "productName",
-                  "productCategory",
-                  "sales14d",
-                  "orders14d",
-                  "unitsSold14d",
-                  "newToBrandSales14d",
-                  "newToBrandPurchases14d",
-                  "newToBrandUnitsSold14d",
-                  "newToBrandSalesPercentage14d",
-                  "newToBrandPurchasesPercentage14d",
-                  "newToBrandUnitsSoldPercentage14d",
-                ]
+                - "campaignBudgetCurrencyCode"
+                - "campaignName"
+                - "adGroupName"
+                - "attributionType"
+                - "purchasedAsin"
+                - "productName"
+                - "productCategory"
+                - "sales14d"
+                - "orders14d"
+                - "unitsSold14d"
+                - "newToBrandSales14d"
+                - "newToBrandPurchases14d"
+                - "newToBrandUnitsSold14d"
+                - "newToBrandSalesPercentage14d"
+                - "newToBrandPurchasesPercentage14d"
+                - "newToBrandUnitsSoldPercentage14d"
               reportTypeId: sbPurchasedProduct
               filters: []
               timeUnit: SUMMARY
@@ -1289,13 +1285,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "purchasedAsin report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_BRANDS
               groupBy: ["purchasedAsin"]
@@ -1336,13 +1331,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["campaign"]
@@ -1431,13 +1425,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["campaign"]
@@ -1523,13 +1516,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["adGroup"]
@@ -1618,13 +1610,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["adGroup"]
@@ -1710,13 +1701,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["advertiser"]
@@ -1808,13 +1798,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["advertiser"]
@@ -1903,13 +1892,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["targeting"]
@@ -1993,13 +1981,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["targeting"]
@@ -2080,13 +2067,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["asin"]
@@ -2136,13 +2122,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["asin"]
@@ -2190,13 +2175,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign"]
@@ -2255,13 +2239,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign"]
@@ -2319,13 +2302,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign", "adGroup"]
@@ -2381,13 +2363,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign", "adGroup"]
@@ -2442,13 +2423,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "keywords report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
@@ -2513,13 +2493,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "keywords report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
@@ -2579,13 +2558,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
@@ -2655,13 +2633,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
@@ -2724,13 +2701,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["advertiser"]
@@ -2789,13 +2765,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["advertiser"]
@@ -2853,13 +2828,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_keywords report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
@@ -2907,13 +2881,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_keywords report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
@@ -2960,13 +2933,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_targets report {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
@@ -3015,13 +2987,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_targets report daily {{ stream_interval.start_time }}"
-            startDate: >
-              {% if stream_interval.start_time < config['start_date'] %}
-                {{ config['start_date'] }}
-              {% else %}
-                {{ stream_interval.start_time }}
-              {% endif %}
-            endDate: "{{ stream_interval.end_time }}"
+            startDate: >-
+              {%- set tz = stream_slice.extra_fields.get('timezone', 'UTC') -%}
+              {%- set today = today_with_timezone(tz) -%}
+              {%- set ninety_days_ago = today - duration('P90D') -%}
+              "{{ max(stream_interval.start_time, ninety_days_ago.strftime('%Y-%m-%d')) }}"
+            endDate: "{{ today_with_timezone(stream_slice.extra_fields.get('timezone', 'UTC')).strftime('%Y-%m-%d') }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
@@ -3065,7 +3036,11 @@ definitions:
     lookback_window: P{{ config.get('look_back_window', 3) }}D
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+      datetime: >-
+        {%- set today = today_utc() -%}
+        {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
+        {%- set ninety_days_ago = today - duration('P90D') -%}
+        "{{ max(user_start_date, ninety_days_ago.strftime('%Y-%m-%d')) }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"
