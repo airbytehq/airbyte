@@ -1,0 +1,1417 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://dashboard.straddle.io/
+  API Reference: https://straddle.dev/api-reference
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    representatives:
+      type: DeclarativeStream
+      name: representatives
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/representatives
+          http_method: GET
+          request_parameters:
+            account_id: "{{ stream_partition['acc_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: acc_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/representatives"
+    capability_requests:
+      type: DeclarativeStream
+      name: capability_requests
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/accounts/{{ stream_partition['acc_id'] }}/capability_requests
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: acc_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/capability_requests"
+    linked_bank_accounts:
+      type: DeclarativeStream
+      name: linked_bank_accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/linked_bank_accounts
+          http_method: GET
+          request_parameters:
+            account_id: "{{ stream_partition['acc_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: acc_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/linked_bank_accounts"
+    customer_review_customer_details:
+      type: DeclarativeStream
+      name: customer_review_customer_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/customers/{{ stream_partition['cus_id'] }}/review
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - customer_details
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: cus_id
+              stream:
+                $ref: "#/definitions/streams/customers"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_review_customer_details"
+    customer_review_identity_details:
+      type: DeclarativeStream
+      name: customer_review_identity_details
+      primary_key:
+        - review_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/customers/{{ stream_partition['cus_id'] }}/review
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - identity_details
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: cus_id
+              stream:
+                $ref: "#/definitions/streams/customers"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_review_identity_details"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['environment'] }}.straddle.io
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/representatives"
+  - $ref: "#/definitions/streams/capability_requests"
+  - $ref: "#/definitions/streams/linked_bank_accounts"
+  - $ref: "#/definitions/streams/customer_review_customer_details"
+  - $ref: "#/definitions/streams/customer_review_identity_details"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - environment
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your secret API key for authenticating with the Straddle API. Generate
+          it from the Straddle Dashboard under Developers > API Keys. Use
+          separate keys for Sandbox and Production environments.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      environment:
+        type: string
+        description: The environment for the API (e.g., 'sandbox' or 'production')
+        name: environment
+        title: Environment
+        default: production
+        enum:
+          - sandbox
+          - production
+        order: 1
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: true
+    organizations: true
+    accounts: true
+    representatives: true
+    capability_requests: true
+    linked_bank_accounts: true
+    customer_review_customer_details: true
+    customer_review_identity_details: true
+  testedStreams:
+    customers:
+      streamHash: 5aa77bb80ae75487a9c24a3988a3afc9f05e5042
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: bacc40601d69e76936485222cd18b832ddc6c27b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    accounts:
+      streamHash: 62c392fb718832a732ea266e351059270c6fe40f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    representatives:
+      streamHash: 8af4ab82f6ec452b390c3436e7306281f908248d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    capability_requests:
+      streamHash: a5bbe20c8de04a43569280d507117330c38f894b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    linked_bank_accounts:
+      streamHash: 4edd922e6bbd53824143b520c51e9b957e0b6d73
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_review_customer_details:
+      streamHash: 12cc21411c5c1222c458369340ef7ee53aa9caac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_review_identity_details:
+      streamHash: 41bcfcd069211c9640d9e86f0a406338817c2cca
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://straddle.dev/api-reference
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          aliquip9e:
+            type:
+              - string
+              - "null"
+          dolor_7:
+            type:
+              - string
+              - "null"
+          sed_d:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      access_level:
+        type:
+          - string
+          - "null"
+      business_profile:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          support_channels:
+            type:
+              - object
+              - "null"
+          website:
+            type:
+              - string
+              - "null"
+      capabilities:
+        type:
+          - object
+          - "null"
+        properties:
+          consent_types:
+            type:
+              - object
+              - "null"
+            properties:
+              internet:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  capability_status:
+                    type:
+                      - string
+                      - "null"
+              signed_agreement:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  capability_status:
+                    type:
+                      - string
+                      - "null"
+          customer_types:
+            type:
+              - object
+              - "null"
+            properties:
+              businesses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  capability_status:
+                    type:
+                      - string
+                      - "null"
+              individuals:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  capability_status:
+                    type:
+                      - string
+                      - "null"
+          payment_types:
+            type:
+              - object
+              - "null"
+            properties:
+              charges:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  capability_status:
+                    type:
+                      - string
+                      - "null"
+              payouts:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  capability_status:
+                    type:
+                      - string
+                      - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      organization_id:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          charges:
+            type:
+              - object
+              - "null"
+            properties:
+              daily_amount:
+                type:
+                  - number
+                  - "null"
+              funding_time:
+                type:
+                  - string
+                  - "null"
+              linked_bank_account_id:
+                type:
+                  - string
+                  - "null"
+              max_amount:
+                type:
+                  - number
+                  - "null"
+              monthly_amount:
+                type:
+                  - number
+                  - "null"
+              monthly_count:
+                type:
+                  - number
+                  - "null"
+          payouts:
+            type:
+              - object
+              - "null"
+            properties:
+              daily_amount:
+                type:
+                  - number
+                  - "null"
+              funding_time:
+                type:
+                  - string
+                  - "null"
+              linked_bank_account_id:
+                type:
+                  - string
+                  - "null"
+              max_amount:
+                type:
+                  - number
+                  - "null"
+              monthly_amount:
+                type:
+                  - number
+                  - "null"
+              monthly_count:
+                type:
+                  - number
+                  - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_detail:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+          reason:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+      terms_of_service:
+        type:
+          - object
+          - "null"
+        properties:
+          accepted_date:
+            type:
+              - string
+              - "null"
+          agreement_type:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  representatives:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      dob:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      mobile_number:
+        type:
+          - string
+          - "null"
+      relationship:
+        type:
+          - object
+          - "null"
+        properties:
+          control:
+            type:
+              - boolean
+              - "null"
+          owner:
+            type:
+              - boolean
+              - "null"
+          percent_ownership:
+            type:
+              - number
+              - "null"
+          primary:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      ssn_last4:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_detail:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+          reason:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  capability_requests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          DailyAmount:
+            type:
+              - number
+              - "null"
+          MaxAmount:
+            type:
+              - number
+              - "null"
+          MonthlyAmount:
+            type:
+              - number
+              - "null"
+          MonthlyCount:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  linked_bank_accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          Lorem_63:
+            type:
+              - string
+              - "null"
+          consectetur8b6:
+            type:
+              - string
+              - "null"
+          eiusmod1b:
+            type:
+              - string
+              - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      bank_account:
+        type:
+          - object
+          - "null"
+        properties:
+          account_holder:
+            type:
+              - string
+              - "null"
+          account_mask:
+            type:
+              - string
+              - "null"
+          institution_name:
+            type:
+              - string
+              - "null"
+          routing_number:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      status_detail:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+          reason:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  customer_review_customer_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          ut7:
+            type:
+              - string
+              - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      compliance_profile:
+        type:
+          - object
+          - "null"
+        properties:
+          dob:
+            type:
+              - string
+              - "null"
+          representatives:
+            type:
+              - array
+              - "null"
+          ssn:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      device:
+        type:
+          - object
+          - "null"
+        properties:
+          ip_address:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  customer_review_identity_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      breakdown:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - object
+              - "null"
+            properties:
+              codes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              correlation_score:
+                type:
+                  - number
+                  - "null"
+              decision:
+                type:
+                  - string
+                  - "null"
+              risk_score:
+                type:
+                  - number
+                  - "null"
+          fraud:
+            type:
+              - object
+              - "null"
+            properties:
+              codes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              decision:
+                type:
+                  - string
+                  - "null"
+              risk_score:
+                type:
+                  - number
+                  - "null"
+          phone:
+            type:
+              - object
+              - "null"
+            properties:
+              codes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              correlation_score:
+                type:
+                  - number
+                  - "null"
+              decision:
+                type:
+                  - string
+                  - "null"
+              risk_score:
+                type:
+                  - number
+                  - "null"
+          synthetic:
+            type:
+              - object
+              - "null"
+            properties:
+              codes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              decision:
+                type:
+                  - string
+                  - "null"
+              risk_score:
+                type:
+                  - number
+                  - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      decision:
+        type:
+          - string
+          - "null"
+      messages:
+        type:
+          - object
+          - "null"
+        properties:
+          I121:
+            type:
+              - string
+              - "null"
+          I553:
+            type:
+              - string
+              - "null"
+          I556:
+            type:
+              - string
+              - "null"
+          I557:
+            type:
+              - string
+              - "null"
+          I558:
+            type:
+              - string
+              - "null"
+          I609:
+            type:
+              - string
+              - "null"
+          I611:
+            type:
+              - string
+              - "null"
+          I618:
+            type:
+              - string
+              - "null"
+          I621:
+            type:
+              - string
+              - "null"
+          I622:
+            type:
+              - string
+              - "null"
+          R223:
+            type:
+              - string
+              - "null"
+          R225:
+            type:
+              - string
+              - "null"
+      network_alerts:
+        type:
+          - object
+          - "null"
+        properties:
+          alerts:
+            type:
+              - array
+              - "null"
+          codes:
+            type:
+              - array
+              - "null"
+          decision:
+            type:
+              - string
+              - "null"
+      review_id:
+        type: string
+      updated_at:
+        type: string
+      watch_list:
+        type:
+          - object
+          - "null"
+        properties:
+          codes:
+            type:
+              - array
+              - "null"
+          decision:
+            type:
+              - string
+              - "null"
+          matches:
+            type:
+              - array
+              - "null"
+    required:
+      - review_id
+      - updated_at
