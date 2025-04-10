@@ -123,3 +123,8 @@
 - from:
     - /connector-development/connector-builder-ui/compatibility-guide
   to: /connector-development/connector-builder-ui/overview
+  #iceberg connector replacement
+- from:
+    - /integrations/destinations/iceberg
+    - /integrations/destinations/s3-glue
+  to: /integrations/destinations/s3-data-lake
