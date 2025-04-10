@@ -159,6 +159,11 @@ definitions:
       name: marketing_emails
       path: /marketing-emails/v1/emails/with-statistics
       extractor_field_path: objects
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "rootMicId" ]
+            value: "{{ record['rootMicId'] | string }}"
 
   email_subscriptions_stream:
     $ref: "#/definitions/stream_without_pagination"
