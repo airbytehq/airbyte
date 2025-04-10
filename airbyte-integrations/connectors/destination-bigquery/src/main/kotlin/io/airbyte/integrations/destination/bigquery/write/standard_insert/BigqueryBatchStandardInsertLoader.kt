@@ -51,7 +51,9 @@ class BigqueryBatchStandardInsertsLoader(
     }
 
     override fun close() {
-        // do nothing
+        if (writer.isOpen) {
+            writer.close()
+        }
     }
 }
 
