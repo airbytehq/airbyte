@@ -111,6 +111,22 @@ definitions:
       type: OffsetIncrement
       page_size: 250
 
+  vid_offset_cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: vidOffset
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: count
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('vid-offset') }}"
+      page_size: 100
+      stop_condition: "{{ not response.get('has-more') }}"
+
   base_selector:
     type: RecordSelector
     extractor:
@@ -141,7 +157,7 @@ definitions:
   stream_base:
     type: DeclarativeStream
     primary_key:
-      - id
+      - "{{ parameters.get('primary_key', 'id') }}"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -172,6 +188,92 @@ definitions:
       path: /email/public/v1/subscriptions
       extractor_field_path: subscriptionDefinitions
 
+  contacts_form_submissions_stream:
+    $parameters:
+      name: contacts_form_submissions
+      path: /contacts/v1/lists/all/contacts/all
+      primary_key: canonical-vid
+    $ref: "#/definitions/stream_base"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          formSubmissionMode: all
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: true
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['timestamp'] >= format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%s', '%Y-%m-%dT%H:%M:%SZ')}}"
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.ListFieldToSingleRecordByPkExtractor
+          field_path:
+            - contacts
+          pk_field_path:
+            - canonical-vid
+          related_field_path:
+            - form-submissions
+      paginator:
+        $ref: "#/definitions/vid_offset_cursor_paginator"
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: DpathFlattenFields
+        delete_origin_value: true
+        replace_record: true
+        field_path:
+          - form-submissions
+
+  contacts_merged_audit_stream:
+    primary_key: canonical-vid
+    $parameters:
+      name: contacts_merged_audit
+      path: /contacts/v1/lists/all/contacts/all
+      primary_key: canonical-vid
+    $ref: "#/definitions/stream_base"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: true
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['timestamp'] >= format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%s', '%Y-%m-%dT%H:%M:%SZ')}}"
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.ListFieldToSingleRecordByPkExtractor
+          field_path:
+            - contacts
+          pk_field_path:
+            - canonical-vid
+          related_field_path:
+            - merge-audits
+      paginator:
+        $ref: "#/definitions/vid_offset_cursor_paginator"
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: DpathFlattenFields
+        delete_origin_value: true
+        replace_record: true
+        field_path:
+          - merge-audits
+      - type: CustomTransformation
+        class_name: source_hubspot.components.UnnestFields
+        field_path:
+          - merged_from_email
+      - type: CustomTransformation
+        class_name: source_hubspot.components.UnnestFields
+        field_path:
+          - merged_to_email
+
+
 streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/email_subscriptions_stream"
+  - "#/definitions/contacts_form_submissions_stream"
+  - "#/definitions/contacts_merged_audit_stream"
