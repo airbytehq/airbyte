@@ -66,7 +66,7 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
                         StreamId.concatenateRawTableName(streamNamespace, streamName)
                 )
             )
-        return BigQuerySqlGeneratorIntegrationTest.Companion.toJsonRecords(result)
+        return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result)
     }
 
     @Throws(InterruptedException::class)
@@ -80,7 +80,7 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
         }
         val result =
             bq!!.query(QueryJobConfiguration.of("SELECT * FROM $streamNamespace.$streamName"))
-        return BigQuerySqlGeneratorIntegrationTest.Companion.toJsonRecords(result)
+        return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result)
     }
 
     override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String) {
