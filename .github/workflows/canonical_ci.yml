@@ -1,0 +1,125 @@
+name: Canonical CI
+
+on:
+  pull_request:
+
+jobs:
+  fail_on_protected_path_changes:
+    name: "Check fork does not change protected paths"
+    uses: ./.github/workflows/canonical_check_protected_paths.yml
+
+  get_changed_directories_list:
+    name: Get List Of Changed Directories
+    runs-on: ubuntu-latest
+    outputs:
+      connectors_list_json: ${{ steps.detect-changes.outputs.connectors_list_json }}
+    steps:
+      - name: Checkout fork with full history
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Detect changed connectors
+        id: detect-changes
+        uses: ./.github/actions/detect-changes
+        with:
+          base_commit: ${{ github.event.pull_request.base.sha }}
+          head_commit: ${{ github.event.pull_request.head.sha }}
+
+  connectors_full_ci:
+    name: Run connectors full CI on fork
+    if: github.event.pull_request.head.repo.fork == true && needs.detect-changes.outputs.connectors_list_json != '[]'
+    needs: [fail_on_protected_path_changes, get_changed_directories_list]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: ${{ fromJson(needs.get_changed_directories_list.outputs.connectors_list_json) }}
+
+    steps:
+      - name: Checkout fork with full history
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Install Airbyte CI
+        id: install-airbyte-ci
+        uses: ./.github/actions/install-airbyte-ci
+        with:
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
+          is_fork: ${{ inputs.is_fork }}
+
+      - name: Test Connector ${{ matrix.dir }}
+        id: test-airbyte-ci
+        env:
+          CI_GIT_BRANCH: ${{ github.head_ref }}
+          CI_GIT_REPO_URL: ${{ github.event.pull_request.head.repo.clone_url }}
+          CI_GIT_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.sha }}
+          CONNECTOR: ${{ matrix.dir }}
+        run: |
+          if [ -z "${{ matrix.dir }}" ]; then
+            echo "No directory specified in matrix.dir, skipping."
+            exit 0
+          fi
+
+          # install required packages
+          sudo apt update
+          sudo apt install python3-setuptools -y
+          pip install --upgrade setuptools
+
+          git checkout $CI_GIT_BRANCH
+
+          echo "🔄 Running tests for connector: $CONNECTOR"
+          cd airbyte-integrations/connectors/$CONNECTOR
+
+          # Run tests for the connector. Skip the tests which are relevant to upstream repository.
+          airbyte-ci --disable-update-check --disable-dagger-run connectors --name=$CONNECTOR test \
+              --skip-step=qa_checks --skip-step=version_inc_check --skip-step=acceptance --skip-step=python_cli_validation
+
+          # return back to root
+          cd ../../../
+          # Find the latest timestamped report directory inside the CI branch folder
+          REPORT_DIR=$(find airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/manual/"$CI_GIT_BRANCH" -mindepth 1 -maxdepth 1 -type d | sort | tail -n 1)
+          echo "Report dir is $REPORT_DIR"
+
+          if [[ -z "$REPORT_DIR" ]]; then
+              echo "❌ Error: No report directory found for branch $CI_GIT_BRANCH."
+              exit 1
+          fi
+
+          # Find the latest commit hash directory inside the timestamped directory
+          COMMIT_DIR=$(find "$REPORT_DIR" -mindepth 1 -maxdepth 1 -type d | sort | tail -n 1)
+
+          if [[ -z "$COMMIT_DIR" ]]; then
+              echo "❌ Error: No commit directory found inside $REPORT_DIR."
+              exit 1
+          fi
+          echo "Commit dir is $COMMIT_DIR"
+
+          # Extract connector name dynamically from the JSON file if available
+          OUTPUT_JSON=$(find "$COMMIT_DIR" -mindepth 3 -maxdepth 3 -type f -name "output.json" | head -n 1)
+
+          if [[ ! -f "$OUTPUT_JSON" ]]; then
+              echo "⚠️ Warning: Test report JSON not found in $COMMIT_DIR, failing build to be safe."
+              ls $COMMIT_DIR
+              exit 1
+          fi
+
+          # Extracting the connector name dynamically
+          CONNECTOR_NAME=$(jq -r '.connector_technical_name' "$OUTPUT_JSON")
+
+          # Extract the success field and failed steps
+          SUCCESS=$(jq -r '.success' "$OUTPUT_JSON")
+          FAILED_STEPS=$(jq -r '.failed_steps[]' "$OUTPUT_JSON")
+
+          if [[ "$SUCCESS" == "false" ]]; then
+              echo "❌ Connector tests failed for $CONNECTOR_NAME."
+              echo "🚨 Failed steps: $FAILED_STEPS"
+              exit 1
+          else
+              echo "✅ All connector tests passed for $CONNECTOR_NAME!"
+          fi

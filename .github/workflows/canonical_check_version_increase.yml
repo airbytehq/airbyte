@@ -1,0 +1,51 @@
+name: Canonical Check Image Version
+
+on:
+  pull_request:
+
+jobs:
+  check_connector_version:
+    name: Check connector version
+    if: github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect changed connectors
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            BASE_COMMIT=${{ github.event.before }}
+          else
+            BASE_COMMIT=${{ github.event.pull_request.base.sha }}
+          fi
+          echo "BASE_COMMIT=$BASE_COMMIT"
+          CHANGED_DIRS=$(git diff --name-only $BASE_COMMIT $GITHUB_SHA | grep '^airbyte-integrations/connectors/' | cut -d/ -f3 | sort -u)
+          echo "Changed connector directories: $CHANGED_DIRS"
+          echo "CONNECTORS_LIST=$CHANGED_DIRS" >> $GITHUB_ENV
+          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+
+      - name: Check connector version
+        id: version-check
+        run: |
+          for DIR in $CONNECTORS_LIST; do
+            if [ -d "airbyte-integrations/connectors/$DIR" ]; then
+              METADATAFILE="airbyte-integrations/connectors/$DIR/metadata.yaml"
+              echo "METADATAFILE=$METADATAFILE"
+              NEW_VERSION=$(grep 'canonicalImageTag' $METADATAFILE | cut -d':' -f2 | tr -d '" ')
+              echo "BASE_COMMIT=$BASE_COMMIT"
+              git checkout $BASE_COMMIT
+              BASE_VERSION=$(grep 'canonicalImageTag' $METADATAFILE | cut -d':' -f2 | tr -d '" ')
+              # Switch back to the current commit
+              git checkout $GITHUB_SHA
+              echo "NEW_VERSION=$NEW_VERSION"
+              echo "BASE_VERSION=$BASE_VERSION"
+              if [ "$NEW_VERSION" == "$BASE_VERSION" ]; then
+                echo "Error: Connector version has not changed in $METADATAFILE. Please check canonicalImageTag."
+                exit 1
+              fi
+              echo "Connector version has changed for $DIR: $BASE_VERSION -> $NEW_VERSION"
+            fi
+          done

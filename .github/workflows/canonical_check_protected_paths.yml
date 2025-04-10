@@ -1,0 +1,41 @@
+name: Canonical Check Protected Paths
+
+on:
+  workflow_call:
+
+jobs:
+  fail_on_protected_path_changes:
+    name: "Check fork does not change protected paths"
+    if: github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get list of changed files
+        id: changed-files
+        uses: canonical/actions/changed-files@main
+      - name: Check for changes in protected paths
+        id: check-for-protected-paths
+        run: |
+          PROTECTED_PATHS=("airbyte-ci/" ".github/workflows/")
+          CHANGED_FILES="${{ steps.changed-files.outputs.changed-files }}"
+
+          echo "Changed files: $CHANGED_FILES"
+          echo "$CHANGED_FILES" | tr ' ' '\n' > changed_files.txt
+
+          for path in "${PROTECTED_PATHS[@]}"; do
+            if grep -q "^$path" changed_files.txt; then
+              echo "PROTECTED_PATH_CHANGED=true" >> $GITHUB_ENV
+              break
+            fi
+          done
+          echo "PROTECTED_PATH_CHANGED=${PROTECTED_PATH_CHANGED:-false}" >> $GITHUB_ENV
+      - name: Fail if changes in protected paths
+        if: env.PROTECTED_PATH_CHANGED == 'true'
+        run: |
+          echo "The fork has changes in protected paths. This is not allowed."
+          exit 1
