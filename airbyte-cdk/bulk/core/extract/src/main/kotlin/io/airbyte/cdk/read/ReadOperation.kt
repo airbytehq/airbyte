@@ -55,21 +55,7 @@ class ReadOperation(
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             unixDomainSocketOutputConsumerProvider.startAll()
-            rootReader.read { feedJobs: Collection<Job> ->
-                val rootJob = coroutineContext.job
-                launch(Job()) {
-                    var previousJobTree = ""
-                    while (feedJobs.any { it.isActive }) {
-                        val currentJobTree: String = renderTree(rootJob)
-                        if (currentJobTree != previousJobTree) {
-                            log.info { "Mem ${Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()} / ${Runtime.getRuntime().totalMemory()}" }
-                            log.info { "coroutine state:\n$currentJobTree" }
-                            previousJobTree = currentJobTree
-                        }
-                        delay(config.resourceAcquisitionHeartbeat.toKotlinDuration())
-                    }
-                }
-            }
+            rootReader.read { /*no-op*/ }
         }
     }
 
