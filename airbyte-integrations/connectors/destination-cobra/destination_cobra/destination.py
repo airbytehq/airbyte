@@ -25,12 +25,13 @@ from destination_cobra.api.processor import Operation, RecordProcessor
 
 
 _DO_NOT_PRINT_RECORD_IN_ERROR_MESSAGES = False
+_100_MB = 100 * 1024 * 1024
 
 
 class DestinationCobra(Destination):
     @classmethod
     def for_spec(cls, logger: logging.Logger) -> Destination:
-        return cls(None, {}, [], logger, _DO_NOT_PRINT_RECORD_IN_ERROR_MESSAGES)
+        return cls(None, {}, [], logger, _DO_NOT_PRINT_RECORD_IN_ERROR_MESSAGES, _100_MB)
 
     @classmethod
     def create(cls, config: Mapping[str, Any], logger: logging.Logger) -> Destination:
@@ -59,6 +60,7 @@ class DestinationCobra(Destination):
             config.get("stream_order", None),
             logger,
             config.get("print_record_content_on_error", _DO_NOT_PRINT_RECORD_IN_ERROR_MESSAGES),
+            config.get("max_batch_size_in_bytes", _100_MB),
         )
 
     def __init__(
@@ -68,6 +70,7 @@ class DestinationCobra(Destination):
         stream_order: Optional[Iterable[str]],
         logger: logging.Logger,
         print_record_content_on_error: bool,
+        max_batch_size_in_bytes: int,
     ):
         self._http_client = HttpClient(
             name="destination-cobra",
@@ -80,6 +83,7 @@ class DestinationCobra(Destination):
         self._stream_order = stream_order
         self._logger = logger
         self._print_record_content_on_error = print_record_content_on_error
+        self._max_batch_size_in_bytes = max_batch_size_in_bytes
 
     @property
     def _url_base(self) -> str:
@@ -143,6 +147,7 @@ class DestinationCobra(Destination):
             self._http_client,
             self._url_base,
             self._source_to_destination_operation_mapping,
+            self._max_batch_size_in_bytes,
             self._stream_order,
             print_record_content_on_error=self._print_record_content_on_error,
         )

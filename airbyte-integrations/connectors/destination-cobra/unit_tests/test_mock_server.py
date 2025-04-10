@@ -2,8 +2,9 @@
 import gzip
 import json
 import logging
+from dataclasses import dataclass
 from io import StringIO
-from typing import Any, List, Mapping
+from typing import Any, Iterable, List, Mapping
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -28,8 +29,15 @@ _INPUT_STREAM = "input_stream"
 _ANOTHER_INPUT_STREAM = "another_input_stream"
 _SALESFORCE_OBJECT = "salesforce_object"
 _A_JOB_ID = "a_job_id"
+_ANOTHER_JOB_ID = "another_job_id"
 _A_RECORD_ID = "a_record_id"
 _ANOTHER_RECORD_ID = "another_record_id"
+
+
+@dataclass
+class Job:
+    id: str
+    batch_as_csv: str
 
 
 class ConfigBuilder:
@@ -80,6 +88,10 @@ class ConfigBuilder:
 
     def with_print_record_content_on_error(self, print_record_content_on_error: bool) -> "ConfigBuilde":
         self._config["print_record_content_on_error"] = print_record_content_on_error
+        return self
+
+    def with_max_batch_size_in_bytes(self, max_batch_size_in_bytes: int) -> "ConfigBuilder":
+        self._config["max_batch_size_in_bytes"] = max_batch_size_in_bytes
         return self
 
     def build(self):
@@ -144,8 +156,10 @@ class DestinationCobraTest(TestCase):
             [SalesforceFieldBuilder().with_name("Id").with_type("id"), SalesforceFieldBuilder().with_name("field_to_be_updated")],
         )
 
-        record_data = {"Id": _A_RECORD_ID, "field_to_be_updated": "new data"}
-        self._given_successful_jobs(http_mocker, "insert", f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")
+        record_data = {"Id": _A_RECORD_ID, "field_to_be_updated": True}
+        self._given_successful_jobs(
+            http_mocker, "insert", [Job(id=_A_JOB_ID, batch_as_csv=f"Id,field_to_be_updated\n{_A_RECORD_ID},True\n")]
+        )
         self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id,field_to_be_updated')
 
         output = list(
@@ -153,6 +167,47 @@ class DestinationCobraTest(TestCase):
                 config,
                 _ANY_CATALOG,
                 [AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=_INPUT_STREAM, data=record_data, emitted_at=0))],
+            )
+        )
+
+        # HttpMocker validates that all expected requests were made
+        assert len(output) == 1
+        assert output[0].log.message == "Sync completed"
+
+    @patch("time.sleep", return_value=None)
+    @HttpMocker()
+    def test_given_max_batch_size_in_bytes_exceeded_when_write_then_perform_two_jobs(self, sleep, http_mocker) -> None:
+        config = self._config().with_stream_mapping(_INPUT_STREAM, _SALESFORCE_OBJECT, "INSERT").with_max_batch_size_in_bytes(10).build()
+        self._given_authentication(http_mocker, config, _INSTANCE_URL, _ACCESS_TOKEN)
+        self._mock_salesforce_describe(
+            http_mocker,
+            _SALESFORCE_OBJECT,
+            [SalesforceFieldBuilder().with_name("Id").with_type("id"), SalesforceFieldBuilder().with_name("field_to_be_updated")],
+        )
+
+        a_record_data = {"Id": _A_RECORD_ID, "field_to_be_updated": "new data 1"}
+        another_record_data = {"Id": _ANOTHER_RECORD_ID, "field_to_be_updated": "new data 2"}
+        self._given_successful_jobs(
+            http_mocker,
+            "insert",
+            [
+                Job(id=_A_JOB_ID, batch_as_csv=f"Id,field_to_be_updated\n{_A_RECORD_ID},new data 1\n"),
+                Job(id=_ANOTHER_JOB_ID, batch_as_csv=f"Id,field_to_be_updated\n{_ANOTHER_RECORD_ID},new data 2\n"),
+            ],
+        )
+        self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id,field_to_be_updated')
+        self._mock_failed_results(http_mocker, _ANOTHER_JOB_ID, '"sf__Id","sf__Error",Id,field_to_be_updated')
+
+        output = list(
+            self._destination(config).write(
+                config,
+                _ANY_CATALOG,
+                [
+                    AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=_INPUT_STREAM, data=a_record_data, emitted_at=0)),
+                    AirbyteMessage(
+                        type=Type.RECORD, record=AirbyteRecordMessage(stream=_INPUT_STREAM, data=another_record_data, emitted_at=0)
+                    ),
+                ],
             )
         )
 
@@ -178,7 +233,8 @@ class DestinationCobraTest(TestCase):
             _SALESFORCE_OBJECT,
             [SalesforceFieldBuilder().with_name("Id").with_type("id"), SalesforceFieldBuilder().with_name("field_to_be_updated")],
         )
-        self._mock_job_creation(http_mocker, "insert", _A_JOB_ID)
+        self._mock_job_creation(http_mocker, "insert", [_A_JOB_ID])
+        self._mock_ingestion_start(http_mocker, _A_JOB_ID)
         record_data = {"Id": _A_RECORD_ID, "field_to_be_updated": "new data"}
         self._mock_batch_upload(http_mocker, _A_JOB_ID, f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")
 
@@ -236,7 +292,9 @@ class DestinationCobraTest(TestCase):
 
         # successful job
         record_data = {"Id": _A_RECORD_ID, "field_to_be_updated": "new data"}
-        self._given_successful_jobs(http_mocker, "insert", f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")
+        self._given_successful_jobs(
+            http_mocker, "insert", [Job(id=_A_JOB_ID, batch_as_csv=f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")]
+        )
         self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id,field_to_be_updated')
 
         # failed job
@@ -290,7 +348,9 @@ class DestinationCobraTest(TestCase):
         )
 
         record_data = {"Id": _A_RECORD_ID, "datetime_field": "2024-01-01 21:12:21 UTC"}
-        self._given_successful_jobs(http_mocker, "insert", f"Id,datetime_field\n{_A_RECORD_ID},2024-01-01T21:12:21.000+00:00\n")
+        self._given_successful_jobs(
+            http_mocker, "insert", [Job(id=_A_JOB_ID, batch_as_csv=f"Id,datetime_field\n{_A_RECORD_ID},2024-01-01T21:12:21.000+00:00\n")]
+        )
         self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id,datetime_field')
 
         output = list(
@@ -316,7 +376,9 @@ class DestinationCobraTest(TestCase):
         )
 
         record_data = {"Id": _A_RECORD_ID, "field_to_be_updated": "new data"}
-        self._given_successful_jobs(http_mocker, "update", f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")
+        self._given_successful_jobs(
+            http_mocker, "update", [Job(id=_A_JOB_ID, batch_as_csv=f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")]
+        )
         self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id,field_to_be_updated')
 
         output = list(
@@ -343,7 +405,7 @@ class DestinationCobraTest(TestCase):
         )
 
         record_data = {"Id": _A_RECORD_ID}
-        self._given_successful_jobs(http_mocker, "delete", f"Id\n{_A_RECORD_ID}\n")
+        self._given_successful_jobs(http_mocker, "delete", [Job(id=_A_JOB_ID, batch_as_csv=f"Id\n{_A_RECORD_ID}\n")])
         self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id')
 
         output = list(
@@ -379,7 +441,7 @@ class DestinationCobraTest(TestCase):
         a_record = {"Id": _A_RECORD_ID} | data_to_be_updated
         another_record = {"Id": _ANOTHER_RECORD_ID} | data_to_be_updated
 
-        self._mock_job_creation(http_mocker, operation, _A_JOB_ID)
+        self._mock_job_creation(http_mocker, operation, [_A_JOB_ID])
         self._mock_batch_upload(http_mocker, _A_JOB_ID, f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n{_ANOTHER_RECORD_ID},new data\n")
         self._mock_ingestion_start(http_mocker, _A_JOB_ID)
         self._mock_polling(http_mocker, _A_JOB_ID, ["UploadComplete", "InProgress", "JobComplete"])
@@ -420,36 +482,40 @@ class DestinationCobraTest(TestCase):
             HttpResponse(json.dumps({"access_token": access_token, "instance_url": instance_url}), 200),
         )
 
-    def _given_successful_jobs(self, http_mocker: HttpMocker, operation: str, batch_as_csv: str) -> None:
-        self._mock_job_creation(http_mocker, operation, _A_JOB_ID)
-        self._mock_batch_upload(http_mocker, _A_JOB_ID, batch_as_csv)
-        self._mock_ingestion_start(http_mocker, _A_JOB_ID)
-        self._mock_polling(http_mocker, _A_JOB_ID, ["UploadComplete", "InProgress", "JobComplete"])
+    def _given_successful_jobs(self, http_mocker: HttpMocker, operation: str, jobs: Iterable[Job]) -> None:
+        self._mock_job_creation(http_mocker, operation, map(lambda job: job.id, jobs))
+        for job in jobs:
+            self._mock_batch_upload(http_mocker, job.id, job.batch_as_csv)
+            self._mock_ingestion_start(http_mocker, job.id)
+            self._mock_polling(http_mocker, job.id, ["UploadComplete", "InProgress", "JobComplete"])
 
     @staticmethod
-    def _mock_job_creation(http_mocker: HttpMocker, operation: str, job_id: str) -> None:
+    def _mock_job_creation(http_mocker: HttpMocker, operation: str, job_ids: Iterable[str]) -> None:
         http_mocker.post(
             DestinationCobraTest._job_creation_http_request(operation),
-            HttpResponse(
-                json.dumps(
-                    {
-                        "id": job_id,
-                        "operation": operation,
-                        "object": _SALESFORCE_OBJECT,
-                        "createdById": "0055e000006PQdLAAW",
-                        "createdDate": "2025-02-12T22:25:33.000+0000",
-                        "systemModstamp": "2025-02-12T22:25:33.000+0000",
-                        "state": "Open",
-                        "concurrencyMode": "Parallel",
-                        "contentType": "CSV",
-                        "apiVersion": 62.0,
-                        "contentUrl": "services/data/v62.0/jobs/ingest/750cW0000081hKrQAI/batches",
-                        "lineEnding": "LF",
-                        "columnDelimiter": "COMMA",
-                    }
-                ),
-                200,
-            ),
+            [
+                HttpResponse(
+                    json.dumps(
+                        {
+                            "id": job_id,
+                            "operation": operation,
+                            "object": _SALESFORCE_OBJECT,
+                            "createdById": "0055e000006PQdLAAW",
+                            "createdDate": "2025-02-12T22:25:33.000+0000",
+                            "systemModstamp": "2025-02-12T22:25:33.000+0000",
+                            "state": "Open",
+                            "concurrencyMode": "Parallel",
+                            "contentType": "CSV",
+                            "apiVersion": 62.0,
+                            "contentUrl": "services/data/v62.0/jobs/ingest/750cW0000081hKrQAI/batches",
+                            "lineEnding": "LF",
+                            "columnDelimiter": "COMMA",
+                        }
+                    ),
+                    200,
+                )
+                for job_id in job_ids
+            ],
         )
 
     @staticmethod
