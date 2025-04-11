@@ -96,6 +96,4 @@ public class MongodbRecordConsumerTest extends PerStreamStateMessageTest {
 
     verify(targetCollection, times(3)).insertMany(anyList());
   }
-
-
 }
