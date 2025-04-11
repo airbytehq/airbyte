@@ -1,4 +1,4 @@
-version: 6.33.0
+version: 6.41.1
 
 type: DeclarativeSource
 
@@ -21,7 +21,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: deal
         record_selector:
@@ -72,7 +71,6 @@ definitions:
           path: v1/dealFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -105,7 +103,6 @@ definitions:
           path: v1/goals/find
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -130,7 +127,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: file
         record_selector:
@@ -183,7 +179,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: filter
         record_selector:
@@ -234,7 +229,6 @@ definitions:
           path: v1/leadLabels
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -256,7 +250,6 @@ definitions:
           path: v1/leads
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -289,7 +282,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: note
         record_selector:
@@ -342,7 +334,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: activity
         record_selector:
@@ -393,7 +384,6 @@ definitions:
           path: v1/activityTypes
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -415,7 +405,6 @@ definitions:
           path: v1/activityFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -446,7 +435,6 @@ definitions:
           path: v1/currencies
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -470,7 +458,6 @@ definitions:
           path: v1/mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -508,12 +495,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/organizations
+          path: api/v2/organizations
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: organization
+            include_fields: >-
+              ["next_activity_id","last_activity_id","open_deals_count","related_open_deals_count","closed_deals_count","related_closed_deals_count","email_messages_count","people_count","activities_count","done_activities_count","undone_activities_count","files_count","notes_count","followers_count","won_deals_count","related_won_deals_count","lost_deals_count","related_lost_deals_count"]
         record_selector:
           type: RecordSelector
           extractor:
@@ -525,10 +511,40 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: start
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            page_size: 100
+            cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("additional_data", {}).get("next_cursor", {})
+              }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_since
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_until
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -543,7 +559,6 @@ definitions:
           path: v1/organizationFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -574,7 +589,6 @@ definitions:
           path: v1/permissionSets
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -598,7 +612,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: person
         record_selector:
@@ -649,7 +662,6 @@ definitions:
           path: v1/personFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -682,7 +694,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: pipeline
         record_selector:
@@ -735,7 +746,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: product
         record_selector:
@@ -786,7 +796,6 @@ definitions:
           path: v1/productFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -817,7 +826,6 @@ definitions:
           path: v1/roles
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -850,7 +858,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: stage
         record_selector:
@@ -903,7 +910,6 @@ definitions:
           path: v1/recents
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
             items: user
         record_selector:
@@ -954,7 +960,6 @@ definitions:
           path: v1/deals/{{ stream_slice.parent_id }}/products
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -995,7 +1000,6 @@ definitions:
           path: v1/mailbox/mailThreads
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
         record_selector:
           type: RecordSelector
@@ -1031,6 +1035,13 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.pipedrive.com/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: api_token
+      api_token: "{{ config[\"api_token\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/deals"
@@ -2805,14 +2816,6 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      active_flag:
-        type:
-          - "null"
-          - boolean
-      activities_count:
-        type:
-          - "null"
-          - number
       add_time:
         type:
           - "null"
@@ -2820,108 +2823,49 @@ schemas:
       address:
         type:
           - "null"
-          - string
-      address_admin_area_level_1:
-        type:
-          - "null"
-          - string
-      address_admin_area_level_2:
-        type:
-          - "null"
-          - string
-      address_country:
-        type:
-          - "null"
-          - string
-      address_formatted_address:
-        type:
-          - "null"
-          - string
-      address_locality:
-        type:
-          - "null"
-          - string
-      address_postal_code:
-        type:
-          - "null"
-          - string
-      address_route:
-        type:
-          - "null"
-          - string
-      address_street_number:
-        type:
-          - "null"
-          - string
-      address_sublocality:
-        type:
-          - "null"
-          - string
-      address_subpremise:
-        type:
-          - "null"
-          - string
-      category_id:
-        type:
-          - "null"
-          - integer
-      cc_email:
-        type:
-          - "null"
-          - string
-      closed_deals_count:
-        type:
-          - "null"
-          - number
-      company_id:
-        type:
-          - "null"
-          - number
-      country_code:
-        type:
-          - "null"
-          - string
-      delete_time:
-        type:
-          - "null"
-          - string
-      done_activities_count:
-        type:
-          - "null"
-          - number
-      email_messages_count:
-        type:
-          - "null"
-          - number
-      files_count:
-        type:
-          - "null"
-          - number
-      first_char:
-        type:
-          - "null"
-          - string
-      followers_count:
-        type:
-          - "null"
-          - number
+          - object
+        properties:
+          value:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          admin_area_level_1:
+            type:
+              - "null"
+              - string
+          admin_area_level_2:
+            type:
+              - "null"
+              - string
+          locality:
+            type:
+              - "null"
+              - string
+          sublocality:
+            type:
+              - "null"
+              - string
+          route:
+            type:
+              - "null"
+              - string
+          street_number:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
+          formatted_address:
+            type:
+              - "null"
+              - string
       id:
-        type:
-          - "null"
-          - number
-      label:
-        type:
-          - "null"
-          - number
-      last_activity_date:
-        type:
-          - "null"
-          - string
-      last_activity_id:
-        type:
-          - "null"
-          - number
-      lost_deals_count:
         type:
           - "null"
           - number
@@ -2929,26 +2873,6 @@ schemas:
         type:
           - "null"
           - string
-      next_activity_date:
-        type:
-          - "null"
-          - string
-      next_activity_id:
-        type:
-          - "null"
-          - number
-      next_activity_time:
-        type:
-          - "null"
-          - string
-      notes_count:
-        type:
-          - "null"
-          - number
-      open_deals_count:
-        type:
-          - "null"
-          - number
       owner_id:
         type:
           - "null"
@@ -2983,80 +2907,22 @@ schemas:
             type:
               - "null"
               - number
-      owner_name:
-        type:
-          - "null"
-          - string
-      people_count:
+      org_id:
         type:
           - "null"
           - number
-      picture_id:
+      is_deleted:
         type:
           - "null"
-          - object
-        properties:
-          active_flag:
-            type:
-              - "null"
-              - boolean
-          add_time:
-            type:
-              - "null"
-              - string
-          added_by_user_id:
-            type:
-              - "null"
-              - number
-          item_id:
-            type:
-              - "null"
-              - number
-          item_type:
-            type:
-              - "null"
-              - string
-          pictures:
-            type:
-              - "null"
-              - object
-            properties:
-              "128":
-                type:
-                  - "null"
-                  - string
-              "512":
-                type:
-                  - "null"
-                  - string
-          update_time:
-            type:
-              - "null"
-              - string
-          value:
-            type:
-              - "null"
-              - number
-      related_closed_deals_count:
+          - boolean
+      label_ids:
         type:
           - "null"
-          - number
-      related_lost_deals_count:
-        type:
-          - "null"
-          - number
-      related_open_deals_count:
-        type:
-          - "null"
-          - number
-      related_won_deals_count:
-        type:
-          - "null"
-          - number
-      undone_activities_count:
-        type:
-          - "null"
-          - number
+          - array
+        items:
+          type:
+            - "null"
+            - number
       update_time:
         type:
           - "null"
@@ -3066,10 +2932,6 @@ schemas:
           - "null"
           - number
           - string
-      won_deals_count:
-        type:
-          - "null"
-          - number
   organization_fields:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
