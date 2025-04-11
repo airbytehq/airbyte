@@ -266,11 +266,7 @@ If you're adding a new file, removing a file, or moving things around, update [`
 
 If you're moving or renaming a page, you should add a redirect to its new location. If you're deleting a page, you should add a redirect to the most relevant new file, like a replacement topic or a parent page.
 
-To add a redirect, open the [`docusaurus/redirects.yml`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/redirects.yml) file and add an entry from which old path to which new path a redirect should happen.
-
-:::note
-Your path needs a leading slash `/` to work
-:::
+To add a redirect, open the [`docusaurus/vercel.json`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/vercel.json) file and add an entry from the old path to the new path. Vercel.json supports complex redirects using wildcards and regular expressions, if necessary. For help, see [Configuring projects with vercel.json](https://vercel.com/docs/project-configuration#redirects).
 
 ### Document a code module
 
