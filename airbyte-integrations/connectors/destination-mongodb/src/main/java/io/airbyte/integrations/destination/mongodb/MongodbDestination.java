@@ -109,7 +109,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       final AirbyteStream stream = configStream.getStream();
       final String streamName = stream.getName();
       final String collectionName = namingResolver.getIdentifier(streamName);
-      final String tmpCollectionName = namingResolver.getTmpTableName(collectionName);
+      final String tmpCollectionName = namingResolver.getTmpTableName(streamName, "mongodb");
 
       if (DestinationSyncMode.OVERWRITE == configStream.getDestinationSyncMode()) {
         database.getCollection(collectionName).drop();
