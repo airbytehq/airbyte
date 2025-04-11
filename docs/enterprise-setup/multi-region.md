@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Multiple region deployments
 
-Self-Managed Enterprise customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment.
+Self-Managed Enterprise customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment, and it can help you reduce data egress costs with cloud providers.
 
 ![Stylized diagram showing a control plane above multiple data planes in different global regions](assets/data-planes.png)
 
@@ -45,19 +45,13 @@ While data planes process data in their respective regions, some metadata remain
 
 Before you begin, make sure you've completed the following.
 
-### Deploy Airbyte
-
 - Deploy your Self-Managed Enterprise version of Airbyte as described in the [implementation guide](implementation-guide).
 
-- You must be an Instance Administrator.
-
-### Create a Kubernetes cluster for your data plane
+- You must be an Instance Administrator to manage regions and data planes.
 
 - You need a Kubernetes cluster on which your data plane can run. For example, if your Airbyte control plane already runs on an EKS cluster on `us-west-2`, and you want your data plane to run on `eu-west-1`, create an EKS cluster on `eu-west-1`.
 
-### Get API access
-
-If you haven't already, create an application and generate an access token. For help, see [Configuring API access](../enterprise-setup/api-access-config).
+- If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](../enterprise-setup/api-access-config).
 
 ## 1. Create a region {#step-1}
 
@@ -188,6 +182,8 @@ Include the following parameters in your request.
 | `name`          | The name of your workspace in Airbyte.                    |
 | `dataResidency` | A string with a region identifier you received in step 1. |
 
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/workspaces#/).
+
 </details>
 
 <details>
@@ -230,6 +226,8 @@ Include the following parameters in your request.
 | --------------- | --------------------------------------------------------- |
 | `name`          | The name of your workspace in Airbyte.                    |
 | `dataResidency` | A string with a region identifier you received in step 1. |
+
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/workspaces#/).
 
 </details>
 
@@ -289,7 +287,7 @@ data:
   S3_SECRET_ACCESS_KEY: your-s3-secret-key
 ```
 
-Apply your secrets manifest in your terminal with `kubectl`: `kubectl apply -f <file>.yaml -n <namespace>`.
+Apply your secrets manifest in your command-line tool with `kubectl`: `kubectl apply -f <file>.yaml -n <namespace>`.
 
 You can also use `kubectl` to create the secret directly from the command-line tool:
 
@@ -334,7 +332,7 @@ stringData:
   gcp.json: <CREDENTIALS_JSON_BLOB>
 ```
 
-Apply your secrets manifest in your terminal with `kubectl`: `kubectl apply -f <file>.yaml -n <namespace>`.
+Apply your secrets manifest in your command-line tool with `kubectl`: `kubectl apply -f <file>.yaml -n <namespace>`.
 
 You can also use `kubectl` to create the secret directly from the command-line tool:
 
@@ -412,10 +410,14 @@ secretsManager:
 
 ## 6. Deploy your data plane {#step-6}
 
-In your terminal:
+In your command-line tool, deploy the data plane using `helm upgrade`. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
 
-```bash
-helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.6.0 -n airbyte-dataplane --values values.yaml
+```bash title="Example using the default namespace in your cluster"
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.6.0 --values values.yaml
+```
+
+```bash title="Example using or creating a namespace called 'airbyte-dataplane'"
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.6.0 -n airbyte-dataplane --create-namespace --values values.yaml
 ```
 
 ## Check which region your workspaces use
