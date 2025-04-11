@@ -30,18 +30,6 @@ object TriggerTableConfig {
             type = OffsetDateTimeFieldType,
         )
 
-    val PRIMARY_KEY_FIELD =
-        Field(
-            id = TRIGGER_TABLE_PREFIX + "primary_key",
-            type = StringFieldType,
-        )
-
-    val STREAM_NAME_FIELD =
-        Field(
-            id = TRIGGER_TABLE_PREFIX + "stream_name",
-            type = StringFieldType,
-        )
-
     val OPERATION_TYPE_FIELD =
         Field(
             id = TRIGGER_TABLE_PREFIX + "operation_type",
@@ -64,8 +52,6 @@ object TriggerTableConfig {
         listOf(
             CHANGE_ID_FIELD,
             CURSOR_FIELD,
-            PRIMARY_KEY_FIELD,
-            STREAM_NAME_FIELD,
             OPERATION_TYPE_FIELD,
             VALUE_BEFORE_FIELD,
             VALUE_AFTER_FIELD,

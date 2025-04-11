@@ -29,14 +29,22 @@ class SapHanaTestDatabase(
 
     @Throws(SQLException::class)
     fun execute(sql: String): Boolean {
-        connection?.createStatement().use { statement ->
+        if (connection == null || connection?.isClosed == true) {
+            connect()
+        }
+
+        connection!!.createStatement().use { statement ->
             return statement?.execute(sql) ?: false
         }
     }
 
     @Throws(SQLException::class)
     fun executeQuery(sql: String): ResultSet? {
-        return connection?.createStatement()?.executeQuery(sql)
+        if (connection == null || connection?.isClosed == true) {
+            connect()
+        }
+
+        return connection!!.createStatement()?.executeQuery(sql)
     }
 
     /** Verifies that a table exists in the specified schema. */

@@ -10,7 +10,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b6935898-aadb-46ae-99ca-d697207994c1
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/source-sap-hana-enterprise
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-sap-hana
   githubIssueLabel: source-sap-hana-enterprise
@@ -29,4 +29,13 @@ data:
   supportLevel: certified
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_ENTERPRISE_SOURCE_SAP_HANA_TEST_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
