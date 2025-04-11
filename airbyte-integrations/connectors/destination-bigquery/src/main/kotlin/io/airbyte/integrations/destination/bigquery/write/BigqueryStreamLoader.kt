@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
+import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -21,6 +22,14 @@ class BigqueryStreamLoader(
 ) : StreamLoader {
     override suspend fun start() {
         super.start()
+
+        BigQueryDirectLoadingStorageOperation(
+            bigquery,
+            bigQueryClientChunkSize = TODO(),
+            BigQueryRecordFormatter(),
+
+        )
+
         logger.info { "Creating dataset if needed: ${config.rawTableDataset}" }
         BigQueryUtils.getOrCreateDataset(
             bigquery,
