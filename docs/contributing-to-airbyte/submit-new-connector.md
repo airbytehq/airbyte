@@ -25,7 +25,7 @@ The token must be a (classic) token with repo scope enabled. Follow these direct
 
 ![Generate Tokens Classic](./assets/token-classic-select.png)
 
-5. Add the `repo` scope. Click `Generate Token`.
+5. Add the `workflow` scope. Click `Generate Token`.
 
 ![Generate Tokens Classic](./assets/token-classic-scope.png)
 
