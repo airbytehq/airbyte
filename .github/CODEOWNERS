@@ -68,4 +68,4 @@
 # Breaking changes detection
 # This rule ensures that breaking changes to connectors (identified by migrations files) 
 # are reviewed by the breaking-changes-reviewers team to maintain compatibility
-docs/integrations/**/*-migrations.md @airbytehq/breaking-changes-reviewers
+docs/integrations/**/*-migrations.md @airbytehq/breaking-change-reviewers
