@@ -159,7 +159,7 @@ class SocketInputFlow(
                         while (true) {
                             val protoMessage =
                                 parser.parseDelimitedFrom(bufferedInputStream) ?: break
-                            val destinationMessage = factory.fromProtobufAirbyteMessage(protoMessage, initMapper(),
+                            val destinationMessage = factory.fromProtobufAirbyteMessage(protoMessage, mapper,
                                 config.skipJsonOnProto)
                             handleDestinationMessage(destinationMessage, streamRecordCounts, collector, count ++)
                         }
