@@ -1,4 +1,5 @@
 # S3 Migration Guide
+This document tracks breaking changes and migration steps between versions.
 
 ## Upgrading to 4.0.4
 
