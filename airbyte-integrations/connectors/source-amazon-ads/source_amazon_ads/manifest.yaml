@@ -2218,6 +2218,8 @@ definitions:
       authenticator:
         type: NoAuth
     download_decoder:
+      # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+      # https://github.com/airbytehq/airbyte/issues/56988
       type: GzipDecoder
       decoder:
         type: GzipDecoder
