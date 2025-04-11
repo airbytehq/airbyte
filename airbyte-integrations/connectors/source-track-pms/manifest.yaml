@@ -1,4 +1,4 @@
-version: 6.31.1
+version: 6.33.4
 
 type: DeclarativeSource
 
@@ -49,7 +49,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -61,6 +61,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -107,7 +117,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -119,6 +129,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -181,7 +201,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -193,6 +213,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -239,7 +269,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -251,6 +281,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -301,7 +341,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -313,6 +353,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -405,7 +455,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -417,6 +467,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -475,7 +535,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -487,6 +547,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -561,7 +631,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -573,6 +643,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -643,7 +723,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -655,6 +735,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -715,7 +805,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -727,6 +817,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -769,7 +869,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -781,6 +881,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -849,7 +959,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -861,6 +971,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -907,7 +1027,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -919,6 +1039,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -979,7 +1109,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -991,6 +1121,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1051,7 +1191,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1063,6 +1203,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1109,7 +1259,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1121,6 +1271,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1175,7 +1335,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1187,6 +1347,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1233,7 +1403,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1245,6 +1415,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1295,7 +1475,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1307,6 +1487,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1353,7 +1543,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1365,6 +1555,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1428,7 +1628,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1440,6 +1640,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1490,7 +1700,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1502,6 +1712,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1562,7 +1782,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1574,6 +1794,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1620,7 +1850,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1632,6 +1862,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1678,7 +1918,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1690,6 +1930,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1752,7 +2002,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1764,6 +2014,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1814,7 +2074,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1826,6 +2086,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1872,7 +2142,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1884,6 +2154,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -1952,7 +2232,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1964,6 +2244,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2029,10 +2319,6 @@ definitions:
               - paymentMethod
         - type: RemoveFields
           field_pointers:
-            - - guestBreakdown
-              - rates
-        - type: RemoveFields
-          field_pointers:
             - - _embedded
               - channel
       incremental_sync:
@@ -2076,7 +2362,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2088,6 +2374,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2138,7 +2434,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2150,6 +2446,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2205,7 +2511,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2217,6 +2523,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2263,7 +2579,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2275,6 +2591,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2347,7 +2673,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2359,6 +2685,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2413,7 +2749,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2425,6 +2761,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2483,7 +2829,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2495,6 +2841,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2556,7 +2912,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2568,6 +2924,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2680,7 +3046,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2692,6 +3058,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2738,7 +3114,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2750,6 +3126,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2796,7 +3182,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2808,6 +3194,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2867,7 +3263,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2879,6 +3275,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -2934,7 +3340,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2946,6 +3352,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3004,7 +3420,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3016,6 +3432,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3062,7 +3488,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3074,6 +3500,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3124,7 +3560,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3136,6 +3572,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3185,7 +3631,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3197,6 +3643,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3261,7 +3717,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3273,6 +3729,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3346,7 +3812,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3358,6 +3824,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3404,7 +3880,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3416,6 +3892,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3511,7 +3997,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3523,6 +4009,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3602,7 +4098,6 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 1
         requester:
           $ref: "#/definitions/base_requester"
           path: pms/accounting/accounts
@@ -3611,7 +4106,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3623,6 +4118,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
           request_parameters:
@@ -3674,7 +4179,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3686,6 +4191,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3735,7 +4250,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3747,6 +4262,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3882,7 +4407,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3894,6 +4419,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3940,7 +4475,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -3952,6 +4487,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -3998,7 +4543,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4010,6 +4555,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4056,7 +4611,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4068,6 +4623,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4163,7 +4728,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4175,6 +4740,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4315,7 +4890,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4327,6 +4902,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4392,7 +4977,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4404,6 +4989,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4465,7 +5060,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4477,6 +5072,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4529,7 +5134,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4541,6 +5146,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4597,7 +5212,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4609,6 +5224,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4658,7 +5283,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4670,6 +5295,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4756,7 +5391,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4768,6 +5403,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4822,7 +5467,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4834,6 +5479,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4921,7 +5576,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4933,6 +5588,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -4980,7 +5645,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -4992,6 +5657,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5045,7 +5720,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5057,6 +5732,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5128,7 +5813,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5140,6 +5825,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5181,7 +5876,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5193,6 +5888,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5238,7 +5943,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5250,6 +5955,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5298,7 +6013,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5310,6 +6025,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5404,7 +6129,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5416,6 +6141,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5466,7 +6201,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5478,6 +6213,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5524,7 +6269,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 3
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -5536,6 +6281,16 @@ definitions:
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 305
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 409
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
           request_headers:
             accept: application/json
         record_selector:
@@ -5671,532 +6426,532 @@ metadata:
   testedStreams:
     tags:
       hasRecords: true
-      streamHash: 4d3748c4b656efb86881ef434fdcf11a3487e7f5
+      streamHash: 80e5894da03a54543f1fea4ce14ec9dde300eb51
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     nodes:
       hasRecords: true
-      streamHash: a91c977c181d92d4afc9a2b3ed98abd066f1adf1
+      streamHash: b97c48f7d2648ffebb67d96c4ab310e2503cf292
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     roles:
       hasRecords: true
-      streamHash: 5ec881bb38105776bf0a6cde6521d0e221a9f892
+      streamHash: 321f8725ab608f5381b52a29fff1fccff87007f9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     taxes:
       hasRecords: true
-      streamHash: 33970aa4d3ccb1351f00d8a6bc00caa57f6fc37e
+      streamHash: a4e2a31d8b0412cc90caa4f01223cd3ecc8b81f2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units:
       hasRecords: true
-      streamHash: ad69fbe66aa0d628d301cd866b745bebeabc9a76
+      streamHash: da3d92df4ef4cecce3d1cb3d4f3da2855c96d82c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     users:
       hasRecords: true
-      streamHash: c05976cadd73b4eb4966742ba74f52787053bd72
+      streamHash: 77225b4c7a33721e30a1f06d92c972981fb28330
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     folios:
       hasRecords: true
-      streamHash: 9e617d83fba287dd361fb14688e9d293f8a443a9
+      streamHash: c308ca84b6515509200f57ee6f945e759d48609e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     groups:
       hasRecords: true
-      streamHash: c2f1ad5de5ac37e2a591db3a21bc377db193d68e
+      streamHash: 82ca5ad1c54b857fa142254d372e1bbfcb8674bc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     owners:
       hasRecords: true
-      streamHash: da312fdee719636288f2bac0ca3c4931c6742b91
+      streamHash: 2314c38e96170496ee6fbe48fd5322f3b39e3bb2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     quotes:
       hasRecords: true
-      streamHash: db841ad8c0347e02f45d5f01ae923ec8122b5f1c
+      streamHash: 75664e568e2cec843daf45d4128d14a84f322dda
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     charges:
       hasRecords: true
-      streamHash: 5156c91ec05f221acf09ed8b9ced7c174ab23ea7
+      streamHash: a5d3673976b223226b372290a1b685e0db1548e4
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reviews:
       hasRecords: true
-      streamHash: 3736ba51a268f1d686e0f3010cc3ee34e3bbaa81
+      streamHash: 060a620990a647bb464b173056dad86dd661ca17
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     contacts:
       hasRecords: true
-      streamHash: cfbd534d251454f371cad0b8db46054c6df0e34c
+      streamHash: 0579c0308f9e94d43772663e996a2f4b0341f29a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     companies:
       hasRecords: true
-      streamHash: 30f21fc18ec843b2902691fb961238a874ef9b86
+      streamHash: af4ef8436a71d3de18db0a100e5b420ab9fed807
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     contracts:
       hasRecords: true
-      streamHash: efe59da768b182345d7a54aafd7072c867af4cce
+      streamHash: 35e5a34767b57610fcf523c86aefb0106e3ae928
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     crm_tasks:
       hasRecords: true
-      streamHash: f297e2528156edfd43c12498f19405c52015582a
+      streamHash: f12219d40e6d103f364e228f98903a03637138c5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     documents:
       hasRecords: true
-      streamHash: 4a3e78f41916fb2116adb66a6b3e60a46cc21474
+      streamHash: 704736b333ed5e7e59394977f93f1e334bffaf06
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     rate_types:
       hasRecords: true
-      streamHash: 55b038aa873a42257ad4aeece2d430645c609eb1
+      streamHash: 65ac54e05d68ae7ded5bb539046708bf76582a87
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     date_groups:
       hasRecords: true
-      streamHash: 29ec2bfa283a470274a27b5e023216190573b227
+      streamHash: 14f186c6711c212392168d552a6440fb35739067
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     folios_logs:
       hasRecords: true
-      streamHash: 67698f580c02e8f4e927a254313dafdffb704bba
+      streamHash: d7b2db9a09f9f5460938bc19335c3d1c9f3d40c3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     fractionals:
       hasRecords: true
-      streamHash: 3aa7597ae2014822e86ae1f70ad559586d321d74
+      streamHash: f24648487e5d2122a90875c97f7bddc710c637ab
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     groups_tags:
       hasRecords: true
-      streamHash: f1b3713e93ceeb57b53fd5f66ec04f071c25d5f9
+      streamHash: edc48d71458875673a8b4892dd03144d0c5efe1b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     nodes_types:
       hasRecords: true
-      streamHash: 74869a75374239be00123ab909af4cb45af12843
+      streamHash: ff957f3af9eb477ac35566738280808714773a12
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     promo_codes:
       hasRecords: true
-      streamHash: d76846207d2b5d1af9d7b4b130bfccabaaa93d94
+      streamHash: 5f6c317599b868a11b4ffd99b3f2b4a3fed7d2a5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_taxes:
       hasRecords: true
-      streamHash: c87c2304d61533a60db866b1023afa96506665fb
+      streamHash: 69bfc5dc05bd7f4b07cffcf7b2c95a72b514bc31
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_types:
       hasRecords: true
-      streamHash: 8eae37028eb1dea0620772d13cc295ea52274e20
+      streamHash: 735decae50090a90c2aee10b490e7611280a924e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     folios_rules:
       hasRecords: true
-      streamHash: 638510fcadd093fce72c8e67dc1e1d589146aefb
+      streamHash: d21f2f7604bc7928de9ff2aaf36bc39bd73f3838
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     owners_units:
       hasRecords: true
-      streamHash: 93df60e25b638dc2c9f0d241d37c74cee5d6a58f
+      streamHash: f757c38fb5c603d87445a0121003eae10a27dfe3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations:
       hasRecords: true
-      streamHash: 59d40ccffe59056d827405c9cb8ae3a8f298ac1c
+      streamHash: 2b6e821e95543e25cc9f21e1328ac33583b5a048
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     tax_policies:
       hasRecords: true
-      streamHash: 92101a44d4778ee47d68f36adaea5ff75ce5e6ea
+      streamHash: 8e4c2089d055c753e179022d711a1a6a8ed36e60
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_blocks:
       hasRecords: true
-      streamHash: 36f52da245b14e904ac801c4f8c5d926af2b87fc
+      streamHash: 36fe777faa856fbbe333c7573c7b72c77fb12558
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     custom_fields:
       hasRecords: true
-      streamHash: 554ebd43a2cf7473a372cd8418b0700442461e13
+      streamHash: 481cd57909b34543e2da70c4c5e1dbde92dfe5e2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     groups_blocks:
       hasRecords: true
-      streamHash: 4ceee2b6477dce331f1721c58fc52946b02e0444
+      streamHash: d9425e35a6dfdb289c02526b5e732dedb23af280
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     lodging_types:
       hasRecords: true
-      streamHash: 83b19e8df38a24119925f321db5dd856fde14d2b
+      streamHash: deff4469675bc9e6ac262a9a3e2b210b6df31e01
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     tax_districts:
       hasRecords: true
-      streamHash: a35b648e918aee8e82e901e48679a2a62e90787a
+      streamHash: ef6f30738766580aa77a9e4d8f7a9bf76d3a1257
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_channel:
       hasRecords: true
-      streamHash: 1a88b86abd249d89b04113991d13e00e679674ec
+      streamHash: ad348b08e9035979baaa3f96e1f1bfcbc9843d72
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_v2:
       hasRecords: true
-      streamHash: cf61591905ac24a7f9cc719325bd0bb88ac441f9
+      streamHash: d6d971016399a6e0d7ed9b03ec4a74020a86b662
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_amenities:
       hasRecords: true
-      streamHash: 7f953fd513732b6db484397f9191cf5df2d62f02
+      streamHash: d3abc49e3895654014ec428c1dd57c06b28fa7b9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_bed_types:
       hasRecords: true
-      streamHash: 6b15997b71117c748541d6e01183224fd9ab897c
+      streamHash: b03c6d4894969744da6aaa866a5df4ffe15de8e5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_bills:
       hasRecords: true
-      streamHash: 68ab98926407e308a144aa775f1cd16f59e9bc2a
+      streamHash: 470d3ba4b282449341db3e8a3f0b3eff52218539
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_items:
       hasRecords: true
-      streamHash: c06ee5ed91e1e44e919837aac09f9644676c4bcb
+      streamHash: 3b3072acd95928124225644ed2342b7822d968d0
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     groups_breakdown:
       hasRecords: true
-      streamHash: a7583ba3d91003751a21a2a567f26b438d2fe780
+      streamHash: 52cb53f5920ec2914cdac5c08176011aea9e8df7
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     owners_contracts:
       hasRecords: true
-      streamHash: 45d37f14be582a85e4dbba50c7db8a717ff27012
+      streamHash: 8b9c0b66d5ecff704507cb041008d487143c44f4
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     owners_statements:
       hasRecords: true
-      streamHash: fa386c3f9f894c273888363fcf3e43872ce274d3
+      streamHash: 7d4b10b58968c687d9cc73ab896d3500f89fc94d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_charges:
       hasRecords: true
-      streamHash: 5224b009251428243282ebbabce7f8f3b010d8f4
+      streamHash: a3aca44213821eaf233570964ae15978515d64c0
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     contacts_companies:
       hasRecords: true
-      streamHash: 3ed745925f076caf77c45465e2f5e58e24e2aa28
+      streamHash: a3dcc64785649facde59b3fcd97c7b9e5a0f9d58
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     fractionals_owners:
       hasRecords: true
-      streamHash: 153e575f657d5a9b9fdb935496adfa2273e9f0eb
+      streamHash: df536268df3e361dba54a06d8e0f4830ff509505
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_types:
       hasRecords: true
-      streamHash: ca12f786d45d4750187dda5f35308442432d829e
+      streamHash: 9f1d37b78859dce5fab92b0cc7999d29a93063f8
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_taxes_parent:
       hasRecords: true
-      streamHash: b29a1ba4a65588261c94f2731c7d9790be188c75
+      streamHash: 1aa1ac0ea470af005efd90ee6bcc4612808ddf45
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     users_pii_redacted:
       hasRecords: true
-      streamHash: 07084bef8f0495deee620d9ec27cd972187a6324
+      streamHash: 74774c16795c6210a0e77ea3bbb72aea756204bf
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_accounts:
       hasRecords: true
-      streamHash: ab43698b7844dccab05004440cfae9c1f7320cae
+      streamHash: 5ef550830f4392fdfab784e0b21b8ed962fb67d0
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_deposits:
       hasRecords: true
-      streamHash: 4d5ff981516fa6e9909db3f8edf8a0967edd6e42
+      streamHash: b463b422405ee25910eb54fd2085f52aef68feb1
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     owners_pii_redacted:
       hasRecords: true
-      streamHash: bbf1007b30bcf67a2be3568f24d439e6e1474300
+      streamHash: acd2662cfa7237a6a3cb5d3ade71349412865e86
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     maintenance_problems:
       hasRecords: true
-      streamHash: 44efd42d6b916f8f6639b7c74ff21b618ba3a003
+      streamHash: 9f27e025740cc5990a93194dcdd599f55085d08e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     suspend_code_reasons:
       hasRecords: true
-      streamHash: 5024962d8fd6afa1524066877cfa8729a4c1d161
+      streamHash: 2e9bc1da37d80cd016cd3e335d2fc452435b7e46
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_amenity_groups:
       hasRecords: true
-      streamHash: ad033af37e9b0bc7826df11e8bb3adabd1b90193
+      streamHash: 760397a215142d44f0edef6c76ef0476ab043f8c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_pricing_parent:
       hasRecords: true
-      streamHash: 446d8845e18aca989b382fb4d7cafecaf4d1f0c7
+      streamHash: 3fa0d2685b7811f7fc121614335c0d67e5feab0f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     contacts_pii_redacted:
       hasRecords: true
-      streamHash: 22ba3e8724c2afd9b7444965b1b677f5a62ad47e
+      streamHash: 063d24ef48aaaf718325ed084941a27f111e94cf
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     fractionals_inventory:
       hasRecords: true
-      streamHash: 6271d8d340fdda819159aede20f25ccf774735cb
+      streamHash: 8f4dec668306fe7809c6a99f6379f4aca14883a6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     crm_company_attachment:
       hasRecords: true
-      streamHash: ddb36f29db1e526bff3fcf2299523113efc6232f
+      streamHash: 9a2990540a76331813334af2e84cd9b15e2df78d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     housekeeping_task_list:
       hasRecords: true
-      streamHash: 65dd04c8fb51ff7baf0c742ae464201e1ab31a65
+      streamHash: d8211381bbbe478753c7eeeba7c97480f6ed570a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_daily_pricing_v2:
       hasRecords: true
-      streamHash: d17dd3156baf20e88b80f4cba8213f845a0096ae
+      streamHash: 31cb5741dafe84ba83b4a312ad373d3f0170ac24
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_transactions:
       hasRecords: true
-      streamHash: d18864fdf78071bf28c2f03a75d46e8406982842
+      streamHash: 64916f2fa24813fc8d35cc01a1b603d38cf6b57f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     maintenance_work_orders:
       hasRecords: true
-      streamHash: d8a0fcffaf085a799615d5e82ea30b475f01da6c
+      streamHash: 34bfbce62d87fe9754f2b651fc4c8a1ae0bde1ec
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     housekeeping_clean_types:
       hasRecords: true
-      streamHash: b07e8bdbe9f4df633962efc7a837637f065f09bf
+      streamHash: 76b2248f37d2028a8ea6d690bce6968c4025deac
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     housekeeping_work_orders:
       hasRecords: true
-      streamHash: 95aa4120828cf04d281966dd38181d5e2cd31d97
+      streamHash: 83eaf0312006682ec35c68759efab270a771bb54
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     travel_insurance_products:
       hasRecords: true
-      streamHash: 75d710bece9fb03113637ac617ae5ab034a26db6
+      streamHash: 58d08992e4a65b3f9a6646e9f8830ddcb40b75d2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_types_pricing_parent:
       hasRecords: true
-      streamHash: 4a9eb897a45762bfd9c22d918dec907879595876
+      streamHash: 49856ab2c688899bd39ff34bf3eca6891f2808ce
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_charge_pricing_parent:
       hasRecords: true
-      streamHash: 99cf54d1f3e601ba3cc28e733b8c0919f07a1f73
+      streamHash: 1db26b1b5aa470532e25f4e97569877a73d760d7
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     units_type_daily_pricing_v2:
       hasRecords: true
-      streamHash: 51745798e62c5d179eb58a05971e2569d1c0044f
+      streamHash: 7e18e7b0e787273b5221d2e3ab401ffdeb113322
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_deposits_payments:
       hasRecords: true
-      streamHash: c7f283f687b510df29d097fcfec1ce0b5e1a37d7
+      streamHash: 752650f94e8fc7bcfddb9a21ded90ce1bfc48317
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_discount_reasons:
       hasRecords: true
-      streamHash: 7cc2661b75978286208757d136e16074af764af6
+      streamHash: 27181bc9991c4c5516477c457006070722625c80
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     owners_statements_transactions:
       hasRecords: true
-      streamHash: a675b709313e36ed4bf25d6724c4d67062efb132
+      streamHash: d79e0eeb56b523be7c4f23d27151c95bf7f7fedc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_guarantee_policies:
       hasRecords: true
-      streamHash: 23c3a3c17eba4c8262d91f8965e5c3faf12466ad
+      streamHash: e4c92e485d6eb661f57f3304e5a6d5ace5af9106
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_cancellation_reasons:
       hasRecords: true
-      streamHash: 1fef66aeb7047147574685dde03ef10b35fc503e
+      streamHash: 00d530707baed3cd47701e162d6489f6fe59db10
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_cancellation_policies:
       hasRecords: true
-      streamHash: 9ad36f2230f85a8607047540481d52f9fc95dc39
+      streamHash: 484a839cce9bc60edea6c5a0d547910c1f1d4c61
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6205,82 +6960,82 @@ metadata:
     global:
       - authenticator
   autoImportSchema:
-    tags: true
-    nodes: true
-    roles: true
-    taxes: true
-    units: true
-    users: true
-    folios: true
-    groups: true
-    owners: true
-    quotes: true
-    charges: true
-    reviews: true
-    contacts: true
-    companies: true
-    contracts: true
-    crm_tasks: true
-    documents: true
-    rate_types: true
-    date_groups: true
-    folios_logs: true
-    fractionals: true
-    groups_tags: true
-    nodes_types: true
-    promo_codes: true
-    units_taxes: true
-    units_types: true
-    folios_rules: true
-    owners_units: true
-    reservations: true
-    tax_policies: true
-    units_blocks: true
-    custom_fields: true
-    groups_blocks: true
-    lodging_types: true
-    tax_districts: true
-    units_channel: true
-    reservations_v2: true
-    units_amenities: true
-    units_bed_types: true
-    accounting_bills: true
-    accounting_items: true
-    groups_breakdown: true
-    owners_contracts: true
-    owners_statements: true
-    accounting_charges: true
-    contacts_companies: true
-    fractionals_owners: true
-    reservations_types: true
-    units_taxes_parent: true
-    users_pii_redacted: true
-    accounting_accounts: true
-    accounting_deposits: true
-    owners_pii_redacted: true
-    maintenance_problems: true
-    suspend_code_reasons: true
-    units_amenity_groups: true
-    units_pricing_parent: true
-    contacts_pii_redacted: true
-    fractionals_inventory: true
-    crm_company_attachment: true
-    housekeeping_task_list: true
-    units_daily_pricing_v2: true
-    accounting_transactions: true
-    maintenance_work_orders: true
-    housekeeping_clean_types: true
-    housekeeping_work_orders: true
-    travel_insurance_products: true
-    units_types_pricing_parent: true
-    units_charge_pricing_parent: true
-    units_type_daily_pricing_v2: true
-    accounting_deposits_payments: true
-    reservations_discount_reasons: true
-    owners_statements_transactions: true
-    reservations_guarantee_policies: true
-    reservations_cancellation_reasons: true
-    reservations_cancellation_policies: true
+    tags: false
+    nodes: false
+    roles: false
+    taxes: false
+    units: false
+    users: false
+    folios: false
+    groups: false
+    owners: false
+    quotes: false
+    charges: false
+    reviews: false
+    contacts: false
+    companies: false
+    contracts: false
+    crm_tasks: false
+    documents: false
+    rate_types: false
+    date_groups: false
+    folios_logs: false
+    fractionals: false
+    groups_tags: false
+    nodes_types: false
+    promo_codes: false
+    units_taxes: false
+    units_types: false
+    folios_rules: false
+    owners_units: false
+    reservations: false
+    tax_policies: false
+    units_blocks: false
+    custom_fields: false
+    groups_blocks: false
+    lodging_types: false
+    tax_districts: false
+    units_channel: false
+    reservations_v2: false
+    units_amenities: false
+    units_bed_types: false
+    accounting_bills: false
+    accounting_items: false
+    groups_breakdown: false
+    owners_contracts: false
+    owners_statements: false
+    accounting_charges: false
+    contacts_companies: false
+    fractionals_owners: false
+    reservations_types: false
+    units_taxes_parent: false
+    users_pii_redacted: false
+    accounting_accounts: false
+    accounting_deposits: false
+    owners_pii_redacted: false
+    maintenance_problems: false
+    suspend_code_reasons: false
+    units_amenity_groups: false
+    units_pricing_parent: false
+    contacts_pii_redacted: false
+    fractionals_inventory: false
+    crm_company_attachment: false
+    housekeeping_task_list: false
+    units_daily_pricing_v2: false
+    accounting_transactions: false
+    maintenance_work_orders: false
+    housekeeping_clean_types: false
+    housekeeping_work_orders: false
+    travel_insurance_products: false
+    units_types_pricing_parent: false
+    units_charge_pricing_parent: false
+    units_type_daily_pricing_v2: false
+    accounting_deposits_payments: false
+    reservations_discount_reasons: false
+    owners_statements_transactions: false
+    reservations_guarantee_policies: false
+    reservations_cancellation_reasons: false
+    reservations_cancellation_policies: false
 
 schemas:
   tags:
@@ -6482,6 +7237,14 @@ schemas:
           - string
           - "null"
       guaranteePoliciesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      insuranceProductsIds:
         type:
           - array
           - "null"
@@ -7886,6 +8649,10 @@ schemas:
         type:
           - array
           - "null"
+      bookingDotComTaxApplication:
+        type:
+          - string
+          - "null"
     additionalProperties: true
   units:
     type: object
@@ -8049,10 +8816,6 @@ schemas:
         type:
           - boolean
           - "null"
-      isOccupied:
-        type:
-          - boolean
-          - "null"
       websiteUrl:
         type:
           - string
@@ -8157,10 +8920,6 @@ schemas:
         type:
           - boolean
           - "null"
-      cleanStatusType:
-        type:
-          - string
-          - "null"
       extendedAddress:
         type:
           - string
@@ -8206,6 +8965,14 @@ schemas:
           - string
           - "null"
       guaranteePoliciesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      insuranceProductsIds:
         type:
           - array
           - "null"
@@ -8452,11 +9219,116 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          contact:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              tags:
+                type:
+                  - array
+                  - "null"
+              isDNR:
+                type:
+                  - boolean
+                  - "null"
+              isVip:
+                type:
+                  - boolean
+                  - "null"
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - string
+                          - "null"
+              custom:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  custom_5:
+                    type:
+                      - string
+                      - "null"
+                  custom_6:
+                    type:
+                      - string
+                      - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              lastName:
+                type:
+                  - string
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              createdBy:
+                type:
+                  - string
+                  - "null"
+              firstName:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              updatedBy:
+                type:
+                  - string
+                  - "null"
+              noIdentity:
+                type:
+                  - boolean
+                  - "null"
+              quoteCount:
+                type:
+                  - string
+                  - "null"
+              references:
+                type:
+                  - array
+                  - "null"
+              isBlacklist:
+                type:
+                  - boolean
+                  - "null"
+              isOwnerContact:
+                type:
+                  - boolean
+                  - "null"
       accountId:
         type:
           - number
           - "null"
       companyId:
+        type:
+          - number
+          - "null"
+      contactId:
         type:
           - number
           - "null"
@@ -8647,7 +9519,7 @@ schemas:
           - "null"
       currentBalance:
         type:
-          - string
+          - number
           - "null"
       minimumBalance:
         type:
@@ -9121,18 +9993,8 @@ schemas:
                     properties:
                       _links:
                         type:
-                          - object
+                          - array
                           - "null"
-                        properties:
-                          self:
-                            type:
-                              - object
-                              - "null"
-                            properties:
-                              href:
-                                type:
-                                  - string
-                                  - "null"
                   localOffice:
                     type:
                       - object
@@ -9258,10 +10120,6 @@ schemas:
                 type:
                   - boolean
                   - "null"
-              isOccupied:
-                type:
-                  - boolean
-                  - "null"
               websiteUrl:
                 type:
                   - string
@@ -9366,10 +10224,6 @@ schemas:
                 type:
                   - boolean
                   - "null"
-              cleanStatusType:
-                type:
-                  - string
-                  - "null"
               extendedAddress:
                 type:
                   - string
@@ -9415,6 +10269,14 @@ schemas:
                   - string
                   - "null"
               guaranteePoliciesIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              insuranceProductsIds:
                 type:
                   - array
                   - "null"
@@ -10810,9 +11672,21 @@ schemas:
         type:
           - string
           - "null"
+      maxStayLength:
+        type:
+          - number
+          - "null"
+      maximumAmount:
+        type:
+          - string
+          - "null"
       minStayLength:
         type:
           - number
+          - "null"
+      minimumAmount:
+        type:
+          - string
           - "null"
       taxPolicyType:
         type:
@@ -10923,6 +11797,10 @@ schemas:
         type:
           - string
           - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
       autoReview:
         type:
           - number
@@ -10950,6 +11828,7 @@ schemas:
       channelUnitId:
         type:
           - number
+          - string
           - "null"
       overAllRating:
         type:
@@ -12611,6 +13490,10 @@ schemas:
         type:
           - array
           - "null"
+      insuranceProductsIds:
+        type:
+          - array
+          - "null"
       useRoomConfiguration:
         type:
           - boolean
@@ -13441,53 +14324,6 @@ schemas:
                 type:
                   - array
                   - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    id:
-                      type:
-                        - number
-                        - "null"
-                    dateGroup:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        id:
-                          type:
-                            - number
-                            - "null"
-                        name:
-                          type:
-                            - string
-                            - "null"
-                        dates:
-                          type:
-                            - array
-                            - "null"
-                          items:
-                            type:
-                              - object
-                              - "null"
-                            properties:
-                              id:
-                                type:
-                                  - number
-                                  - "null"
-                              end:
-                                type:
-                                  - string
-                                  - "null"
-                              start:
-                                type:
-                                  - string
-                                  - "null"
-                    isBlackoutDates:
-                      type:
-                        - boolean
-                        - "null"
               unitConstraints:
                 type:
                   - array
@@ -15671,6 +16507,10 @@ schemas:
         type:
           - number
           - "null"
+      airbnbPublishError:
+        type:
+          - string
+          - "null"
       airbnbStatusCategory:
         type:
           - string
@@ -16126,53 +16966,6 @@ schemas:
                 type:
                   - array
                   - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    id:
-                      type:
-                        - number
-                        - "null"
-                    dateGroup:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        id:
-                          type:
-                            - number
-                            - "null"
-                        name:
-                          type:
-                            - string
-                            - "null"
-                        dates:
-                          type:
-                            - array
-                            - "null"
-                          items:
-                            type:
-                              - object
-                              - "null"
-                            properties:
-                              id:
-                                type:
-                                  - number
-                                  - "null"
-                              end:
-                                type:
-                                  - string
-                                  - "null"
-                              start:
-                                type:
-                                  - string
-                                  - "null"
-                    isBlackoutDates:
-                      type:
-                        - boolean
-                        - "null"
               unitConstraints:
                 type:
                   - array
@@ -18223,10 +19016,6 @@ schemas:
         type:
           - boolean
           - "null"
-      isOccupied:
-        type:
-          - boolean
-          - "null"
       websiteUrl:
         type:
           - string
@@ -18331,10 +19120,6 @@ schemas:
         type:
           - boolean
           - "null"
-      cleanStatusType:
-        type:
-          - string
-          - "null"
       extendedAddress:
         type:
           - string
@@ -18380,6 +19165,14 @@ schemas:
           - string
           - "null"
       guaranteePoliciesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      insuranceProductsIds:
         type:
           - array
           - "null"
@@ -18528,6 +19321,10 @@ schemas:
       companyName:
         type:
           - string
+          - "null"
+      checkSetupId:
+        type:
+          - number
           - "null"
       accountNumber:
         type:
@@ -18769,7 +19566,7 @@ schemas:
           - "null"
       currentBalance:
         type:
-          - string
+          - number
           - "null"
       minimumBalance:
         type:
@@ -19057,10 +19854,6 @@ schemas:
         type:
           - boolean
           - "null"
-      isOccupied:
-        type:
-          - boolean
-          - "null"
       websiteUrl:
         type:
           - string
@@ -19165,10 +19958,6 @@ schemas:
         type:
           - boolean
           - "null"
-      cleanStatusType:
-        type:
-          - string
-          - "null"
       extendedAddress:
         type:
           - string
@@ -19214,6 +20003,14 @@ schemas:
           - string
           - "null"
       guaranteePoliciesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      insuranceProductsIds:
         type:
           - array
           - "null"
@@ -19477,6 +20274,10 @@ schemas:
         type:
           - string
           - "null"
+      size:
+        type:
+          - number
+          - "null"
       fileUrl:
         type:
           - string
@@ -19488,6 +20289,10 @@ schemas:
       isPublic:
         type:
           - boolean
+          - "null"
+      mimeType:
+        type:
+          - string
           - "null"
       createdAt:
         type:
@@ -20983,6 +21788,10 @@ schemas:
         type:
           - array
           - "null"
+      insuranceProductsIds:
+        type:
+          - array
+          - "null"
       useRoomConfiguration:
         type:
           - boolean
@@ -21330,15 +22139,7 @@ schemas:
         type:
           - string
           - "null"
-      ownerId:
-        type:
-          - string
-          - "null"
       isPending:
-        type:
-          - string
-          - "null"
-      ownerName:
         type:
           - string
           - "null"
@@ -21737,6 +22538,10 @@ schemas:
           - boolean
           - "null"
       marriottCategory:
+        type:
+          - string
+          - "null"
+      bookingDotComType:
         type:
           - string
           - "null"
