@@ -108,8 +108,8 @@ public class MongodbDestination extends BaseConnector implements Destination {
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
       final String streamName = stream.getName();
-      final String collectionName = namingResolver.getRawTableName(streamName);
-      final String tmpCollectionName = namingResolver.getTmpTableName(streamName);
+      final String collectionName = namingResolver.getIdentifier(streamName);
+      final String tmpCollectionName = namingResolver.getTmpTableName(collectionName);
 
       if (DestinationSyncMode.OVERWRITE == configStream.getDestinationSyncMode()) {
         database.getCollection(collectionName).drop();
@@ -157,7 +157,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
     final StringBuilder connectionStrBuilder = new StringBuilder();
 
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
-    final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    final var instance = MongoUtils.MongoInstanceType.valueOf(instanceConfig.get(MongoUtils.INSTANCE).asText().toUpperCase());
 
     switch (instance) {
       case STANDALONE -> {
