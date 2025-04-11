@@ -144,21 +144,8 @@ class JdbcSelectQuerier(
                         resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                     } else {
                         // Fetch and discard the data w/o marshaling to JSON
-                        when (column.type.airbyteSchemaType) {
-                            is ArrayAirbyteSchemaType -> TODO()
-                            LeafAirbyteSchemaType.BOOLEAN -> rs?.getBoolean(colIdx)
-                            LeafAirbyteSchemaType.STRING -> rs?.getString(colIdx)
-                            LeafAirbyteSchemaType.BINARY -> { /* do nothing */ }
-                            LeafAirbyteSchemaType.DATE -> rs?.getDate(colIdx)
-                            LeafAirbyteSchemaType.TIME_WITH_TIMEZONE -> rs?.getTime(colIdx)
-                            LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE -> rs?.getTime(colIdx)
-                            LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> rs?.getTimestamp(colIdx)
-                            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> rs?.getTimestamp(colIdx)
-                            LeafAirbyteSchemaType.INTEGER -> rs?.getInt(colIdx)
-                            LeafAirbyteSchemaType.NUMBER -> rs?.getDouble(colIdx)
-                            LeafAirbyteSchemaType.NULL -> { /* do nothing */ }
-                            LeafAirbyteSchemaType.JSONB -> { /* do nothing */ }
-                        }
+                        rs?.getBytes(colIdx)
+                        // TODO: put this actually into the proto?
                     }
                 } catch (e: Exception) {
                     resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())
