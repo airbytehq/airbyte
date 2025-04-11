@@ -118,7 +118,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     try {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
-      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.sha256Hex(Jsons.toBytes(recordMessage.getData())).getBytes(
+      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(Jsons.serialize(recordMessage.getData()).getBytes(
           Charset.defaultCharset())).toString();
       final var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));
@@ -144,17 +144,32 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
   }
 
   private static void copyTable(final MongoDatabase mongoDatabase, final String collectionName, final String tmpCollectionName) {
-
     final var tempCollection = mongoDatabase.getOrCreateNewCollection(tmpCollectionName);
     final var collection = mongoDatabase.getOrCreateNewCollection(collectionName);
     final List<Document> documents = new ArrayList<>();
-    try (final MongoCursor<Document> cursor = tempCollection.find().projection(excludeId()).iterator()) {
-      while (cursor.hasNext()) {
-        documents.add(cursor.next());
+    final int batchSize = 10000;
+
+    try {
+      try (final MongoCursor<Document> cursor = tempCollection.find().projection(excludeId()).iterator()) {
+        while (cursor.hasNext()) {
+          documents.add(cursor.next());
+
+          if (documents.size() >= batchSize) {
+            collection.insertMany(documents);
+            LOGGER.info("Inserted batch of {} documents from {} to {}", documents.size(), tmpCollectionName, collectionName);
+            documents.clear();
+          }
+        }
+
+        if (!documents.isEmpty()) {
+          collection.insertMany(documents);
+          LOGGER.info("Inserted final batch of {} documents from {} to {}", documents.size(), tmpCollectionName, collectionName);
+        }
       }
-    }
-    if (!documents.isEmpty()) {
-      collection.insertMany(documents);
+    } catch (final RuntimeException e) {
+      LOGGER.error("Failed to copy data from temporary collection '{}' to permanent collection '{}': {}",
+          tmpCollectionName, collectionName, e.getMessage());
+      throw new RuntimeException(e);
     }
   }
 
