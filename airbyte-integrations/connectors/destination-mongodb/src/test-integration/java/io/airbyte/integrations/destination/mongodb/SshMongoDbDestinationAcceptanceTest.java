@@ -43,7 +43,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
   @Override
   protected JsonNode getConfig() throws Exception {
     return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, new HostPortResolver().resolveIpAddress(container))
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, container.getExposedPorts().get(0))
         .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put(AUTH_TYPE, getAuthTypeConfig()), false);
@@ -53,7 +53,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
   protected JsonNode getFailCheckConfig() throws Exception {
     // should result in a failed connection check
     return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, new HostPortResolver().resolveIpAddress(container))
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, container.getExposedPorts().get(0))
         .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
@@ -69,7 +69,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema) {
-    final MongoDatabase database = getMongoDatabase(new HostPortResolver().resolveIpAddress(container),
+    final MongoDatabase database = getMongoDatabase(HostPortResolver.resolveHost(container),
         container.getExposedPorts().get(0), DATABASE_NAME);
     final var collection = database.getOrCreateNewCollection(namingResolver.getIdentifier(streamName));
     final List<JsonNode> result = new ArrayList<>();
