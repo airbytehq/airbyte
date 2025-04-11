@@ -77,7 +77,7 @@ sealed class FeedBootstrap<T : Feed>(
             lateinit var socketOutputConsumer: UnixDomainSocketOutputConsumer
         override suspend fun acceptAsync(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?, totalNum: Int?, num: Long?) {
             if (::socketOutputConsumer.isInitialized.not()) {
-                socketOutputConsumer = outputConsumer.getNextFreeSocketConsumer(0)
+                socketOutputConsumer = outputConsumer.getNextFreeSocketConsumer(num!!.toInt())
                 // get consumer
             }
             socketOutputConsumer.acceptAsyncMaybe(recordData, stream.namespace ?: "", stream.name)
