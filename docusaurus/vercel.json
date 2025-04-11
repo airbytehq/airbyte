@@ -68,7 +68,9 @@
     { "source": "/pyairbyte", "destination": "/platform/using-airbyte/pyairbyte/getting-started", "permanent": true},
     { "source": "/telemetry", "destination": "/platform/operator-guides/telemetry", "permanent": true},
     { "source": "/deploying-airbyte/quickstart", "destination": "/platform/using-airbyte/getting-started/oss-quickstart", "permanent": true},
-    { "source": "/connector-development/connector-builder-ui/compatibility-guide", "destination": "/platform/connector-development/connector-builder-ui/overview", "permanent": true}
+    { "source": "/connector-development/connector-builder-ui/compatibility-guide", "destination": "/platform/connector-development/connector-builder-ui/overview", "permanent": true},
+    { "source": "/integrations/destinations/iceberg", "destination": "/integrations/destinations/s3-data-lake", "permanent": true},
+    { "source": "/integrations/destinations/s3-glue", "destination": "/integrations/destinations/s3-data-lake", "permanent": true}
   ]
 }
 
