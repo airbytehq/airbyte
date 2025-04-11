@@ -4,6 +4,10 @@ FROM python:3.11.9 as base
 ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
 ENV DOCKER_VERSION = "24.0.2"
 
+# Disable dynamic versioning for the tests
+# because VCS is not available in the docker image.
+ENV POETRY_DYNAMIC_VERSIONING_COMMANDS=""
+
 RUN apt-get update \
     && pip install --upgrade pip \
     && apt-get -y install tzdata bash curl
@@ -12,7 +16,7 @@ RUN apt-get update \
 RUN curl -fsSL https://get.docker.com | sh
 
 
-RUN pip install poetry==1.8.4
+RUN pip install poetry==2.0.1
 RUN poetry config virtualenvs.create false
 RUN echo "Etc/UTC" > /etc/timezone
 

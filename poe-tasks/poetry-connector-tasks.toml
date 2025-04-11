@@ -69,6 +69,10 @@ fix-and-check = [ # Fix everything fixable, then see if checks pass
 cmd = 'poetry add airbyte-cdk@latest'
 help = "Pin to the latest version of the CDK."
 
+[tool.poe.tasks.use-cdk-local]
+cmd = 'poetry add --editable ${POE_GIT_ROOT}/../airbyte-python-cdk'
+help = "Pin to the local version of the CDK."
+
 [tool.poe.tasks.use-cdk-version]
 cmd = 'poetry add "airbyte-cdk@${VERSION}"'
 args = [
