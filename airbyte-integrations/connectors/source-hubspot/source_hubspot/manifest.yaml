@@ -4,6 +4,7 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # We need to use Contacts stream once it is migrated
   stream_names:
     - marketing_emails
 
@@ -27,7 +28,6 @@ definitions:
       OAuth Credentials: "#/definitions/oauth_auth"
       Private App Credentials: "#/definitions/api_token_auth"
 
-  # Reusable Components
   schema_loader:
     type: JsonFileSchemaLoader
     file_path: "./source_hubspot/schemas/{{ parameters['name'] }}.json"
@@ -50,6 +50,7 @@ definitions:
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
+      # HubSpot API does not always return Retry-After value for 429 HTTP error
       - type: ExponentialBackoffStrategy
     response_filters:
       # 429 => RETRY
@@ -82,13 +83,6 @@ definitions:
           - 403
         error_message: >-
           Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
-      # 404 => FAIL
-      - type: HttpResponseFilter
-        action: FAIL
-        http_codes:
-          - 404
-        error_message: >-
-          Resource not found (404). Confirm the endpoint or resource ID.
       # 400 => FAIL
       - type: HttpResponseFilter
         action: FAIL
@@ -109,7 +103,7 @@ definitions:
       field_name: limit
     pagination_strategy:
       type: OffsetIncrement
-      page_size: 250
+      page_size: 100
 
   base_selector:
     type: RecordSelector
@@ -157,11 +151,16 @@ definitions:
     $ref: "#/definitions/stream_base"
     retriever:
       $ref: "#/definitions/base_retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 250
       record_selector:
         $ref: "#/definitions/base_selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ record['updated'] | int > format_datetime(config['start_date'], '%ms') | int }}"
+          condition: "{{ record['updated'] | int > format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms') | int }}"
     $parameters:
       name: marketing_emails
       path: /marketing-emails/v1/emails/with-statistics
@@ -170,9 +169,9 @@ definitions:
       - type: AddFields
         fields:
           - path: ["rootMicId"]
-            value: "{{ record['rootMicId'] | string }}"
+            value: "{{ record['rootMicId'] | string if record.get('rootMicId') is not none else none }}"
           - path: ["updated"]
-            value: "{{ record['created'] if record['updated'] is none else record['updated'] }}"
+            value: "{{ record.get('updated') or record['created'] }}"
 
   email_subscriptions_stream:
     $ref: "#/definitions/stream_without_pagination"
