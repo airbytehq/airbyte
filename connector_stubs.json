@@ -60,7 +60,8 @@
     "icon": "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/sharepoint.svg",
     "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-sharepoint-enterprise",
     "type": "enterprise_source",
-    "codename": "cascade"
+    "codename": "cascade",
+    "definitionId": "c8e0fa7d-47a2-4f1f-b69b-03860f528263"
   },
   {
     "id": "source-db2",
