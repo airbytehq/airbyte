@@ -1,0 +1,49 @@
+/*
+  * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+  */
+
+syntax = "proto3";
+import "catalog/airbyte_configured_catalog.proto";
+import "message/airbyte_catalog.proto";
+import "message/airbyte_connection_status.proto";
+import "message/airbyte_connector_specification.proto";
+import "message/airbyte_control.proto";
+import "message/airbyte_log.proto";
+import "message/airbyte_record.proto";
+import "message/airbyte_state.proto";
+import "message/airbyte_trace.proto";
+package io.airbyte.protocol;
+
+/**
+ * Main Protocol Buffers proto file that imports the various modules from specific files.  All
+ * changes should be made to other files and imported here.
+ */
+
+enum AirbyteMessageType {
+  RECORD = 0;
+  STATE = 1;
+  LOG = 2;
+  SPEC = 3;
+  CONNECTION_STATUS = 4;
+  CATALOG = 5;
+  TRACE_MESSAGE = 6;
+  CONTROL = 7;
+};
+
+message AirbyteMessage {
+  AirbyteMessageType type = 1;
+  oneof payload {
+    AirbyteRecordMessage record = 2;
+    AirbyteLogMessage log = 3;
+    AirbyteTraceMessage trace = 4;
+    AirbyteConnectorSpecification spec = 5;
+    AirbyteConnectionStatus status = 6;
+    AirbyteCatalog catalog = 7;
+    AirbyteStateMessage state = 8;
+    AirbyteControlMessage control = 9;
+  }
+}
+
+message ConfiguredAirbyteCatalog {
+  repeated ConfiguredAirbyteStream streams = 1;
+}

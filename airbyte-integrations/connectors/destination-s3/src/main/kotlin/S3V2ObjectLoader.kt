@@ -17,6 +17,8 @@ class S3V2ObjectLoader(config: S3V2Configuration<*>) : ObjectLoader {
     override val maxMemoryRatioReservedForParts: Double = config.maxMemoryRatioReservedForParts
     override val objectSizeBytes: Long = config.objectSizeBytes
     override val partSizeBytes: Long = config.partSizeBytes
+    override val useGarbagePart: Boolean = config.useGarbagePart
+    override val skipUpload: Boolean = config.skipUpload
 }
 
 @Singleton

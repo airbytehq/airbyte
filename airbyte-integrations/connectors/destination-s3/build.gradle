@@ -15,7 +15,7 @@ application {
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
 //            Uncomment to run locally:
-//          '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+ //         '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
 //            Uncomment to enable remote profiling:
 //            '-XX:NativeMemoryTracking=detail',
 //            '-Djava.rmi.server.hostname=localhost',
