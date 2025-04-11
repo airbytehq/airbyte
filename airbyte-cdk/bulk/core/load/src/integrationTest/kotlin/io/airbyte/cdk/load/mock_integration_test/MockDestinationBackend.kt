@@ -129,7 +129,7 @@ object MockDestinationDataDumper : DestinationDataDumper {
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
+    ): Map<String, String> {
         // Not needed since the test is disabled for file transfer
         throw NotImplementedError()
     }

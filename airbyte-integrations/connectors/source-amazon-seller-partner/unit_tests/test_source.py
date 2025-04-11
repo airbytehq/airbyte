@@ -275,10 +275,10 @@ STREAM_NAMES = [
 
 
 END_DATETIME_LOGIC = {
-    "Orders": "now_minus_1s",  # now_utc() - PT1S
+    "Orders": "now_minus_2m",  # now_utc() - PT2M
     "OrderItems": "now",  # now_utc()
-    "ListFinancialEventGroups": "now_minus_1s",  # now_utc() - PT1S
-    "ListFinancialEvents": "now_minus_1s",  # now_utc() - PT1S
+    "ListFinancialEventGroups": "now_minus_2m",  # now_utc() - PT2M
+    "ListFinancialEvents": "now_minus_2m",  # now_utc() - PT2M
     "VendorDirectFulfillmentShipping": "now",  # now_utc()
     "VendorOrders": "now",  # now_utc()
 }
@@ -291,8 +291,8 @@ def default_start_date(now):
 
 # Helper function to calculate default end date based on stream logic
 def default_end_date(stream_name, now):
-    if END_DATETIME_LOGIC[stream_name] == "now_minus_1s":
-        return (now - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if END_DATETIME_LOGIC[stream_name] == "now_minus_2m":
+        return (now - timedelta(minutes=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
     return now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

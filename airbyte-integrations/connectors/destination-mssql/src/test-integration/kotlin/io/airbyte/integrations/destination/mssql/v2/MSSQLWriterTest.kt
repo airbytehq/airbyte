@@ -132,7 +132,7 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream,
-    ): List<String> {
+    ): Map<String, String> {
         throw UnsupportedOperationException("destination-mssql doesn't support file transfer")
     }
 }
