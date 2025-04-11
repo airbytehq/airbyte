@@ -118,6 +118,7 @@ abstract class DestinationConfiguration : Configuration {
     open val socketPrefix: String = "/var/run/sockets/ab_socket"
     open val socketWaitTimeoutSeconds: Int = 5 * 60
     open val devNullAfterDeserialization: Boolean = false
+    open val skipJsonOnProto: Boolean = false
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

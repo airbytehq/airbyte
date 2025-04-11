@@ -56,6 +56,7 @@ data class S3V2Configuration<T : OutputStream>(
     override val devNullAfterDeserialization: Boolean,
     val skipUpload: Boolean,
     val useGarbagePart: Boolean,
+    override val skipJsonOnProto: Boolean
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -77,10 +78,10 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            numSockets = pojo.numSockets ?: 4,
+            numSockets = pojo.numSockets ?: 1,
             numUploadWorkers = pojo.numPartLoaders ?: 10,
-            numPartWorkers = pojo.numPartFormatters ?: pojo.numSockets ?: 4,
-            inputSerializationFormat = pojo.inputSerializationFormat ?: DestinationConfiguration.InputSerializationFormat.SMILE,
+            numPartWorkers = pojo.numPartFormatters ?: pojo.numSockets ?: 1,
+            inputSerializationFormat = pojo.inputSerializationFormat ?: DestinationConfiguration.InputSerializationFormat.PROTOBUF,
             partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
             maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 0.4,
             inputBufferByteSizePerSocket = pojo.inputBufferByteSizePerSocket ?: (8 * 1024L),
@@ -89,6 +90,7 @@ class S3V2ConfigurationFactory :
             devNullAfterDeserialization = pojo.devNullAfterDeserialization ?: false,
             skipUpload = pojo.skipUpload ?: false,
             useGarbagePart = pojo.useGarbagePart ?: false,
+            skipJsonOnProto = pojo.skipJsonOnProto ?: true,
         )
     }
 }

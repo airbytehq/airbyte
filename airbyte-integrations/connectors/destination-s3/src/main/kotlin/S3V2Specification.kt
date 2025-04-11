@@ -113,6 +113,9 @@ class S3V2Specification :
 
     @get:JsonProperty("num_part_formatters")
     val numPartFormatters: Int? = null
+
+    @get:JsonProperty("skip_json_on_proto")
+    val skipJsonOnProto: Boolean? = null
 }
 
 @Singleton

@@ -814,7 +814,10 @@ class DestinationMessageFactory(
         }
     }
 
-    fun fromProtobufAirbyteMessage(airbyteMessage: AirbyteMessageProto, objectMapper: ObjectMapper): DestinationMessage {
+    private val fakeJsonNode = """{"id":1,"age":50,"name":"Tomoko","email":"corrections1854+2@live.com","title":"Prof.","gender":"Female","height":1.53,"weight":61,"language":"Czech","global_id":13679213,"telephone":"357-652-0612","blood_type":"O+","created_at":"2009-02-27T13:44:37z","occupation":"MachineSetter","updated_at":"2009-07-12T16:12:23z","nationality":"Cameroonian","academic_degree":"Bachelor"}"""
+        .deserializeToNode()
+
+    fun fromProtobufAirbyteMessage(airbyteMessage: AirbyteMessageProto, objectMapper: ObjectMapper, skipJsonDeserialization: Boolean): DestinationMessage {
         return when (airbyteMessage.type) {
             Protocol.AirbyteMessageType.RECORD -> {
                 val stream =
@@ -828,7 +831,11 @@ class DestinationMessageFactory(
                     serialized = airbyteMessage.toString(),
                     schema = stream.schema,
                     emittedAtMs = airbyteMessage.record.emittedAt,
-                    data = objectMapper.readTree(airbyteMessage.record.data.newInput()),
+                    data = if (skipJsonDeserialization) {
+                        fakeJsonNode
+                    } else {
+                        objectMapper.readTree(airbyteMessage.record.data.newInput())
+                    },
                     meta = airbyteMessage.record.meta?.let {
                         meta -> Meta( meta.itemsList.map {
                             Meta.Change(it.field, Change.valueOf(it.change.toString()), Reason.valueOf(it.reason.toString()))
