@@ -53,7 +53,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
@@ -153,6 +153,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.1.4 | 2025-04-07 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability |
 | 7.1.6 | 2025-04-05 | [57138](https://github.com/airbytehq/airbyte/pull/57138) | Update dependencies |
 | 7.1.5 | 2025-03-29 | [56554](https://github.com/airbytehq/airbyte/pull/56554) | Update dependencies |
 | 7.1.4 | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies |
