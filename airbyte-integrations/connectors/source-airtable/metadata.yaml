@@ -58,4 +58,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
 metadataSpecVersion: "1.0"
