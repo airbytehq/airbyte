@@ -119,6 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 3.0.8 | 2025-03-26 | [55725](https://github.com/airbytehq/airbyte/pull/55725) | Add sequence_number to fetched Notion blocks |
 | 3.0.7 | 2025-01-11 | [43832](https://github.com/airbytehq/airbyte/pull/43832) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.0.6 | 2024-06-25 | [40498](https://github.com/airbytehq/airbyte/pull/40498) | Fix Pydantic error - add missing type annotation for `max_cursor_time` |
 | 3.0.5 | 2024-06-04 | [38871](https://github.com/airbytehq/airbyte/pull/38871) | Refactor: use `client_side_incremental` feature |
