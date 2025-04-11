@@ -44,19 +44,20 @@ data class MySqlSourceConfiguration(
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
-    val skipSerializationAndWriting: Boolean,
-    val skipWriting: Boolean,
     val skipSynchronizedCounts: Boolean,
     override val bufferByteSize: Int,
     override val outputFormat: String,
     override val devNullAfterSerialization: Boolean,
-    override val recreateWriterEveryNRecords: Int
+    override val inputChannelCapacity: Int,
+    override val devNullBeforePosting: Boolean,
+    override val numSockets: Int,
+    override val writeAsync: Boolean = false,
+    override val skipJsonNodeAndUseFakeRecord: Boolean = false,
+    override val sharedInputChannel: Boolean = false,
 ) : JdbcSourceConfiguration, CdcSourceConfiguration, SocketConfig {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
         get() = (incrementalConfiguration as? CdcIncrementalConfiguration)?.initialLoadTimeout
-
-    override val numSockets = maxConcurrency
 
     /** Required to inject [MySqlSourceConfiguration] directly. */
     @Factory
@@ -167,14 +168,16 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
-            skipSerializationAndWriting = pojo.tmpSkipSerializationAndWriting ?: true,
-            skipWriting = pojo.tmpSkipWriting ?: true,
             skipSynchronizedCounts = pojo.tmpSkipSynchronizedCounts ?: false,
             bufferByteSize = pojo.bufferByteSize ?: (8 * 1024),
-            outputFormat = pojo.outputFormat ?: "jsonl",
+            outputFormat = pojo.outputFormat ?: "json",
             devNullAfterSerialization = pojo.devNullAfterSerialization ?: false,
-            recreateWriterEveryNRecords =
-                pojo.recreateEveryNRecords ?: 100_000,
+            inputChannelCapacity = pojo.inputChannelCapacity ?: 20_000,
+            devNullBeforePosting = pojo.devNullBeforePosting ?: false,
+            numSockets = pojo.numSockets ?: 1,
+            writeAsync = pojo.writeAsync ?: false,
+            skipJsonNodeAndUseFakeRecord = pojo.skipJsonNodeAndUseFakeRecord ?: false,
+            sharedInputChannel = pojo.useSharedInputChannel ?: false,
         )
     }
 

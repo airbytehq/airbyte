@@ -55,14 +55,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
-    fun out(row: SelectQuerier.ResultRow) {
-        /*if (partition.skipWritingAndSerialization || partition.skipWriting) {
-            if(++devNulledRows % 100_000L == 0L) {
-                log.info { "Discarded $devNulledRows rows" }
-            }
-            return
-        }*/
-        streamRecordConsumer.accept(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
+    suspend fun out(row: SelectQuerier.ResultRow) {
+        streamRecordConsumer.acceptAsync(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
     }
 
     override fun setNum(num: Long) {
@@ -70,6 +64,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
+        streamRecordConsumer.close()
     }
 
     /** If configured max feed read time elapsed we exit with a transient error */

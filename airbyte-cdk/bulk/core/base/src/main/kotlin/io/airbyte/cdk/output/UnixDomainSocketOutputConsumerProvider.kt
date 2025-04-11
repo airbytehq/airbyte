@@ -6,12 +6,14 @@ import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SequenceWriter
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.google.protobuf.ByteString
+import io.airbyte.cdk.output.UnixDomainSocketOutputConsumer.NamedNode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.AirbyteRecord
 import io.airbyte.protocol.Protocol
@@ -31,9 +33,17 @@ import java.nio.channels.Channels
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
 import java.time.Clock
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
     private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
+//private const val SOCKET_FULL_PATH = "/Users/jschmidt/.sockets/$SOCKET_NAME_TEMPLATE"
 //private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
 
@@ -42,7 +52,11 @@ interface SocketConfig {
     val bufferByteSize: Int
     val outputFormat: String
     val devNullAfterSerialization: Boolean
-    val recreateWriterEveryNRecords: Int
+    val inputChannelCapacity: Int
+    val devNullBeforePosting: Boolean
+    val writeAsync: Boolean
+    val skipJsonNodeAndUseFakeRecord: Boolean
+    val sharedInputChannel: Boolean
 }
 
 @Singleton
@@ -52,7 +66,11 @@ class DefaultSocketConfig: SocketConfig {
     override val bufferByteSize: Int = 8 * 1024
     override val outputFormat: String = "jsonl"
     override val devNullAfterSerialization: Boolean = false
-    override val recreateWriterEveryNRecords: Int = 100_000
+    override val inputChannelCapacity: Int = 20_000
+    override val devNullBeforePosting: Boolean = false
+    override val writeAsync: Boolean = false
+    override val skipJsonNodeAndUseFakeRecord: Boolean = false
+    override val sharedInputChannel: Boolean = false
 }
 
 @Singleton
@@ -61,23 +79,39 @@ class UnixDomainSocketOutputConsumerProvider(
     stdout: PrintStream,
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush}")
     bufferByteSizeThresholdForFlush: Int,
-    configuration: SocketConfig,
+    val configuration: SocketConfig,
 ) : StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     val numSockets = configuration.numSockets
     val bufferByteSize = configuration.bufferByteSize
     val outputFormat: String = configuration.outputFormat
 
-    private val socketConsumers = (0 until numSockets).map {
-        UnixDomainSocketOutputConsumer(
-            it,
-            bufferByteSize,
-            outputFormat,
-            clock,
-            stdout,
-            bufferByteSizeThresholdForFlush,
-            configuration.devNullAfterSerialization,
-            configuration.recreateWriterEveryNRecords
-        )
+    private val sharedInputChannel: Channel<NamedNode> = Channel(configuration.inputChannelCapacity)
+
+    private val socketConsumers = (0 until numSockets).map { socketNum ->
+        if (configuration.sharedInputChannel) {
+            sharedInputChannel
+        } else {
+            Channel(configuration.inputChannelCapacity)
+        }.let {
+            UnixDomainSocketOutputConsumer(
+                socketNum,
+                bufferByteSize,
+                outputFormat,
+                clock,
+                stdout,
+                bufferByteSizeThresholdForFlush,
+                configuration.devNullAfterSerialization,
+                configuration.devNullBeforePosting,
+                configuration.writeAsync,
+                configuration.skipJsonNodeAndUseFakeRecord,
+                it,
+                if (configuration.sharedInputChannel) {
+                    it.receiveAsFlow()
+                } else {
+                    it.consumeAsFlow()
+                },
+            )
+        }
     }
 
     override fun close() {
@@ -85,8 +119,31 @@ class UnixDomainSocketOutputConsumerProvider(
         socketConsumers.forEach { it.close() }
     }
 
-    override fun getSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
-        return socketConsumers[part]
+    override fun getNextFreeSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
+        if (configuration.writeAsync) {
+            return socketConsumers[part % socketConsumers.size]
+        }
+
+        synchronized(this) {
+            return socketConsumers.first { it.busy.not() }.use { it.busy = true; it }
+        }
+    }
+
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+
+    suspend fun startAll() {
+        if (!configuration.writeAsync) {
+            return
+        }
+
+        socketConsumers.forEachIndexed { i, socketConsumer ->
+            logger.info {
+                "Starting socket consumer $i with capacity ${configuration.inputChannelCapacity} and buffer size ${configuration.bufferByteSize}"
+            }
+            ioScope.launch {
+                socketConsumer.readSocketUntilComplete()
+            }
+        }
     }
 }
 
@@ -101,19 +158,38 @@ class DevNullOutputStream: OutputStream() {
 }
 
 class UnixDomainSocketOutputConsumer(
-    socketNum: Int,
+    val socketNum: Int,
     bufferSize: Int = DEFAULT_BUFFER_SIZE,
     val outputFormat: String,
     clock: Clock,
     stdout: PrintStream,
     bufferByteSizeThresholdForFlush: Int,
     val devNullAfterSerialization: Boolean = false,
-    val recreateWriterEveryNRecords: Int = 100_000,
+    val devNullBeforePosting: Boolean = false,
+    private val writeAsync: Boolean,
+    private val fakeRecord: Boolean,
+    private val outputChannel: Channel<NamedNode>,
+    private val inputFlow: Flow<NamedNode>,
 ): StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketChannel: SocketChannel
     private val bufferedOutputStream: BufferedOutputStream
     private var writer: SequenceWriter
     private var numRecords: Int = 0
+    var busy: Boolean = false
+
+    val fakeRecordJson = """{"id":1,"age":50,"name":"Tomoko","email":"corrections1854+2@live.com","title":"Prof.","gender":"Female","height":1.53,"weight":61,"language":"Czech","global_id":13679213,"telephone":"357-652-0612","blood_type":"O+","created_at":"2009-02-27T13:44:37z","occupation":"MachineSetter","updated_at":"2009-07-12T16:12:23z","nationality":"Cameroonian","academic_degree":"Bachelor"}""".toByteArray(charset = Charsets.UTF_8)
+
+    data class NamedNode(
+        val namespace: String,
+        val streamName: String,
+        val recordData: ObjectNode
+    )
+
+    val dummyNode = NamedNode(
+        namespace = "1tb",
+        streamName = "users",
+        recordData = JsonNodeFactory.instance.objectNode()
+    )
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         return objectMapper
@@ -168,14 +244,6 @@ class UnixDomainSocketOutputConsumer(
         }.writeValues(bufferedOutputStream)
     }
 
-    override fun accept(airbyteMessage: AirbyteMessage) {
-        writer.write(airbyteMessage)
-        if (++ numRecords == 100_000) {
-            bufferedOutputStream.flush()
-            numRecords = 0
-        }
-    }
-
     fun accept(recordData: ObjectNode, namespace: String, streamName: String) {
         if (outputFormat == "devnull") {
             return
@@ -188,14 +256,15 @@ class UnixDomainSocketOutputConsumer(
                     AirbyteRecord.AirbyteRecordMessage.newBuilder()
                         .setStream(streamName)
                         .setNamespace(namespace)
-                        .setData(ByteString.copyFrom(Jsons.writeValueAsBytes(recordData)))
+                        .setData(ByteString.copyFrom(
+                            if (fakeRecord) { fakeRecordJson } else { Jsons.writeValueAsBytes(recordData) }
+                        ))
                         .setEmittedAt(clock.millis())
                         .build()
                 )
                 .build()
             pMessage?.writeDelimitedTo(bufferedOutputStream)
         } else {
-
             val airbyteMessage = AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
@@ -207,15 +276,40 @@ class UnixDomainSocketOutputConsumer(
                 )
             writer.write(airbyteMessage)
         }
-        numRecords ++
-        if (numRecords % recreateWriterEveryNRecords == 0) {
-            writer = writerForMapper()
-        }
-
+        numRecords++
         if (numRecords == 100_000) {
             bufferedOutputStream.flush()
-            buffer.reset()
             numRecords = 0
         }
+    }
+
+
+    suspend fun acceptAsyncMaybe(recordData: ObjectNode, namespace: String, streamName: String) {
+        if (!writeAsync) {
+            accept(recordData, namespace, streamName)
+            return
+        }
+
+        if (outputFormat == "proto" || outputFormat == "protobuf") {
+            // This is fine for now b/c the GC issue this (maybe?)
+            // produces can easily be optimized away.
+            outputChannel.send(dummyNode)
+        }
+
+        val namedNode = NamedNode(namespace, streamName, recordData)
+        if (devNullBeforePosting) {
+            return
+        }
+        outputChannel.send(namedNode)
+    }
+
+    suspend fun readSocketUntilComplete() {
+        inputFlow.collect { (namespace, name, recordData) ->
+            accept(recordData, namespace, name)
+        }
+    }
+
+    override fun accept(airbyteMessage: AirbyteMessage) {
+        throw UnsupportedOperationException("Not supported")
     }
 }

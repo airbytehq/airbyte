@@ -182,14 +182,6 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
         additionalPropertiesMap[name] = value
     }
 
-    @JsonProperty("tmp_skip_serialization_and_writing")
-    @JsonSchemaDefault("false")
-    val tmpSkipSerializationAndWriting: Boolean? = null
-
-    @JsonProperty("tmp_skip_writing")
-    @JsonSchemaDefault("false")
-    val tmpSkipWriting: Boolean? = null
-
     @JsonProperty("tmp_skip_synchronized_counts")
     @JsonSchemaDefault("false")
     val tmpSkipSynchronizedCounts: Boolean? = null
@@ -206,8 +198,27 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaDefault("false")
     val devNullAfterSerialization: Boolean? = null
 
-    @JsonProperty("recreate_every_n_records")
-    val recreateEveryNRecords: Int? = null
+    @JsonProperty("input_channel_capacity_rows")
+    val inputChannelCapacity: Int? = 20_000
+
+    @JsonProperty("dev_null_before_posting")
+    @JsonSchemaDefault("false")
+    val devNullBeforePosting: Boolean? = null
+
+    @JsonProperty("num_sockets")
+    val numSockets: Int? = 1
+
+    @JsonProperty("write_async")
+    @JsonSchemaDefault("false")
+    val writeAsync: Boolean? = false
+
+    @JsonProperty("skip_json_node_and_use_fake_record")
+    @JsonSchemaDefault("false")
+    val skipJsonNodeAndUseFakeRecord: Boolean? = false
+
+    @JsonProperty("use_shared_input_channel")
+    @JsonSchemaDefault("false")
+    val useSharedInputChannel: Boolean? = false
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
