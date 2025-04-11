@@ -1,7 +1,24 @@
 {
   "redirects": [
     { "source": "/robin", "destination": "/batman/robin", "permanent": false },
-    { "source": "/access-management/:path*", "destination": "/platform/access-management/:path*", "permanent": true }
+    { "source": "/access-management/:path*", "destination": "/platform/access-management/:path*", "permanent": true },
+    { "source": "/access-management/:path*", "destination": "/platform/access-management/:path*", "permanent": true},
+    { "source": "/cloud/:path*", "destination": "/platform/cloud/:path*", "permanent": true},
+    { "source": "/community/:path*", "destination": "/platform/community/:path*", "permanent": true},
+    { "source": "/connector-development/:path*", "destination": "/platform/connector-development/:path*", "permanent": true},
+    { "source": "/contributing-to-airbyte/:path*", "destination": "/platform/contributing-to-airbyte/:path*", "permanent": true},
+    { "source": "/deploying-airbyte/:path*", "destination": "/platform/deploying-airbyte/:path*", "permanent": true},
+    { "source": "/developer-guides/:path*", "destination": "/platform/developer-guides/:path*", "permanent": true},
+    { "source": "/embedded-setup/:path*", "destination": "/platform/embedded-setup/:path*", "permanent": true},
+    { "source": "/enterprise-setup/:path*", "destination": "/platform/enterprise-setup/:path*", "permanent": true},
+    { "source": "/managing-airbyte/:path*", "destination": "/platform/managing-airbyte/:path*", "permanent": true},
+    { "source": "/operating-airbyte/:path*", "destination": "/platform/operating-airbyte/:path*", "permanent": true},
+    { "source": "/operator-guides/:path*", "destination": "/platform/operator-guides/:path*", "permanent": true},
+    { "source": "/understanding-airbyte/:path*", "destination": "/platform/understanding-airbyte/:path*", "permanent": true},
+    { "source": "/using-airbyte/:path*", "destination": "/platform/using-airbyte/:path*", "permanent": true},
+    { "source": "/api-documentation", "destination": "/platform/api-documentation", "permanent": true},
+    { "source": "/", "destination": "/home/", "permanent": true},
+    { "source": "/terraform-documentation", "destination": "/platform/terraform-documentation", "permanent": true}
   ]
 }
 
