@@ -62,38 +62,40 @@ public class MongodbRecordConsumerTest extends PerStreamStateMessageTest {
 
   @Test
   void testCopyTableBatchProcessing() throws Exception {
-    Method copyTableMethod = MongodbRecordConsumer.class.getDeclaredMethod("copyTable", 
+    Method copyTableMethod = MongodbRecordConsumer.class.getDeclaredMethod("copyTable",
         MongoDatabase.class, String.class, String.class);
     copyTableMethod.setAccessible(true);
-    
+
     MongoCollection<Document> tempCollection = mock(MongoCollection.class);
     MongoCollection<Document> targetCollection = mock(MongoCollection.class);
     FindIterable<Document> findIterable = mock(FindIterable.class);
     MongoCursor<Document> cursor = mock(MongoCursor.class);
-    
+
     List<Document> testDocuments = new ArrayList<>();
     for (int i = 0; i < 25000; i++) {
       testDocuments.add(new Document("test_field", "test_value_" + i));
     }
-    
+
     when(mongoDatabase.getOrCreateNewCollection("temp_collection")).thenReturn(tempCollection);
     when(mongoDatabase.getOrCreateNewCollection("target_collection")).thenReturn(targetCollection);
     when(tempCollection.find()).thenReturn(findIterable);
     when(findIterable.projection(any())).thenReturn(findIterable);
     when(findIterable.iterator()).thenReturn(cursor);
-    
+
     final int[] counter = {0};
-    
+
     when(cursor.hasNext()).thenAnswer(invocation -> counter[0] < testDocuments.size());
-    
+
     when(cursor.next()).thenAnswer(invocation -> {
       Document doc = testDocuments.get(counter[0]);
       counter[0]++;
       return doc;
     });
-    
+
     copyTableMethod.invoke(null, mongoDatabase, "target_collection", "temp_collection");
-    
+
     verify(targetCollection, times(3)).insertMany(anyList());
   }
+
+
 }
