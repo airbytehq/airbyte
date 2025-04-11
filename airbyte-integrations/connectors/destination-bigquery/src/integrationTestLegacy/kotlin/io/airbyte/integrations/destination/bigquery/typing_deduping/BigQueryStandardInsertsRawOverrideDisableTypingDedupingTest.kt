@@ -3,7 +3,13 @@
  */
 package io.airbyte.integrations.destination.bigquery.typing_deduping
 
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.SyncMode
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 class BigQueryStandardInsertsRawOverrideDisableTypingDedupingTest :
     AbstractBigQueryTypingDedupingTest() {
@@ -15,6 +21,34 @@ class BigQueryStandardInsertsRawOverrideDisableTypingDedupingTest :
 
     override fun disableFinalTableComparison(): Boolean {
         return true
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun arst() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
+
+        val messages = readMessages("dat/sync1_messages.jsonl")
+        runSync(catalog, messages)
+        println()
     }
 
     @Disabled
