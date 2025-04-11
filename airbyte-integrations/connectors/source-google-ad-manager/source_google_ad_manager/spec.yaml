@@ -1,0 +1,69 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: https://json-schema.org/draft-07/schema#
+  title: Google Ad Manager Spec
+  type: object
+  required:
+    - chunk_size
+    - dimensions
+    - columns
+    - dateRangeType
+    - adUnitView
+    - service_account
+    - network_code
+    - startDate
+    - endDate
+  properties:
+    dimensions:
+      title: Report dimensions names
+      type: array
+      description: These are the report dimensions
+      items:
+        type: string
+    columns:
+      title: Report columns names
+      type: array
+      description: These are the report metrics
+      items:
+        type: string
+    dimensionAttributes:
+      title: Report attributes names
+      type: array
+      description: These are the report attributes
+      items:
+        type: string
+    dateRangeType:
+      title: Report dateRangeType
+      type: string
+      description: This is the report dateRangeType
+      enum:
+        - CUSTOM_DATE
+    adUnitView:
+      title: adUnitView
+      type: string
+      enum:
+        - FLAT
+      description: This is the adUnitView
+    startDate:
+      title: startDate
+      type: string
+      format: date
+      description: This is the report start date
+    endDate:
+      title: endDate
+      type: string
+      format: date
+      description: This is the report end date
+    service_account:
+      title: Service Account
+      type: string
+      description: This is the service account
+      airbyte_secret: True
+    network_code:
+      title: Google Ad Manager network_code
+      type: string
+      description: This is the unique code used to identify the Google Ad Manager network
+    chunk_size:
+      title: Chunk size
+      type: string
+      description: This is the length of the chunks with which to divide the report
