@@ -1,0 +1,37 @@
+/*
+  * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+  */
+
+syntax = "proto3";
+import "airbyte_commons.proto";
+package io.airbyte.protocol;
+
+enum AirbyteStateType {
+  GLOBAL = 0;
+  STREAM = 1;
+}
+
+message AirbyteStreamState {
+  AirbyteStreamDescriptor stream_descriptor = 1;
+  bytes state = 2;
+}
+
+message AirbyteGlobalState {
+  repeated AirbyteStreamState stream_states = 1;
+  optional bytes shared_state = 2;
+}
+
+message AirbyteStateStats {
+  optional int64 recordCount = 1;
+}
+
+message AirbyteStateMessage {
+  optional AirbyteStateType type = 1;
+  oneof state {
+    AirbyteStreamState stream = 2;
+    AirbyteGlobalState global = 3;
+  }
+  optional AirbyteStateStats sourceStats = 4;
+  optional AirbyteStateStats destinationStats = 5;
+  optional int32 stateId = 6;
+}
