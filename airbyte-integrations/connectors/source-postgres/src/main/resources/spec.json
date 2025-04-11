@@ -341,6 +341,25 @@
             }
           }
         ]
+      },
+      "entra_service_principal_auth": {
+        "title": "Entra service principal authentication",
+        "description": "Interpret username and password as client id and client secret for a Microsft Entra service principal",
+        "type": "boolean",
+        "group": "auth",
+        "default": false
+      },
+      "entra_tenant_id": {
+        "title": "Entra tenant id",
+        "description": "If using entra service principal, the ID of the tenant",
+        "type": "string",
+        "group": "auth"
+      },
+      "entra_client_id": {
+        "title": "Entra client id",
+        "description": "If using entra service principal, the application ID of the service principal",
+        "type": "string",
+        "group": "auth"
       }
     },
     "groups": [
