@@ -608,6 +608,7 @@ module.exports = {
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
         "enterprise-setup/scaling-airbyte",
+        "enterprise-setup/upgrade-service-account",
         "enterprise-setup/upgrading-from-community",
         {
           type: "category",
@@ -633,7 +634,6 @@ module.exports = {
       },
       items: [
         "managing-airbyte/connector-updates",
-        "enterprise-setup/upgrade-service-account",
       ],
     },
     {

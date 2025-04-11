@@ -48,19 +48,21 @@ If you haven't, you're using Airbyte's default service account, `airbyte-sa`.
 
 ### Using your own service account
 
-Upgrade your service account/role to grant it **secrets** access. The role should look approximately like this:
+1. Upgrade your service account/role to grant it **secrets** access. The role should look approximately like this:
 
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: roleName    app.kubernetes.io/managed-by: Helm
-  annotations:
-    helm.sh/hook: pre-install
-    helm.sh/hook-weight: "-5"
-rules:
-  - apiGroups: ["*"]
-  //highlight-next-line
-    resources: ["jobs", "pods", "pods/log", "pods/exec", "pods/attach", "secrets"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-```
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: roleName    app.kubernetes.io/managed-by: Helm
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-5"
+    rules:
+      - apiGroups: ["*"]
+      //highlight-next-line
+        resources: ["jobs", "pods", "pods/log", "pods/exec", "pods/attach", "secrets"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+    ```
+
+2. Upgrade Airbyte as your normally would.
