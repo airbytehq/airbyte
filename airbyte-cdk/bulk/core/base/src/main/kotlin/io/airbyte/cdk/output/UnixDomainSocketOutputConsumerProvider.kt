@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SequenceWriter
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -184,6 +185,12 @@ class UnixDomainSocketOutputConsumer(
         val recordData: ObjectNode
     )
 
+    val dummyNode = NamedNode(
+        namespace = "1tb",
+        streamName = "users",
+        recordData = JsonNodeFactory.instance.objectNode()
+    )
+
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         return objectMapper
             .registerModule(JavaTimeModule())
@@ -281,6 +288,12 @@ class UnixDomainSocketOutputConsumer(
         if (!writeAsync) {
             accept(recordData, namespace, streamName)
             return
+        }
+
+        if (outputFormat == "proto" || outputFormat == "protobuf") {
+            // This is fine for now b/c the GC issue this (maybe?)
+            // produces can easily be optimized away.
+            outputChannel.send(dummyNode)
         }
 
         val namedNode = NamedNode(namespace, streamName, recordData)

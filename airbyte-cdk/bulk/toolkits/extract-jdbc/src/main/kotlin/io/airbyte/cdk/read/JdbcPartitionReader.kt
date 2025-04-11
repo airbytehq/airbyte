@@ -56,12 +56,6 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     suspend fun out(row: SelectQuerier.ResultRow) {
-        /*if (partition.skipWritingAndSerialization || partition.skipWriting) {
-            if(++devNulledRows % 100_000L == 0L) {
-                log.info { "Discarded $devNulledRows rows" }
-            }
-            return
-        }*/
         streamRecordConsumer.acceptAsync(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
     }
 
