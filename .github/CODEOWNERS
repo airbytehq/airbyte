@@ -64,3 +64,7 @@
 /airbyte-integrations/connectors/source-salesforce/ @airbytehq/dev-extensibility
 /airbyte-integrations/connectors/source-shopify/ @airbytehq/dev-extensibility
 /airbyte-integrations/connectors/source-stripe/ @airbytehq/dev-extensibility
+
+# Breaking changes detection
+# This rule ensures that any changes to migration files are reviewed by the breaking-changes-reviewers team
+**/*-migrations.md @airbytehq/breaking-changes-reviewers
