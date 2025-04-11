@@ -155,7 +155,7 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
         # Determine if we should do a full sync today
         # Check the hour - if it's between midnight and 4am, sync all campaigns
         current_hour = datetime.now().hour
-        is_full_sync_window = 0 <= current_hour < 4
+        is_full_sync_window = False # 0 <= current_hour < 4 # we disable it for now since it is not needed
 
         if is_full_sync_window:
             logging.info("Full sync period (between midnight and 1am): synchronizing all campaigns with tracking_method filter only")
