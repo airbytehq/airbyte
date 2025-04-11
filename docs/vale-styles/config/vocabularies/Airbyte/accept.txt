@@ -35,8 +35,15 @@ markdownlint-cli2
 
 AWS
 GCP
+AKS
+EKS
+EC2
 REST
 IAM
+API
+CDK
+SDK
+DAG
 
 # Airbyte connectors
 
@@ -46,6 +53,11 @@ S3 Data Lake
 # Companies and products
 
 Glue
+Linux
+Windows
+macOS
+Orchestra
+Prefect
 
 # Acceptable non-words that should not trigger spellcheck
 
