@@ -1,6 +1,27 @@
 {
   "redirects": [
-    { "source": "/robin", "destination": "/batman/robin", "permanent": false }
+    { "source": "/robin", "destination": "/batman/robin", "permanent": false },
+    { "source": "/access-management/:path*", "destination": "/platform/access-management/:path*", "permanent": true }
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
+    // { "source": "", "destination": "", "permanent": true},
   ]
 }
 
