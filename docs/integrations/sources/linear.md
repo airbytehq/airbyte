@@ -36,6 +36,6 @@ An Airbyte connector for Linear.app.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.1 | 2025-04-11 | | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) |
+| 0.0.1 | 2025-04-11 | [#57586](https://github.com/airbytehq/airbyte/pull/57586) | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) |
 
 </details>
