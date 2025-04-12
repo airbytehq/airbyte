@@ -80,6 +80,7 @@ RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.18 | 2025-04-12 | [57968](https://github.com/airbytehq/airbyte/pull/57968) | Update dependencies |
 | 0.2.17 | 2025-04-05 | [57359](https://github.com/airbytehq/airbyte/pull/57359) | Update dependencies |
 | 0.2.16 | 2025-03-29 | [56772](https://github.com/airbytehq/airbyte/pull/56772) | Update dependencies |
 | 0.2.15 | 2025-03-22 | [56231](https://github.com/airbytehq/airbyte/pull/56231) | Update dependencies |
