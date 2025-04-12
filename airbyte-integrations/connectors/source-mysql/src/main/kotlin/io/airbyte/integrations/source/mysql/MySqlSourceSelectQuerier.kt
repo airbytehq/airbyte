@@ -26,7 +26,7 @@ class MySqlSourceSelectQuerier(
         jdbcConnectionFactory: JdbcConnectionFactory,
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ) : JdbcSelectQuerier.Result(jdbcConnectionFactory, q, parameters) {
+    ) : JdbcSelectQuerier.Result(jdbcConnectionFactory, q, parameters, socketConfig.skipJsonNodeAndUseFakeRecord) {
         override fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
@@ -47,6 +47,6 @@ class MySqlSourceSelectQuerier(
 
     override fun executeQuery(
         q: SelectQuery,
-        parameters: SelectQuerier.Parameters
+        parameters: SelectQuerier.Parameters,
     ): SelectQuerier.Result = MySqlResult(jdbcConnectionFactory, q, parameters)
 }
