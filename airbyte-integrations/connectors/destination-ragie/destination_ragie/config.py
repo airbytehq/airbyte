@@ -4,7 +4,7 @@
 import logging
 from typing import List, Optional, Dict, Any
 import json
-from pydantic import BaseModel, Field, validator, Json
+from pydantic import BaseModel, Field, field_validator, validator, Json
 
 # Configure logging for CDK usage
 logging.basicConfig(level=logging.INFO)
@@ -33,36 +33,56 @@ class RagieConfig(BaseModel):
         description="(Optional) Name of the partition (index/dataset) to write data into. Must be lowercase alphanumeric with '-' or '_'. If empty, uses default.",
         default="",
         pattern=r"^[a-z0-9_\-]*$", # Allow empty or matching pattern
-        order=2
+        order=2,
+        always_show= True
+
     )
 
     processing_mode: str = Field(
-        title="Processing Mode",
+        title="Mode",
         description="Processing mode for ingestion ('fast' or 'hi-res').",
         default="fast",
         enum=["fast", "hi-res"],
-        order=3
+        order=3,
+        always_show= True
+
     )
 
-    content_fields: Optional[List[str]] = Field(
+    content_fields: List[str] = Field(
         title="Content Fields",
         description="(Optional) List of fields from the record to use as the main document content. If empty, the entire record is used. Use dot notation for nested fields (e.g., 'user.profile').",
         default=[],
-        order=4
+        order=4,
+        examples=[
+      "description",
+      "message",
+      "details.notes"
+    ],
+        always_show= True
+
     )
 
-    metadata_fields: Optional[List[str]] = Field(
+    metadata_fields: List[str] = Field(
         title="Metadata Fields",
         description="(Optional) List of fields from the record to store as metadata. If empty, no record fields are added as metadata. Use dot notation.",
         default=[],
-        order=5
+        order=5,
+        examples=[
+      "user.id",
+      "user.email",
+      "user.profile.created_at"],
+        always_show= True
+
+      
     )
 
     metadata_static: Optional[Dict[str, Any]] = Field(
         title="Static Metadata (JSON)",
         description="(Optional) Static key-value pairs (as a JSON object) to add to every document's metadata.",
-        default={},
-        order=6
+        examples=[
+      '{"source": "airbyte", "ingestion_time": "2023-10-01T12:00:00Z"}'],
+        order=6,
+        default='',
     )
 
     document_name_field: Optional[str] = Field(
@@ -74,7 +94,7 @@ class RagieConfig(BaseModel):
 
     external_id_field: Optional[str] = Field(
         title="External ID Field",
-        description="(Optional) Field from the record to use as the unique 'external_id' for Ragie documents. Required for 'append-dedup' mode if primary keys are not defined.",
+        description="(Optional) Field from the record to use as the unique 'external_id' for Ragie documents.",
         default="",
         order=8
     )
@@ -89,7 +109,7 @@ class RagieConfig(BaseModel):
     )
 
     # Add validator if metadata_static needs to accept JSON string from UI
-    @validator('metadata_static', pre=True, always=True)
+    @field_validator('metadata_static', pre=True, always=True)
     def ensure_metadata_dict(cls, v):
         if isinstance(v, str):
             if not v:
