@@ -23,6 +23,7 @@ JAVA_OPTS=$JAVA_OPTS" --add-opens=java.base/java.lang=ALL-UNNAMED"
 JAVA_OPTS=$JAVA_OPTS" -Dorg.jooq.no-logo=true -Dorg.jooq.no-tips=true"
 export JAVA_OPTS
 
+yum install -y sudo && sudo dnf update -y && sudo dnf install -y mariadb105
 # Wrap run script in a script so that we can lazy evaluate the value of APPLICATION. APPLICATION is
 # set by the dockerfile that inherits base-java, so it cannot be evaluated when base-java is built.
 # We also need to make sure that stdin of the script is piped to the stdin of the java application.
@@ -31,3 +32,4 @@ if [[ $A = --write ]]; then
 else
   /airbyte/bin/"$APPLICATION" "$@"
 fi
+
