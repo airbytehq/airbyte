@@ -102,13 +102,23 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             .with_mounted_cache(self.pip_cache_path, pip_cache_volume, owner=self.USER)
             .with_env_variable("PIP_CACHE_DIR", self.pip_cache_path)
             # Upgrade pip to the expected version
-            .with_exec(["pip", "install", "--upgrade", "pip==24.0", "setuptools==70.0.0"])
+            .with_exec([
+                "pip",
+                "install",
+                "--upgrade",
+                "pip==24.0",
+                "setuptools==70.0.0",
+            ])
             # Declare poetry specific environment variables
             .with_env_variable("POETRY_VIRTUALENVS_CREATE", "false")
             .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
             .with_env_variable("POETRY_NO_INTERACTION", "1")
-            .with_exec(["pip", "install", "poetry==2.0.1"])
-            .with_exec(["sh", "-c", "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean"])
+            .with_exec(["pip", "install", "poetry==1.8.4"])
+            .with_exec([
+                "sh",
+                "-c",
+                "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean",
+            ])
             .with_exec(["sh", "-c", "apt-get install -y socat=1.7.4.4-2"])
             # Install CDK system dependencies
             .with_(self.install_cdk_system_dependencies())
