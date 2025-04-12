@@ -34,7 +34,13 @@ class FeedReader(
     private val log = KotlinLogging.logger {}
 
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed)
+        FeedBootstrap.create(
+            root.outputConsumer,
+            root.metaFieldDecorator,
+            root.stateManager,
+            feed,
+            root.unixDomainSocketOutputConsumerProvider
+        )
 
     /** Reads records from this [feed]. */
     suspend fun read() {
@@ -181,7 +187,10 @@ class FeedReader(
         while (true) {
             val status: PartitionReader.TryAcquireResourcesStatus =
             // Resource acquisition always executes serially.
-            root.resourceAcquisitionMutex.withLock {delay(1.seconds); partitionReader.tryAcquireResources() }
+            root.resourceAcquisitionMutex.withLock {
+                    delay(1.seconds)
+                    partitionReader.tryAcquireResources()
+                }
             if (status == PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
@@ -316,8 +325,8 @@ class FeedReader(
             return
         }
         log.info { "dev-nulling checkpoint of ${stateMessages.size} state message(s)" }
-        //for (stateMessage in stateMessages) {
-            // root.outputConsumer.accept(stateMessage)
-        //}
+        // for (stateMessage in stateMessages) {
+        // root.outputConsumer.accept(stateMessage)
+        // }
     }
 }

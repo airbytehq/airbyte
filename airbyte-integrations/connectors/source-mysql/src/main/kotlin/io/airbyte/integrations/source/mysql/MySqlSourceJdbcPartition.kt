@@ -334,7 +334,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
 
     override val completeState: OpaqueStateValue
         get() = // TODO: check here
-            MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+        MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorUpperBound,
                 stream,

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature.*
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
@@ -28,6 +27,7 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -43,7 +43,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
-import io.airbyte.protocol.Protocol
 
 class SocketInputFlow(
     private val config: DestinationConfiguration,
@@ -56,11 +55,15 @@ class SocketInputFlow(
 ) : Flow<PipelineEvent<StreamKey, DestinationRecordRaw>> {
     private val log = KotlinLogging.logger {}
     private val factory = DestinationMessageFactory(catalog, false)
-    private val devNullContext = if (config.inputSerializationFormat == DestinationConfiguration.InputSerializationFormat.DEVNULL) {
-        DevNullContext()
-    } else {
-        null
-    }
+    private val devNullContext =
+        if (
+            config.inputSerializationFormat ==
+                DestinationConfiguration.InputSerializationFormat.DEVNULL
+        ) {
+            DevNullContext()
+        } else {
+            null
+        }
 
     private val socketName = "${config.socketPrefix}$part"
 
@@ -73,7 +76,10 @@ class SocketInputFlow(
     private fun initSmileMapper(): ObjectMapper = configure(SmileMapper())
 
     private val mapper =
-        if (config.inputSerializationFormat == DestinationConfiguration.InputSerializationFormat.SMILE) {
+        if (
+            config.inputSerializationFormat ==
+                DestinationConfiguration.InputSerializationFormat.SMILE
+        ) {
             initSmileMapper()
         } else {
             initMapper()
@@ -136,73 +142,85 @@ class SocketInputFlow(
         val parser = Protocol.AirbyteMessage.parser()
         var count = 0L
         socketChannel.use { channel ->
-            Channels.newInputStream(channel).buffered(config.inputBufferByteSizePerSocket.toInt()).use { bufferedInputStream ->
-                val streamRecordCounts =
-                    catalog.streams.associate { it.descriptor to 0L }.toMutableMap()
-                when (config.inputSerializationFormat) {
-                    DestinationConfiguration.InputSerializationFormat.JSONL,
-                    DestinationConfiguration.InputSerializationFormat.SMILE -> {
-                        mapper
-                            .readerFor(AirbyteMessage::class.java)
-                            .readValues<AirbyteMessage>(bufferedInputStream)
-                            .forEach {
-                                val destinationMessage = factory.fromAirbyteMessage(it, "")
+            Channels.newInputStream(channel)
+                .buffered(config.inputBufferByteSizePerSocket.toInt())
+                .use { bufferedInputStream ->
+                    val streamRecordCounts =
+                        catalog.streams.associate { it.descriptor to 0L }.toMutableMap()
+                    when (config.inputSerializationFormat) {
+                        DestinationConfiguration.InputSerializationFormat.JSONL,
+                        DestinationConfiguration.InputSerializationFormat.SMILE -> {
+                            mapper
+                                .readerFor(AirbyteMessage::class.java)
+                                .readValues<AirbyteMessage>(bufferedInputStream)
+                                .forEach {
+                                    val destinationMessage = factory.fromAirbyteMessage(it, "")
+                                    handleDestinationMessage(
+                                        destinationMessage,
+                                        streamRecordCounts,
+                                        collector,
+                                        count++
+                                    )
+                                }
+                        }
+                        DestinationConfiguration.InputSerializationFormat.PROTOBUF -> {
+                            while (true) {
+                                val protoMessage =
+                                    parser.parseDelimitedFrom(bufferedInputStream) ?: break
+                                val destinationMessage =
+                                    factory.fromProtobufAirbyteMessage(
+                                        protoMessage,
+                                        mapper,
+                                        config.skipJsonOnProto
+                                    )
                                 handleDestinationMessage(
                                     destinationMessage,
                                     streamRecordCounts,
                                     collector,
-                                    count ++
+                                    count++
                                 )
                             }
-                    }
-                    DestinationConfiguration.InputSerializationFormat.PROTOBUF -> {
-                        while (true) {
-                            val protoMessage =
-                                parser.parseDelimitedFrom(bufferedInputStream) ?: break
-                            val destinationMessage = factory.fromProtobufAirbyteMessage(protoMessage, mapper,
-                                config.skipJsonOnProto)
-                            handleDestinationMessage(destinationMessage, streamRecordCounts, collector, count ++)
                         }
-                    }
-                    DestinationConfiguration.InputSerializationFormat.DEVNULL -> {
-                        var bytes = 0L
-                        if (devNullContext != null) {
-                            while (true) {
-                                val bytesRead = bufferedInputStream.read(devNullContext.byteBuffer)
-                                if (bytesRead == -1) {
-                                    log.info {
-                                        "dev-nulled a total of $bytes bytes"
+                        DestinationConfiguration.InputSerializationFormat.DEVNULL -> {
+                            var bytes = 0L
+                            if (devNullContext != null) {
+                                while (true) {
+                                    val bytesRead =
+                                        bufferedInputStream.read(devNullContext.byteBuffer)
+                                    if (bytesRead == -1) {
+                                        log.info { "dev-nulled a total of $bytes bytes" }
+                                        break
                                     }
-                                    break
+                                    bytes += bytesRead
+                                    if (++count % 10_000 == 0L) {
+                                        log.info { "dev-nulled $bytes bytes" }
+                                    }
                                 }
-                                bytes += bytesRead
-                                if (++ count % 10_000 == 0L) {
-                                    log.info { "dev-nulled $bytes bytes" }
+                                catalog.streams.forEach {
+                                    if (
+                                        streamCompletionCounts[it.descriptor]?.decrementAndGet() ==
+                                            0
+                                    ) {
+                                        syncManager
+                                            .getStreamManager(it.descriptor)
+                                            .markEndOfStream(true)
+                                    }
+                                    collector.emit(PipelineEndOfStream(it.descriptor))
                                 }
+                            } else {
+                                throw IllegalStateException(
+                                    "DEVNULL context is null, but DEVNULL format is set"
+                                )
                             }
-                            catalog.streams.forEach {
-                                if (
-                                    streamCompletionCounts[it.descriptor]
-                                        ?.decrementAndGet() == 0
-                                ) {
-                                    syncManager.getStreamManager(it.descriptor)
-                                        .markEndOfStream(true)
-                                }
-                                collector.emit(PipelineEndOfStream(it.descriptor))
-                            }
-                        } else {
-                            throw IllegalStateException(
-                                "DEVNULL context is null, but DEVNULL format is set"
-                            )
                         }
                     }
                 }
-            }
         }
-        if (config.inputSerializationFormat != DestinationConfiguration.InputSerializationFormat.DEVNULL) {
-            log.info {
-                "Socket $socketName closed after reading $count messages"
-            }
+        if (
+            config.inputSerializationFormat !=
+                DestinationConfiguration.InputSerializationFormat.DEVNULL
+        ) {
+            log.info { "Socket $socketName closed after reading $count messages" }
         }
     }
 
@@ -231,7 +249,6 @@ class SocketInputFlow(
                     )
                 )
             }
-
             is DestinationRecordStreamComplete -> {
                 log.info {
                     "Stream complete message received for ${destinationMessage.stream.descriptor}"
@@ -252,12 +269,10 @@ class SocketInputFlow(
                 }
                 collector.emit(PipelineEndOfStream(destinationMessage.stream.descriptor))
             }
-
             is GlobalCheckpoint,
             is StreamCheckpoint -> {
                 log.warn { "Ignoring state message " }
             }
-
             else ->
                 throw IllegalStateException(
                     "Unsupported message type ${destinationMessage::class.java}"

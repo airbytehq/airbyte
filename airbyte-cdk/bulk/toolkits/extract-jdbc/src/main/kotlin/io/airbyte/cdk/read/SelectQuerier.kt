@@ -55,8 +55,13 @@ class JdbcSelectQuerier(
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters,
-        skipMarshalingToJson = socketConfig.skipJsonNodeAndUseFakeRecord)
+    ): SelectQuerier.Result =
+        Result(
+            jdbcConnectionFactory,
+            q,
+            parameters,
+            skipMarshalingToJson = socketConfig.skipJsonNodeAndUseFakeRecord
+        )
 
     data class ResultRow(
         override var data: ObjectNode = Jsons.objectNode(),
@@ -148,16 +153,24 @@ class JdbcSelectQuerier(
                             is ArrayAirbyteSchemaType -> TODO()
                             LeafAirbyteSchemaType.BOOLEAN -> rs?.getBoolean(colIdx)
                             LeafAirbyteSchemaType.STRING -> rs?.getString(colIdx)
-                            LeafAirbyteSchemaType.BINARY -> { /* do nothing */ }
+                            LeafAirbyteSchemaType.BINARY -> {
+                                /* do nothing */
+                            }
                             LeafAirbyteSchemaType.DATE -> rs?.getDate(colIdx)
                             LeafAirbyteSchemaType.TIME_WITH_TIMEZONE -> rs?.getTime(colIdx)
                             LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE -> rs?.getTime(colIdx)
-                            LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> rs?.getTimestamp(colIdx)
-                            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> rs?.getTimestamp(colIdx)
+                            LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE ->
+                                rs?.getTimestamp(colIdx)
+                            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE ->
+                                rs?.getTimestamp(colIdx)
                             LeafAirbyteSchemaType.INTEGER -> rs?.getInt(colIdx)
                             LeafAirbyteSchemaType.NUMBER -> rs?.getDouble(colIdx)
-                            LeafAirbyteSchemaType.NULL -> { /* do nothing */ }
-                            LeafAirbyteSchemaType.JSONB -> { /* do nothing */ }
+                            LeafAirbyteSchemaType.NULL -> {
+                                /* do nothing */
+                            }
+                            LeafAirbyteSchemaType.JSONB -> {
+                                /* do nothing */
+                            }
                         }
                     }
                 } catch (e: Exception) {

@@ -184,7 +184,16 @@ class SyncBeanFactory {
                 .associate { it.descriptor to AtomicInteger(config.numSockets) }
                 .let { ConcurrentHashMap(it) }
         return (0 until config.numSockets)
-            .map { SocketInputFlow(config, catalog, it, completions, streamCompleteCountdown, syncManager) }
+            .map {
+                SocketInputFlow(
+                    config,
+                    catalog,
+                    it,
+                    completions,
+                    streamCompleteCountdown,
+                    syncManager
+                )
+            }
             .toTypedArray()
     }
 }

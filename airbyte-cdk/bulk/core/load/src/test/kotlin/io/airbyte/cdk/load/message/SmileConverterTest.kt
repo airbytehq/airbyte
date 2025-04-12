@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.core.JsonGenerator
@@ -28,12 +32,14 @@ class SmileConverterTest {
         return objectMapper
     }
 
-    val SMILE_WRITER = initSmileMapper()
-        .writerFor(AirbyteMessage::class.java)
-        .with(MinimalPrettyPrinter(System.lineSeparator()))
+    val SMILE_WRITER =
+        initSmileMapper()
+            .writerFor(AirbyteMessage::class.java)
+            .with(MinimalPrettyPrinter(System.lineSeparator()))
 
-    val jsonlFile = javaClass.getResource("/test-data-1-stream-100k-rows.json")
-        ?: error("test-data-1-stream-100k-rows.jsonl not found")
+    val jsonlFile =
+        javaClass.getResource("/test-data-1-stream-100k-rows.json")
+            ?: error("test-data-1-stream-100k-rows.jsonl not found")
     val outFile = File("test-data-1-stream-100k.smile3")
     val outputStream = Files.newOutputStream(outFile.toPath())
 

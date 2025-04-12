@@ -23,7 +23,6 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -119,7 +118,6 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
-@Named("stdoutOutputConsumer")
 open class StdoutOutputConsumer(
     val stdout: PrintStream,
     val clock: Clock,
@@ -198,7 +196,7 @@ open class StdoutOutputConsumer(
     }
 
     open fun withLockFlushRecord() {
-       withLockFlush()
+        withLockFlush()
     }
     override fun accept(record: AirbyteRecordMessage) {
         // The serialization of RECORD messages can become a performance bottleneck for source
@@ -212,31 +210,31 @@ open class StdoutOutputConsumer(
         // For this reason, this method builds and reuses a JSON template for each stream.
         // Then, for each record, it serializes just "data" and "meta" to populate the template.
         val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
-//        synchronized(this) {
-            // Write a newline character to the buffer if it's not empty.
-            withLockMaybeWriteNewline()
-            // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
-            buffer.write(template.prefix)
-            // Serialize the record data ObjectNode to JSON, writing it to the buffer.
-            Jsons.writeTree(jsonGenerator, record.data)
-            jsonGenerator.flush()
-            // If the record has a AirbyteRecordMessageMeta instance set,
-            // write ',"meta":' followed by the serialized meta.
-            val meta: AirbyteRecordMessageMeta? = record.meta
-            if (meta != null) {
-                buffer.write(metaPrefixBytes)
-                sequenceWriter.write(meta)
-                sequenceWriter.flush()
-            }
-            // Write ',"emitted_at":...}}'.
-            buffer.write(template.suffix)
-            // Flush the buffer to stdout only once it has reached a certain size.
-            // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
-            // which otherwise becomes very apparent when lots of tiny records are involved.
-            if (buffer.size() >= bufferByteSizeThresholdForFlush) {
-                withLockFlushRecord()
-            }
-//        }
+        //        synchronized(this) {
+        // Write a newline character to the buffer if it's not empty.
+        withLockMaybeWriteNewline()
+        // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
+        buffer.write(template.prefix)
+        // Serialize the record data ObjectNode to JSON, writing it to the buffer.
+        Jsons.writeTree(jsonGenerator, record.data)
+        jsonGenerator.flush()
+        // If the record has a AirbyteRecordMessageMeta instance set,
+        // write ',"meta":' followed by the serialized meta.
+        val meta: AirbyteRecordMessageMeta? = record.meta
+        if (meta != null) {
+            buffer.write(metaPrefixBytes)
+            sequenceWriter.write(meta)
+            sequenceWriter.flush()
+        }
+        // Write ',"emitted_at":...}}'.
+        buffer.write(template.suffix)
+        // Flush the buffer to stdout only once it has reached a certain size.
+        // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
+        // which otherwise becomes very apparent when lots of tiny records are involved.
+        if (buffer.size() >= bufferByteSizeThresholdForFlush) {
+            withLockFlushRecord()
+        }
+        //        }
     }
 
     protected val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()

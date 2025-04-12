@@ -40,7 +40,6 @@ import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import scala.math.BigInt
 
 @Primary
 @Singleton
@@ -408,11 +407,14 @@ class MySqlSourceJdbcPartitionFactory(
     ): List<MySqlSourceJdbcPartition> {
         log.info { "Splitting partition $unsplitPartition" }
         val splitPartitionBoundries: List<MySqlSourceJdbcStreamStateValue> by lazy {
-            opaqueStateValues.map { Jsons.treeToValue(it, MySqlSourceJdbcStreamStateValue::class.java) }
+            opaqueStateValues.map {
+                Jsons.treeToValue(it, MySqlSourceJdbcStreamStateValue::class.java)
+            }
         }
 
         return when (unsplitPartition) {
-            is MySqlSourceJdbcSnapshotWithCursorPartition -> unsplitPartition.split(splitPartitionBoundries)
+            is MySqlSourceJdbcSnapshotWithCursorPartition ->
+                unsplitPartition.split(splitPartitionBoundries)
             else -> listOf(unsplitPartition) // TEMP
         }
     }
@@ -422,8 +424,7 @@ class MySqlSourceJdbcPartitionFactory(
     ): List<MySqlSourceJdbcResumablePartition> {
         var inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
-        inners =
-            redoInners(inners, 6658729623L/*50827485*/)
+        inners = redoInners(inners, 6658729623L /*50827485*/)
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lBound, uBound) ->
@@ -447,20 +448,24 @@ class MySqlSourceJdbcPartitionFactory(
         for (i in 1..inners.size) {
             queryPlan.add((i) * eachStep)
         }
-        return inners.mapIndexed { index, inner -> listOf(stateValueToJsonNode(Field("id", BigIntegerFieldType), queryPlan[index].toString())) }
+        return inners.mapIndexed { index, inner ->
+            listOf(
+                stateValueToJsonNode(Field("id", BigIntegerFieldType), queryPlan[index].toString())
+            )
+        }
     }
 
     private fun MySqlSourceJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? =
         pkName?.let { pkName ->
             val fields = stream.configuredPrimaryKey ?: listOf()
-            if (!fields.map {it.id}.toSet().contains(pkName)) {
-                handler.accept(
-                    InvalidPrimaryKey(stream.id, listOf(pkName))
-                )
+            if (!fields.map { it.id }.toSet().contains(pkName)) {
+                handler.accept(InvalidPrimaryKey(stream.id, listOf(pkName)))
                 null
             }
 
-            fields.associateWith { stateValueToJsonNode(fields.first(), pkValue) } //TODO: check here
-        } ?: mapOf()
-
+            fields.associateWith {
+                stateValueToJsonNode(fields.first(), pkValue)
+            } // TODO: check here
+        }
+            ?: mapOf()
 }

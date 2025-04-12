@@ -186,31 +186,23 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaDefault("false")
     val tmpSkipSynchronizedCounts: Boolean? = null
 
-    @JsonProperty("buffer_byte_size")
-    @JsonSchemaDefault("8192")
-    val bufferByteSize: Int? = null
+    @JsonProperty("buffer_byte_size") @JsonSchemaDefault("8192") val bufferByteSize: Int? = null
 
-    @JsonProperty("output_format")
-    @JsonSchemaDefault("jsonl")
-    val outputFormat: String? = null
+    @JsonProperty("output_format") @JsonSchemaDefault("jsonl") val outputFormat: String? = null
 
     @JsonProperty("dev_null_after_serialization")
     @JsonSchemaDefault("false")
     val devNullAfterSerialization: Boolean? = null
 
-    @JsonProperty("input_channel_capacity_rows")
-    val inputChannelCapacity: Int? = 20_000
+    @JsonProperty("input_channel_capacity_rows") val inputChannelCapacity: Int? = 20_000
 
     @JsonProperty("dev_null_before_posting")
     @JsonSchemaDefault("false")
     val devNullBeforePosting: Boolean? = null
 
-    @JsonProperty("num_sockets")
-    val numSockets: Int? = 1
+    @JsonProperty("num_sockets") val numSockets: Int? = 1
 
-    @JsonProperty("write_async")
-    @JsonSchemaDefault("false")
-    val writeAsync: Boolean? = false
+    @JsonProperty("write_async") @JsonSchemaDefault("false") val writeAsync: Boolean? = false
 
     @JsonProperty("skip_json_node_and_use_fake_record")
     @JsonSchemaDefault("false")
@@ -404,4 +396,3 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
             else -> throw ConfigErrorException("invalid value $method")
         }
 }
-

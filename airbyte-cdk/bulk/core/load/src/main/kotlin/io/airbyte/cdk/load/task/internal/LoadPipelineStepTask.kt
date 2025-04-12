@@ -96,11 +96,14 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
             try {
                 when (input) {
                     is PipelineMessage -> {
-//                        if (stateStore.streamsEnded.contains(input.key.stream)) {
-//                            throw IllegalStateException(
-//                                "$taskName[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
-//                            )
-//                        }
+                        //                        if
+                        // (stateStore.streamsEnded.contains(input.key.stream)) {
+                        //                            throw IllegalStateException(
+                        //                                "$taskName[$part] received input for
+                        // complete stream ${input.key.stream}. This indicates data was processed
+                        // out of order and future bookkeeping might be corrupt. Failing hard."
+                        //                            )
+                        //                        }
                         // Get or create the accumulator state associated w/ the input key.
                         val stateWithCounts =
                             stateStore.stateWithCounts
@@ -311,12 +314,14 @@ class LoadPipelineStepTaskFactory(
     val partToSocket: List<Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>>
     init {
         if (config.numSockets < loadStrategy.inputPartitions) {
-            val sharedFlows = socketInputFlows
-                .map { it.shareIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, 1024) }
-                .toTypedArray()
-            val assignments = (0 until loadStrategy.inputPartitions)
-                .map { it % socketInputFlows.size }
-                .toList()
+            val sharedFlows =
+                socketInputFlows
+                    .map {
+                        it.shareIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, 1024)
+                    }
+                    .toTypedArray()
+            val assignments =
+                (0 until loadStrategy.inputPartitions).map { it % socketInputFlows.size }.toList()
             log.info {
                 "${config.numSockets} < ${loadStrategy.inputPartitions} workers, constructing fan-out assignments $assignments"
             }
@@ -362,29 +367,26 @@ class LoadPipelineStepTaskFactory(
         part: Int,
         numWorkers: Int,
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
-        val flow = if (config.numSockets == numWorkers) {
-            log.info {
-                "${config.numSockets} == $numWorkers workers, so using 1<->1"
+        val flow =
+            if (config.numSockets == numWorkers) {
+                log.info { "${config.numSockets} == $numWorkers workers, so using 1<->1" }
+                // 1<->1 socket to worker
+                socketInputFlows[part]
+            } else if (config.numSockets > numWorkers) {
+                val socketsToUse = (part until config.numSockets step numWorkers).toList()
+                log.info {
+                    "${config.numSockets} > $numWorkers workers, so using fan-in (worker $part using sockets $socketsToUse)"
+                }
+                // Fan-in by merging socket flows
+                val sockets = socketsToUse.map { socketInputFlows[it] }.toTypedArray()
+                merge(*sockets)
+            } else {
+                // Fan-out by using previously started shared flows
+                log.info {
+                    "${config.numSockets} < $numWorkers workers, so using fan-out on shared flow $part"
+                }
+                partToSocket[part]
             }
-            // 1<->1 socket to worker
-            socketInputFlows[part]
-        } else if (config.numSockets > numWorkers) {
-            val socketsToUse = (part until config.numSockets step numWorkers).toList()
-            log.info {
-                "${config.numSockets} > $numWorkers workers, so using fan-in (worker $part using sockets $socketsToUse)"
-            }
-            // Fan-in by merging socket flows
-            val sockets = socketsToUse
-                .map { socketInputFlows[it] }
-                .toTypedArray()
-            merge(*sockets)
-        } else {
-            // Fan-out by using previously started shared flows
-            log.info {
-                "${config.numSockets} < $numWorkers workers, so using fan-out on shared flow $part"
-            }
-            partToSocket[part]
-        }
 
         return create(
             batchAccumulator,

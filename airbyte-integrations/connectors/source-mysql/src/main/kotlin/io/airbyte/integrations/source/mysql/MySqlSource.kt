@@ -4,11 +4,9 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.AirbyteSourceRunner
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 private val log = KotlinLogging.logger {}
+
 object MySqlSource {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -17,7 +15,6 @@ object MySqlSource {
             if (index in listOf(2, 4, 6)) {
                 log.info { (File(arg).readText()) }
             }
-
         }
         AirbyteSourceRunner.run(*args)
     }

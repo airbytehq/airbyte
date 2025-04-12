@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
@@ -30,6 +31,8 @@ import io.airbyte.cdk.load.data.toAirbyteValues
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.protocol.Protocol
+import io.airbyte.protocol.Protocol.AirbyteMessage as AirbyteMessageProto
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -47,9 +50,6 @@ import jakarta.inject.Singleton
 import java.math.BigInteger
 import java.time.OffsetDateTime
 import java.util.UUID
-import io.airbyte.protocol.Protocol.AirbyteMessage as AirbyteMessageProto
-import com.fasterxml.jackson.databind.ObjectMapper
-import io.airbyte.protocol.Protocol
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -196,24 +196,21 @@ data class DestinationRecord(
         message: AirbyteMessage,
         serialized: String,
         schema: AirbyteType
-    ): this(
+    ) : this(
         stream,
         message.record.data,
         message.record.emittedAt,
         message,
         serialized,
         schema,
-        message.record.meta?.let {
-            meta -> Meta(meta.changes.map {
-                Meta.Change(it.field, it.change, it.reason)
-            })
+        message.record.meta?.let { meta ->
+            Meta(meta.changes.map { Meta.Change(it.field, it.change, it.reason) })
         }
     )
 
-    override fun asProtocolMessage(): AirbyteMessage = message ?:
-        throw IllegalStateException(
-            "This record was not sourced from a protocol message."
-        )
+    override fun asProtocolMessage(): AirbyteMessage =
+        message
+            ?: throw IllegalStateException("This record was not sourced from a protocol message.")
 
     fun asRecordSerialized(): DestinationRecordSerialized =
         DestinationRecordSerialized(stream, serialized)
@@ -327,14 +324,12 @@ data class DestinationRecordRaw(
         rawData: AirbyteMessage,
         serialized: String,
         schema: AirbyteType
-    ): this(
+    ) : this(
         stream,
         rawData.record.data,
         rawData.record.emittedAt,
-        rawData.record.meta?.let {
-            meta -> Meta(meta.changes.map {
-                Meta.Change(it.field, it.change, it.reason)
-            })
+        rawData.record.meta?.let { meta ->
+            Meta(meta.changes.map { Meta.Change(it.field, it.change, it.reason) })
         },
         serialized,
         schema
@@ -702,14 +697,14 @@ class DestinationMessageFactory(
                             emittedAtMs = message.record.emittedAt,
                             serialized = serialized,
                             fileMessage =
-                            DestinationFile.AirbyteRecordMessageFile(
-                                fileUrl = fileMessage["file_url"] as String?,
-                                bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
-                                fileRelativePath = fileMessage["file_relative_path"] as String?,
-                                modified =
-                                toLong(fileMessage["modified"], "message.record.modified"),
-                                sourceFileUrl = fileMessage["source_file_url"] as String?
-                            )
+                                DestinationFile.AirbyteRecordMessageFile(
+                                    fileUrl = fileMessage["file_url"] as String?,
+                                    bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
+                                    fileRelativePath = fileMessage["file_relative_path"] as String?,
+                                    modified =
+                                        toLong(fileMessage["modified"], "message.record.modified"),
+                                    sourceFileUrl = fileMessage["source_file_url"] as String?
+                                )
                         )
                     } catch (e: Exception) {
                         throw IllegalArgumentException(
@@ -721,17 +716,15 @@ class DestinationMessageFactory(
                         stream,
                         message.record.data,
                         message.record.emittedAt,
-                        message, serialized,
+                        message,
+                        serialized,
                         stream.schema,
-                        message.record.meta?.let {
-                            meta -> Meta(meta.changes.map {
-                                Meta.Change(it.field, it.change, it.reason)
-                            })
+                        message.record.meta?.let { meta ->
+                            Meta(meta.changes.map { Meta.Change(it.field, it.change, it.reason) })
                         }
                     )
                 }
             }
-
             AirbyteMessage.Type.TRACE -> {
                 val status = message.trace.streamStatus
                 val stream =
@@ -741,7 +734,7 @@ class DestinationMessageFactory(
                     )
                 if (
                     message.trace.type == null ||
-                    message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
+                        message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
                 ) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
@@ -756,7 +749,6 @@ class DestinationMessageFactory(
                                     message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }
-
                         AirbyteStreamStatus.INCOMPLETE ->
                             if (fileTransferEnabled) {
                                 DestinationFileStreamIncomplete(
@@ -769,55 +761,54 @@ class DestinationMessageFactory(
                                     message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }
-
                         else -> Undefined
                     }
                 } else {
                     Undefined
                 }
             }
-
             AirbyteMessage.Type.STATE -> {
                 when (message.state.type) {
                     AirbyteStateMessage.AirbyteStateType.STREAM ->
                         StreamCheckpoint(
                             checkpoint = fromAirbyteStreamState(message.state.stream),
                             sourceStats =
-                            message.state.sourceStats?.recordCount?.let {
-                                Stats(recordCount = it.toLong())
-                            },
+                                message.state.sourceStats?.recordCount?.let {
+                                    Stats(recordCount = it.toLong())
+                                },
                             additionalProperties = message.state.additionalProperties,
                         )
-
                     null,
                     AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                         GlobalCheckpoint(
                             sourceStats =
-                            message.state.sourceStats?.recordCount?.let {
-                                Stats(recordCount = it.toLong())
-                            },
+                                message.state.sourceStats?.recordCount?.let {
+                                    Stats(recordCount = it.toLong())
+                                },
                             state = message.state.global.sharedState,
                             checkpoints =
-                            message.state.global.streamStates.map {
-                                fromAirbyteStreamState(it)
-                            },
+                                message.state.global.streamStates.map {
+                                    fromAirbyteStreamState(it)
+                                },
                             additionalProperties = message.state.additionalProperties,
                             originalTypeField = message.state.type,
                         )
-
                     else -> // TODO: Do we still need to handle LEGACY?
-                        Undefined
+                    Undefined
                 }
             }
-
             else -> Undefined
         }
     }
 
-    private val fakeJsonNode = """{"id":1,"age":50,"name":"Tomoko","email":"corrections1854+2@live.com","title":"Prof.","gender":"Female","height":1.53,"weight":61,"language":"Czech","global_id":13679213,"telephone":"357-652-0612","blood_type":"O+","created_at":"2009-02-27T13:44:37z","occupation":"MachineSetter","updated_at":"2009-07-12T16:12:23z","nationality":"Cameroonian","academic_degree":"Bachelor"}"""
-        .deserializeToNode()
+    private val fakeJsonNode =
+        """{"id":1,"age":50,"name":"Tomoko","email":"corrections1854+2@live.com","title":"Prof.","gender":"Female","height":1.53,"weight":61,"language":"Czech","global_id":13679213,"telephone":"357-652-0612","blood_type":"O+","created_at":"2009-02-27T13:44:37z","occupation":"MachineSetter","updated_at":"2009-07-12T16:12:23z","nationality":"Cameroonian","academic_degree":"Bachelor"}""".deserializeToNode()
 
-    fun fromProtobufAirbyteMessage(airbyteMessage: AirbyteMessageProto, objectMapper: ObjectMapper, skipJsonDeserialization: Boolean): DestinationMessage {
+    fun fromProtobufAirbyteMessage(
+        airbyteMessage: AirbyteMessageProto,
+        objectMapper: ObjectMapper,
+        skipJsonDeserialization: Boolean
+    ): DestinationMessage {
         return when (airbyteMessage.type) {
             Protocol.AirbyteMessageType.RECORD -> {
                 val stream =
@@ -831,16 +822,24 @@ class DestinationMessageFactory(
                     serialized = airbyteMessage.toString(),
                     schema = stream.schema,
                     emittedAtMs = airbyteMessage.record.emittedAt,
-                    data = if (skipJsonDeserialization) {
-                        fakeJsonNode
-                    } else {
-                        objectMapper.readTree(airbyteMessage.record.data.newInput())
-                    },
-                    meta = airbyteMessage.record.meta?.let {
-                        meta -> Meta( meta.itemsList.map {
-                            Meta.Change(it.field, Change.valueOf(it.change.toString()), Reason.valueOf(it.reason.toString()))
-                        })
-                    }
+                    data =
+                        if (skipJsonDeserialization) {
+                            fakeJsonNode
+                        } else {
+                            objectMapper.readTree(airbyteMessage.record.data.newInput())
+                        },
+                    meta =
+                        airbyteMessage.record.meta?.let { meta ->
+                            Meta(
+                                meta.itemsList.map {
+                                    Meta.Change(
+                                        it.field,
+                                        Change.valueOf(it.change.toString()),
+                                        Reason.valueOf(it.reason.toString())
+                                    )
+                                }
+                            )
+                        }
                 )
             }
             Protocol.AirbyteMessageType.TRACE_MESSAGE -> {
@@ -854,7 +853,6 @@ class DestinationMessageFactory(
                     emittedAtMs = airbyteMessage.trace.emittedAt
                 )
             }
-
             else -> Undefined
         }
     }

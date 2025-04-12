@@ -207,19 +207,19 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
         // TEMPORARY FOR SOCKETS TEST
-//        val inputConsumerTask =
-//            inputConsumerTaskFactory.make(
-//                catalog = catalog,
-//                inputFlow = inputFlow,
-//                recordQueueSupplier = recordQueueSupplier,
-//                checkpointQueue = checkpointQueue,
-//                fileTransferQueue = fileTransferQueue,
-//                destinationTaskLauncher = this,
-//                recordQueueForPipeline = recordQueueForPipeline,
-//                loadPipeline = loadPipeline,
-//                partitioner = partitioner,
-//                openStreamQueue = openStreamQueue,
-//
+        //        val inputConsumerTask =
+        //            inputConsumerTaskFactory.make(
+        //                catalog = catalog,
+        //                inputFlow = inputFlow,
+        //                recordQueueSupplier = recordQueueSupplier,
+        //                checkpointQueue = checkpointQueue,
+        //                fileTransferQueue = fileTransferQueue,
+        //                destinationTaskLauncher = this,
+        //                recordQueueForPipeline = recordQueueForPipeline,
+        //                loadPipeline = loadPipeline,
+        //                partitioner = partitioner,
+        //                openStreamQueue = openStreamQueue,
+        //
         // launch(inputConsumerTask)
 
         // Launch the client interface setup task

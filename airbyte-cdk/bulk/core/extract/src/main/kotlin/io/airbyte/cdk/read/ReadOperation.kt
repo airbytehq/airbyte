@@ -15,15 +15,11 @@ import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
-import jakarta.inject.Named
 import jakarta.inject.Singleton
-import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @Singleton
@@ -52,11 +48,14 @@ class ReadOperation(
                 outputConsumer,
                 metaFieldDecorator,
                 partitionsCreatorFactories,
+                unixDomainSocketOutputConsumerProvider
             )
 
-        runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
-            unixDomainSocketOutputConsumerProvider.startAll()
-            rootReader.read { /*no-op*/ }
+        unixDomainSocketOutputConsumerProvider.use { socketProvider ->
+            runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
+                socketProvider.startAll()
+                rootReader.read { /*no-op*/}
+            }
         }
     }
 

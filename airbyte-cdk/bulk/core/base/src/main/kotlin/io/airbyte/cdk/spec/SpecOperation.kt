@@ -8,7 +8,6 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.net.URI
 
@@ -18,7 +17,7 @@ class SpecOperation(
     @Value("\${airbyte.connector.metadata.documentation-url}") val documentationUrl: String,
     val configJsonObjectSupplier: ConfigurationSpecificationSupplier<*>,
     val extendSpecification: SpecificationExtender,
-    @Named("stdoutOutputConsumer") val outputConsumer: OutputConsumer,
+    val outputConsumer: OutputConsumer,
 ) : Operation {
     override fun execute() {
         val spec =

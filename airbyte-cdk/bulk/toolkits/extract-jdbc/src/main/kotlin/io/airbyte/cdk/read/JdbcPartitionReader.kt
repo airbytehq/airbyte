@@ -6,25 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedReader
-import java.io.InputStream
-import java.nio.file.attribute.PosixFilePermissions
-import java.time.Clock
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
-import kotlin.io.path.Path
-import kotlin.io.path.createTempFile
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.fileSize
-import kotlin.io.path.getLastModifiedTime
-import kotlin.io.path.pathString
-import kotlin.text.Charsets.UTF_8
-import kotlin.time.measureTime
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.future.await
 
 /** Base class for JDBC implementations of [PartitionReader]. */
 sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
@@ -56,13 +43,12 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     suspend fun out(row: SelectQuerier.ResultRow) {
-        /*if (partition.skipWritingAndSerialization || partition.skipWriting) {
-            if(++devNulledRows % 100_000L == 0L) {
-                log.info { "Discarded $devNulledRows rows" }
-            }
-            return
-        }*/
-        streamRecordConsumer.acceptAsync(row.data, row.changes, sharedState.configuration.maxConcurrency, partitionNum)
+        streamRecordConsumer.acceptAsync(
+            row.data,
+            row.changes,
+            sharedState.configuration.maxConcurrency,
+            partitionNum
+        )
     }
 
     override fun setNum(num: Long) {
@@ -88,7 +74,6 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
     private val log = KotlinLogging.logger {}
-
 
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()

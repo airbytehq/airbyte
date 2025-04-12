@@ -56,12 +56,13 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
     private val objectSizeBytes = loader.objectSizeBytes
 
-    private val garbagePart = if (loader.useGarbagePart) {
-        val prng = Random(System.currentTimeMillis())
-        prng.nextBytes(loader.partSizeBytes.toInt())
-    } else {
-        null
-    }
+    private val garbagePart =
+        if (loader.useGarbagePart) {
+            val prng = Random(System.currentTimeMillis())
+            prng.nextBytes(loader.partSizeBytes.toInt())
+        } else {
+            null
+        }
 
     data class State<T : OutputStream>(
         val stream: DestinationStream,
@@ -124,14 +125,14 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         input: DestinationRecordRaw,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
-        val size = if (!loader.useGarbagePart) {
-            state.writer.accept(input)
-            state.writer.bufferSize
-        } else {
-            372
-        }
-        val dataSufficient =
-            size >= clampedPartSizeBytes || batchSizeOverride != null
+        val size =
+            if (!loader.useGarbagePart) {
+                state.writer.accept(input)
+                state.writer.bufferSize
+            } else {
+                372
+            }
+        val dataSufficient = size >= clampedPartSizeBytes || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)
             if (part.part.isFinal) {
