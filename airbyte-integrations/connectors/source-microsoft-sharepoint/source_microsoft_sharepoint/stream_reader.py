@@ -10,98 +10,30 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Any, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Tuple
 
 import requests
 import smart_open
-from msal import ConfidentialClientApplication
 from office365.entity_collection import EntityCollection
-from office365.graph_client import GraphClient
+from office365.onedrive.driveitems.driveItem import DriveItem
 from office365.onedrive.drives.drive import Drive
-from office365.runtime.auth.token_response import TokenResponse
-from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.search.service import SearchService
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
+from source_microsoft_sharepoint.sharepoint_base_reader import SharepointBaseReader
 
-from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .utils import (
-    FolderNotFoundException,
-    MicrosoftSharePointRemoteFile,
-    execute_query_with_retry,
-    filter_http_urls,
-    get_site_prefix,
-)
+from .exceptions import ErrorFetchingMetadata
+from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
 
 
 SITE_TITLE = "Title"
 SITE_PATH = "Path"
 
 
-class SourceMicrosoftSharePointClient:
-    """
-    Client to interact with Microsoft SharePoint.
-    """
-
-    def __init__(self, config: SourceMicrosoftSharePointSpec):
-        self.config = config
-        self._client = None
-        self._msal_app = ConfidentialClientApplication(
-            self.config.credentials.client_id,
-            authority=f"https://login.microsoftonline.com/{self.config.credentials.tenant_id}",
-            client_credential=self.config.credentials.client_secret,
-        )
-
-    @property
-    def client(self):
-        """Initializes and returns a GraphClient instance."""
-        if not self.config:
-            raise ValueError("Configuration is missing; cannot create the Office365 graph client.")
-        if not self._client:
-            self._client = GraphClient(self._get_access_token)
-        return self._client
-
-    @staticmethod
-    def _get_scope(tenant_prefix: str = None):
-        """
-        Returns the scope for the access token.
-        We use admin site to retrieve objects like Sites.
-        """
-        if tenant_prefix:
-            admin_site_url = f"https://{tenant_prefix}-admin.sharepoint.com"
-            return [f"{admin_site_url}/.default"]
-        return ["https://graph.microsoft.com/.default"]
-
-    def _get_access_token(self, tenant_prefix: str = None):
-        """Retrieves an access token for SharePoint access."""
-        scope = self._get_scope(tenant_prefix)
-        refresh_token = self.config.credentials.refresh_token if hasattr(self.config.credentials, "refresh_token") else None
-
-        if refresh_token:
-            result = self._msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
-        else:
-            result = self._msal_app.acquire_token_for_client(scopes=scope)
-
-        if "access_token" not in result:
-            error_description = result.get("error_description", "No error description provided.")
-            message = f"Failed to acquire access token. Error: {result.get('error')}. Error description: {error_description}."
-            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-
-        return result
-
-    def get_token_response_object_wrapper(self, tenant_prefix: str):
-        def get_token_response_object():
-            token = self._get_access_token(tenant_prefix=tenant_prefix)
-            return TokenResponse.from_json(token)
-
-        return get_token_response_object
-
-
-class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
+class SourceMicrosoftSharePointStreamReader(SharepointBaseReader, AbstractFileBasedStreamReader):
     """
     A stream reader for Microsoft SharePoint. Handles file enumeration and reading from SharePoint.
     """
@@ -110,62 +42,14 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     FILE_SIZE_LIMIT = 1_500_000_000
 
     def __init__(self):
-        super().__init__()
-        self._auth_client = None
-        self._one_drive_client = None
-
-    @property
-    def config(self) -> SourceMicrosoftSharePointSpec:
-        return self._config
-
-    @property
-    def auth_client(self):
-        # Lazy initialization of the auth_client
-        if self._auth_client is None:
-            self._auth_client = SourceMicrosoftSharePointClient(self._config)
-        return self._auth_client
-
-    @property
-    def one_drive_client(self):
-        # Lazy initialization of the one_drive_client
-        if self._one_drive_client is None:
-            self._one_drive_client = self.auth_client.client
-        return self._one_drive_client
+        AbstractFileBasedStreamReader.__init__(self)
+        SharepointBaseReader.__init__(self)
 
     def get_access_token(self):
         # Directly fetch a new access token from the auth_client each time it's called
-        return self.auth_client._get_access_token()["access_token"]
+        return self.auth_client.access_token
 
-    def get_token_response_object(self, tenant_prefix: str) -> Callable:
-        """
-        When building a ClientContext using with_access_token() method,
-        the token_func param is expected to be a method/callable that returns a TokenResponse object.
-        tenant_prefix is used to determine the scope of the access token.
-        return: A callable that returns a TokenResponse object.
-        """
-        return self.auth_client.get_token_response_object_wrapper(tenant_prefix=tenant_prefix)
-
-    def _get_client_context(self, site_url: str, root_site_prefix: str) -> ClientContext:
-        """ "
-        Creates a ClientContext for the specified SharePoint site URL.
-        """
-        client_context = ClientContext(site_url).with_access_token(
-            token_func=self.get_token_response_object(tenant_prefix=root_site_prefix)
-        )
-        return client_context
-
-    @config.setter
-    def config(self, value: SourceMicrosoftSharePointSpec):
-        """
-        The FileBasedSource reads and parses configuration from a file, then sets this configuration in its StreamReader. While it only
-        uses keys from its abstract configuration, concrete StreamReader implementations may need additional keys for third-party
-        authentication. Therefore, subclasses of AbstractFileBasedStreamReader should verify that the value in their config setter
-        matches the expected config type for their StreamReader.
-        """
-        assert isinstance(value, SourceMicrosoftSharePointSpec)
-        self._config = value
-
-    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> List[Tuple[str, str, datetime]]:
+    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
         """
         Retrieves a list of all nested files under the specified object.
 
@@ -184,7 +68,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         headers = {"Authorization": f"Bearer {access_token}"}
         base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
 
-        def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
+        def get_files(url: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
                 error_info = response.json().get("error", {}).get("message", "No additional error information provided.")
@@ -195,7 +79,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 new_path = path + "/" + child["name"]
                 if child.get("file"):  # Object is a file
                     last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified)
+                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified, child.get("id"), drive_id, True)
                 else:  # Object is a folder, retrieve children
                     child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
                     yield from get_files(child_url, new_path)
@@ -216,20 +100,38 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         if item_data.get("file"):  # Initial object is a file
             new_path = path + "/" + item_data["name"]
             last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified)
+            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified, item_data.get("id"), drive_id, True)
         else:
             # Initial object is a folder, start file retrieval
             yield from get_files(f"{item_url}/children", path)
 
-    def _list_directories_and_files(self, root_folder, path):
-        """Enumerates folders and files starting from a root folder."""
+    def _list_directories_and_files(
+        self, root_folder: DriveItem, path: str, drive_id: str
+    ) -> Iterable[Tuple[str, str, str, str, str, bool]]:
+        """Enumerates folders and files starting from a root folder.""" """
+        Enumerates folders and files starting from a root folder.
+    
+        Args:
+            root_folder (DriveItem): The root folder to start the enumeration from.
+            path (str): The current path in the directory structure.
+    
+        Yields:
+            Tuple[str, str, str, str]: A tuple containing the file path, download URL, last modified date, and file ID.
+        """
         drive_items = execute_query_with_retry(root_folder.children.get())
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
-                yield (item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"])
+                yield (
+                    item_path,
+                    item.properties["@microsoft.graph.downloadUrl"],
+                    item.properties["lastModifiedDateTime"],
+                    item.id,
+                    drive_id,
+                    False,
+                )
             else:
-                yield from self._list_directories_and_files(item, item_path)
+                yield from self._list_directories_and_files(item, item_path, drive_id)
         yield from []
 
     def _get_files_by_drive_name(self, drives, folder_path):
@@ -251,7 +153,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         continue
                     folder_path_url = drive.web_url + "/" + folder_path
 
-                yield from self._list_directories_and_files(folder, folder_path_url)
+                yield from self._list_directories_and_files(folder, folder_path_url, drive_id=drive.id)
 
     def get_all_sites(self) -> List[MutableMapping[str, Any]]:
         """
@@ -260,11 +162,10 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         Returns:
             List[MutableMapping[str, Any]]: A list of site information.
         """
-        site_url, root_site_prefix = get_site_prefix(self.one_drive_client)
-        ctx = self._get_client_context(site_url, root_site_prefix)
+        ctx = self._get_client_context()
         search_service = SearchService(ctx)
         # ignore default OneDrive site with NOT Path:https://prefix-my.sharepoint.com
-        search_job = search_service.post_query(f"contentclass:STS_Site NOT Path:https://{root_site_prefix}-my.sharepoint.com")
+        search_job = search_service.post_query(f"contentclass:STS_Site NOT Path:https://{self.root_site_prefix}-my.sharepoint.com")
         search_job_result = execute_query_with_retry(search_job)
 
         found_sites = []
@@ -387,8 +288,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         uri=path,
                         download_url=download_url,
                         last_modified=last_modified,
+                        id=file_id,
+                        drive_id=drive_id,
+                        from_shared_drive=from_shared_drive,
                     )
-                    for path, download_url, last_modified in files
+                    for path, download_url, last_modified, file_id, drive_id, from_shared_drive in files
                 ],
                 globs,
             ),
