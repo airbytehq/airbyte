@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Article Attachments",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Assigned ID when the article attachment is created.",
+      "type": ["null", "integer"]
+    },
+    "url": {
+      "description": "The URL of the article attachment.",
+      "type": ["null", "string"]
+    },
+    "article_id": {
+      "description": "The associated article, if present.",
+      "type": ["null", "integer"]
+    },
+    "display_file_name": {
+      "description": "The file name displayed.",
+      "type": ["null", "string"]
+    },
+    "file_name": {
+      "description": "The file name.",
+      "type": ["null", "string"]
+    },
+    "locale": {
+      "description": "TThe locale of translation that the attachment will be attached to and can only be set on inline attachments.",
+      "type": ["null", "string"]
+    },
+    "content_url": {
+      "description": "URL where the attachment file can be downloaded.",
+      "type": ["null", "string"]
+    },
+    "relative_path": {
+      "description": "Relative path of the file.",
+      "type": ["null", "string"]
+    },
+    "content_type": {
+      "description": "The file type. Example: image/png",
+      "type": ["null", "string"]
+    },
+    "size": {
+      "description": "The attachment file size in bytes.",
+      "type": ["null", "integer"]
+    },
+    "inline": {
+      "description": "The attached file is shown in the admin interface for inline attachments.",
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "description": "The time the article attachment was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The time the article attachment was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

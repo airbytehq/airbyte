@@ -260,6 +260,49 @@ definitions:
           type: DpathExtractor
           field_path: ["articles"]
 
+  article_attachments_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "article_attachments"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/article_attachments.json"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "help_center/articles/{{ stream_partition.article_id }}/attachments"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "article_id"
+            stream:
+              $ref: "#/definitions/articles_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["article_attachments"]
+    file_uploader:
+      type: FileUploader
+      requester:
+        type: HttpRequester
+        url_base: "{{download_target}}"
+        http_method: GET
+        authenticator:
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["credentials", "credentials"]
+          authenticators:
+            oauth2.0: "#/definitions/bearer_authenticator"
+            api_token: "#/definitions/basic_authenticator"
+      download_target_extractor:
+        type: DpathExtractor
+        field_path: ["content_url"]
+      filename_extractor: "{{ record.id }}/{{ record.file_name }}/"
+
   article_comments_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "article_comments"
@@ -1022,6 +1065,7 @@ streams:
   - $ref: "#/definitions/sections_stream"
   # Incremental streams
   - $ref: "#/definitions/articles_stream"
+  - $ref: "#/definitions/article_attachments_stream"
   - $ref: "#/definitions/article_comments_stream"
   - $ref: "#/definitions/article_votes_stream"
   - $ref: "#/definitions/article_comment_votes_stream"
