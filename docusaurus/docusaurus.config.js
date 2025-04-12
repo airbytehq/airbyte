@@ -16,10 +16,6 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 
-// const redirects = yaml.load(
-//   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
-// );
-
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   markdown: {
@@ -146,14 +142,6 @@ const config = {
         ],
       },
     ],
-    // Client-side redirect plugin - turning off for now to replace with Vercel server-side redirects
-    // [
-    //   "@docusaurus/plugin-client-redirects",
-    //   {
-    //     fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
-    //     redirects: redirects,
-    //   },
-    // ],
     () => ({
       name: "Yaml loader",
       configureWebpack() {
