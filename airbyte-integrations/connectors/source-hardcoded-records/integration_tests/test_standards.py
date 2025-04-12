@@ -8,7 +8,6 @@ iterate locally and quickly.
 from source_hardcoded_records import SourceHardcodedRecords
 
 from airbyte_cdk.test.declarative.test_suites import (
-    ConnectorTestScenario,
     SourceTestSuiteBase,
     generate_tests,
 )
@@ -28,9 +27,3 @@ class TestHardcodedRecords(SourceTestSuiteBase):
     """
 
     connector = SourceHardcodedRecords
-
-    @classmethod
-    def create_connector(cls, scenario: ConnectorTestScenario) -> "IConnector":
-        """Create a new instance of the connector."""
-
-        return SourceHardcodedRecords()
