@@ -1,6 +1,6 @@
 import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
-# Connector Catalog
+# Connectors
 
 ## Introduction to Connectors
 
