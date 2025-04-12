@@ -1,11 +1,11 @@
 # Oracle Siebel CRM
 
-[Oracle Siebel CRM] is a Customer Relationship Management platform.
+[Oracle Siebel CRM](https://www.oracle.com/cx/siebel/) is a Customer Relationship Management platform.
 
 Airbyte reccommends using the connector for the underlying database in your deployment of Oracle Siebel CRM to replicate data. 
 Oracle Siebel CRM can be hosted on: [Oracle Database, IBM DB2, or Microsoft SQL Server](https://docs.oracle.com/cd/F26413_42/books/DMR/c-Overview-of-Siebel-Data-Model-afs1022619.html)
 
-## Preqrequisties
+## Prerequisites
 
 To sync data from Oracle Siebel CRM, determine where the application is hosted and verify that you can access the underlying database.
 
