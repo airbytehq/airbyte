@@ -1,6 +1,6 @@
 """Airbyte standard connector tests.
 
-The AST (Airbyte Standard Tests) suite is designed to ensure that connectors meet Airbyte
+The FAST Airbyte Standard Tests suite is designed to ensure that connectors meet Airbyte
 protocol standards.
 """
 
