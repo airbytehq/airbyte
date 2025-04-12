@@ -819,7 +819,7 @@ class DestinationMessageFactory(
                 return DestinationRecord(
                     stream = stream,
                     message = null,
-                    serialized = airbyteMessage.toString(),
+                    serialized = "",
                     schema = stream.schema,
                     emittedAtMs = airbyteMessage.record.emittedAt,
                     data =
@@ -834,8 +834,8 @@ class DestinationMessageFactory(
                                 meta.itemsList.map {
                                     Meta.Change(
                                         it.field,
-                                        Change.valueOf(it.change.toString()),
-                                        Reason.valueOf(it.reason.toString())
+                                        Change.valueOf(it.change.name),
+                                        Reason.valueOf(it.reason.name)
                                     )
                                 }
                             )
