@@ -102,7 +102,7 @@ sealed class JdbcPartitionsCreator<
             // If that's still not enough, don't sample at all.
             values.clear()
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
-            selectQuerier.executeQuery(samplingQuery).use {
+            selectQuerier.executeQuery(samplingQuery, cursorQuery = true).use {
                 for (row in it) {
                     values.add(recordMapper(row.data))
                 }
