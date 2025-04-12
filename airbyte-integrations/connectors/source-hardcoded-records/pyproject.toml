@@ -24,6 +24,7 @@ airbyte-cdk = "6.45.1.post44.dev14417290834"
 source-hardcoded-records = "source_hardcoded_records.run:run"
 
 [tool.poetry.group.dev.dependencies]
+mypy = "^1.15.0"
 ruff = "^0.11.5"
 pytest = "^8.0.0"
 pytest-mock = "^3.6.1"
