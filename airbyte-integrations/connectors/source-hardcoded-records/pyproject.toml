@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "0.0.35"
 name = "source-hardcoded-records"
-description = "Source implementation for hardcoded recprds."
+description = "Source implementation for hardcoded records."
 authors = [ "Airbyte <evan@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
