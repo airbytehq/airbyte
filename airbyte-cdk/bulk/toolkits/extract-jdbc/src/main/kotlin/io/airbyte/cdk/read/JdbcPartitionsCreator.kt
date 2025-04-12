@@ -66,7 +66,7 @@ sealed class JdbcPartitionsCreator<
         }
         log.info { "Querying maximum cursor column value." }
         val record: ObjectNode? =
-            selectQuerier.executeQuery(cursorUpperBoundQuery).use {
+            selectQuerier.executeQuery(cursorUpperBoundQuery, cursorQuery = true).use {
                 if (it.hasNext()) it.next().data else null
             }
         if (record == null) {

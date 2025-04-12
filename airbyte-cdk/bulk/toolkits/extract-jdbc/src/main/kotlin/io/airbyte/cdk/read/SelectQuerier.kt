@@ -22,6 +22,7 @@ interface SelectQuerier {
     fun executeQuery(
         q: SelectQuery,
         parameters: Parameters = Parameters(),
+        cursorQuery: Boolean = false
     ): Result
 
     data class Parameters(
@@ -55,6 +56,7 @@ class JdbcSelectQuerier(
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
+        cursorQuery: Boolean
     ): SelectQuerier.Result =
         Result(
             jdbcConnectionFactory,
