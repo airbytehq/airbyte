@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.6.2 | 2025-04-12 | [57566](https://github.com/airbytehq/airbyte/pull/57566) | chore(source-hubspot): replace CAT with FAST Airbyte Standard Tests |
 | 4.6.1 | 2025-04-12 | [57694](https://github.com/airbytehq/airbyte/pull/57694) | Update dependencies |
 | 4.6.0 | 2025-04-11 | [57572](https://github.com/airbytehq/airbyte/pull/57572) | Promoting release candidate 4.6.0-rc.1 to a main version. |
 | 4.6.0-rc.1  | 2025-03-31  | [56919](https://github.com/airbytehq/airbyte/pull/56919) | Update CDK to v6                                                                                                                                                                                                             |
