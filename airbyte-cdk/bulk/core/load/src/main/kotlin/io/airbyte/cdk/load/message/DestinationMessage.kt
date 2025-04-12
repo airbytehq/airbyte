@@ -314,7 +314,7 @@ data class EnrichedDestinationRecordAirbyteValue(
 data class DestinationRecordRaw(
     val stream: DestinationStream,
     private val data: JsonNode,
-    private val emittedAtMs: Long,
+    val emittedAtMs: Long,
     private val meta: Meta?,
     private val serialized: String,
     private val schema: AirbyteType

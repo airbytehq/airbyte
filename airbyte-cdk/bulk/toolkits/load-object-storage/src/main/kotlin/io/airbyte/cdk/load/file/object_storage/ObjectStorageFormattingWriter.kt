@@ -6,7 +6,10 @@ package io.airbyte.cdk.load.file.object_storage
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SequenceWriter
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
@@ -27,6 +30,7 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -35,7 +39,9 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.collections.LinkedHashMap
 import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
@@ -88,16 +94,16 @@ class JsonFormattingWriter(
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
     private val writer: SequenceWriter =
-        Jsons.writerFor(object : TypeReference<LinkedHashMap<String, AirbyteValue>>() {})
+        Jsons.writerFor(JsonNode::class.java)
             .with(MinimalPrettyPrinter(System.lineSeparator()))
             .writeValues(outputStream)
 
     override fun accept(record: DestinationRecordRaw) {
-        val data: LinkedHashMap<String, AirbyteValue> =
-            record
-                .asDestinationRecordAirbyteValue()
-                .dataWithAirbyteMeta(stream, rootLevelFlattening)
-                .toJson()
+        val data = record.asRawJson() as ObjectNode
+        data.put(Meta.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString())
+        data.put(Meta.COLUMN_NAME_AB_EXTRACTED_AT, record.emittedAtMs)
+        data.set<ObjectNode>(Meta.COLUMN_NAME_AB_META, JsonNodeFactory.instance.objectNode())
+        data.put(Meta.COLUMN_NAME_AB_GENERATION_ID, stream.generationId)
         writer.write(data)
     }
 
