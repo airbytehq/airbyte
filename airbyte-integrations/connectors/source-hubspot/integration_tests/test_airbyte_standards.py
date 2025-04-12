@@ -10,18 +10,9 @@ import pytest
 from source_hubspot import SourceHubspot
 
 from airbyte_cdk.test.declarative.test_suites import (
-    ConnectorTestScenario,
     SourceTestSuiteBase,
     generate_tests,
 )
-
-
-CONNECTOR_ROOT = Path(__file__).parent.parent
-
-
-def get_file_path(file_name: str) -> Path:
-    """Get the path to a resource file."""
-    return CONNECTOR_ROOT / file_name
 
 
 def pytest_generate_tests(metafunc) -> None:
@@ -40,11 +31,3 @@ class TestAirbyteStandardTests(SourceTestSuiteBase):
     """
 
     connector = SourceHubspot
-    working_dir = CONNECTOR_ROOT
-    acceptance_test_config_path = get_file_path("acceptance-test-config.yml")
-
-    @classmethod
-    def create_connector(cls, scenario: ConnectorTestScenario) -> SourceHubspot:
-        """Create a new instance of the connector."""
-
-        return SourceHubspot()
