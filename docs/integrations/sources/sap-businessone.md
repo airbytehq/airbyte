@@ -5,7 +5,7 @@
 Airbyte reccommends using the connector for the underlying database in your deployment of SAP Business One to replicate data. 
 SAP Business One can be hosted on: [SAP HANA or Microsoft SQL Server](https://help.sap.com/docs/SAP_BUSINESS_ONE_PRODUCT_LINE)
 
-## Prerequisties
+## Prerequisites
 
 To sync data from SAP Business One, determine where the application is hosted and verify that you can access the underlying database.
 
