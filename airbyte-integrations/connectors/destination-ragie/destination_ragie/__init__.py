@@ -4,5 +4,7 @@
 
 
 from .destination import DestinationRagie
+from .writer import RagieWriter 
 
-__all__ = ["DestinationRagie"]
+
+__all__ = ["DestinationRagie", "RagieWriter"]

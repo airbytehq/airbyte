@@ -12,7 +12,6 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureTy
 
 from .config import RagieConfig
 
-from .config import RagieConfig
 
 logger = logging.getLogger("airbyte.destination_ragie.client")
 
@@ -371,13 +370,7 @@ class RagieClient:
 
                 pagination_info = response_data.get("pagination", {})
                 cursor = pagination_info.get("next_cursor")
-                while cursor !='null':
-                    self._request(
-                        "GET",
-                        self.DOCUMENTS_ENDPOINT,
-                        params=params,
-                        extra_headers=headers
-                    )
+                
                 if not cursor:
                     logger.debug("No next_cursor returned, assuming end of results.")
                     break
