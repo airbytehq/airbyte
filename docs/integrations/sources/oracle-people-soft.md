@@ -5,7 +5,7 @@
 Airbyte reccommends using the connector for the underlying database in your deployment of Oracle PeopleSoft to replicate data. 
 Oracle PeopleSoft can be hosted on: [Oracle Database, IBM DB2, or Microsoft SQL Server](https://docs.oracle.com/cd/E92519_02/pt856pbr3/eng/pt/tgst/task_PeopleSoftDatabase-827f35.html)
 
-## Preqrequisties
+## Prerequisites
 
 To sync data from Oracle PeopleSoft, determine where the application is hosted and verify that you can access the underlying database.
 
