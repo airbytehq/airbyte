@@ -1,5 +1,7 @@
 # Oracle PeopleSoft
 
+[Oracle PeopleSoft](https://www.oracle.com/applications/peoplesoft/) is a Human Resource, Financial, Supply Chain, Customer Relationship, and Enterprise Performance Management System.
+
 Airbyte reccommends using the connector for the underlying database in your deployment of Oracle PeopleSoft to replicate data. 
 Oracle PeopleSoft can be hosted on: [Oracle Database, IBM DB2, or Microsoft SQL Server](https://docs.oracle.com/cd/E92519_02/pt856pbr3/eng/pt/tgst/task_PeopleSoftDatabase-827f35.html)
 
