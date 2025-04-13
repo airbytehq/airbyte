@@ -38,6 +38,7 @@ import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
+import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
@@ -152,6 +153,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val partitioner: InputPartitioner,
     private val updateBatchTaskFactory: UpdateBatchStateTaskFactory,
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
+    private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -235,6 +237,8 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
             log.info { "Launching update batch task" }
             val updateBatchTask = updateBatchTaskFactory.make(this)
             launch(updateBatchTask)
+            log.info { "Launching heartbeat task" }
+            launch(heartbeatTask)
         } else {
             // TODO: pluggable file transfer
             if (!fileTransferEnabled) {
