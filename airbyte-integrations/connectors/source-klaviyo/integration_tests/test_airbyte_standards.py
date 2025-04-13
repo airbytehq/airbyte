@@ -42,14 +42,3 @@ class TestAirbyteStandardTests(DeclarativeSourceTestSuite):
     tests in this class.
     """
 
-    connector = DeclarativeSource
-    working_dir = CONNECTOR_ROOT
-    acceptance_test_config_path = get_file_path("acceptance-test-config.yml")
-    manifest_path = get_file_path("manifest.yaml")
-    components_py_path = get_file_path("components.py")
-
-    # @classmethod
-    # def create_connector(cls, scenario: ConnectorTestScenario) -> DeclarativeSource:
-    #     """Create a new instance of the connector."""
-
-    #     return DeclarativeSource
