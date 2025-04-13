@@ -3,10 +3,9 @@
 #
 
 import logging
-import traceback
 from http import HTTPStatus
 from itertools import chain
-from typing import Any, Generator, List, Mapping, Optional, Tuple, Union
+from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 from requests import HTTPError
 
@@ -40,7 +39,6 @@ from source_hubspot.streams import (
     DealsPropertyHistory,
     DealsWebAnalytics,
     EmailEvents,
-    EmailSubscriptions,
     Engagements,
     EngagementsCalls,
     EngagementsCallsWebAnalytics,
@@ -59,7 +57,6 @@ from source_hubspot.streams import (
     Leads,
     LineItems,
     LineItemsWebAnalytics,
-    MarketingEmails,
     Owners,
     OwnersArchived,
     Products,
@@ -185,7 +182,6 @@ class SourceHubspot(YamlDeclarativeSource):
             Deals(**common_params),
             DealsArchived(**common_params),
             EmailEvents(**common_params),
-            # EmailSubscriptions(**common_params),
             Engagements(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),
@@ -197,7 +193,6 @@ class SourceHubspot(YamlDeclarativeSource):
             Goals(**common_params),
             Leads(**common_params),
             LineItems(**common_params),
-            # MarketingEmails(**common_params),
             Owners(**common_params),
             OwnersArchived(**common_params),
             Products(**common_params),
