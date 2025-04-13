@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - accounts
+    - events
 
 definitions:
   # Base components
@@ -118,8 +118,6 @@ definitions:
   # Regular flow components
   created_stream:
     $ref: "#/definitions/base_stream"
-    primary_key:
-      - id
     incremental_sync:
       $ref: "#/definitions/created_incremental_sync"
 
