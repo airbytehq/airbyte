@@ -196,1181 +196,1181 @@ schemas:
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ab:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       abHoursToWait:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       abSampleSizeDefault:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       abSamplingDefault:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       abStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       abSuccessMetric:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       abTestPercentage:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       abVariation:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       absoluteUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       aifeatures:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       allEmailCampaignIds:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       analyticsPageId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       analyticsPageType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       authorAt:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       authorName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       authorUserId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       blogEmailType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       campaign:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       campaignName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       canSpamSettingsId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       categoryId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       clonedFrom:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       contentTypeCategory:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createPage:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       created:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdById:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       currentState:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       currentlyPublished:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       customReplyTo:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       customReplyToEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       domain:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailBody:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailNote:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailTemplateMode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailbodyPlaintext:
         description: Plain text version of the email body
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       feedbackEmailCategory:
         description: Category for feedback related to the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       feedbackSurveyId:
         description: ID of the feedback survey linked to the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       folderId:
         description: ID of the folder where the email is stored
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       freezeDate:
         description: Date when the email content was finalized
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       fromName:
         description: Name of the sender displayed in the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       htmlTitle:
         description: HTML title of the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       isGraymailSuppressionEnabled:
         description: Flag indicating if graymail suppression is enabled for the email
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       isLocalTimezoneSend:
         description: Flag indicating if the email is sent based on the local timezone
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       isPublished:
         description: Flag indicating if the email is published
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       isRecipientFatigueSuppressionEnabled:
         description: Flag indicating if recipient fatigue suppression is enabled
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       leadFlowId:
         description: ID of the lead flow associated with the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       liveDomain:
         description: Domain where the live version of the email is hosted
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       mailingListsExcluded:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailingListsIncluded:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       maxRssEntries:
         description: Maximum number of RSS entries to include in the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       metaDescription:
         description: Meta description of the email content
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         description: Name of the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       pageExpiryEnabled:
         description: Flag indicating if page expiry is enabled for the email
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       pageRedirected:
         description: Information about page redirection
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       portalId:
         description: ID of the HubSpot portal associated with the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       previewKey:
         description: Key used for email preview
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       primaryEmailCampaignId:
         description: ID of the primary email campaign associated with the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       processingStatus:
         description: Status of the email processing
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       publishDate:
         description: Date when the email is scheduled to be published
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       publishedById:
         description: ID of the user who published the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       publishedByName:
         description: Name of the user who published the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       publishImmediately:
         description: Flag indicating if the email should be published immediately
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       publishedUrl:
         description: URL where the published email can be accessed
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       replyTo:
         description: Email address for replies to the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resolvedDomain:
         description: Domain resolved for the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rootMicId:
         description: Root MIC ID associated with the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       selected:
         description: Flag indicating if the email is selected
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       slug:
         description: Slug associated with the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       smartEmailFields:
         description: Fields related to smart email features
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       state:
         description: Current state of the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       stats:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           counters:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               sent:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               open:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               delivered:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               bounce:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               unsubscribed:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               click:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               reply:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               dropped:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               selected:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               spamreport:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               suppressed:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               hardbounced:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               softbounced:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               pending:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               contactslost:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               notsent:
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
           deviceBreakdown:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               open_device_type:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   computer:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
                   mobile:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
                   unknown:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
               click_device_type:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   computer:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
                   mobile:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
                   unknown:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
           failedToLoad:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           qualifierStats:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
           ratios:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               clickratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               clickthroughratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               deliveredratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               openratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               replyratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               unsubscribedratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               spamreportratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               bounceratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               hardbounceratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               softbounceratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               contactslostratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               pendingratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               notsentratio:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
       subcategory:
         description: Subcategory to which the email belongs
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       subject:
         description: Subject line of the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       subscription:
         description: Information about email subscription
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       subscriptionName:
         description: Name of the email subscription
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       templatePath:
         description: Path of the email template
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       transactional:
         description: Flag indicating if the email is transactional
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       unpublishedAt:
         description: Timestamp when the email was unpublished
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       updated:
         description: Timestamp of the last update to the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       updatedById:
         description: ID of the user who last updated the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       url:
         description: URL associated with the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       useRssHeadlineAsSubject:
         description: Flag indicating if the RSS headline should be used as the subject
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       vidsExcluded:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       vidsIncluded:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       publishedByEmail:
         description: Email address of the user who published the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sections:
         description: Sections within the email
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       author:
         description: Author of the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       isCreatedFomSandboxSync:
         description: Flag indicating if the email was created from a sandbox sync
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       rssEmailUrl:
         description: URL for RSS emails
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       teamPerms:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       securityState:
         description: Security state of the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       isInstanceLayoutPage:
         description: Flag indicating if the email is a layout page in an instance
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       audienceAccess:
         description: Information about who has access to view the email
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       campaignUtm:
         description: UTM parameters for campaign tracking
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       contentAccessRuleTypes:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       pastMabExperimentIds:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       rssEmailClickThroughText:
         description: Text for click-through actions in RSS emails
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rssEmailImageMaxWidth:
         description: Maximum width of images in RSS emails
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       flexAreas:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           main:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               boxed:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               isSingleColumnFullWidth:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               sections:
                 type:
-                - 'null'
-                - array
+                  - "null"
+                  - array
                 items:
                   type:
-                  - 'null'
-                  - object
+                    - "null"
+                    - object
                   properties:
                     columns:
                       type:
-                      - 'null'
-                      - array
+                        - "null"
+                        - array
                       items:
                         type:
-                        - 'null'
-                        - object
+                          - "null"
+                          - object
                         properties:
                           id:
                             type:
-                            - 'null'
-                            - string
+                              - "null"
+                              - string
                           widgets:
                             type:
-                            - 'null'
-                            - array
+                              - "null"
+                              - array
                             items:
                               type:
-                              - 'null'
-                              - string
+                                - "null"
+                                - string
                           width:
                             type:
-                            - 'null'
-                            - integer
+                              - "null"
+                              - integer
                     id:
                       type:
-                      - 'null'
-                      - string
+                        - "null"
+                        - string
                     style:
                       type:
-                      - 'null'
-                      - object
+                        - "null"
+                        - object
                       properties:
                         backgroundColor:
                           type:
-                          - 'null'
-                          - string
+                            - "null"
+                            - string
                         backgroundType:
                           type:
-                          - 'null'
-                          - string
+                            - "null"
+                            - string
                         paddingBottom:
                           type:
-                          - 'null'
-                          - string
+                            - "null"
+                            - string
                         paddingTop:
                           type:
-                          - 'null'
-                          - string
+                            - "null"
+                            - string
       emailCampaignGroupId:
         description: Group ID associated with the email campaign
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       layoutSections:
         description: Sections within the email layout
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       blogRssSettings:
         description: Settings related to blog RSS integration
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archivedInDashboard:
         description: Flag indicating if the email was archived in the dashboard
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       publishedAt:
         description: Timestamp when the email was published
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       lastEditUpdateId:
         description: Update ID of the last edit made to the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       lastEditSessionId:
         description: Session ID of the last edit made to the email
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       styleSettings:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           background_color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           background_image:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           background_image_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           body_border_color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           body_border_color_choice:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           body_border_width:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           body_color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           color_picker_favorite1:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           color_picker_favorite2:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           color_picker_favorite3:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           color_picker_favorite4:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           color_picker_favorite5:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           color_picker_favorite6:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           email_body_padding:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           email_body_width:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           heading_one_font:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               bold:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               color:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               font:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               font_style:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
               italic:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               size:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               underline:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
           heading_two_font:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               bold:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               color:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               font:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               font_style:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
               italic:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               size:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               underline:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
           links_font:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               bold:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               color:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               font:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               font_style:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
               italic:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
               size:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               underline:
                 type:
-                - 'null'
-                - boolean
+                  - "null"
+                  - boolean
           primary_accent_color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           primary_font:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           primary_font_color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           primary_font_line_height:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           primary_font_size:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           secondary_accent_color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           secondary_font:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           secondary_font_color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           secondary_font_line_height:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           secondary_font_size:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           use_email_client_default_settings:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           user_module_defaults:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               button_email:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   background_color:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   corner_radius:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
                   font:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   font_color:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   font_size:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
                   font_style:
                     type:
-                    - 'null'
-                    - object
+                      - "null"
+                      - object
               email_divider:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   color:
                     type:
-                    - 'null'
-                    - object
+                      - "null"
+                      - object
                   height:
                     type:
-                    - 'null'
-                    - integer
+                      - "null"
+                      - integer
                   line_type:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
       visibleToAll:
         description: Flag indicating if the email is visible to all users
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       language:
         description: Language in which the email is written
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rssEmailByText:
         description: Text content related to RSS emails
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rssEmailCommentText:
         description: Text for comments in RSS emails
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       hasContentAccessRules:
         description: Indicates if the email has content access rules applied
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       archivedAt:
         description: Timestamp when the email was archived
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       translations:
         description: Translations available for the email
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       userPerms:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       contentAccessRuleIds:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       rssEmailEntryTemplateEnabled:
         description: Flag indicating if the RSS email entry template is enabled
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       mailingIlsListsExcluded:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailingIlsListsIncluded:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
     additionalProperties: true
 
   email_subscriptions:
     $schema: http://json-schema.org/draft-07/schema#
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     additionalProperties: true
     properties:
       active:
         description: Indicates whether the subscription is currently active or not
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       portalId:
         description: The unique identifier for the portal associated with the subscription
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       description:
         description: Additional information or details about the subscription
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       id:
         description: The unique identifier for the subscription
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       name:
         description: The display name of the subscription
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       order:
         description: The order in which the subscription is displayed or processed
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       businessUnitId:
-        description: The unique identifier for the business unit associated with the
+        description:
+          The unique identifier for the business unit associated with the
           subscription
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       internal:
         description: Indicates whether the subscription is for internal use only
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       internalName:
         description: The internal name for the subscription
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       category:
         description: The category to which the subscription belongs
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       channel:
         description: The communication channel through which the subscription is managed
         type:
-        - 'null'
-        - string
-
+          - "null"
+          - string

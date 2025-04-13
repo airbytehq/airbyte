@@ -106,6 +106,7 @@ def properties_scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bo
     else:
         return not properties_scopes.get(stream.name, set()) - granted_scopes
 
+
 class SourceHubspot(YamlDeclarativeSource):
     logger = logging.getLogger("airbyte")
 
