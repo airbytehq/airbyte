@@ -488,7 +488,7 @@ The previous section, for the sake of clarity, looked exclusively at the life cy
 
 This image looks at two time points during an example sync. At T1 the Source has emitted 3 records and 2 state messages. If the Sync were to fail now, the next sync should start at the beginning because no records have been saved to the destination.
 
-At T2, the Destination has received all records before the first state message and has emitted that that state message. By emitting that state message, the destination is confirming that all records in that state message have been committed. The diagram only shows the state being emitted because the destination does not emit record messages, only state messages. In addition, the Source has also emitted more records, including the record for Drew and another state message. If the sync were to fail at T2, then the next sync could start replicating records after Bob. Because the state records for Carl and Drew did not make it through to the destination, despite being emitted by the source, they have to be resent.
+At T2, the Destination has received all records before the first state message and has emitted that state message. By emitting that state message, the destination is confirming that all records in that state message have been committed. The diagram only shows the state being emitted because the destination does not emit record messages, only state messages. In addition, the Source has also emitted more records, including the record for Drew and another state message. If the sync were to fail at T2, then the next sync could start replicating records after Bob. Because the state records for Carl and Drew did not make it through to the destination, despite being emitted by the source, they have to be resent.
 
 The normal success case (T3, not depicted) would be that all the records would move through the destination and the last state message that the Source emitted is then emitted by the Destination. The Source and Destination would both close `STDOUT` and `exit 0` signal that they have emitted all records without failure.
 
@@ -548,7 +548,7 @@ These principles are intended to produce simple overall system behavior, and mov
 
 6. **Destinations return state in the order it was received.**
 
-   Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors, as do skipped state messages. Every state message the destination recieved must be returned back to the platform, in order.
+   Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors, as do skipped state messages. Every state message the destination received must be returned back to the platform, in order.
 
    Order-ness is determined by the type of State message. Per-stream state messages require order per-stream. Global state messages require global ordering.
 

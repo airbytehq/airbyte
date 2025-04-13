@@ -1,9 +1,9 @@
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import json
 from typing import Any, Iterable, Mapping
 
-import dpath.util
+import dpath
 
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import StreamSlice
@@ -39,7 +39,7 @@ class MultipleAdvertiserIdsPerPartition(SubstreamPartitionRouter):
 
     def get_partition_value_from_config(self) -> str:
         for path in self._path_to_partition_in_config:
-            config_value = dpath.util.get(self.config, path, default=None)
+            config_value = dpath.get(self.config, path, default=None)
             if config_value:
                 return config_value
 

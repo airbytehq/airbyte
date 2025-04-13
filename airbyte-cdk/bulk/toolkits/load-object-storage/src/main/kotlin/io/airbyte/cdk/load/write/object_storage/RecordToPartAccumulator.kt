@@ -10,8 +10,8 @@ import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
-import io.airbyte.cdk.load.message.object_storage.*
+import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.object_storage.LoadablePart
 import io.airbyte.cdk.load.write.BatchAccumulator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.OutputStream
@@ -39,7 +39,7 @@ class RecordToPartAccumulator<U : OutputStream>(
     private val currentObject = ConcurrentHashMap<String, ObjectInProgress<U>>()
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecordAirbyteValue>,
+        records: Iterator<DestinationRecordRaw>,
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {
@@ -55,7 +55,6 @@ class RecordToPartAccumulator<U : OutputStream>(
                                     pathFactory.getPathToFile(
                                         stream,
                                         fileNo,
-                                        isStaging = pathFactory.supportsStaging
                                     )
                                 ),
                             fileNumber = fileNo

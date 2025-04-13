@@ -46,7 +46,7 @@ global:
     # -- The database name
     database: ""
 
-    # -- The database user
+    # -- The key within `secretName` where database user is stored
     userSecretKey: "" # e.g. "database-user"
 
     # -- The key within `secretName` where password is stored

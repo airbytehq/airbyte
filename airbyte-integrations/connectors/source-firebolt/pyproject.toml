@@ -24,7 +24,7 @@ firebolt-sdk = "^1.1.0"
 source-firebolt = "source_firebolt.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2"
+pytest = "^8.0.0"
 pytest-mock = "^3.6"
 requests-mock = "^1.11.0"
 pytest-asyncio = "^0.18.0"

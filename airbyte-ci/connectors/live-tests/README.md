@@ -181,6 +181,9 @@ The traffic recorded on the control connector is passed to the target connector 
 ## Changelog
 
 
+### 0.21.3
+Update dependencies to avoid genson issue
+
 ### 0.21.2
 Fix selected streams filter in regression tests
 

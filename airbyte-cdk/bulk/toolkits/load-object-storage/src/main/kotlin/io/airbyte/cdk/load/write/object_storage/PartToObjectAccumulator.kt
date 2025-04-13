@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.write.object_storage
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.PartBookkeeper
@@ -14,7 +15,6 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.object_storage.IncompletePartialUpload
 import io.airbyte.cdk.load.message.object_storage.LoadablePart
 import io.airbyte.cdk.load.message.object_storage.LoadedObject
-import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
@@ -25,6 +25,7 @@ import kotlinx.coroutines.CompletableDeferred
 class PartToObjectAccumulator<T : RemoteObject<*>>(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<T>,
+    private val destinationConfig: DestinationConfiguration,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -41,7 +42,7 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         if (upload.hasStarted.setOnce()) {
             // Start the upload if we haven't already. Note that the `complete`
             // here refers to the completable deferred, not the streaming upload.
-            val metadata = ObjectStorageDestinationState.metadataFor(stream)
+            val metadata = destinationConfig.metadataFor(stream)
             val streamingUpload = client.startStreamingUpload(batch.part.key, metadata)
             upload.streamingUpload.complete(streamingUpload)
         }
@@ -58,10 +59,15 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         upload.partBookkeeper.add(batch.part)
         if (upload.partBookkeeper.isComplete) {
             val obj = streamingUpload.complete()
+            val empty = upload.partBookkeeper.isEmpty
             uploadsInProgress.remove(batch.part.key)
 
             log.info { "Completed upload of ${obj.key}" }
-            return LoadedObject(remoteObject = obj, fileNumber = batch.part.fileNumber)
+            return LoadedObject(
+                remoteObject = obj,
+                fileNumber = batch.part.fileNumber,
+                isEmpty = empty
+            )
         } else {
             return IncompletePartialUpload(batch.part.key)
         }

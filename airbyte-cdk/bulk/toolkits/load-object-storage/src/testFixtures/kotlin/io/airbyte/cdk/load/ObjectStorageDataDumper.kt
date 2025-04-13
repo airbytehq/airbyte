@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import java.io.BufferedReader
 import java.io.InputStream
+import java.util.stream.Collectors.toMap
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
@@ -50,7 +51,7 @@ class ObjectStorageDataDumper(
         // Note: this is implicitly a test of the `streamConstant` final directory
         // and the path matcher, so a failure here might imply a bug in the metadata-based
         // destination state loader, which lists by `prefix` and filters against the matcher.
-        val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream)
         val matcher =
             pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
         return runBlocking {
@@ -76,8 +77,8 @@ class ObjectStorageDataDumper(
         }
     }
 
-    fun dumpFile(): List<String> {
-        val prefix = pathFactory.getFinalDirectory(stream).toString()
+    fun dumpFile(): Map<String, String> {
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream)
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client
@@ -91,10 +92,13 @@ class ObjectStorageDataDumper(
                                     null -> objectData
                                     else -> error("Unsupported compressor")
                                 }
-                            BufferedReader(decompressed.reader()).readText()
+                            // Remove the "namespace/name/" prefix from the object key
+                            val truncatedKey = listedObject.key.replace(prefix, "")
+                            truncatedKey to BufferedReader(decompressed.reader()).readText()
                         }
                     }
                     .toList()
+                    .toMap()
             }
         }
     }

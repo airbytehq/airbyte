@@ -197,7 +197,7 @@ sealed class DefaultJdbcCursorPartition(
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
-        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound!!
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
 
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())

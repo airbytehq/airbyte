@@ -66,50 +66,13 @@
           "type": "string"
         }
       },
-      "state_filter": {
-        "title": "State Filter",
-        "description": "Reflects the state of the Display, Product, and Brand Campaign streams as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.",
-        "default": [],
-        "order": 8,
-        "type": "array",
-        "items": {
-          "title": "StateFilterEnum",
-          "description": "An enumeration.",
-          "enum": ["enabled", "paused", "archived"],
-          "type": "string"
-        },
-        "uniqueItems": true
-      },
       "look_back_window": {
         "title": "Look Back Window",
         "description": "The amount of days to go back in time to get the updated data from Amazon Ads",
         "default": 3,
         "examples": [3, 10],
-        "order": 9,
+        "order": 8,
         "type": "integer"
-      },
-      "report_record_types": {
-        "title": "Report Record Types",
-        "description": "Optional configuration which accepts an array of string of record types. Leave blank for default behaviour to pull all report types. Use this config option only if you want to pull specific report type(s). See <a href=\"https://advertising.amazon.com/API/docs/en-us/reporting/v2/report-types\">docs</a> for more details",
-        "default": [],
-        "order": 10,
-        "type": "array",
-        "items": {
-          "title": "ReportRecordTypeEnum",
-          "description": "An enumeration.",
-          "enum": [
-            "adGroups",
-            "asins",
-            "asins_keywords",
-            "asins_targets",
-            "campaigns",
-            "keywords",
-            "productAds",
-            "targets"
-          ],
-          "type": "string"
-        },
-        "uniqueItems": true
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"]

@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test
 
 class DevNullPerformanceTest :
     BasicPerformanceTest(
-        configContents = DevNullTestUtils.loggingConfigContents,
+        configContents = DevNullTestUtils.configContents(DevNullTestUtils.silentConfigPath),
         configSpecClass = DevNullSpecification::class.java,
-        defaultRecordsToInsert = 1000000,
+        defaultRecordsToInsert = 1_000_000,
     ) {
     @Test
     override fun testInsertRecords() {

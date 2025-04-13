@@ -226,9 +226,16 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.11.2      | 2025-02-06 | [53195](https://github.com/airbytehq/airbyte/pull/53195) | Fix typo in CDC configuration.                                                                                                                  |                                                                                                                  |
-| 3.11.1      | 2025-01-30  | [52039](https://github.com/airbytehq/airbyte/pull/52039)   | Adopt latest API changes from Bulk CDK.                                                                                                         |
-| 3.11.0      | 2025-01-14 | [51545](https://github.com/airbytehq/airbyte/pull/51545)   | Promoting release candidate 3.11.0-rc.1 to a main version.                                                                                      |
+| 3.11.9 | 2025-03-14 | [55731](https://github.com/airbytehq/airbyte/pull/55731) | More meaningful errors for variables used in extra checks for CDC |
+| 3.11.8 | 2025-03-14 | [55761](https://github.com/airbytehq/airbyte/pull/55761) | Do not perform complex sampling for source-mysql |
+| 3.11.7 | 2025-03-12 | [55734](https://github.com/airbytehq/airbyte/pull/55734) | Expose additional stream context for debezium properties at startup |
+| 3.11.6 | 2025-03-06 | [55237](https://github.com/airbytehq/airbyte/pull/55237) | [Fix fetching binlog status for version >=8.4](https://github.com/airbytehq/airbyte/pull/55237#top) |
+| 3.11.5 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
+| 3.11.4 | 2025-03-06 | [55214](https://github.com/airbytehq/airbyte/pull/55214) | Update default encryption method to 'required'.                                                                                                 | |
+| 3.11.3 | 2025-02-24 | [54156](https://github.com/airbytehq/airbyte/pull/54156) | Improve error handling.                                                                                                                         | |
+| 3.11.2 | 2025-02-06 | [53195](https://github.com/airbytehq/airbyte/pull/53195) | Fix typo in CDC configuration.                                                                                                                  | |
+| 3.11.1 | 2025-01-30 | [52039](https://github.com/airbytehq/airbyte/pull/52039) | Adopt latest API changes from Bulk CDK. |
+| 3.11.0 | 2025-01-14 | [51545](https://github.com/airbytehq/airbyte/pull/51545) | Promoting release candidate 3.11.0-rc.1 to a main version. |
 | 3.11.0-rc.1 | 2025-01-09 | [51029](https://github.com/airbytehq/airbyte/pull/51029)   | Fix unnecessary schema change when upgrading from legacy mysql source.                                                                          |
 | 3.10.1      | 2025-01-10 | [51510](https://github.com/airbytehq/airbyte/pull/51510)   | Use a non root base image                                                                                                                       |
 | 3.10.0      | 2025-01-09 | [51008](https://github.com/airbytehq/airbyte/pull/51008)   | Promoting release candidate 3.10.0-rc.9 to a main version.                                                                                      |

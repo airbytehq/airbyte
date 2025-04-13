@@ -35,11 +35,15 @@
   --color-white: hsl(0, 0%, 100%);
   --color-grey-40: hsl(240, 25%, 98%);
   --color-grey-100: hsl(240, 12%, 92%);
-  --color-grey-400: hsl(240, 10%, 59%);
+  --color-grey-400: hsl(239, 10%, 59%);
   --color-grey-500: hsl(240, 10%, 49%);
   --color-grey-900: hsl(240, 19%, 18%);
+  --color-green-40: hsl(185, 76%, 97%);
   --color-green-50: hsl(184, 67%, 92%);
+  --color-green-600: hsl(185, 100%, 35%);
+  --color-green-800: hsl(184, 100%, 26%);
   --color-blue-30: hsl(240, 100%, 98%);
+  --color-dark-blue-40: hsl(230, 23%, 95%);
   --color-dark-blue-700: hsl(236, 43%, 31%);
   --color-red-400: hsl(0, 73%, 50%);
 
@@ -91,6 +95,10 @@ html[data-theme="dark"] {
 .navbar__logo img {
   /* Correct for visual imbalance in the logo */
   transform: translateY(-2px);
+}
+
+span.DocSearch-Button-Placeholder {
+  color: var(--ifm-menu-color);
 }
 
 .navbar__items--right {
@@ -168,6 +176,19 @@ html[data-theme="dark"] {
   display: none;
 }
 
+nav.theme-doc-breadcrumbs {
+  margin-top: 8px !important;
+}
+
+ul.breadcrumbs > li.breadcrumbs__item > a.breadcrumbs__link {
+  color: var(--ifm-color-primary);
+}
+
+ul.breadcrumbs > li.breadcrumbs__item > span.breadcrumbs__link {
+  color: var(--ifm-font-color-base);
+  background: none;
+}
+
 .cloudStatusLink {
   display: flex;
   gap: 4px;
@@ -207,9 +228,9 @@ html[data-theme="dark"] {
   box-shadow: none !important;
 }
 
-img {
+main img {
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .iconExternalLink_I5OW {
@@ -279,4 +300,9 @@ table tr:hover {
 }
 table thead tr:hover {
   background-color: transparent;
+}
+
+svg.inline-svg {
+  max-height: 1em;
+  max-width: 1em;
 }

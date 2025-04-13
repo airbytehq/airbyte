@@ -1,0 +1,3739 @@
+version: 6.36.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - agents
+
+definitions:
+  streams:
+    agents:
+      type: DeclarativeStream
+      name: agents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: agents
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream agents returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agents"
+    business_hours:
+      type: DeclarativeStream
+      name: business_hours
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: business_hours
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream business_hours returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - working_hours
+              value: "{{ record.get('business_hours') }}"
+        - type: RemoveFields
+          field_pointers:
+            - - business_hours
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/business_hours"
+    canned_response_folders:
+      type: DeclarativeStream
+      name: canned_response_folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: canned_response_folders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream canned_response_folders returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/canned_response_folders"
+    canned_responses:
+      type: DeclarativeStream
+      name: canned_responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: canned_response_folders/{{ stream_slice.id }}/responses
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream canned_responses returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/canned_response_folders"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/canned_responses"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream companies returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tickets/{{ stream_slice.id }}/conversations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream conversations returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/tickets"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream contacts returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.get('start_date') or day_delta(-3650,
+            '%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: _updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    discussion_categories:
+      type: DeclarativeStream
+      name: discussion_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: discussions/categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream discussion_categories returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discussion_categories"
+    discussion_comments:
+      type: DeclarativeStream
+      name: discussion_comments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: discussions/topics/{{ stream_slice.id }}/comments
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream discussion_comments returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/discussion_topics"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discussion_comments"
+    discussion_forums:
+      type: DeclarativeStream
+      name: discussion_forums
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: discussions/categories/{{ stream_slice.id }}/forums
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream discussion_forums returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/discussion_categories"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discussion_forums"
+    discussion_topics:
+      type: DeclarativeStream
+      name: discussion_topics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: discussions/forums/{{ stream_slice.id }}/topics
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream discussion_topics returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/discussion_forums"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discussion_topics"
+    email_configs:
+      type: DeclarativeStream
+      name: email_configs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: email_configs
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream email_configs returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_configs"
+    email_mailboxes:
+      type: DeclarativeStream
+      name: email_mailboxes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: email/mailboxes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream email_mailboxes returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_mailboxes"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream groups returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream products returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: roles
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream roles returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    satisfaction_ratings:
+      type: DeclarativeStream
+      name: satisfaction_ratings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: surveys/satisfaction_ratings
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream satisfaction_ratings returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        lookback_window: P{{ config['lookback_window_in_days'] or 14 }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.get('start_date') or day_delta(-3650,
+            '%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/satisfaction_ratings"
+    scenario_automations:
+      type: DeclarativeStream
+      name: scenario_automations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: scenario_automations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream scenario_automations returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scenario_automations"
+    settings:
+      type: DeclarativeStream
+      name: settings
+      primary_key:
+        - primary_language
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: settings/helpdesk
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream settings returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/settings"
+    skills:
+      type: DeclarativeStream
+      name: skills
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: skills
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream skills returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/skills"
+    sla_policies:
+      type: DeclarativeStream
+      name: sla_policies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sla_policies
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream sla_policies returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sla_policies"
+    solution_articles:
+      type: DeclarativeStream
+      name: solution_articles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: solutions/folders/{{ stream_slice.id }}/articles
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream solution_articles returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/solution_folders"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/solution_articles"
+    solution_categories:
+      type: DeclarativeStream
+      name: solution_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: solutions/categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream solution_categories returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/solution_categories"
+    solution_folders:
+      type: DeclarativeStream
+      name: solution_folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: solutions/categories/{{ stream_slice.id }}/folders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream solution_folders returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/solution_categories"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - category_id
+              value: "{{ record.get('category_id') or stream_slice.get('id') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/solution_folders"
+    surveys:
+      type: DeclarativeStream
+      name: surveys
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: surveys
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream surveys returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surveys"
+    ticket_fields:
+      type: DeclarativeStream
+      name: ticket_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: ticket_fields
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream ticket_fields returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_fields"
+    tickets:
+      type: DeclarativeStream
+      name: tickets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.FreshdeskTicketsIncrementalRequester
+          path: tickets
+          http_method: GET
+          request_parameters:
+            include: description,requester,stats
+            order_by: updated_at
+            order_type: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream tickets returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CustomPaginationStrategy
+            page_size: 100
+            class_name: source_declarative_manifest.components.FreshdeskTicketsPaginationStrategy
+            start_from_page: 1
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.FreshdeskTicketsIncrementalSync
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.get('start_date') or day_delta(-3650,
+            '%Y-%m-%dT%H:%M:%SZ') }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+    time_entries:
+      type: DeclarativeStream
+      name: time_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: time_entries
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream time_entries returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_entries"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['domain'] }}/api/v2/
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config.get('api_key')}}"
+
+streams:
+  - $ref: "#/definitions/streams/agents"
+  - $ref: "#/definitions/streams/business_hours"
+  - $ref: "#/definitions/streams/canned_response_folders"
+  - $ref: "#/definitions/streams/canned_responses"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/discussion_categories"
+  - $ref: "#/definitions/streams/discussion_comments"
+  - $ref: "#/definitions/streams/discussion_forums"
+  - $ref: "#/definitions/streams/discussion_topics"
+  - $ref: "#/definitions/streams/email_configs"
+  - $ref: "#/definitions/streams/email_mailboxes"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/satisfaction_ratings"
+  - $ref: "#/definitions/streams/scenario_automations"
+  - $ref: "#/definitions/streams/settings"
+  - $ref: "#/definitions/streams/skills"
+  - $ref: "#/definitions/streams/sla_policies"
+  - $ref: "#/definitions/streams/solution_articles"
+  - $ref: "#/definitions/streams/solution_categories"
+  - $ref: "#/definitions/streams/solution_folders"
+  - $ref: "#/definitions/streams/surveys"
+  - $ref: "#/definitions/streams/ticket_fields"
+  - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/time_entries"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - domain
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Freshdesk API Key. See the <a
+          href="https://docs.airbyte.com/integrations/sources/freshdesk">docs</a>
+          for more information on how to obtain this key.
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      domain:
+        type: string
+        description: Freshdesk domain
+        order: 1
+        title: Domain
+        pattern: ^[a-zA-Z0-9._-]*\.freshdesk\.com$
+        examples:
+          - myaccount.freshdesk.com
+      requests_per_minute:
+        type: integer
+        description: >-
+          The number of requests per minute that this source allowed to use.
+          There is a rate limit of 50 requests per minute per app per account.
+        order: 2
+        title: Requests per minute
+      rate_limit_plan:
+        type: object
+        description: Rate Limit Plan for API Budget
+        title: Rate Limit Plan
+        oneOf:
+          - type: object
+            title: Free Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: free
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Free Plan
+                const: 50
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Free Plan
+                const: 50
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Free Plan
+                const: 50
+          - type: object
+            title: Growth Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: growth
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Growth Plan
+                const: 200
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Growth Plan
+                const: 20
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Growth Plan
+                const: 20
+          - type: object
+            title: Pro Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: pro
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Pro Plan
+                const: 400
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Pro Plan
+                const: 100
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Pro Plan
+                const: 100
+          - type: object
+            title: Enterprise Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: enterprise
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Enterprise Plan
+                const: 700
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Enterprise Plan
+                const: 200
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Enterprise Plan
+                const: 200
+          - type: object
+            title: Custom Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: custom
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Custom Plan
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Custom Plan
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Custom Plan
+      start_date:
+        type: string
+        description: >-
+          UTC date and time. Any data created after this date will be
+          replicated. If this parameter is not set, all data will be replicated.
+        order: 3
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2020-12-01T00:00:00Z"
+      lookback_window_in_days:
+        type: integer
+        description: Number of days for lookback window for the stream Satisfaction Ratings
+        order: 4
+        title: Lookback Window
+        default: 14
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    agents: false
+    business_hours: false
+    canned_response_folders: false
+    canned_responses: false
+    companies: false
+    conversations: false
+    contacts: false
+    discussion_categories: false
+    discussion_comments: false
+    discussion_forums: false
+    discussion_topics: false
+    email_configs: false
+    email_mailboxes: false
+    groups: false
+    products: false
+    roles: false
+    satisfaction_ratings: false
+    scenario_automations: false
+    settings: false
+    skills: false
+    sla_policies: false
+    solution_articles: false
+    solution_categories: false
+    solution_folders: false
+    surveys: false
+    ticket_fields: false
+    tickets: false
+    time_entries: false
+  yamlComponents:
+    streams:
+      tickets:
+        - paginator
+        - incrementalSync
+    global:
+      - authenticator
+  testedStreams:
+    agents:
+      streamHash: 7dd6fb8b10ff80b9d8d269201bd0649d38ac2b49
+    business_hours:
+      streamHash: 49d654d02422bad74c38312c2d5d1ff02c25f784
+    canned_response_folders:
+      streamHash: 83b22bacbe9f29e983c6ad230c22dab0f5bfac21
+    canned_responses:
+      streamHash: 5ef4bfcab038fcbbfa5a60cc040cc114aa881d3c
+    companies:
+      streamHash: d899d6530b9a4f10a7334e68d109d67ef296837d
+    conversations:
+      streamHash: a7f6251268464fdddae9d06c0da0da0946065b80
+    contacts:
+      streamHash: 3d3e37184b916a8c2c13d125812afd25f76c1301
+    discussion_categories:
+      streamHash: 8eff793aea31a938113415c932df8201a9bc3763
+    discussion_comments:
+      streamHash: 5e4e8e022684e62068e3f175603ca5aac5c91981
+    discussion_forums:
+      streamHash: 880109bcf0a56ae6c1461235ca9717148057b2ed
+    discussion_topics:
+      streamHash: f36e854842897a3cba2c1e4a80f9766fc6e3ca2b
+    email_configs:
+      streamHash: 44ad8007fe390f08997732e36ea388a4145c7abd
+    email_mailboxes:
+      streamHash: 0f5e4f2ff1d4f13ca3c45264478f97bafbc76ed8
+    groups:
+      streamHash: fb80d115f564b4df6acbdab9e5f000c1b89b8a10
+    products:
+      streamHash: 636588f388943a6a3f7af7e77f15836a1bee7832
+    roles:
+      streamHash: 7d1477592c6d40db87c79c710bb47b4f4f2ee03e
+    satisfaction_ratings:
+      streamHash: 1d8710a700a95c1a6aa8bc488caffceea09398db
+    scenario_automations:
+      streamHash: b295a90b9c2066cd8facf2cba914e39bea9af372
+    settings:
+      streamHash: c6e66bb0d9ee1e84aec615e8f9317d173645fd56
+    skills:
+      streamHash: b4fa39a380a2ddfb2345a8ca8a895cc3c80102a4
+    sla_policies:
+      streamHash: 1de71475d5c7fa550fa624e8f3de38ca38212393
+    solution_articles:
+      streamHash: f5252fa19fe44bb4ee99a5c051e53539e794c738
+    solution_categories:
+      streamHash: 65179a7ed2a672f2d04492290b06ce0925c39398
+    solution_folders:
+      streamHash: 05401ed3a267b6867551ed9bc25170a764934b73
+    surveys:
+      streamHash: 05283b6b50a0c90bf650f6151e388c88c27e91fe
+    ticket_fields:
+      streamHash: 438652c2fc47bfd9ed56b0151d80f437aedc86c9
+    tickets:
+      streamHash: b10fdc7b926ad6e09f4b2a7d7d7768517b998e1b
+    time_entries:
+      streamHash: dbee105cf7d369dd2ebf0b87cc0737a7af507ebd
+  assist: {}
+
+schemas:
+  agents:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      available:
+        type:
+          - boolean
+          - "null"
+      available_since:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - "null"
+          - object
+        properties:
+          active:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          job_title:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          last_login_at:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      last_active_at:
+        type:
+          - string
+          - "null"
+      occasional:
+        type:
+          - boolean
+          - "null"
+      signature:
+        type:
+          - string
+          - "null"
+      ticket_scope:
+        type:
+          - integer
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+  business_hours:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_default:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      working_hours:
+        type:
+          - "null"
+          - object
+        properties:
+          monday:
+            type:
+              - "null"
+              - object
+            properties:
+              start_time:
+                type:
+                  - "null"
+                  - string
+              end_time:
+                type:
+                  - "null"
+                  - string
+          tuesday:
+            type:
+              - "null"
+              - object
+            properties:
+              start_time:
+                type:
+                  - "null"
+                  - string
+              end_time:
+                type:
+                  - "null"
+                  - string
+          wednesday:
+            type:
+              - "null"
+              - object
+            properties:
+              start_time:
+                type:
+                  - "null"
+                  - string
+              end_time:
+                type:
+                  - "null"
+                  - string
+          thursday:
+            type:
+              - "null"
+              - object
+            properties:
+              start_time:
+                type:
+                  - "null"
+                  - string
+              end_time:
+                type:
+                  - "null"
+                  - string
+          friday:
+            type:
+              - "null"
+              - object
+            properties:
+              start_time:
+                type:
+                  - "null"
+                  - string
+              end_time:
+                type:
+                  - "null"
+                  - string
+          saturday:
+            type:
+              - "null"
+              - object
+            properties:
+              start_time:
+                type:
+                  - "null"
+                  - string
+              end_time:
+                type:
+                  - "null"
+                  - string
+          sunday:
+            type:
+              - "null"
+              - object
+            properties:
+              start_time:
+                type:
+                  - "null"
+                  - string
+              end_time:
+                type:
+                  - "null"
+                  - string
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  canned_response_folders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      personal:
+        type:
+          - "null"
+          - boolean
+      responses_count:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  canned_responses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      title:
+        type:
+          - "null"
+          - string
+      folder_id:
+        type:
+          - "null"
+          - integer
+      content:
+        type:
+          - "null"
+          - string
+      content_html:
+        type:
+          - "null"
+          - string
+      attachments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            content_type:
+              type:
+                - "null"
+                - string
+            size:
+              type:
+                - "null"
+                - integer
+            attachment_url:
+              type:
+                - "null"
+                - string
+            thumb_url:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  companies:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      health_score:
+        type:
+          - string
+          - "null"
+      account_tier:
+        type:
+          - string
+          - "null"
+      renewal_date:
+        type:
+          - string
+          - "null"
+      industry:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  conversations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      body:
+        type:
+          - string
+          - "null"
+      body_text:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      incoming:
+        type:
+          - boolean
+          - "null"
+      private:
+        type:
+          - boolean
+          - "null"
+      user_id:
+        type:
+          - integer
+          - "null"
+      support_email:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - integer
+          - "null"
+      category:
+        type:
+          - integer
+          - "null"
+      to_emails:
+        type:
+          - array
+          - "null"
+      from_email:
+        type:
+          - string
+          - "null"
+      cc_emails:
+        type:
+          - array
+          - "null"
+      bcc_emails:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      ticket_id:
+        type:
+          - integer
+          - "null"
+      source_additional_info:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - integer
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      job_title:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      twitter_id:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      facebook_id:
+        type:
+          - integer
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      csat_rating:
+        type:
+          - integer
+          - "null"
+      preferred_source:
+        type:
+          - string
+          - "null"
+      unique_external_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  discussion_categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  discussion_comments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      answer:
+        type:
+          - "null"
+          - boolean
+      body:
+        type:
+          - "null"
+          - string
+      forum_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      published:
+        type:
+          - "null"
+          - boolean
+      spam:
+        type:
+          - "null"
+          - boolean
+      topic_id:
+        type:
+          - "null"
+          - integer
+      trash:
+        type:
+          - "null"
+          - boolean
+      user_id:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  discussion_forums:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      company_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      forum_category_id:
+        type:
+          - "null"
+          - integer
+      forum_type:
+        type:
+          - "null"
+          - integer
+      forum_visibility:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      position:
+        type:
+          - "null"
+          - integer
+      posts_count:
+        type:
+          - "null"
+          - integer
+      topics_count:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  discussion_topics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      forum_id:
+        type:
+          - "null"
+          - integer
+      hits:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      locked:
+        type:
+          - "null"
+          - boolean
+      merged_topic_id:
+        type:
+          - "null"
+          - integer
+      message:
+        type:
+          - "null"
+          - string
+      posts_count:
+        type:
+          - "null"
+          - integer
+      replied_by:
+        type:
+          - "null"
+          - integer
+      stamp_type:
+        type:
+          - "null"
+          - integer
+      sticky:
+        type:
+          - "null"
+          - boolean
+      title:
+        type:
+          - "null"
+          - string
+      user_id:
+        type:
+          - "null"
+          - integer
+      user_votes:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  email_configs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      active:
+        type:
+          - "null"
+          - boolean
+      group_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      primary_role:
+        type:
+          - "null"
+          - boolean
+      product_id:
+        type:
+          - "null"
+          - integer
+      reply_email:
+        type:
+          - "null"
+          - string
+      to_email:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  email_mailboxes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      support_email:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      product_id:
+        type:
+          - "null"
+          - integer
+      default_reply_email:
+        type:
+          - "null"
+          - boolean
+      mailbox_type:
+        type:
+          - "null"
+          - string
+      custom_mailbox:
+        type:
+          - "null"
+          - string
+      access_type:
+        type:
+          - "null"
+          - string
+      incoming:
+        type:
+          - "null"
+          - string
+      mail_server:
+        type:
+          - "null"
+          - string
+      port:
+        type:
+          - "null"
+          - integer
+      use_ssl:
+        type:
+          - "null"
+          - boolean
+      delete_from_server:
+        type:
+          - "null"
+          - boolean
+      authentication:
+        type:
+          - "null"
+          - string
+      username:
+        type:
+          - "null"
+          - string
+      password:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      escalate_to:
+        type:
+          - integer
+          - "null"
+      unassigned_for:
+        type:
+          - string
+          - "null"
+      business_hour_id:
+        type:
+          - integer
+          - "null"
+      group_type:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      auto_ticket_assign:
+        type:
+          - integer
+          - "null"
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      default:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  satisfaction_ratings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      survey_id:
+        type:
+          - "null"
+          - integer
+      user_id:
+        type:
+          - "null"
+          - integer
+      agent_id:
+        type:
+          - "null"
+          - integer
+      feedback:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      ticket_id:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      ratings:
+        type:
+          - "null"
+          - object
+    additionalProperties: true
+  scenario_automations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      actions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      private:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  settings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      primary_language:
+        type:
+          - "null"
+          - string
+      supported_languages:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      portal_languages:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+    additionalProperties: true
+  skills:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      rank:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      agents:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+      match_type:
+        type:
+          - "null"
+          - string
+      conditions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            resource_type:
+              type:
+                - "null"
+                - string
+            field_name:
+              type:
+                - "null"
+                - string
+            operator:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+    additionalProperties: true
+  sla_policies:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      active:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      is_default:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      position:
+        type:
+          - "null"
+          - integer
+      sla_target:
+        type:
+          - "null"
+          - object
+        properties:
+          priority_4:
+            type:
+              - "null"
+              - object
+            properties:
+              respond_within:
+                type:
+                  - "null"
+                  - integer
+              resolve_within:
+                type:
+                  - "null"
+                  - integer
+              business_hours:
+                type:
+                  - "null"
+                  - boolean
+              escalation_enabled:
+                type:
+                  - "null"
+                  - boolean
+          priority_3:
+            type:
+              - "null"
+              - object
+            properties:
+              respond_within:
+                type:
+                  - "null"
+                  - integer
+              resolve_within:
+                type:
+                  - "null"
+                  - integer
+              business_hours:
+                type:
+                  - "null"
+                  - boolean
+              escalation_enabled:
+                type:
+                  - "null"
+                  - boolean
+          priority_2:
+            type:
+              - "null"
+              - object
+            properties:
+              respond_within:
+                type:
+                  - "null"
+                  - integer
+              resolve_within:
+                type:
+                  - "null"
+                  - integer
+              business_hours:
+                type:
+                  - "null"
+                  - boolean
+              escalation_enabled:
+                type:
+                  - "null"
+                  - boolean
+          priority_1:
+            type:
+              - "null"
+              - object
+            properties:
+              respond_within:
+                type:
+                  - "null"
+                  - integer
+              resolve_within:
+                type:
+                  - "null"
+                  - integer
+              business_hours:
+                type:
+                  - "null"
+                  - boolean
+              escalation_enabled:
+                type:
+                  - "null"
+                  - boolean
+      applicable_to:
+        type:
+          - "null"
+          - object
+        properties:
+          company_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          group_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          sources:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          ticket_types:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          product_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+      escalation:
+        type:
+          - "null"
+          - object
+        properties:
+          response:
+            type:
+              - "null"
+              - object
+            properties:
+              escalation_time:
+                type:
+                  - "null"
+                  - integer
+              agent_ids:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - integer
+          resolution:
+            type:
+              - "null"
+              - object
+            properties:
+              level1:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  escalation_time:
+                    type:
+                      - "null"
+                      - integer
+                  agent_ids:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - integer
+              level2:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  escalation_time:
+                    type:
+                      - "null"
+                      - integer
+                  agent_ids:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - integer
+              level3:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  escalation_time:
+                    type:
+                      - "null"
+                      - integer
+                  agent_ids:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - integer
+              level4:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  escalation_time:
+                    type:
+                      - "null"
+                      - integer
+                  agent_ids:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - integer
+    additionalProperties: true
+  solution_articles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      agent_id:
+        type:
+          - "null"
+          - integer
+      category_id:
+        type:
+          - "null"
+          - integer
+      description_text:
+        type:
+          - "null"
+          - string
+      folder_id:
+        type:
+          - "null"
+          - integer
+      hits:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - integer
+      seo_data:
+        type:
+          - "null"
+          - object
+        properties:
+          meta_title:
+            type:
+              - "null"
+              - string
+          meta_description:
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      thumbs_down:
+        type:
+          - "null"
+          - integer
+      thumbs_up:
+        type:
+          - "null"
+          - integer
+      title:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  solution_categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      visible_in_portals:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  solution_folders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      visibility:
+        type:
+          - "null"
+          - integer
+      company_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      contact_segment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      company_segment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  surveys:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      title:
+        type:
+          - "null"
+          - string
+      active:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+      questions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            label:
+              type:
+                - "null"
+                - string
+            accepted_ratings:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - integer
+            default:
+              type:
+                - "null"
+                - boolean
+    additionalProperties: true
+  ticket_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      default:
+        type:
+          - "null"
+          - boolean
+      label:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      position:
+        type:
+          - "null"
+          - integer
+      required_for_closure:
+        type:
+          - "null"
+          - boolean
+      required_for_agents:
+        type:
+          - "null"
+          - boolean
+      required_for_customers:
+        type:
+          - "null"
+          - boolean
+      label_for_customers:
+        type:
+          - "null"
+          - string
+      customers_can_edit:
+        type:
+          - "null"
+          - boolean
+      displayed_to_customers:
+        type:
+          - "null"
+          - boolean
+      portal_cc:
+        type:
+          - "null"
+          - boolean
+      portal_cc_to:
+        type:
+          - "null"
+          - string
+      choices:
+        type:
+          - "null"
+          - array
+          - object
+      is_fsm:
+        type:
+          - "null"
+          - boolean
+      field_update_in_progress:
+        type:
+          - "null"
+          - boolean
+      dependent_fields:
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          label:
+            type:
+              - "null"
+              - string
+          label_for_customers:
+            type:
+              - "null"
+              - string
+          level:
+            type:
+              - "null"
+              - integer
+          ticket_field_id:
+            type:
+              - "null"
+              - integer
+          created_at:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  tickets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      cc_emails:
+        type:
+          - array
+          - "null"
+      fwd_emails:
+        type:
+          - array
+          - "null"
+      reply_cc_emails:
+        type:
+          - array
+          - "null"
+      ticket_cc_emails:
+        type:
+          - array
+          - "null"
+      fr_escalated:
+        type:
+          - "null"
+          - boolean
+      spam:
+        type:
+          - "null"
+          - boolean
+      email_config_id:
+        type:
+          - integer
+          - "null"
+      group_id:
+        type:
+          - integer
+          - "null"
+      priority:
+        type:
+          - integer
+          - "null"
+      requester_id:
+        type:
+          - integer
+          - "null"
+      responder_id:
+        type:
+          - integer
+          - "null"
+      source:
+        type:
+          - integer
+          - "null"
+      company_id:
+        type:
+          - integer
+          - "null"
+      status:
+        type:
+          - integer
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      association_type:
+        type:
+          - integer
+          - "null"
+      to_emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      product_id:
+        type:
+          - integer
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      due_by:
+        type:
+          - string
+          - "null"
+      fr_due_by:
+        type:
+          - string
+          - "null"
+      is_escalated:
+        type:
+          - boolean
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      associated_tickets_count:
+        type:
+          - integer
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      nr_due_by:
+        type:
+          - string
+          - "null"
+      nr_escalated:
+        type:
+          - boolean
+          - "null"
+      description_text:
+        type:
+          - string
+          - "null"
+      requester:
+        type:
+          - object
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
+  time_entries:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      billable:
+        type:
+          - boolean
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      timer_running:
+        type:
+          - boolean
+          - "null"
+      agent_id:
+        type:
+          - integer
+          - "null"
+      ticket_id:
+        type:
+          - integer
+          - "null"
+      company_id:
+        type:
+          - integer
+          - "null"
+      time_spent:
+        type:
+          - string
+          - "null"
+      executed_at:
+        type:
+          - string
+          - "null"
+      start_time:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: "PT1M"
+      # due to lack for support for interpolated string for the call_limit field, this has been
+      # hardcoded to 50 which is the default rate for free plan
+      # in the near term use "{{ config.get('requests_per_minute')}}"
+      # long term is to utilize the `rate_limit_plan` field in config and specifying for each endpoint
+      call_limit: 50 
+      matchers:
+        - method: GET
+          url_base: "https://{{ config['domain'] }}/api/v2/"
+  ratelimit_reset_header: Retry-After
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  status_codes_for_ratelimit_hit: [429]

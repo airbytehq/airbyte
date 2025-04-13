@@ -1,4 +1,4 @@
-import { faArrowRight, faCloud, faDownload, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faCloud, faDownload, faLock, faRobot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "./Card.module.css";
 import { CloudIcon, EnterpriseIcon, OssIcon } from "./CustomIcons";
@@ -7,7 +7,7 @@ const FA_ICONS = {
   "fa-cloud": faCloud,
   "fa-download": faDownload,
   "fa-lock": faLock,
-
+  "fa-robot": faRobot,
 };
 
 const CUSTOM_ICONS = {

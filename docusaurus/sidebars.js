@@ -1,9 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const {
-  parseMarkdownContentTitle,
-  parseMarkdownFile,
-} = require("@docusaurus/utils");
+const { parseMarkdownContentTitle, parseMarkdownFile } = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -20,7 +17,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
           fileName.endsWith("-migrations.md") ||
           fileName.endsWith(".js") ||
           fileName === "low-code.md"
-        )
+        ),
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
@@ -28,20 +25,20 @@ function getFilenamesInDir(prefix, dir, excludes) {
       // Get the first header of the markdown document
       try {
         const filePath = path.join(dir, `${filename}.md`);
-        const fileContent = fs.readFileSync(filePath, 'utf8');
-        const firstLine = fileContent.split('\n').find(line => line.trim().startsWith('# '));
-        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, '').trim() : filename;
+        const fileContent = fs.readFileSync(filePath, "utf8");
+        const firstLine = fileContent.split("\n").find((line) => line.trim().startsWith("# "));
+        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, "").trim() : filename;
         return {
-          type: 'doc',
+          type: "doc",
           id: prefix + filename,
-          label: contentTitle || filename
+          label: contentTitle || filename,
         };
       } catch (error) {
         console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
         return {
-          type: 'doc',
+          type: "doc",
           id: prefix + filename,
-          label: filename
+          label: filename,
         };
       }
 
@@ -89,10 +86,9 @@ function getDestinationConnectors() {
 }
 
 function getEnterpriseConnectors() {
-  return getFilenamesInDir(
-    "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs, ["readme"]
-  );
+  return getFilenamesInDir("integrations/enterprise-connectors/", enterpriseConnectorDocs, [
+    "readme",
+  ]);
 }
 
 const sourcePostgres = {
@@ -222,12 +218,12 @@ const buildAConnector = {
   items: [
     {
       type: "category",
-      label: "No-Code Connector Builder",
+      label: "Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
-        "connector-development/connector-builder-ui/connector-builder-compatibility",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
+        "connector-development/connector-builder-ui/custom-components",
         {
           type: "category",
           label: "Concepts",
@@ -238,31 +234,13 @@ const buildAConnector = {
             "connector-development/connector-builder-ui/incremental-sync",
             "connector-development/connector-builder-ui/partitioning",
             "connector-development/connector-builder-ui/error-handling",
+            "connector-development/connector-builder-ui/async-streams",
           ],
         },
-      ],
-    },
-    {
-      type: "category",
-      label: "Low-Code CDK",
-      items: [
         {
           label: "Low-Code CDK Intro",
           type: "doc",
           id: "connector-development/config-based/low-code-cdk-overview",
-        },
-        {
-          type: "category",
-          label: "Tutorial",
-          items: [
-            "connector-development/config-based/tutorial/getting-started",
-            "connector-development/config-based/tutorial/create-source",
-            "connector-development/config-based/tutorial/install-dependencies",
-            "connector-development/config-based/tutorial/connecting-to-the-API-source",
-            "connector-development/config-based/tutorial/reading-data",
-            "connector-development/config-based/tutorial/incremental-reads",
-            "connector-development/config-based/tutorial/testing",
-          ],
         },
         {
           type: "category",
@@ -288,6 +266,7 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/incremental-syncs",
             "connector-development/config-based/understanding-the-yaml-file/pagination",
             "connector-development/config-based/understanding-the-yaml-file/partition-router",
+            "connector-development/config-based/understanding-the-yaml-file/rate-limit-api-budget",
             "connector-development/config-based/understanding-the-yaml-file/record-selector",
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
@@ -304,7 +283,7 @@ const buildAConnector = {
             "connector-development/config-based/advanced-topics/parameters",
             "connector-development/config-based/advanced-topics/references",
             "connector-development/config-based/advanced-topics/string-interpolation",
-          ]
+          ],
         },
       ],
     },
@@ -320,30 +299,24 @@ const buildAConnector = {
         "connector-development/cdk-python/basic-concepts",
         "connector-development/cdk-python/schemas",
         "connector-development/cdk-python/full-refresh-stream",
+        "connector-development/cdk-python/resumable-full-refresh-stream",
         "connector-development/cdk-python/incremental-stream",
         "connector-development/cdk-python/http-streams",
-        "connector-development/cdk-python/python-concepts",
         "connector-development/cdk-python/stream-slices",
+        "connector-development/cdk-python/migration-to-base-image",
         {
           type: "category",
-          label: "Tutorials",
+          label: "Tutorial: Creating a connector with Python CDK",
           items: [
-            "connector-development/tutorials/cdk-speedrun",
-            {
-              type: "category",
-              label: "Python CDK: Creating a Python Source",
-              items: [
-                "connector-development/tutorials/custom-python-connector/getting-started",
-                "connector-development/tutorials/custom-python-connector/environment-setup",
-                "connector-development/tutorials/custom-python-connector/reading-a-page",
-                "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
-                "connector-development/tutorials/custom-python-connector/check-and-error-handling",
-                "connector-development/tutorials/custom-python-connector/discover",
-                "connector-development/tutorials/custom-python-connector/incremental-reads",
-                "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
-                "connector-development/tutorials/custom-python-connector/concurrency",
-              ],
-            },
+            "connector-development/tutorials/custom-python-connector/getting-started",
+            "connector-development/tutorials/custom-python-connector/environment-setup",
+            "connector-development/tutorials/custom-python-connector/reading-a-page",
+            "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
+            "connector-development/tutorials/custom-python-connector/check-and-error-handling",
+            "connector-development/tutorials/custom-python-connector/discover",
+            "connector-development/tutorials/custom-python-connector/incremental-reads",
+            "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
+            "connector-development/tutorials/custom-python-connector/concurrency",
           ],
         },
       ],
@@ -355,11 +328,11 @@ const buildAConnector = {
         type: "doc",
         id: "connector-development/testing-connectors/README",
       },
-      items: [
-        "connector-development/testing-connectors/connector-acceptance-tests-reference",
-      ],
+      items: ["connector-development/testing-connectors/connector-acceptance-tests-reference"],
     },
     "connector-development/connector-specification-reference",
+    "connector-development/partner-certified-destinations",
+    "connector-development/debugging-docker",
     "connector-development/writing-connector-docs",
     "connector-development/schema-reference",
     "connector-development/connector-metadata-file",
@@ -390,8 +363,8 @@ const connectorCatalog = {
         sourceMssql,
         ...getSourceConnectors(),
       ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || '';
-        const labelB = itemB?.label || '';
+        const labelA = itemA?.label || "";
+        const labelB = itemB?.label || "";
         return labelA.localeCompare(labelB);
       }),
     },
@@ -402,15 +375,13 @@ const connectorCatalog = {
         type: "doc",
         id: "integrations/destinations/README",
       },
-      items: [
-        destinationS3,
-        destinationPostgres,
-        ...getDestinationConnectors(),
-      ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || '';
-        const labelB = itemB?.label || '';
-        return labelA.localeCompare(labelB);
-      }),
+      items: [destinationS3, destinationPostgres, ...getDestinationConnectors()].sort(
+        (itemA, itemB) => {
+          const labelA = itemA?.label || "";
+          const labelB = itemB?.label || "";
+          return labelA.localeCompare(labelB);
+        },
+      ),
     },
     {
       type: "doc",
@@ -532,6 +503,7 @@ const understandingAirbyte = {
     "understanding-airbyte/high-level-view",
     "understanding-airbyte/airbyte-protocol",
     "understanding-airbyte/airbyte-protocol-docker",
+    "understanding-airbyte/airbyte-protocol-versioning",
     "understanding-airbyte/jobs",
     "understanding-airbyte/database-data-catalog",
     "understanding-airbyte/beginners-guide-to-catalog",
@@ -542,6 +514,7 @@ const understandingAirbyte = {
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",
+    "understanding-airbyte/heartbeats",
   ],
 };
 
@@ -551,6 +524,10 @@ module.exports = {
     {
       type: "doc",
       id: "using-airbyte/getting-started/readme",
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/getting-started/academy",
     },
     {
       type: "doc",
@@ -606,8 +583,17 @@ module.exports = {
         "operator-guides/refreshes",
         "operator-guides/clear",
         "operator-guides/browsing-output-logs",
+        "integrations/locating-files-local-destination",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/tagging",
+    },
+    {
+      type: "doc",
+      id: "understanding-airbyte/airbyte-metadata-fields",
     },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
@@ -621,7 +607,9 @@ module.exports = {
       items: [
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
+        "enterprise-setup/multi-region",
         "enterprise-setup/scaling-airbyte",
+        "enterprise-setup/upgrade-service-account",
         "enterprise-setup/upgrading-from-community",
         {
           type: "category",
@@ -631,8 +619,8 @@ module.exports = {
             id: "integrations/enterprise-connectors/README",
           },
           items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
-            const labelA = itemA?.label || '';
-            const labelB = itemB?.label || '';
+            const labelA = itemA?.label || "";
+            const labelB = itemB?.label || "";
             return labelA.localeCompare(labelB);
           }),
         },
@@ -645,7 +633,9 @@ module.exports = {
         type: "doc",
         id: "operator-guides/upgrading-airbyte",
       },
-      items: ["managing-airbyte/connector-updates"],
+      items: [
+        "managing-airbyte/connector-updates",
+      ],
     },
     {
       type: "category",
@@ -654,10 +644,7 @@ module.exports = {
         type: "doc",
         id: "operator-guides/configuring-airbyte",
       },
-      items: [
-        "operator-guides/configuring-connector-resources",
-        "operator-guides/telemetry",
-      ],
+      items: ["operator-guides/configuring-connector-resources", "operator-guides/telemetry"],
     },
 
     {
@@ -688,7 +675,7 @@ module.exports = {
           items: [
             {
               type: "doc",
-              id: "access-management/role-mapping"
+              id: "access-management/role-mapping",
             },
           ],
         },
@@ -742,7 +729,6 @@ module.exports = {
       id: "using-airbyte/pyairbyte/getting-started",
     },
     understandingAirbyte,
-    contributeToAirbyte,
     {
       type: "category",
       label: "Licenses",
@@ -758,6 +744,7 @@ module.exports = {
       ],
     },
     sectionHeader("Community"),
+    contributeToAirbyte,
     "community/getting-support",
     "community/code-of-conduct",
     sectionHeader("Product Updates"),
@@ -771,40 +758,54 @@ module.exports = {
       label: "Release Notes",
       link: {
         type: "generated-index",
-        description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
+        description:
+          "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
+        "release_notes/v-1.6",
+        "release_notes/v-1.5",
         "release_notes/v-1.4",
         "release_notes/v-1.3",
         "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",
-        "release_notes/aug_2024",
-        "release_notes/july_2024",
-        "release_notes/june_2024",
-        "release_notes/may_2024",
-        "release_notes/april_2024",
-        "release_notes/march_2024",
-        "release_notes/february_2024",
-        "release_notes/january_2024",
-        "release_notes/december_2023",
-        "release_notes/november_2023",
-        "release_notes/october_2023",
-        "release_notes/upgrading_to_destinations_v2",
-        "release_notes/september_2023",
-        "release_notes/july_2023",
-        "release_notes/june_2023",
-        "release_notes/may_2023",
-        "release_notes/april_2023",
-        "release_notes/march_2023",
-        "release_notes/february_2023",
-        "release_notes/january_2023",
-        "release_notes/december_2022",
-        "release_notes/november_2022",
-        "release_notes/october_2022",
-        "release_notes/september_2022",
-        "release_notes/august_2022",
-        "release_notes/july_2022",
+        {
+          type: "category",
+          label: "Historical release notes",
+          link: {
+            type: "generated-index",
+            description:
+              "Historical release notes from before Airbyte 1.0 are preserved here for posterity.",
+          },
+          items: [
+            "release_notes/aug_2024",
+            "release_notes/july_2024",
+            "release_notes/june_2024",
+            "release_notes/may_2024",
+            "release_notes/april_2024",
+            "release_notes/march_2024",
+            "release_notes/february_2024",
+            "release_notes/january_2024",
+            "release_notes/december_2023",
+            "release_notes/november_2023",
+            "release_notes/october_2023",
+            "release_notes/upgrading_to_destinations_v2",
+            "release_notes/september_2023",
+            "release_notes/july_2023",
+            "release_notes/june_2023",
+            "release_notes/may_2023",
+            "release_notes/april_2023",
+            "release_notes/march_2023",
+            "release_notes/february_2023",
+            "release_notes/january_2023",
+            "release_notes/december_2022",
+            "release_notes/november_2022",
+            "release_notes/october_2022",
+            "release_notes/september_2022",
+            "release_notes/august_2022",
+            "release_notes/july_2022",
+          ],
+        },
       ],
     },
   ],

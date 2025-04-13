@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.48.7'
+    cdkVersionRequired = '0.48.8'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -24,7 +24,7 @@ application {
 }
 
 dependencies {
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.10.0.jre11'
     implementation 'io.debezium:debezium-embedded:3.0.7.Final'
     implementation 'io.debezium:debezium-connector-sqlserver:3.0.7.Final'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'

@@ -54,5 +54,5 @@ When deployed this way, you'll upgrade by modifying the `values.yaml` file. If y
 Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd like to ensure you're running the latest version of Airbyte, you can check the value of the Helm Chart's app version by running `abctl local status`.
 
 :::note
-Occasionally, `abctl` itself will need to be updated. Do that by running `brew update abctl`. This is seperate from upgrading Airbyte and only upgrades the command line tool.
+Occasionally, `abctl` itself will need to be updated. Do that by running `brew update abctl`. This is separate from upgrading Airbyte and only upgrades the command line tool.
 :::

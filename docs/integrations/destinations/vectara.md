@@ -22,7 +22,7 @@ The Vectara destination connector supports Full Refresh Overwrite, Full Refresh 
 
 All streams will be output into a corpus in Vectara whose name must be specified in the config.
 
-Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the prefered corpus.
+Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the preferred corpus.
 
 ### Features
 

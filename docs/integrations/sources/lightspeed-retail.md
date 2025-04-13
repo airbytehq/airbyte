@@ -51,6 +51,12 @@ After logging in, you can create your personal token by navigating to Setup -&gt
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-04-05 | [57081](https://github.com/airbytehq/airbyte/pull/57081) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56687](https://github.com/airbytehq/airbyte/pull/56687) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [56011](https://github.com/airbytehq/airbyte/pull/56011) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55497](https://github.com/airbytehq/airbyte/pull/55497) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54800](https://github.com/airbytehq/airbyte/pull/54800) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54361](https://github.com/airbytehq/airbyte/pull/54361) | Update dependencies |
 | 0.0.12 | 2025-02-15 | [53837](https://github.com/airbytehq/airbyte/pull/53837) | Update dependencies |
 | 0.0.11 | 2025-02-08 | [53304](https://github.com/airbytehq/airbyte/pull/53304) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [52763](https://github.com/airbytehq/airbyte/pull/52763) | Update dependencies |

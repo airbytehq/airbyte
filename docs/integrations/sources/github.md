@@ -225,6 +225,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.26 | 2025-02-22 | [54404](https://github.com/airbytehq/airbyte/pull/54404) | Update dependencies |
 | 1.8.25 | 2025-02-15 | [53703](https://github.com/airbytehq/airbyte/pull/53703) | Update dependencies |
 | 1.8.24 | 2025-02-01 | [52875](https://github.com/airbytehq/airbyte/pull/52875) | Update dependencies |
 | 1.8.23 | 2025-01-25 | [52364](https://github.com/airbytehq/airbyte/pull/52364) | Update dependencies |

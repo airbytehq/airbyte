@@ -27,8 +27,8 @@ def check_connection_url(config):
 @pytest.mark.parametrize("response_code,expect_success,response_json", [(400, False, {"error": "Request error"})])
 def test_check_connection(requests_mock, check_connection_url, config_raw, response_code, expect_success, response_json):
     # requests_mock.register_uri("GET", check_connection_url, setup_response(response_code, response_json))
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=response_code, json=response_json)
-    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=response_code, json=response_json)
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=response_code, json=response_json)
+    requests_mock.get("https://eu.mixpanel.com/api/query/cohorts/list", status_code=response_code, json=response_json)
     ok, error = SourceMixpanel().check_connection(logger, config_raw)
     assert ok == expect_success
 
@@ -48,15 +48,17 @@ def test_check_connection_incomplete(config_raw):
 
 
 def test_streams(requests_mock, config_raw):
-    requests_mock.register_uri("POST", "https://mixpanel.com/api/2.0/engage?page_size=1000", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(200, {"id": 123}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"}))
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage?page_size=1000", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
+    requests_mock.register_uri(
+        "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
+    )
     requests_mock.register_uri(
         "GET",
         "https://data.mixpanel.com/api/2.0/export",
@@ -68,13 +70,13 @@ def test_streams(requests_mock, config_raw):
 
 
 def test_streams_string_date(requests_mock, config_raw):
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(200, {"id": 123}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
-    requests_mock.register_uri("POST", "https://mixpanel.com/api/2.0/engage", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(402, {"error": "Payment required"}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels/list", setup_response(402, {"error": "Payment required"}))
     requests_mock.register_uri(
         "GET",
         "https://data.mixpanel.com/api/2.0/export",
@@ -140,9 +142,9 @@ def test_streams_string_date(requests_mock, config_raw):
     ),
 )
 def test_config_validation(config, success, expected_error_message, requests_mock):
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
-    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+    requests_mock.get("https://eu.mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
     try:
         is_success, message = SourceMixpanel().check_connection(None, config)
     except AirbyteTracedException as e:

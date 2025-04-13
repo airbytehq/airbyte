@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.state.object_storage
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.PathFactory
@@ -25,6 +26,7 @@ class ObjectStorageDestinationState(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory,
+    private val destinationConfig: DestinationConfiguration,
 ) : DestinationState {
     private val log = KotlinLogging.logger {}
 
@@ -34,11 +36,7 @@ class ObjectStorageDestinationState(
         pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
 
     companion object {
-        const val METADATA_GENERATION_ID_KEY = "ab-generation-id"
         const val OPTIONAL_ORDINAL_SUFFIX_PATTERN = "(-[0-9]+)?"
-
-        fun metadataFor(stream: DestinationStream): Map<String, String> =
-            mapOf(METADATA_GENERATION_ID_KEY to stream.generationId.toString())
     }
 
     /**
@@ -53,7 +51,7 @@ class ObjectStorageDestinationState(
             return emptyList()
         }
 
-        val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream)
         log.info {
             "Searching $prefix for objects to delete (minGenId=${stream.minimumGenerationId}; matcher=${matcher.regex})"
         }
@@ -64,7 +62,10 @@ class ObjectStorageDestinationState(
             .toList() // Force the list call to complete before initiating metadata calls
             .mapNotNull { obj ->
                 val generationId =
-                    client.getMetadata(obj.key)[METADATA_GENERATION_ID_KEY]?.toLongOrNull() ?: 0L
+                    client
+                        .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
+                        ?.toLongOrNull()
+                        ?: 0L
                 if (generationId < stream.minimumGenerationId) {
                     Pair(generationId, obj)
                 } else {
@@ -118,10 +119,11 @@ class ObjectStorageDestinationState(
 @Singleton
 class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
-    private val pathFactory: PathFactory
+    private val pathFactory: PathFactory,
+    private val destinationConfig: DestinationConfiguration,
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
-        return ObjectStorageDestinationState(stream, client, pathFactory)
+        return ObjectStorageDestinationState(stream, client, pathFactory, destinationConfig)
     }
 
     override suspend fun persist(stream: DestinationStream, state: ObjectStorageDestinationState) {

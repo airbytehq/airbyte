@@ -112,6 +112,8 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.3.6 | 2025-03-29 | [54945](https://github.com/airbytehq/airbyte/pull/54945) | Update dependencies |
+| 4.3.5 | 2025-02-22 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |
 | 4.3.4 | 2025-01-11 | [44671](https://github.com/airbytehq/airbyte/pull/44671) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 4.3.3 | 2024-08-17 | [44207](https://github.com/airbytehq/airbyte/pull/44207) | Update dependencies |
 | 4.3.2 | 2024-08-12 | [43856](https://github.com/airbytehq/airbyte/pull/43856) | Update dependencies |

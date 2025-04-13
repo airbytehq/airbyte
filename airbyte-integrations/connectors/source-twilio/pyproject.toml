@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.11.16"
+version = "0.11.17"
 name = "source-twilio"
 description = "Source implementation for Twilio."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -28,7 +28,7 @@ source-twilio = "source_twilio.run:run"
 pytest-mock = "^3.12.0"
 freezegun = "^1.4.0"
 requests-mock = "^1.9.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]
