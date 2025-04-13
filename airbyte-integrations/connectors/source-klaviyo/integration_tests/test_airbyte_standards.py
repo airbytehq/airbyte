@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 """Airbyte standard connector tests.
 
 The AST (Airbyte Standard Tests) suite is designed to ensure that connectors meet Airbyte
