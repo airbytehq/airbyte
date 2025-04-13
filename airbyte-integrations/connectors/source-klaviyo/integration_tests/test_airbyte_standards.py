@@ -19,14 +19,6 @@ from airbyte_cdk.test.declarative.test_suites import (
 )
 
 
-CONNECTOR_ROOT = Path(__file__).parent.parent
-
-
-def get_file_path(file_name: str) -> Path:
-    """Get the path to a resource file."""
-    return CONNECTOR_ROOT / file_name
-
-
 def pytest_generate_tests(metafunc) -> None:
     generate_tests(metafunc)
 
