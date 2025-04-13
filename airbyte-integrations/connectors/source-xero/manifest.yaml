@@ -1717,7 +1717,7 @@ spec:
     auth_flow_type: oauth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
-        consent_url: https://login.xero.com/identity/connect/authorize?response_type=code&{{client_id_param}}&{{scope_param}}&{{redirect_uri_param}}
+        consent_url: https://login.xero.com/identity/connect/authorize?response_type=code&{{client_id_param}}&{{scope_param}}&{{redirect_uri_param}}&{{state_param}}
         scope: offline_access accounting.transactions.read accounting.reports.read accounting.budgets.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings.read accounting.contacts.read accounting.attachments.read assets.read files.read projects.read openid
         access_token_url: https://identity.xero.com/connect/token
         access_token_headers:
