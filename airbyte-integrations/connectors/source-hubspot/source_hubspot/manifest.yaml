@@ -181,6 +181,10 @@ definitions:
           type: DpathExtractor
           field_path:
             - subscriptionDefinitions
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/email_subscriptions"
 
 streams:
   - "#/definitions/marketing_emails_stream"
