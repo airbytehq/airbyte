@@ -12,9 +12,7 @@ import pytest
 
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.test.declarative.test_suites import (
-    ConnectorTestScenario,
     DeclarativeSourceTestSuite,
-    SourceTestSuiteBase,
     generate_tests,
 )
 
