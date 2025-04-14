@@ -2,7 +2,6 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
-    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-gcp')
 
     implementation("com.google.cloud:google-cloud-storage:2.50.0")
 
