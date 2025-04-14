@@ -583,4 +583,10 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      _cursor:
+        type: integer
