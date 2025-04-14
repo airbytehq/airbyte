@@ -171,14 +171,14 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def _construct_s3_uri(self, file: RemoteFile) -> str:
         """
         Constructs the S3 URI for a given file, handling both regular files and files inside archives.
-        
+
         Args:
             file: The RemoteFile object representing either a regular file or a file inside an archive
-            
+
         Returns:
             str: The properly formatted S3 URI
         """
-        file_path = file.uri.split('#')[0] if isinstance(file, RemoteFileInsideArchive) else file.uri
+        file_path = file.uri.split("#")[0] if isinstance(file, RemoteFileInsideArchive) else file.uri
         return f"s3://{self.config.bucket}/{file_path}"
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
