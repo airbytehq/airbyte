@@ -27,8 +27,6 @@ class BigQueryBulkLoader(
     override suspend fun load(remoteObject: S3Object) {
         val rawTableId = TempUtils.rawTableId(bigQueryConfiguration, stream.descriptor)
 
-        BigQueryRecordFormatter
-
         // Use LoadJobConfiguration API approach instead of SQL
         val gcsUri = "gs://${remoteObject.keyWithBucketName}"
 
