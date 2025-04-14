@@ -570,6 +570,20 @@ definitions:
           "complete_payment",
           "value_per_complete_payment",
           "total_complete_payment_rate",
+          "profile_visits_rate",
+          "purchase",
+          "purchase_rate",
+          "registration",
+          "registration_rate",
+          "sales_lead",
+          "sales_lead_rate",
+          "cost_per_app_install",
+          "cost_per_purchase",
+          "cost_per_registration",
+          "cost_per_sales_lead",
+          "cost_per_total_sales_lead",
+          "cost_per_total_app_event_add_to_cart",
+          "total_app_event_add_to_cart",
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
@@ -1304,6 +1318,20 @@ definitions:
           "complete_payment",
           "value_per_complete_payment",
           "total_complete_payment_rate",
+          "profile_visits_rate",
+          "purchase",
+          "purchase_rate",
+          "registration",
+          "registration_rate",
+          "sales_lead",
+          "sales_lead_rate",
+          "cost_per_app_install",
+          "cost_per_purchase",
+          "cost_per_registration",
+          "cost_per_sales_lead",
+          "cost_per_total_sales_lead",
+          "cost_per_total_app_event_add_to_cart",
+          "total_app_event_add_to_cart",
         ]
       dimensions: ["ad_id", "stat_time_hour"]
     primary_key:
@@ -1473,6 +1501,20 @@ definitions:
           "complete_payment",
           "value_per_complete_payment",
           "total_complete_payment_rate",
+          "profile_visits_rate",
+          "purchase",
+          "purchase_rate",
+          "registration",
+          "registration_rate",
+          "sales_lead",
+          "sales_lead_rate",
+          "cost_per_app_install",
+          "cost_per_purchase",
+          "cost_per_registration",
+          "cost_per_sales_lead",
+          "cost_per_total_sales_lead",
+          "cost_per_total_app_event_add_to_cart",
+          "total_app_event_add_to_cart",
         ]
       dimensions: ["ad_id"]
     primary_key:

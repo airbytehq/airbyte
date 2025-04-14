@@ -751,6 +751,10 @@ serviceAccount:
   name:
 ```
 
+### Deploying to multiple regions
+
+See [Multiple region deployments](multi-region).
+
 ## AWS Policies Appendix
 
 Ensure your access key is tied to an IAM user or you are using a Role with the following policies.
