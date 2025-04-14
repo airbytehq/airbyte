@@ -20,7 +20,7 @@ python = "^3.11,<3.12"
 msal = "==1.27.0"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
-airbyte-cdk = {extras = ["file-based"], version = "6.45.0.dev04107"}
+airbyte-cdk = {extras = ["file-based"], version = "^6"}
 
 [tool.poetry.scripts]
 source-microsoft-sharepoint = "source_microsoft_sharepoint.run:run"
