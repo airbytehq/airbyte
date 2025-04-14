@@ -147,14 +147,14 @@ files = [
 
 [[package]]
 name = "bingads"
-version = "13.0.18.1"
+version = "13.0.24.1"
 description = "A library to make working with the Bing Ads APIs and bulk services easy"
 optional = false
 python-versions = "*"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "bingads-13.0.18.1.tar.gz", hash = "sha256:7e861ac0d959d374519043c32d04db1fc8dd97f3a0566ea6bdca76bd60784f86"},
+    {file = "bingads-13.0.24.1.tar.gz", hash = "sha256:16a399c8b99a15435cfe17c7d737182e8125a9e28b06f0336f69f964f68846f0"},
 ]
 
 [package.dependencies]
@@ -2204,4 +2204,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "4035d1efeb1d9f1c73574f4775d89bee3ec740b0dfde4b7f095e3ac749f66158"
+content-hash = "a5f8e0679df3235be6f04ecbd8786805b493d64159ce164408120868d71a42e5"

@@ -48,11 +48,18 @@
         "airbyte_secret": true,
         "order": 4
       },
+      "manager_account_id": {
+        "type": "string",
+        "title": "Manager Account ID",
+        "description": "Optional. The ID of the manager account to use for the connection. Only used for manager accounts.",
+        "airbyte_secret": false,
+        "order": 5
+      },
       "account_names": {
         "title": "Account Names Predicates",
         "description": "Predicates that will be used to sync data by specific accounts.",
         "type": "array",
-        "order": 5,
+        "order": 6,
         "items": {
           "description": "Account Names Predicates Config.",
           "type": "object",
@@ -77,7 +84,7 @@
         "title": "Reports replication start date",
         "format": "date",
         "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format. If not set, data from previous and current calendar year will be replicated.",
-        "order": 6
+        "order": 7
       },
       "lookback_window": {
         "title": "Lookback window",
@@ -86,12 +93,12 @@
         "default": 0,
         "minimum": 0,
         "maximum": 90,
-        "order": 7
+        "order": 8
       },
       "custom_reports": {
         "title": "Custom Reports",
         "description": "You can add your Custom Bing Ads report by creating one.",
-        "order": 8,
+        "order": 9,
         "type": "array",
         "items": {
           "title": "Custom Report Config",

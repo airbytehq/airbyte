@@ -99,6 +99,7 @@ class BingAdsStream(BingAdsBaseStream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
+        manager_account_id = str(stream_slice.get("manager_account_id")) if stream_slice else None
         account_id = str(stream_slice.get("account_id")) if stream_slice else None
         customer_id = str(stream_slice.get("customer_id")) if stream_slice else None
 
@@ -165,6 +166,7 @@ class Accounts(BingAdsStream):
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__(client, config)
+        self._manager_account_id = config.get("manager_account_id", None)
         self._account_names = config.get("account_names", [])
         self._unique_account_ids = set()
 
@@ -179,10 +181,11 @@ class Accounts(BingAdsStream):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        user_id = self._manager_account_id or self._user_id
         user_id_predicate = {
             "Field": "UserId",
             "Operator": "Equals",
-            "Value": self._user_id,
+            "Value": user_id,
         }
         if self._account_names:
             for account_config in self._account_names:
