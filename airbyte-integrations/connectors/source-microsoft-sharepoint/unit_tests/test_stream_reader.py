@@ -288,6 +288,7 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
 
     assert os.path.basename(expected_staging_file_url) == file_record_data.filename
     assert os.path.dirname(expected_staging_file_url.replace(f"{TEST_LOCAL_DIRECTORY}", "")) == file_record_data.folder
+    assert file_record_data.source_uri == file_uri
 
     # Check if the file exists at the file_url path
     assert os.path.exists(file_reference.staging_file_url)

@@ -471,7 +471,9 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         try:
-            file_paths = self._get_file_transfer_paths(file, local_directory, parse_file_path_from_uri=self._parse_file_path_from_uri)
+            file_paths = self._get_file_transfer_paths(
+                source_file_relative_path=self._parse_file_path_from_uri(file.uri), staging_directory=local_directory
+            )
             local_file_path = file_paths[self.LOCAL_FILE_PATH]
             file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
             file_name = file_paths[self.FILE_NAME]
@@ -497,6 +499,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 folder=file_paths[self.FILE_FOLDER],
                 filename=file_name,
                 bytes=file_size,
+                source_uri=file.uri,
                 updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             )
 
