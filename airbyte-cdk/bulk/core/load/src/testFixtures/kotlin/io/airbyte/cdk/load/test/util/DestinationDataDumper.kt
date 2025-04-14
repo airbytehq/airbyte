@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 
 interface DestinationDataDumper {
     fun dumpRecords(spec: ConfigurationSpecification, stream: DestinationStream): List<OutputRecord>
-    fun dumpFile(spec: ConfigurationSpecification, stream: DestinationStream): List<String>
+    fun dumpFile(spec: ConfigurationSpecification, stream: DestinationStream): Map<String, String>
 }
 
 /**
@@ -27,7 +27,7 @@ object FakeDataDumper : DestinationDataDumper {
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
+    ): Map<String, String> {
         throw NotImplementedError()
     }
 }
