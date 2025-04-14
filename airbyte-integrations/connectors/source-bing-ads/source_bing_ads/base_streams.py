@@ -63,7 +63,9 @@ class BingAdsStream(BingAdsBaseStream, ABC):
     def _get_user_id(self, number_of_retries=10):
         """"""
         try:
-            return self._service.GetUser().User.Id
+            user_id = self._service.GetUser().User.Id
+            self.logger.info(f"User ID: {user_id}")
+            return user_id
         except URLError as error:
             if isinstance(error.reason, ssl.SSLError):
                 self.logger.warning("SSL certificate error, retrying...")
@@ -181,6 +183,7 @@ class Accounts(BingAdsStream):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.logger.info(f"Manager account ID: {self._manager_account_id}")
         user_id = self._manager_account_id or self._user_id
         user_id_predicate = {
             "Field": "UserId",
