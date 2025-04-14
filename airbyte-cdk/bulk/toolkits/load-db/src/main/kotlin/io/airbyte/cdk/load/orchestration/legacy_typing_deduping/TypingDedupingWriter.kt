@@ -91,7 +91,7 @@ class TypingDedupingWriter(
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val tableNames = names[stream]!!.first
-        return LegacyTypingDedupingStreamLoader(
+        return TypingDedupingStreamLoader(
             stream,
             initialStatuses[stream]!!,
             tableNames.rawTableName!!,

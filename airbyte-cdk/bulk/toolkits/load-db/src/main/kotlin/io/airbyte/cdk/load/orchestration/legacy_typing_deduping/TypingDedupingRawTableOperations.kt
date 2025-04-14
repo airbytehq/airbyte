@@ -33,8 +33,8 @@ interface TypingDedupingRawTableOperations {
      * Get the generation of a single record in the raw table. Not necessarily the min or max
      * generation, just _any_ record.
      *
-     * [LegacyTypingDedupingStreamLoader] is responsible for orchestrating the raw tables so that
-     * the temp raw table always contains exactly one generation.
+     * [TypingDedupingStreamLoader] is responsible for orchestrating the raw tables so that the temp
+     * raw table always contains exactly one generation.
      *
      * @return The generation ID of a record in the raw table, or `null` if the raw table is empty.
      */

@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.orchestration.TableName
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 
-class LegacyTypingDedupingStreamLoader(
+class TypingDedupingStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: TypingDedupingDestinationInitialStatus,
     private val rawTableName: TableName,
