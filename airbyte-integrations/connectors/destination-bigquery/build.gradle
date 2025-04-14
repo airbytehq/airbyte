@@ -5,7 +5,7 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-gcs', 'load-db']
+    toolkits = ['load-gcs', 'load-db', 'load-s3']
     cdk = 'local'
 }
 
