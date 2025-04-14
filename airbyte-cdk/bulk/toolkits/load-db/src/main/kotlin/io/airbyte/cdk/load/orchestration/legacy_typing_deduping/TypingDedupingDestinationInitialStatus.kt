@@ -1,12 +1,14 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.orchestration.DestinationInitialStatus
 import java.time.Instant
 
 data class TypingDedupingDestinationInitialStatus(
-    /**
-     * Initial status of the final table, or null if the table doesn't exist yet.
-     */
+    /** Initial status of the final table, or null if the table doesn't exist yet. */
     val finalTableStatus: FinalTableInitialStatus?,
     val rawTableStatus: RawTableInitialStatus?,
     val tempRawTableStatus: RawTableInitialStatus?,
@@ -15,9 +17,7 @@ data class TypingDedupingDestinationInitialStatus(
 data class FinalTableInitialStatus(
     val isSchemaMismatch: Boolean,
     val isEmpty: Boolean,
-    /**
-     * The generation ID of _any_ record from the final table, or `null` if the table is empty.
-     */
+    /** The generation ID of _any_ record from the final table, or `null` if the table is empty. */
     val finalTableGenerationId: Long?,
 )
 

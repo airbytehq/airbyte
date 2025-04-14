@@ -6,15 +6,26 @@ package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.orchestration.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.DestinationInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.TableNameGenerator
 import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import java.util.concurrent.Executors
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class TypingDedupingWriter(
     private val catalog: DestinationCatalog,
-    private val stateGatherer: DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
+    private val rawTableTableNameGenerator: TableNameGenerator,
+    private val finalTableTableNameGenerator: TableNameGenerator,
+    private val finalTableColumnNameGenerator: ColumnNameGenerator,
+    private val stateGatherer:
+        DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
 ) : DestinationWriter {
@@ -23,19 +34,59 @@ class TypingDedupingWriter(
         Map<DestinationStream, TypingDedupingDestinationInitialStatus>
 
     override suspend fun setup() {
-        // TODO
-        //  -1. figure out table/column names
-        //   0. gather state
-        //   1. execute migrations
-        //   2. soft reset
-        //   3. gather state
-        names = TODO()
-        val initialInitialStatuses: Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
-            stateGatherer.gatherInitialStatus(names)
-        // TODO migrations
-        // TODO soft reset if needed
-        // TODO only refetch streams that need to be refetched
-        initialStatuses = stateGatherer.gatherInitialStatus(names)
+        // TODO handle collisions in table names
+        names =
+            catalog.streams.associateWith { stream ->
+                Pair(
+                    TableNames(
+                        rawTableName = rawTableTableNameGenerator.getTableName(stream.descriptor),
+                        finalTableName =
+                            finalTableTableNameGenerator.getTableName(stream.descriptor),
+                    ),
+                    ColumnNameMapping(
+                        // TODO handle collisions in column names
+                        (stream.schema as ObjectType).properties.mapValues { (columnName, _) ->
+                            finalTableColumnNameGenerator.getColumnName(columnName).displayName
+                        }
+                    )
+                )
+            }
+
+        Executors.newFixedThreadPool(4).asCoroutineDispatcher().use { dispatcher ->
+            val initialInitialStatuses:
+                Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
+                stateGatherer.gatherInitialStatus(names)
+
+            // TODO migrations
+
+            // If we have a schema mismatch, then execute a soft reset.
+            val streamsNeedingSoftReset =
+                initialInitialStatuses.filter { (_, status) ->
+                    // if the table doesn't exist, then by definition we don't have a schema
+                    // mismatch.
+                    status.finalTableStatus?.isSchemaMismatch ?: false
+                }
+            runBlocking(dispatcher) {
+                streamsNeedingSoftReset.forEach { (stream, _) ->
+                    launch {
+                        finalTableOperations.softResetFinalTable(
+                            stream,
+                            names[stream]!!.first.finalTableName!!
+                        )
+                    }
+                }
+            }
+
+            // Soft reset will modify the initial status of a table.
+            // Refetch their statuses.
+            val statusesAfterSoftReset =
+                stateGatherer.gatherInitialStatus(
+                    names.filterKeys { streamsNeedingSoftReset.containsKey(it) }
+                )
+            // TODO check whether this is true
+            // second map "wins" when adding two maps together, so we'll retain the newer statuses.
+            initialStatuses = initialInitialStatuses + statusesAfterSoftReset
+        }
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {

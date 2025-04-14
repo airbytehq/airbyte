@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -30,8 +34,6 @@ class LegacyTypingDedupingStreamLoader(
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
-        // TODO is this handled in the bulk load pipeline already?
-        rawTableOperations.cleanupStage(rawTableName)
         if (streamFailure == null) {
             // TODO only do this in truncate mode, do all the correct truncate stuff
             rawTableOperations.overwriteRawTable(rawTableName, suffix = "_airbyte_tmp")

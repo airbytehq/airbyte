@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.orchestration.TableName
@@ -35,8 +39,4 @@ interface TypingDedupingRawTableOperations {
      * @return The generation ID of a record in the raw table, or `null` if the raw table is empty.
      */
     fun getRawTableGeneration(rawTableName: TableName, suffix: String): Long?
-
-    // TODO this probably could be named better
-    /** Delete all staged data from blob storage. */
-    fun cleanupStage(rawTableName: TableName)
 }
