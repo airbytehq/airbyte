@@ -1,9 +1,11 @@
+# client.py
 
 import datetime
 import json
 import logging
 import time
 import traceback
+import os
 from typing import Any, Mapping, List, Dict, Optional, Set, Union
 
 import backoff
@@ -15,33 +17,66 @@ from .config import RagieConfig
 
 logger = logging.getLogger("airbyte.destination_ragie.client")
 
-# --- Error Handling Functions (remain the same) ---
+# --- Error Handling Functions (remain mostly the same) ---
 class RagieApiError(Exception):
     """Custom exception for Ragie API errors."""
     pass
 
 def user_error(e: Exception) -> bool:
     """Return True if this exception is likely a user configuration error (4xx)."""
-    if not isinstance(e, requests.exceptions.RequestException):
-        return False
-    # Exclude 404 from user errors that give up immediately
-    return bool(e.response and 400 <= e.response.status_code < 500 and e.response.status_code not in [404, 429])
+    # Added check for RagieApiError originating from HTTPError
+    if isinstance(e, RagieApiError) and isinstance(e.__cause__, requests.exceptions.HTTPError):
+        response = e.__cause__.response
+    elif isinstance(e, requests.exceptions.RequestException):
+        response = e.response
+    else:
+        return False # Not an HTTP-related error we can easily classify
+
+    if response is None:
+        return False # Cannot determine status code
+
+    # Exclude 404, 429 from user errors that give up immediately
+    return bool(400 <= response.status_code < 500 and response.status_code not in [404, 429])
 
 def transient_error(e: Exception) -> bool:
     """Return True if this exception is likely transient (5xx or rate limit)."""
-    if not isinstance(e, requests.exceptions.RequestException):
-        return isinstance(e, (requests.exceptions.ConnectionError, requests.exceptions.Timeout))
-    return bool(e.response and (e.response.status_code >= 500 or e.response.status_code == 429))
+    # Added check for RagieApiError originating from HTTPError or RequestException
+    if isinstance(e, RagieApiError):
+        if isinstance(e.__cause__, requests.exceptions.HTTPError):
+             response = e.__cause__.response
+        elif isinstance(e.__cause__, requests.exceptions.RequestException):
+             # Network errors wrapped in RagieApiError are transient
+             return True
+        else:
+            # Other RagieApiErrors (e.g., manual raises) likely not transient
+            return False
+    elif isinstance(e, requests.exceptions.RequestException):
+        # Direct RequestExceptions (like ConnectionError, Timeout) are transient
+        # Also check response status code if available
+        response = e.response
+        if response is None: # Connection error, Timeout etc.
+            return True
+    else:
+        # Other exception types (e.g., programming errors) are not transient network issues
+        return False
+
+    if response is None:
+        # Should have been caught above, but for safety: if no response, assume transient network issue
+        return True
+
+    # Check for 5xx or 429 status codes
+    return bool(response.status_code >= 500 or response.status_code == 429)
 # --- End Error Handling ---
 
 
 class RagieClient:
     # --- Constants ---
     DEFAULT_API_URL = "https://api.ragie.ai"
-    DOCUMENTS_RAW_ENDPOINT = "/documents/raw" # For creating/indexing
-    DOCUMENTS_ENDPOINT = "/documents"        # For listing/querying and deleting by internal ID
+    # Endpoint for JSON data uploads (assuming this is correct, based on previous impl)
+    DOCUMENTS_RAW_ENDPOINT = "/documents/raw"
+    # Endpoint for Listing/Deleting/Querying (based on previous impl and connection check)
+    DOCUMENTS_GENERAL_ENDPOINT = "/documents"
 
-    # !! CHANGED: Renamed metadata key to avoid leading underscore !!
     METADATA_AIRBYTE_STREAM_FIELD = "airbyte_stream" # Use this key in RagieWriter as well
 
     def __init__(self, config: RagieConfig):
@@ -49,43 +84,59 @@ class RagieClient:
         self.base_url = config.api_url.rstrip("/") if config.api_url else self.DEFAULT_API_URL
         self.api_key = config.api_key
         self.session = self._create_session()
-        # Store partition header for reuse
-        self.partition_header = {"partition": config.partition or "default"}
-        logger.info(f"RagieClient initialized. Base URL: {self.base_url}, Partition Scope: {config.partition or 'Default/Account-wide'}")
+        # Store partition header for reuse on *non-file-upload* requests
+        self.partition_header = {"partition": config.partition} if config.partition else {}
+        logger.info(f"RagieClient initialized. Base URL: {self.base_url}, Default Partition Scope (for non-file uploads): {config.partition or 'Account-wide'}")
 
     def _create_session(self) -> requests.Session:
         session = requests.Session()
         session.headers.update({
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
+            "Accept": "application/json", 
             "X-source": "airbyte-destination-ragie"
         })
         return session
 
     @backoff.on_exception(backoff.expo,
-                          requests.exceptions.RequestException,
+                          (requests.exceptions.RequestException, RagieApiError),
                           max_tries=5,
                           giveup=user_error,
-                          on_backoff=lambda details: logger.warning(f"Transient error detected. Retrying in {details['wait']:.1f}s. Details: {details['exception']}"),
+                          on_backoff=lambda details: logger.warning(f"Transient error detected ({details['exception']}). Retrying in {details['wait']:.1f}s."),
                           factor=3)
     def _request(self,
                  method: str,
                  endpoint: str,
                  params: Optional[Dict[str, Any]] = None,
                  json_data: Optional[Dict[str, Any]] = None,
+                 data: Optional[Dict[str, Any]] = None, # For form data
+                 files: Optional[Dict[str, Any]] = None, # For file uploads
                  extra_headers: Optional[Dict[str, str]] = None) -> requests.Response:
         """Makes an HTTP request with error handling, retries, and optional extra headers."""
         full_url = f"{self.base_url}{endpoint}"
+        # Start with session headers (includes Auth, Accept, X-source)
         request_headers = self.session.headers.copy()
-        # Combine session headers with specific request headers (like partition)
+
+        # Apply specific per-request headers (like partition for non-file requests)
         if extra_headers:
             request_headers.update(extra_headers)
 
-        log_data = f" data: {json.dumps(json_data)[:200]}..." if json_data else ""
+        # Content-Type management:
+        # - If 'json_data' is present, set Content-Type to application/json
+        # - If 'files' is present, requests handles multipart/form-data Content-Type automatically
+        # - If only 'data' is present, requests handles application/x-www-form-urlencoded
+        # - Avoid setting Content-Type explicitly if 'files' are involved.
+        if json_data is not None and files is None:
+            request_headers['Content-Type'] = 'application/json'
+        elif files is not None:
+            # Remove potentially conflicting Content-Type if files are present
+            request_headers.pop('Content-Type', None)
+
+        log_json = f" json_data: {json.dumps(json_data)[:200]}..." if json_data else ""
+        log_data = f" data_keys: {list(data.keys())}" if data else ""
+        log_files = f" files_keys: {list(files.keys())}" if files else ""
         log_params = f" params: {params}" if params else ""
-        log_headers = f" headers: {request_headers}" # Log all effective headers
-        logger.debug(f"Making {method} request to {full_url}{log_params}{log_data}{log_headers}")
+        # Log effective headers *before* the request
+        logger.debug(f"Making {method} request to {full_url}{log_params}{log_json}{log_data}{log_files} with headers: {request_headers}")
 
         try:
             response = self.session.request(
@@ -93,8 +144,11 @@ class RagieClient:
                 url=full_url,
                 params=params,
                 json=json_data,
-                headers=request_headers # Use combined headers
+                data=data,
+                files=files,
+                headers=request_headers
             )
+            logger.debug(f"Response status code: {response.status_code}")
             response.raise_for_status() # Raises HTTPError for 4xx/5xx
             return response
         except requests.exceptions.HTTPError as e:
@@ -103,328 +157,282 @@ class RagieClient:
                 error_details = e.response.json()
                 error_message += f" Response: {json.dumps(error_details)}"
             except json.JSONDecodeError:
-                error_message += f" Response Body: {e.response.text[:500]}"
+                error_message += f" Response Body: {e.response.text[:500]}" # Log raw response if not JSON
             logger.error(error_message)
-            raise e
+            raise RagieApiError(error_message) from e
         except requests.exceptions.RequestException as e:
+            # Network errors, timeouts etc.
             logger.error(f"Request failed for {method} {full_url}: {e}")
-            raise e
+            raise RagieApiError(f"Request failed: {e}") from e # Wrap in custom error
 
     def check_connection(self) -> Optional[str]:
-        """Checks API key and connectivity. Returns error message string or None if successful."""
-        logger.info(f"Performing connection check using GET {self.DOCUMENTS_ENDPOINT} with partition scope: {self.config.partition or 'Default/Account-wide'}")
+        """Checks API key and connectivity using GET /documents."""
+        logger.info(f"Performing connection check using GET {self.DOCUMENTS_GENERAL_ENDPOINT} with partition scope: {self.config.partition or 'Default/Account-wide'}")
         try:
+            # Use the general partition header for this GET request
             response = self._request(
                 "GET",
-                self.DOCUMENTS_ENDPOINT,
+                self.DOCUMENTS_GENERAL_ENDPOINT,
                 params={"page_size": 1},
-                extra_headers=self.partition_header # Pass partition header
+                extra_headers=self.partition_header
             )
-            logger.info(f"Connection check successful (Endpoint {self.DOCUMENTS_ENDPOINT} responded with {response.status_code}).")
+            logger.info(f"Connection check successful (Endpoint {self.DOCUMENTS_GENERAL_ENDPOINT} responded with {response.status_code}).")
             return None
-        except requests.exceptions.RequestException as e:
-            if e.response is not None:
-                if e.response.status_code == 401:
-                    return "Authentication failed: Invalid API Key."
-                if e.response.status_code == 403:
-                    return "Authorization failed: API Key lacks permissions for the specified partition or action."
-                if 400 <= e.response.status_code < 500:
-                    return f"Connection check failed with status {e.response.status_code}. Check API URL, Partition, and configuration. Response: {e.response.text[:500]}"
+        except RagieApiError as e:
+            error_str = str(e)
+            if "401" in error_str:
+                 return "Authentication failed: Invalid API Key."
+            if "403" in error_str:
+                 return "Authorization failed: API Key lacks permissions for the specified partition or action."
+            # Check for other 4xx errors based on the status code in the message
+            status_code = None
+            if e.__cause__ and isinstance(e.__cause__, requests.exceptions.HTTPError):
+                status_code = e.__cause__.response.status_code
+            if status_code and 400 <= status_code < 500 and status_code not in [401, 403]:
+                 return f"Connection check failed with status {status_code}. Check API URL, Partition, and configuration. Error: {error_str}"
+            # Generic API error or network error
             return f"Failed to connect to Ragie API at {self.base_url}. Error: {e}"
         except Exception as e:
             logger.error(f"Unexpected error during connection check: {repr(e)}", exc_info=True)
             return f"An unexpected error occurred during connection check: {repr(e)}"
 
     def index_documents(self, documents: List[Dict[str, Any]]):
-        """Indexes documents one by one using POST /documents/raw."""
+        """
+        Indexes documents/files one by one.
+        Uses POST /documents for file uploads (multipart/form-data).
+        Uses POST /documents/raw for JSON data uploads (application/json).
+        """
         if not documents:
             return
-        logger.info(f"Indexing {len(documents)} documents one by one...")
+        logger.info(f"Indexing {len(documents)} items (documents/files) one by one...")
         successful_count = 0
-        # Use partition header if configured
-        headers = self.partition_header
 
-        for doc_payload in documents:
+        for item_payload in documents:
+            doc_id_log = item_payload.get("external_id") or item_payload.get("name", "N/A")
+            # Check for the special 'file_path' key added by the writer
+            file_path = item_payload.pop("file_path", None)
+
             try:
-                self._request(
-                    "POST",
-                    self.DOCUMENTS_RAW_ENDPOINT,
-                    json_data=doc_payload,
-                    extra_headers=headers # Pass partition header
-                )
+                if file_path:
+                    # --- Handle File Upload via POST /documents ---
+                    endpoint = self.DOCUMENTS_GENERAL_ENDPOINT
+                    method = "POST"
+
+                    if not os.path.exists(file_path):
+                        logger.error(f"File path does not exist, skipping item: {file_path} (ID: {doc_id_log})")
+                        continue
+
+                    file_name = os.path.basename(file_path)
+                    form_data = {} # Payload for form fields
+
+                    # Populate form_data from item_payload keys expected by the API
+                    for key in ["mode", "external_id", "name"]:
+                        if key in item_payload:
+                            form_data[key] = item_payload[key]
+
+                    # Add partition to form data if configured
+                    if self.config.partition:
+                        form_data["partition"] = self.config.partition
+
+                    # Serialize metadata dictionary to JSON string for the form field
+                    if "metadata" in item_payload:
+                        try:
+                            # Ensure metadata is a dict before serializing
+                            if isinstance(item_payload["metadata"], dict):
+                                form_data['metadata'] = json.dumps(item_payload["metadata"])
+                            else:
+                                logger.warning(f"Metadata for file '{doc_id_log}' is not a dict, skipping metadata field. Type: {type(item_payload['metadata'])}")
+                        except TypeError as json_err:
+                             logger.error(f"Could not JSON-serialize metadata for file '{doc_id_log}' ({file_path}): {json_err}. Metadata: {item_payload['metadata']}")
+                             raise AirbyteTracedException(
+                                 message=f"Failed to serialize metadata for file '{doc_id_log}'. Check metadata contents.",
+                                 internal_message=f"Metadata Snippet: {str(item_payload.get('metadata', {}))[:200]}, Error: {json_err}",
+                                 failure_type=FailureType.config_error
+                             ) from json_err
+
+                    logger.debug(f"Uploading file '{file_name}' (ID: {doc_id_log}) to {endpoint} with form data keys: {list(form_data.keys())}")
+                    with open(file_path, 'rb') as f:
+                        files_dict = {'file': (file_name, f)}
+                        # Make the request - no extra headers needed (like partition) as it's in form_data
+                        self._request(
+                            method=method,
+                            endpoint=endpoint,
+                            data=form_data,
+                            files=files_dict,
+                            extra_headers=None # Partition is in form_data
+                        )
+                    logger.debug(f"Successfully requested upload for file: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
+
+                else:
+                    # --- Handle JSON Data Upload via POST /documents/raw ---
+                    endpoint = self.DOCUMENTS_RAW_ENDPOINT
+                    method = "POST"
+                    # For JSON uploads, we *do* want the partition header if set
+                    headers = self.partition_header
+
+                    logger.debug(f"Indexing JSON document via {endpoint}: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
+                    # Make the request with json_data and potential partition header
+                    self._request(
+                        method=method,
+                        endpoint=endpoint,
+                        json_data=item_payload, # Send the whole payload as JSON body
+                        extra_headers=headers # Pass partition header
+                    )
+                    logger.debug(f"Successfully requested indexing for JSON document: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
+
                 successful_count += 1
-                logger.debug(f"Successfully indexed document: Name='{doc_payload.get('name', 'N/A')}', ExternalID='{doc_payload.get('external_id')}'")
+
             except Exception as e:
-                doc_id = doc_payload.get("external_id") or doc_payload.get("name", "N/A")
-                logger.error(f"Failed to index document '{doc_id}': {e}", exc_info=True)
+                item_type = "file" if file_path else "document"
+                logger.error(f"Failed to index {item_type} '{doc_id_log}': {e}", exc_info=True)
+
+                internal_msg = f"PayloadKeys: {list(item_payload.keys())}"
+                if file_path:
+                    internal_msg += f", FilePath: {file_path}"
+                # Avoid logging full error again if already in message from RagieApiError
+                error_details = str(e) if isinstance(e, RagieApiError) else repr(e)
+                internal_msg += f", Error: {error_details}"
+
+                # Determine failure type
+                failure_type = FailureType.system_error # Default
+                if isinstance(e, RagieApiError) and e.__cause__:
+                    if isinstance(e.__cause__, requests.exceptions.HTTPError):
+                         status = e.__cause__.response.status_code
+                         if 400 <= status < 500 and status not in [404, 429]:
+                             failure_type = FailureType.config_error # User config likely caused 4xx
+
                 raise AirbyteTracedException(
-                    message=f"Failed to index document '{doc_id}'",
-                    internal_message=f"Payload: {json.dumps(doc_payload)[:500]}... Error: {e}",
-                    failure_type=FailureType.system_error
+                    message=f"Failed to index {item_type} '{doc_id_log}' into Ragie.",
+                    internal_message=internal_msg[:1000], # Limit length
+                    failure_type=failure_type
                 ) from e
-        logger.info(f"Successfully indexed {successful_count} documents.")
+        logger.info(f"Successfully processed {successful_count} indexing requests.")
 
 
-    def _format_filter_value(self, value: Any) -> str:
-        """Formats a Python value for Ragie filter strings."""
-        if isinstance(value, str):
-            # Escape single quotes within the string if necessary
-            escaped_value = value.replace("'", "\\'")
-            return f"'{escaped_value}'"
-        elif isinstance(value, bool):
-            return str(value).lower()
-        elif isinstance(value, (int, float)):
-            return str(value)
-        else:
-            # Fallback for unexpected types - log warning and convert to string
-            logger.warning(f"Unsupported type for filtering: {type(value)}. Converting to string.")
-            return f"'{str(value)}'"
-    # NEW: Function to build the filter JSON object
+    # --- Metadata Filtering/Querying (_build_filter_json, find_ids_by_metadata, find_docs_by_metadata) ---
     def _build_filter_json(self, filter_conditions: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Builds a Ragie filter JSON object structure from a dictionary.
-        Assumes simple key-value inputs imply $eq and multiple conditions are combined with $and.
-        Handles determining if the key is top-level (external_id) or metadata.
-        """
+        """Builds a Ragie filter JSON object structure. (No changes needed)"""
         if not filter_conditions:
             logger.warning("Attempted to build filter JSON from empty conditions.")
-            return {} # Return empty dict if no conditions
-
+            return {}
         and_conditions = []
         supported_operators = {"$eq", "$ne", "$gt", "$gte", "$lt", "$lte", "$in", "$nin"}
-
         for key, value in filter_conditions.items():
-            # 1. Determine the filter key path (metadata. vs top-level)
-            #    Based on Ragie docs, only specific fields are top-level. Assume 'external_id'.
-            #    All user-defined fields go under 'metadata.'.
-            if key == "external_id":
-                filter_key_path = "external_id"
-            # Add other known top-level filterable fields if discovered (e.g., 'id', 'name'?)
-            # elif key == "id": filter_key_path = "id"
-            else:
-                # Assume it's a user-defined metadata field
-                filter_key_path = f"{key}"
+            
+            filter_key_path = f"{key}"
 
-            # 2. Check if the value already includes an operator
             if isinstance(value, dict) and next(iter(value)) in supported_operators:
-                # Value is already in the correct operator format, e.g., {"$gte": 2020}
                 condition = {filter_key_path: value}
-                logger.debug(f"Using pre-structured operator for filter key '{filter_key_path}': {value}")
-            elif isinstance(value, (str, int, float, bool, list)):
-                 # If simple value (or list, maybe for future $in use), assume $eq
-                 # List values are only valid with $in/$nin according to docs, but we default to $eq here.
-                 # This might need refinement if $in is passed via simple lists.
+            elif isinstance(value, (str, int, float, bool)):
                  condition = {filter_key_path: {"$eq": value}}
-                 logger.debug(f"Applying default '$eq' operator for filter key '{filter_key_path}' with value: {value}")
+            elif isinstance(value, list):
+                 condition = {filter_key_path: {"$in": value}}
             else:
-                 # Log warning and skip unsupported types
-                 logger.warning(f"Unsupported value type ({type(value)}) for filter key '{key}'. Skipping this filter condition.")
-                 continue # Skip this key-value pair
-
+                 logger.warning(f"Unsupported value type ({type(value)}) for filter key '{key}'. Skipping condition.")
+                 continue
             and_conditions.append(condition)
+        if not and_conditions: return {}
+        final_filter_obj = and_conditions[0] if len(and_conditions) == 1 else {"$and": and_conditions}
+        logger.debug(f"Built filter JSON: {final_filter_obj}")
+        return final_filter_obj
 
-        # 3. Combine conditions
-        if not and_conditions:
-            return {} # No valid conditions were built
-        elif len(and_conditions) == 1:
-            # If only one condition, return it directly without $and wrapper
-            final_filter_obj = and_conditions[0]
-            logger.debug(f"Built single filter condition: {final_filter_obj}")
-            return final_filter_obj
-        else:
-            # If multiple conditions, wrap them in $and
-            final_filter_obj = {"$and": and_conditions}
-            logger.debug(f"Built combined filter conditions with '$and': {final_filter_obj}")
-            return final_filter_obj
-
-    def find_ids_by_metadata(self, filter_conditions: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Finds documents matching filter conditions using GET /documents.
-        Handles pagination and returns a list of dicts [{'internal_id': '...'}]
-        """
-        logger.info(f"Querying Ragie for documents with filter conditions: {filter_conditions}")
-        found_docs_summary = []
+    def find_ids_by_metadata(self, filter_conditions: Dict[str, Any]) -> List[str]:
+        """Finds internal Ragie document IDs using GET /documents."""
+        logger.info(f"Querying Ragie document IDs with filter: {filter_conditions}")
+        found_internal_ids = []
         cursor = None
-        page_size = 100 # Max allowed per docs
-
-        # Build the filter JSON object structure
+        page_size = 100
         filter_json_obj = self._build_filter_json(filter_conditions)
-        if not filter_json_obj:
-            logger.warning("Filter conditions resulted in an empty filter object. Cannot query.")
-            return [] # Return empty list if filter is invalid/empty
-
-        # Convert the JSON object to a string for the query parameter
-        # Requests library usually handles URL encoding for params dictionary values
+        if not filter_json_obj: return []
         filter_param_string = json.dumps(filter_json_obj)
-        logger.info(f"Using filter string for query parameter: {filter_param_string}")
-
-        # Use partition header if configured
+        # Use general partition header for GET requests
         headers = self.partition_header
-
         while True:
-            params = {
-                "page_size": page_size,
-                "filter": filter_param_string, # Pass the JSON string here
-            }
-            if cursor:
-                params["cursor"] = cursor
-
+            params = {"page_size": page_size, "filter": filter_param_string}
+            if cursor: params["cursor"] = cursor
             try:
-                response = self._request(
-                    "GET",
-                    self.DOCUMENTS_ENDPOINT,
-                    params=params,
-                    extra_headers=headers
-                )
+                # Use the general endpoint for listing/querying
+                response = self._request("GET", self.DOCUMENTS_GENERAL_ENDPOINT, params=params, extra_headers=headers)
                 response_data = response.json()
-
                 documents_on_page = response_data.get("documents", [])
-                if not documents_on_page:
-                    logger.debug("No more documents found on this page.")
-                    break
+                if not documents_on_page: break
+                page_ids = [doc.get("id") for doc in documents_on_page if doc.get("id")]
+                found_internal_ids.extend(page_ids)
+                logger.debug(f"Found {len(page_ids)} IDs page. Total: {len(found_internal_ids)}")
+                cursor = response_data.get("pagination", {}).get("next_cursor")
+                if not cursor: break
+            except Exception as e:
+                logger.error(f"Failed during document ID query (filter='{filter_param_string}', cursor='{cursor}'): {e}", exc_info=True)
+                raise AirbyteTracedException(message="Failed to query Ragie document IDs.", internal_message=f"Filter: {filter_param_string}, Error: {e}", failure_type=FailureType.system_error) from e
+        logger.info(f"Found {len(found_internal_ids)} total document IDs matching filter.")
+        return found_internal_ids
 
-                page_results = []
-                for doc in documents_on_page:
-                     internal_id = doc.get("id")
-                     if internal_id:
-                         # Only need internal_id for deletion logic later
-                         page_results.append(internal_id)
-                     else:
-                          logger.warning(f"Found document in response without internal 'id': {doc}")
-
-                found_docs_summary.extend(page_results)
-                logger.debug(f"Found {len(page_results)} documents on this page. Total found so far: {len(found_docs_summary)}")
-
-                pagination_info = response_data.get("pagination", {})
-                cursor = pagination_info.get("next_cursor")
-                if not cursor:
-                    logger.debug("No next_cursor returned, assuming end of results.")
-                    break
-                else:
-                    logger.debug(f"Received next_cursor: {cursor[:10]}...")
-
+    def find_docs_by_metadata(self, filter_conditions: Dict[str, Any], fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+        """Finds full documents using GET /documents."""
+        logger.info(f"Querying Ragie documents with filter: {filter_conditions}" + (f" fields: {fields}" if fields else ""))
+        found_docs = []
+        cursor = None
+        page_size = 100
+        filter_json_obj = self._build_filter_json(filter_conditions)
+        if not filter_json_obj: return []
+        filter_param_string = json.dumps(filter_json_obj)
+        # Use general partition header for GET requests
+        headers = self.partition_header
+        while True:
+            params = {"page_size": page_size, "filter": filter_param_string}
+            if fields: params["fields"] = ",".join(fields)
+            if cursor: params["cursor"] = cursor
+            try:
+                # Use the general endpoint for listing/querying
+                response = self._request("GET", self.DOCUMENTS_GENERAL_ENDPOINT, params=params, extra_headers=headers)
+                response_data = response.json()
+                documents_on_page = response_data.get("documents", [])
+                if not documents_on_page: break
+                found_docs.extend(documents_on_page)
+                logger.debug(f"Found {len(documents_on_page)} docs page. Total: {len(found_docs)}")
+                cursor = response_data.get("pagination", {}).get("next_cursor")
+                if not cursor: break
             except Exception as e:
                 logger.error(f"Failed during document query (filter='{filter_param_string}', cursor='{cursor}'): {e}", exc_info=True)
-                raise AirbyteTracedException(
-                    message=f"Failed to query Ragie documents using filter.",
-                    internal_message=f"Filter: {filter_param_string}, Error: {e}",
-                    failure_type=FailureType.system_error
-                ) from e
+                raise AirbyteTracedException(message="Failed to query Ragie documents.", internal_message=f"Filter: {filter_param_string}, Fields: {fields}, Error: {e}", failure_type=FailureType.system_error) from e
+        logger.info(f"Found {len(found_docs)} total documents matching filter.")
+        return found_docs
 
-        logger.info(f"Found total of {len(found_docs_summary)} documents matching filter conditions: {filter_conditions}")
-        return found_docs_summary
-
-    def find_docs_by_metadata(self, filter_conditions: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Finds documents matching filter conditions using GET /documents.
-        Handles pagination and returns a list of dicts [{'internal_id': '...'}]
-        """
-        logger.info(f"Querying Ragie for documents with filter conditions: {filter_conditions}")
-        found_docs_summary = []
-        cursor = None
-        page_size = 100 # Max allowed per docs
-
-        # Build the filter JSON object structure
-        filter_json_obj = self._build_filter_json(filter_conditions)
-        if not filter_json_obj:
-            logger.warning("Filter conditions resulted in an empty filter object. Cannot query.")
-            return [] # Return empty list if filter is invalid/empty
-
-        # Convert the JSON object to a string for the query parameter
-        # Requests library usually handles URL encoding for params dictionary values
-        filter_param_string = json.dumps(filter_json_obj)
-        logger.info(f"Using filter string for query parameter: {filter_param_string}")
-
-        # Use partition header if configured
-        headers = self.partition_header
-
-        while True:
-            params = {
-                "page_size": page_size,
-                "filter": filter_param_string, # Pass the JSON string here
-            }
-            if cursor:
-                params["cursor"] = cursor
-
-            try:
-                response = self._request(
-                    "GET",
-                    self.DOCUMENTS_ENDPOINT,
-                    params=params,
-                    extra_headers=headers
-                )
-                response_data = response.json()
-
-                documents_on_page = response_data.get("documents", [])
-                if not documents_on_page:
-                    logger.debug("No more documents found on this page.")
-                    break
-
-                page_results = []
-                for doc in documents_on_page:
-                    # Only need internal_id for deletion logic later
-                    page_results.append(doc)
-
-                found_docs_summary.extend(page_results)
-                logger.debug(f"Found {len(page_results)} documents on this page. Total found so far: {len(found_docs_summary)}")
-
-                pagination_info = response_data.get("pagination", {})
-                cursor = pagination_info.get("next_cursor")
-                
-                if not cursor:
-                    logger.debug("No next_cursor returned, assuming end of results.")
-                    break
-                else:
-                    logger.debug(f"Received next_cursor: {cursor[:10]}...")
-
-            except Exception as e:
-                logger.error(f"Failed during document query (filter='{filter_param_string}', cursor='{cursor}'): {e}", exc_info=True)
-                raise AirbyteTracedException(
-                    message=f"Failed to query Ragie documents using filter.",
-                    internal_message=f"Filter: {filter_param_string}, Error: {e}",
-                    failure_type=FailureType.system_error
-                ) from e
-
-        logger.info(f"Found total of {len(found_docs_summary)} documents matching filter conditions: {filter_conditions}")
-        return found_docs_summary
-
-
+    # --- Deletion Logic --- 
     def delete_documents_by_id(self, internal_ids: List[str]):
         """Deletes documents one by one using DELETE /documents/{internal_id}."""
-        if not internal_ids:
-            return
+        if not internal_ids: return
         logger.info(f"Attempting to delete {len(internal_ids)} documents by internal Ragie ID.")
-
         successful_deletes = 0
         failed_deletes = 0
-        # Use partition header if configured
+        # Use general partition header for DELETE requests
         headers = self.partition_header
-
         for internal_id in internal_ids:
-            # Construct endpoint using the internal ID
-            delete_endpoint = f"{self.DOCUMENTS_ENDPOINT}/{internal_id}"
+            if not internal_id or not isinstance(internal_id, str):
+                logger.warning(f"Invalid internal ID for deletion: {internal_id}. Skipping.")
+                failed_deletes += 1
+                continue
+            # Construct endpoint using the general documents endpoint base
+            delete_endpoint = f"{self.DOCUMENTS_GENERAL_ENDPOINT}/{internal_id}"
             try:
-                self._request(
-                    "DELETE",
-                    delete_endpoint,
-                    extra_headers=headers # Pass partition header
-                )
+                self._request("DELETE", delete_endpoint, extra_headers=headers)
                 successful_deletes += 1
                 logger.debug(f"Successfully deleted document with internal_id: {internal_id}")
-            except requests.exceptions.HTTPError as e:
-                 if e.response.status_code == 404:
-                     logger.warning(f"Document with internal_id {internal_id} not found for deletion (status 404). Assuming already deleted.")
-                     successful_deletes +=1 # Count as success
+            except RagieApiError as e:
+                 error_str = str(e)
+                 status_code = None
+                 if e.__cause__ and isinstance(e.__cause__, requests.exceptions.HTTPError):
+                     status_code = e.__cause__.response.status_code
+
+                 if status_code == 404:
+                     logger.warning(f"Document internal_id {internal_id} not found for deletion (404). Assuming deleted.")
+                     successful_deletes +=1 # Count 404 as success during delete
                  else:
-                     logger.error(f"Failed to delete document with internal_id {internal_id}: {e}")
+                     logger.error(f"Failed to delete document internal_id {internal_id}: {e}")
                      failed_deletes += 1
             except Exception as e:
-                 logger.error(f"Unexpected error deleting document with internal_id {internal_id}: {e}", exc_info=True)
+                 logger.error(f"Unexpected error deleting document internal_id {internal_id}: {e}", exc_info=True)
                  failed_deletes += 1
-
-        logger.info(f"Deletion result: {successful_deletes} successful requests, {failed_deletes} failed.")
+        logger.info(f"Deletion result: {successful_deletes} successful (incl 404s), {failed_deletes} failures.")
         if failed_deletes > 0:
-             raise AirbyteTracedException(
-                 message=f"Failed to delete {failed_deletes} out of {len(internal_ids)} documents. Check logs for details.",
-                 failure_type=FailureType.system_error
-             )
+             raise AirbyteTracedException(message=f"Failed to delete {failed_deletes} out of {len(internal_ids)} documents (excluding 404s).", failure_type=FailureType.system_error)

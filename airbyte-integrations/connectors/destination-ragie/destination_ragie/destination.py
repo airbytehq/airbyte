@@ -63,13 +63,11 @@ class DestinationRagie(Destination):
             for message in input_messages:
                 if message.type == Type.STATE:
                     # On STATE message: Flush buffer, then yield state
-                    logger.info(f"Received STATE message. Flushing buffer of {len(writer.write_buffer)} records.")
+                    logger.info(f"Received STATE message: {message.state.data}. Yielding state.")
                     try:
-                        writer.flush()
-                        logger.debug(f"Successfully flushed buffer. Yielding STATE: {message.state.data}")
                         yield message
                     except Exception as e:
-                        logger.error(f"Exception during flush on STATE message: {e}", exc_info=True)
+                        logger.error(f"Exception during Yielding on STATE message: {e}", exc_info=True)
                         # Re-raise to signal failure to Airbyte platform
                         raise e
 
@@ -77,7 +75,7 @@ class DestinationRagie(Destination):
                     try:
                         writer.queue_write_operation(message.record)
                         processed_records += 1
-                        if processed_records % (writer.batch_size * 10) == 0: # Log progress periodically
+                        if processed_records % 10 == 0: # Log progress periodically
                             logger.info(f"Processed {processed_records} records...")
                     except Exception as e:
                          # Error processing a single record - log and potentially continue or fail?
@@ -89,10 +87,6 @@ class DestinationRagie(Destination):
                     # Ignore other message types (LOG, TRACE, etc.)
                     logger.debug(f"Ignoring message of type: {message.type}")
 
-            # --- Final Flush ---
-            # Ensure any remaining records in the buffer are written at the end
-            logger.info(f"End of message stream reached. Performing final flush of {len(writer.write_buffer)} records.")
-            writer.flush()
             logger.info(f"Write operation completed. Total records processed: {processed_records}")
 
         except Exception as e:
