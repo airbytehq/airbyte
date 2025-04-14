@@ -7,14 +7,14 @@ package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.DestinationStatusGatherer
+import io.airbyte.cdk.load.orchestration.DestinationInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 
 class TypingDedupingWriter(
     private val catalog: DestinationCatalog,
-    private val stateGatherer: DestinationStatusGatherer<TypingDedupingDestinationInitialStatus>,
+    private val stateGatherer: DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
 ) : DestinationWriter {
