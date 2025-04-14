@@ -41,7 +41,7 @@ class GcsStreamingUpload(
 
     /** Upload a part to GCS. Each part is stored as a temporary blob. */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
-        check(parts.size <= 32) {
+        check(parts.size + 1 <= 32) {
             "We are attempting to compose more than 32 parts for key $key. " +
                 "GCS is not capable of doing that."
         }

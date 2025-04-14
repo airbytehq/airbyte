@@ -15,7 +15,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.util.concurrent.ConcurrentSkipListMap
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -127,25 +126,19 @@ class GcsStreamingUploadTest {
     }
 
     @Test
-    fun `complete - throws when more than 32 parts uploaded`() = runBlocking {
-        // Arrange - Set up 33 parts
+    fun `uploadPart - throws when more than 32 parts uploaded`() = runBlocking {
+        // Arrange - Set up 32 parts
         every { storage.create(any(), any<ByteArray>()) } returns mockk()
 
-        // Reflection to access the private 'parts' field to manually add more than 32 parts
-        val partsField = GcsStreamingUpload::class.java.getDeclaredField("parts")
-        partsField.isAccessible = true
-        val parts = ConcurrentSkipListMap<Int, String>()
-
-        // Add 33 parts (more than the max 32)
-        for (i in 0..32) {
-            parts[i] = "part-$i"
+        // First, upload 32 parts (the maximum allowed)
+        for (i in 0..31) {
+            streamingUpload.uploadPart("data".toByteArray(), i)
         }
-        partsField.set(streamingUpload, parts)
 
-        // Act & Assert - the implementation should throw when parts > 32
+        // Act & Assert - the implementation should throw when trying to upload the 33rd part
         val exception =
             org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
-                runBlocking { streamingUpload.complete() }
+                runBlocking { streamingUpload.uploadPart("data".toByteArray(), 32) }
             }
 
         // Verify message mentions the 32 part limit
