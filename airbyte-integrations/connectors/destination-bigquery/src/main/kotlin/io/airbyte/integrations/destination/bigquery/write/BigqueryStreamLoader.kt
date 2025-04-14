@@ -27,7 +27,6 @@ class BigqueryStreamLoader(
             bigquery,
             bigQueryClientChunkSize = TODO(),
             BigQueryRecordFormatter(),
-
         )
 
         logger.info { "Creating dataset if needed: ${config.rawTableDataset}" }

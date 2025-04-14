@@ -5,9 +5,7 @@ import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 
 class DbStreamLoader(override val stream: DestinationStream) : StreamLoader {
-    override suspend fun start() {
-    }
+    override suspend fun start() {}
 
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
-    }
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {}
 }

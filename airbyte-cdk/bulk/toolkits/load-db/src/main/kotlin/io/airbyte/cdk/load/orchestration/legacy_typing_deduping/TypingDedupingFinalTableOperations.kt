@@ -27,9 +27,8 @@ class TypingDedupingFinalTableOperations(
     }
 
     /**
-     * Attempt to atomically swap the final table from the temp version.
-     * This could be destination specific, INSERT INTO..SELECT * and DROP TABLE OR CREATE OR REPLACE
-     * ... SELECT *, DROP TABLE
+     * Attempt to atomically swap the final table from the temp version. This could be destination
+     * specific, INSERT INTO..SELECT * and DROP TABLE OR CREATE OR REPLACE ... SELECT *, DROP TABLE
      */
     fun overwriteFinalTable(
         finalTableName: TableName,

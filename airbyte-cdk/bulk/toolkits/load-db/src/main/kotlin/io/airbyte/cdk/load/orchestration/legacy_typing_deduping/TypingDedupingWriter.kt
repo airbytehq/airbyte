@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -15,7 +19,8 @@ class TypingDedupingWriter(
     private val finalTableOperations: TypingDedupingFinalTableOperations,
 ) : DestinationWriter {
     private lateinit var names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>
-    private lateinit var initialStatuses: Map<DestinationStream.Descriptor, TypingDedupingDestinationInitialStatus>
+    private lateinit var initialStatuses:
+        Map<DestinationStream, TypingDedupingDestinationInitialStatus>
 
     override suspend fun setup() {
         // TODO
@@ -25,7 +30,8 @@ class TypingDedupingWriter(
         //   2. soft reset
         //   3. gather state
         names = TODO()
-        val initialInitialStatuses: Map<DestinationStream.Descriptor, TypingDedupingDestinationInitialStatus> = stateGatherer.gatherInitialStatus(names)
+        val initialInitialStatuses: Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
+            stateGatherer.gatherInitialStatus(names)
         // TODO migrations
         // TODO soft reset if needed
         // TODO only refetch streams that need to be refetched
@@ -36,7 +42,7 @@ class TypingDedupingWriter(
         val tableNames = names[stream]!!.first
         return LegacyTypingDedupingStreamLoader(
             stream,
-            initialStatuses[stream.descriptor]!!,
+            initialStatuses[stream]!!,
             tableNames.rawTableName!!,
             tableNames.finalTableName!!,
             rawTableOperations,

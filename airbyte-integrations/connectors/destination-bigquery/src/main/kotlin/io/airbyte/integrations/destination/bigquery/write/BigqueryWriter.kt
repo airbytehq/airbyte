@@ -10,17 +10,14 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns.V2_
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer
 import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations
-import io.airbyte.cdk.integrations.destination.gcs.credential.GcsCredentialConfig
 import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.staging.operation.StagingStreamOperations
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.operation.StandardStreamOperation
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
@@ -73,8 +70,9 @@ class BigqueryWriter(
                         parsedCatalog,
                         destinationHandler,
                         config.datasetId,
-                        { initialStatus: DestinationInitialStatus<BigQueryDestinationState>, disableTD
-                            ->
+                        {
+                            initialStatus: DestinationInitialStatus<BigQueryDestinationState>,
+                            disableTD ->
                             StandardStreamOperation(
                                 bigQueryLoadingStorageOperation,
                                 initialStatus,
@@ -114,7 +112,9 @@ class BigqueryWriter(
                         parsedCatalog,
                         destinationHandler,
                         config.datasetId,
-                        { initialStatus: DestinationInitialStatus<BigQueryDestinationState>, disableTD ->
+                        {
+                            initialStatus: DestinationInitialStatus<BigQueryDestinationState>,
+                            disableTD ->
                             StagingStreamOperations(
                                 bigQueryGcsStorageOperations,
                                 initialStatus,

@@ -22,8 +22,8 @@ data class TableNames(
 data class TableName(val namespace: String, val name: String)
 
 /**
- * map from the column name as declared in the schema,
- * to the column name that we'll create in the final (typed) table.
+ * map from the column name as declared in the schema, to the column name that we'll create in the
+ * final (typed) table.
  */
 @JvmInline
 value class ColumnNameMapping(private val columnNameMapping: Map<String, String>) :
