@@ -3,7 +3,7 @@
 #
 
 
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 
 def safe_stream_state(stream_state: Mapping[str, Any], cursor_field: str) -> Mapping[str, Any]:
