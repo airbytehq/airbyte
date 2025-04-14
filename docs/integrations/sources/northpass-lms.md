@@ -81,6 +81,8 @@ Link to Northpass LMS API documentation [here](https://developers.northpass.com/
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.21 | 2025-04-12 | [57915](https://github.com/airbytehq/airbyte/pull/57915) | Update dependencies |
+| 0.2.20 | 2025-04-05 | [57305](https://github.com/airbytehq/airbyte/pull/57305) | Update dependencies |
 | 0.2.19 | 2025-03-29 | [56727](https://github.com/airbytehq/airbyte/pull/56727) | Update dependencies |
 | 0.2.18 | 2025-03-22 | [56204](https://github.com/airbytehq/airbyte/pull/56204) | Update dependencies |
 | 0.2.17 | 2025-03-08 | [55515](https://github.com/airbytehq/airbyte/pull/55515) | Update dependencies |

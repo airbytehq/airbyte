@@ -48,6 +48,8 @@ the MeiliSearch docs.
 
 | Version | Date       | Pull Request                                              | Subject                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
+| 1.0.22 | 2025-04-12 | [57603](https://github.com/airbytehq/airbyte/pull/57603) | Update dependencies |
+| 1.0.21 | 2025-04-05 | [57137](https://github.com/airbytehq/airbyte/pull/57137) | Update dependencies |
 | 1.0.20 | 2025-03-29 | [56616](https://github.com/airbytehq/airbyte/pull/56616) | Update dependencies |
 | 1.0.19 | 2025-03-22 | [56153](https://github.com/airbytehq/airbyte/pull/56153) | Update dependencies |
 | 1.0.18 | 2025-03-08 | [55372](https://github.com/airbytehq/airbyte/pull/55372) | Update dependencies |

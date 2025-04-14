@@ -52,4 +52,6 @@ Each destination will have its own set of required fields to configure during se
 Some destinations will also have an **Optional Fields** tab located beneath the required fields. You can open this tab to view and configure any additional optional parameters that exist for the source. These fields generally grant you more fine-grained control over your data replication, but you can safely ignore them.
 :::
 
-Once you've filled out the required fields, select **Set up destination**. A connection check will run to verify that a successful connection can be established. Now you're ready to [set up your first connection](./set-up-a-connection)!
+Once you've filled out the required fields, select **Set up destination**. A connection check will run to verify that a successful connection can be established. If you're using the [API](https://reference.airbyte.com/reference/createdestination#/) or [Terraform](../../terraform-documentation) to manage your infrastructure, use the **Copy JSON** button to copy your configuration as a JSON string that you can paste into your code.
+
+Now you're ready to [set up your first connection](./set-up-a-connection)!
