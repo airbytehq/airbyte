@@ -245,6 +245,19 @@ const connectorCatalog = {
           },
         ),
       },
+      {
+        type: "category",
+        label: "Enterprise Connectors",
+        link: {
+            type: "doc",
+            id: "enterprise-connectors/README",
+        },
+        items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
+            const labelA = itemA?.label || "";
+            const labelB = itemB?.label || "";
+            return labelA.localeCompare(labelB);
+        }),
+      },
       "connector-support-levels",
       {
         type: "doc",

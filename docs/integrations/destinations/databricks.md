@@ -30,11 +30,11 @@ When setting up a Databricks destination, you need these pieces of information:
 1. Open the workspace console.
 2. Open your SQL warehouse:
 
-   ![](../../.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
+   ![](/.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
 
 3. Open the Connection Details tab:
 
-   ![](../../.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
+   ![](/.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
 
 4. Finally, you'll need to provide the `Databricks Unity Catalog Path`, which is the path to the database you wish to use within the Unity Catalog. This is often the same as the workspace name.
 
@@ -50,11 +50,11 @@ to generate a client ID and secret.
 1. Open your workspace console.
 2. Click on your icon in the top-right corner, and head to `settings`, then `developer`, then `manage` under `access tokens`
 
-   ![](../../.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
+   ![](/.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
 
 3. Enter a description for the token and how long it will be valid for (or leave blank for a permanent token):
 
-   ![](../../.gitbook/assets/destination/databricks/databricks_generate_token.png)
+   ![](/.gitbook/assets/destination/databricks/databricks_generate_token.png)
 
 ### Other Options
 

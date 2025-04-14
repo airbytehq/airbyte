@@ -2,6 +2,10 @@
 products: all
 ---
 
-# Platform docs go here
+# Airbyte platform
 
-Some content.
+Airbyte platform.
+
+<!-- import DocCardList from '@theme/DocCardList';
+
+<DocCardList /> -->

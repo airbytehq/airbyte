@@ -8,9 +8,9 @@ Each source or destination is a connector. A source is an API, file, database, o
 
 By browsing the catalog, you can see useful links to documentation, source code, and issues related to each connector. You'll also be able to see whether a connector is supported on our Open Source Software (OSS), our Cloud platform, or both. 
 
-As an open source project, Airbyte's catalog of connectors is continually growing thanks to community contributions as well as development by the Airbyte team. Airbyte enables you to [build new connectors](/connector-development/). We encourage you to consider contributing  enhancements, bug fixes, or features to existing connectors or to submit entirely new connectors you've built for inclusion in the connector catalog. That said, you always have the option to publish connectors privately, to your own workspaces. 
+As an open source project, Airbyte's catalog of connectors is continually growing thanks to community contributions as well as development by the Airbyte team. Airbyte enables you to [build new connectors](../platform/connector-development/). We encourage you to consider contributing  enhancements, bug fixes, or features to existing connectors or to submit entirely new connectors you've built for inclusion in the connector catalog. That said, you always have the option to publish connectors privately, to your own workspaces.
 
-Learn more about contributing to Airbyte [here](/contributing-to-airbyte/).
+Learn more about contributing to Airbyte [here](../platform/contributing-to-airbyte/).
 
 ## Connector Support Levels
 
