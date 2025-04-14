@@ -698,6 +698,7 @@ def test_export_iter_dicts():
     # drop record parts because they are not standing nearby
     assert list(iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
 
+
 @responses.activate
 def test_export_full_refresh_read(export_config, engage_response):
     config = export_config.copy()
@@ -746,6 +747,7 @@ def test_export_full_refresh_read(export_config, engage_response):
     output = read(SourceMixpanel(config=config, catalog=catalog, state={}), config, catalog, {})
     assert len(output.records) == 2
     assert output.state_messages[-1].state.stream.stream_state.time == "2022-05-18T21:59:59Z"
+
 
 @responses.activate
 def test_export_incremental_read(export_config, engage_response):

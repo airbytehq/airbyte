@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Optional
 
 import pendulum
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
