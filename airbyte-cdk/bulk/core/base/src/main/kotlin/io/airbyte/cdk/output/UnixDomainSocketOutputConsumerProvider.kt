@@ -166,7 +166,12 @@ class UnixDomainSocketOutputConsumer(
             charset = Charsets.UTF_8
         )
 
-    data class NamedNode(val namespace: String, val streamName: String, val recordData: ObjectNode)
+    data class NamedNode(
+        val namespace: String,
+        val streamName: String,
+        val recordData: ObjectNode,
+        val recordMessage: AirbyteRecord.AirbyteRecordMessage,
+    )
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         return objectMapper
@@ -222,33 +227,19 @@ class UnixDomainSocketOutputConsumer(
             .writeValues(bufferedOutputStream)
     }
 
-    fun accept(recordData: ObjectNode, namespace: String, streamName: String) {
+    val messageBuilder = Protocol.AirbyteMessage.newBuilder()
+        .setType(Protocol.AirbyteMessageType.RECORD)
+
+    fun accept(recordData: ObjectNode, recordMessage:  AirbyteRecord.AirbyteRecordMessage, namespace: String, streamName: String) {
         if (outputFormat == "devnull") {
             return
         }
 
         if (outputFormat in listOf("proto", "protobuf")) {
-            val pMessage: Protocol.AirbyteMessage? =
-                Protocol.AirbyteMessage.newBuilder()
-                    .setType(Protocol.AirbyteMessageType.RECORD)
-                    .setRecord(
-                        AirbyteRecord.AirbyteRecordMessage.newBuilder()
-                            .setStream(streamName)
-                            .setNamespace(namespace)
-                            .setData(
-                                ByteString.copyFrom(
-                                    if (fakeRecord) {
-                                        fakeRecordJson
-                                    } else {
-                                        Jsons.writeValueAsBytes(recordData)
-                                    }
-                                )
-                            )
-                            .setEmittedAt(clock.millis())
-                            .build()
-                    )
-                    .build()
-            pMessage?.writeDelimitedTo(bufferedOutputStream)
+            val pMessage = messageBuilder
+                .setRecord(recordMessage)
+                .build()
+            pMessage.writeDelimitedTo(bufferedOutputStream)
         } else {
             val airbyteMessage =
                 AirbyteMessage()
@@ -269,13 +260,22 @@ class UnixDomainSocketOutputConsumer(
         }
     }
 
-    suspend fun acceptAsyncMaybe(recordData: ObjectNode, namespace: String, streamName: String) {
+    suspend fun acceptAsyncMaybe(recordData: ObjectNode,
+                                 recordBuilder: AirbyteRecord.AirbyteRecordMessage.Builder,
+                                 namespace: String,
+                                 streamName: String
+    ) {
+        recordBuilder
+            .setNamespace(namespace)
+            .setStream(streamName)
+            .setEmittedAt(clock.millis())
+
         if (!writeAsync) {
-            accept(recordData, namespace, streamName)
+            accept(recordData, recordBuilder.build(), namespace, streamName)
             return
         }
 
-        val namedNode = NamedNode(namespace, streamName, recordData)
+        val namedNode = NamedNode(namespace, streamName, recordData, recordBuilder.build())
         if (devNullBeforePosting) {
             return
         }
@@ -283,7 +283,7 @@ class UnixDomainSocketOutputConsumer(
     }
 
     suspend fun writeToSocketUntilComplete() {
-        inputFlow.collect { (namespace, name, recordData) -> accept(recordData, namespace, name) }
+        inputFlow.collect { (namespace, name, recordData, recordMessage) -> accept(recordData, recordMessage, namespace, name) }
     }
 
     override fun close() {

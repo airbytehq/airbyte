@@ -37,7 +37,17 @@ message AirbyteRecordMessageMeta {
 message AirbyteRecordMessage {
   optional string namespace = 1;
   string stream = 2;
-  bytes data = 3;
+  repeated AirbyteValue data = 3;
   int64 emitted_at = 4;
   optional AirbyteRecordMessageMeta meta = 5;
 };
+
+message AirbyteValue {
+  oneof value {
+    string string = 1;
+    bool boolean = 2;
+    int64 integer = 3;
+    double number = 4;
+    bytes binary = 5;
+  }
+}

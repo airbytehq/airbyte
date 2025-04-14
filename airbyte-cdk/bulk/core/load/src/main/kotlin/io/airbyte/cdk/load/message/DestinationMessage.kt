@@ -33,6 +33,7 @@ import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.Protocol.AirbyteMessage as AirbyteMessageProto
+import io.airbyte.protocol.AirbyteRecord
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -189,7 +190,8 @@ data class DestinationRecord(
     val message: AirbyteMessage?,
     val serialized: String,
     val schema: AirbyteType,
-    val meta: Meta?
+    val meta: Meta?,
+    val dataProto: List<AirbyteRecord.AirbyteValue> = emptyList()
 ) : DestinationRecordDomainMessage {
     constructor(
         stream: DestinationStream,
@@ -225,7 +227,7 @@ data class DestinationRecord(
         )
     }
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, data, emittedAtMs, meta, serialized, schema)
+        return DestinationRecordRaw(stream, data, emittedAtMs, meta, serialized, schema, dataProto)
     }
 }
 
@@ -317,7 +319,8 @@ data class DestinationRecordRaw(
     val emittedAtMs: Long,
     private val meta: Meta?,
     private val serialized: String,
-    private val schema: AirbyteType
+    private val schema: AirbyteType,
+    val protoData: List<AirbyteRecord.AirbyteValue> = emptyList()
 ) {
     constructor(
         stream: DestinationStream,
@@ -806,8 +809,6 @@ class DestinationMessageFactory(
 
     fun fromProtobufAirbyteMessage(
         airbyteMessage: AirbyteMessageProto,
-        objectMapper: ObjectMapper,
-        skipJsonDeserialization: Boolean
     ): DestinationMessage {
         return when (airbyteMessage.type) {
             Protocol.AirbyteMessageType.RECORD -> {
@@ -822,12 +823,8 @@ class DestinationMessageFactory(
                     serialized = "",
                     schema = stream.schema,
                     emittedAtMs = airbyteMessage.record.emittedAt,
-                    data =
-                        if (skipJsonDeserialization) {
-                            fakeJsonNode
-                        } else {
-                            objectMapper.readTree(airbyteMessage.record.data.newInput())
-                        },
+                    data = fakeJsonNode,
+                    dataProto = airbyteMessage.record.dataList,
                     meta =
                         airbyteMessage.record.meta?.let { meta ->
                             Meta(

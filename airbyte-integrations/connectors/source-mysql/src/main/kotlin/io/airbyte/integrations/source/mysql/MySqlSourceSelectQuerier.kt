@@ -9,6 +9,7 @@ import io.airbyte.cdk.output.SocketConfig
 import io.airbyte.cdk.read.JdbcSelectQuerier
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
+import io.airbyte.protocol.AirbyteConfiguredCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -28,7 +29,7 @@ class MySqlSourceSelectQuerier(
         parameters: SelectQuerier.Parameters,
         cursorQuery: Boolean
     ) : JdbcSelectQuerier.Result(jdbcConnectionFactory, q, parameters,
-            skipMarshalingToJson = (!cursorQuery) && socketConfig.skipJsonNodeAndUseFakeRecord) {
+            writeProto = (!cursorQuery) && socketConfig.outputFormat.startsWith("proto")) {
         override fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)

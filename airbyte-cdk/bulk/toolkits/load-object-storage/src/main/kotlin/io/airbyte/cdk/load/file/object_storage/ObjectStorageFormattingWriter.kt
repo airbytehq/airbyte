@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SequenceWriter
@@ -17,7 +16,6 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -32,16 +30,15 @@ import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
+import java.io.UnsupportedEncodingException
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.collections.LinkedHashMap
 import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
@@ -93,18 +90,67 @@ class JsonFormattingWriter(
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
-    private val writer: SequenceWriter =
+    private val generator =
+        Jsons.createGenerator(outputStream)
+    private val writer =
         Jsons.writerFor(JsonNode::class.java)
             .with(MinimalPrettyPrinter(System.lineSeparator()))
             .writeValues(outputStream)
 
+    enum class DataType {
+        STRING,
+        BOOLEAN,
+        INTEGER,
+        NUMBER,
+        BINARY,
+    }
+    private val fakeSortedCatalog = listOf(
+        Pair("occupation", DataType.STRING),
+        Pair("gender", DataType.STRING),
+        Pair("global_id", DataType.INTEGER),
+        Pair("academic_degree", DataType.STRING),
+        Pair("weight", DataType.NUMBER),
+        Pair("created_at", DataType.STRING),
+        Pair("language", DataType.STRING),
+        Pair("telephone", DataType.STRING),
+        Pair("title", DataType.STRING),
+        Pair("updated_at", DataType.STRING),
+        Pair("nationality", DataType.STRING),
+        Pair("blood_type", DataType.STRING),
+        Pair("name", DataType.STRING),
+        Pair("id", DataType.INTEGER),
+        Pair("age", DataType.INTEGER),
+        Pair("email", DataType.STRING),
+        Pair("height", DataType.NUMBER),
+    )
+
     override fun accept(record: DestinationRecordRaw) {
-        val data = record.asRawJson() as ObjectNode
-        data.put(Meta.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString())
-        data.put(Meta.COLUMN_NAME_AB_EXTRACTED_AT, record.emittedAtMs)
-        data.set<ObjectNode>(Meta.COLUMN_NAME_AB_META, JsonNodeFactory.instance.objectNode())
-        data.put(Meta.COLUMN_NAME_AB_GENERATION_ID, stream.generationId)
-        writer.write(data)
+        if (record.protoData.isEmpty()) {
+            throw UnsupportedEncodingException("We done temporarily disabled everything but proto y'all")
+        }
+
+        generator.writeStartObject()
+        generator.writeFieldName(Meta.COLUMN_NAME_AB_RAW_ID)
+        generator.writeString(UUID.randomUUID().toString())
+        generator.writeFieldName(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
+        generator.writeNumber(record.emittedAtMs)
+        generator.writeFieldName(Meta.COLUMN_NAME_AB_GENERATION_ID)
+        generator.writeNumber(stream.generationId)
+        generator.writeFieldName(Meta.COLUMN_NAME_DATA)
+        generator.writeStartObject()
+        fakeSortedCatalog.zip(record.protoData).forEach { (nameAndType, field) ->
+            generator.writeFieldName(nameAndType.first)
+            when (nameAndType.second) {
+                DataType.STRING -> generator.writeString(field.string)
+                DataType.BOOLEAN -> generator.writeBoolean(field.boolean)
+                DataType.INTEGER -> generator.writeNumber(field.integer)
+                DataType.NUMBER -> generator.writeNumber(field.number)
+                DataType.BINARY -> generator.writeBinary(field.binary.asReadOnlyByteBuffer().array())
+            }
+        }
+        generator.writeEndObject()
+        generator.writeEndObject()
+        generator.writeRaw(System.lineSeparator())
     }
 
     override fun flush() {

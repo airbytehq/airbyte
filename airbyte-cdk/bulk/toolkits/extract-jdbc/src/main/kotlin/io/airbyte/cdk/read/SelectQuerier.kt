@@ -3,16 +3,17 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.data.ArrayAirbyteSchemaType
-import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.output.SocketConfig
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.AirbyteRecord
+import io.airbyte.protocol.AirbyteRecord.AirbyteRecordMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
+import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -44,6 +45,7 @@ interface SelectQuerier {
     interface ResultRow {
         val data: ObjectNode
         val changes: Map<Field, FieldValueChange>
+        val recordBuilder: AirbyteRecordMessage.Builder get() = AirbyteRecordMessage.newBuilder()
     }
 }
 
@@ -62,19 +64,27 @@ class JdbcSelectQuerier(
             jdbcConnectionFactory,
             q,
             parameters,
-            skipMarshalingToJson = socketConfig.skipJsonNodeAndUseFakeRecord
+            writeProto = socketConfig.skipJsonNodeAndUseFakeRecord
         )
 
     data class ResultRow(
         override var data: ObjectNode = Jsons.objectNode(),
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
+        override val recordBuilder: AirbyteRecordMessage.Builder =
+            // TOTAL HACK: We need to inject the catalog size for this to work.
+            AirbyteRecordMessage.newBuilder().also {
+                b -> repeat(17) {
+                    b.addData(AirbyteRecord.AirbyteValue.newBuilder().setInteger(0).build())
+                }
+           },
+        val valueBuilder: AirbyteRecord.AirbyteValue.Builder = AirbyteRecord.AirbyteValue.newBuilder()
     ) : SelectQuerier.ResultRow
 
     open class Result(
         val jdbcConnectionFactory: JdbcConnectionFactory,
         val q: SelectQuery,
         val parameters: SelectQuerier.Parameters,
-        val skipMarshalingToJson: Boolean = false,
+        val writeProto: Boolean = false,
     ) : SelectQuerier.Result {
         private val log = KotlinLogging.logger {}
 
@@ -147,11 +157,33 @@ class JdbcSelectQuerier(
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-                    if (!skipMarshalingToJson) {
+                    if (!writeProto) {
                         resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                     } else {
                         // Fetch and discard the data w/o marshaling to JSON
-                        jdbcFieldType.getValueOnly(rs!!, colIdx)
+                        when (val value = jdbcFieldType.getValueOnly(rs!!, colIdx)) {
+                            is String -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value))
+                            }
+                            is Int -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setInteger(value.toLong()))
+                            }
+                            is Long -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setInteger(value))
+                            }
+                            is BigDecimal -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setNumber(value.toDouble()))
+                            }
+                            is Double -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setNumber(value))
+                            }
+                            is Float -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setNumber(value.toDouble()))
+                            }
+                            is Boolean -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setBoolean(value))
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())

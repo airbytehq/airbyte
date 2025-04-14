@@ -46,6 +46,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         streamRecordConsumer.acceptAsync(
             row.data,
             row.changes,
+            row.recordBuilder,
             sharedState.configuration.maxConcurrency,
             partitionNum
         )

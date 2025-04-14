@@ -12,6 +12,8 @@ import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.UnixDomainSocketOutputConsumer
 import io.airbyte.cdk.output.UnixDomainSocketOutputConsumerProvider
+import io.airbyte.protocol.AirbyteRecord
+import io.airbyte.protocol.AirbyteRecord.AirbyteRecordMessage.Builder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 
 /**
@@ -76,13 +78,14 @@ sealed class FeedBootstrap<T : Feed>(
         override suspend fun acceptAsync(
             recordData: ObjectNode,
             changes: Map<Field, FieldValueChange>?,
+            recordBuilder: Builder,
             totalNum: Int?,
             num: Long?
         ) {
             if (::socketOutputConsumer.isInitialized.not()) {
                 socketOutputConsumer = socketProvider.getNextFreeSocketConsumer(num!!.toInt())
             }
-            socketOutputConsumer.acceptAsyncMaybe(recordData, stream.namespace ?: "", stream.name)
+            socketOutputConsumer.acceptAsyncMaybe(recordData, recordBuilder, stream.namespace ?: "", stream.name)
         }
 
         override fun accept(
@@ -197,6 +200,7 @@ interface StreamRecordConsumer : AutoCloseable {
     suspend fun acceptAsync(
         recordData: ObjectNode,
         changes: Map<Field, FieldValueChange>?,
+        recordBuilder: AirbyteRecord.AirbyteRecordMessage.Builder,
         totalNum: Int? = null,
         num: Long? = null
     ) {
