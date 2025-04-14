@@ -260,24 +260,15 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
     mock_s3_client_instance.download_file.return_value = None
 
     reader = SourceS3StreamReader()
+    bucket_name = "test"
     reader.config = Config(
-        bucket="test",
+        bucket=bucket_name,
         aws_access_key_id="test",
         aws_secret_access_key="test",
         streams=[],
+        endpoint=None,
         delivery_method={"delivery_type": "use_file_transfer"},
     )
-    try:
-        reader.config = Config(
-            bucket="test",
-            aws_access_key_id="test",
-            aws_secret_access_key="test",
-            streams=[],
-            endpoint=None,
-            delivery_method={"delivery_type": "use_file_transfer"},
-        )
-    except Exception as exc:
-        raise exc
     file_folder = "directory"
     file_name = "file.txt"
     test_file_path = f"{file_folder}/{file_name}"
@@ -286,6 +277,7 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
     assert file_record_data.bytes == 100
     assert file_record_data.folder == file_folder
     assert file_record_data.filename == file_name
+    assert file_record_data.source_uri == f"s3://{bucket_name}/{test_file_path}"
 
     assert file_reference.file_size_bytes == 100
     assert file_reference.source_file_relative_path == ANY
