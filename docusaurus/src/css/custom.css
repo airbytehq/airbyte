@@ -228,9 +228,9 @@ ul.breadcrumbs > li.breadcrumbs__item > span.breadcrumbs__link {
   box-shadow: none !important;
 }
 
-img {
+main img {
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .iconExternalLink_I5OW {
