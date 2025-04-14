@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.file.gcs
 
-import GcsBlob
-import GcsClient
 import com.google.cloud.storage.Blob
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo

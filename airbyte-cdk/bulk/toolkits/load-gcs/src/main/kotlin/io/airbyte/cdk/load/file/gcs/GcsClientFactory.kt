@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.file.gcs
 
-import GcsClient
 import com.google.auth.oauth2.AwsCredentials
 import com.google.cloud.storage.StorageOptions
 import io.airbyte.cdk.load.command.gcs.GcsClientConfigurationProvider
