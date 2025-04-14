@@ -698,92 +698,54 @@ def test_export_iter_dicts():
     # drop record parts because they are not standing nearby
     assert list(iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
 
+@responses.activate
+def test_export_full_refresh_read(export_config, engage_response):
+    config = export_config.copy()
+    config["start_date"] = "2022-01-01T00:00:00Z"
+    config["end_date"] = "2022-06-01T00:00:00Z"
+    config["attribution_window"] = 5
+    config["export_lookback_window"] = 60
+    config["date_window_size"] = 90
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append_dedup,
+                stream=AirbyteStream(name="export", json_schema={}, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]),
+            )
+        ]
+    )
 
-@pytest.mark.parametrize(
-    "start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_params",
-    (
-        (
-            "2021-01-01T00:00:00Z",
-            "2021-03-01T00:00:00Z",
-            None,
-            None,
-            None,
-            {"from_date": "2020-12-27", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609459200)'},
-        ),
-        (
-            "2021-01-01T00:00:00Z",
-            "2021-03-01T00:00:00Z",
-            None,
-            5,
-            None,
-            {"from_date": "2021-01-06", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1610323200)'},
-        ),
-        (
-            "2021-01-01T00:00:00Z",
-            "2021-03-01T00:00:00Z",
-            None,
-            None,
-            5 * 24 * 60 * 60 + 10,
-            {"from_date": "2021-01-05", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609891190)'},
-        ),
-        (
-            "2021-01-01T00:00:00Z",
-            "2021-03-01T00:00:00Z",
-            None,
-            5,
-            5 * 24 * 60 * 60 + 10,
-            {"from_date": "2021-01-05", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609891190)'},
-        ),
-        (
-            "2021-01-01T00:00:00Z",
-            "2021-03-01T00:00:00Z",
-            None,
-            6,
-            5 * 24 * 60 * 60 + 10,
-            {"from_date": "2021-01-05", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609891190)'},
-        ),
-        (
-            "2021-01-01T00:00:00Z",
-            "2021-03-01T00:00:00Z",
-            10,
-            None,
-            None,
-            {"from_date": "2020-12-27", "to_date": "2021-03-01", "where": 'properties["$time"]>=datetime(1609459200)'},
-        ),
-    ),
-    ids=(
-        "when lookback_window is default, state not provided",
-        "when config.attribution_window is 5 days and state provided",
-        "when config.export_lookback_window is 5 days and state provided",
-        "when config.export_lookback_window is bugger then config.attribution_window",
-        "when config.attribution_window is bugger then config.export_lookback_window",
-        "when config.date_window_size is 10",
-    ),
-)
-def test_export_request_params(
-    export_config, start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_params
-):
-    export_config["start_date"] = start_date
-    export_config["end_date"] = end_date
-    if date_window_size:
-        export_config["date_window_size"] = date_window_size
+    responses.add(
+        responses.GET,
+        url="https://mixpanel.com/api/query/engage/properties",
+        json={
+            "computed_at": "time",
+            "results": {
+                "$email": {"count": 2, "type": "string"},
+                "$last_seen": {"count": 3, "type": "datetime"},
+                "$name": {"count": 3, "type": "string"},
+            },
+            "session_id": "session",
+            "status": "ok",
+        },
+        status=200,
+    )
+    responses.add(responses.GET, url="https://mixpanel.com/api/query/events/properties/top", json={}, status=200)
 
-    with mock.patch("airbyte_cdk.sources.declarative.incremental.datetime_based_cursor.DatetimeBasedCursor.get_stream_state") as state_mock:
-        if attribution_window:
-            export_config["attribution_window"] = attribution_window
-            state_mock.return_value = {"time": (pendulum.parse(start_date) + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S%z")}
-        if export_lookback_window:
-            export_config["export_lookback_window"] = export_lookback_window
-            state_mock.return_value = {"time": (pendulum.parse(start_date) + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S%z")}
+    request_params = [
+        ({"from_date": "2022-01-01T00:00:00Z", "to_date": "2022-03-31T00:00:00Z"}, {"properties": {"time": "2022-03-18T21:59:59Z"}}),
+        ({"from_date": "2022-04-01T00:00:00Z", "to_date": "2022-06-01T00:00:00Z"}, {"properties": {"time": "2022-05-18T21:59:59Z"}}),
+    ]
 
-        stream = init_stream("export", config=export_config)
+    for params, json_data in request_params:
+        responses.add(
+            responses.GET, url="https://data.mixpanel.com/api/2.0/export?" + urllib.parse.urlencode(params), json=json_data, status=200
+        )
 
-        stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
-        assert len(stream_slices) == 1
-        request_params = stream.retriever.requester.get_request_params(stream_state={}, stream_slice=stream_slices[0])
-
-        assert request_params == expected_params
-
+    output = read(SourceMixpanel(config=config, catalog=catalog, state={}), config, catalog, {})
+    assert len(output.records) == 2
+    assert output.state_messages[-1].state.stream.stream_state.time == "2022-05-18T21:59:59Z"
 
 @responses.activate
 def test_export_incremental_read(export_config, engage_response):

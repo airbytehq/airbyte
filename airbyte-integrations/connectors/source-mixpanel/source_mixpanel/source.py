@@ -4,6 +4,7 @@
 
 from typing import Any, List, Mapping, Optional
 
+import pendulum
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
@@ -31,6 +32,12 @@ class SourceMixpanel(YamlDeclarativeSource):
                 credentials["option_title"] = "Service Account"
                 if not credentials.get("project_id"):
                     raise_config_error("Required parameter 'project_id' missing or malformed. Please provide a valid project ID.")
+
+        if config.get("project_timezone"):
+            try:
+                pendulum.timezone(config["project_timezone"])
+            except pendulum.tz.zoneinfo.exceptions.InvalidTimezone as e:
+                raise_config_error(f"Could not parse time zone: {config['project_timezone']}, please enter a valid timezone.", e)
 
         if not config.get("region"):
             # US is default region according to the spec

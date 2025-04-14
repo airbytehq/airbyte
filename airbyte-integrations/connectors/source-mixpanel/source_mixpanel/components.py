@@ -329,18 +329,10 @@ class ExportHttpRequester(MixpanelHttpRequester):
             self._validate_end_date()
             self._end_date = pendulum.parse(self.config.get("end_date")).date()
         else:
-            self._validate_project_timezone()
             self._end_date = (
                 pendulum.today(tz=self.config.get("project_timezone", self.default_project_timezone))
                 - timedelta(days=self._to_date_lookback_window)
             ).date()
-
-    def _validate_project_timezone(self) -> None:
-        if self.config.get("project_timezone"):
-            try:
-                pendulum.timezone(self.config["project_timezone"])
-            except pendulum.tz.zoneinfo.exceptions.InvalidTimezone as e:
-                raise_config_error(f"Could not parse time zone: {self.config['project_timezone']}, please enter a valid timezone.", e)
 
     def _validate_end_date(self) -> None:
         date_str = self.config.get("end_date")

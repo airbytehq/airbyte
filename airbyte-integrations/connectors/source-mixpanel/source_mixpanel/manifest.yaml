@@ -770,7 +770,6 @@ definitions:
       step: "P{{ config.get('date_window_size', 30) }}D"
       cursor_granularity: P1D
       lookback_window: "PT{{ max(config.get('attribution_window', 5) * 20 * 60 * 60, config.get('export_lookback_window', 0)) }}S"
-      is_client_side_incremental: true
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%d %H:%M:%S"
