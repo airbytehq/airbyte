@@ -168,6 +168,19 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             endpoint=self.config.endpoint,
         ) from exc
 
+    def _construct_s3_uri(self, file: RemoteFile) -> str:
+        """
+        Constructs the S3 URI for a given file, handling both regular files and files inside archives.
+        
+        Args:
+            file: The RemoteFile object representing either a regular file or a file inside an archive
+            
+        Returns:
+            str: The properly formatted S3 URI
+        """
+        file_path = file.uri.split('#')[0] if isinstance(file, RemoteFileInsideArchive) else file.uri
+        return f"s3://{self.config.bucket}/{file_path}"
+
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
             params = {"client": self.s3_client}
@@ -176,14 +189,13 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         logger.debug(f"try to open {file.uri}")
         try:
+            s3_uri = self._construct_s3_uri(file)
             if isinstance(file, RemoteFileInsideArchive):
-                s3_file_object = smart_open.open(f"s3://{self.config.bucket}/{file.uri.split('#')[0]}", transport_params=params, mode="rb")
+                s3_file_object = smart_open.open(s3_uri, transport_params=params, mode="rb")
                 decompressed_stream = DecompressedStream(s3_file_object, file)
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
-                result = smart_open.open(
-                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding
-                )
+                result = smart_open.open(s3_uri, transport_params=params, mode=mode.value, encoding=encoding)
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
@@ -247,7 +259,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             message = "File size exceeds the 1 GB limit."
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
-        file_paths = self._get_file_transfer_paths(file, local_directory)
+        file_paths = self._get_file_transfer_paths(file.uri, local_directory)
         local_file_path = file_paths[self.LOCAL_FILE_PATH]
         file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
         file_name = file_paths[self.FILE_NAME]
@@ -267,6 +279,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             filename=file_name,
             bytes=file_size,
             updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            source_uri=self._construct_s3_uri(file),
         )
 
         file_reference = AirbyteRecordMessageFileReference(
