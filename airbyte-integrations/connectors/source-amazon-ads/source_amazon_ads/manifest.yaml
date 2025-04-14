@@ -3114,7 +3114,7 @@ definitions:
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       request_body_json:
         name: "purchasedAsin report {{ stream_interval.start_time }}"
-        startDate:  >
+        startDate: >
           {% if stream_interval.start_time < config['start_date'] %}
             {{ config['start_date'] }}
           {% else %}
