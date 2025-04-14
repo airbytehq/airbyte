@@ -23,7 +23,7 @@ object S3V2DataDumper : DestinationDataDumper {
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
+    ): Map<String, String> {
         return getObjectStorageDataDumper(spec, stream).dumpFile()
     }
 
