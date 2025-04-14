@@ -84,7 +84,7 @@ class GcsResumableStreamingUpload(
             require(!isCompleted.get()) { "Upload is already complete" }
 
             // Verify the part arrives in the expected order
-            val expectedIndex = nextExpectedPartIndex.get()
+            //        val expectedIndex = nextExpectedPartIndex.get()
             //        require(index == expectedIndex) {
             //            "Expected part $expectedIndex but received part $index. Parts must be
             // uploaded in order."
