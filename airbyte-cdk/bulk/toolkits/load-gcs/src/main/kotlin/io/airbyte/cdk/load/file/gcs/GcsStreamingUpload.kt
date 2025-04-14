@@ -41,6 +41,10 @@ class GcsStreamingUpload(
 
     /** Upload a part to GCS. Each part is stored as a temporary blob. */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
+        check(parts.size <= 32) {
+            "We are attempting to compose more than 32 parts for key $key. " +
+                "GCS is not capable of doing that."
+        }
         val partName = combinePath("$uploadId-part-$index")
         log.info { "Uploading part #$index => $partName" }
 
@@ -72,10 +76,6 @@ class GcsStreamingUpload(
         // We can assume here that we won't have more than 32 parts. This should be handled
         // in the configuration (total size / chunk_size <= 32)
         val allPartNames = parts.values.toList()
-        check(allPartNames.size <= 32) {
-            "We are attempting to compose more than 32 parts for key $key. " +
-                "GCS is not capable of doing that."
-        }
         log.info { "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$key" }
 
         // Create the final blob with metadata
