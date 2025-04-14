@@ -4,8 +4,6 @@ The FAST Airbyte Standard Tests suite is designed to ensure that connectors meet
 protocol standards.
 """
 
-from pathlib import Path
-
 import pytest
 from source_hubspot import SourceHubspot
 
