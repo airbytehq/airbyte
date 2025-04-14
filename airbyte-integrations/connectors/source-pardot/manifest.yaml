@@ -391,8 +391,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
-            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+            cursor_value: >-
+              {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
+              else "v5/objects/prospect-accounts?idGreaterThan=" ~
+              last_record.id }}
+            stop_condition: "{{ not last_record.id }}"
         partition_router:
           type: ListPartitionRouter
           values:
