@@ -28,6 +28,7 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
+    val includeFiles: Boolean,
 ) {
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -108,7 +109,8 @@ class DestinationStreamFactory {
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
-            schema = JsonSchemaToAirbyteType().convert(stream.stream.jsonSchema)
+            schema = JsonSchemaToAirbyteType().convert(stream.stream.jsonSchema),
+            includeFiles = stream.includeFiles ?: false,
         )
     }
 }
