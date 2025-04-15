@@ -5,15 +5,14 @@
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.TableName
+import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 
 class TypingDedupingStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: TypingDedupingDestinationInitialStatus,
-    private val rawTableName: TableName,
-    private val finalTableName: TableName,
+    private val tableNames: TableNames,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
 ) : StreamLoader {
@@ -21,13 +20,13 @@ class TypingDedupingStreamLoader(
     override suspend fun start() {
         // TODO do all the truncate stuff
         rawTableOperations.prepareRawTable(
-            rawTableName,
+            tableNames.rawTableName!!,
             suffix = "",
             replace = false,
         )
         finalTableOperations.createFinalTable(
             stream,
-            finalTableName,
+            tableNames.finalTableName!!,
             finalTableSuffix = "",
             replace = false,
         )
@@ -36,16 +35,19 @@ class TypingDedupingStreamLoader(
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             // TODO only do this in truncate mode, do all the correct truncate stuff
-            rawTableOperations.overwriteRawTable(rawTableName, suffix = "_airbyte_tmp")
+            rawTableOperations.overwriteRawTable(tableNames.rawTableName!!, suffix = "_airbyte_tmp")
             finalTableOperations.typeAndDedupe(
                 stream,
-                rawTableName,
-                finalTableName,
+                tableNames,
                 maxProcessedTimestamp = TODO(),
                 finalTableSuffix = "",
             )
             // TODO extract constant for suffix
-            finalTableOperations.overwriteFinalTable(finalTableName, finalTableSuffix = "")
+            finalTableOperations.overwriteFinalTable(
+                stream,
+                tableNames.finalTableName!!,
+                finalTableSuffix = ""
+            )
         }
     }
 }

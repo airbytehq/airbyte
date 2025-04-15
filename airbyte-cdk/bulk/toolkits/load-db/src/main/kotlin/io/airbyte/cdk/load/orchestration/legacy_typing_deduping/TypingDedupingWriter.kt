@@ -57,7 +57,8 @@ class TypingDedupingWriter(
                 Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
                 stateGatherer.gatherInitialStatus(names)
 
-            // TODO migrations
+            // TODO migrations - we should probably actually drop all existing migrations as part of
+            //   this project, but eventually we'll need some solution here
 
             // If we have a schema mismatch, then execute a soft reset.
             val streamsNeedingSoftReset =
@@ -80,7 +81,6 @@ class TypingDedupingWriter(
                 stateGatherer.gatherInitialStatus(
                     names.filterKeys { streamsNeedingSoftReset.containsKey(it) }
                 )
-            // TODO check whether this is true
             // second map "wins" when adding two maps together, so we'll retain the newer statuses.
             initialStatuses = initialInitialStatuses + statusesAfterSoftReset
         }
@@ -91,8 +91,7 @@ class TypingDedupingWriter(
         return TypingDedupingStreamLoader(
             stream,
             initialStatuses[stream]!!,
-            tableNames.rawTableName!!,
-            tableNames.finalTableName!!,
+            tableNames,
             rawTableOperations,
             finalTableOperations,
         )
