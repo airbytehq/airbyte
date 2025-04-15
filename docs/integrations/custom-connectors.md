@@ -29,10 +29,10 @@ If you don't use one of the official development options, remember to set the `A
 Otherwise, your connector will not run correctly.
 :::
 
-Learn how to upload Docker-based custom connectors [here](../../operator-guides/using-custom-connectors/)
+Learn how to upload Docker-based custom connectors [here](../../platform/operator-guides/using-custom-connectors/)
 
 ## Upgrading a connector
 
 To upgrade your connector version, go to the Settings in the left hand side of the UI and navigate to either Sources or Destinations. Find your connector in the list, and input the latest connector version.
 
-![](/.gitbook/assets/upgrade-connector-version.png)
+![](/platform/.gitbook/assets/upgrade-connector-version.png)
