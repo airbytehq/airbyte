@@ -9,7 +9,7 @@ products: oss-*
 
 ## 1. Connect to Airbyte
 
-Navigate to [Orchestra](https://app.getorchestra.io/integrations) and create a new integration credential. Select Airbyte Cloud or Airbyte Server, depending on your setup. You will need to create a Client ID and Client Secret to authenticate with Airbyte. Instructions for this can be found [here](/using-airbyte/configuring-api-access).
+Navigate to [Orchestra](https://app.getorchestra.io/integrations) and create a new integration credential. Select Airbyte Cloud or Airbyte Server, depending on your setup. You will need to create a Client ID and Client Secret to authenticate with Airbyte. Instructions for this can be found [here](/platform/using-airbyte/configuring-api-access).
 
 ![orchestra_airbyte_integration](./assets/OrchestraAirbyteIntegration.png)
 

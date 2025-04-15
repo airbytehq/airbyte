@@ -140,7 +140,7 @@ Airbyte Cloud allows you to log in to the platform using your email and password
 
 ### Access Control
 
-Airbyte Cloud supports [user management](/using-airbyte/workspaces.md#add-users-to-your-workspace). 
+Airbyte Cloud supports [user management](/platform/using-airbyte/workspaces.md#add-users-to-your-workspace). 
 
 In addition, Airbyte Cloud and  Airbyte Enterprise support [role-based access control](../../access-management/rbac.md) allowing admins to manage varying access levels across users in their instance.
 

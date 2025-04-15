@@ -22,7 +22,7 @@ Airbyte Teams. To learn more
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may
 fail to sync if a record cannot be stored, but Destinations which support
-[typing and deduping](/using-airbyte/core-concepts/typing-deduping) will adjust your record so that
+[typing and deduping](/platform/using-airbyte/core-concepts/typing-deduping) will adjust your record so that
 the sync does not fail, given the database/file constraints. For example, the maximum size of a
 record in MongoDB is 16MB - records larger than that will need to be modified. At the very least,
 primary keys and cursors will be maintained. Any modifications to the record will be stored within

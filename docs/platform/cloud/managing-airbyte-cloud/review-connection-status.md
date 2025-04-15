@@ -72,8 +72,8 @@ In addition to the stream status, Airbyte offers stream-specific actions that al
 
 - **Show in replication table** navigates you to the **Schema** tab of the connection, where Airbyte highlights the stream you selected
 - **Open details** opens the field selection pane for the stream.
-- [Refresh stream](/operator-guides/refreshes) re-syncs all historical data for the stream.
-- [Clear data](/operator-guides/clear) removes previously synced data from your destination for the stream.
+- [Refresh stream](/platform/operator-guides/refreshes) re-syncs all historical data for the stream.
+- [Clear data](/platform/operator-guides/clear) removes previously synced data from your destination for the stream.
 
 ## Connection troubleshooting
 
@@ -107,4 +107,4 @@ Airbyte shows sync errors in yellow. These can range from transient errors to wa
 
 If Airbyte releases a new major version of the connector in Cloud, you also see a banner on this page indicating the cutoff date for the version upgrade. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you don't upgrade before the cutoff date, Airbyte automatically disables your connection.
 
-Learn more about version upgrades in the [resolving breaking change documentation](/using-airbyte/schema-change-management.md#resolving-breaking-changes).
+Learn more about version upgrades in the [resolving breaking change documentation](/platform/using-airbyte/schema-change-management.md#resolving-breaking-changes).

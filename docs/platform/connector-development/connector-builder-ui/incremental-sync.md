@@ -12,7 +12,7 @@ To use incremental syncs, the API endpoint needs to fullfil the following requir
   - If the record's cursor field is nested, you can use an "Add Field" transformation to copy it to the top-level, and a Remove Field to remove it from the object. This will effectively move the field to the top-level of the record
 - It's possible to filter/request records by the cursor field
 
-The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/using-airbyte/core-concepts/sync-modes/incremental-append/) and [Incremental Sync - Append + Deduped](/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) pages.
+The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/platform/using-airbyte/core-concepts/sync-modes/incremental-append/) and [Incremental Sync - Append + Deduped](/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) pages.
 
 ## Configuration
 
@@ -21,7 +21,7 @@ To configure incremental syncs for a stream in the connector builder, you have t
 In the builder UI, these things are specified like this:
 
 - The "Cursor field" is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
-- The "Datetime format" specifies the format the cursor field is using to specify date and time. Check out the [YAML reference](/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/DatetimeBasedCursor) for a full list of supported formats.
+- The "Datetime format" specifies the format the cursor field is using to specify date and time. Check out the [YAML reference](/platform/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/DatetimeBasedCursor) for a full list of supported formats.
 - "API time filtering capabilities" specifies if the API allows filtering by start and end datetime or whether it's a "feed" of data going from newest to oldest records. See the ["Incremental sync without time filtering"](#incremental-sync-without-time-filtering) section below for details.
 - The "Start datetime" is the initial start date of the time range to fetch records for. When doing incremental syncs, the second sync will overwrite this date with the last record that got synced so far.
 - The "End datetime" is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started to sync all changes that happened so far.
@@ -89,7 +89,7 @@ If the last record read has a datetime earlier than the end time of the stream i
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
 
 :::info
-In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
+In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](/platform/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
 
 ## Incremental sync without time filtering
@@ -136,7 +136,7 @@ Some APIs update records over time but do not allow to filter or search by modif
 
 In these cases, there are two options:
 
-- **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
+- **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 - **Configure the "Lookback window"** to not only sync exclusively new records, but resync some portion of records before the cutoff date to catch changes that were made to existing records, trading off data consistency and the amount of synced records. In the case of the API of The Guardian, news articles tend to only be updated for a few days after the initial release date, so this strategy should be able to catch most updates without having to resync all articles.
 
 Reiterating the example from above with a "Lookback window" of 2 days configured, let's assume the last encountered article looked like this:
@@ -166,7 +166,7 @@ Using the "Inject start time / end time into outgoing HTTP request" option in th
 - The value needs to be injected into the URL path
 - Some conditional logic needs to be applied
 
-To handle these cases, disable injection in the incremental sync form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
+To handle these cases, disable injection in the incremental sync form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/platform/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
 
 For example the [Sendgrid API](https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages) requires setting both start and end time in a `query` parameter.
 For this case, you can use the `stream_interval` variable to configure a query parameter with "key" `query` and "value" `last_event_time BETWEEN TIMESTAMP "{{stream_interval.start_time}}" AND TIMESTAMP "{{stream_interval.end_time}}"` to filter down to the right window in time.

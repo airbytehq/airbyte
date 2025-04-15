@@ -26,10 +26,10 @@ A connection is an automated data pipeline that replicates data from a source to
 
 | Concept                                                                                                                  | Description                                                        |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| [Stream and Field Selection](/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
-| [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                           | How should the streams be replicated (read and written)?           |
-| [Sync Schedule](/using-airbyte/core-concepts/sync-schedules.md)                                                          | When should a data sync be triggered?                              |
-| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                                    | Where should the replicated data be written?                       |
+| [Stream and Field Selection](/platform/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
+| [Sync Mode](/platform/using-airbyte/core-concepts/sync-modes/README.md)                                                           | How should the streams be replicated (read and written)?           |
+| [Sync Schedule](/platform/using-airbyte/core-concepts/sync-schedules.md)                                                          | When should a data sync be triggered?                              |
+| [Destination Namespace and Stream Prefix](/platform/using-airbyte/core-concepts/namespaces.md)                                    | Where should the replicated data be written?                       |
 | [Schema Propagation](using-airbyte/schema-change-management.md)                                                          | How should Airbyte handle schema drift in sources?                 |
 
 ## Stream
@@ -87,15 +87,15 @@ You can move data from a source to a destination in one of two ways, depending o
 
 A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the destination.
 
-Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
+Read more about each [sync mode](/platform/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
 
 ## Resumability
 
-[Resumability](/understanding-airbyte/resumability.md) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood. 
+[Resumability](/platform/understanding-airbyte/resumability.md) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood. 
 
 ## Typing and Deduping
 
-Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns, and if deduplication is selected, only contains unique records. Typing and deduping is only relevant for relational database & warehouse destinations. For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
+Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns, and if deduplication is selected, only contains unique records. Typing and deduping is only relevant for relational database & warehouse destinations. For more details, see our [Typing & Deduping documentation](/platform/using-airbyte/core-concepts/typing-deduping).
 
 ## Custom Transformations
 

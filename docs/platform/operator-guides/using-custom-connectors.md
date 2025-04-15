@@ -8,14 +8,14 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 # Uploading Docker-based custom connectors
 
 :::info
-This guide walks through the setup of a Docker-based custom connector. To understand how to use our low-code connector builder, read our guide [here](/connector-development/connector-builder-ui/overview.md).
+This guide walks through the setup of a Docker-based custom connector. To understand how to use our low-code connector builder, read our guide [here](/platform/connector-development/connector-builder-ui/overview.md).
 :::
 
-If our connector catalog does not fulfill your needs, you can build your own Airbyte connectors! You can either use our [low-code connector builder](/connector-development/connector-builder-ui/overview.md) or upload a Docker-based custom connector.
+If our connector catalog does not fulfill your needs, you can build your own Airbyte connectors! You can either use our [low-code connector builder](/platform/connector-development/connector-builder-ui/overview.md) or upload a Docker-based custom connector.
 
 This page walks through the process to upload a **Docker-based custom connector**. This is an ideal route for connectors that have an **internal** use case like a private API with a specific fit for your organization. This guide for using Docker-based custom connectors assumes the following:
 
-- You followed our other guides and tutorials about [connector development](/connector-development/connector-builder-ui/overview.md)
+- You followed our other guides and tutorials about [connector development](/platform/connector-development/connector-builder-ui/overview.md)
 - You finished your connector development and have it running locally on an Airbyte development instance.
 - You want to deploy this connector to a production Airbyte instance running on a VM with docker-compose or on a Kubernetes cluster.
 

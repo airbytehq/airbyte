@@ -90,7 +90,7 @@ The data from one stream will now be mapped to one table in your schema as below
 | Not-yet-typed ⟶                              |                  |                        |                                                                |     |            |      |                                           |
 
 In legacy normalization, columns of
-[Airbyte type](/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination
+[Airbyte type](/platform/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination
 were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested
 `public.users_address` table with columns `city` and `zip` will no longer be generated.
 

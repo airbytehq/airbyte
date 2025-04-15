@@ -28,7 +28,7 @@ Please be aware that contributions to Airbyte Connectors may take some time to r
 
 :::warning
 Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in April 2025.
-We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
+We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
 We're not actively reviewing/accepting new Java connectors for now.
 :::
 

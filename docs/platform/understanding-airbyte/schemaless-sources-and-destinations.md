@@ -1,9 +1,9 @@
 # "Schemaless" Sources and Destinations
 
-In order to run a sync, Airbyte requires a [catalog](/understanding-airbyte/airbyte-protocol#catalog), which includes a data schema describing the shape of data being emitted by the source.
+In order to run a sync, Airbyte requires a [catalog](/platform/understanding-airbyte/airbyte-protocol#catalog), which includes a data schema describing the shape of data being emitted by the source.
 This schema will be used to prepare the destination to populate the data during the sync.
 
-While having a [strongly-typed](/understanding-airbyte/supported-data-types) catalog/schema is possible for most sources, some won't have a reasonably static schema. This document describes the options available for the subset of sources that do not have a strict schema, aka "schemaless sources".
+While having a [strongly-typed](/platform/understanding-airbyte/supported-data-types) catalog/schema is possible for most sources, some won't have a reasonably static schema. This document describes the options available for the subset of sources that do not have a strict schema, aka "schemaless sources".
 
 ## What is a Schemaless Source?
 
@@ -12,7 +12,7 @@ For example, in a MongoDB database, there's no requirement that the fields in on
 Similarly, for a file-based source such as S3, the files that are present in your source may not all have the same schema.
 
 Although the sources themselves may not conform to an obvious schema, Airbyte still needs to know the shape of the data in order to prepare the destination for the records.
-For these sources, during the [`discover`](/understanding-airbyte/airbyte-protocol#discover) method, Airbyte offers two options to create the schema:
+For these sources, during the [`discover`](/platform/understanding-airbyte/airbyte-protocol#discover) method, Airbyte offers two options to create the schema:
 
 1. Dynamic schema inference.
 2. A hardcoded "schemaless" schema.

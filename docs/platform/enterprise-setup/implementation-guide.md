@@ -27,7 +27,7 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 | Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                                     |
 | Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.                                                                         |
 | Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
-| External Secrets Manager | [Amazon Secrets Manager](/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
+| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
 
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
@@ -229,7 +229,7 @@ global:
   edition: enterprise
 ```
 
-3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
+3. To enable SSO authentication, add instance admin details [SSO auth details](/platform/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/platform/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
 
 ```yaml
 auth:
