@@ -6,7 +6,7 @@ This page guides you through the process of setting up the Postgres destination 
 
 :::warning
 
-Postgres, while an excellent relational database, is not a data warehouse. Please only consider using postgres as a destination for small data volumes (e.g. less than 10GB) or for testing purposes. For larger data volumes, we recommend using a data warehouse like BigQuery, Snowflake, or Redshift. Learn more [here](/platform/integrations/destinations/postgres/postgres-troubleshooting#postgres-is-not-a-data-warehouse).
+Postgres, while an excellent relational database, is not a data warehouse. Please only consider using postgres as a destination for small data volumes (e.g. less than 10GB) or for testing purposes. For larger data volumes, we recommend using a data warehouse like BigQuery, Snowflake, or Redshift. Learn more [here](/integrations/destinations/postgres/postgres-troubleshooting#postgres-is-not-a-data-warehouse).
 
 :::
 

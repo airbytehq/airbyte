@@ -168,7 +168,7 @@ This produces the private key in pem format, and the public key remains in the s
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your MySQL connector, see more [in our MySQL troubleshooting guide](/platform/integrations/sources/mysql/mysql-troubleshooting).
+To see connector limitations, or troubleshoot your MySQL connector, see more [in our MySQL troubleshooting guide](/integrations/sources/mysql/mysql-troubleshooting).
 
 ## Data Type Mapping
 

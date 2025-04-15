@@ -35,4 +35,4 @@ Learn how to upload Docker-based custom connectors [here](../../platform/operato
 
 To upgrade your connector version, go to the Settings in the left hand side of the UI and navigate to either Sources or Destinations. Find your connector in the list, and input the latest connector version.
 
-![](/platform/.gitbook/assets/upgrade-connector-version.png)
+![](/.gitbook/assets/upgrade-connector-version.png)
