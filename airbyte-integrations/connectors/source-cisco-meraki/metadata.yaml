@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.meraki.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-cisco-meraki
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.1@sha256:101da55e5201e9ce0ba5f3ebc7528e700f75a2a1d9afe76a34573d0311fe7a98
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 65468f53-6682-4fa4-8627-1dfa4b3dc560
+  dockerImageTag: 0.0.3
+  dockerRepository: airbyte/source-cisco-meraki
+  githubIssueLabel: source-cisco-meraki
+  icon: icon.svg
+  license: MIT
+  name: Cisco Meraki
+  releaseDate: 2025-04-01
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cisco-meraki
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

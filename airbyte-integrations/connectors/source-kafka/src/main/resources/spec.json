@@ -188,7 +188,8 @@
                   "OAUTHBEARER",
                   "SCRAM-SHA-256",
                   "SCRAM-SHA-512",
-                  "PLAIN"
+                  "PLAIN",
+                  "AWS_MSK_IAM"
                 ]
               },
               "sasl_jaas_config": {

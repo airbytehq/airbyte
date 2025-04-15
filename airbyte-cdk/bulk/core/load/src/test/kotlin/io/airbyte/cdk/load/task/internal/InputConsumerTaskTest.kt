@@ -111,7 +111,7 @@ class InputConsumerTaskTest {
             queue1.publish(
                 match {
                     it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream == STREAM1
+                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM1
                 }
             )
         }
@@ -119,7 +119,7 @@ class InputConsumerTaskTest {
             queue2.publish(
                 match {
                     it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream == STREAM2
+                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM2
                 }
             )
         }

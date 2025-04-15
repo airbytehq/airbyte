@@ -1,4 +1,6 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from datetime import datetime, timedelta, timezone
 from typing import List
@@ -34,10 +36,7 @@ _STREAM_NAME = "persons"
 _ACCOUNT_ID = "acct_1G9HZLIEn49ers"
 _CLIENT_SECRET = "ConfigBuilder default client secret"
 _NOW = datetime.now(timezone.utc)
-_CONFIG = {
-    "client_secret": _CLIENT_SECRET,
-    "account_id": _ACCOUNT_ID,
-}
+_CONFIG = {"client_secret": _CLIENT_SECRET, "account_id": _ACCOUNT_ID}
 _NO_STATE = StateBuilder().build()
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
 
@@ -283,7 +282,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -333,7 +332,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": str(state_datetime.timestamp())}).build()
         source = SourceStripe(config=config, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(
             source,
@@ -345,7 +344,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -420,7 +419,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name="persons")
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()

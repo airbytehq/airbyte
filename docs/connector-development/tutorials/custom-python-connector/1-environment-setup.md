@@ -7,36 +7,34 @@ git clone git@github.com:airbytehq/airbyte.git
 cd airbyte
 ```
 
-Use the Airbyte provided code generator which bootstraps the scaffolding for our connector:
+Next, you will want to create a new connector.
+
+## Initialize connector project
 
 ```bash
-cd airbyte-integrations/connector-templates/generator
-./generate.sh
+git clone git@github.com:airbytehq/airbyte.git
+cd airbyte
+
+# Make a directory for a new connector and navigate to it
+mkdir airbyte-integrations/connectors/source-exchange-rates-tutorial
+cd airbyte-integrations/connectors/source-exchange-rates-tutorial
+
+# Initialize a project, follow Poetry prompts, and then add airbyte-cdk as a dependency.
+poetry init
+poetry add airbyte-cdk
 ```
 
-Select Python CDK Source Set name to `survey-monkey-demo`
+For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`.
 
-Next change your working directory to the new connector module. Also change airbyte-cdk version
-to the one used for this tutorial in `pyproject.toml`:
+## Add Connector Metadata file
 
-```bash
-cd ../../connectors/source-survey-monkey-demo
-```
+Each Airbyte connector needs to have a valid `metadata.yaml` file in the root of the connector directory. [Here is metadata.yaml format documentation](../../../connector-development/connector-metadata-file.md).
 
-Then create an initial python environment and install the dependencies required to run an API Source connector:
+## Implement connector entrypoint scripts
 
-```bash
-poetry lock
-poetry install --with dev
-```
+Airbyte connectors are expected to be able to run `spec`, `check`, `discover`, and `read` commands. You can use `run.py` file in Airbyte connectors as an example of how to implement them.
 
-Let's verify the unit tests pass
-
-```bash
-poetry run pytest unit_tests
-```
-
-And the check operation fails as expected
+## Running operations
 
 ```bash
 poetry run source-survey-monkey-demo check --config secrets/config.json
