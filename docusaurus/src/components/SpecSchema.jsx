@@ -18,7 +18,7 @@ export const SpecSchema = ({
 
 function JSONSchemaViewer(props) {
   return <div>
-    <Heading as="h4">Config fields reference</Heading>
+    <Heading as="h3">Config fields reference</Heading>
     <div class={styles.grid}>
       <div class={className(styles.headerItem, styles.tableHeader)}>
         Field
