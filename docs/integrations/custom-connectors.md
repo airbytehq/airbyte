@@ -29,7 +29,7 @@ If you don't use one of the official development options, remember to set the `A
 Otherwise, your connector will not run correctly.
 :::
 
-Learn how to upload Docker-based custom connectors [here](../../operator-guides/using-custom-connectors/)
+Learn how to upload Docker-based custom connectors [here](../../platform/operator-guides/using-custom-connectors/)
 
 ## Upgrading a connector
 

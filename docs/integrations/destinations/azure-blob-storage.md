@@ -31,7 +31,7 @@ as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file
 
 ### CSV
 
-Like most other Airbyte destination connectors, the output contains your data, along with some [metadata fields](/understanding-airbyte/airbyte-metadata-fields).
+Like most other Airbyte destination connectors, the output contains your data, along with some [metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields).
 If you select the "root level flattening" option, your data will be promoted to additional columns; if you select "no flattening", your data
 will be left as a JSON blob inside the `_airbyte_data` column.
 
@@ -62,7 +62,7 @@ With root level flattening, the output CSV is:
 ### JSON Lines \(JSONL\)
 
 [JSON Lines](https://jsonlines.org/) is a text format with one JSON per line. As with the [CSV](#csv) format, this connector will write your data along
-with some [metadata fields](/understanding-airbyte/airbyte-metadata-fields). You can enable "root level flattening" to promote your data to the root
+with some [metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields). You can enable "root level flattening" to promote your data to the root
 of the JSON object, or use "no flattening" to leave your data inside the `_airbyte_data` object.
 
 For example, given the following two JSON object from a source:

@@ -10,7 +10,7 @@ For file-based DBs, data is written to `/tmp/airbyte_local` by default. To chang
 
 This destination implements [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides improved final table structures. It's a new version of the existing DuckDB destination and works both with DuckDB and MotherDuck.
 
-Learn more about what's new in Destinations V2 [here](/using-airbyte/core-concepts/typing-deduping).
+Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).
 
 ## Use with MotherDuck
 
@@ -53,9 +53,9 @@ In addition, columns specified in the [JSON schema](https://docs.airbyte.com/con
 | Full Refresh Sync                                                        | Yes       |     |
 | Incremental - Append Sync                                                | Yes       |     |
 | Incremental - Append + Deduped                                           | Yes       |     |
-| [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) | Yes       |     |
-| [Namespaces](/using-airbyte/core-concepts/namespaces)                    | No        |     |
-| [Data Generations](/operator-guides/refreshes#data-generations)          | No        |     |
+| [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) | Yes       |     |
+| [Namespaces](/platform/using-airbyte/core-concepts/namespaces)                    | No        |     |
+| [Data Generations](/platform/operator-guides/refreshes#data-generations)          | No        |     |
 
 #### Performance consideration
 
