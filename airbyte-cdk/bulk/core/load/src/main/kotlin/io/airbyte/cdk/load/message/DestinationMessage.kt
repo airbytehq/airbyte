@@ -826,7 +826,7 @@ class DestinationMessageFactory(
                     schema = stream.schema,
                     emittedAtMs = airbyteMessage.record.emittedAt,
                     data = fakeJsonNode,
-                    dataProto = protoMapper.mapData(airbyteMessage.record.dataList),
+                    dataProto = protoMapper.mapData(airbyteMessage.record.dataList.toMutableList()),
                     meta =
                         airbyteMessage.record.meta?.let { meta ->
                             Meta(
