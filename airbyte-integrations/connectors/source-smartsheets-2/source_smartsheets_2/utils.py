@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from pathlib import PurePath
 import re
+from pathlib import PurePath
 from typing import Iterable, Optional
 
 from smartsheet.models.enums import ColumnType
@@ -51,7 +51,7 @@ def filter_folders_by_exclusion(
             unmatched_folders.append(folder)
     return matched_folders, unmatched_folders
 
-    
+
 def convert_column_type(column_type: ColumnType) -> dict[str, str]:
     """
     Converts column type from Smartsheet conventions to Airbyte conventions.
@@ -99,8 +99,8 @@ def normalize_column_name(column: str, transformations: Optional[list[str]] = No
     - Hyphens into underscores: Replaces continuous sections of whitespace characters with a single underscore.
     - Ensure starts with identifier character: Prepends an underscore if the first character is not in [a-zA-Z_]
     - Strip non-identifier characters: Removes all characters not in [A-Za-z0-9_].
-    - Replace non-identifier characters with hex encoding: Replaces all characters not in [A-Za-z0-9_] 
-    
+    - Replace non-identifier characters with hex encoding: Replaces all characters not in [A-Za-z0-9_]
+
     :param column: Any string.
     "param transformations: An optional list of transformations from the connector spec.
 
@@ -111,7 +111,7 @@ def normalize_column_name(column: str, transformations: Optional[list[str]] = No
         transformations = []
 
     ret = column
-    
+
     if "Make common substitutions" in transformations:
         # This is all we have for now
         ret = ret.replace("%", "Percent")
@@ -120,7 +120,7 @@ def normalize_column_name(column: str, transformations: Optional[list[str]] = No
         ret = ret.lower()
     elif "Make all upper case" in transformations:
         ret = ret.upper()
-    
+
     if "Strip whitespace" in transformations:
         ret = re.sub(r"\s+", "", ret)
     else:
@@ -156,7 +156,7 @@ def reconcile_types(left: ColumnType, right: ColumnType) -> ColumnType:
     # Expected common case
     if left == right:
         return left
-    
+
     equivalence_classes = [
         {ColumnType.ABSTRACT_DATETIME},
         {ColumnType.CHECKBOX},
@@ -171,9 +171,11 @@ def reconcile_types(left: ColumnType, right: ColumnType) -> ColumnType:
     right_class_idx = next((cls for cls in equivalence_classes if right in cls), None)
 
     # In case future updates create new types
-    assert left_class_idx is not None and right_class_idx is not None, \
-        "Schema sheet contains unrecognized type: '%s' or '%s'" % (left, right)
-    
+    assert left_class_idx is not None and right_class_idx is not None, "Schema sheet contains unrecognized type: '%s' or '%s'" % (
+        left,
+        right,
+    )
+
     # Equivalent types, return any of them
     if left_class_idx == right_class_idx:
         return left

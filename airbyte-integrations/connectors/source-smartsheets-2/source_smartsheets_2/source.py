@@ -14,6 +14,8 @@ from typing import (
     Optional,
 )
 
+from smartsheet.models.enums import ColumnType
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -27,12 +29,12 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-from smartsheet.models.enums import ColumnType
 
 from . import (
-    api, 
+    api,
     utils,
 )
+
 
 # This dictionary maps metadata fields to a tuple of the type of the field
 # and a function that can yield the field value when given tne sheet,
@@ -270,7 +272,11 @@ class SourceSmartsheets_2(Source):
                 columns: list[tuple[int, str]] = []
                 # Get whatever columns from the schema are available
                 for col_idx, column in enumerate(sheet.columns):
-                    col_name = column.title if not config.get("column-name-normalization") else utils.normalize_column_name(column.title, config.get("column-name-normalization"))
+                    col_name = (
+                        column.title
+                        if not config.get("column-name-normalization")
+                        else utils.normalize_column_name(column.title, config.get("column-name-normalization"))
+                    )
                     if col_name in schema_properties:
                         columns.append((col_idx, col_name))
 
@@ -288,7 +294,10 @@ class SourceSmartsheets_2(Source):
                         for field in config.get("metadata-fields", [])
                     }
                     if config.get("column-name-normalization"):
-                        metadata = {utils.normalize_column_name(key, config.get("column-name-normalization")): val for (key, val) in metadata.items()}
+                        metadata = {
+                            utils.normalize_column_name(key, config.get("column-name-normalization")): val
+                            for (key, val) in metadata.items()
+                        }
                     data: dict[str, Any] = {}
                     for col_idx, col_name in columns:
                         data[col_name] = row.cells[col_idx].value
