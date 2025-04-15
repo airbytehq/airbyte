@@ -206,6 +206,10 @@ ul.breadcrumbs > li.breadcrumbs__item > span.breadcrumbs__link {
   background: none;
 }
 
+article span.badge {
+  margin-bottom: 50px !important;
+}
+
 .cloudStatusLink {
   display: flex;
   gap: 4px;

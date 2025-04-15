@@ -104,7 +104,7 @@ were "unnested" into separate tables. In this example, with Destinations V2, the
 
 You also now see the following changes in Airbyte-provided columns:
 
-![Airbyte Destinations V2 Column Changes](../../../release_notes/assets/updated_table_columns.png)
+![Airbyte Destinations V2 Column Changes](../assets/updated_table_columns.png)
 
 ## On final table re-creation
 

@@ -386,10 +386,10 @@ Here is an example of setting the `display_type` of a oneOf field to `dropdown`,
 }
 ```
 
-![dropdown oneOf](../../assets/docs/oneOf-dropdown.png)
+![dropdown oneOf](/assets/docs/oneOf-dropdown.png)
 
 And here is how it looks if the `display_type` property is set to `radio` instead:
-![radio oneOf](../../assets/docs/oneOf-radio.png)
+![radio oneOf](/assets/docs/oneOf-radio.png)
 
 ### Using `enum`
 
