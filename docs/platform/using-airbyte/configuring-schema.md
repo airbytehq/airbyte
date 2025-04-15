@@ -6,7 +6,7 @@ products: all
 
 A connection's schema typically consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream, there are typically several fields or columns. You can sync specific data from your sources by selecting which stream or fields.
 
-To learn more about streams and fields, see our [Core Concepts](/using-airbyte/core-concepts/).
+To learn more about streams and fields, see our [Core Concepts](/platform/using-airbyte/core-concepts/).
 
 ## Select Streams
 
@@ -57,7 +57,7 @@ If you want to sync your data into a single table, combine it downstream, in you
 
 Each stream syncs using a specific sync mode. The sync mode tells Airbyte how the data should be synced, and what shape it will take.
 
-To learn more about sync modes, see our [Sync Mode documentation](/using-airbyte/core-concepts/sync-modes/).
+To learn more about sync modes, see our [Sync Mode documentation](/platform/using-airbyte/core-concepts/sync-modes/).
 
 ![Select Sync Mode](./assets/select-sync-mode.png)
 
@@ -106,7 +106,7 @@ To select a partial set of fields:
 ![Refresh Modal](./assets/refresh-modal.png)
 
 :::tip
-When editing the stream configuration, Airbyte recommends that you refresh streams. A [refresh](/operator-guides/refreshes.md) will delete data in the destination of the affected streams and then re-sync all historical data. Skipping a refresh is discouraged and might lead to unexpected behavior.
+When editing the stream configuration, Airbyte recommends that you refresh streams. A [refresh](/platform/operator-guides/refreshes.md) will delete data in the destination of the affected streams and then re-sync all historical data. Skipping a refresh is discouraged and might lead to unexpected behavior.
 :::
 
 8. Click **Save connection** to apply your preference.

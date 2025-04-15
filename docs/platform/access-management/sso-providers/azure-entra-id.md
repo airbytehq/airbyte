@@ -108,7 +108,7 @@ Once your Microsoft Entra ID app is set up, you're ready to deploy Airbyte Self-
     * Client ID: You'll find this in the **Essentials** section on the **Overview** page of the application you created.
     * Client Secret: The client secret you copied in the previous step.
 
-Use this information to configure the auth details of your `airbyte.yml` for your Self-Managed Enterprise deployment. To learn more on deploying Self-Managed Enterprise, see our [implementation guide](/enterprise-setup/implementation-guide).
+Use this information to configure the auth details of your `airbyte.yml` for your Self-Managed Enterprise deployment. To learn more on deploying Self-Managed Enterprise, see our [implementation guide](/platform/enterprise-setup/implementation-guide).
 
 </TabItem>
 </Tabs>

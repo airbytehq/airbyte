@@ -13,7 +13,7 @@ On the left side of your main Airbyte dashboard, select **Connections**. You wil
 
 ## Configure the connection
 
-Once you've chosen your source and destination you can configure the connection. You'll first be asked a few questions about how your data should sync, these correlate to our sync modes which you can read more about on [this page](/cloud/managing-airbyte-cloud/configuring-connections.md).
+Once you've chosen your source and destination you can configure the connection. You'll first be asked a few questions about how your data should sync, these correlate to our sync modes which you can read more about on [this page](/platform/cloud/managing-airbyte-cloud/configuring-connections.md).
 
 Most users select "Mirror Source", which will simply copy the data from the source to the destination where you'll see one row in the destination for each row in the source. If you prefer to Append Historical Changes or take a Full Snapshot with each sync, you can optionally select those options, but keep in mind those will create duplicate records in your destination. The sync mode we choose for all the enabled streams will reflect your selection here.
 
@@ -23,7 +23,7 @@ Next, you can toggle which streams you want to replicate. Our test data consists
 
 ![Setup streams](./assets/getting-started-stream-selection.png)
 
-Your sync mode is already determined by your selection above, but you can change the sync mode for an individual stream. You can also select a cursor or primary key to enable incremental and/or deduplication. For more information on the nature of each sync mode supported by Airbyte, see [this page](/using-airbyte/core-concepts/sync-modes).
+Your sync mode is already determined by your selection above, but you can change the sync mode for an individual stream. You can also select a cursor or primary key to enable incremental and/or deduplication. For more information on the nature of each sync mode supported by Airbyte, see [this page](/platform/using-airbyte/core-concepts/sync-modes).
 
 You can also select individual fields to sync on this page. Expand the fields available by expanding all fields or expanding an individual stream. This is helpful when you have security concerns or don't want to sync all the data from the source.
 ![Column Selection](./assets/getting-started-field-selection.png)
@@ -31,7 +31,7 @@ You can also select individual fields to sync on this page. Expand the fields av
 Click **Next** to complete your stream setup and move to the connection configuration. This is where you'll set up how often your data will sync and where it will live in the destination. For this demo, we'll set the connection to run every 24 hours.
 
 :::note
-To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/using-airbyte/core-concepts/namespaces.md)
+To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/platform/using-airbyte/core-concepts/namespaces.md)
 :::
 
 Once you've set up all the connection settings, click "Set up connection". You've successfully set up your first data pipeline with Airbyte. Your first sync is about to begin!
@@ -77,7 +77,7 @@ If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](
 
 ## What's next?
 
-Congratulations on successfully setting up your first connection using Airbyte! We hope that this will be just the first step on your journey with us. We support a large, ever-growing [catalog of sources and destinations](/integrations/), and you can even [contribute your own](/connector-development/).
+Congratulations on successfully setting up your first connection using Airbyte! We hope that this will be just the first step on your journey with us. We support a large, ever-growing [catalog of sources and destinations](/integrations/), and you can even [contribute your own](/platform/connector-development/).
 
 If you'd like an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
 

@@ -19,7 +19,7 @@ This guide is meant to be used in conjunction with the “SongSync” example pr
 
 ## Customer and Connection Architecture
 
-This section references the [Airbyte Core Concepts](/using-airbyte/core-concepts/)
+This section references the [Airbyte Core Concepts](/platform/using-airbyte/core-concepts/)
 
 ![Airbyte Embedded Marketing Architecture](./assets/embedded-marketechture.png)
 
@@ -181,7 +181,7 @@ TODO
 
 ## Deliveries and Webhooks
 
-Operators should subscribe to webhook notifications for their syncs. Learn more [here](/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#configure-webhook-notification-settings)
+Operators should subscribe to webhook notifications for their syncs. Learn more [here](/platform/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#configure-webhook-notification-settings)
 
 In this way, you will know when new data is available to process (successful syncs), or there has been an error which will need to be addressed on the next attempt (e.g. rate limit hit) or your users need to take action (e.g. password incorrect). Collecting and transmitting these errors to the proper party is the Operator’s responsibility.
 
@@ -195,4 +195,4 @@ There are 2 ways to keep tabs on your syncs at large.
 
 **Dashboard:** Airbyte will provide you with an Operator Dashboard showing high-level metrics like number and type of syncs, data volume moved, and an overview of the common problems addressing your syncs. For this feature to be enabled, self-hosted deployments will need to enable sending telemetry to Airbyte’s servers.
 
-**Telemetry:** For self-hosted Operators who wish to have realtime and system-level metrics exposed, we offer Open Telemetry ([operator-guides/collecting-metrics](/operator-guides/collecting-metrics#otel)). This information is not available when using Airbyte Cloud.
+**Telemetry:** For self-hosted Operators who wish to have realtime and system-level metrics exposed, we offer Open Telemetry ([operator-guides/collecting-metrics](/platform/operator-guides/collecting-metrics#otel)). This information is not available when using Airbyte Cloud.

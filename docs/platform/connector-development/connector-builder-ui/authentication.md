@@ -4,7 +4,7 @@ Authentication allows the connector to check whether it has sufficient permissio
 
 The credentials itself (e.g. username and password) are _not_ specified as part of the connector, instead they are part of the configuration that is specified by the end user when setting up a source based on the connector. During development, it's possible to provide testing credentials in the "Testing values" menu, but those are not saved along with the connector. Credentials that are part of the source configuration are stored in a secure way in your Airbyte instance while the connector configuration is saved in the regular database.
 
-In the "Authentication" section on the "Global Configuration" page in the connector builder, the authentication method can be specified. This configuration is shared for all streams - it's not possible to use different authentication methods for different streams in the same connector. In case your API uses multiple or custom authentication methods, you can use the [low-code CDK](/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/connector-development/cdk-python/).
+In the "Authentication" section on the "Global Configuration" page in the connector builder, the authentication method can be specified. This configuration is shared for all streams - it's not possible to use different authentication methods for different streams in the same connector. In case your API uses multiple or custom authentication methods, you can use the [low-code CDK](/platform/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/platform/connector-development/cdk-python/).
 
 If your API doesn't need authentication, leave it set at "No auth". This means the connector will be able to make requests to the API without providing any credentials which might be the case for some public open APIs or private APIs only available in local networks.
 
@@ -116,7 +116,7 @@ The configuration consists of three main components:
    - Parameter placement for client credentials and refresh token
    - Custom header and body configurations
 
-To learn more about the Declarative OAuth 2.0 add see a variety of example implementations please refer to the [Declarative OAuth 2.0](/connector-development/config-based/advanced-topics/oauth) documentation.
+To learn more about the Declarative OAuth 2.0 add see a variety of example implementations please refer to the [Declarative OAuth 2.0](/platform/connector-development/config-based/advanced-topics/oauth) documentation.
 
 
 #### Partial OAuth (legacy)
@@ -221,7 +221,7 @@ We will walk through each part of the configuration below. Throughout this, we w
       - Key: `username`, Value: `{{ config['username'] }}`
       - Key: `password`, Value: `{{ config['password'] }}`
   - `Error Handler` - used to handle errors encountered when retrieving the session token
-    - See the [Error Handling](/connector-development/connector-builder-ui/error-handling) page for more info about configuring this component.
+    - See the [Error Handling](/platform/connector-development/connector-builder-ui/error-handling) page for more info about configuring this component.
 - `Session Token Path` - an array of values to form a path into the session token retrieval response which points to the session token value
   - For Metabase, the `/api/session` response looks like `{"id":"<session-token-value>"}`, so the value here would simply be `id`.
 - `Expiration Duration` - an [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations) indicating how long the session token has until it expires
@@ -236,4 +236,4 @@ We will walk through each part of the configuration below. Throughout this, we w
 
 ### Custom authentication methods
 
-Some APIs require complex custom authentication schemes involving signing requests or doing multiple requests to authenticate. In these cases, it's required to use the [low-code CDK](/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/connector-development/cdk-python/).
+Some APIs require complex custom authentication schemes involving signing requests or doing multiple requests to authenticate. In these cases, it's required to use the [low-code CDK](/platform/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/platform/connector-development/cdk-python/).

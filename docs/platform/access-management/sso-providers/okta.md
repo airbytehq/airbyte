@@ -109,7 +109,7 @@ On the following screen you'll need to configure all parameters for your Okta ap
     * Client ID
     * Client Secret
 
-    Visit the [implementation guide](/enterprise-setup/implementation-guide.md) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
+    Visit the [implementation guide](/platform/enterprise-setup/implementation-guide.md) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
 
   </TabItem>
 </Tabs>

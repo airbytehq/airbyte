@@ -83,7 +83,7 @@ The following table summarises how this works. In this example, we're looking at
 ## Using Namespaces with Basic Normalization
 
 :::note
-Basic normalization has been deprecated in favor of [Typing & Deduping](/using-airbyte/core-concepts/typing-deduping).
+Basic normalization has been deprecated in favor of [Typing & Deduping](/platform/using-airbyte/core-concepts/typing-deduping).
 :::
 
 As part of the connection settings, it is possible to configure the namespace used by: 

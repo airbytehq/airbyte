@@ -26,7 +26,7 @@ The API providing the partitions via one or multiple separate requests is a "dyn
 
 To configure static partitioning, enable the `Parameterized Requests` component. The following fields have to be configured:
 
-- The "Parameter Values" can either be set to a list of strings, making the partitions part of the connector itself, or delegated to a user input so the end user configuring a Source based on the connector can control which partitions to fetch. When using "user input" mode for the parameter values, create a user input of type array and reference it as the value using the [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) value using `{{ config['<your chosen user input name>'] }}`
+- The "Parameter Values" can either be set to a list of strings, making the partitions part of the connector itself, or delegated to a user input so the end user configuring a Source based on the connector can control which partitions to fetch. When using "user input" mode for the parameter values, create a user input of type array and reference it as the value using the [placeholder](/platform/connector-development/config-based/understanding-the-yaml-file/reference#variables) value using `{{ config['<your chosen user input name>'] }}`
 - The "Current Parameter Value Identifier" can be freely choosen and is the identifier of the variable holding the current parameter value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` syntax.
 - The "Inject Parameter Value into outgoing HTTP Request" option allows you to configure how to add the current parameter value to the requests
 
@@ -73,7 +73,7 @@ The following fields have to be configured to use the Parent Stream component:
 
 - The "Parent Stream" defines the records of which stream should be used as partitions
 - The "Parent Key" is the property on the parent stream record that should become the partition value (in most cases this is some form of id)
-- The "Current Parent Key Value Identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` [interpolation placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables).
+- The "Current Parent Key Value Identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` [interpolation placeholder](/platform/connector-development/config-based/understanding-the-yaml-file/reference#variables).
 
 #### Example
 
@@ -146,4 +146,4 @@ Using the "Inject Parameter / Parent Key Value into outgoing HTTP Request" optio
 - The value needs to be injected into the URL path
 - Some conditional logic needs to be applied
 
-To handle these cases, disable injection in the component and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables (like `stream_partition`) as part of the URL path as shown in the Woocommerce example above.
+To handle these cases, disable injection in the component and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/platform/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables (like `stream_partition`) as part of the URL path as shown in the Woocommerce example above.

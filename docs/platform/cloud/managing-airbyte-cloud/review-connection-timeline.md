@@ -54,7 +54,7 @@ The Connection Timeline also shows who took an action, if that's relevant to the
 
 ## Syncs, refreshes, and clears
 
-Completed syncs, [refreshes](/operator-guides/refreshes), and [clears](/operator-guides/clear) have a status associated to the event.
+Completed syncs, [refreshes](/platform/operator-guides/refreshes), and [clears](/platform/operator-guides/clear) have a status associated to the event.
 
 | Status     | Description                                                                                                                            |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -83,4 +83,4 @@ Airbyte summarizes metrics in the sync summary across all the attempts in the sy
 
 ### Data volume moved
 
-If you're using Airbyte Cloud with [volume-based pricing](https://airbyte.com/pricing), Airbyte calculates volume the way it calculates the information presented in the sync summary in the user interface. Every database stores and compresses data differently, so Airbyte measures data volume observed by the Airbyte Platform during the sync. When the data is in transit, Airbyte serializes it in the [Airbyte Protocol format](/understanding-airbyte/airbyte-protocol/#airbyterecordmessage). This is likely to be a larger representation of your data than you would see if you were to query your database directly.
+If you're using Airbyte Cloud with [volume-based pricing](https://airbyte.com/pricing), Airbyte calculates volume the way it calculates the information presented in the sync summary in the user interface. Every database stores and compresses data differently, so Airbyte measures data volume observed by the Airbyte Platform during the sync. When the data is in transit, Airbyte serializes it in the [Airbyte Protocol format](/platform/understanding-airbyte/airbyte-protocol/#airbyterecordmessage). This is likely to be a larger representation of your data than you would see if you were to query your database directly.
