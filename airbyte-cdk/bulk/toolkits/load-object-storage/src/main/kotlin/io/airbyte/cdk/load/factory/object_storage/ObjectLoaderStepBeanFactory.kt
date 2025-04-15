@@ -3,11 +3,14 @@ package io.airbyte.cdk.load.factory.object_storage
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoaderStep
 import io.micronaut.context.annotation.Factory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
+import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatterStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleterStep
@@ -15,9 +18,26 @@ import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.OutputStream
 
 @Factory
 class ObjectLoaderStepBeanFactory {
+    @Named("recordPartFormatterStep")
+    @Singleton
+    fun <T : OutputStream> recordPartFormatter(
+        loader: ObjectLoader,
+        partFormatter: ObjectLoaderPartFormatter<T>,
+        @Named("pipelineInputQueue") inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+        @Named("objectLoaderPartQueue") outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+        taskFactory: LoadPipelineStepTaskFactory,
+    ) = ObjectLoaderPartFormatterStep(
+        loader,
+        partFormatter,
+        inputQueue,
+        outputQueue,
+        taskFactory,
+    )
+
     @Named("recordPartLoaderStep")
     @Singleton
     fun <T : RemoteObject<*>> recordPartLoader(
@@ -26,13 +46,13 @@ class ObjectLoaderStepBeanFactory {
         @Named("objectLoaderPartQueue") inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
         @Named("objectLoaderLoadedPartQueue") outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
         taskFactory: LoadPipelineStepTaskFactory,
-        ) = ObjectLoaderPartLoaderStep(
-            loader,
-            partLoader,
-            inputQueue,
-            outputQueue,
-            taskFactory,
-        )
+    ) = ObjectLoaderPartLoaderStep(
+        loader,
+        partLoader,
+        inputQueue,
+        outputQueue,
+        taskFactory,
+    )
 
     @Named("filePartLoaderStep")
     @Singleton
@@ -42,13 +62,13 @@ class ObjectLoaderStepBeanFactory {
         @Named("filePartQueue") inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
         @Named("fileLoadedPartQueue") outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
         taskFactory: LoadPipelineStepTaskFactory,
-        ) = ObjectLoaderPartLoaderStep(
-            loader,
-            partLoader,
-            inputQueue,
-            outputQueue,
-            taskFactory,
-        )
+    ) = ObjectLoaderPartLoaderStep(
+        loader,
+        partLoader,
+        inputQueue,
+        outputQueue,
+        taskFactory,
+    )
 
     @Named("recordUploadCompleterStep")
     @Singleton
@@ -83,6 +103,22 @@ class ObjectLoaderStepBeanFactory {
         inputQueue,
         completedUploadQueue,
         completedUploadPartitioner,
+        taskFactory,
+    )
+
+    @Named("fileRecordPartFormatterStep")
+    @Singleton
+    fun <T : OutputStream> fileRecordPartFormatterStep(
+        loader: ObjectLoader,
+        partFormatter: ObjectLoaderPartFormatter<T>,
+        @Named("recordQueue") inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+        @Named("objectLoaderPartQueue") outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+        taskFactory: LoadPipelineStepTaskFactory,
+    ) = ObjectLoaderPartFormatterStep(
+        loader,
+        partFormatter,
+        inputQueue,
+        outputQueue,
         taskFactory,
     )
 }

@@ -62,7 +62,6 @@ data class Part(
     val partIndex: Int,
     val bytes: ByteArray?,
     val isFinal: Boolean,
-    var parentRecord: DestinationRecordRaw? = null,
 ) {
     val isEmpty: Boolean
         get() = bytes == null

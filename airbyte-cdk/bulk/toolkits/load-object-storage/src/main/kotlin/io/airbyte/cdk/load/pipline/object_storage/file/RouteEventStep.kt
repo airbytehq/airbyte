@@ -1,4 +1,4 @@
-package io.airbyte.cdk.load.pipline.object_storage
+package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.message.DestinationRecordRaw

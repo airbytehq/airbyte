@@ -1,4 +1,4 @@
-package io.airbyte.cdk.load.pipline.object_storage
+package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.factory.object_storage.ObjectKey
@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import jakarta.inject.Named

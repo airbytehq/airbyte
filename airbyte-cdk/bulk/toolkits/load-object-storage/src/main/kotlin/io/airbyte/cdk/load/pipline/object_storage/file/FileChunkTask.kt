@@ -1,4 +1,4 @@
-package io.airbyte.cdk.load.pipline.object_storage
+package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -13,6 +13,8 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartPartitioner
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
@@ -76,9 +78,6 @@ class FileChunkTask<T>(
 
                     do {
                         val outputPart = partFactory.getNextPart()
-                        // add the record
-                        outputPart.parentRecord = event.value
-
                         publishPart(event.key.stream, outputPart, event.checkpointCounts)
                     } while (!outputPart.isFinal)
 

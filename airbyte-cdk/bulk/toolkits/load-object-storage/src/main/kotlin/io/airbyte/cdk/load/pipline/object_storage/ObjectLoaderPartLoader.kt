@@ -71,7 +71,6 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         override val objectKey: String,
         val partIndex: Int,
         val isFinal: Boolean,
-        val parentRecord: DestinationRecordRaw? = null,
     ) : PartResult<T> {
         override val state: BatchState = BatchState.STAGED
     }
