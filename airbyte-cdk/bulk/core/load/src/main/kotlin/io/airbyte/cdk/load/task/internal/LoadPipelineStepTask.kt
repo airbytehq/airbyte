@@ -291,7 +291,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 @Requires(bean = LoadStrategy::class)
 class LoadPipelineStepTaskFactory(
     @Named("batchStateUpdateQueue") val batchUpdateQueue: QueueWriter<BatchUpdate>,
-    @Named("recordQueue")
+    @Named("pipelineInputQueue")
     val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val flushStrategy: PipelineFlushStrategy,
 ) {

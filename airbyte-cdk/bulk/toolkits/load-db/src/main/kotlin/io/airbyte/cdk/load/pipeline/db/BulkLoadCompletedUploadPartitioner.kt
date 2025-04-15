@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.pipeline.db
 
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
+import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
@@ -20,8 +20,8 @@ import jakarta.inject.Singleton
 class BulkLoadCompletedUploadPartitioner<T : RemoteObject<*>> :
     ObjectLoaderCompletedUploadPartitioner<StreamKey, T> {
     override fun getOutputKey(
-        inputKey: ObjectKey,
-        output: ObjectLoaderUploadCompleter.UploadResult<T>
+      inputKey: ObjectKey,
+      output: ObjectLoaderUploadCompleter.UploadResult<T>
     ): StreamKey {
         return StreamKey(inputKey.stream)
     }

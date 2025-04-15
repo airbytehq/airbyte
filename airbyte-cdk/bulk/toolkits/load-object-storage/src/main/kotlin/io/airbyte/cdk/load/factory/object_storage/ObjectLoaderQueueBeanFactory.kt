@@ -2,17 +2,23 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.pipline.object_storage
+package io.airbyte.cdk.load.factory.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.ResourceReservingPartitionedQueue
+import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.message.WithStream
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.state.ReservationManager
+import io.airbyte.cdk.load.write.LoadStrategy
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -57,7 +63,7 @@ class ObjectLoaderPartQueueFactory(
     @Singleton
     @Named("objectLoaderPartQueue")
     @Requires(bean = ObjectLoader::class)
-    fun objectLoaderPartQueue(
+    fun recordObjectLoaderPartQueue(
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ResourceReservingPartitionedQueue<
         PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
@@ -92,4 +98,89 @@ class ObjectLoaderPartQueueFactory(
                 .toTypedArray()
         )
     }
+
+    /**
+     * A file queue for the records
+     */
+    @Singleton
+    @Named("recordQueue")
+    fun recordQueue(
+        loadStrategy: LoadStrategy? = null,
+    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
+        return StrictPartitionedQueue(
+            Array(loadStrategy?.inputPartitions ?: 1) {
+                ChannelMessageQueue(Channel(Channel.UNLIMITED))
+            }
+        )
+    }
+
+    /**
+     * A file queue for the records
+     */
+    @Singleton
+    @Named("fileQueue")
+    fun fileQueue(
+        loadStrategy: LoadStrategy? = null,
+    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
+        return StrictPartitionedQueue(
+            Array(loadStrategy?.inputPartitions ?: 1) {
+                ChannelMessageQueue(Channel(Channel.UNLIMITED))
+            }
+        )
+    }
+
+    /**
+     * Queue between file part chunking and loading of file parts. It will hold the actual part
+     * bytes and needs to be sized based on the available reserved memory.
+     */
+    @Singleton
+    @Named("filePartQueue")
+    fun fileObjectLoaderPartQueue(
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+    ): ResourceReservingPartitionedQueue<
+        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        return ResourceReservingPartitionedQueue(
+            globalMemoryManager,
+            loader.maxMemoryRatioReservedForParts,
+            loader.numUploadWorkers,
+            loader.numPartWorkers,
+            loader.partSizeBytes
+        )
+    }
+
+    /**
+     * Queue between upload file parts and the upload completer. It will hold the fact of
+     * upload completion only, so in theory it can be [Channel.UNLIMITED], but to be safe we'll
+     * limit it to 10,000 queued completions.
+     */
+    @Singleton
+    @Named("fileLoadedPartQueue")
+    fun <T : RemoteObject<*>> fileLoadedPartQueue():
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>> {
+        return StrictPartitionedQueue(
+            (0 until loader.numUploadCompleters)
+                .map {
+                    ChannelMessageQueue(
+                        Channel<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>(
+                            OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers
+                        )
+                    )
+                }
+                .toTypedArray()
+        )
+    }
+
+    @Singleton
+    @Named("fileCompletedQueue")
+    fun <K : WithStream, T> completedUploadQueue() =
+        StrictPartitionedQueue(
+            (0 until loader.numUploadCompleters)
+                .map {
+                    ChannelMessageQueue<
+                        PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>(
+                        Channel(OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
+                    )
+                }
+                .toTypedArray()
+        )
 }

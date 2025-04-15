@@ -2,6 +2,7 @@ package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
@@ -12,6 +13,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
@@ -23,14 +25,14 @@ import java.nio.file.Path
 
 /**
  * Given an input stream of file references, reads the files and chunks them into parts, emitting
- * those parts to the outputQueue.
+ * those parts to the partQueue.
  */
-class FilePartChunkTask<T>(
+class FileChunkTask<T>(
     val catalog: DestinationCatalog,
     val pathFactory: ObjectStoragePathFactory,
     val fileLoader: ObjectLoader,
     val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, Part>>,
+    val partQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     val partition: Int
 ): Task {
     private val log = KotlinLogging.logger {}
@@ -43,8 +45,9 @@ class FilePartChunkTask<T>(
         inputQueue.consume(partition).collect { event ->
             when (event) {
                 is PipelineMessage -> {
-                    val stream = catalog.getStream(event.key.stream)
                     val file = event.value.fileReference!!
+
+                    val stream = catalog.getStream(event.key.stream)
 
                     val key =
                         Path.of(
@@ -73,7 +76,10 @@ class FilePartChunkTask<T>(
 
                     do {
                         val outputPart = partFactory.getNextPart()
-                        publishPart(event.key.stream, outputPart)
+                        // add the record
+                        outputPart.parentRecord = event.value
+
+                        publishPart(event.key.stream, outputPart, event.checkpointCounts)
                     } while (!outputPart.isFinal)
 
                     log.info { "Finished reading $localFileUrl, deleting." }
@@ -82,11 +88,11 @@ class FilePartChunkTask<T>(
                 }
 
                 is PipelineEndOfStream -> {
-                    outputQueue.broadcast(PipelineEndOfStream(event.stream))
+                    partQueue.broadcast(PipelineEndOfStream(event.stream))
                 }
 
                 is PipelineHeartbeat<*, *> -> {
-                    log.info { "Unexpected heartbeat msg. Ignoring..." }
+                    log.info { "Unexpected heartbeat. Ignoring..." }
                 }
             }
         }
@@ -95,11 +101,22 @@ class FilePartChunkTask<T>(
     private suspend fun publishPart(
         stream: DestinationStream.Descriptor,
         part: Part,
+        checkpointCounts: Map<CheckpointId, Long>,
     ) {
         val outputKey = ObjectKey(stream, part.key)
-        val partition = partitioner.getPart(outputKey, 0, outputQueue.partitions)
-        val outputMessage = PipelineMessage(emptyMap(), outputKey, part)
-        outputQueue.publish(outputMessage, partition)
+        val partition = partitioner.getPart(outputKey, partition, partQueue.partitions)
+        // pass the checkpoints on the last part
+        // bookkeeping should automatically handle this
+        val checkpointsToForward = if (part.isFinal) {
+            checkpointCounts
+        } else {
+            emptyMap()
+        }
+
+        val formattedPart = ObjectLoaderPartFormatter.FormattedPart(part)
+
+        val outputMessage = PipelineMessage(checkpointsToForward, outputKey, formattedPart)
+        partQueue.publish(outputMessage, partition)
     }
 }
 
@@ -123,4 +140,3 @@ class FilePartFactory(
         }
     }
 }
-

@@ -19,14 +19,14 @@ import kotlinx.coroutines.delay
 @Singleton
 class HeartbeatTask<K : WithStream, V>(
     private val config: DestinationConfiguration,
-    @Named("recordQueue") private val recordQueue: PartitionedQueue<PipelineEvent<K, V>>
+    @Named("pipelineInputQueue") private val inputQueue: PartitionedQueue<PipelineEvent<K, V>>
 ) : Task {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {
         while (true) {
             delay(config.heartbeatIntervalSeconds * 1000L)
-            recordQueue.broadcast(PipelineHeartbeat())
+            inputQueue.broadcast(PipelineHeartbeat())
         }
     }
 }

@@ -29,8 +29,28 @@ import jakarta.inject.Singleton
  */
 @Singleton
 @Requires(bean = ObjectLoader::class)
+@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     partStep: ObjectLoaderPartFormatterStep,
     uploadStep: ObjectLoaderPartLoaderStep<T>,
     completerStep: ObjectLoaderUploadCompleterStep<K, T>,
 ) : LoadPipeline(listOf(partStep, uploadStep, completerStep))
+
+@Singleton
+@Requires(bean = ObjectLoader::class)
+@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "true")
+class ObjectLoaderPipelineWithFiles<K : WithStream, T : RemoteObject<*>>(
+    fileChunkStep: FileChunkStep<T>,
+    fileChunkUploader: ObjectLoaderPartLoaderStep<T>, // create separate instance with correct IO queues
+    fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>, // create separate instance with correct IO queues
+    partStep: ObjectLoaderPartFormatterStep,
+    uploadStep: ObjectLoaderPartLoaderStep<T>,
+    completerStep: ObjectLoaderUploadCompleterStep<K, T>,
+) : LoadPipeline(listOf(
+    fileChunkStep,
+    fileChunkUploader,
+    fileCompleterStep,
+    partStep,
+    uploadStep,
+    completerStep,
+))
