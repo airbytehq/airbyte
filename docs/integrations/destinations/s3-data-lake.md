@@ -236,7 +236,7 @@ This connector never rewrites existing Iceberg data files. This means Airbyte ca
 
 You have the following options to manage schema evolution.
 
-- To handle unsupported schema changes automatically, use [Full Refresh - Overwrite](../../using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) as your [sync mode](../../platform/using-airbyte/core-concepts/sync-modes).
+- To handle unsupported schema changes automatically, use [Full Refresh - Overwrite](../../platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) as your [sync mode](../../platform/using-airbyte/core-concepts/sync-modes).
 - To handle unsupported schema changes as they occur, wait for a sync to fail, then take action to restore it. Either:
 
     - Manually edit your table schema in Iceberg directly.
