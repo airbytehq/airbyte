@@ -6,7 +6,7 @@ description: Missing a connector?
 
 If you'd like to **ask for a new connector,** you can request it directly [here](https://github.com/airbytehq/airbyte/discussions/new?category=new-connector-request).
 
-If you'd like to build new connectors and **make them part of the pool of pre-built connectors on Airbyte,** first a big thank you. We invite you to check our [contributing guide on building connectors](../platform/contributing-to-airbyte/README.md).
+If you'd like to build new connectors and **make them part of the pool of pre-built connectors on Airbyte,** first a big thank you. We invite you to check our [contributing guide on building connectors](../platform/contributing-to-airbyte/).
 
 If you'd like to build new connectors, or update existing ones, **for your own usage,** without contributing to the Airbyte codebase, read along.
 
@@ -20,7 +20,7 @@ You should only build and deploy your own connector in code (using Python or Jav
 
 ### Really need to build your own connector from scratch?
 
-It's easy to build your own connectors for Airbyte. You can learn how to build new connectors using either our Connector Builder or our connector CDKs [here](/platform/connector-development/README.md).
+It's easy to build your own connectors for Airbyte. You can learn how to build new connectors using either our Connector Builder or our connector CDKs [here](/platform/connector-development/).
 
 While the guides in the link above are specific to the languages used most frequently to write integrations, **Airbyte connectors can be written in any language**. Please reach out to us if you'd like help developing connectors in other languages.
 
