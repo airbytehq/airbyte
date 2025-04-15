@@ -181,6 +181,33 @@ definitions:
       path: /email/public/v1/subscriptions
       extractor_field_path: subscriptionDefinitions
 
+  ticket_pipelines_stream:
+    $parameters:
+      name: ticket_pipelines
+      path: /crm/v3/pipelines/tickets
+      extractor_field_path: results
+    $ref: "#/definitions/stream_base"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - '%Y-%m-%dT%H:%M:%SZ'
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "updatedAt" ]
+            value: "{{ record['createdAt'] }}"
+            condition: "{{ record.get('updatedAt') is None }}"
+
 streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/email_subscriptions_stream"
+  - "#/definitions/ticket_pipelines_stream"

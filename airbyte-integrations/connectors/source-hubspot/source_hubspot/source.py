@@ -64,7 +64,6 @@ from source_hubspot.streams import (
     Products,
     ProductsWebAnalytics,
     SubscriptionChanges,
-    TicketPipelines,
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
@@ -207,7 +206,6 @@ class SourceHubspot(YamlDeclarativeSource):
             DealsPropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
-            TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
 
