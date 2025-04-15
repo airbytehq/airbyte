@@ -5,6 +5,9 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping
 
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
@@ -635,8 +638,7 @@ class BigQuerySqlGenerator
         }
 
         // TODO maybe make this a BiMap and elevate this method and its inverse
-        // (toDestinationSQLType?) to
-        // the SQLGenerator?
+        // (toDestinationSQLType?) to the SQLGenerator?
         fun toDialectType(airbyteProtocolType: AirbyteProtocolType): StandardSQLTypeName {
             return when (airbyteProtocolType) {
                 AirbyteProtocolType.STRING,
@@ -652,15 +654,19 @@ class BigQuerySqlGenerator
             }
         }
 
-        fun clusteringColumns(stream: StreamConfig): List<String> {
+        fun clusteringColumns(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping
+        ): List<String> {
             val clusterColumns: MutableList<String> = ArrayList()
-            if (stream.postImportAction == ImportType.DEDUPE) {
+            if (stream.importType is Dedupe) {
                 // We're doing de-duping, therefore we have a primary key.
                 // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering
                 // columns,
                 // and we're always clustering on _airbyte_extracted_at
-                stream.primaryKey.stream().limit(3).forEach { columnId: ColumnId ->
-                    clusterColumns.add(columnId.name)
+                (stream.importType as Dedupe).primaryKey.stream().limit(3).forEach {
+                    pk: List<String> ->
+                    clusterColumns.add(columnNameMapping[pk.first()]!!)
                 }
             }
             clusterColumns.add("_airbyte_extracted_at")
