@@ -18,8 +18,8 @@ import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.spec.BulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
+import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingSpecification
 import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import io.micronaut.context.annotation.Requires
@@ -71,7 +71,7 @@ class BigQueryBulkLoader(
 class BigqueryConfiguredForBulkLoad : Condition {
     override fun matches(context: ConditionContext<*>): Boolean {
         val config = context.beanContext.getBean(BigqueryConfiguration::class.java)
-        return config.loadingMethod is BulkLoadConfiguration
+        return config.loadingMethod is GcsStagingConfiguration
     }
 }
 

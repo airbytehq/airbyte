@@ -26,8 +26,6 @@ sealed interface LoadingMethodConfiguration
 
 data object BatchedStandardInsertConfiguration : LoadingMethodConfiguration
 
-data object BulkLoadConfiguration : LoadingMethodConfiguration
-
 data class GcsStagingConfiguration(
     val gcsClientConfig: GcsClientConfiguration,
     val filePostProcessing: GcsFilePostProcessing,
