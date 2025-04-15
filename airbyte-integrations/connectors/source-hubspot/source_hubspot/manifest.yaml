@@ -212,7 +212,7 @@ definitions:
         fields:
           - path: ["updatedAt"]
             value: "{{ record['createdAt'] }}"
-        condition: "{{ record.get('updatedAt') is None }}"
+        condition: "{{ record.get('updatedAt') is none }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
