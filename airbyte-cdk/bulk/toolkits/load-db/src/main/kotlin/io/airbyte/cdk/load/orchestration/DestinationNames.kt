@@ -24,13 +24,19 @@ data class TableNames(
         this.rawTableName.conflictsWith(other.rawTableName) ||
             this.finalTableName.conflictsWith(other.finalTableName)
 
+    fun prettyPrint() =
+        "Raw table: ${rawTableName?.prettyPrint()}; Final table: ${finalTableName?.prettyPrint()}"
+
     companion object {
         // TODO comment explaining this
         const val TMP_TABLE_SUFFIX = "_airbyte_tmp"
+        const val SOFT_RESET_SUFFIX = "_ab_soft_reset"
     }
 }
 
-data class TableName(val namespace: String, val name: String)
+data class TableName(val namespace: String, val name: String) {
+    fun prettyPrint() = "$namespace.$name"
+}
 
 fun TableName?.conflictsWith(other: TableName?): Boolean {
     if (this == null || other == null) {

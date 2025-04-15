@@ -69,10 +69,7 @@ class TypingDedupingWriter(
             runBlocking(dispatcher) {
                 streamsNeedingSoftReset.forEach { (stream, _) ->
                     launch {
-                        finalTableOperations.softResetFinalTable(
-                            stream,
-                            names[stream]!!.first.finalTableName!!
-                        )
+                        finalTableOperations.softResetFinalTable(stream, names[stream]!!.first)
                     }
                 }
             }

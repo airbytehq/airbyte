@@ -28,7 +28,7 @@ class TypingDedupingStreamLoader(
         finalTableOperations.createFinalTable(
             stream,
             finalTableName,
-            suffix = "",
+            finalTableSuffix = "",
             replace = false,
         )
     }
@@ -45,7 +45,7 @@ class TypingDedupingStreamLoader(
                 finalTableSuffix = "",
             )
             // TODO extract constant for suffix
-            finalTableOperations.overwriteFinalTable(finalTableName, suffix = "")
+            finalTableOperations.overwriteFinalTable(finalTableName, finalTableSuffix = "")
         }
     }
 }
