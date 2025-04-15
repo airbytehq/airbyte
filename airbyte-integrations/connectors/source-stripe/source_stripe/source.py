@@ -460,6 +460,14 @@ class SourceStripe(YamlDeclarativeSource):
                 cursor_field="created",
                 **args,
             ),
+            UpdatedCursorIncrementalStripeLazySubStream(
+                name="application_fees_refunds",
+                path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
+                parent=application_fees,
+                event_types=["application_fee.refund.updated"],
+                sub_items_attr="refunds",
+                **args,
+            ),
             UpdatedCursorIncrementalStripeSubStream(
                 name="payment_methods",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
@@ -514,7 +522,6 @@ class SourceStripe(YamlDeclarativeSource):
                 },
                 **args,
             ),
-            subscription_items,
             ParentIncrementalStripeSubStream(
                 name="transfer_reversals",
                 path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
