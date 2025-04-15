@@ -13,7 +13,7 @@ On the left side of your main Airbyte dashboard, select **Connections**. You wil
 
 ## Configure the connection
 
-Once you've chosen your source and destination you can configure the connection. You'll first be asked a few questions about how your data should sync, these correlate to our sync modes which you can read more about on [this page](/platform/cloud/managing-airbyte-cloud/configuring-connections.md).
+Once you've chosen your source and destination you can configure the connection. You'll first be asked a few questions about how your data should sync, these correlate to our sync modes which you can read more about on [this page](/platform/cloud/managing-airbyte-cloud/configuring-connections).
 
 Most users select "Mirror Source", which will simply copy the data from the source to the destination where you'll see one row in the destination for each row in the source. If you prefer to Append Historical Changes or take a Full Snapshot with each sync, you can optionally select those options, but keep in mind those will create duplicate records in your destination. The sync mode we choose for all the enabled streams will reflect your selection here.
 
@@ -31,7 +31,7 @@ You can also select individual fields to sync on this page. Expand the fields av
 Click **Next** to complete your stream setup and move to the connection configuration. This is where you'll set up how often your data will sync and where it will live in the destination. For this demo, we'll set the connection to run every 24 hours.
 
 :::note
-To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/platform/using-airbyte/core-concepts/namespaces.md)
+To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/platform/using-airbyte/core-concepts/namespaces)
 :::
 
 Once you've set up all the connection settings, click "Set up connection". You've successfully set up your first data pipeline with Airbyte. Your first sync is about to begin!
@@ -69,7 +69,7 @@ Once the first sync has completed, you can verify the sync has completed by chec
     You should see a list of JSON objects, each containing a unique `airbyte_ab_id`, an `emitted_at` timestamp, and `airbyte_data` containing the extracted record.
 
 :::tip
-If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/integrations/locating-files-local-destination.md) to locate the replicated folder and file.
+If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/integrations/locating-files-local-destination) to locate the replicated folder and file.
 :::
 
   </TabItem>

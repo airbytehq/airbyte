@@ -16,7 +16,7 @@ Once you've signed up for Airbyte Cloud or logged in to your Airbyte Open Source
 You can use the provided search bar at the top of the page, or scroll down the list to find the destination you want to replicate data from.
 
 :::tip
-You can filter the list of destinations by support level. Airbyte connectors are categorized in two support levels, Airbyte Connectors and Marketplace Connectors. See our [Connector Support Levels](/integrations/connector-support-levels.md) page for more information on this topic.
+You can filter the list of destinations by support level. Airbyte connectors are categorized in two support levels, Airbyte Connectors and Marketplace Connectors. See our [Connector Support Levels](/integrations/connector-support-levels) page for more information on this topic.
 :::
 
 <Tabs groupId="cloud-hosted">
@@ -28,7 +28,7 @@ You can filter the list of destinations by support level. Airbyte connectors are
 :::info  
 Google Sheets imposes rate limits and hard limits on the amount of data it can receive. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
 
-Read more about the [specific limitations](/integrations/destinations/google-sheets.md#limitations) in our Google Sheets documentation.
+Read more about the [specific limitations](/integrations/destinations/google-sheets/#limitations) in our Google Sheets documentation.
 :::
 
     The left half of the page contains a set of fields that you will have to fill out. In the **Destination name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the destination (i.e., `Google Sheets`).

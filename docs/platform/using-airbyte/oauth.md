@@ -33,7 +33,7 @@ graph TD;
 
 ## OAuth in Airbyte Cloud
 
-In Airbyte Cloud, the process depends on a [connector's support level](../integrations/connector-support-levels).
+In Airbyte Cloud, the process depends on a [connector's support level](/integrations/connector-support-levels).
 
 ### Airbyte connectors
 

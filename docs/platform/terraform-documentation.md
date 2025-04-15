@@ -35,7 +35,7 @@ Before starting this tutorial, make sure you have the following:
 
     - Your workspace ID. To get your workspace ID, open your workspace in Airbyte, then copy the ID from the URL. It looks like this: `039da657-f061-493e-a836-9bce86bc5e35`.
 
-- Source and destination credentials. This tutorial uses [Stripe](integrations/sources/stripe) and [BigQuery](integrations/destinations/bigquery), but you can substitute any other connector. Consult the documentation for those connectors to ensure you have what you need to connect.
+- Source and destination credentials. This tutorial uses [Stripe](/integrations/sources/stripe) and [BigQuery](/integrations/destinations/bigquery), but you can substitute any other connector. Consult the documentation for those connectors to ensure you have what you need to connect.
 
 ## Strongly typed versus weakly typed {#typing}
 

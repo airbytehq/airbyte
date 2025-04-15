@@ -6,14 +6,14 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 ## ✨ Highlights
 
-Airbyte now supports extracting text content from PDF, Docx, and Pptx files from S3, Azure Blob Storage, and the newly introduced [Google Drive](/integrations/sources/google-drive.md) source. This is an important part of supporting LLM use cases that rely on unstructured data in files.
+Airbyte now supports extracting text content from PDF, Docx, and Pptx files from S3, Azure Blob Storage, and the newly introduced [Google Drive](/integrations/sources/google-drive) source. This is an important part of supporting LLM use cases that rely on unstructured data in files.
 
 SSO and RBAC (admin roles only) are now available in Airbyte Cloud! Read more below.
 
 ## Platform Releases
 
 - **SSO and RBAC** You can now use SSO in Airbyte Cloud to administer permissions in Airbyte. This is currently only available through Okta, with plans to support Active Directory next. We also now offer **RBAC** (admin roles only) to ensure a high level of security when managing you workspace. For access to this feature, reach out to our [Sales team](https://www.airbyte.com/company/talk-to-sales).
-- **Continuous heartbeat checks** We're continually monitoring syncs to verify they continue making progress, and have added functionality in the background to ensure that we continue receiving updated ["heartbeat" messages](/understanding-airbyte/heartbeats.md) from our connectors. This will ensure that we continue delivering data and avoid any timeouts.
+- **Continuous heartbeat checks** We're continually monitoring syncs to verify they continue making progress, and have added functionality in the background to ensure that we continue receiving updated ["heartbeat" messages](/platform/understanding-airbyte/heartbeats) from our connectors. This will ensure that we continue delivering data and avoid any timeouts.
 
 ## Connector Improvements
 

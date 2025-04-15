@@ -21,7 +21,7 @@ A connector reaching version 1.0 is considered mature and comes with semver guar
 * **Minor updates (1.x.0):** These might introduce new features like streams or properties, but they are designed to be fully backward compatible with your existing setup.
 * **Major updates (x.0.0):** These are significant changes that may require your review. We'll discuss this in more detail below.
 
-Each connector's changelog details its update history. You can find it in the [connector catalog](../integrations/) at the end of each individual connector's entry.
+Each connector's changelog details its update history. You can find it in the [connector catalog](/integrations/) at the end of each individual connector's entry.
 
 <Arcade id="vMZISMWeitH8X7kT1ArF" title="Review a Connector Changelog" paddingBottom="calc(61.37931034482759% + 41px)" />
 

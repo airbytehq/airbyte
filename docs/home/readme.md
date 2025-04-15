@@ -9,11 +9,11 @@ Airbyte is open source data movement infrastructure for building extract and loa
 Today, teams and organizations require efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open-source approach enables your data stack to adapt as your data needs evolve.
 
 - **Wide connector availability:** Airbyte’s connector catalog comes “out-of-the-box” with over 600 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes. 
-- **Long-tail connector coverage:** You can easily extend Airbyte’s functionality to support your custom use cases through Airbyte's [No-Code Connector Builder](./connector-development/connector-builder-ui/overview).
+- **Long-tail connector coverage:** You can easily extend Airbyte’s functionality to support your custom use cases through Airbyte's [No-Code Connector Builder](/platform/connector-development/connector-builder-ui/overview).
 
 - **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
 
-- **Accessible User Interfaces** through the UI, [**PyAirbyte**](./using-airbyte/pyairbyte/getting-started) (Python library), [**API**](./api-documentation), and [**Terraform Provider**](./terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
+- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/platform/using-airbyte/pyairbyte/getting-started) (Python library), [**API**](/platform/api-documentation), and [**Terraform Provider**](/platform/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
 

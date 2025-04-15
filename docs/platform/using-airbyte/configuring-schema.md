@@ -106,7 +106,7 @@ To select a partial set of fields:
 ![Refresh Modal](./assets/refresh-modal.png)
 
 :::tip
-When editing the stream configuration, Airbyte recommends that you refresh streams. A [refresh](/platform/operator-guides/refreshes.md) will delete data in the destination of the affected streams and then re-sync all historical data. Skipping a refresh is discouraged and might lead to unexpected behavior.
+When editing the stream configuration, Airbyte recommends that you refresh streams. A [refresh](/platform/operator-guides/refreshes) will delete data in the destination of the affected streams and then re-sync all historical data. Skipping a refresh is discouraged and might lead to unexpected behavior.
 :::
 
 8. Click **Save connection** to apply your preference.

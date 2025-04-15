@@ -107,4 +107,4 @@ Airbyte shows sync errors in yellow. These can range from transient errors to wa
 
 If Airbyte releases a new major version of the connector in Cloud, you also see a banner on this page indicating the cutoff date for the version upgrade. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you don't upgrade before the cutoff date, Airbyte automatically disables your connection.
 
-Learn more about version upgrades in the [resolving breaking change documentation](/platform/using-airbyte/schema-change-management.md#resolving-breaking-changes).
+Learn more about version upgrades in the [resolving breaking change documentation](/platform/using-airbyte/schema-change-management/#resolving-breaking-changes).

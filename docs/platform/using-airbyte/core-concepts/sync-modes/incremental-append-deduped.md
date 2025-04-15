@@ -74,13 +74,13 @@ In the final de-duplicated table:
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [Exchange Rates source](../../../integrations/sources/exchange-rates.md), the source already knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental sync mode in the UI by navigating to the `Schema` tab for a connection.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [Exchange Rates source](/integrations/sources/exchange-rates/), the source already knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental sync mode in the UI by navigating to the `Schema` tab for a connection.
 
 You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog).
 
 ## User-Defined Cursor
 
-Some sources are unable to define the cursor without user input. For example, in the [Postgres source](../../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor`. In these cases, simply select the `cursor` for each stream in the UI by navigating to the `Schema` tab for a connection.
+Some sources are unable to define the cursor without user input. For example, in the [Postgres source](/integrations/sources/postgres), the user needs to choose which column in a database table they want to use as the `cursor`. In these cases, simply select the `cursor` for each stream in the UI by navigating to the `Schema` tab for a connection.
 
 You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog).
 

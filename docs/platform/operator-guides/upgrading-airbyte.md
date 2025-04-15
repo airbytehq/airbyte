@@ -21,7 +21,7 @@ During upgrades, Airbyte will attempt to upgrade some connector versions. The fo
    
    2. If a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
 
-Refer to [Managing Connector Updates](../platform/managing-airbyte/connector-updates.md) for more details about keeping connectors updated.
+Refer to [Managing Connector Updates](/platform/managing-airbyte/connector-updates) for more details about keeping connectors updated.
 
 ## Upgrading on K8s using Helm
 

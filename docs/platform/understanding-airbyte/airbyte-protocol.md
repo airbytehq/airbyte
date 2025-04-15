@@ -347,7 +347,7 @@ Technical systems often group their underlying data into namespaces with each na
 
 An example of a namespace is the RDBMS's `schema` concept. An API namespace might be used for multiple accounts (e.g. `company_a` vs `company_b`, each having a "users" and "purchases" stream). Some common use cases for schemas are enforcing permissions, segregating test and production data and general data organization.
 
-The `AirbyteStream` represents this concept through an optional field called `namespace`. Additional documentation on Namespaces can be found [here](/platform/using-airbyte/core-concepts/namespaces.md).
+The `AirbyteStream` represents this concept through an optional field called `namespace`. Additional documentation on Namespaces can be found [here](/platform/using-airbyte/core-concepts).
 
 ### Cursor
 

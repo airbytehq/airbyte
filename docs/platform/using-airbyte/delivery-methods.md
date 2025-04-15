@@ -37,15 +37,15 @@ To ensure your source and destination credentials remain isolated, Airbyte uses 
 
 #### Supported sources {#supported-sources}
 
-- [SFTP bulk](../integrations/sources/sftp-bulk): `v1.5.0` or later
+- [SFTP bulk](/integrations/sources/sftp-bulk): `v1.5.0` or later
 
-- [S3](../integrations/sources/s3): `v4.10.1` or later
+- [S3](/integrations/sources/s3): `v4.10.1` or later
 
 Additional sources may be added later.
 
 #### Supported destinations
 
-- [S3](../integrations/destinations/s3): `v1.4.0` or later
+- [S3](/integrations/destinations/s3): `v1.4.0` or later
 
 Additional destinations may be added later.
 

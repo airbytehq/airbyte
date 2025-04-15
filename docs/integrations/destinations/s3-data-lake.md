@@ -285,7 +285,7 @@ For example, the following table contains three versions of the 'Alice' record.
 | 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        |
 | 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        |
 
-To mitigate this, generate a flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` [metadata field](../../platform/understanding-airbyte/airbyte-metadata-fields.md) that assists with this.
+To mitigate this, generate a flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` [metadata field](../../platform/understanding-airbyte/airbyte-metadata-fields) that assists with this.
 
 ```sql
 row_number() over (partition by {primary_key} order by {cursor}, _airbyte_extracted_at)) != 1 OR _ab_cdc_deleted_at IS NOT NULL as is_outdated;

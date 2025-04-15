@@ -22,7 +22,7 @@ To choose your default data residency, click **Settings** in the Airbyte UI. Nav
 
 :::info
 
-Depending on your network configuration, you may need to add [IP addresses](/platform/operating-airbyte/security.md#network-security-1) to your allowlist.
+Depending on your network configuration, you may need to add [IP addresses](/platform/operating-airbyte/security/#network-security-1) to your allowlist.
 
 :::
 

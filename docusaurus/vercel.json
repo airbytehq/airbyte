@@ -350,6 +350,11 @@
       "source": "/integrations/destinations/s3-glue",
       "destination": "/integrations/destinations/s3-data-lake",
       "statusCode": 301
+    },
+    {
+      "source": "/getting-started/",
+      "destination": "/platform/",
+      "statusCode": 301
     }
   ]
 }

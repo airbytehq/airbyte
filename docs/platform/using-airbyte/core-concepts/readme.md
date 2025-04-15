@@ -24,13 +24,13 @@ An Airbyte component which pulls data from a source or pushes data to a destinat
 
 A connection is an automated data pipeline that replicates data from a source to a destination. It links a configured source (based on a source connector) to a configured destination (based on a destination connector) to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate. Setting up a connection enables configuration of the following parameters:
 
-| Concept                                                                                                                  | Description                                                        |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| [Stream and Field Selection](/platform/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
-| [Sync Mode](/platform/using-airbyte/core-concepts/sync-modes/README.md)                                                           | How should the streams be replicated (read and written)?           |
-| [Sync Schedule](/platform/using-airbyte/core-concepts/sync-schedules.md)                                                          | When should a data sync be triggered?                              |
-| [Destination Namespace and Stream Prefix](/platform/using-airbyte/core-concepts/namespaces.md)                                    | Where should the replicated data be written?                       |
-| [Schema Propagation](using-airbyte/schema-change-management.md)                                                          | How should Airbyte handle schema drift in sources?                 |
+| Concept                                                                                                                         | Description                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [Stream and Field Selection](/platform/cloud/managing-airbyte-cloud/configuring-connections/#modify-streams-in-your-connection)  | What data should be replicated from the source to the destination? |
+| [Sync Mode](/platform/using-airbyte/core-concepts/sync-modes/)                                                            | How should the streams be replicated (read and written)?           |
+| [Sync Schedule](/platform/using-airbyte/core-concepts/sync-schedules)                                                           | When should a data sync be triggered?                              |
+| [Destination Namespace and Stream Prefix](/platform/using-airbyte/core-concepts/namespaces)                                      | Where should the replicated data be written?                       |
+| [Schema Propagation](/platform/using-airbyte/schema-change-management)                                                          | How should Airbyte handle schema drift in sources?                 |
 
 ## Stream
 
@@ -69,7 +69,7 @@ There are three options for scheduling a sync to run:
 - [CRON schedule](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
 - Manual \(i.e: clicking the "Sync Now" button in the UI or through the API\)
 
-For more details, see our [Sync Schedules documentation](sync-schedules.md).
+For more details, see our [Sync Schedules documentation](sync-schedules).
 
 ## Destination Namespace
 
@@ -77,7 +77,7 @@ A namespace defines where the data will be written to your destination. You can 
 
 Depending on your destination, you may know this more commonly as the "Dataset", "Schema" or "Bucket Path". The term "Namespace" is used to generalize the concept across various destinations.
 
-For more details, see our [Namespace documentation](namespaces.md).
+For more details, see our [Namespace documentation](namespaces).
 
 ## Delivery Method
 
@@ -87,11 +87,11 @@ You can move data from a source to a destination in one of two ways, depending o
 
 A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the destination.
 
-Read more about each [sync mode](/platform/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
+Read more about each [sync mode](/platform/using-airbyte/core-concepts/sync-modes/) and how they differ.
 
 ## Resumability
 
-[Resumability](/platform/understanding-airbyte/resumability.md) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood. 
+[Resumability](/platform/understanding-airbyte/resumability/) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood. 
 
 ## Typing and Deduping
 

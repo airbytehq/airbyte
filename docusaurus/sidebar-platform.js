@@ -270,21 +270,14 @@ module.exports = {
         {
             type: "category",
             collapsible: false,
-            label: "Platform",
+            label: "Airbyte Platform",
             link: {
                 type: "doc",
                 id: "readme",
             },
             items: [
                 sectionHeader("Getting Started"),
-                {
-                type: "doc",
-                id: "using-airbyte/getting-started/readme",
-                },
-                {
-                type: "doc",
-                id: "using-airbyte/getting-started/academy",
-                },
+                
                 {
                 type: "doc",
                 label: "Quickstart",
@@ -293,6 +286,10 @@ module.exports = {
                 {
                 type: "doc",
                 id: "using-airbyte/core-concepts/readme",
+                },
+                {
+                type: "doc",
+                id: "using-airbyte/getting-started/academy",
                 },
                 {
                 type: "category",
