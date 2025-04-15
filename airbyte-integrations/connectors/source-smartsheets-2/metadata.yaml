@@ -16,7 +16,8 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2a6bece2-b8ad-4e47-bb4e-2c6eea4b5cb9
-  dockerImageTag: 0.1.0
+  canonicalImageTag: 1.0.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-smartsheets-2
   githubIssueLabel: source-smartsheets-2
   icon: smartsheet.svg
