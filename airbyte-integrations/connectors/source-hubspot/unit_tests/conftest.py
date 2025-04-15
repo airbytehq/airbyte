@@ -101,3 +101,10 @@ def api(some_credentials):
 @pytest.fixture
 def http_mocker():
     return None
+
+
+def find_stream(stream_name, config):
+    for stream in SourceHubspot(config=config, catalog=None, state=None).streams(config=config):
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")

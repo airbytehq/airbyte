@@ -15,11 +15,12 @@ import pytest
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, BaseStream, Companies, Deals, Engagements, MarketingEmails, Products
+from source_hubspot.streams import API, BaseStream, Companies, Deals, Engagements, Products
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
+from .conftest import find_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -727,7 +728,8 @@ def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, commo
     assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
-def test_pagination_marketing_emails_stream(requests_mock, common_params):
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_pagination_marketing_emails_stream(mock_get_custom_objects_stream, requests_mock, common_params, config):
     """
     Test pagination for Marketing Emails stream
     """
@@ -765,7 +767,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
             },
         ],
     )
-    test_stream = MarketingEmails(**common_params)
+    test_stream = find_stream("marketing_emails", config)
 
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.

@@ -161,6 +161,10 @@ definitions:
         fields:
           - path: ["rootMicId"]
             value: "{{ record['rootMicId'] | string if record.get('rootMicId') is not none else none }}"
+            value_type: string
+        condition: "{{ record.get('rootMicId') is not none and record.get('rootMicId') is not string }}"
+      - type: AddFields
+        fields:
           - path: ["updated"]
             value: "{{ record.get('updated') or record['created'] }}"
     schema_loader:
@@ -172,7 +176,7 @@ definitions:
     $ref: "#/definitions/stream_without_pagination"
     name: email_subscriptions
     retriever:
-      $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/retriever_without_pagination"
       requester:
         $ref: "#/definitions/base_requester"
         path: /email/public/v1/subscriptions
