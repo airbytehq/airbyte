@@ -16,6 +16,9 @@ import io.airbyte.cdk.load.command.s3.S3ClientConfigurationProvider
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.write.db.DbConstants
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.condition.Condition
+import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 
@@ -73,7 +76,15 @@ class BigqueryConfigurationProvider(private val config: DestinationConfiguration
     @Singleton fun get() = config as BigqueryConfiguration
 }
 
+class BigQueryIsConfiguredForBulkLoad : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        val config = context.beanContext.getBean(BigqueryConfiguration::class.java)
+        return config.bigqueryLoadTypeConfiguration.loadTypeConfiguration is BulkLoadConfiguration
+    }
+}
+
 @Singleton
+@Requires(condition = BigQueryIsConfiguredForBulkLoad::class)
 class BigQueryBulkLoadConfiguration(
     private val config: BigqueryConfiguration,
 ) :
