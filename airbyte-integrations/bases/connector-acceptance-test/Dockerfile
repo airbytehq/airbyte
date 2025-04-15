@@ -4,10 +4,6 @@ FROM python:3.11.9 as base
 ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
 ENV DOCKER_VERSION = "24.0.2"
 
-# Disable dynamic versioning for the tests
-# because VCS is not available in the docker image.
-ENV POETRY_DYNAMIC_VERSIONING_COMMANDS=""
-
 RUN apt-get update \
     && pip install --upgrade pip \
     && apt-get -y install tzdata bash curl

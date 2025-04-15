@@ -17,8 +17,7 @@ include = "source_hardcoded_records"
 
 [tool.poetry.dependencies]
 python = "^3.11,<3.13"
-airbyte-cdk = "6.45.1.post44.dev14417290834"
-# airbyte-cdk = {git = "https://github.com/airbytehq/airbyte-python-cdk.git", rev = "aj/feat/mini-cat-test-suites"}
+airbyte-cdk = "^6.37"
 
 [tool.poetry.scripts]
 source-hardcoded-records = "source_hardcoded_records.run:run"
