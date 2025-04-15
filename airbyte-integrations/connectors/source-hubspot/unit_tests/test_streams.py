@@ -43,8 +43,8 @@ from source_hubspot.streams import (
 )
 
 from airbyte_cdk.models import SyncMode
-from .conftest import find_stream
 
+from .conftest import find_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -88,6 +88,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
     assert stream_state[stream.updated_at_field] == expected
 
+
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value",
     [
@@ -122,7 +123,9 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
     ],
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_streams_read(mock_get_custom_object_streams, stream_class, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, config):
+def test_streams_read(
+    mock_get_custom_object_streams, stream_class, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, config
+):
     if isinstance(stream_class, str):
         stream = find_stream(stream_class, config)
         data_field = stream.retriever.record_selector.extractor.field_path[0]
@@ -756,10 +759,12 @@ def test_contacts_membership_transform(common_params):
         ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": None}, {"rootMicId": None}),
         ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": "123456"}, {"rootMicId": "123456"}),
         ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": 1234.56}, {"rootMicId": "1234.56"}),
-    ]
+    ],
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_cast_record_fields_with_schema_if_needed(mock_get_custom_object_stream, stream_class, cursor_value, requests_mock, common_params, data_to_cast, expected_casted_data, config):
+def test_cast_record_fields_with_schema_if_needed(
+    mock_get_custom_object_stream, stream_class, cursor_value, requests_mock, common_params, data_to_cast, expected_casted_data, config
+):
     """
     Test that the stream cast record fields with stream json schema if needed
     """
