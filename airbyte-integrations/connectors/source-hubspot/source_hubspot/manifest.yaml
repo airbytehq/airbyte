@@ -187,15 +187,13 @@ definitions:
         $ref: "#/schemas/email_subscriptions"
 
   ticket_pipelines_stream:
-    $parameters:
-      name: ticket_pipelines
-      path: /crm/v3/pipelines/tickets
-      extractor_field_path: results
     $ref: "#/definitions/stream_base"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/ticket_pipelines"
+    name: ticket_pipelines
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/pipelines/tickets
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -214,7 +212,11 @@ definitions:
         fields:
           - path: ["updatedAt"]
             value: "{{ record['createdAt'] }}"
-            condition: "{{ record.get('updatedAt') is None }}"
+        condition: "{{ record.get('updatedAt') is None }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ticket_pipelines"
 
 streams:
   - "#/definitions/marketing_emails_stream"
