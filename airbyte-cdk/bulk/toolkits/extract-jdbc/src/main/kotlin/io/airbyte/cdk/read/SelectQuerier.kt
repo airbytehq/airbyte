@@ -17,6 +17,9 @@ import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @DefaultImplementation(JdbcSelectQuerier::class)
 interface SelectQuerier {
@@ -182,6 +185,21 @@ class JdbcSelectQuerier(
                             }
                             is Boolean -> {
                                 resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setBoolean(value))
+                            }
+                            is LocalDateTime -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
+                            }
+                            is LocalTime -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
+                            }
+                            is LocalDate -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
+                            }
+                            null -> {
+                                // TODO: Set is_null
+                            }
+                            else -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
                             }
                         }
                     }

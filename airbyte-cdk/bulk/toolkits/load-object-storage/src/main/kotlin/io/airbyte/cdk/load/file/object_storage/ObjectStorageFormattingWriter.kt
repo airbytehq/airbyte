@@ -120,14 +120,17 @@ class JsonFormattingWriter(
         generator.writeNumber(stream.generationId)
         generator.writeFieldName(Meta.COLUMN_NAME_DATA)
         generator.writeStartObject()
-        protoMapper.finalSchema.zip(record.protoData).forEach { (nameAndType, field) ->
-            generator.writeFieldName(nameAndType.first)
-            when (nameAndType.second) {
-                ProtoDataType.STRING -> generator.writeString(field.string)
-                ProtoDataType.BOOLEAN -> generator.writeBoolean(field.boolean)
-                ProtoDataType.INTEGER -> generator.writeNumber(field.integer)
-                ProtoDataType.NUMBER -> generator.writeNumber(field.number)
-                ProtoDataType.BINARY -> generator.writeBinary(field.binary.asReadOnlyByteBuffer().array())
+        val schema = protoMapper.finalSchema
+        for (i in schema.indices) {
+            generator.writeFieldName(schema[i].first)
+            when (schema[i].second) {
+                ProtoDataType.STRING -> generator.writeString(record.protoData[i].string)
+                ProtoDataType.BOOLEAN -> generator.writeBoolean(record.protoData[i].boolean)
+                ProtoDataType.INTEGER -> generator.writeNumber(record.protoData[i].integer)
+                ProtoDataType.NUMBER -> generator.writeNumber(record.protoData[i].number)
+                ProtoDataType.BINARY -> generator.writeBinary(
+                    record.protoData[i].binary.asReadOnlyByteBuffer().array()
+                )
             }
         }
         generator.writeEndObject()
