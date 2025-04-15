@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery
+package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.FormatOptions
@@ -17,9 +17,13 @@ import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingSpecification
 import io.airbyte.integrations.destination.bigquery.write.TempUtils
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.condition.Condition
+import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Singleton
 
 class BigQueryBulkLoader(
@@ -63,7 +67,15 @@ class BigQueryBulkLoader(
     }
 }
 
+class BigqueryConfiguredForBulkLoad : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        val config = context.beanContext.getBean(BigqueryConfiguration::class.java)
+        return config.loadingMethod is BulkLoadConfiguration
+    }
+}
+
 @Singleton
+@Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigQueryBulkLoaderFactory(
     private val catalog: DestinationCatalog,
     private val storageClient: S3KotlinClient,
