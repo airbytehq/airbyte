@@ -398,7 +398,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
-        assertEquals(listOf("123"), fileContent)
+        assertEquals(mapOf("path/to/file" to "123"), fileContent)
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")

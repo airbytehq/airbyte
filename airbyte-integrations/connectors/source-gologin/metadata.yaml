@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-gologin
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.44.0@sha256:cc993e8883bb1d9de36e007c4335462d74273b942c2aeac7a14393df76f4fa42
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.1@sha256:101da55e5201e9ce0ba5f3ebc7528e700f75a2a1d9afe76a34573d0311fe7a98
   connectorSubtype: api
   connectorType: source
   definitionId: 02e5177c-84cf-424c-91e4-9f7ce344b813
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/source-gologin
   githubIssueLabel: source-gologin
   icon: icon.svg

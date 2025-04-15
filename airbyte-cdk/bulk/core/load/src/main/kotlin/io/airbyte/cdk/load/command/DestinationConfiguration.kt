@@ -87,6 +87,7 @@ abstract class DestinationConfiguration : Configuration {
         const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
         const val DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 60L
         const val DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS = 15 * 60L
+        const val DEFAULT_GENERATION_ID_METADATA_KEY = "ab-generation-id"
     }
 
     // DEPRECATED: Old interface config. TODO: Drop when we're totally migrated.
@@ -97,6 +98,8 @@ abstract class DestinationConfiguration : Configuration {
     open val numProcessBatchWorkers: Int = 5
     open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
+
+    open val generationIdMetadataKey: String = DEFAULT_GENERATION_ID_METADATA_KEY
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
