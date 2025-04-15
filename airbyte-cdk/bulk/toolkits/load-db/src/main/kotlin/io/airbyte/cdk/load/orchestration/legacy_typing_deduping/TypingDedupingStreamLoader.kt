@@ -346,7 +346,7 @@ class TypingDedupingStreamLoader(
             // We only run T+D if the current sync had some records, or a previous attempt wrote
             // some records to the temp raw table.
             logger.info {
-                "Skipping typing and deduping for stream ${stream.descriptor.toPrettyString()} running as truncate sync. Stream success: $streamSuccessful; records written: ${syncSummary.recordsWritten}; temp raw table already existed: ${initialRawTableStatus.rawTableExists}; temp raw table had records: ${initialRawTableStatus.hasUnprocessedRecords}"
+                "Skipping typing and deduping for stream ${stream.descriptor.toPrettyString()} running as truncate sync. Stream success: $streamSuccessful; records written: ${syncSummary.recordsWritten}; temp raw table had records: ${initialRawTableStatus.hasUnprocessedRecords}"
             }
         } else {
             // When targeting the temp final table, we want to read all the raw records
