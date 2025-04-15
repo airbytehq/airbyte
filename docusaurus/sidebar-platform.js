@@ -299,8 +299,14 @@ module.exports = {
                     "using-airbyte/getting-started/add-a-destination",
                     "using-airbyte/getting-started/set-up-a-connection",
                 ],
+
                 },
                 sectionHeader("Airbyte Connectors"),
+                {
+                    type:'link',
+                    label: 'Connector Catalog',
+                    href: '/integrations/',
+                },
                 buildAConnector,
                 {
                 type: "doc",
