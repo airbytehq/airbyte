@@ -53,11 +53,11 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Terraform
 
-Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](../../terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
+Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/platform/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
 
 ### PyAirbyte
 
-If you want to use Python to move data, our Python library, [PyAirbyte](../pyairbyte/getting-started.mdx), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
+If you want to use Python to move data, our Python library, [PyAirbyte](/platform/using-airbyte/pyairbyte/getting-started), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
 
 :::note
 PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
@@ -67,4 +67,4 @@ PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, 
 
 Airbyte began as an open-source product. This is vital to Airbyte's vision of data movement. There are seemingly infinite data sources in the world, and only through community collaboration can we address that long tail of data sources.
 
-If you don't see the data source you need in our collection, [you can build one](../../connector-development/). Airbyte comes with no-code, low-code, and programmatic builder options. If you're interested in giving back to the community, documenting your connector and publishing it in the [Marketplace](/integrations/) will help others like you move data in the future.
+If you don't see the data source you need in our collection, [you can build one](/platform/connector-development/). Airbyte comes with no-code, low-code, and programmatic builder options. If you're interested in giving back to the community, documenting your connector and publishing it in the [Marketplace](/integrations/) will help others like you move data in the future.
