@@ -8,7 +8,8 @@ from source_smartsheets_2 import utils
 
 
 @pytest.mark.parametrize(
-    ("name", "expected", "transformations"), [
+    ("name", "expected", "transformations"),
+    [
         ("Revenue Recognition %", "Revenue Recognition Percent", ["Make common substitutions"]),
         ("Revenue Recognition %", "revenue recognition %", ["Make all lower case"]),
         ("Revenue Recognition %", "REVENUE RECOGNITION %", ["Make all upper case"]),
@@ -19,23 +20,31 @@ from source_smartsheets_2 import utils
         ("1st Responder", "_1st Responder", ["Ensure starts with identifier character"]),
         ("Revenue Recognition %", "RevenueRecognition", ["Strip non-identifier characters"]),
         ("Revenue Recognition %", "Revenue_x20Recognition_x20_x25", ["Replace non-identifier characters with hex encoding"]),
-        ("Revenue Recognition %", "revenue_recognition_percent", [
-            "Make common substitutions",
-            "Make all lower case",
-            "Trim outer whitespace",
-            "Whitespace into underscores",
-            "Ensure starts with identifier character",
-            "Strip non-identifier characters",
-        ]),
-        ("R/A/I/D", "raid", [
-            "Make common substitutions",
-            "Make all lower case",
-            "Trim outer whitespace",
-            "Whitespace into underscores",
-            "Ensure starts with identifier character",
-            "Strip non-identifier characters",
-        ]),
-    ]
+        (
+            "Revenue Recognition %",
+            "revenue_recognition_percent",
+            [
+                "Make common substitutions",
+                "Make all lower case",
+                "Trim outer whitespace",
+                "Whitespace into underscores",
+                "Ensure starts with identifier character",
+                "Strip non-identifier characters",
+            ],
+        ),
+        (
+            "R/A/I/D",
+            "raid",
+            [
+                "Make common substitutions",
+                "Make all lower case",
+                "Trim outer whitespace",
+                "Whitespace into underscores",
+                "Ensure starts with identifier character",
+                "Strip non-identifier characters",
+            ],
+        ),
+    ],
 )
 def test_column_name_normalization(name, expected, transformations):
     """Tests that the column name normalization logic works as expected."""
