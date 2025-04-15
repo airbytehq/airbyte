@@ -207,12 +207,12 @@ definitions:
       lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - '%Y-%m-%dT%H:%M:%SZ'
+        - "%Y-%m-%dT%H:%M:%SZ"
       is_client_side_incremental: true
     transformations:
       - type: AddFields
         fields:
-          - path: [ "updatedAt" ]
+          - path: ["updatedAt"]
             value: "{{ record['createdAt'] }}"
             condition: "{{ record.get('updatedAt') is None }}"
 
@@ -1409,7 +1409,7 @@ schemas:
         type:
           - "null"
           - string
-  
+
   ticket_pipelines:
     $schema: http://json-schema.org/draft-07/schema#
     type:
