@@ -66,13 +66,12 @@ class GoogleDriveRemoteFile(RemoteFile):
     view_link: str
     # Only populated for items in shared drives.
     drive_id: Optional[str] = None
-    
+
     @property
     def url(self) -> str:
         if self.drive_id:
             return f"https://drive.google.com/open?id={self.id}&driveId={self.drive_id}"
         return self.view_link
-    
 
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
@@ -313,7 +312,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 id=file.id,
                 mime_type=file.mime_type,
                 updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                source_uri=file.url
+                source_uri=file.url,
             )
             file_reference = AirbyteRecordMessageFileReference(
                 staging_file_url=local_file_path,

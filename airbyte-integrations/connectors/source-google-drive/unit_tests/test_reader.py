@@ -42,7 +42,21 @@ def flatten_list(list_of_lists):
     [
         pytest.param(
             "*",
-            [[{"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"}]}]],
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            }
+                        ]
+                    }
+                ]
+            ],
             [
                 GoogleDriveRemoteFile(
                     uri="test.csv",
@@ -61,8 +75,20 @@ def flatten_list(list_of_lists):
                 [
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
-                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
+                            {
+                                "id": "def",
+                                "mimeType": "text/csv",
+                                "name": "another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
+                            },
                         ]
                     },
                 ]
@@ -91,10 +117,26 @@ def flatten_list(list_of_lists):
             "*",
             [
                 [
-                    {"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"}]},
                     {
                         "files": [
-                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk"}
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            }
+                        ]
+                    },
+                    {
+                        "files": [
+                            {
+                                "id": "def",
+                                "mimeType": "text/csv",
+                                "name": "another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
+                            }
                         ]
                     },
                 ]
@@ -135,13 +177,19 @@ def flatten_list(list_of_lists):
                 [
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
                             {
                                 "id": "sub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -150,13 +198,19 @@ def flatten_list(list_of_lists):
                     # second request is for requesting the subfolder
                     {
                         "files": [
-                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk"},
+                            {
+                                "id": "def",
+                                "mimeType": "text/csv",
+                                "name": "another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
+                            },
                             {
                                 "id": "subsub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -170,7 +224,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -210,13 +264,19 @@ def flatten_list(list_of_lists):
                 [
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
                             {
                                 "id": "sub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -225,13 +285,19 @@ def flatten_list(list_of_lists):
                     # second request is for requesting the subfolder
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
                             {
                                 "id": "subsub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -240,13 +306,19 @@ def flatten_list(list_of_lists):
                     # third request is for requesting the subsubfolder
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
                             {
                                 "id": "sub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "link_to_subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -270,13 +342,19 @@ def flatten_list(list_of_lists):
                 [
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
                             {
                                 "id": "sub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -285,13 +363,19 @@ def flatten_list(list_of_lists):
                     # second request is for requesting the subfolder
                     {
                         "files": [
-                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk"},
+                            {
+                                "id": "def",
+                                "mimeType": "text/csv",
+                                "name": "another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
+                            },
                             {
                                 "id": "ghi",
                                 "mimeType": "text/jsonl",
                                 "name": "non_matching.jsonl",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -315,13 +399,19 @@ def flatten_list(list_of_lists):
                 [
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
                             {
                                 "id": "sub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                             # This won't get queued because it has no chance of matching the glob
                             {
@@ -329,7 +419,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "ignored_subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -338,14 +428,20 @@ def flatten_list(list_of_lists):
                     # second request is for requesting the subfolder
                     {
                         "files": [
-                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk"},
+                            {
+                                "id": "def",
+                                "mimeType": "text/csv",
+                                "name": "another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
+                            },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
                             {
                                 "id": "subsub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -359,7 +455,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -383,13 +479,19 @@ def flatten_list(list_of_lists):
                 [
                     {
                         "files": [
-                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"},
+                            {
+                                "id": "abc",
+                                "mimeType": "text/csv",
+                                "name": "test.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
+                            },
                             {
                                 "id": "sub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -398,14 +500,20 @@ def flatten_list(list_of_lists):
                     # second request is for requesting the subfolder
                     {
                         "files": [
-                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z", "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk"},
+                            {
+                                "id": "def",
+                                "mimeType": "text/csv",
+                                "name": "another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
+                            },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
                             {
                                 "id": "subsub",
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -419,7 +527,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
                             {
@@ -427,7 +535,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "ignored_subsubsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/subsubsub/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/subsubsub/view?usp=drivesdk",
                             },
                         ]
                     },
@@ -457,7 +565,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.document",
                                 "name": "MyDoc",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/document/d/abc/edit?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/document/d/abc/edit?usp=drivesdk",
                             }
                         ]
                     }
@@ -486,7 +594,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.presentation",
                                 "name": "MySlides",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/presentation/d/abc/edit?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/presentation/d/abc/edit?usp=drivesdk",
                             }
                         ]
                     }
@@ -515,7 +623,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.drawing",
                                 "name": "MyDrawing",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/drawings/d/abc/edit?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/drawings/d/abc/edit?usp=drivesdk",
                             }
                         ]
                     }
@@ -544,7 +652,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.video",
                                 "name": "MyVideo",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
-                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk"
+                                "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             }
                         ]
                     }
@@ -595,7 +703,11 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
     [
         pytest.param(
             GoogleDriveRemoteFile(
-                uri="avro_file", id="abc", mime_type="text/csv", original_mime_type="text/csv", last_modified=datetime.datetime(2021, 1, 1),
+                uri="avro_file",
+                id="abc",
+                mime_type="text/csv",
+                original_mime_type="text/csv",
+                last_modified=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
             ),
             b"test",
@@ -608,7 +720,11 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
         ),
         pytest.param(
             GoogleDriveRemoteFile(
-                uri="test.csv", id="abc", mime_type="text/csv", original_mime_type="text/csv", last_modified=datetime.datetime(2021, 1, 1),
+                uri="test.csv",
+                id="abc",
+                mime_type="text/csv",
+                original_mime_type="text/csv",
+                last_modified=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
             ),
             b"test",
@@ -920,7 +1036,9 @@ def test_upload_file(
 @patch("source_google_drive.stream_reader.MediaIoBaseDownload")
 @patch("source_google_drive.stream_reader.service_account")
 @patch("source_google_drive.stream_reader.build")
-def test_source_uri_format(mock_build_service, mock_service_account, mock_basedownload, file: GoogleDriveRemoteFile, expected_source_uri: str):
+def test_source_uri_format(
+    mock_build_service, mock_service_account, mock_basedownload, file: GoogleDriveRemoteFile, expected_source_uri: str
+):
     mock_request = MagicMock()
     mock_downloader = MagicMock()
 
