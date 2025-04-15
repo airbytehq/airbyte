@@ -36,7 +36,8 @@ data class TableNames(
 }
 
 data class TableName(val namespace: String, val name: String) {
-    fun prettyPrint() = "$namespace.$name"
+    fun prettyPrint(quote: String = "", suffix: String = "") =
+        "$quote$namespace$quote.$quote$name$suffix$quote"
 }
 
 fun TableName?.conflictsWith(other: TableName?): Boolean {
@@ -63,15 +64,15 @@ fun interface ColumnNameGenerator {
      * In some database/warehouses, there's a difference between how a name is _displayed_, and how
      * the underlying engine actually treats it. For example, a column might be displayed as
      * `CamelCaseColumn`, but the engine actually treats it as lowercase `camelcasecolumn`, or
-     * truncate it to `CamelCas`.
+     * truncate it to `CamelCas`. Bigquery is an example of this: `create table foo (foo int, FOO
+     * int)` is invalid, because `foo` is duplicated.
      *
      * This is relevant for handling collisions between column names. We need to know what name will
      * be displayed to the user, since that's what we'll use in queries - but we also need to know
      * the "canonical" name to check whether two columns will collide.
-     *
-     * (edgao: I actually can't think of an example offhand. This logic predates me, and possibly
-     * doesn't need to exist.)
      */
     data class ColumnName(val displayName: String, val canonicalName: String)
     fun getColumnName(column: String): ColumnName
 }
+
+const val CDC_DELETED_AT_COLUMN = "_ab_cdc_deleted_at"

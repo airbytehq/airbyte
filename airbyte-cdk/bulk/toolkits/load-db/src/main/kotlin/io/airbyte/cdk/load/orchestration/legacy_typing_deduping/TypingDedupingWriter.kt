@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.orchestration.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.DestinationInitialStatusGatherer
@@ -46,7 +45,7 @@ class TypingDedupingWriter(
                     ),
                     ColumnNameMapping(
                         // TODO handle collisions in column names
-                        (stream.schema as ObjectType).properties.mapValues { (columnName, _) ->
+                        stream.schema.getProperties().mapValues { (columnName, _) ->
                             finalTableColumnNameGenerator.getColumnName(columnName).displayName
                         }
                     )
@@ -71,7 +70,12 @@ class TypingDedupingWriter(
             runBlocking(dispatcher) {
                 streamsNeedingSoftReset.forEach { (stream, _) ->
                     launch {
-                        finalTableOperations.softResetFinalTable(stream, names[stream]!!.first)
+                        val (tableNames, columnNameMapping) = names[stream]!!
+                        finalTableOperations.softResetFinalTable(
+                            stream,
+                            tableNames,
+                            columnNameMapping
+                        )
                     }
                 }
             }
@@ -88,11 +92,12 @@ class TypingDedupingWriter(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        val tableNames = names[stream]!!.first
+        val (tableNames, columnNameMapping) = names[stream]!!
         return TypingDedupingStreamLoader(
             stream,
             initialStatuses[stream]!!,
             tableNames,
+            columnNameMapping,
             rawTableOperations,
             finalTableOperations,
             disableTypeDedupe = disableTypeDedupe,

@@ -7,57 +7,32 @@ import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.orchestration.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
-import io.airbyte.integrations.base.destination.typing_deduping.*
+import io.airbyte.cdk.load.orchestration.Sql
+import io.airbyte.cdk.load.orchestration.TableName
+import io.airbyte.cdk.load.orchestration.TableNames
+import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.Array
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
-class BigQuerySqlGenerator
 /**
  * @param projectId
  * @param datasetLocation This is technically redundant with [BigQueryDestinationHandler] setting
  * the query execution location, but let's be explicit since this is typically a compliance
  * requirement.
  */
-(private val projectId: String?, private val datasetLocation: String?) : SqlGenerator {
-    private val CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at")
-
-    private val LOGGER: Logger = LoggerFactory.getLogger(BigQuerySqlGenerator::class.java)
-
-    override fun buildStreamId(
-        namespace: String,
-        name: String,
-        rawNamespaceOverride: String
-    ): StreamId {
-        return StreamId(
-            nameTransformer.getNamespace(namespace),
-            nameTransformer.convertStreamName(name),
-            nameTransformer.getNamespace(rawNamespaceOverride),
-            nameTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)),
-            namespace,
-            name
-        )
-    }
-
-    override fun buildColumnId(name: String, suffix: String?): ColumnId {
-        val nameWithSuffix = name + suffix
-        return ColumnId(
-            nameTransformer.getIdentifier(nameWithSuffix),
-            name, // Bigquery columns are case-insensitive, so do all our validation on the
-            // lowercased name
-            nameTransformer.getIdentifier(nameWithSuffix.lowercase(Locale.getDefault()))
-        )
-    }
-
+class BigQuerySqlGenerator(private val projectId: String?, private val datasetLocation: String?) :
+    TypingDedupingSqlGenerator {
     private fun extractAndCast(
-        column: ColumnId,
+        columnName: String,
         airbyteType: AirbyteType,
         forceSafeCast: Boolean
     ): String {
@@ -134,15 +109,21 @@ class BigQuerySqlGenerator
         }
     }
 
-    override fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql {
+    override fun createFinalTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        finalTableSuffix: String,
+        replace: Boolean
+    ): Sql {
         val columnDeclarations = columnsAndTypes(stream)
         val clusterConfig =
-            clusteringColumns(stream)
+            clusteringColumns(stream, columnNameMapping)
                 .stream()
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
-        val forceCreateTable = if (force) "OR REPLACE" else ""
-        val finalTableId = stream.id.finalTableId(QUOTE, suffix)
+        val forceCreateTable = if (replace) "OR REPLACE" else ""
+        val finalTableId = tableName.prettyPrint(QUOTE, finalTableSuffix)
         return Sql.of(
             """
             CREATE $forceCreateTable TABLE `$projectId`.$finalTableId (
@@ -158,75 +139,117 @@ class BigQuerySqlGenerator
         )
     }
 
-    private fun columnsAndTypes(stream: StreamConfig): String {
-        return stream.columns.entries
-            .stream()
-            .map { column: Map.Entry<ColumnId, AirbyteType> ->
-                java.lang.String.join(" ", column.key.name(QUOTE), toDialectType(column.value).name)
+    private fun columnsAndTypes(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): String {
+        return stream.schema
+            .getProperties()
+            .map { (fieldName, type) ->
+                val columnName = columnNameMapping[fieldName]!!
+                val typeName = toDialectType(type).name
+                "`$columnName` $typeName"
             }
-            .collect(Collectors.joining(",\n"))
+            .joinToString(",\n")
     }
 
-    override fun prepareTablesForSoftReset(stream: StreamConfig): Sql {
+    override fun prepareTablesForSoftReset(
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
+    ): Sql {
         // Bigquery can't run DDL in a transaction, so these are separate transactions.
-        return Sql
-            .concat( // If a previous sync failed to delete the soft reset temp table (unclear why
-                // this happens),
-                // AND this sync is trying to change the clustering config, then we need to manually
-                // drop the soft
-                // reset temp table.
-                // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain
-                // about the
-                // clustering config being changed.
-                // So we explicitly drop the soft reset temp table first.
-                dropTableIfExists(stream, TyperDeduperUtil.SOFT_RESET_SUFFIX),
-                createTable(stream, TyperDeduperUtil.SOFT_RESET_SUFFIX, true),
-                clearLoadedAt(stream.id)
-            )
+        return Sql.concat(
+            // If a previous sync failed to delete the soft reset temp table (unclear why
+            // this happens),
+            // AND this sync is trying to change the clustering config, then we need to manually
+            // drop the soft
+            // reset temp table.
+            // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain
+            // about the
+            // clustering config being changed.
+            // So we explicitly drop the soft reset temp table first.
+            dropTableIfExists(tableNames.finalTableName!!, TableNames.SOFT_RESET_SUFFIX),
+            createFinalTable(
+                stream,
+                tableNames.finalTableName!!,
+                columnNameMapping,
+                TableNames.SOFT_RESET_SUFFIX,
+                true
+            ),
+            clearLoadedAt(stream, tableNames.rawTableName!!)
+        )
     }
 
-    private fun dropTableIfExists(stream: StreamConfig, suffix: String): Sql {
-        val tableId = stream.id.finalTableId(QUOTE, suffix)
+    private fun dropTableIfExists(
+        finalTableName: TableName,
+        suffix: String,
+    ): Sql {
+        val tableId = finalTableName.prettyPrint(QUOTE, suffix)
         return Sql.of("""DROP TABLE IF EXISTS `$projectId`.$tableId;""")
     }
 
-    override fun clearLoadedAt(streamId: StreamId): Sql {
-        val rawTableId = streamId.rawTableId(QUOTE)
+    override fun clearLoadedAt(stream: DestinationStream, rawTableName: TableName): Sql {
+        val rawTableId = rawTableName.prettyPrint(QUOTE)
         return Sql.of(
             """UPDATE `$projectId`.$rawTableId SET _airbyte_loaded_at = NULL WHERE 1=1;"""
         )
     }
 
-    override fun updateTable(
-        stream: StreamConfig,
-        finalSuffix: String,
-        minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+    override fun updateFinalTable(
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
+        finalTableSuffix: String,
+        maxProcessedTimestamp: Instant?,
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val handleNewRecords =
-            if (stream.postImportAction == ImportType.DEDUPE) {
-                upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp)
+            if (stream.importType is Dedupe) {
+                upsertNewRecords(
+                    stream,
+                    tableNames,
+                    columnNameMapping,
+                    finalTableSuffix,
+                    useExpensiveSaferCasting,
+                    maxProcessedTimestamp
+                )
             } else {
-                insertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp)
+                insertNewRecords(
+                    stream,
+                    tableNames,
+                    columnNameMapping,
+                    finalTableSuffix,
+                    useExpensiveSaferCasting,
+                    maxProcessedTimestamp
+                )
             }
-        val commitRawTable = commitRawTable(stream.id, minRawTimestamp)
+        val commitRawTable = commitRawTable(tableNames.rawTableName!!, maxProcessedTimestamp)
 
         return Sql.transactionally(handleNewRecords, commitRawTable)
     }
 
     private fun insertNewRecords(
-        stream: StreamConfig,
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
         finalSuffix: String,
         forceSafeCasting: Boolean,
-        minRawTimestamp: Optional<Instant>
+        minRawTimestamp: Instant?,
     ): String {
         val columnList: String =
-            stream.columns.keys
+            stream.schema
+                .getProperties()
+                .keys
                 .stream()
-                .map { quotedColumnId: ColumnId -> quotedColumnId.name(QUOTE) + "," }
+                .map { fieldName ->
+                    val columnName = columnNameMapping[fieldName]!!
+                    "`$columnName`,"
+                }
                 .collect(Collectors.joining("\n"))
-        val extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp)
-        val finalTableId = stream.id.finalTableId(QUOTE, finalSuffix)
+        val extractNewRawRecords =
+            extractNewRawRecords(stream, tableNames, forceSafeCasting, minRawTimestamp)
+        val finalTableId = tableNames.finalTableName!!.prettyPrint(QUOTE, finalSuffix)
 
         return """
                INSERT INTO `$projectId`.$finalTableId
@@ -242,10 +265,12 @@ class BigQuerySqlGenerator
     }
 
     private fun upsertNewRecords(
-        stream: StreamConfig,
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
         finalSuffix: String,
         forceSafeCasting: Boolean,
-        minRawTimestamp: Optional<Instant>
+        minRawTimestamp: Instant?,
     ): String {
         val pkEquivalent =
             stream.primaryKey
@@ -351,27 +376,30 @@ class BigQuerySqlGenerator
      * dedupes the records (since we only need the most-recent record to upsert).
      */
     private fun extractNewRawRecords(
-        stream: StreamConfig,
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
         forceSafeCasting: Boolean,
-        minRawTimestamp: Optional<Instant>
+        minRawTimestamp: Instant?,
     ): String {
         val columnCasts: String =
-            stream.columns.entries
-                .stream()
-                .map { col: Map.Entry<ColumnId, AirbyteType> ->
-                    val extractAndCast = extractAndCast(col.key, col.value, forceSafeCasting)
-                    val columnName = col.key.name(QUOTE)
-                    """$extractAndCast as $columnName,"""
+            stream.schema
+                .getProperties()
+                .map { (fieldName, type) ->
+                    val columnName = columnNameMapping[fieldName]!!
+                    val extractAndCast = extractAndCast(columnName, type.type, forceSafeCasting)
+                    "$extractAndCast as `$columnName`,"
                 }
-                .collect(Collectors.joining("\n"))
+                .joinToString("\n")
         val columnErrors =
             if (forceSafeCasting) {
                 "[" +
-                    stream.columns.entries
-                        .stream()
-                        .map { col: Map.Entry<ColumnId, AirbyteType> ->
-                            val rawColName = escapeColumnNameForJsonPath(col.key.originalName)
-                            val jsonExtract = extractAndCast(col.key, col.value, true)
+                    stream.schema
+                        .getProperties()
+                        .map { (fieldName, type) ->
+                            val columnName = columnNameMapping[fieldName]!!
+                            val rawColName = escapeColumnNameForJsonPath(fieldName)
+                            val jsonExtract = extractAndCast(columnName, type.type, true)
                             // Explicitly parse json here. This is safe because
                             // we're not using the actual value anywhere,
                             // and necessary because json_query
@@ -385,7 +413,7 @@ class BigQuerySqlGenerator
                             END
                             """.trimIndent()
                         }
-                        .collect(Collectors.joining(",\n")) +
+                        .joinToString(",\n") +
                     "]"
             } else {
                 // We're not safe casting, so any error should throw an exception and trigger the
@@ -394,14 +422,15 @@ class BigQuerySqlGenerator
             }
 
         val columnList: String =
-            stream.columns.keys
-                .stream()
-                .map { quotedColumnId: ColumnId -> quotedColumnId.name(QUOTE) + "," }
-                .collect(Collectors.joining("\n"))
+            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+                val columnName = columnNameMapping[fieldName]!!
+                "`$columnName`,"
+            }
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
 
-        val rawTableId = stream.id.rawTableId(QUOTE)
-        if (stream.postImportAction == ImportType.DEDUPE) {
+        val rawTableId = tableNames.rawTableName!!.prettyPrint(QUOTE)
+        if (stream.importType is Dedupe) {
+            val importType = stream.importType as Dedupe
             // When deduping, we need to dedup the raw records. Note the row_number() invocation in
             // the SQL
             // statement. Do the same extract+cast CTE + airbyte_meta construction as in non-dedup
@@ -414,7 +443,7 @@ class BigQuerySqlGenerator
             // out-of-order records.
 
             var cdcConditionalOrIncludeStatement = ""
-            if (stream.columns.containsKey(CDC_DELETED_AT_COLUMN)) {
+            if (stream.schema.getProperties().containsKey(CDC_DELETED_AT_COLUMN)) {
                 cdcConditionalOrIncludeStatement =
                     """
                     OR (
@@ -425,13 +454,17 @@ class BigQuerySqlGenerator
             }
 
             val pkList =
-                stream.primaryKey
-                    .stream()
-                    .map { columnId: ColumnId -> columnId.name(QUOTE) }
-                    .collect(Collectors.joining(","))
+                importType.primaryKey.joinToString(",") { fieldName ->
+                    val columnName = columnNameMapping[fieldName.first()]!!
+                    "`$columnName`"
+                }
             val cursorOrderClause =
-                stream.cursor
-                    .map { cursorId: ColumnId -> cursorId.name(QUOTE) + " DESC NULLS LAST," }
+                importType.cursor
+                    .first()
+                    .map { fieldName ->
+                        val columnName = columnNameMapping[fieldName]!!
+                        "`$columnName` DESC NULLS LAST"
+                    }
                     .orElse("")
 
             return """
@@ -513,8 +546,8 @@ class BigQuerySqlGenerator
     }
 
     @VisibleForTesting
-    fun commitRawTable(id: StreamId, minRawTimestamp: Optional<Instant>): String {
-        val rawTableId = id.rawTableId(QUOTE)
+    fun commitRawTable(rawTableName: TableName, minRawTimestamp: Instant?): String {
+        val rawTableId = rawTableName.prettyPrint(QUOTE)
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
         return """
                UPDATE `$projectId`.$rawTableId
@@ -609,7 +642,7 @@ class BigQuerySqlGenerator
 
     companion object {
         const val QUOTE: String = "`"
-        private val nameTransformer = BigQuerySQLNameTransformer()
+        val nameTransformer = BigQuerySQLNameTransformer()
 
         @JvmStatic
         fun toDialectType(type: AirbyteType): StandardSQLTypeName {
@@ -673,10 +706,9 @@ class BigQuerySqlGenerator
             return clusterColumns
         }
 
-        private fun buildExtractedAtCondition(minRawTimestamp: Optional<Instant>): String {
-            return minRawTimestamp
-                .map { ts: Instant -> " AND _airbyte_extracted_at > '$ts'" }
-                .orElse("")
+        private fun buildExtractedAtCondition(minRawTimestamp: Instant?): String {
+            return minRawTimestamp?.let { ts: Instant -> " AND _airbyte_extracted_at > '$ts'" }
+                ?: ""
         }
 
         private fun cast(content: String, asType: String, useSafeCast: Boolean): String {

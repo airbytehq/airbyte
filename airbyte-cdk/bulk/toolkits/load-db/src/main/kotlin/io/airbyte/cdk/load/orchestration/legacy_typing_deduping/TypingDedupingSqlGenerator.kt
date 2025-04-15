@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.Sql
 import io.airbyte.cdk.load.orchestration.TableName
 import io.airbyte.cdk.load.orchestration.TableNames
@@ -27,6 +28,7 @@ interface TypingDedupingSqlGenerator {
     fun createFinalTable(
         stream: DestinationStream,
         tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
         finalTableSuffix: String,
         replace: Boolean
     ): Sql
@@ -69,6 +71,7 @@ interface TypingDedupingSqlGenerator {
     fun updateFinalTable(
         stream: DestinationStream,
         tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
         finalTableSuffix: String,
         maxProcessedTimestamp: Instant?,
         useExpensiveSaferCasting: Boolean,
@@ -87,15 +90,22 @@ interface TypingDedupingSqlGenerator {
     ): Sql
 
     fun clearLoadedAt(stream: DestinationStream, rawTableName: TableName): Sql
-}
 
-/** Typically we need to create a soft reset temporary table and clear loaded at values */
-fun TypingDedupingSqlGenerator.prepareTablesForSoftReset(
-    stream: DestinationStream,
-    tableNames: TableNames
-): Sql {
-    val createTempTable =
-        createFinalTable(stream, tableNames.finalTableName!!, SOFT_RESET_SUFFIX, replace = true)
-    val clearLoadedAt = clearLoadedAt(stream, tableNames.rawTableName!!)
-    return Sql.concat(createTempTable, clearLoadedAt)
+    /** Typically we need to create a soft reset temporary table and clear loaded at values */
+    fun prepareTablesForSoftReset(
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
+    ): Sql {
+        val createTempTable =
+            createFinalTable(
+                stream,
+                tableNames.finalTableName!!,
+                columnNameMapping,
+                SOFT_RESET_SUFFIX,
+                replace = true
+            )
+        val clearLoadedAt = clearLoadedAt(stream, tableNames.rawTableName!!)
+        return Sql.concat(createTempTable, clearLoadedAt)
+    }
 }

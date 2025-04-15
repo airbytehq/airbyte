@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.orchestration.TableNames.Companion.NO_SUFFIX
 import io.airbyte.cdk.load.orchestration.TableNames.Companion.TMP_TABLE_SUFFIX
@@ -19,6 +20,7 @@ class TypingDedupingStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: TypingDedupingDestinationInitialStatus,
     private val tableNames: TableNames,
+    private val columnNameMapping: ColumnNameMapping,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
     private val disableTypeDedupe: Boolean,
@@ -214,6 +216,7 @@ class TypingDedupingStreamLoader(
             finalTableOperations.createFinalTable(
                 stream,
                 tableNames.finalTableName!!,
+                columnNameMapping,
                 NO_SUFFIX,
                 replace = false
             )
@@ -252,7 +255,7 @@ class TypingDedupingStreamLoader(
                     logger.info {
                         "Truncate sync, and final table matches our generation, but has the wrong schema. Writing to it directly, but triggering a soft reset first."
                     }
-                    finalTableOperations.softResetFinalTable(stream, tableNames)
+                    finalTableOperations.softResetFinalTable(stream, tableNames, columnNameMapping)
                     return NO_SUFFIX
                 }
             } else {
@@ -266,7 +269,7 @@ class TypingDedupingStreamLoader(
                 // Also, if a raw table migration wants us to do a soft reset, do that
                 // here.
                 logger.info { "Executing soft-reset on final table of stream ${stream.descriptor}" }
-                finalTableOperations.softResetFinalTable(stream, tableNames)
+                finalTableOperations.softResetFinalTable(stream, tableNames, columnNameMapping)
             }
             return NO_SUFFIX
         }
@@ -281,6 +284,7 @@ class TypingDedupingStreamLoader(
             finalTableOperations.createFinalTable(
                 stream,
                 tableNames.finalTableName!!,
+                columnNameMapping,
                 TMP_TABLE_SUFFIX,
                 replace = true
             )
@@ -361,6 +365,7 @@ class TypingDedupingStreamLoader(
             finalTableOperations.typeAndDedupe(
                 stream,
                 tableNames,
+                columnNameMapping,
                 maxProcessedTimestamp = maxProcessedTimestamp,
                 finalTableSuffix = finalTmpTableSuffix
             )

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.DestinationHandler
 import io.airbyte.cdk.load.orchestration.TableName
 import io.airbyte.cdk.load.orchestration.TableNames
@@ -21,6 +22,7 @@ class TypingDedupingFinalTableOperations(
     fun createFinalTable(
         stream: DestinationStream,
         finalTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
         finalTableSuffix: String,
         replace: Boolean
     ) {
@@ -31,6 +33,7 @@ class TypingDedupingFinalTableOperations(
             sqlGenerator.createFinalTable(
                 stream,
                 finalTableName,
+                columnNameMapping,
                 finalTableSuffix,
                 replace = replace
             )
@@ -41,14 +44,18 @@ class TypingDedupingFinalTableOperations(
     fun softResetFinalTable(
         stream: DestinationStream,
         tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
     ) {
         logger.info {
             "Executing soft reset for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.prettyPrint()}"
         }
-        destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(stream, tableNames))
+        destinationHandler.execute(
+            sqlGenerator.prepareTablesForSoftReset(stream, tableNames, columnNameMapping)
+        )
         typeAndDedupe(
             stream,
             tableNames,
+            columnNameMapping,
             maxProcessedTimestamp = null,
             finalTableSuffix = SOFT_RESET_SUFFIX,
         )
@@ -85,6 +92,7 @@ class TypingDedupingFinalTableOperations(
     fun typeAndDedupe(
         stream: DestinationStream,
         tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
         maxProcessedTimestamp: Instant?,
         finalTableSuffix: String
     ) {
@@ -96,6 +104,7 @@ class TypingDedupingFinalTableOperations(
                 sqlGenerator.updateFinalTable(
                     stream,
                     tableNames,
+                    columnNameMapping,
                     finalTableSuffix = finalTableSuffix,
                     maxProcessedTimestamp = maxProcessedTimestamp,
                     useExpensiveSaferCasting = false,
@@ -110,6 +119,7 @@ class TypingDedupingFinalTableOperations(
                     sqlGenerator.updateFinalTable(
                         stream,
                         tableNames,
+                        columnNameMapping,
                         finalTableSuffix = finalTableSuffix,
                         maxProcessedTimestamp = maxProcessedTimestamp,
                         useExpensiveSaferCasting = true,
