@@ -63,6 +63,16 @@ class GoogleDriveRemoteFile(RemoteFile):
     # The mime type of the file as returned by the Google Drive API
     # This is not the same as the mime type when opened by the parser (e.g. google docs is exported as docx)
     original_mime_type: str
+    view_link: str
+    # Only populated for items in shared drives.
+    drive_id: Optional[str] = None
+    
+    @property
+    def url(self) -> str:
+        if self.drive_id:
+            return f"https://drive.google.com/open?id={self.id}&driveId={self.drive_id}"
+        return self.view_link
+    
 
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
@@ -134,10 +144,11 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             (path, folder_id) = folder_id_queue.pop()
             # fetch all files in this folder (1000 is the max page size)
             # supportsAllDrives and includeItemsFromAllDrives are required to access files in shared drives
+            # ref https://developers.google.com/workspace/drive/api/reference/rest/v3/files#File
             request = service.files().list(
                 q=f"'{folder_id}' in parents",
                 pageSize=1000,
-                fields="nextPageToken, files(id, name, modifiedTime, mimeType)",
+                fields="nextPageToken, files(id, name, modifiedTime, mimeType, webViewLink, driveId)",
                 supportsAllDrives=True,
                 includeItemsFromAllDrives=True,
             )
@@ -172,6 +183,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                             id=new_file["id"],
                             original_mime_type=original_mime_type,
                             mime_type=mime_type,
+                            drive_id=new_file.get("driveId"),
+                            view_link=new_file.get("webViewLink"),
                         )
                         if self.file_matches_globs(remote_file, globs):
                             yield remote_file
@@ -266,7 +279,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         try:
-            file_paths = self._get_file_transfer_paths(file, local_directory)
+            file_paths = self._get_file_transfer_paths(source_file_relative_path=file.uri, staging_directory=local_directory)
             local_file_path = file_paths[self.LOCAL_FILE_PATH]
             file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
             file_name = file_paths[self.FILE_NAME]
@@ -300,6 +313,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 id=file.id,
                 mime_type=file.mime_type,
                 updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                source_uri=file.url
             )
             file_reference = AirbyteRecordMessageFileReference(
                 staging_file_url=local_file_path,
