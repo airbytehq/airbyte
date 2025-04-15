@@ -21,7 +21,7 @@ import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import jakarta.inject.Singleton
 
 class BigQueryBulkLoader(
-    private val s3CLient: S3KotlinClient,
+    private val storageClient: S3KotlinClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
     private val stream: DestinationStream,
@@ -49,7 +49,7 @@ class BigQueryBulkLoader(
             )
         }
 
-        s3CLient.delete(remoteObject)
+        storageClient.delete(remoteObject)
     }
 
     override fun close() {
@@ -60,13 +60,13 @@ class BigQueryBulkLoader(
 @Singleton
 class BigQueryBulkLoaderFactory(
     private val catalog: DestinationCatalog,
-    private val s3Client: S3KotlinClient,
+    private val storageClient: S3KotlinClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration
 ) : BulkLoaderFactory<StreamKey, S3Object> {
     override val maxNumConcurrentLoads: Int = 1
     override fun create(key: StreamKey, partition: Int): BulkLoader<S3Object> {
         val stream = catalog.getStream(key.stream)
-        return BigQueryBulkLoader(s3Client, bigQueryClient, bigQueryConfiguration, stream)
+        return BigQueryBulkLoader(storageClient, bigQueryClient, bigQueryConfiguration, stream)
     }
 }
