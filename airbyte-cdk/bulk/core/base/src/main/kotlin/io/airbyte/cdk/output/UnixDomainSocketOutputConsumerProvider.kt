@@ -42,10 +42,6 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-private const val SOCKET_NAME_TEMPLATE = "ab_socket_%d"
-private const val SOCKET_FULL_PATH = "/var/run/sockets/$SOCKET_NAME_TEMPLATE"
-//private const val SOCKET_FULL_PATH = "/Users/jschmidt/.sockets/$SOCKET_NAME_TEMPLATE"
-// private const val SOCKET_FULL_PATH = "/tmp/$SOCKET_NAME_TEMPLATE"
 private val logger = KotlinLogging.logger {}
 
 interface SocketConfig {
@@ -58,6 +54,7 @@ interface SocketConfig {
     val writeAsync: Boolean
     val skipJsonNodeAndUseFakeRecord: Boolean
     val sharedInputChannel: Boolean
+    val socketPrefix: String
 }
 
 @Singleton
@@ -80,7 +77,7 @@ class UnixDomainSocketOutputConsumerProvider(
                 }
                 .let {
                     UnixDomainSocketOutputConsumer(
-                        socketNum,
+                        "${configuration.socketPrefix}${socketNum}",
                         clock,
                         bufferByteSize,
                         outputFormat,
@@ -144,7 +141,7 @@ class DevNullOutputStream : OutputStream() {
 }
 
 class UnixDomainSocketOutputConsumer(
-    socketNum: Int,
+    socketPath: String,
     private val clock: Clock,
     bufferSize: Int = DEFAULT_BUFFER_SIZE,
     private val outputFormat: String,
@@ -195,7 +192,6 @@ class UnixDomainSocketOutputConsumer(
     private val OBJECT_MAPPER: ObjectMapper = initJsonMapper()
 
     init {
-        val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
         logger.info { "Using socket..." }
         val socketFile = File(socketPath)
         logger.info { "Socket File path $socketPath" }

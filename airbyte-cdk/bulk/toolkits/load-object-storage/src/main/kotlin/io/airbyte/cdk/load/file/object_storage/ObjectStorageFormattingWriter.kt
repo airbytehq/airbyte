@@ -32,6 +32,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.pipeline.ProtoDataType
 import io.airbyte.cdk.load.pipeline.ProtoMapper
+import io.airbyte.cdk.load.util.FastUUIDGenerator
 import io.airbyte.cdk.load.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -111,6 +112,7 @@ class JsonFormattingWriter(
             .writeValues(outputStream)
 
     val oneVerySecureUUID = UUID.randomUUID().toString()
+    val fastUUIDGenerator = FastUUIDGenerator()
 
     override fun accept(record: DestinationRecordRaw) {
         if (record.protoData.isEmpty()) {
@@ -122,7 +124,7 @@ class JsonFormattingWriter(
         if (disableUUID) {
             generator.writeString(oneVerySecureUUID)
         } else {
-            generator.writeString(UUID.randomUUID().toString())
+            generator.writeString(fastUUIDGenerator.insecureUUID())
         }
         generator.writeFieldName(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
         generator.writeNumber(record.emittedAtMs)

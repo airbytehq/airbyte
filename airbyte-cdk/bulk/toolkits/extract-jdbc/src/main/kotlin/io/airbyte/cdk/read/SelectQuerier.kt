@@ -52,6 +52,8 @@ interface SelectQuerier {
     }
 }
 
+val dummyCell: AirbyteRecord.AirbyteValue = AirbyteRecord.AirbyteValue.newBuilder().setBoolean(false).build()
+
 /** Default implementation of [SelectQuerier]. */
 @Singleton
 class JdbcSelectQuerier(
@@ -73,13 +75,7 @@ class JdbcSelectQuerier(
     data class ResultRow(
         override var data: ObjectNode = Jsons.objectNode(),
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
-        override val recordBuilder: AirbyteRecordMessage.Builder =
-            // TOTAL HACK: We need to inject the catalog size for this to work.
-            AirbyteRecordMessage.newBuilder().also {
-                b -> repeat(17) {
-                    b.addData(AirbyteRecord.AirbyteValue.newBuilder().setInteger(0).build())
-                }
-           },
+        override val recordBuilder: AirbyteRecordMessage.Builder = AirbyteRecordMessage.newBuilder().also { it.addData(dummyCell) },
         val valueBuilder: AirbyteRecord.AirbyteValue.Builder = AirbyteRecord.AirbyteValue.newBuilder()
     ) : SelectQuerier.ResultRow
 
@@ -94,7 +90,7 @@ class JdbcSelectQuerier(
         var conn: Connection? = null
         var stmt: PreparedStatement? = null
         var rs: ResultSet? = null
-        val reusable: ResultRow? = ResultRow().takeIf { parameters.reuseResultObject }
+        val reusable: ResultRow = ResultRow()
 
         init {
             log.info { "Querying ${q.sql}" }
@@ -153,7 +149,7 @@ class JdbcSelectQuerier(
             // necessary.
             if (!hasNext()) throw NoSuchElementException()
             // Read the current row in the ResultSet
-            val resultRow: ResultRow = reusable ?: ResultRow()
+            val resultRow: ResultRow = reusable
             resultRow.changes.clear()
             var colIdx = 1
             for (column in q.columns) {

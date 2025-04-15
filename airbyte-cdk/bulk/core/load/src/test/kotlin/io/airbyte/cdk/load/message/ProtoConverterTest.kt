@@ -4,15 +4,18 @@
 
 package io.airbyte.cdk.load.message
 
-import com.fasterxml.uuid.Generators
 import com.google.protobuf.Any
 import com.google.protobuf.ByteString
 import com.google.protobuf.DescriptorProtos
 import com.google.protobuf.Descriptors
 import com.google.protobuf.DynamicMessage
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.util.FastUUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.protocol.AirbyteCommons
@@ -22,6 +25,7 @@ import io.airbyte.protocol.AirbyteTrace
 import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.micronaut.core.execution.ExecutionFlow.async
 import io.mockk.every
 import io.mockk.mockk
 import java.io.File
@@ -30,6 +34,12 @@ import java.nio.file.Files
 import java.security.SecureRandom
 import java.util.*
 import kotlin.time.measureTime
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -325,17 +335,42 @@ class ProtoConverterTest {
 
     //@Disabled("Just to test fast-uuid performance")
     @Test
-    fun fastUUIDPerformance() {
+    fun fastUUIDPerformance() = runBlocking {
         val repetitions = 1_000_000
+        val threads = 4
+
         val javaUUID = measureTime {
-            repeat(repetitions) {
-                UUID.randomUUID()
-            }
+//            withContext(Dispatchers.IO) {
+//                (0 until threads).map {
+//                    async {
+                        repeat(repetitions) {
+                            UUID.randomUUID().toString()
+                        }
+//                    }
+//                }.joinAll()
+//            }
         }
 
+        val catalog = DestinationCatalog(
+            streams = listOf(
+                DestinationStream(
+                    descriptor = DestinationStream.Descriptor("johnny", "users"),
+                    schema = ObjectTypeWithoutSchema,
+                    syncId = 1234L,
+                    generationId = 1,
+                    minimumGenerationId = 1,
+                    importType = Overwrite,
+                )
+            )
+        )
+        val gen = FastUUIDGenerator(catalog)
         val fastUUID = measureTime {
-            repeat(repetitions) {
-                uuidGenerator.generate()
+//            withContext(Dispatchers.IO) {
+//                (0 until threads).map {
+                    repeat(repetitions) {
+                        gen.insecureUUID()
+//                    }
+//                }
             }
         }
 

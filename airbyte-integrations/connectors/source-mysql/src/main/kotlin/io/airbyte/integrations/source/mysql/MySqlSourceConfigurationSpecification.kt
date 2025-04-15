@@ -211,6 +211,10 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("use_shared_input_channel")
     @JsonSchemaDefault("false")
     val useSharedInputChannel: Boolean? = false
+
+    @JsonProperty("socket_prefix")
+    @JsonSchemaDefault("/var/run/sockets/ab_socket_")
+    val socketPrefix: String? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
