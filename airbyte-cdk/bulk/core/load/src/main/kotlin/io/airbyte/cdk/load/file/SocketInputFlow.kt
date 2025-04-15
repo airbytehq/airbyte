@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.IdentityProtoMapper
 import io.airbyte.cdk.load.pipeline.ProtoMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.SyncManager
@@ -53,7 +54,7 @@ class SocketInputFlow(
     private val streamCompletionCounts:
         ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>,
     private val syncManager: SyncManager,
-    private val protoMapper: ProtoMapper,
+    protoMapper: ProtoMapper,
 ) : Flow<PipelineEvent<StreamKey, DestinationRecordRaw>> {
     private val log = KotlinLogging.logger {}
     private val factory = DestinationMessageFactory(catalog, false)
@@ -86,6 +87,12 @@ class SocketInputFlow(
         } else {
             initMapper()
         }
+
+    private val protoMapperToApply = if (config.disableMapper) {
+        IdentityProtoMapper()
+    } else {
+        protoMapper
+    }
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         objectMapper
@@ -170,7 +177,7 @@ class SocketInputFlow(
                                 val protoMessage =
                                     parser.parseDelimitedFrom(bufferedInputStream) ?: break
                                 val destinationMessage =
-                                    factory.fromProtobufAirbyteMessage(protoMessage, protoMapper)
+                                    factory.fromProtobufAirbyteMessage(protoMessage, protoMapperToApply)
                                 handleDestinationMessage(
                                     destinationMessage,
                                     streamRecordCounts,

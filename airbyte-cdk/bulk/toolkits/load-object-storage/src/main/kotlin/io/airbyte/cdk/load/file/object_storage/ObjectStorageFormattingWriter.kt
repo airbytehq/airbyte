@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SequenceWriter
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
@@ -56,7 +57,8 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
-    private val protoMapper: ProtoMapper
+    private val protoMapper: ProtoMapper,
+    private val config: DestinationConfiguration,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
@@ -70,7 +72,8 @@ class DefaultObjectStorageFormattingWriterFactory(
                 stream,
                 outputStream,
                 flatten,
-                protoMapper
+                protoMapper,
+                disableUUID = config.disableUUID,
             )
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
@@ -97,7 +100,8 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
-    private val protoMapper: ProtoMapper
+    private val protoMapper: ProtoMapper,
+    private val disableUUID: Boolean,
 ) : ObjectStorageFormattingWriter {
     private val generator =
         Jsons.createGenerator(outputStream)
@@ -106,6 +110,8 @@ class JsonFormattingWriter(
             .with(MinimalPrettyPrinter(System.lineSeparator()))
             .writeValues(outputStream)
 
+    val oneVerySecureUUID = UUID.randomUUID().toString()
+
     override fun accept(record: DestinationRecordRaw) {
         if (record.protoData.isEmpty()) {
             throw UnsupportedEncodingException("We done temporarily disabled everything but proto y'all")
@@ -113,7 +119,11 @@ class JsonFormattingWriter(
 
         generator.writeStartObject()
         generator.writeFieldName(Meta.COLUMN_NAME_AB_RAW_ID)
-        generator.writeString(UUID.randomUUID().toString())
+        if (disableUUID) {
+            generator.writeString(oneVerySecureUUID)
+        } else {
+            generator.writeString(UUID.randomUUID().toString())
+        }
         generator.writeFieldName(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
         generator.writeNumber(record.emittedAtMs)
         generator.writeFieldName(Meta.COLUMN_NAME_AB_GENERATION_ID)

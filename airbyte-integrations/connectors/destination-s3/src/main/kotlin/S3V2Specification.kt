@@ -107,6 +107,10 @@ class S3V2Specification :
     @get:JsonProperty("num_part_formatters") val numPartFormatters: Int? = null
 
     @get:JsonProperty("skip_json_on_proto") val skipJsonOnProto: Boolean? = null
+
+    @get:JsonProperty("disable_uuid") val disableUUID: Boolean? = null
+
+    @get:JsonProperty("disable_mapper") val disableMapper: Boolean? = null
 }
 
 @Singleton
