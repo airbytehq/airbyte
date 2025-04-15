@@ -28,11 +28,8 @@ class BigQueryBulkLoader(
 ) : BulkLoader<S3Object> {
     override suspend fun load(remoteObject: S3Object) {
         val rawTableId = TempUtils.rawTableId(bigQueryConfiguration, stream.descriptor)
-
-        // Use LoadJobConfiguration API approach instead of SQL
         val gcsUri = "gs://${remoteObject.keyWithBucketName}"
 
-        // Configure the load job for CSV format
         val configuration =
             LoadJobConfiguration.builder(rawTableId, gcsUri)
                 .setFormatOptions(FormatOptions.csv())
@@ -41,7 +38,6 @@ class BigQueryBulkLoader(
                 .setJobTimeoutMs(600000L) // 10 min timeout
                 .build()
 
-        // Create and execute the load job
         val loadJob = bigQueryClient.create(JobInfo.of(configuration))
 
         try {
