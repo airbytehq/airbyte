@@ -427,6 +427,60 @@ definitions:
             request_parameters:
               types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
 
+    application_fees_refunds:
+      type: StateDelegatingStream
+      $parameters:
+        name: application_fees_refunds
+      full_refresh_stream:
+        type: DeclarativeStream
+        primary_key:
+          - id
+        schema_loader:
+          type: JsonFileSchemaLoader
+          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: application_fees/{{ stream_partition.application_fee_id }}/refunds
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+            transform_before_filtering: true
+            schema_normalization: Default
+          paginator:
+            $ref: "#/definitions/base_paginator"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: application_fee_id
+                extra_fields:
+                  - [ "id" ]
+                lazy_read_pointer: [ "refunds" ]
+                stream:
+                  $ref: "#/definitions/streams/application_fees"
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          cursor_field: updated
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters: "{{ {'type': 'application_fee.refund.updated'} }}"
+
 streams:
   # These streams are base incremental streams
   - $ref: "#/definitions/streams/events"
@@ -449,6 +503,11 @@ streams:
   - $ref: "#/definitions/streams/early_fraud_warnings"
   - $ref: "#/definitions/streams/external_account_bank_accounts"
   - $ref: "#/definitions/streams/external_account_cards"
+
+  ## These streams are state condition streams with lazy read logic:
+  # - No State: Runs lazy read logic where the first N records are fetched from the parent, and pagination continues with the original logic if needed.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
+  - $ref: "#/definitions/streams/application_fees_refunds"
 
 spec:
   type: Spec
