@@ -30,11 +30,11 @@ When setting up a Databricks destination, you need these pieces of information:
 1. Open the workspace console.
 2. Open your SQL warehouse:
 
-   ![](../../.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
+   ![](/.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
 
 3. Open the Connection Details tab:
 
-   ![](../../.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
+   ![](/.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
 
 4. Finally, you'll need to provide the `Databricks Unity Catalog Path`, which is the path to the database you wish to use within the Unity Catalog. This is often the same as the workspace name.
 
@@ -50,11 +50,11 @@ to generate a client ID and secret.
 1. Open your workspace console.
 2. Click on your icon in the top-right corner, and head to `settings`, then `developer`, then `manage` under `access tokens`
 
-   ![](../../.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
+   ![](/.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
 
 3. Enter a description for the token and how long it will be valid for (or leave blank for a permanent token):
 
-   ![](../../.gitbook/assets/destination/databricks/databricks_generate_token.png)
+   ![](/.gitbook/assets/destination/databricks/databricks_generate_token.png)
 
 ### Other Options
 
@@ -79,7 +79,7 @@ Each table will have the following columns, in addition to your whatever columns
 | `_airbyte_raw_id`        |  string   | A random UUID.                                                         |
 | `_airbyte_extracted_at`  | timestamp | Timestamp when the source read the record.                             |
 | `_airbyte_loaded_at`     | timestamp | Timestamp when the record was written to the destination               |
-| `_airbyte_generation_id` |  bigint   | See the [refreshes](../../operator-guides/refreshes.md) documentation. |
+| `_airbyte_generation_id` |  bigint   | See the [refreshes](../../platform/operator-guides/refreshes) documentation. |
 
 Airbyte will also produce "raw tables" (by default in the `airbyte_internal` schema). We do not recommend directly interacting
 with the raw tables, and their format is subject to change without notice.
@@ -103,7 +103,7 @@ with the raw tables, and their format is subject to change without notice.
 | 3.2.2   | 2024-08-22 | [#44941](https://github.com/airbytehq/airbyte/pull/44941)                                                           | Clarify Unity Catalog Path option.                                                                                                                                               |
 | 3.2.1   | 2024-08-22 | [#44506](https://github.com/airbytehq/airbyte/pull/44506)                                                           | Handle uppercase/mixed-case stream name/namespaces                                                                                                                               |
 | 3.2.0   | 2024-08-12 | [#40712](https://github.com/airbytehq/airbyte/pull/40712)                                                           | Rely solely on PAT, instead of also needing a user/pass                                                                                                                          |
-| 3.1.0   | 2024-07-22 | [#40692](https://github.com/airbytehq/airbyte/pull/40692)                                                           | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
+| 3.1.0   | 2024-07-22 | [#40692](https://github.com/airbytehq/airbyte/pull/40692)                                                           | Support for [refreshes](../../platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
 | 3.0.0   | 2024-07-12 | [#40689](https://github.com/airbytehq/airbyte/pull/40689)                                                           | (Private release, not to be used for production) Add `_airbyte_generation_id` column, and `sync_id` entry in `_airbyte_meta`                                                     |
 | 2.0.0   | 2024-05-17 | [#37613](https://github.com/airbytehq/airbyte/pull/37613)                                                           | (Private release, not to be used for production) Alpha release of the connector to use Unity Catalog                                                                             |
 | 1.1.2   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846)                                                           | (incompatible with CDK, do not use) Remove duplicate S3 Region                                                                                                                   |

@@ -86,6 +86,16 @@ html[data-theme="dark"] {
   --icon-background: hsl(0, 0%, 100%);
 }
 
+/* Hide sidebar on the homepage */
+html.plugin-id-default aside.theme-doc-sidebar-container {
+  visibility:hidden !important;
+}
+
+/* Hide breadcrumbs on the homepage */
+html.plugin-id-default nav.theme-doc-breadcrumbs {
+  visibility: hidden;
+}
+
 .admonition-icon,
 .iconExternalLink_wgqa,
 .iconExternalLink_node_modules-\@docusaurus-theme-classic-lib-next-theme-IconExternalLink-styles-module {
@@ -165,7 +175,6 @@ span.DocSearch-Button-Placeholder {
 
 .navbar__category {
   font-weight: 700;
-  font-size: 0.8em;
   padding: 0.4em 0 0.4em 0.4em;
   color: var(--docsearch-text-color);
   background-color: var(--ifm-hover-overlay);
@@ -182,11 +191,6 @@ ul.table-of-contents{
 
 ul.table-of-contents li {
   margin-left: 0;
-}
-
-/* Hide the breadcrumbs if they have only the house as an entry (i.e. on the start page) */
-.breadcrumbs:has(li:first-child:last-child) {
-  display: none;
 }
 
 nav.theme-doc-breadcrumbs {

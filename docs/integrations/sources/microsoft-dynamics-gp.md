@@ -4,7 +4,7 @@
 
 ## Sync overview
 
-MS Dynamics GP runs on the [MSSQL](https://docs.microsoft.com/en-us/dynamics-gp/installation/installing-on-first-computer) database. You can use the [MSSQL connector](mssql.md) to sync your MS Dynamics GP instance by connecting to the underlying database.
+MS Dynamics GP runs on the [MSSQL](https://docs.microsoft.com/en-us/dynamics-gp/installation/installing-on-first-computer) database. You can use the [MSSQL connector](mssql) to sync your MS Dynamics GP instance by connecting to the underlying database.
 
 :::info
 

@@ -98,7 +98,7 @@ You can also copy the output file to your host machine, the following command wi
 docker cp airbyte-server:/tmp/airbyte_local/{destination_path} .
 ```
 
-Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
+Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination) for an alternative approach.
 
 <!-- /env:oss -->
 
@@ -107,7 +107,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 ### Error message `Request failed:  (UNAVAILABLE, RPC 'GET_WELCOME_PACK')`
 
 This error may indicate that you are connecting with a `0.10.x` DuckDB client (as per DuckDB Destination connector versions `>=0.4.0`) and your database has not yet been upgraded to a version `>=0.10.x`. To resolve this, you'll need to manually upgrade your database or revert to a previous version of the DuckDB Destination connector.
-For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations.md).
+For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations).
 
 
 

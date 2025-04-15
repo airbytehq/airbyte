@@ -36,7 +36,7 @@ To ensure uninterrupted syncs, users should follow the instructions below to mig
  This will reset the data in your destination and initiate a fresh sync.
  `
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 3.0.0
 
@@ -99,7 +99,7 @@ Please follow the instructions below to migrate to version 3.0.0:
  This will reset the data in your destination and initiate a fresh sync.
  `
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 

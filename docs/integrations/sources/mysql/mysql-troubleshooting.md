@@ -8,7 +8,7 @@
 
 ### CDC Requirements
 
-- Make sure to read our [CDC docs](../../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
+- Make sure to read our [CDC docs](/platform/understanding-airbyte/cdc) to see limitations that impact all databases using CDC replication.
 - Our CDC implementation uses at least once delivery for all change records.
 - To enable CDC with incremental sync, ensure the table has at least one primary key.
   Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.

@@ -32,31 +32,31 @@ access to the database.
 1. Log in to the MongoDB Atlas dashboard.
 2. From the dashboard, click on "Database Access" under "Security"
 
-![Security Database Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
+![Security Database Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
 
 3. Click on the "+ ADD NEW DATABASE USER" button.
 
-![Add New Database User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
+![Add New Database User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
 
 4. On the "Add new Database User" modal dialog, choose "Password" for the "Authentication Method".
 
-![Authentication Method](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
+![Authentication Method](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
 
 5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` in the first text box and set a password in the second text box.
 
-![Username and Password](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
+![Username and Password](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
 6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
 
-![Database User Privileges](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
+![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
 7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
-![Restrict Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
+![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
 8. Click on "Add User" at the bottom to save the user.
 
-![Add User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
+![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
 ##### Self Hosted
 
@@ -112,15 +112,15 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
 
-![Connect to Source Cluster](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
+![Connect to Source Cluster](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
 
 3. On the "Connect to &lt;cluster name&gt;" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-![Shell Connect](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
+![Shell Connect](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
 
 4. Copy the connection string from the entry labeled "2. Run your connection string in your command line" on the modal dialog, removing/avoiding the quotation marks.
 
-![Copy Connection String](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
+![Copy Connection String](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
 
 ##### Self Hosted Cluster
 

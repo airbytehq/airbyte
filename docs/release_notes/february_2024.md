@@ -20,4 +20,4 @@ In addition to our Postgres V2 destination, we also released a few notable Conne
 
 - Our [Paypal source](https://github.com/airbytehq/airbyte/pull/34510) has been rigorously tested for bugs and now syncs new streams `Catalog Products`, `Disputes`, `Invoicing`, `Orders`, `Payments` and `Subscriptions`.
 - [Chargebee](https://github.com/airbytehq/airbyte/pull/34053) source now syncs incrementally for `unbilled-charge`, `gift`, and `site_migration_detail`
-- We launched [PyAirbyte](/using-airbyte/pyairbyte/getting-started.mdx), a new interface to use Airbyte connectors with for Python developers.
+- We launched [PyAirbyte](/platform/using-airbyte/pyairbyte/getting-started), a new interface to use Airbyte connectors with for Python developers.
