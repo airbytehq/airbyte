@@ -63,9 +63,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val flushStrategy: PipelineFlushStrategy?,
     private val part: Int,
     private val numWorkers: Int,
-    private val taskIndex: Int,
-    private val streamCompletions:
-        ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>
+    private val taskId: String,
+    private val streamCompletions: ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>
 ) : Task {
     private val log = KotlinLogging.logger {}
 
@@ -188,7 +187,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
                         val numWorkersSeenEos =
                             streamCompletions
-                                .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
+                                .getOrPut(Pair(taskId, input.stream)) { AtomicInteger(0) }
                                 .incrementAndGet()
                         if (numWorkersSeenEos == numWorkers) {
                             log.info {
@@ -298,10 +297,10 @@ class LoadPipelineStepTaskFactory(
     val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val flushStrategy: PipelineFlushStrategy,
 ) {
-    // A map of (TaskIndex, Stream) ->  streams to ensure eos is not forwarded from
+    // A map of (TaskId, Stream) ->  streams to ensure eos is not forwarded from
     // task N to N+1 until all workers have seen eos.
     private val streamCompletions =
-        ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>()
+        ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>()
 
     fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> create(
         batchAccumulator: BatchAccumulator<S, K1, T, U>,
@@ -311,7 +310,7 @@ class LoadPipelineStepTaskFactory(
         flushStrategy: PipelineFlushStrategy?,
         part: Int,
         numWorkers: Int,
-        taskIndex: Int,
+        taskId: String,
     ): LoadPipelineStepTask<S, K1, T, K2, U> {
         return LoadPipelineStepTask(
             batchAccumulator,
@@ -322,8 +321,8 @@ class LoadPipelineStepTaskFactory(
             flushStrategy,
             part,
             numWorkers,
-            taskIndex,
-            streamCompletions
+            taskId,
+            streamCompletions,
         )
     }
 
@@ -342,7 +341,7 @@ class LoadPipelineStepTaskFactory(
             flushStrategy,
             part,
             numWorkers,
-            taskIndex = 0
+            taskId = "first-step"
         )
     }
 
@@ -360,7 +359,7 @@ class LoadPipelineStepTaskFactory(
             null,
             part,
             numWorkers,
-            taskIndex = -1
+            taskId = "final-step"
         )
     }
 
@@ -379,7 +378,7 @@ class LoadPipelineStepTaskFactory(
         outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
         part: Int,
         numWorkers: Int,
-        taskIndex: Int,
+        taskId: String,
     ): LoadPipelineStepTask<S, K1, T, K2, U> {
         return create(
             batchAccumulator,
@@ -389,7 +388,7 @@ class LoadPipelineStepTaskFactory(
             null,
             part,
             numWorkers,
-            taskIndex
+            taskId,
         )
     }
 }

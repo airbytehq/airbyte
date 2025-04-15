@@ -36,6 +36,7 @@ class ObjectLoaderStepBeanFactory {
         inputQueue,
         outputQueue,
         taskFactory,
+        "record-part-formatter-step",
     )
 
     @Named("recordPartLoaderStep")
@@ -52,6 +53,7 @@ class ObjectLoaderStepBeanFactory {
         inputQueue,
         outputQueue,
         taskFactory,
+        "record-part-loader-step",
     )
 
     @Named("filePartLoaderStep")
@@ -68,6 +70,7 @@ class ObjectLoaderStepBeanFactory {
         inputQueue,
         outputQueue,
         taskFactory,
+        "file-part-loader-step",
     )
 
     @Named("recordUploadCompleterStep")
@@ -86,6 +89,7 @@ class ObjectLoaderStepBeanFactory {
         completedUploadQueue,
         completedUploadPartitioner,
         taskFactory,
+        "record-upload-completer-step",
     )
 
     @Named("fileUploadCompleterStep")
@@ -104,6 +108,7 @@ class ObjectLoaderStepBeanFactory {
         completedUploadQueue,
         completedUploadPartitioner,
         taskFactory,
+        "file-upload-completer-step",
     )
 
     @Named("fileRecordPartFormatterStep")
@@ -120,5 +125,6 @@ class ObjectLoaderStepBeanFactory {
         inputQueue,
         outputQueue,
         taskFactory,
+        "file-record-part-formatter-step",
     )
 }

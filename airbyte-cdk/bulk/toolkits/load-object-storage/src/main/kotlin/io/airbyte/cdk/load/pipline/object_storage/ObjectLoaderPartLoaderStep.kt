@@ -15,10 +15,11 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 
 class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
     loader: ObjectLoader,
-    val partLoader: ObjectLoaderPartLoader<T>,
-    val inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
-    val taskFactory: LoadPipelineStepTaskFactory,
+    private val partLoader: ObjectLoaderPartLoader<T>,
+    private val inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+    private val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
+    private val taskFactory: LoadPipelineStepTaskFactory,
+    private val taskId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
 
@@ -30,7 +31,7 @@ class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
             outputQueue,
             partition,
             numWorkers,
-            taskIndex = 2
+            taskId = taskId,
         )
     }
 }
