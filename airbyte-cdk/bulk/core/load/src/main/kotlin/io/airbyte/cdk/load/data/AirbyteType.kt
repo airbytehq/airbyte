@@ -14,6 +14,11 @@ sealed interface AirbyteType {
     fun getProperties(): LinkedHashMap<String, FieldType> {
         return linkedMapOf()
     }
+
+    val isObject: Boolean
+        get() = false
+    val isArray: Boolean
+        get() = false
 }
 
 data object StringType : AirbyteType
@@ -34,19 +39,29 @@ data object TimeTypeWithTimezone : AirbyteType
 
 data object TimeTypeWithoutTimezone : AirbyteType
 
-data class ArrayType(val items: FieldType) : AirbyteType
+data class ArrayType(val items: FieldType) : AirbyteType {
+    override val isArray = true
+}
 
-data object ArrayTypeWithoutSchema : AirbyteType
+data object ArrayTypeWithoutSchema : AirbyteType {
+    override val isArray = true
+}
 
 data class ObjectType(val properties: LinkedHashMap<String, FieldType>) : AirbyteType {
     override fun getProperties(): LinkedHashMap<String, FieldType> {
         return properties
     }
+
+    override val isObject = true
 }
 
-data object ObjectTypeWithEmptySchema : AirbyteType
+data object ObjectTypeWithEmptySchema : AirbyteType {
+    override val isObject = true
+}
 
-data object ObjectTypeWithoutSchema : AirbyteType
+data object ObjectTypeWithoutSchema : AirbyteType {
+    override val isObject = true
+}
 
 data class UnionType(
     val options: Set<AirbyteType>,

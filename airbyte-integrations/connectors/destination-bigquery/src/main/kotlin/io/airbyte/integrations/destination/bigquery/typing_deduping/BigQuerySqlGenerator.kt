@@ -30,12 +30,10 @@ import io.airbyte.cdk.load.orchestration.Sql
 import io.airbyte.cdk.load.orchestration.TableName
 import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingSqlGenerator
-import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
-import java.util.stream.Stream
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -51,14 +49,15 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         airbyteType: AirbyteType,
         forceSafeCast: Boolean
     ): String {
-        if (airbyteType is Union) {
+        // TODO this should actually be LegacyUnionType
+        if (airbyteType is UnionType) {
             // This is guaranteed to not be a Union, so we won't recurse infinitely
             val chosenType: AirbyteType = airbyteType.chooseType()
-            return extractAndCast(column, chosenType, forceSafeCast)
+            return extractAndCast(columnName, chosenType, forceSafeCast)
         }
-        val columnName = escapeColumnNameForJsonPath(column.originalName)
+        val jsonPathEscapedColumnName = escapeColumnNameForJsonPath(columnName)
 
-        if (airbyteType is Struct) {
+        if (airbyteType.isObject) {
             // We need to validate that the struct is actually a struct.
             // Note that struct columns are actually nullable in two ways. For a column `foo`:
             // {foo: null} and {} are both valid, and are both written to the final table as a SQL
@@ -68,53 +67,52 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
             return """
                    PARSE_JSON(CASE
-                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"') IS NULL
-                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"'), wide_number_mode=>'round')) != 'object'
+                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"') IS NULL
+                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"'), wide_number_mode=>'round')) != 'object'
                        THEN NULL
-                     ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"')
+                     ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"')
                    END, wide_number_mode=>'round')
                    """.trimIndent()
         }
 
-        if (airbyteType is Array) {
+        if (airbyteType.isArray) {
             // Much like the Struct case above, arrays need special handling.
             return """
                    PARSE_JSON(CASE
-                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"') IS NULL
-                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"'), wide_number_mode=>'round')) != 'array'
+                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"') IS NULL
+                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"'), wide_number_mode=>'round')) != 'array'
                        THEN NULL
-                     ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"')
+                     ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"')
                    END, wide_number_mode=>'round')
                    """.trimIndent()
         }
 
-        if (airbyteType is UnsupportedOneOf || airbyteType === AirbyteProtocolType.UNKNOWN) {
+        if (airbyteType is UnionType || airbyteType is UnknownType) {
             // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse
             // the
             // airbyte_data to json
             // and json_query it directly (which preserves nulls correctly).
-            return """JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."$columnName"')"""
+            return """JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."$jsonPathEscapedColumnName"')"""
         }
 
-        if (airbyteType === AirbyteProtocolType.STRING) {
+        if (airbyteType is StringType) {
             // Special case String to only use json value for type string and parse the json for
             // others
             // Naive json_value returns NULL for object/array values and json_query adds escaped
-            // quotes to the
-            // string.
+            // quotes to the string.
             return """
                    (CASE
-                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"') IS NULL
-                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"'), wide_number_mode=>'round')) != 'string'
-                       THEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"')
+                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"') IS NULL
+                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"'), wide_number_mode=>'round')) != 'string'
+                       THEN JSON_QUERY(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"')
                      ELSE
-                     JSON_VALUE(`_airbyte_data`, '${'$'}."$columnName"')
+                     JSON_VALUE(`_airbyte_data`, '${'$'}."$jsonPathEscapedColumnName"')
                    END)
                    """.trimIndent()
         }
 
         val dialectType = toDialectType(airbyteType)
-        val baseTyping = """JSON_VALUE(`_airbyte_data`, '$."$columnName"')"""
+        val baseTyping = """JSON_VALUE(`_airbyte_data`, '$."$jsonPathEscapedColumnName"')"""
         return if (dialectType == StandardSQLTypeName.STRING) {
             // json_value implicitly returns a string, so we don't need to cast it.
             baseTyping
@@ -596,12 +594,6 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             "DROP TABLE IF EXISTS `$projectId`.$finalTableId;",
             "ALTER TABLE `$projectId`.$tempFinalTableId RENAME TO `${finalTableName.name}`;"
         )
-    }
-
-    private fun wrapAndQuote(namespace: String, tableName: String): String {
-        return Stream.of(namespace, tableName)
-            .map { part: String? -> StringUtils.wrap(part, QUOTE) }
-            .collect(Collectors.joining("."))
     }
 
     /**
