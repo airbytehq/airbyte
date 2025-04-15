@@ -28,6 +28,7 @@ class TypingDedupingWriter(
         DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
+    private val disableTypeDedupe: Boolean,
 ) : DestinationWriter {
     private lateinit var names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>
     private lateinit var initialStatuses:
@@ -94,6 +95,7 @@ class TypingDedupingWriter(
             tableNames,
             rawTableOperations,
             finalTableOperations,
+            disableTypeDedupe = disableTypeDedupe,
         )
     }
 }

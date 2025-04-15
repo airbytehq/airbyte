@@ -35,4 +35,20 @@ data class RawTableInitialStatus(
      * (note the strictly-greater comparison).
      */
     val maxProcessedTimestamp: Instant?,
-)
+) {
+    companion object {
+        /**
+         * If the raw table doesn't exist, we'll obviously need to create it. After creating a raw
+         * table, this is its default state (i.e. it has no records, so there are by definition no
+         * unprocessed records, and no processed records).
+         */
+        val emptyTableStatus = RawTableInitialStatus(false, maxProcessedTimestamp = null)
+    }
+}
+
+/**
+ * Many callers need to do a `create table if not exists`. This is a utility method to update the
+ * initial status accordingly - i.e. if the table already existed, retain its status; otherwise, use
+ * the empty table status.
+ */
+fun RawTableInitialStatus?.reify() = this ?: RawTableInitialStatus.emptyTableStatus

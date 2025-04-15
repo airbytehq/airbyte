@@ -28,6 +28,7 @@ data class TableNames(
         "Raw table: ${rawTableName?.prettyPrint()}; Final table: ${finalTableName?.prettyPrint()}"
 
     companion object {
+        const val NO_SUFFIX = ""
         // TODO comment explaining this
         const val TMP_TABLE_SUFFIX = "_airbyte_tmp"
         const val SOFT_RESET_SUFFIX = "_ab_soft_reset"
