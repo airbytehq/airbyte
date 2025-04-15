@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 /**
@@ -32,25 +33,29 @@ import jakarta.inject.Singleton
 @Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     partStep: ObjectLoaderPartFormatterStep,
-    uploadStep: ObjectLoaderPartLoaderStep<T>,
-    completerStep: ObjectLoaderUploadCompleterStep<K, T>,
+    @Named("filePartLoaderStep") uploadStep: ObjectLoaderPartLoaderStep<T>,
+    @Named("fileUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
 ) : LoadPipeline(listOf(partStep, uploadStep, completerStep))
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
 @Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "true")
 class ObjectLoaderPipelineWithFiles<K : WithStream, T : RemoteObject<*>>(
+    routeEventStep: RouteEventStep,
     fileChunkStep: FileChunkStep<T>,
-    fileChunkUploader: ObjectLoaderPartLoaderStep<T>, // create separate instance with correct IO queues
-    fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>, // create separate instance with correct IO queues
-    partStep: ObjectLoaderPartFormatterStep,
-    uploadStep: ObjectLoaderPartLoaderStep<T>,
-    completerStep: ObjectLoaderUploadCompleterStep<K, T>,
+    @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
+    @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+    forwardFileRecordStep: ForwardFileRecordStep<T>,
+    recordPartStep: ObjectLoaderPartFormatterStep,
+    recordUploadStep: ObjectLoaderPartLoaderStep<T>,
+    recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
 ) : LoadPipeline(listOf(
+    routeEventStep,
     fileChunkStep,
     fileChunkUploader,
     fileCompleterStep,
-    partStep,
-    uploadStep,
-    completerStep,
+    forwardFileRecordStep,
+    recordPartStep,
+    recordUploadStep,
+    recordCompleterStep,
 ))

@@ -172,12 +172,12 @@ class ObjectLoaderPartQueueFactory(
 
     @Singleton
     @Named("fileCompletedQueue")
-    fun <K : WithStream, T> completedUploadQueue() =
+    fun <T> completedUploadQueue() =
         StrictPartitionedQueue(
             (0 until loader.numUploadCompleters)
                 .map {
                     ChannelMessageQueue<
-                        PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>(
+                        PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>(
                         Channel(OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
                     )
                 }

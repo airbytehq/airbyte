@@ -1,0 +1,24 @@
+package io.airbyte.cdk.load.pipline.object_storage
+
+import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEvent
+import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.LoadPipelineStep
+import jakarta.inject.Named
+import jakarta.inject.Singleton
+
+@Singleton
+class ForwardFileRecordStep<T>(
+    @Named("fileCompletedQueue") private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
+    @Named("recordQueue") private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+) : LoadPipelineStep {
+    override val numWorkers: Int = 1
+
+    override fun taskForPartition(partition: Int) =
+        ForwardFileRecordTask(
+            inputQueue,
+            outputQueue,
+            partition,
+        )
+}

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.task.internal
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineContext
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
@@ -148,7 +149,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                     input.key,
                                     stateWithCounts.checkpointCounts,
                                     finalAccOutput,
-                                    stateWithCounts.inputCount
+                                    stateWithCounts.inputCount,
+                                    input.context,
                                 )
                                 stateWithCounts.checkpointCounts.clear()
                                 0
@@ -245,7 +247,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     key,
                     stateWithCounts.checkpointCounts,
                     output,
-                    stateWithCounts.inputCount
+                    stateWithCounts.inputCount,
                 )
                 stateWithCounts.close()
             }
@@ -256,13 +258,14 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         inputKey: K1,
         checkpointCounts: Map<CheckpointId, Long>,
         output: U,
-        inputCount: Long
+        inputCount: Long,
+        context: PipelineContext? = null,
     ) {
 
         // Only publish the output if there's a next step.
         outputQueue?.let {
             val outputKey = outputPartitioner!!.getOutputKey(inputKey, output)
-            val message = PipelineMessage(checkpointCounts.toMap(), outputKey, output)
+            val message = PipelineMessage(checkpointCounts.toMap(), outputKey, output, context = context)
             val outputPart = outputPartitioner.getPart(outputKey, part, it.partitions)
             it.publish(message, outputPart)
         }

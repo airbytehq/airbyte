@@ -21,6 +21,7 @@ class PipelineMessage<K : WithStream, T>(
     val key: K,
     val value: T,
     val postProcessingCallback: suspend () -> Unit = {},
+    val context: PipelineContext? = null,
 ) : PipelineEvent<K, T>
 
 /** Broadcast at end-of-stream to all partitions to signal that the stream has ended. */
@@ -29,3 +30,9 @@ class PipelineEndOfStream<K : WithStream, T>(val stream: DestinationStream.Descr
 
 /** Timed recurring event to keep the pipeline alive if no data is coming. */
 class PipelineHeartbeat<K : WithStream, T> : PipelineEvent<K, T>
+
+/** Contextual pass through data. */
+class PipelineContext(
+    var parentCheckpointCounts: Map<CheckpointId, Long>?,
+    var parentRecord: DestinationRecordRaw?,
+)
