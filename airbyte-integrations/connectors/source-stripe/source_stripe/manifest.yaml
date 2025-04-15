@@ -460,8 +460,8 @@ definitions:
                 parent_key: id
                 partition_field: application_fee_id
                 extra_fields:
-                  - [ "id" ]
-                lazy_read_pointer: [ "refunds" ]
+                  - ["id"]
+                lazy_read_pointer: ["refunds"]
                 stream:
                   $ref: "#/definitions/streams/application_fees"
         incremental_sync:
