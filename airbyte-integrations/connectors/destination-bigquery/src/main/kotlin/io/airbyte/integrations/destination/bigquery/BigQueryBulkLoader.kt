@@ -17,6 +17,8 @@ import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
+import io.airbyte.integrations.destination.bigquery.spec.GcsStagingSpecification
 import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import jakarta.inject.Singleton
 
@@ -49,7 +51,11 @@ class BigQueryBulkLoader(
             )
         }
 
-        storageClient.delete(remoteObject)
+        val loadingMethodPostProcessing =
+            (bigQueryConfiguration.loadingMethod as GcsStagingSpecification).filePostProcessing
+        if (loadingMethodPostProcessing == GcsFilePostProcessing.DELETE) {
+            storageClient.delete(remoteObject)
+        }
     }
 
     override fun close() {
