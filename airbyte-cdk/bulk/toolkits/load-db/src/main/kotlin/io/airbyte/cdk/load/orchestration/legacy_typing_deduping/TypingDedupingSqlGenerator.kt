@@ -86,7 +86,7 @@ interface TypingDedupingSqlGenerator {
     fun overwriteFinalTable(
         stream: DestinationStream,
         finalTableName: TableName,
-        finalTableSuffix: String
+        finalTableSuffix: String,
     ): Sql
 
     fun clearLoadedAt(stream: DestinationStream, rawTableName: TableName): Sql

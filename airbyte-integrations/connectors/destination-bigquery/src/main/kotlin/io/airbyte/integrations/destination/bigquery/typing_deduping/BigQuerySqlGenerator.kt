@@ -8,6 +8,22 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.orchestration.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.Sql
@@ -15,7 +31,6 @@ import io.airbyte.cdk.load.orchestration.TableName
 import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.Array
-import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import java.time.Instant
 import java.util.*
@@ -116,7 +131,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         finalTableSuffix: String,
         replace: Boolean
     ): Sql {
-        val columnDeclarations = columnsAndTypes(stream)
+        val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
         val clusterConfig =
             clusteringColumns(stream, columnNameMapping)
                 .stream()
@@ -147,7 +162,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             .getProperties()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
-                val typeName = toDialectType(type).name
+                val typeName = toDialectType(type.type).name
                 "`$columnName` $typeName"
             }
             .joinToString(",\n")
@@ -248,7 +263,13 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 }
                 .collect(Collectors.joining("\n"))
         val extractNewRawRecords =
-            extractNewRawRecords(stream, tableNames, forceSafeCasting, minRawTimestamp)
+            extractNewRawRecords(
+                stream,
+                tableNames,
+                columnNameMapping,
+                forceSafeCasting,
+                minRawTimestamp
+            )
         val finalTableId = tableNames.finalTableName!!.prettyPrint(QUOTE, finalSuffix)
 
         return """
@@ -272,32 +293,38 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         forceSafeCasting: Boolean,
         minRawTimestamp: Instant?,
     ): String {
+        val importType = stream.importType as Dedupe
         val pkEquivalent =
-            stream.primaryKey
-                .stream()
-                .map { pk: ColumnId ->
-                    val quotedPk = pk.name(QUOTE)
-                    ("""(target_table.$quotedPk = new_record.$quotedPk OR (target_table.$quotedPk IS NULL AND new_record.$quotedPk IS NULL))""")
-                }
-                .collect(Collectors.joining(" AND "))
+            importType.primaryKey.joinToString(" AND ") { fieldPath ->
+                val fieldName = fieldPath.first()
+                val columnName = columnNameMapping[fieldName]!!
+                """(target_table.`$columnName` = new_record.`$columnName` OR (target_table.`$columnName` IS NULL AND new_record.`$columnName` IS NULL))"""
+            }
 
         val columnList: String =
-            stream.columns.keys
-                .stream()
-                .map { quotedColumnId: ColumnId -> quotedColumnId.name(QUOTE) + "," }
-                .collect(Collectors.joining("\n"))
+            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+                val columnName = columnNameMapping[fieldName]!!
+                "`$columnName`,"
+            }
         val newRecordColumnList: String =
-            stream.columns.keys
-                .stream()
-                .map { quotedColumnId: ColumnId ->
-                    "new_record." + quotedColumnId.name(QUOTE) + ","
-                }
-                .collect(Collectors.joining("\n"))
-        val extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp)
+            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+                val columnName = columnNameMapping[fieldName]!!
+                "new_record.`$columnName`,"
+            }
+        val extractNewRawRecords =
+            extractNewRawRecords(
+                stream,
+                tableNames,
+                columnNameMapping,
+                forceSafeCasting,
+                minRawTimestamp
+            )
 
         val cursorComparison: String
-        if (stream.cursor.isPresent) {
-            val cursor = stream.cursor.get().name(QUOTE)
+        if (importType.cursor.isNotEmpty()) {
+            val cursorFieldName = importType.cursor.first()
+            val cursorColumnName = columnNameMapping[cursorFieldName]!!
+            val cursor = "`$cursorColumnName`"
             // Build a condition for "new_record is more recent than target_table":
             cursorComparison = // First, compare the cursors.
             ("""
@@ -316,7 +343,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
 
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
-        if (stream.columns.containsKey(CDC_DELETED_AT_COLUMN)) {
+        if (stream.schema.getProperties().containsKey(CDC_DELETED_AT_COLUMN)) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
                 "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND $cursorComparison THEN DELETE"
@@ -330,14 +357,11 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         }
 
         val columnAssignments: String =
-            stream.columns.keys
-                .stream()
-                .map { airbyteType: ColumnId ->
-                    val column = airbyteType.name(QUOTE)
-                    "$column = new_record.$column,"
-                }
-                .collect(Collectors.joining("\n"))
-        val finalTableId = stream.id.finalTableId(QUOTE, finalSuffix)
+            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+                val column = columnNameMapping[fieldName]!!
+                "`$column` = new_record.`$column`,"
+            }
+        val finalTableId = tableNames.finalTableName!!.prettyPrint(QUOTE, finalSuffix)
 
         return """
                MERGE `$projectId`.$finalTableId target_table
@@ -459,13 +483,16 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                     "`$columnName`"
                 }
             val cursorOrderClause =
-                importType.cursor
-                    .first()
-                    .map { fieldName ->
-                        val columnName = columnNameMapping[fieldName]!!
-                        "`$columnName` DESC NULLS LAST"
-                    }
-                    .orElse("")
+                if (importType.cursor.isEmpty()) {
+                    ""
+                } else if (importType.cursor.size == 1) {
+                    val columnName = importType.cursor.first()
+                    "`$columnName` DESC NULLS LAST"
+                } else {
+                    throw UnsupportedOperationException(
+                        "Only top-level cursors are supported, got ${importType.cursor}"
+                    )
+                }
 
             return """
                    WITH intermediate_data AS (
@@ -558,13 +585,16 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                """.trimIndent()
     }
 
-    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
-        val finalTableId = stream.finalTableId(QUOTE)
-        val tempFinalTableId = stream.finalTableId(QUOTE, finalSuffix)
-        val realFinalTableName = stream.finalName(QUOTE)
+    override fun overwriteFinalTable(
+        stream: DestinationStream,
+        finalTableName: TableName,
+        finalTableSuffix: String,
+    ): Sql {
+        val finalTableId = finalTableName.prettyPrint(QUOTE)
+        val tempFinalTableId = finalTableName.prettyPrint(QUOTE, finalTableSuffix)
         return Sql.separately(
             "DROP TABLE IF EXISTS `$projectId`.$finalTableId;",
-            "ALTER TABLE `$projectId`.$tempFinalTableId RENAME TO $realFinalTableName;"
+            "ALTER TABLE `$projectId`.$tempFinalTableId RENAME TO `${finalTableName.name}`;"
         )
     }
 
@@ -572,43 +602,6 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         return Stream.of(namespace, tableName)
             .map { part: String? -> StringUtils.wrap(part, QUOTE) }
             .collect(Collectors.joining("."))
-    }
-
-    override fun createSchema(schema: String): Sql {
-        val projectId = StringUtils.wrap(projectId, QUOTE)
-        val quotedSchema = StringUtils.wrap(schema, QUOTE)
-        return Sql.of(
-            """CREATE SCHEMA IF NOT EXISTS $projectId.$quotedSchema OPTIONS(location="$datasetLocation");"""
-        )
-    }
-
-    override fun migrateFromV1toV2(streamId: StreamId, namespace: String, tableName: String): Sql {
-        val v2RawTable = streamId.rawTableId(QUOTE)
-        val v1RawTable = wrapAndQuote(namespace, tableName)
-        return Sql.of(
-            """
-            CREATE OR REPLACE TABLE `$projectId`.$v2RawTable (
-              _airbyte_raw_id STRING,
-              _airbyte_data STRING,
-              _airbyte_extracted_at TIMESTAMP,
-              _airbyte_loaded_at TIMESTAMP,
-              _airbyte_meta STRING,
-              _airbyte_generation_id INTEGER
-            )
-            PARTITION BY DATE(_airbyte_extracted_at)
-            CLUSTER BY _airbyte_extracted_at
-            AS (
-                SELECT
-                    _airbyte_ab_id AS _airbyte_raw_id,
-                    _airbyte_data AS _airbyte_data,
-                    _airbyte_emitted_at AS _airbyte_extracted_at,
-                    CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at,
-                    '{"sync_id": 0, "changes": []}' AS _airbyte_meta,
-                    0 as _airbyte_generation_id
-                FROM `$projectId`.$v1RawTable
-            );
-            """.trimIndent()
-        )
     }
 
     /**
@@ -646,44 +639,24 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
 
         @JvmStatic
         fun toDialectType(type: AirbyteType): StandardSQLTypeName {
-            // switch pattern-matching is still in preview at language level 17 :(
-            if (type is AirbyteProtocolType) {
-                return toDialectType(type)
-            } else if (type is Struct) {
-                return StandardSQLTypeName.JSON
-            } else if (type is Array) {
-                return StandardSQLTypeName.JSON
-            } else if (type is UnsupportedOneOf) {
-                return StandardSQLTypeName.JSON
-            } else if (type is Union) {
-                val typeWithPrecedence: AirbyteType = type.chooseType()
-                val dialectType: StandardSQLTypeName
-                if ((typeWithPrecedence is Struct) || (typeWithPrecedence is Array)) {
-                    dialectType = StandardSQLTypeName.JSON
-                } else {
-                    dialectType = toDialectType(typeWithPrecedence as AirbyteProtocolType)
-                }
-                return dialectType
-            }
-
-            // Literally impossible; AirbyteType is a sealed interface.
-            throw IllegalArgumentException("Unsupported AirbyteType: $type")
-        }
-
-        // TODO maybe make this a BiMap and elevate this method and its inverse
-        // (toDestinationSQLType?) to the SQLGenerator?
-        fun toDialectType(airbyteProtocolType: AirbyteProtocolType): StandardSQLTypeName {
-            return when (airbyteProtocolType) {
-                AirbyteProtocolType.STRING,
-                AirbyteProtocolType.TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING
-                AirbyteProtocolType.NUMBER -> StandardSQLTypeName.NUMERIC
-                AirbyteProtocolType.INTEGER -> StandardSQLTypeName.INT64
-                AirbyteProtocolType.BOOLEAN -> StandardSQLTypeName.BOOL
-                AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> StandardSQLTypeName.TIMESTAMP
-                AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> StandardSQLTypeName.DATETIME
-                AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME
-                AirbyteProtocolType.DATE -> StandardSQLTypeName.DATE
-                AirbyteProtocolType.UNKNOWN -> StandardSQLTypeName.JSON
+            return when (type) {
+                BooleanType -> StandardSQLTypeName.BOOL
+                DateType -> StandardSQLTypeName.DATE
+                IntegerType -> StandardSQLTypeName.INT64
+                NumberType -> StandardSQLTypeName.NUMERIC
+                StringType -> StandardSQLTypeName.STRING
+                TimeTypeWithTimezone -> StandardSQLTypeName.STRING
+                TimeTypeWithoutTimezone -> StandardSQLTypeName.TIME
+                TimestampTypeWithTimezone -> StandardSQLTypeName.TIMESTAMP
+                TimestampTypeWithoutTimezone -> StandardSQLTypeName.DATETIME
+                is ArrayType,
+                ArrayTypeWithoutSchema,
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema,
+                // TODO handle LegacyUnion type (do the Union.chooseType thing)
+                is UnionType,
+                is UnknownType -> StandardSQLTypeName.JSON
             }
         }
 
