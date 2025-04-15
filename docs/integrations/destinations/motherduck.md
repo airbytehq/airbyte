@@ -8,7 +8,7 @@ For file-based DBs, data is written to `/tmp/airbyte_local` by default. To chang
 
 ## Destinations V2
 
-This destination implements [Destinations V2](/platform/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides improved final table structures. It's a new version of the existing DuckDB destination and works both with DuckDB and MotherDuck.
+This destination implements [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides improved final table structures. It's a new version of the existing DuckDB destination and works both with DuckDB and MotherDuck.
 
 Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).
 
@@ -63,7 +63,7 @@ This integration will be constrained by the speed at which your filesystem accep
 
 ## Working with local DuckDB files
 
-This connector is primarily designed to work with MotherDuck and local DuckDB files for [Destinations V2](/platform/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2). If you would like to work only with local DuckDB files, you may want to consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
+This connector is primarily designed to work with MotherDuck and local DuckDB files for [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2). If you would like to work only with local DuckDB files, you may want to consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
 
 ## Changelog
 
