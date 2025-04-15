@@ -33,6 +33,7 @@ import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.Protocol.AirbyteMessage as AirbyteMessageProto
+import io.airbyte.cdk.load.pipeline.ProtoMapper
 import io.airbyte.protocol.AirbyteRecord
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -809,6 +810,7 @@ class DestinationMessageFactory(
 
     fun fromProtobufAirbyteMessage(
         airbyteMessage: AirbyteMessageProto,
+        protoMapper: ProtoMapper,
     ): DestinationMessage {
         return when (airbyteMessage.type) {
             Protocol.AirbyteMessageType.RECORD -> {
@@ -824,7 +826,7 @@ class DestinationMessageFactory(
                     schema = stream.schema,
                     emittedAtMs = airbyteMessage.record.emittedAt,
                     data = fakeJsonNode,
-                    dataProto = airbyteMessage.record.dataList,
+                    dataProto = protoMapper.mapData(airbyteMessage.record.dataList),
                     meta =
                         airbyteMessage.record.meta?.let { meta ->
                             Meta(

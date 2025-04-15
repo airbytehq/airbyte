@@ -29,6 +29,8 @@ import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.pipeline.ProtoDataType
+import io.airbyte.cdk.load.pipeline.ProtoMapper
 import io.airbyte.cdk.load.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -54,6 +56,7 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
+    private val protoMapper: ProtoMapper
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
@@ -63,7 +66,12 @@ class DefaultObjectStorageFormattingWriterFactory(
         // TODO: FileWriter
 
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
-            is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
+            is JsonFormatConfiguration -> JsonFormattingWriter(
+                stream,
+                outputStream,
+                flatten,
+                protoMapper
+            )
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
                     stream,
@@ -89,6 +97,7 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
+    private val protoMapper: ProtoMapper
 ) : ObjectStorageFormattingWriter {
     private val generator =
         Jsons.createGenerator(outputStream)
@@ -96,33 +105,6 @@ class JsonFormattingWriter(
         Jsons.writerFor(JsonNode::class.java)
             .with(MinimalPrettyPrinter(System.lineSeparator()))
             .writeValues(outputStream)
-
-    enum class DataType {
-        STRING,
-        BOOLEAN,
-        INTEGER,
-        NUMBER,
-        BINARY,
-    }
-    private val fakeSortedCatalog = listOf(
-        Pair("occupation", DataType.STRING),
-        Pair("gender", DataType.STRING),
-        Pair("global_id", DataType.INTEGER),
-        Pair("academic_degree", DataType.STRING),
-        Pair("weight", DataType.NUMBER),
-        Pair("created_at", DataType.STRING),
-        Pair("language", DataType.STRING),
-        Pair("telephone", DataType.STRING),
-        Pair("title", DataType.STRING),
-        Pair("updated_at", DataType.STRING),
-        Pair("nationality", DataType.STRING),
-        Pair("blood_type", DataType.STRING),
-        Pair("name", DataType.STRING),
-        Pair("id", DataType.INTEGER),
-        Pair("age", DataType.INTEGER),
-        Pair("email", DataType.STRING),
-        Pair("height", DataType.NUMBER),
-    )
 
     override fun accept(record: DestinationRecordRaw) {
         if (record.protoData.isEmpty()) {
@@ -138,14 +120,14 @@ class JsonFormattingWriter(
         generator.writeNumber(stream.generationId)
         generator.writeFieldName(Meta.COLUMN_NAME_DATA)
         generator.writeStartObject()
-        fakeSortedCatalog.zip(record.protoData).forEach { (nameAndType, field) ->
+        protoMapper.finalSchema.zip(record.protoData).forEach { (nameAndType, field) ->
             generator.writeFieldName(nameAndType.first)
             when (nameAndType.second) {
-                DataType.STRING -> generator.writeString(field.string)
-                DataType.BOOLEAN -> generator.writeBoolean(field.boolean)
-                DataType.INTEGER -> generator.writeNumber(field.integer)
-                DataType.NUMBER -> generator.writeNumber(field.number)
-                DataType.BINARY -> generator.writeBinary(field.binary.asReadOnlyByteBuffer().array())
+                ProtoDataType.STRING -> generator.writeString(field.string)
+                ProtoDataType.BOOLEAN -> generator.writeBoolean(field.boolean)
+                ProtoDataType.INTEGER -> generator.writeNumber(field.integer)
+                ProtoDataType.NUMBER -> generator.writeNumber(field.number)
+                ProtoDataType.BINARY -> generator.writeBinary(field.binary.asReadOnlyByteBuffer().array())
             }
         }
         generator.writeEndObject()

@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.BatchUpdate
+import io.airbyte.cdk.load.pipeline.ProtoMapper
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
@@ -167,6 +168,7 @@ class SyncBeanFactory {
         catalog: DestinationCatalog,
         syncManager: SyncManager,
         destinationWriter: DestinationWriter,
+        protoMapper: ProtoMapper,
     ): Array<SocketInputFlow> {
         // We know we're only running this for S3, so there's no start work required.
         // Just make sure the stream loader is available for close, so we don't block.
@@ -191,7 +193,8 @@ class SyncBeanFactory {
                     it,
                     completions,
                     streamCompleteCountdown,
-                    syncManager
+                    syncManager,
+                    protoMapper
                 )
             }
             .toTypedArray()
