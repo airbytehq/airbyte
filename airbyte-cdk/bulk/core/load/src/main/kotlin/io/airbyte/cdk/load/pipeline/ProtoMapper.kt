@@ -19,7 +19,7 @@ enum class ProtoDataType {
 }
 
 abstract class ProtoMapper {
-    internal val fakeSortedCatalog: List<Pair<String, ProtoDataType>> =
+    private val fakeSortedCatalog: List<Pair<String, ProtoDataType>> =
         listOf(
             Pair("occupation", ProtoDataType.STRING),
             Pair("gender", ProtoDataType.STRING),
@@ -72,14 +72,14 @@ class HashingProtoMapper : ProtoMapper() {
     ): List<Pair<String, ProtoDataType>> = schemaIn
 
     override fun mapData(dataIn: MutableList<AirbyteValue>): MutableList<AirbyteValue> {
-        val emailIndex = fakeSortedCatalog.indexOfFirst { it.first == "email" }
+        val emailIndex = 15
         val emailValue = dataIn.get(emailIndex)
         dataIn[emailIndex] =
-            AirbyteValue.newBuilder(emailValue)
+            AirbyteValue
+                .newBuilder(emailValue)
                 .setString(
                     String(MessageDigest.getInstance("SHA-256").digest(emailValue.toByteArray())),
-                )
-                .build()
+                ).build()
         return dataIn
     }
 }
