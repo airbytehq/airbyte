@@ -100,7 +100,7 @@ class ObjectLoaderPartQueueFactory(
     }
 
     /**
-     * A file queue for the records
+     * A queue for records uploading.
      */
     @Singleton
     @Named("recordQueue")
@@ -115,7 +115,7 @@ class ObjectLoaderPartQueueFactory(
     }
 
     /**
-     * A file queue for the records
+     * A queue for records with file references for file uploading.
      */
     @Singleton
     @Named("fileQueue")
@@ -170,6 +170,9 @@ class ObjectLoaderPartQueueFactory(
         )
     }
 
+    /**
+     * Completed file uploads.
+     */
     @Singleton
     @Named("fileCompletedQueue")
     fun <T> completedUploadQueue() =

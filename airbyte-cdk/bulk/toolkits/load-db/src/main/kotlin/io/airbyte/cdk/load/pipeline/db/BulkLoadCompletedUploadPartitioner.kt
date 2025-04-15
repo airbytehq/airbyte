@@ -20,8 +20,8 @@ import jakarta.inject.Singleton
 class BulkLoadCompletedUploadPartitioner<T : RemoteObject<*>> :
     ObjectLoaderCompletedUploadPartitioner<StreamKey, T> {
     override fun getOutputKey(
-      inputKey: ObjectKey,
-      output: ObjectLoaderUploadCompleter.UploadResult<T>
+        inputKey: ObjectKey,
+        output: ObjectLoaderUploadCompleter.UploadResult<T>
     ): StreamKey {
         return StreamKey(inputKey.stream)
     }
