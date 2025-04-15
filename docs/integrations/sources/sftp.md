@@ -48,7 +48,7 @@ For more information on SSH key pair authentication, please refer to the
 
 ### Step 2: Set up the SFTP connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
+1. [Log in to your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **SFTP** from the list of available sources.
    <!-- env:cloud -->
@@ -79,7 +79,7 @@ Root
 
 An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point.
 
-3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
+3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase../api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
 ```
 log-([0-9]{4})([0-9]{2})([0-9]{2})
@@ -89,7 +89,7 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 ## Supported sync modes
 
-The SFTP source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SFTP source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                        | Support | Notes                                                                                |
 | :----------------------------- | :-----: | :----------------------------------------------------------------------------------- |

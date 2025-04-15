@@ -2,17 +2,17 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Google Cloud Storage (GCS)](https://cloud.google.com/storage/docs/apis) source connector.
+This page contains the setup guide and reference information for the [Google Cloud Storage (GCS)](https://platform/cloud.google.com/stora../apis) source connector.
 
 </HideInUI>
 
 :::info
-Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Google Cloud Storage pricing guide](https://cloud.google.com/storage/pricing).
+Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Google Cloud Storage pricing guide](https://platform/cloud.google.com/storage/pricing).
 :::
 
 ## Prerequisites
 
-- Google account or JSON credentials for the service account that have access to GCS. For more details check [instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
+- Google account or JSON credentials for the service account that have access to GCS. For more details check [instructions](https://platform/cloud.google.com/i../creating-managing-service-accounts)
 - GCS bucket
 - The list of streams to sync
 
@@ -31,13 +31,13 @@ First, you need to select existing or create a new project in the Google Cloud C
 
 ### Grant permission to GCS
 
-Use the service account ID from above, grant read access to your target bucket. Click [here](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) for more details.
+Use the service account ID from above, grant read access to your target bucket. Click [here](https://platform/cloud.google.com/stora../access-control/using-iam-permissions) for more details.
 
 ### Set up the Google Cloud Storage (GCS) connector in Airbyte
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Cloud Storage (GCS) from the Source type dropdown.
 4. Enter a name for the Google Cloud Storage (GCS) connector.
@@ -211,7 +211,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 ## Supported sync modes
 
-The Google Cloud Storage (GCS) source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Google Cloud Storage (GCS) source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 
 | Feature           | Supported?\(Yes/No\) | Notes |

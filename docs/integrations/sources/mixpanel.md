@@ -8,7 +8,7 @@ To set up the Mixpanel source connector, you'll need a Mixpanel [Service Account
 
 ## Set up the Mixpanel connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Mixpanel** from the Source type dropdown.
 4. Enter the name for the Mixpanel connector.
@@ -25,12 +25,12 @@ To set up the Mixpanel source connector, you'll need a Mixpanel [Service Account
 
 ## Supported sync modes
 
-The Mixpanel source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Mixpanel source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 Note: Incremental sync returns duplicated \(old records\) for the state date due to API filter limitation, which is granular to the whole day only.
 

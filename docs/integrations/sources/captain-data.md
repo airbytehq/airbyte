@@ -18,7 +18,7 @@ Api key and project UID are mandate for this connector to work, It could be gene
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Captain Data connector and select **Captain Data** from the Source type dropdown.
 4. Enter your `api_key` and `project_uid`.
@@ -33,7 +33,7 @@ Api key and project UID are mandate for this connector to work, It could be gene
 
 ## Supported sync modes
 
-The Captain Data source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Captain Data source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

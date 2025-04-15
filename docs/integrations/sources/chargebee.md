@@ -10,69 +10,69 @@ This page contains the setup guide and reference information for the Chargebee s
 
 To set up the Chargebee source connector, you will need:
 
-- [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth)
-- [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of the Chargebee site you are syncing.
+- [Chargebee API key](https://apidocs.chargebee.c../api/auth)
+- [Product Catalog version](https://www.chargebee.c../1.0/upgrade-product-catalog.html) of the Chargebee site you are syncing.
 
 :::info
-All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2.0](https://www.chargebee.com/docs/2.0/product-catalog.html) enabled by default. Sites created prior to this date will use [Product Catalog 1.0](https://www.chargebee.com/docs/1.0/product-catalog.html).
+All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2.0](https://www.chargebee.c../2.0/product-catalog.html) enabled by default. Sites created prior to this date will use [Product Catalog 1.0](https://www.chargebee.c../1.0/product-catalog.html).
 :::
 
 ## Set up the Chargebee connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
 4. Enter the name for the Chargebee connector.
 5. For **Site**, enter the site prefix for your Chargebee instance.
 6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For **API Key**, enter the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
-8. For **Product Catalog**, enter the Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). Connector defaults to Product Catalog 2.0 unless otherwise specified.
+7. For **API Key**, enter the [Chargebee API key](https://apidocs.chargebee.c../api?prod_cat_ver=2#api_authentication).
+8. For **Product Catalog**, enter the Chargebee [Product Catalog version](https://apidocs.chargebee.c../api?prod_cat_ver=2). Connector defaults to Product Catalog 2.0 unless otherwise specified.
 9. Click **Set up source**.
 
 <HideInUI>
 
 ## Supported sync modes
 
-The Chargebee source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Chargebee source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported streams
 
-Most streams are supported regardless of your Chargebee site's [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html), with a few version-specific exceptions.
+Most streams are supported regardless of your Chargebee site's [Product Catalog version](https://www.chargebee.c../1.0/upgrade-product-catalog.html), with a few version-specific exceptions.
 
 | Stream                                                                                                                                 | Product Catalog 1.0 | Product Catalog 2.0 |
 |:---------------------------------------------------------------------------------------------------------------------------------------|:--------------------|:--------------------|
-| [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1)                                                                 | ✔                   |                     |
-| [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2)                                                 |                     | ✔                   |
-| [Comments](https://apidocs.chargebee.com/docs/api/comments?prod_cat_ver=2)                                                             | ✔                   | ✔                   |
-| [Contacts](https://apidocs.chargebee.com/docs/api/customers?lang=curl#list_of_contacts_for_a_customer)                                 | ✔                   | ✔                   |
-| [Coupons](https://apidocs.chargebee.com/docs/api/coupons)                                                                              | ✔                   | ✔                   |
-| [Credit Notes](https://apidocs.chargebee.com/docs/api/credit_notes)                                                                    | ✔                   | ✔                   |
-| [Customers](https://apidocs.chargebee.com/docs/api/customers)                                                                          | ✔                   | ✔                   |
-| [Differential Prices](https://apidocs.chargebee.com/docs/api/differential_prices)                                                      | ✔                   | ✔                   |
-| [Events](https://apidocs.chargebee.com/docs/api/events)                                                                                | ✔                   | ✔                   |
-| [Gifts](https://apidocs.chargebee.com/docs/api/gifts)                                                                                  | ✔                   | ✔                   |
-| [Hosted Pages](https://apidocs.chargebee.com/docs/api/hosted_pages)                                                                    | ✔                   | ✔                   |
-| [Invoices](https://apidocs.chargebee.com/docs/api/invoices)                                                                            | ✔                   | ✔                   |
-| [Items](https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2)                                                                   |                     | ✔                   |
-| [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2)                                                       |                     | ✔                   |
-| [Item Families](https://apidocs.chargebee.com/docs/api/item_families?prod_cat_ver=2)                                                   |                     | ✔                   |
-| [Orders](https://apidocs.chargebee.com/docs/api/orders)                                                                                | ✔                   | ✔                   |
-| [Payment Sources](https://apidocs.chargebee.com/docs/api/payment_sources)                                                              | ✔                   | ✔                   |
-| [Plans](https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1)                                                                   | ✔                   |                     |
-| [Promotional Credits](https://apidocs.chargebee.com/docs/api/promotional_credits)                                                      | ✔                   | ✔                   |
-| [Quotes](https://apidocs.chargebee.com/docs/api/quotes)                                                                                | ✔                   | ✔                   |
-| [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups)                                                          | ✔                   | ✔                   |
-| [Site Migration Details](https://apidocs.chargebee.com/docs/api/site_migration_details)                                                | ✔                   | ✔                   |
-| [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions)                                                                  | ✔                   | ✔                   |
-| [Subscriptions With Scheduled Changes](https://apidocs.chargebee.com/docs/api/subscriptions?lang=curl#retrieve_with_scheduled_changes) | ✔                   | ✔                   |
-| [Transactions](https://apidocs.chargebee.com/docs/api/transactions)                                                                    | ✔                   | ✔                   |
-| [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges)                                                            | ✔                   | ✔                   |
-| [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                                                  | ✔                   | ✔                   |
+| [Addons](https://apidocs.chargebee.c../api/addons?prod_cat_ver=1)                                                                 | ✔                   |                     |
+| [Attached Items](https://apidocs.chargebee.c../api/attached_items?prod_cat_ver=2)                                                 |                     | ✔                   |
+| [Comments](https://apidocs.chargebee.c../api/comments?prod_cat_ver=2)                                                             | ✔                   | ✔                   |
+| [Contacts](https://apidocs.chargebee.c../api/customers?lang=curl#list_of_contacts_for_a_customer)                                 | ✔                   | ✔                   |
+| [Coupons](https://apidocs.chargebee.c../api/coupons)                                                                              | ✔                   | ✔                   |
+| [Credit Notes](https://apidocs.chargebee.c../api/credit_notes)                                                                    | ✔                   | ✔                   |
+| [Customers](https://apidocs.chargebee.c../api/customers)                                                                          | ✔                   | ✔                   |
+| [Differential Prices](https://apidocs.chargebee.c../api/differential_prices)                                                      | ✔                   | ✔                   |
+| [Events](https://apidocs.chargebee.c../api/events)                                                                                | ✔                   | ✔                   |
+| [Gifts](https://apidocs.chargebee.c../api/gifts)                                                                                  | ✔                   | ✔                   |
+| [Hosted Pages](https://apidocs.chargebee.c../api/hosted_pages)                                                                    | ✔                   | ✔                   |
+| [Invoices](https://apidocs.chargebee.c../api/invoices)                                                                            | ✔                   | ✔                   |
+| [Items](https://apidocs.chargebee.c../api/items?prod_cat_ver=2)                                                                   |                     | ✔                   |
+| [Item Prices](https://apidocs.chargebee.c../api/item_prices?prod_cat_ver=2)                                                       |                     | ✔                   |
+| [Item Families](https://apidocs.chargebee.c../api/item_families?prod_cat_ver=2)                                                   |                     | ✔                   |
+| [Orders](https://apidocs.chargebee.c../api/orders)                                                                                | ✔                   | ✔                   |
+| [Payment Sources](https://apidocs.chargebee.c../api/payment_sources)                                                              | ✔                   | ✔                   |
+| [Plans](https://apidocs.chargebee.c../api/plans?prod_cat_ver=1)                                                                   | ✔                   |                     |
+| [Promotional Credits](https://apidocs.chargebee.c../api/promotional_credits)                                                      | ✔                   | ✔                   |
+| [Quotes](https://apidocs.chargebee.c../api/quotes)                                                                                | ✔                   | ✔                   |
+| [Quote Line Groups](https://apidocs.chargebee.c../api/quote_line_groups)                                                          | ✔                   | ✔                   |
+| [Site Migration Details](https://apidocs.chargebee.c../api/site_migration_details)                                                | ✔                   | ✔                   |
+| [Subscriptions](https://apidocs.chargebee.c../api/subscriptions)                                                                  | ✔                   | ✔                   |
+| [Subscriptions With Scheduled Changes](https://apidocs.chargebee.c../api/subscriptions?lang=curl#retrieve_with_scheduled_changes) | ✔                   | ✔                   |
+| [Transactions](https://apidocs.chargebee.c../api/transactions)                                                                    | ✔                   | ✔                   |
+| [Unbilled Charges](https://apidocs.chargebee.c../api/unbilled_charges)                                                            | ✔                   | ✔                   |
+| [Virtual Bank Accounts](https://apidocs.chargebee.c../api/virtual_bank_accounts)                                                  | ✔                   | ✔                   |
 
 :::note
 When using incremental sync mode, the `Attached Items` stream behaves differently than the other streams. Whereas other incremental streams read and output _only new_ records, the `Attached Items` stream reads _all_ records but only outputs _new_ records, making it more demanding on your Chargebee API quota. Each sync incurs API calls equal to the total number of attached items in your Chargebee instance divided by 100, regardless of the actual number of `Attached Items` changed or synced.
@@ -89,7 +89,7 @@ Expand to see details about the Chargebee connector limitations and troubleshoot
 
 #### Rate limiting
 
-The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.c../api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ### Troubleshooting
 

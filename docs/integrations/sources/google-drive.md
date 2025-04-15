@@ -68,7 +68,7 @@ If your folder is viewable by anyone with its link, no further action is needed.
 
 To set up Google Drive as a source in Airbyte Cloud:
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+1. [Log in to your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Drive** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
@@ -101,7 +101,7 @@ To set up Google Drive as a source in Airbyte Cloud:
 
 ## Supported sync modes
 
-The Google Drive source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Drive source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported? |
 | :--------------------------------------------- | :--------- |

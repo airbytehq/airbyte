@@ -12,7 +12,7 @@ You can get the API token for Monday by going to Profile picture (bottom left co
 
 ## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
 4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
@@ -25,7 +25,7 @@ You can get the API token for Monday by going to Profile picture (bottom left co
 
 ### Connect using `API Token` option
 
-1. Generate an API Token as described [here](https://developer.monday.com/api-reference/docs/authentication).
+1. Generate an API Token as described [here](https://developer.monday.com/api-referen../authentication).
 2. Use the generated `api_token` in the Airbyte connection.
 
 ## Supported sync modes
@@ -43,14 +43,14 @@ The Monday source connector supports the following features:
 
 Several output streams are available from this source:
 
-- [Activity logs](https://developer.monday.com/api-reference/docs/activity-logs)
-- [Items](https://developer.monday.com/api-reference/docs/items-queries)
-- [Boards](https://developer.monday.com/api-reference/docs/groups-queries#groups-queries)
-- [Teams](https://developer.monday.com/api-reference/docs/teams-queries)
-- [Updates](https://developer.monday.com/api-reference/docs/updates-queries)
-- [Users](https://developer.monday.com/api-reference/docs/users-queries-1)
-- [Tags](https://developer.monday.com/api-reference/docs/tags-queries)
-- [Workspaces](https://developer.monday.com/api-reference/docs/workspaces)
+- [Activity logs](https://developer.monday.com/api-referen../activity-logs)
+- [Items](https://developer.monday.com/api-referen../items-queries)
+- [Boards](https://developer.monday.com/api-referen../groups-queries#groups-queries)
+- [Teams](https://developer.monday.com/api-referen../teams-queries)
+- [Updates](https://developer.monday.com/api-referen../updates-queries)
+- [Users](https://developer.monday.com/api-referen../users-queries-1)
+- [Tags](https://developer.monday.com/api-referen../tags-queries)
+- [Workspaces](https://developer.monday.com/api-referen../workspaces)
 
 Important Notes:
 

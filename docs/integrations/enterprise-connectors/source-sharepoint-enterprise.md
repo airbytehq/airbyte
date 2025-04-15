@@ -279,7 +279,7 @@ The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/
 
 ### Supported sync modes
 
-The SharePoint Enterprise source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The SharePoint Enterprise source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 | Feature           | Supported?\(Yes/No\) |
 |:------------------|:---------------------|

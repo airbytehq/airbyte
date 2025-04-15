@@ -1,7 +1,7 @@
 # Humanitix
 Humanitix is a ticketing platform.
 Using this connector we can extract data from streams such as events , orders and tickets.
-Docs : https://humanitix.stoplight.io/docs/humanitix-public-api/e508a657c1467-humanitix-public-api
+Docs : https://humanitix.stoplight.../humanitix-public-api/e508a657c1467-humanitix-public-api
 
 ## Configuration
 

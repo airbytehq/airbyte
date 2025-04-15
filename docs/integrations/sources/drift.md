@@ -8,9 +8,9 @@ The Drift source supports Full Refresh syncs. That is, every time a sync is run,
 
 Several output streams are available from this source:
 
-- [Accounts](https://devdocs.drift.com/docs/account-model)
-- [Conversations](https://devdocs.drift.com/docs/conversation-model)
-- [Users](https://devdocs.drift.com/docs/user-model)
+- [Accounts](https://devdocs.drift.c../account-model)
+- [Conversations](https://devdocs.drift.c../conversation-model)
+- [Users](https://devdocs.drift.c../user-model)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -41,7 +41,7 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 #### Authenticate using `Access Token`
 
-- Follow Drift's [Setting Things Up ](https://devdocs.drift.com/docs/quick-start)guide for a more detailed description of how to obtain the API token.
+- Follow Drift's [Setting Things Up ](https://devdocs.drift.c../quick-start)guide for a more detailed description of how to obtain the API token.
 
 #### Authenticate using `OAuth2.0`
 

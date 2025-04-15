@@ -82,7 +82,7 @@ You should now have all the requirements needed to configure ClickHouse as a des
 
 ## Naming Conventions
 
-From [ClickHouse SQL Identifiers syntax](https://clickhouse.com/docs/en/sql-reference/syntax/):
+From [ClickHouse SQL Identifiers syntax](https://clickhouse.c../en/sql-reference/syntax/):
 
 - SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical marks and non-Latin letters\) or an underscore \(\_\).
 - Subsequent characters in an identifier or key word can be letters, underscores, digits \(0-9\).

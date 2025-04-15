@@ -2,7 +2,7 @@
 
 One unified business management suite, encompassing ERP/Financials, CRM and ecommerce for more than 31,000 customers.
 
-This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html) and uses REST API to fetch the customers data.
+This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/platform/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html) and uses REST API to fetch the customers data.
 
 ## Prerequisites
 
@@ -100,7 +100,7 @@ You have copied next parameters
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **NetSuite** from the Source type dropdown and enter a name for this connector.
 4. Add **Realm**
@@ -124,7 +124,7 @@ You have copied next parameters
 
 ## Supported sync modes
 
-The NetSuite source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The NetSuite source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -135,7 +135,7 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 
 ## Performance considerations
 
-The connector is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html).
+The connector is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/platform/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html).
 
 ## Changelog
 

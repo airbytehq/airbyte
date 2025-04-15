@@ -59,7 +59,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
 4. Enter a name for the Zendesk Support connector.
@@ -91,7 +91,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ## Supported sync modes
 
-The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -119,26 +119,26 @@ The Zendesk Support source connector supports the following streams:
 - [Automations](https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 - [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
-- [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
-- [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
-- [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
-- [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
+- [Groups](https://developer.zendesk.com/rest_a../support/groups) \(Incremental\)
+- [Group Memberships](https://developer.zendesk.com/rest_a../support/group_memberships) \(Incremental\)
+- [Macros](https://developer.zendesk.com/rest_a../support/macros) \(Incremental\)
+- [Organizations](https://developer.zendesk.com/rest_a../support/organizations) \(Incremental\)
 - [Organization Fields](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields) \(Incremental\)
 - [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
 - [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
 - [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments) \(Incremental\)
 - [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
-- [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
+- [Satisfaction Ratings](https://developer.zendesk.com/rest_a../support/satisfaction_ratings) \(Incremental\)
 - [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Incremental\)
-- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
-- [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
+- [SLA Policies](https://developer.zendesk.com/rest_a../support/sla_policies) \(Incremental\)
+- [Tags](https://developer.zendesk.com/rest_a../support/tags)
 - [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
-- [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
+- [Ticket Audits](https://developer.zendesk.com/rest_a../support/ticket_audits) \(Client-Side Incremental\)
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
-- [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
-- [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\)
-- [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
+- [Ticket Fields](https://developer.zendesk.com/rest_a../support/ticket_fields) \(Incremental\)
+- [Ticket Forms](https://developer.zendesk.com/rest_a../support/ticket_forms) \(Incremental\)
+- [Ticket Metrics](https://developer.zendesk.com/rest_a../support/ticket_metrics) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
@@ -172,7 +172,7 @@ Expand to see details about Zendesk Support connector limitations and troublesho
 
 #### Rate limiting
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
+The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_a../support/usage_limits).
 
 The Zendesk connector ideally should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 

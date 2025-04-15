@@ -2,7 +2,7 @@
 This page contains the setup guide and reference information for the [Buildkite](https://buildkite.com/) source connector.
 
 ## Documentation reference:
-Visit `https://buildkite.com/docs/apis/rest-api` for API documentation
+Visit `https://buildkite.c../apis/rest-api` for API documentation
 
 ## Authentication setup
 Buildkite uses bearer token authentication,

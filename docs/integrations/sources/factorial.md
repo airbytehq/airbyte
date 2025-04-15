@@ -5,7 +5,7 @@ This directory contains the manifest-only connector for [`source-factorial`](htt
 Visit `https://apidoc.factorialhr.com/reference` for API documentation
 
 ## Authentication setup
-`Factorial` uses API token authentication, Visit `https://app.factorialhr.com/settings/api-keys` for getting your api token. Refer `https://apidoc.factorialhr.com/docs/api-keys`.
+`Factorial` uses API token authentication, Visit `https://app.factorialhr.com/settings/api-keys` for getting your api token. Refer `https://apidoc.factorialhr.c../api-keys`.
 
 ## Configuration
 

@@ -22,7 +22,7 @@ This page contains the setup guide and reference information for the [Microsoft 
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
 4. Enter a name for the Microsoft SharePoint connector.
@@ -275,7 +275,7 @@ To have the connector iterate all sub-sites provide the site url as `https://<te
 
 ### Supported sync modes
 
-The Microsoft SharePoint source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Microsoft SharePoint source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 | Feature           | Supported?\(Yes/No\) |
 |:------------------|:---------------------|

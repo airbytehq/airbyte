@@ -51,7 +51,7 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Bing Ads from the Source type dropdown.
 4. Enter a name for the Bing Ads connector.
@@ -96,12 +96,12 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 
 ## Supported sync modes
 
-The Bing Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Bing Ads source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -210,7 +210,7 @@ Account Impression Performance Report: composite pk - [AccountName, AccountNumbe
 
 Note: These are just examples, and you should consider your own data and needs in order to correctly define the primary key.
 
-See more info about user-defined pk [here](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key).
+See more info about user-defined pk [here](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key).
 
 :::
 

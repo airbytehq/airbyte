@@ -43,7 +43,7 @@ This page contains the setup guide and reference information for the [Airtable](
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Airtable from the Source type dropdown.
 4. Enter a name for the Airtable connector.
@@ -75,10 +75,10 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 ## Supported sync modes
 
-The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported Streams
 

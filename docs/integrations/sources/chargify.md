@@ -8,8 +8,8 @@ The Chargify source supports Full Refresh syncs for Customers and Subscriptions 
 
 Several output streams are available from this source:
 
-- [Customers](https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgyNzY-list-or-find-customers)
-- [Subscriptions](https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgzODk-list-subscriptions)
+- [Customers](https://developers.chargify.c../api-docs/b3A6MTQxMDgyNzY-list-or-find-customers)
+- [Subscriptions](https://developers.chargify.c../api-docs/b3A6MTQxMDgzODk-list-subscriptions)
 
 If there are more streams you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -36,7 +36,7 @@ The Chargify connector should not run into Chargify API limitations under normal
 
 ### Setup guide
 
-Please follow the [Chargify documentation for generating an API key](https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api).
+Please follow the [Chargify documentation for generating an API key](https://developers.chargify.c../api-docs/YXBpOjE0MTA4MjYx-chargify-api).
 
 ## Changelog
 

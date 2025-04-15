@@ -34,7 +34,7 @@ Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Salesloft** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your Salesloft account` by selecting Oauth or API Key for Authentication.
@@ -53,12 +53,12 @@ Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https
 
 ## Supported sync modes
 
-The Salesloft Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Salesloft Source connector supports the following [ sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 

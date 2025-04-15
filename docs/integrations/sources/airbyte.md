@@ -1,6 +1,6 @@
 # Airbyte
 
-This source allows you to sync up data about your Airbyte Cloud workspaces. [Take a look at this guide](https://docs.airbyte.com/using-airbyte/configuring-api-access) to setup API access tokens.
+This source allows you to sync up data about your Airbyte Cloud workspaces. [Take a look at this guide](https://docs.airbyte.com/platform/using-airbyte/configuring-api-access) to setup API access tokens.
 ## Configuration
 
 | Input | Type | Description | Default Value |

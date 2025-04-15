@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Zenefits so
 
 ## Prerequisites
 
-- A Zenefits [token](https://developers.zenefits.com/v1.0/docs/auth)
+- A Zenefits [token](https://developers.zenefits.com/v1../auth)
 
 ## Set up Zenefits as a source in Airbyte
 
@@ -15,30 +15,30 @@ To set up Zenefits as a source in Airbyte Cloud:
 1.  In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 2.  On the Set up the source page, select **Zenefits** from the **Source type** dropdown.
 3.  For Name, enter a name for the Zenefits connector.
-4.  For **Token**, enter the token you have got from [Authentication](https://developers.zenefits.com/v1.0/docs/auth)
+4.  For **Token**, enter the token you have got from [Authentication](https://developers.zenefits.com/v1../auth)
 5.  Click **Set up source**.
 
 ## Supported sync modes
 
 The Zenefits source connector supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
 
 ## Supported Streams
 
 You can replicate the following tables using the Zenefits connector:
 
-- [People](https://developers.zenefits.com/docs/people)
-- [Employments](https://developers.zenefits.com/docs/employment)
-- [Vacation_requests](https://developers.zenefits.com/docs/vacation-requests)
-- [Vacation_types](https://developers.zenefits.com/docs/vacation-types)
-- [Time_durations](https://developers.zenefits.com/docs/time-durations)
-- [Departments](https://developers.zenefits.com/docs/department)
-- [Locations](https://developers.zenefits.com/docs/location)
-- [Labor_groups](https://developers.zenefits.com/docs/labor-groups)
-- [Labor_group_types](https://developers.zenefits.com/docs/labor-group-types)
-- [Custom_fields](https://developers.zenefits.com/docs/custom-fields)
-- [Custom_field_values](https://developers.zenefits.com/docs/custom-field-values)
+- [People](https://developers.zenefits.c../people)
+- [Employments](https://developers.zenefits.c../employment)
+- [Vacation_requests](https://developers.zenefits.c../vacation-requests)
+- [Vacation_types](https://developers.zenefits.c../vacation-types)
+- [Time_durations](https://developers.zenefits.c../time-durations)
+- [Departments](https://developers.zenefits.c../department)
+- [Locations](https://developers.zenefits.c../location)
+- [Labor_groups](https://developers.zenefits.c../labor-groups)
+- [Labor_group_types](https://developers.zenefits.c../labor-group-types)
+- [Custom_fields](https://developers.zenefits.c../custom-fields)
+- [Custom_field_values](https://developers.zenefits.c../custom-field-values)
 
 ## Data type mapping
 

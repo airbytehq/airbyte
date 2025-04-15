@@ -16,7 +16,7 @@ Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API i
 
 ## Step 2: Set up the Tempo connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Tempo connector and select **Tempo** from the Source type dropdown.
 4. Enter your API token that you obtained from Tempo.
@@ -24,12 +24,12 @@ Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API i
 
 ## Supported sync modes
 
-The Tempo source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Tempo source connector supports the following [ sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 

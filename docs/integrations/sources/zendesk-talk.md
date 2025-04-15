@@ -22,7 +22,7 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
 4. Fill in the rest of the fields:
@@ -34,7 +34,7 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 
 ## Supported sync modes
 
-The **Zendesk Talk** source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The **Zendesk Talk** source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental Sync
@@ -43,23 +43,23 @@ The **Zendesk Talk** source connector supports the following [sync modes](https:
 
 This Source is capable of syncing the following core Streams:
 
-- [Account Overview](https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-account-overview)
-- [Addresses](https://developer.zendesk.com/rest_api/docs/voice-api/phone_numbers#list-phone-numbers)
-- [Agents Activity](https://developer.zendesk.com/rest_api/docs/voice-api/stats#list-agents-activity)
-- [Agents Overview](https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-agents-overview)
-- [Calls](https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-calls-export) \(Incremental sync\)
-- [Call Legs](https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-call-legs-export) \(Incremental sync\)
-- [Current Queue Activity](https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-current-queue-activity)
-- [Greeting Categories](https://developer.zendesk.com/rest_api/docs/voice-api/greetings#list-greeting-categories)
-- [Greetings](https://developer.zendesk.com/rest_api/docs/voice-api/greetings#list-greetings)
-- [IVRs](https://developer.zendesk.com/rest_api/docs/voice-api/ivrs#list-ivrs)
-- [IVR Menus](https://developer.zendesk.com/rest_api/docs/voice-api/ivrs#list-ivrs)
-- [IVR Routes](https://developer.zendesk.com/rest_api/docs/voice-api/ivr_routes#list-ivr-routes)
-- [Phone Numbers](https://developer.zendesk.com/rest_api/docs/voice-api/phone_numbers#list-phone-numbers)
+- [Account Overview](https://developer.zendesk.com/rest_a../voice-api/stats#show-account-overview)
+- [Addresses](https://developer.zendesk.com/rest_a../voice-api/phone_numbers#list-phone-numbers)
+- [Agents Activity](https://developer.zendesk.com/rest_a../voice-api/stats#list-agents-activity)
+- [Agents Overview](https://developer.zendesk.com/rest_a../voice-api/stats#show-agents-overview)
+- [Calls](https://developer.zendesk.com/rest_a../voice-api/incremental_exports#incremental-calls-export) \(Incremental sync\)
+- [Call Legs](https://developer.zendesk.com/rest_a../voice-api/incremental_exports#incremental-call-legs-export) \(Incremental sync\)
+- [Current Queue Activity](https://developer.zendesk.com/rest_a../voice-api/stats#show-current-queue-activity)
+- [Greeting Categories](https://developer.zendesk.com/rest_a../voice-api/greetings#list-greeting-categories)
+- [Greetings](https://developer.zendesk.com/rest_a../voice-api/greetings#list-greetings)
+- [IVRs](https://developer.zendesk.com/rest_a../voice-api/ivrs#list-ivrs)
+- [IVR Menus](https://developer.zendesk.com/rest_a../voice-api/ivrs#list-ivrs)
+- [IVR Routes](https://developer.zendesk.com/rest_a../voice-api/ivr_routes#list-ivr-routes)
+- [Phone Numbers](https://developer.zendesk.com/rest_a../voice-api/phone_numbers#list-phone-numbers)
 
 ## Performance considerations
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
+The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_a../voice-api/introduction#rate-limits).
 
 The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 

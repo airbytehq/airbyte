@@ -79,7 +79,7 @@ Each table in the output schema has the following columns:
 The Airbyte data stream's JSON schema is converted to an Avro schema. The JSON object is then converted to an Avro record;
 the Avro record is written to a staging Iceberg table. As the data stream can be generated from any data source,
 the JSON-to-Avro conversion process has arbitrary rules and limitations.
-Learn more about [how source data is converted to Avro](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
+Learn more about [how source data is converted to Avro](https://docs.airbyte.io/platform/understanding-airbyte/json-avro-conversion).
 
 ### Datatype support
 

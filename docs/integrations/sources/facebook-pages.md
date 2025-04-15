@@ -31,14 +31,14 @@ After all the steps, it should look something like this
 
 ![](/.gitbook/assets/facebook-pages-1.png)
 
-5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
-6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.
+5. [Generate](https://developers.facebook.c../facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
+6. [Generate](https://developers.facebook.c../facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.
 
 ### Step 2: Set up the Facebook Pages connector in Airbyte
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
 4. Fill in Page Access Token with Long-Lived Page Token
@@ -54,17 +54,17 @@ After all the steps, it should look something like this
 
 ## Supported sync modes
 
-The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported Streams
 
-- [Page](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/#overview)
-- [Post](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/feed)
-- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/insights)
-- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/insights)
+- [Page](https://developers.facebook.c../graph-api/reference/v19.0/page/#overview)
+- [Post](https://developers.facebook.c../graph-api/reference/v19.0/page/feed)
+- [Page Insights](https://developers.facebook.c../graph-api/reference/v19.0/page/insights)
+- [Post Insights](https://developers.facebook.c../graph-api/reference/v19.0/insights)
 
 ## Data type map
 
@@ -79,7 +79,7 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
+See Facebook's [documentation on rate limiting](https://developers.facebook.c../graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
 
 ## Changelog
 

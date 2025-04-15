@@ -1,6 +1,6 @@
 # Doris
 
-destination-doris is a destination implemented based on [Apache Doris stream load](https://doris.apache.org/docs/dev/data-operate/import/import-way/stream-load-manual), supports batch rollback, and uses http/https put request
+destination-doris is a destination implemented based on [Apache Doris stream load](https://doris.apache.o../dev/data-operate/import/import-way/stream-load-manual), supports batch rollback, and uses http/https put request
 
 ## Sync overview
 
@@ -26,7 +26,7 @@ This section should contain a table with the following format:
 ### Performance considerations
 
 Batch writes are performed. mini records may impact performance.
-Importing multiple tables will generate multiple [Doris stream load](https://doris.apache.org/docs/dev/data-operate/import/import-way/stream-load-manual) transactions, which should be split as much as possible.
+Importing multiple tables will generate multiple [Doris stream load](https://doris.apache.o../dev/data-operate/import/import-way/stream-load-manual) transactions, which should be split as much as possible.
 
 ## Getting started
 

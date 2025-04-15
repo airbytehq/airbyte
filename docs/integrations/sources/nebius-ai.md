@@ -1,6 +1,6 @@
 # Nebius AI
 Website: https://studio.nebius.com/
-API Reference: https://studio.nebius.com/docs/api-reference
+API Reference: https://studio.nebius.c../api-reference
 
 ## Configuration
 

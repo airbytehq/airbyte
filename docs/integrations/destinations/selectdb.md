@@ -1,6 +1,6 @@
 # SelectDB
 
-destination-selectdb is a destination implemented based on [SelectDB copy into ](https://cn.selectdb.com/docs/%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/%E6%95%B0%E6%8D%AE%E5%AF%BC%E5%85%A5#copy-into), supports batch rollback, and uses http/https put request
+destination-selectdb is a destination implemented based on [SelectDB copy into ](https://cn.selectdb.c../%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/%E6%95%B0%E6%8D%AE%E5%AF%BC%E5%85%A5#copy-into), supports batch rollback, and uses http/https put request
 
 ## Sync overview
 

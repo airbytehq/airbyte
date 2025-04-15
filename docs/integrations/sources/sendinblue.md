@@ -19,7 +19,7 @@ This source can sync data from the [Sendinblue API](https://developers.sendinblu
 
 ### Performance considerations
 
-Sendinblue APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.sendinblue.com/docs/how-it-works#rate-limiting)
+Sendinblue APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.sendinblue.c../how-it-works#rate-limiting)
 
 ## Getting started
 

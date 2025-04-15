@@ -4,13 +4,13 @@
 
 The AWS CloudTrail source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Boto3 CloudTrail](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html).
+This Source Connector is based on a [Boto3 CloudTrail](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/platform/cloudtrail.html).
 
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
 
-- [Management Events](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html#CloudTrail.Client.lookup_events)
+- [Management Events](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/platform/cloudtrail.html#CloudTrail.Client.lookup_events)
 
 Insight events are not supported right now. Only Management events are available.
 

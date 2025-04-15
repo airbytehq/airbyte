@@ -101,7 +101,7 @@ destination configuration.
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new
    destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a
@@ -122,7 +122,7 @@ destination configuration.
 ## Supported sync modes
 
 The Redshift destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+[sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-mode):
 
 - Full Refresh
 - Incremental - Append Sync
@@ -232,7 +232,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 3.4.1   | 2024-08-13 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)       | Simplify Redshift Options                                                                                                                                                                                        |
 | 3.4.0   | 2024-07-23 | [42445](https://github.com/airbytehq/airbyte/pull/42445)   | Respect the `drop cascade` option on raw tables                                                                                                                                                                  |
 | 3.3.1   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                                                       |
-| 3.3.0   | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567)   | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                 |
+| 3.3.0   | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567)   | Support for [refreshes](../platform/operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                 |
 | 3.2.0   | 2024-07-02 | [40201](https://github.com/airbytehq/airbyte/pull/40201)   | Add `_airbyte_generation_id` column, and add `sync_id` to `_airbyte_meta` column                                                                                                                                 |
 | 3.1.1   | 2024-06-26 | [39008](https://github.com/airbytehq/airbyte/pull/39008)   | Internal code changes                                                                                                                                                                                            |
 | 3.1.0   | 2024-06-26 | [39141](https://github.com/airbytehq/airbyte/pull/39141)   | Remove nonfunctional "encrypted staging" option                                                                                                                                                                  |

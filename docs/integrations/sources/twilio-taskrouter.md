@@ -9,7 +9,7 @@ Twilio Taskroute HTTP requests to the REST API are protected with HTTP Basic aut
 You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account) by scrolling down the console once you have created a Twilio account.
 You can find [Taskrouter](https://console.twilio.com/develop/explore) in the Explore Products page under Solutions in the list. Click on it to expand a panel in the sidebar and click on Workspaces to be taken to your created workspaces. Each workspace has it's unique ID as SID with which you can access the streams.
 
-See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
+See [docs](https://www.twilio.c../taskrouter/api) for more details.
 
 ## Setup guide
 
@@ -17,7 +17,7 @@ See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio Taskrouter** from the Source/Destination type dropdown.
 4. Enter your `account_sid`.
@@ -34,7 +34,7 @@ See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 
 ## Supported sync modes
 
-The Twilio source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Twilio source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -45,9 +45,9 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Supported Streams
 
-- [Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
-- [All Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
-- [Workers](https://www.twilio.com/docs/taskrouter/api/worker)
+- [Workspaces](https://www.twilio.c../taskrouter/api/workspace)
+- [All Workspaces](https://www.twilio.c../taskrouter/api/workspace)
+- [Workers](https://www.twilio.c../taskrouter/api/worker)
 
 ## Performance considerations
 

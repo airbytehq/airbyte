@@ -2,7 +2,7 @@
 
 ## Upgrading to 4.0.0
 
-Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` now has updated schema, which matches Amazon Seller Partner [docs](https://developer-docs.amazon.com/sp-api/docs/fba-inventory-reports-attributes#get_fba_storage_fee_charges_data).
+Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` now has updated schema, which matches Amazon Seller Partner [docs](https://developer-docs.amazon.com/sp-a../fba-inventory-reports-attributes#get_fba_storage_fee_charges_data).
 
 Users will need to refresh the source schema and reset this stream after upgrading.
 
@@ -31,7 +31,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 3.0.0
 
@@ -78,7 +78,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 

@@ -62,11 +62,11 @@ For more information on SSH key pair authentication, please refer to the
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
-5. Choose a [delivery method](../../using-airbyte/delivery-methods) for your data.
+5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
 8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
@@ -87,7 +87,7 @@ Root
 |   | - 2022
 ```
 
-An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
+An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase../api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
 ```
 log-([0-9]{4})([0-9]{2})([0-9]{2})
@@ -108,7 +108,7 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 <FieldAnchor field="delivery_method.delivery_type">
 
-Choose a [delivery method](../../using-airbyte/delivery-methods) for your data. 
+Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data. 
 
 </FieldAnchor>
 
@@ -128,7 +128,7 @@ If your files are in a folder, include the folder in your glob pattern, like `my
 
 ## Supported sync modes
 
-The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 | Feature                        | Support | Notes |
 |:-------------------------------|:-------:|:------|

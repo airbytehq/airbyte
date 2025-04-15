@@ -8,10 +8,10 @@ The New York Times source supports full refresh syncs
 
 Several output streams are available from this source:
 
-_[Archive](https://developer.nytimes.com/docs/archive-product/1/overview).
-_[Most Popular Emailed Articles](https://developer.nytimes.com/docs/most-popular-product/1/routes/emailed/%7Bperiod%7D.json/get).
-_[Most Popular Shared Articles](https://developer.nytimes.com/docs/most-popular-product/1/routes/shared/%7Bperiod%7D.json/get).
-_[Most Popular Viewed Articles](https://developer.nytimes.com/docs/most-popular-product/1/routes/viewed/%7Bperiod%7D.json/get).
+_[Archive](https://developer.nytimes.c../archive-product/1/overview).
+_[Most Popular Emailed Articles](https://developer.nytimes.c../most-popular-product/1/routes/emailed/%7Bperiod%7D.json/get).
+_[Most Popular Shared Articles](https://developer.nytimes.c../most-popular-product/1/routes/shared/%7Bperiod%7D.json/get).
+_[Most Popular Viewed Articles](https://developer.nytimes.c../most-popular-product/1/routes/viewed/%7Bperiod%7D.json/get).
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 

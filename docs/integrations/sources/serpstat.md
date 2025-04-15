@@ -19,7 +19,7 @@ Go to [My account](https://serpstat.com/users/profile/) page and click **Copy** 
 
 ### Step 2: Set up the Serpstat connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up the source** page, select **Serpstat** from the **Source type** dropdown.
 4. Enter a name for your connector.
@@ -29,7 +29,7 @@ Go to [My account](https://serpstat.com/users/profile/) page and click **Copy** 
 
 ## Supported sync modes
 
-The Serpstat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Serpstat source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full refresh
 

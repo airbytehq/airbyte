@@ -3,7 +3,7 @@
 ## Upgrading to 1.0.0
 
 This version introduces a general availability version of the MongoDB V2 source connector, which leverages
-[Change Data Capture (CDC)](/understanding-airbyte/cdc) to improve the performance and
+[Change Data Capture (CDC)](/platform/understanding-airbyte/cdc) to improve the performance and
 reliability of syncs. This version provides better error handling, incremental delivery of data and improved
 reliability of large syncs via frequent checkpointing.
 

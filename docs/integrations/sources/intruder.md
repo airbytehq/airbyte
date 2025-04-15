@@ -20,7 +20,7 @@ This source can sync data from the [Intruder.io API](https://dev.Intruder.io.com
 
 ### Performance considerations
 
-Intruder.io APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.intruder.io/docs/rate-limiting)
+Intruder.io APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.intruder.../rate-limiting)
 
 ## Getting started
 

@@ -23,7 +23,7 @@ Hubplanner is a tool to plan, schedule, report and manage your entire team.
 
 ## Supported sync modes
 
-The Okta source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Okta source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 

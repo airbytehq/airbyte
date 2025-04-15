@@ -30,7 +30,7 @@ may require a paid plan based upon your requirements.
 
 1. Obtain an API key from [PolygonStocksApi](https://polygon.io).
 2. Find out the exchange symbol of the stock also known as Ticker Symbol of the stock you can google it out and find it (E.x. : Exchange symbol for Microsoft is MSFT)
-3. Choose and verify other options you required for fetching the stock details. [here](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
+3. Choose and verify other options you required for fetching the stock details. [here](https://polygon.../stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
 
 ### Setup guide
 

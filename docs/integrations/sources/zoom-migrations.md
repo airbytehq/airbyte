@@ -4,11 +4,11 @@
 
 ### Authentication
 
-As of September 8, 2023, Zoom has [deprecated JWT](https://developers.zoom.us/docs/internal-apps/jwt-faq/) authentication and now supports Oauth instead.
+As of September 8, 2023, Zoom has [deprecated JWT](https://developers.zoom.../internal-apps/jwt-faq/) authentication and now supports Oauth instead.
 
 ### Creating a server-to-server OAuth app
 
-To successfully migrate, please use [Zoom's migration guide](https://developers.zoom.us/docs/internal-apps/jwt-app-migration/) to create a new server-to-server OAuth app and generate the necessary credentials.
+To successfully migrate, please use [Zoom's migration guide](https://developers.zoom.../internal-apps/jwt-app-migration/) to create a new server-to-server OAuth app and generate the necessary credentials.
 
 When creating the app, ensure you grant it access to the following scopes:
 
@@ -54,4 +54,4 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 :::
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear)
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear)

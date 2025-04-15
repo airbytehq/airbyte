@@ -1,6 +1,6 @@
 # Snapchat Marketing
 
-This page guides you through the process of setting up the [Snapchat Marketing](https://marketingapi.snapchat.com/docs/) source connector.
+This page guides you through the process of setting up the [Snapchat Marketing](https://marketingapi.snapchat.c../) source connector.
 
 ## Prerequisites
 
@@ -58,7 +58,7 @@ This page guides you through the process of setting up the [Snapchat Marketing](
       https://accounts.snapchat.com/login/oauth2/access_token`
    ```
 
-For more information on authenticating into the Snapchat API, read their documentation [here](https://marketingapi.snapchat.com/docs/#authentication)
+For more information on authenticating into the Snapchat API, read their documentation [here](https://marketingapi.snapchat.c../#authentication)
    You will receive the API key and refresh token in the response. Use this refresh token for the connector.
    <!-- /env:oss -->
 
@@ -68,7 +68,7 @@ For more information on authenticating into the Snapchat API, read their documen
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account`.

@@ -11,7 +11,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 - Name
 - Okta-Domain
 - Start Date
-- Personal Api Token (look [here](https://developer.okta.com/docs/guides/find-your-domain/-/main/) to find it)
+- Personal Api Token (look [here](https://developer.okta.c../guides/find-your-domain/-/main/) to find it)
 
 ## Airbyte Cloud
 
@@ -32,7 +32,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
 4. Add **Name**
@@ -46,7 +46,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 ### For Airbyte Open Source:
 
 1. Go to local Airbyte page.
-2. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/).
+2. Use API token from requirements and Okta [domain](https://developer.okta.c../guides/find-your-domain/-/main/).
 3. Go to local Airbyte page.
 4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 5. On the Set up the source page select **Okta** from the Source type dropdown.
@@ -58,26 +58,26 @@ Okta is the complete identity solution for all your apps and people that’s uni
 
 ## Supported sync modes
 
-The Okta source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Okta source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
 ## Supported Streams
 
-- [Users](https://developer.okta.com/docs/reference/api/users/#list-users)
-- [User Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-user)
-- [Groups](https://developer.okta.com/docs/reference/api/groups/#list-groups)
-- [Group Members](https://developer.okta.com/docs/reference/api/groups/#list-group-members)
-- [Group Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-group)
-- [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
-- [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
-- [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions)
-- [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets)
+- [Users](https://developer.okta.c../reference/api/users/#list-users)
+- [User Role Assignments](https://developer.okta.c../reference/api/roles/#list-roles-assigned-to-a-user)
+- [Groups](https://developer.okta.c../reference/api/groups/#list-groups)
+- [Group Members](https://developer.okta.c../reference/api/groups/#list-group-members)
+- [Group Role Assignments](https://developer.okta.c../reference/api/roles/#list-roles-assigned-to-a-group)
+- [System Log](https://developer.okta.c../reference/api/system-log/#get-started)
+- [Custom Roles](https://developer.okta.c../reference/api/roles/#list-roles)
+- [Permissions](https://developer.okta.c../reference/api/roles/#list-permissions)
+- [Resource Sets](https://developer.okta.c../reference/api/roles/#list-resource-sets)
 
 ## Performance considerations
 
-The connector is restricted by normal Okta [requests limitation](https://developer.okta.com/docs/reference/rate-limits/).
+The connector is restricted by normal Okta [requests limitation](https://developer.okta.c../reference/rate-limits/).
 
 ## Changelog
 

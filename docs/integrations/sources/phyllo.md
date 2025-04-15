@@ -1,6 +1,6 @@
 # Phyllo
 Website: https://dashboard.getphyllo.com/
-API Reference: https://docs.getphyllo.com/docs/api-reference/introduction/introduction
+API Reference: https://docs.getphyllo.c../api-reference/introduction/introduction
 
 ## Configuration
 

@@ -1,7 +1,7 @@
 # Inflowinventory
 As the name suggests , Inflowinventory is an inventory management software.
 Using this connector we can extract data from various streams such as customers , productts and sales orders.
-Docs : https://cloudapi.inflowinventory.com/docs/index.html#section/Overview
+Docs : https://platform/cloudapi.inflowinventory.c../index.html#section/Overview
 
 ## Configuration
 

@@ -47,7 +47,7 @@ Some optional fields that are recommended to set according to your use
 
 ## Supported sync modes
 
-The Kafka source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Kafka source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                   | Supported?\(Yes/No\) | Notes |
 | :------------------------ | :------------------- | :---- |

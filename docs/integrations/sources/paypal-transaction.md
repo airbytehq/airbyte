@@ -6,7 +6,7 @@ This connector uses [PayPal APIs](https://developer.paypal.com/api/rest/authenti
 
 ## Prerequisites
 
-You will need a Paypal account, which you can get following [these steps](https://developer.paypal.com/docs/platforms/get-started/)
+You will need a Paypal account, which you can get following [these steps](https://developer.paypal.c../platforms/get-started/)
 
 In the same page, you will also find how to setup a Sandbox so you can test the connector before using it in production.
 
@@ -20,7 +20,7 @@ After creating your account you will be able to get your `Client ID` and `Secret
 
 1. Log into your Airbyte account
 
-   - For Cloud [Log in here](https://cloud.airbyte.com/workspaces).
+   - For Cloud [Log in here](https://platform/cloud.airbyte.com/workspaces).
 
 2. In the left navigation bar, click **Sources**.
 
@@ -50,7 +50,7 @@ By default, syncs are run with a slice period of 7 days. If you see errors with 
 
 ## Supported sync modes
 
-The PayPal Transaction source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The PayPal Transaction source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                   | Supported? |
 | :------------------------ | :--------- |
@@ -62,13 +62,13 @@ The PayPal Transaction source connector supports the following [sync modes](http
 
 This Source is capable of syncing the following core Streams:
 
-- [Transactions](https://developer.paypal.com/docs/api/transaction-search/v1/#transactions)
-- [Balances](https://developer.paypal.com/docs/api/transaction-search/v1/#balances)
-- [List Products](https://developer.paypal.com/docs/api/catalog-products/v1/#products_list)
-- [Show Product Details](https://developer.paypal.com/docs/api/catalog-products/v1/#products_get)
-- [List Disputes](https://developer.paypal.com/docs/api/customer-disputes/v1/#disputes_list)
-- [Search Invoices](https://developer.paypal.com/docs/api/invoicing/v2/#invoices_search-invoices)
-- [List Payments](https://developer.paypal.com/docs/api/payments/v1/#payment_list)
+- [Transactions](https://developer.paypal.c../api/transaction-search/v1/#transactions)
+- [Balances](https://developer.paypal.c../api/transaction-search/v1/#balances)
+- [List Products](https://developer.paypal.c../api/catalog-products/v1/#products_list)
+- [Show Product Details](https://developer.paypal.c../api/catalog-products/v1/#products_get)
+- [List Disputes](https://developer.paypal.c../api/customer-disputes/v1/#disputes_list)
+- [Search Invoices](https://developer.paypal.c../api/invoicing/v2/#invoices_search-invoices)
+- [List Payments](https://developer.paypal.c../api/payments/v1/#payment_list)
 
 ### Transactions Stream
 
@@ -212,7 +212,7 @@ The below table contains the configuraiton parameters available for this connect
 
 :::info
 
-The `start_end` from the configuration, is passed to the body of the request and uses the `creation_date_range.start` and `creation_date_range.end`. More information in the [Paypal Developer API documentation](https://developer.paypal.com/docs/api/invoicing/v2/#invoices_search-invoices).
+The `start_end` from the configuration, is passed to the body of the request and uses the `creation_date_range.start` and `creation_date_range.end`. More information in the [Paypal Developer API documentation](https://developer.paypal.c../api/invoicing/v2/#invoices_search-invoices).
 
 :::
 

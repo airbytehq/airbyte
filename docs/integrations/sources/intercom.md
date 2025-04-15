@@ -19,7 +19,7 @@ This page contains the setup guide and reference information for the [Intercom](
 
 ### Obtain an Intercom access token (Airbyte Open Source)
 
-To authenticate the connector in **Airbyte Open Source**, you will need to obtain an access token. You can follow the setup steps below to create an Intercom app and generate the token. For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/building-apps/docs/authentication-types).
+To authenticate the connector in **Airbyte Open Source**, you will need to obtain an access token. You can follow the setup steps below to create an Intercom app and generate the token. For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/building-ap../authentication-types).
 
 1. Log in to your Intercom account and navigate to the [Developer Hub](https://developers.intercom.com/).
 2. Click **Your apps** in the top-right corner, then click **New app**.
@@ -33,7 +33,7 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Intercom from the Source type dropdown.
 4. Enter a name for the Intercom connector.
@@ -61,7 +61,7 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 ## Supported sync modes
 
-The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -70,15 +70,15 @@ The Intercom source connector supports the following [sync modes](https://docs.a
 
 The Intercom source connector supports the following streams:
 
-- [Admins](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
+- [Admins](https://developers.intercom.c../references/2.10/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
 - [Companies](https://developers.intercom.com/intercom-api-reference/reference/listallcompanies) \(Incremental\)
   - [Company Segments](https://developers.intercom.com/intercom-api-reference/reference/listattachedsegmentsforcompanies) \(Incremental\)
-- [Conversations](https://developers.intercom.com/docs/references/2.9/rest-api/api.intercom.io/conversations/listconversations) \(Incremental\)
-  - [Conversation Parts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
-- [Data Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
-  - [Customer Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
-  - [Company Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
-- [Contacts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/contacts/listcontacts) \(Incremental\)
+- [Conversations](https://developers.intercom.c../references/2.9/rest-api/api.intercom.io/conversations/listconversations) \(Incremental\)
+  - [Conversation Parts](https://developers.intercom.c../references/2.10/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
+- [Data Attributes](https://developers.intercom.c../references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Customer Attributes](https://developers.intercom.c../references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Company Attributes](https://developers.intercom.c../references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+- [Contacts](https://developers.intercom.c../references/2.10/rest-api/api.intercom.io/contacts/listcontacts) \(Incremental\)
 - [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
 - [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
 - [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)

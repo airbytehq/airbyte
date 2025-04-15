@@ -72,7 +72,7 @@ synced data from Airbyte.
 ## Naming Conventions
 
 From
-[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
+[Postgres SQL Identifiers syntax](https://www.postgresql.o../9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
 
 - SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical
   marks and non-Latin letters\) or an underscore \(\_\).
@@ -106,7 +106,7 @@ tables are replaced with underscores.
 :::
 
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new
    destination**.
 3. On the Set up the destination page, enter the name for the PGVector connector and select
@@ -150,7 +150,7 @@ All other fields are ignored.
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry.  Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
+Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry.  Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.c../get_started/introduction).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
@@ -162,11 +162,11 @@ The stream name gets added as a metadata field `_ab_stream` to each document. If
 
 The connector can use one of the following embedding methods:
 
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+1. OpenAI - using [OpenAI API](https://beta.openai.c../api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.c../guides/rate-limits/overview).
 
 2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
 
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.c../modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
 
 ### Indexing/Data Storage 
 

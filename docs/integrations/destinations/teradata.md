@@ -38,7 +38,7 @@ Each stream will be output into its own table in Teradata. Each table will conta
 ### Features
 
 The Teradata destination connector supports the
-following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following[ sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                        | Supported?\(Yes/No\) | Notes |
 | :----------------------------- | :------------------- | :---- |

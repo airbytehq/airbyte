@@ -23,7 +23,7 @@ You can specify a `start_date` for replicating data from the beginning of that d
 
 ## Supported sync modes
 
-The source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental

@@ -20,7 +20,7 @@ You can find more about their API here https://api-docs.incident.io/
 
 ## Supported sync modes
 
-The source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 

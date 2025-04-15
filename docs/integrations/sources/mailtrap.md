@@ -2,7 +2,7 @@
 
 Email Delivery Platform for individuals and businesses to test, send and control email infrastructure in one place.
 
-[API Documentation](https://api-docs.mailtrap.io/docs/mailtrap-api-docs/5tjdeg9545058-mailtrap-api)
+[API Documentation](https://api-docs.mailtrap.../mailtrap-api-docs/5tjdeg9545058-mailtrap-api)
 
 ## Configuration
 

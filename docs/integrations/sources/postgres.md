@@ -5,9 +5,9 @@
 Airbyte's certified Postgres connector offers the following features:
 
 - Replicate data from tables, views and materialized views. Other data objects won't be replicated to the destination like indexes, permissions.
-- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin).
-- All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-- Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
+- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/platform/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin).
+- All available [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
+- Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/platform/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
 
@@ -50,7 +50,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 
 ### Step 2: Create a new Postgres source in Airbyte UI
 
-From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
+From your [Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
 
 To fill out the required information:
 <FieldAnchor field="host, port, database">
@@ -77,9 +77,9 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ## Advanced Configuration using CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
+Airbyte uses [logical replication](https://www.postgresql.o../10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
-- See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
+- See [here](https://docs.airbyte.com/platform/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
 - See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
 
 We recommend configuring your Postgres source with CDC when:
@@ -116,7 +116,7 @@ To enable logical replication, follow these steps based on your deployment envir
 
 #### Bare Metal, VMs, and Docker
 
-To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the [postgresql.conf file](https://www.postgresql.org/docs/current/config-setting.html) for your Postgres database.
+To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the [postgresql.conf file](https://www.postgresql.o../current/config-setting.html) for your Postgres database.
 
 | Parameter             | Description                                                                    | Set value to                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -168,7 +168,7 @@ For each table you want to replicate with CDC, follow the steps below:
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
-In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
+In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.o../current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
 ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
@@ -177,7 +177,7 @@ ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non
 CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`
 ```
 
-The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.o../10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 </FieldAnchor>
 
 :::note
@@ -196,7 +196,7 @@ The Postgres source currently offers 3 methods of replicating updates to your de
 
 ### CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We recommend configuring your Postgres source with CDC when:
+Airbyte uses [logical replication](https://www.postgresql.o../10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/platform/understanding-airbyte/cdc/). We recommend configuring your Postgres source with CDC when:
 
 - You need a record of deletions.
 - You have a very large database (500 GB or more).
@@ -282,7 +282,7 @@ To see connector limitations, or troubleshoot your Postgres connector, see more 
 
 ## Data type mapping
 
-According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.o../14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
 | ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -561,7 +561,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 1.0.2   | 2022-08-11 | [15538](https://github.com/airbytehq/airbyte/pull/15538)   | Allow additional properties in db stream state                                                                                                                             |
 | 1.0.1   | 2022-08-10 | [15496](https://github.com/airbytehq/airbyte/pull/15496)   | Fix state emission in incremental sync                                                                                                                                     |
 |         | 2022-08-10 | [15481](https://github.com/airbytehq/airbyte/pull/15481)   | Fix data handling from WAL logs in CDC mode                                                                                                                                |
-| 1.0.0   | 2022-08-05 | [15380](https://github.com/airbytehq/airbyte/pull/15380)   | Change connector label to generally_available (requires [upgrading](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to `v0.40.0-alpha`) |
+| 1.0.0   | 2022-08-05 | [15380](https://github.com/airbytehq/airbyte/pull/15380)   | Change connector label to generally_available (requires [upgrading](https://docs.airbyte.com/platform/operator-guides/upgrading-airbyte/) your Airbyte platform to `v0.40.0-alpha`) |
 | 0.4.44  | 2022-08-05 | [15342](https://github.com/airbytehq/airbyte/pull/15342)   | Adjust titles and descriptions in spec.json                                                                                                                                |
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226)   | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273)   | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |

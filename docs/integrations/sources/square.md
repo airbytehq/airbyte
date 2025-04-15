@@ -11,13 +11,13 @@ To set up the Square source connector with Airbyte, you'll need to create your S
 ### Step 1: Set up Square
 
 1. Create [Square Application](https://developer.squareup.com/apps)
-2. Obtain [Personal token](https://developer.squareup.com/docs/build-basics/access-tokens) or [Oauth access token](https://developer.squareup.com/docs/oauth-api/create-urls-for-square-authorization).
+2. Obtain [Personal token](https://developer.squareup.c../build-basics/access-tokens) or [Oauth access token](https://developer.squareup.c../oauth-api/create-urls-for-square-authorization).
 
 ### Step 2: Set up the Square connector in Airbyte
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Square connector and select **Square** from the Source type dropdown.
 4. Choose authentication method:
@@ -47,12 +47,12 @@ To set up the Square source connector with Airbyte, you'll need to create your S
 
 ## Supported sync modes
 
-The Square source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Square source connector supports the following [ sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 

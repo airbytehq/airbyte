@@ -17,10 +17,10 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 - Fill up GCS info
   - **GCS Bucket Name**
-    - See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
+    - See [this](https://platform/cloud.google.com/stora../creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
   - **GCS Bucket Region**
   - **HMAC Key Access ID**
-    - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
+    - See [this](https://platform/cloud.google.com/stora../authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://platform/cloud.google.com/stora../authentication/hmackeys)
     - We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
       ```
       storage.multipartUploads.abort
@@ -42,7 +42,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | Feature                        | Support | Notes                                                                                                                                                                                                    |
 | :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
-| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/platform/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
 | Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
 | Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
 
@@ -52,13 +52,13 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | :----------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GCS Bucket Name    | string  | Name of the bucket to sync data into.                                                                                                                                                                                                                                       |
 | GCS Bucket Path    | string  | Subdirectory under the above bucket to sync the data into.                                                                                                                                                                                                                  |
-| GCS Region         | string  | See [here](https://cloud.google.com/storage/docs/locations) for all region codes.                                                                                                                                                                                           |
-| HMAC Key Access ID | string  | HMAC key access ID . The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
+| GCS Region         | string  | See [here](https://platform/cloud.google.com/stora../locations) for all region codes.                                                                                                                                                                                           |
+| HMAC Key Access ID | string  | HMAC key access ID . The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://platform/cloud.google.com/stora../authentication/hmackeys) for details. |
 | HMAC Key Secret    | string  | The corresponding secret for the access ID. It is a 40-character base-64 encoded string.                                                                                                                                                                                    |
 | Format             | object  | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                               |
 | Part Size          | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks.                                                                                                                                                       |
 
-Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
+Currently, only the [HMAC key](https://platform/cloud.google.com/stora../authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
 
 Additionally, your bucket must be encrypted using a Google-managed encryption key (this is the default setting when creating a new bucket). We currently do not support buckets using customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
 
@@ -102,7 +102,7 @@ Each stream will be outputted to its dedicated directory according to the config
 
 ### Avro
 
-[Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the Airbyte S3 Avro connector always uses the [binary encoding](http://avro.apache.org/docs/current/spec.html#binary_encoding), and assumes that all data records follow the same schema.
+[Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the Airbyte S3 Avro connector always uses the [binary encoding](http://avro.apache.o../current/spec.html#binary_encoding), and assumes that all data records follow the same schema.
 
 #### Configuration
 
@@ -133,7 +133,7 @@ Here is the available compression codecs:
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/platform/understanding-airbyte/json-avro-conversion).
 
 ### CSV
 
@@ -229,11 +229,11 @@ The following configuration is available to configure the Parquet output:
 | `dictionary_page_size_kb` | integer |  1024 \(KB\)   | **Dictionary Page Size** in KB. There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary.                                     |
 | `dictionary_encoding`     | boolean |     `true`     | **Dictionary encoding**. This parameter controls whether dictionary encoding is turned on.                                                                                                                                        |
 
-These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/docs/file-format/configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
+These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.o../file-format/configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/platform/understanding-airbyte/json-avro-conversion).
 
 ## Changelog
 

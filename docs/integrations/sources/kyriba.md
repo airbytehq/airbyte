@@ -20,7 +20,7 @@ The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their 
 
 ### Set up the Kyriba source connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
+1. Log in to your [Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
 2. Navigate to **Sources** in the left sidebar and click **+ New source**. in the top-right corner.
 3. Choose **Kyriba** from the list of available sources.
 4. For **Source name**, enter a descriptive name to help you identify this source.
@@ -33,7 +33,7 @@ The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their 
 
 ## Supported Sync Modes
 
-The Kyriba source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Kyriba source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental

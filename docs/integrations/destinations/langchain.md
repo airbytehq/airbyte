@@ -36,11 +36,11 @@ The stream name gets added as a metadata field `_airbyte_stream` to each documen
 
 ### Embedding
 
-THe OpenAI embedding API is used to calculate embeddings - see [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) for details. To do so, an OpenAI API key is required.
+THe OpenAI embedding API is used to calculate embeddings - see [OpenAI API](https://beta.openai.c../api-reference/text-embedding) for details. To do so, an OpenAI API key is required.
 
-This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.c../guides/rate-limits/overview).
 
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.c../modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
 
 ### Indexing
 
@@ -110,7 +110,7 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 #### DocArrayHnswSearch vector store
 
-For local testing, the [DocArrayHnswSearch](https://python.langchain.com/docs/modules/data_connection/vectorstores/integrations/docarray_hnsw) is recommended - it stores the vectors in a local file with a sqlite database for metadata. It is not suitable for production use, but it is the easiest to set up for testing and development purposes.
+For local testing, the [DocArrayHnswSearch](https://python.langchain.c../modules/data_connection/vectorstores/integrations/docarray_hnsw) is recommended - it stores the vectors in a local file with a sqlite database for metadata. It is not suitable for production use, but it is the easiest to set up for testing and development purposes.
 
 The `destination_path` has to start with `/local`. Any directory nesting within local will be mapped onto the local mount.
 

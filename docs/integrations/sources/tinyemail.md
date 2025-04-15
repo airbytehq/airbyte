@@ -1,7 +1,7 @@
 # Tinyemail
 Tinyemail is an email marketing tool.
 We can extract data from campaigns and contacts streams using this connector.
-[API Docs](https://docs.tinyemail.com/docs/tiny-email/tinyemail)
+[API Docs](https://docs.tinyemail.c../tiny-email/tinyemail)
 
 ## Configuration
 

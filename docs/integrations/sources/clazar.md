@@ -21,7 +21,7 @@ This page contains the setup guide and reference information for the [Clazar](ht
 
 1. Generate client credentials by visiting the [API access page](https://app.clazar.io/settings/api-access). 
 2. Click on `Create API Credentials` in `Integration Type` select **Airbyte** from dropdown and copy the `Client ID` & `Client secret`. 
-3. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+3. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 5. On the Set up the source page, select **Clazar** from the Source type dropdown and enter the name for the Clazar connector
 6. Enter your `Client ID` & `Client secret`. 
@@ -47,7 +47,7 @@ This page contains the setup guide and reference information for the [Clazar](ht
 
 ## Supported sync modes
 
-The Clazar source connector supports the following [sync modes](https://docs.airbyte.com/using-airbyte/core-concepts/sync-modes/):
+The Clazar source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
 | Feature                      | Supported?                             |
 |:-----------------------------|:---------------------------------------|
@@ -65,17 +65,17 @@ The Clazar source connector supports the following [sync modes](https://docs.air
 - [Contracts](https://developers.clazar.io/reference/get-contracts-1)
 - Opportunities
 - Analytics
-  - [AWS](https://developers.clazar.io/docs/aws-analytics)
+  - [AWS](https://developers.clazar.../aws-analytics)
     - Disbursement
     - Revenue
     - Opportunities
-  - [Azure](https://developers.clazar.io/docs/analytics)
+  - [Azure](https://developers.clazar.../analytics)
     - Revenue
     - Customers
     - Orders
     - Metered usage
     - Opportunities
-  - [GCP](https://developers.clazar.io/docs/gcp-analytics)
+  - [GCP](https://developers.clazar.../gcp-analytics)
     - Disbursement
     - Disbursement summary
     - Charges & usage

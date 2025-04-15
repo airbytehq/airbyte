@@ -55,7 +55,7 @@ Depending on destination type you may not be prompted to refresh your data. See 
 This will refresh the data in your destination and initiate a fresh sync.
 :::
 
-For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/refreshes).
+For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/platform/operator-guides/refreshes).
 
 ## Upgrading to 3.0.0
 
@@ -118,7 +118,7 @@ Depending on destination type you may not be prompted to refresh your data. See 
 This will refresh the data in your destination and initiate a fresh sync.
 :::
 
-For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/refreshes).
+For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/platform/operator-guides/refreshes).
 
 
 ## Upgrading to 2.0.0

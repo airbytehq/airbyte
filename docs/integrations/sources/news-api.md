@@ -40,7 +40,7 @@ The following fields are required fields for the connector to work:
 - `api_key`: Your News API key.
 - (optional) `search_query`: A search query to filter the results by. For more
   information on constructing a search query, see the
-  [News API documentation](https://newsapi.org/docs/endpoints/everything).
+  [News API documentation](https://newsapi.o../endpoints/everything).
 - (optional) `search_in`: Fields to search in. Possible values are `title`,
   `description` and `content`.
 - (optional) `sources`: Sources to search in. For a list of sources, see the

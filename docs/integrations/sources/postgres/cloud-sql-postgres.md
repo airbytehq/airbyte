@@ -2,11 +2,11 @@
 
 Airbyte's certified Postgres connector offers the following features:
 
-- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](https://docs.airbyte.com/integrations/sources/postgres#xmin).
-- All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-- Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
+- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/platform/understanding-airbyte/cdc) and replication using the [xmin system column](https://docs.airbyte.com/integrations/sources/postgres#xmin).
+- All available [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
+- Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/platform/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
+![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db7../integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ Once this is complete, you will be able to select Postgres as a source for repli
 
 #### Step 1: Create a dedicated read-only Postgres user
 
-These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing Postgres user in your database. To create a user, first [connect to your database](https://cloud.google.com/sql/docs/postgres/connect-overview#external-connection-methods). If you are getting started, you can use [Cloud Shell to connect directly from the UI](https://cloud.google.com/sql/docs/postgres/connect-instance-cloud-shell).
+These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing Postgres user in your database. To create a user, first [connect to your database](https://platform/cloud.google.com/s../postgres/connect-overview#external-connection-methods). If you are getting started, you can use [Cloud Shell to connect directly from the UI](https://platform/cloud.google.com/s../postgres/connect-instance-cloud-shell).
 
 The following commands will create a new user:
 
@@ -40,9 +40,9 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 
 #### Step 2: Create a new Postgres source in Airbyte UI
 
-From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
+From your [Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
 
-![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
+![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db7../integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
 
 To fill out the required information:
 
@@ -73,9 +73,9 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ### Setup using CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
+Airbyte uses [logical replication](https://www.postgresql.o../10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
-- See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
+- See [here](https://docs.airbyte.com/platform/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
 - See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
 
 We recommend configuring your Postgres source with CDC when:
@@ -96,7 +96,7 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, you may connect to primary/master databases. To use a replica as source, which is available starting from Postgres 16.1, and provided additional configurations have been enabled on the database instance (please visit [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)), the most recent required connector's version is 3.6.21.
+For CDC, you may connect to primary/master databases. To use a replica as source, which is available starting from Postgres 16.1, and provided additional configurations have been enabled on the database instance (please visit [Postgres official documentation](https://www.postgresql.o../current/warm-standby.html#CASCADING-REPLICATION)), the most recent required connector's version is 3.6.21.
 
 
 #### Step 2: Provide additional permissions to read-only user
@@ -136,7 +136,7 @@ For each table you want to replicate with CDC, follow the steps below:
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
-In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
+In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.o../current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
 ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
@@ -145,7 +145,7 @@ ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
 CREATE PUBLICATION airbyte_publication FOR TABLE tbl1, tbl2, tbl3;`
 ```
 
-The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.o../10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 
 :::note
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.

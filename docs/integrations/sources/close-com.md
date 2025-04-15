@@ -22,11 +22,11 @@ For security purposes, the API Key will only be displayed once upon creation. Be
 :::
 
 For further reading on creating and maintaining Close.com API keys, refer to the
-[official documentation](https://help.close.com/docs/api-keys-oauth).
+[official documentation](https://help.close.c../api-keys-oauth).
 
 ### Step 2: Set up the Close.com connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
+1. [Log in to your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Close.com** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. In the **API Key** field, enter your Close.com **API Key**

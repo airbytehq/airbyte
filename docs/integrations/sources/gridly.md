@@ -29,7 +29,7 @@ This page contains the setup guide and reference information for the Gridly sour
 
 ## Supported Streams
 
-- [Records](https://www.gridly.com/docs/api/#record)
+- [Records](https://www.gridly.c../api/#record)
 
 ## Changelog
 

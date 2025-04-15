@@ -46,7 +46,7 @@ To access the Sandbox environment:
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select TikTok Marketing from the Source type dropdown.
 4. Enter a name for the TikTok Marketing connector.
@@ -70,7 +70,7 @@ To access the Sandbox environment:
 
 ## Supported sync modes
 
-The TikTok Marketing source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The TikTok Marketing source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental

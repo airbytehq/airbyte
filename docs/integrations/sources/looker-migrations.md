@@ -10,7 +10,7 @@ Version 1.0.0 introduces changes to the connection configuration which has been 
 
 In addtion to affected streams, the schemas of the streams are expected to change.
 
-For details about the API migration, check out [here](https://cloud.google.com/looker/docs/api-3x-deprecation)
+For details about the API migration, check out [here](https://platform/cloud.google.com/look../api-3x-deprecation)
 
 ## Migration Steps
 
@@ -31,4 +31,4 @@ For details about the API migration, check out [here](https://cloud.google.com/l
     > [!NOTE]  
     > This will reset the data in your destination and initiate a fresh sync.
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/platform/operator-guides/reset).

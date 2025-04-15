@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data from the [Toggl API](https://developers.track.toggl.com/docs/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source can sync data from the [Toggl API](https://developers.track.toggl.c../). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
@@ -23,7 +23,7 @@ This source can sync data from the [Toggl API](https://developers.track.toggl.co
 
 ### Performance considerations
 
-Toggl APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.track.toggl.com/docs/#the-api-format)
+Toggl APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.track.toggl.c../#the-api-format)
 
 ## Getting started
 

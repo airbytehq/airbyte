@@ -10,7 +10,7 @@ Log in to your Revolut Business account: Access the Revolut Business log in page
 Navigate to Merchant API settings: Once logged in, access the Merchant API settings page by clicking your profile icon in the top left corner, then selecting APIs &gt; Merchant API. 
 Here you can access your Production API keys (Public, Secret) specific to your Merchant account.
 Get API keys: If you&#39;re visiting this page for the first time, you&#39;ll need to initiate the process by clicking the Get started button. To generate your Production API Secret key, click the Generate button.
-You can find more about the API here https://developer.revolut.com/docs/merchant/merchant-api
+You can find more about the API here https://developer.revolut.c../merchant/merchant-api
 
 ## Configuration
 

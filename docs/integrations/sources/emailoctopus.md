@@ -9,13 +9,13 @@
 
 | Feature           | Supported?\(Yes/No\) | Notes                                                                                          |
 | :---------------- | :------------------- | :--------------------------------------------------------------------------------------------- |
-| Full Refresh Sync | Yes                  | [Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite) |
+| Full Refresh Sync | Yes                  | [Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite) |
 | Incremental Sync  | No                   |                                                                                                |
 
 ## Supported Streams
 
-- [Get all campaigns](https://emailoctopus.com/api-documentation/campaigns/get-all)
-- [Get all lists](https://emailoctopus.com/api-documentation/lists/get-all)
+- [Get all campaigns](https://emailoctopus.com/platform/api-documentation/campaigns/get-all)
+- [Get all lists](https://emailoctopus.com/platform/api-documentation/lists/get-all)
 
 ## Performance considerations
 

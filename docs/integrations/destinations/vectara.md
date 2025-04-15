@@ -38,10 +38,10 @@ You will need a Vectara account to use Vectara with Airbyte. To get started, use
 
 1. [Sign up](https://vectara.com/integrations/airbyte) for a Vectara account if you don't already have one. Once you have completed your sign up you will have a Vectara customer ID. You can find your customer ID by clicking on your name, on the top-right of the Vectara console window.
 2. Within your account you can create your corpus, which represents an area that stores text data you want to ingest into Vectara.
-   - To create a corpus, use the **"Create Corpus"** button in the console. You then provide a name to your corpus as well as a description. If you click on your created corpus, you can see its name and corpus ID right on the top. You can see more details in this [guide](https://docs.vectara.com/docs/console-ui/creating-a-corpus).
+   - To create a corpus, use the **"Create Corpus"** button in the console. You then provide a name to your corpus as well as a description. If you click on your created corpus, you can see its name and corpus ID right on the top. You can see more details in this [guide](https://docs.vectara.c../console-ui/creating-a-corpus).
    - Optionally you can define filtering attributes and apply some advanced options.
    - For the Vectara connector to work properly you **must** define a special meta-data field called `_ab_stream` (string typed) which the connector uses to identify source streams.
-3. The Vectara destination connector uses [OAuth2.0 Credentials](https://docs.vectara.com/docs/learn/authentication/oauth-2). You will need your `Client ID` and `Client Secret` handy for your connector setup.
+3. The Vectara destination connector uses [OAuth2.0 Credentials](https://docs.vectara.c../learn/authentication/oauth-2). You will need your `Client ID` and `Client Secret` handy for your connector setup.
 
 ### Setup the Vectara Destination in Airbyte
 

@@ -23,4 +23,4 @@ With the release of **Confluence API V2**, several changes have been introduced 
 1. **Upgrade** to version **1.0.0**.  
 2. **Resynchronize** the connector to reset schemas and update existing records.  
 
-For more details, refer to the official **[Confluence API V2 Changelog](https://developer.atlassian.com/cloud/confluence/changelog/#CHANGE-2425)**.
+For more details, refer to the official **[Confluence API V2 Changelog](https://developer.atlassian.com/platform/cloud/confluence/changelog/#CHANGE-2425)**.

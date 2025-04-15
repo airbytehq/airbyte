@@ -29,7 +29,7 @@ used internally by Airbyte to prevent records from getting overwritten and can b
 
 To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn
 about how to create one in the
-[MeiliSearch docs](https://www.meilisearch.com/docs/learn/getting_started/installation).
+[MeiliSearch docs](https://www.meilisearch.c../learn/getting_started/installation).
 
 ### Setup guide
 

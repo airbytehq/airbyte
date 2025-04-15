@@ -2,10 +2,10 @@
 This page contains the setup guide and reference information for the [Missive](https://missiveapp.com/) source connector.
 
 ## Documentation reference:
-Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API documentation
+Visit `https://missiveapp.com/help/platform/api-documentation/rest-endpoints` for API documentation
 
 ## Authentication setup
-`Missive` uses Bearer token authentication authentication, Visit your profile settings for getting your api keys. Refer `https://missiveapp.com/help/api-documentation/getting-started` for more details.
+`Missive` uses Bearer token authentication authentication, Visit your profile settings for getting your api keys. Refer `https://missiveapp.com/help/platform/api-documentation/getting-started` for more details.
 
 ## Configuration
 

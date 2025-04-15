@@ -26,14 +26,14 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 5. Choose a **Key name**, and select **Read** for all available permissions.
 6. Click **Create key**. You may be prompted to enter a confirmation code sent to your email address.
 
-For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
+For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.c../keys).
 
 ### Step 2: Set up the Stripe connector in Airbyte
 
 <!-- env:cloud -->
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Stripe from the Source type dropdown.
 4. Enter a name for the Stripe connector.
@@ -70,7 +70,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 ## Supported sync modes
 
-The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -79,66 +79,66 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 
 The Stripe source connector supports the following streams:
 
-- [Accounts](https://stripe.com/docs/api/accounts/list)
-- [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
-- [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list) \(Incremental\)
-- [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
-- [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
-- [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list) \(Incremental\)
-- [Cardholders](https://stripe.com/docs/api/issuing/cardholders/list) \(Incremental\)
-- [Cards](https://stripe.com/docs/api/issuing/cards/list) \(Incremental\)
-- [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
+- [Accounts](https://stripe.c../api/accounts/list)
+- [Application Fees](https://stripe.c../api/application_fees) \(Incremental\)
+- [Application Fee Refunds](https://stripe.c../api/fee_refunds/list) \(Incremental\)
+- [Authorizations](https://stripe.c../api/issuing/authorizations/list) \(Incremental\)
+- [Balance Transactions](https://stripe.c../api/balance_transactions/list) \(Incremental\)
+- [Bank accounts](https://stripe.c../api/customer_bank_accounts/list) \(Incremental\)
+- [Cardholders](https://stripe.c../api/issuing/cardholders/list) \(Incremental\)
+- [Cards](https://stripe.c../api/issuing/cards/list) \(Incremental\)
+- [Charges](https://stripe.c../api/charges/list) \(Incremental\)
   :::note
-  The `amount` column defaults to the smallest currency unit. Check [the Stripe docs](https://stripe.com/docs/api/charges/object) for more details.
+  The `amount` column defaults to the smallest currency unit. Check [the Stripe docs](https://stripe.c../api/charges/object) for more details.
   :::
-- [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list) \(Incremental\)
-- [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items) \(Incremental\)
-- [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
-- [Credit Notes](https://stripe.com/docs/api/credit_notes/list) \(Incremental\)
-- [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) \(Incremental\)
-- [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
-- [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
-- [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
-- [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
-- [External Account Bank Accounts](https://stripe.com/docs/api/external_account_bank_accounts/list) \(Incremental\)
-- [External Account Cards](https://stripe.com/docs/api/external_account_cards/list) \(Incremental\)
-- [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
-- [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
-- [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
-- [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
-- [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
+- [Checkout Sessions](https://stripe.c../api/checkout/sessions/list) \(Incremental\)
+- [Checkout Sessions Line Items](https://stripe.c../api/checkout/sessions/line_items) \(Incremental\)
+- [Coupons](https://stripe.c../api/coupons/list) \(Incremental\)
+- [Credit Notes](https://stripe.c../api/credit_notes/list) \(Incremental\)
+- [Customer Balance Transactions](https://stripe.c../api/customer_balance_transactions/list) \(Incremental\)
+- [Customers](https://stripe.c../api/customers/list) \(Incremental\)
+- [Disputes](https://stripe.c../api/disputes/list) \(Incremental\)
+- [Early Fraud Warnings](https://stripe.c../api/radar/early_fraud_warnings/list) \(Incremental\)
+- [Events](https://stripe.c../api/events/list) \(Incremental\)
+- [External Account Bank Accounts](https://stripe.c../api/external_account_bank_accounts/list) \(Incremental\)
+- [External Account Cards](https://stripe.c../api/external_account_cards/list) \(Incremental\)
+- [File Links](https://stripe.c../api/file_links/list) \(Incremental\)
+- [Files](https://stripe.c../api/files/list) \(Incremental\)
+- [Invoice Items](https://stripe.c../api/invoiceitems/list) \(Incremental\)
+- [Invoice Line Items](https://stripe.c../api/invoices/invoice_lines)
+- [Invoices](https://stripe.c../api/invoices/list) \(Incremental\)
+- [Payment Intents](https://stripe.c../api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
-- [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
+- [Payouts](https://stripe.c../api/payouts/list) \(Incremental\)
 - [Payout Balance Transactions](https://docs.stripe.com/api/balance_transactions/list) \(Incremental\)
   :::note
   This stream is built with a call using payout_id from the payout stream (parent) as a parameter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
   :::
-- [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
-- [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
-- [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
-- [Prices](https://stripe.com/docs/api/prices/list) \(Incremental\)
-- [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
-- [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
-- [Reviews](https://stripe.com/docs/api/radar/reviews/list) \(Incremental\)
-- [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
-- [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
-- [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
-- [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
-- [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
-- [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
-- [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
-- [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
-- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
-- [Usage Records](https://stripe.com/docs/api/usage_records)
+- [Promotion Code](https://stripe.c../api/promotion_codes/list) \(Incremental\)
+- [Persons](https://stripe.c../api/persons/list) \(Incremental\)
+- [Plans](https://stripe.c../api/plans/list) \(Incremental\)
+- [Prices](https://stripe.c../api/prices/list) \(Incremental\)
+- [Products](https://stripe.c../api/products/list) \(Incremental\)
+- [Refunds](https://stripe.c../api/refunds/list) \(Incremental\)
+- [Reviews](https://stripe.c../api/radar/reviews/list) \(Incremental\)
+- [Setup Attempts](https://stripe.c../api/setup_attempts/list) \(Incremental\)
+- [Setup Intents](https://stripe.c../api/setup_intents/list) \(Incremental\)
+- [Shipping Rates](https://stripe.c../api/shipping_rates/list) \(Incremental\)
+- [Subscription Items](https://stripe.c../api/subscription_items/list)
+- [Subscription Schedule](https://stripe.c../api/subscription_schedules) \(Incremental\)
+- [Subscriptions](https://stripe.c../api/subscriptions/list) \(Incremental\)
+- [Top Ups](https://stripe.c../api/topups/list) \(Incremental\)
+- [Transactions](https://stripe.c../api/transfers/list) \(Incremental\)
+- [Transfers](https://stripe.c../api/transfers/list) \(Incremental\)
+- [Transfer Reversals](https://stripe.c../api/transfer_reversals/list)
+- [Usage Records](https://stripe.c../api/usage_records)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Data type map
 
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+The [Stripe API](https://stripe.c../api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
 
 ## Limitations & Troubleshooting
 
@@ -151,10 +151,10 @@ Expand to see details about Stripe connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.com/docs/rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.c../rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 :::warning
-**Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
+**Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.c../api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
 

@@ -8,7 +8,7 @@ vector data
 
 :::info
 Airbyte SingleStore destination is implemented as Destination V2
-with [Typing and Deduping](https://docs.airbyte.com/using-airbyte/core-concepts/typing-deduping) support. Legacy V1 is
+with [Typing and Deduping](https://docs.airbyte.com/platform/using-airbyte/core-concepts/typing-deduping) support. Legacy V1 is
 not supported.
 :::
 

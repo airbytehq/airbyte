@@ -3,13 +3,13 @@
 Airbyte's certified MSSQL connector offers the following features:
 
 - Multiple methods of keeping your data fresh, including
-  [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the
+  [Change Data Capture (CDC)](https://docs.airbyte.com/platform/understanding-airbyte/cdc) using the
   [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
 - Incremental as well as Full Refresh
-  [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing
+  [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes), providing
   flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with
-  [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
+  [checkpointing](https://docs.airbyte.com/platform/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
 > ⚠️ **Please note the minimum required platform version is v0.58.0 to run source-mssql 4.0.18 and above.**
@@ -69,7 +69,7 @@ CDC-enabled tables.
 Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync
 from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
-Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte
+Please read the [CDC docs](../platform/understanding-airbyte/cdc.md) for an overview of how Airbyte
 approaches CDC.
 
 ### Should I use CDC for MSSQL?
@@ -86,7 +86,7 @@ approaches CDC.
 
 #### CDC Limitations
 
-- Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that
+- Make sure to read our [CDC docs](../platform/understanding-airbyte/cdc.md) to see limitations that
   impact all databases using CDC replication.
 - `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by
   Debezium). For more details please check
@@ -103,7 +103,7 @@ approaches CDC.
 - Using variables with partition switching on databases or tables with change data capture \(CDC\)
   is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement.
 - CDC incremental syncing is only available for tables with at least one primary key. Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
-  For more information on CDC limitations, refer to our [CDC Limitations doc](https://docs.airbyte.com/understanding-airbyte/cdc#limitations).
+  For more information on CDC limitations, refer to our [CDC Limitations doc](https://docs.airbyte.com/platform/understanding-airbyte/cdc#limitations).
 - Our CDC implementation uses at least once delivery for all change records.
 - Read more on CDC limitations in the
   [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
@@ -420,7 +420,7 @@ Starting with version 0.4.18, `replication_method` configuration parameter is sa
 After upgrading Microsoft SQL Source connector from 0.4.17 or older version to 0.4.18 or newer
 version you need to fix source configurations in the `actor` table in Airbyte database. To do so,
 you need to run two SQL queries. Follow the instructions in
-[Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db)
+[Airbyte documentation](https://docs.airbyte.com/platform/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db)
 to run SQL queries on Airbyte database.
 
 If you have connections with Microsoft SQL Source using _Standard_ replication method, run this SQL:

@@ -25,13 +25,13 @@ There are some notable shortcomings associated with the Xmin replication method:
 
 ### Version Requirements
 
-- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
+- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/platform/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ### CDC Requirements
 
-- Incremental sync is only supported for tables with primary keys. For tables without primary keys, use [Full Refresh sync](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite).
+- Incremental sync is only supported for tables with primary keys. For tables without primary keys, use [Full Refresh sync](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite).
 - Data must be in tables and not views. If you require data synchronization from a view, you would need to create a new connection with `Standard` as `Replication Method`.
 - The modifications you want to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made using `TRUNCATE`/`ALTER` will not appear in logs and therefore in your destination.
 - Schema changes are not supported automatically for CDC sources. Reset and resync data if you make a schema change.
@@ -89,7 +89,7 @@ When using CDC with Azure PG Flex, if a failover to a new leader happens, your C
 
 ### Sync data from Postgres hot standby server
 
-When the connector is reading from a Postgres replica that is configured as a Hot Standby, any update from the primary server will terminate queries on the replica after a certain amount of time, default to 30 seconds. This default waiting time is not enough to sync any meaning amount of data. See the `Handling Query Conflicts` section in the Postgres [documentation](https://www.postgresql.org/docs/14/hot-standby.html#HOT-STANDBY-CONFLICT) for detailed explanation.
+When the connector is reading from a Postgres replica that is configured as a Hot Standby, any update from the primary server will terminate queries on the replica after a certain amount of time, default to 30 seconds. This default waiting time is not enough to sync any meaning amount of data. See the `Handling Query Conflicts` section in the Postgres [documentation](https://www.postgresql.o../14/hot-standby.html#HOT-STANDBY-CONFLICT) for detailed explanation.
 
 Here is the typical exception:
 
@@ -101,9 +101,9 @@ Caused by: org.postgresql.util.PSQLException: FATAL: terminating connection due 
 
 Possible solutions include:
 
-- Recommended: Set [`hot_standby_feedback`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
+- Recommended: Set [`hot_standby_feedback`](https://www.postgresql.o../14/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
 - Recommended: Sync data when there is no update running in the primary server, or sync data from the primary server.
-- Not Recommended: Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
+- Not Recommended: Increase [`max_standby_archive_delay`](https://www.postgresql.o../14/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.o../14/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
 
 ### Under CDC incremental mode, there are still full refresh syncs
 
@@ -115,7 +115,7 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
   - Sync the data source more frequently.
-  - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
+  - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.o../current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
 - When the Postgres connector successfully reads the WAL and acknowledges it to Postgres, but the destination connector fails to consume the data, the Postgres connector will try to read the same WAL again, which may have been removed by Postgres, since the WAL record is already acknowledged. This scenario is rare, because it can happen, and currently there is no way to prevent it. The correct behavior is to perform a full refresh.
 
 ### Temporary File Size Limit
@@ -214,9 +214,9 @@ To fix the issue when reading against a read replica:
     SELECT version();
     ```
 
-2. Configure your database flags to enable pg_cron. For help with this, see [Google Cloud's docs](https://cloud.google.com/sql/docs/postgres/flags).
+2. Configure your database flags to enable pg_cron. For help with this, see [Google Cloud's docs](https://platform/cloud.google.com/s../postgres/flags).
 
-	1. Set the `cloudsql.enable_pg_cron` flag to `on`. For more information, see [Google Cloud's docs](https://cloud.google.com/sql/docs/postgres/extensions#pg_cron).
+	1. Set the `cloudsql.enable_pg_cron` flag to `on`. For more information, see [Google Cloud's docs](https://platform/cloud.google.com/s../postgres/extensions#pg_cron).
 
 	2. Set the `shared_preload_libraries` flag to include `pg_cron`.
 
@@ -230,7 +230,7 @@ To fix the issue when reading against a read replica:
 		shared_preload_libraries = 'pg_cron,pg_stat_statements'
 		```
 
-	3. Restart your PostgreSQL instance. For help with this, see [Google Cloud's docs](https://cloud.google.com/sql/docs/postgres/start-stop-restart-instance#restart).
+	3. Restart your PostgreSQL instance. For help with this, see [Google Cloud's docs](https://platform/cloud.google.com/s../postgres/start-stop-restart-instance#restart).
 
 PostgreSQL now preloads the `pg_cron` extension when the instance starts.
 

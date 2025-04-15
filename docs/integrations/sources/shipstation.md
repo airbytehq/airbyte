@@ -2,7 +2,7 @@
 This page contains the setup guide and reference information for Shipstation source connector.
 
 Documentation reference:
-Visit https://www.shipstation.com/docs/api/ for API documentation
+Visit https://www.shipstation.c../api/ for API documentation
 
 Authentication setup
 

@@ -18,7 +18,7 @@ To gracefully handle these changes for your existing connections, we highly reco
 8. Check all your streams.
 9. Select **Sync now** to sync your data
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 
@@ -37,7 +37,7 @@ To gracefully handle these changes for your existing connections, we highly reco
 8. Check all your streams.
 9. Select **Sync now** to sync your data
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 1.0.0
 
@@ -63,4 +63,4 @@ This is a breaking change because Stream State for `Boards Issues` will be chang
  This will reset the data in your destination and initiate a fresh sync.
    :::
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).

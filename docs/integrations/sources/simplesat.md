@@ -22,7 +22,7 @@ For the `answers` and `responses` endpoint, you can specify a `start_date` and `
 
 ## Supported sync modes
 
-The source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 

@@ -35,7 +35,7 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 
 ## Set up the Mailchimp source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. Find and select **Mailchimp** from the list of available sources.
 4. Enter a name for your source.
@@ -61,7 +61,7 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 
 ## Supported streams
 
-The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-mode):
 
 | Stream                                                                                                             | Full Refresh | Incremental |
 | :----------------------------------------------------------------------------------------------------------------- | :----------- | :---------- |

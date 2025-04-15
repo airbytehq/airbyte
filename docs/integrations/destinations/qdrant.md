@@ -21,7 +21,7 @@ For each [point](https://qdrant.tech/documentation/concepts/points/) in the coll
 You can connect to a Qdrant instance either in local mode or cloud mode.
 
 - For the local mode, you will need to set it up using Docker. Check the Qdrant docs [here](https://qdrant.tech/documentation/guides/installation/#docker) for an official guide. After setting up, you would need your host, port and if applicable, your gRPC port.
-- To setup to an instance in Qdrant cloud, check out [this official guide](https://qdrant.tech/documentation/cloud/) to get started. After setting up the instance, you would need the instance url and an API key to connect.
+- To setup to an instance in Qdrant cloud, check out [this official guide](https://qdrant.tech/documentation/platform/cloud/) to get started. After setting up the instance, you would need the instance url and an API key to connect.
 
 Note that this connector does not support a local persistent mode. To test, use the docker option.
 
@@ -44,7 +44,7 @@ Make sure your Qdrant database can be accessed by Airbyte. If your database is w
 You should now have all the requirements needed to configure Qdrant as a destination in the UI. You'll need the following information to configure the Qdrant destination:
 
 - (Required) **Text fields to embed**
-- (Optional) **Text splitter** Options around configuring the chunking process provided by the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
+- (Optional) **Text splitter** Options around configuring the chunking process provided by the [Langchain Python library](https://python.langchain.c../get_started/introduction).
 - (Required) **Fields to store as metadata**
 - (Required) **Collection** The name of the collection in Qdrant db to store your data
 - (Required) **The field in the payload that contains the embedded text**

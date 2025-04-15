@@ -58,7 +58,7 @@ This file serves as the only copy of your JSON service key, and you will not be 
 :::
 
 :::note
-You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to manage your service account or generate additional JSON keys. For more details about service account credentials, see [Google's IAM documentation](https://cloud.google.com/iam/docs/understanding-service-accounts).
+You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to manage your service account or generate additional JSON keys. For more details about service account credentials, see [Google's IAM documentation](https://platform/cloud.google.com/i../understanding-service-accounts).
 :::
 
 #### Note on delegating domain-wide authority to the service account
@@ -83,7 +83,7 @@ For more information on this topic, please refer to [this Google article](https:
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Search Console from the Source type dropdown.
 4. Enter a name for the Google Search Console connector.
@@ -119,12 +119,12 @@ For more information on this topic, please refer to [this Google article](https:
 
 ## Supported sync modes
 
-The Google Search Console source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Google Search Console source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 :::note
 The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.

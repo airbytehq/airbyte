@@ -23,7 +23,7 @@ To create a Google account, visit [Google](https://support.google.com/accounts/a
 
 ### Google Sheets (Google Spreadsheets)
 
-1. Once you are logged into your Google account, create a new Google Sheet. [Follow this guide](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create a new sheet. You may use an existing Google Sheet.
+1. Once you are logged into your Google account, create a new Google Sheet. [Follow this guide](https://support.google.c../answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create a new sheet. You may use an existing Google Sheet.
 2. You will need the link of the Google Sheet you'd like to sync. To get it, click "Share" in the top right corner of the Google Sheets interface, and then click Copy Link in the dialog that pops up.
 
 ## Step 2: Set up the Google Sheets destination connector in Airbyte

@@ -6,7 +6,7 @@ Visit `https://dev.frontapp.com/reference/introduction` for API documentation
 
 ## Authentication setup
 `Source-front` uses bearer token authentication,
-Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting your API token.
+Visit `https://dev.frontapp.c../create-and-revoke-api-tokens` for getting your API token.
 
 ## Configuration
 

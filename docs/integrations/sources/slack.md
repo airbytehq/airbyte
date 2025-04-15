@@ -102,7 +102,7 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 
 ## Supported sync modes
 
-The Slack source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Slack source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -112,7 +112,7 @@ The Slack source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-For most of the streams, the Slack source connector uses the [Conversations API](https://api.slack.com/docs/conversations-api) under the hood.
+For most of the streams, the Slack source connector uses the [Conversations API](https://api.slack.c../conversations-api) under the hood.
 
 - [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 - [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
@@ -122,7 +122,7 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 ## Performance considerations
 
-The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits).
+The connector is restricted by Slack [rate limits](https://api.slack.c../rate-limits).
 
 We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration setings.
 
@@ -146,7 +146,7 @@ Expand to see details about Slack connector limitations and troubleshooting.
 
 #### Rate limiting
 
-Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
+Slack has [rate limit restrictions](https://api.slack.c../rate-limits).
 
 ### Troubleshooting
 

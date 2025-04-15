@@ -12,7 +12,7 @@ This page contains the setup guide and reference information for the Paystack so
 
 ### Step 1: Set up Paystack connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://platform/cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Paystack** from the Source type dropdown.
 4. Enter a name for your source.
@@ -22,21 +22,21 @@ This page contains the setup guide and reference information for the Paystack so
 
 ## Supported sync modes
 
-The Paystack source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Paystack source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
 ## Supported Streams
 
-- [Customers](https://paystack.com/docs/api/customer#list) \(Incremental\)
-- [Disputes](https://paystack.com/docs/api/dispute) \(Incremental\)
-- [Invoices](https://paystack.com/docs/api/payment-request) \(Incremental\)
-- [Refunds](https://paystack.com/docs/api/refund) \(Incremental\)
-- [Settlements](https://paystack.com/docs/api/settlement) \(Incremental\)
-- [Subscriptions](https://paystack.com/docs/api/subscription) \(Incremental\)
-- [Transactions](https://paystack.com/docs/api/transaction) \(Incremental\)
-- [Transfers](https://paystack.com/docs/api/transfer) \(Incremental\)
+- [Customers](https://paystack.c../api/customer#list) \(Incremental\)
+- [Disputes](https://paystack.c../api/dispute) \(Incremental\)
+- [Invoices](https://paystack.c../api/payment-request) \(Incremental\)
+- [Refunds](https://paystack.c../api/refund) \(Incremental\)
+- [Settlements](https://paystack.c../api/settlement) \(Incremental\)
+- [Subscriptions](https://paystack.c../api/subscription) \(Incremental\)
+- [Transactions](https://paystack.c../api/transaction) \(Incremental\)
+- [Transfers](https://paystack.c../api/transfer) \(Incremental\)
 
 ### Note on Incremental Syncs
 
@@ -46,7 +46,7 @@ If your data is updated after creation, you can use the Loockback Window option 
 
 ## Data type map
 
-The [Paystack API](https://paystack.com/docs/api) is compatible with the [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The [Paystack API](https://paystack.c../api) is compatible with the [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ### Features
 

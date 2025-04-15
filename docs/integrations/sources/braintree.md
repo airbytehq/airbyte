@@ -15,7 +15,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## Set up the Braintree connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Braintree** from the Source type dropdown.
 4. Enter the name for the Braintree connector.
@@ -42,13 +42,13 @@ This source can sync data for the [Braintree API](https://developers.braintreepa
 
 The following streams are supported:
 
-- [Customers](https://developer.paypal.com/braintree/docs/reference/request/customer/search)
-- [Discounts](https://developer.paypal.com/braintree/docs/reference/response/discount)
-- [Disputes](https://developer.paypal.com/braintree/docs/reference/request/dispute/search)
+- [Customers](https://developer.paypal.com/braintr../reference/request/customer/search)
+- [Discounts](https://developer.paypal.com/braintr../reference/response/discount)
+- [Disputes](https://developer.paypal.com/braintr../reference/request/dispute/search)
 - [Transactions](https://developers.braintreepayments.com/reference/response/transaction/python)
-- [Merchant Accounts](https://developer.paypal.com/braintree/docs/reference/response/merchant-account)
-- [Plans](https://developer.paypal.com/braintree/docs/reference/response/plan)
-- [Subscriptions](https://developer.paypal.com/braintree/docs/reference/response/subscription)
+- [Merchant Accounts](https://developer.paypal.com/braintr../reference/response/merchant-account)
+- [Plans](https://developer.paypal.com/braintr../reference/response/plan)
+- [Subscriptions](https://developer.paypal.com/braintr../reference/response/subscription)
 
 ## Data type mapping
 

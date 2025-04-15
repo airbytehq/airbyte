@@ -121,7 +121,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 Now that you have set up the TiDB source connector, check out the following TiDB tutorial:
 
-- [Using Airbyte to Migrate Data from TiDB Cloud to Snowflake](https://en.pingcap.com/blog/using-airbyte-to-migrate-data-from-tidb-cloud-to-snowflake/)
+- [Using Airbyte to Migrate Data from TiDB Cloud to Snowflake](https://en.pingcap.com/blog/platform/using-airbyte-to-migrate-data-from-tidb-cloud-to-snowflake/)
 
 ## Changelog
 

@@ -11,24 +11,24 @@ _Incremental_ syn means only changed resources are copied from Recurly. For the 
 
 Several output streams are available from this source:
 
-- [Accounts](https://docs.recurly.com/docs/accounts)
-- [Account Notes](https://docs.recurly.com/docs/accounts#account-notes)
-- [Account Coupon Redemptions](https://docs.recurly.com/docs/coupons#redemptions)
-- [Add Ons](https://docs.recurly.com/docs/plans#add-ons-1)
-- [Billing Infos](https://docs.recurly.com/docs/accounts#billing-info)
-- [Coupons](https://docs.recurly.com/docs/coupons)
-- [Unique Coupons](https://docs.recurly.com/docs/bulk-unique-coupons)
-- [Credit Payments](https://docs.recurly.com/docs/invoices)
-- [Automated Exports](https://docs.recurly.com/docs/export-overview)
-- [Invoices](https://docs.recurly.com/docs/invoices)
+- [Accounts](https://docs.recurly.c../accounts)
+- [Account Notes](https://docs.recurly.c../accounts#account-notes)
+- [Account Coupon Redemptions](https://docs.recurly.c../coupons#redemptions)
+- [Add Ons](https://docs.recurly.c../plans#add-ons-1)
+- [Billing Infos](https://docs.recurly.c../accounts#billing-info)
+- [Coupons](https://docs.recurly.c../coupons)
+- [Unique Coupons](https://docs.recurly.c../bulk-unique-coupons)
+- [Credit Payments](https://docs.recurly.c../invoices)
+- [Automated Exports](https://docs.recurly.c../export-overview)
+- [Invoices](https://docs.recurly.c../invoices)
 - [Measured Units](https://developers.recurly.com/api/v2021-02-25/index.html#tag/measured_unit)
-- [Line Items](https://docs.recurly.com/docs/invoices#line-items)
-- [Plans](https://docs.recurly.com/docs/plans)
-- [Shipping Addresses](https://docs.recurly.com/docs/shipping-addresses)
-- [Shipping Methods](https://docs.recurly.com/docs/shipping#shipping-methods)
-- [Subscriptions](https://docs.recurly.com/docs/subscriptions)
-- [Subscription Changes](https://docs.recurly.com/docs/change-subscription#subscription-changes)
-- [Transactions](https://docs.recurly.com/docs/transactions)
+- [Line Items](https://docs.recurly.c../invoices#line-items)
+- [Plans](https://docs.recurly.c../plans)
+- [Shipping Addresses](https://docs.recurly.c../shipping-addresses)
+- [Shipping Methods](https://docs.recurly.c../shipping#shipping-methods)
+- [Subscriptions](https://docs.recurly.c../subscriptions)
+- [Subscription Changes](https://docs.recurly.c../change-subscription#subscription-changes)
+- [Transactions](https://docs.recurly.c../transactions)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -55,7 +55,7 @@ The Recurly connector should not run into Recurly API limitations under normal u
 
 ### Setup guide
 
-Generate a API key using the [Recurly documentation](https://docs.recurly.com/docs/api-keys#section-find-or-generate-your-api-key)
+Generate a API key using the [Recurly documentation](https://docs.recurly.c../api-keys#section-find-or-generate-your-api-key)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 

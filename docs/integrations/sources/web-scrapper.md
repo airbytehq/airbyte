@@ -5,7 +5,7 @@
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_token` | `string` | API Token. API token to use. Find it at https://cloud.webscraper.io/api |  |
+| `api_token` | `string` | API Token. API token to use. Find it at https://platform/cloud.webscraper.io/api |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

@@ -12,11 +12,11 @@ This page contains the setup guide and reference information for the [Delighted]
 ### Step 1: Obtain a Delighted API Key
 
 To set up the Delighted source connector, you'll need a Delighted API key. For detailed instructions, please refer to the
-[official Delighted documentation](https://app.delighted.com/docs/api).
+[official Delighted documentation](https://app.delighted.c../api).
 
 ### Step 2: Set up the Delighted connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
+1. [Log in to your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Delighted** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. Enter your **Delighted API Key**.
@@ -31,21 +31,21 @@ If you are configuring this connector programmatically, please format your date 
 
 ## Supported sync modes
 
-The Delighted source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Delighted source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported streams
 
 This source is capable of syncing the following core streams:
 
-- [Bounced People](https://app.delighted.com/docs/api/listing-bounced-people)
-- [People](https://app.delighted.com/docs/api/listing-people)
-- [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
-- [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
+- [Bounced People](https://app.delighted.c../api/listing-bounced-people)
+- [People](https://app.delighted.c../api/listing-people)
+- [Survey Responses](https://app.delighted.c../api/listing-survey-responses)
+- [Unsubscribed People](https://app.delighted.c../api/listing-unsubscribed-people)
 
 ## Changelog
 

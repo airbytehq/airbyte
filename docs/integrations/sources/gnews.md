@@ -8,8 +8,8 @@ The GNews source supports full refresh syncs
 
 Two output streams are available from this source:
 
-_[Search](https://gnews.io/docs/v4?shell#search-endpoint).
-_[Top Headlines](https://gnews.io/docs/v4?shell#top-headlines-endpoint).
+_[Search](https://gnews.../v4?shell#search-endpoint).
+_[Top Headlines](https://gnews.../v4?shell#top-headlines-endpoint).
 
 ### Features
 
@@ -30,7 +30,7 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 ### Connect using `API Key`:
 
-1. Generate an API Key as described [here](https://gnews.io/docs/v4?shell#authentication).
+1. Generate an API Key as described [here](https://gnews.../v4?shell#authentication).
 2. Use the generated `API Key` in the Airbyte connection.
 
 ## Changelog

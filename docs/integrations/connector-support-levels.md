@@ -8,7 +8,7 @@ The following table describes the support levels of Airbyte connectors.
 
 |                                      | Airbyte Connector     | Marketplace                                                                                                                      | Custom             |
 | ------------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| **Who maintains them?**              | The Airbyte team      | Users and the community, using [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) | Users              |
+| **Who maintains them?**              | The Airbyte team      | Users and the community, using [Connector Builder](https://docs.airbyte.com/platform/connector-development/connector-builder-ui/overview) | Users              |
 | **Production Readiness**             | Guaranteed by Airbyte | Airbyte does not guarantee any SLAs on Marketplace Connectors, but we provide data about their popularity and success rates      | Not guaranteed     |
 | **Support: Cloud**                   | Supported\*           | No Support                                                                                                                       | Supported\*\*      |
 | **Support: Powered by Airbyte**      | Supported\*           | No Support                                                                                                                       | Supported\*\*      |
@@ -67,6 +67,6 @@ GitHub.
 
 If you wish to take over the maintenance of an archived connector, please open a Github Discussion.
 For API Sources (python), updating the connector to the latest version of the
-[CDK](/connector-development/cdk-python/) and ensuring that the connector successfully passes the
-[Connector Acceptance Tests](/connector-development/testing-connectors/connector-acceptance-tests-reference)
+[CDK](/platform/connector-development/cdk-python/) and ensuring that the connector successfully passes the
+[Connector Acceptance Tests](/platform/connector-development/testing-connectors/connector-acceptance-tests-reference)
 is the start to the un-archiving process.

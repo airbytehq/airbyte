@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the Zendesk Cha
 
 - A Zendesk Account with permission to access data from accounts you want to sync.
 <!-- env:oss -->
-- (Airbyte Open Source) An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
+- (Airbyte Open Source) An Access Token (https://developer.zendesk.com/rest_a../chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
 <!-- /env:oss -->
 
 ## Setup guide
@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the Zendesk Cha
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
 4. Enter the name for the Zendesk Chat connector.
@@ -35,37 +35,37 @@ This page contains the setup guide and reference information for the Zendesk Cha
 4. Enter the name for the Zendesk Chat connector.
 5. If you access Zendesk Chat from a [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-), enter the **Subdomain**.
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
-7. For Authorization Method, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/rest_api/docs/chat/auth).
+7. For Authorization Method, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/rest_a../chat/auth).
 8. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
 
-The Zendesk Chat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Zendesk Chat source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
-- [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
-- [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) \(Incremental\)
-- [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) \(Incremental\)
-- [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
-- [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
-- [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
-- [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) \(Incremental\)
-- [Departments](https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments)
-- [Goals](https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals)
-- [Skills](https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills)
-- [Roles](https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles)
-- [Routing Settings](https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings)
+- [Accounts](https://developer.zendesk.com/rest_a../chat/accounts#show-account)
+- [Agents](https://developer.zendesk.com/rest_a../chat/agents#list-agents) \(Incremental\)
+- [Agent Timelines](https://developer.zendesk.com/rest_a../chat/incremental_export#incremental-agent-timeline-export) \(Incremental\)
+- [Chats](https://developer.zendesk.com/rest_a../chat/chats#list-chats)
+- [Shortcuts](https://developer.zendesk.com/rest_a../chat/shortcuts#list-shortcuts)
+- [Triggers](https://developer.zendesk.com/rest_a../chat/triggers#list-triggers)
+- [Bans](https://developer.zendesk.com/rest_a../chat/bans#list-bans) \(Incremental\)
+- [Departments](https://developer.zendesk.com/rest_a../chat/departments#list-departments)
+- [Goals](https://developer.zendesk.com/rest_a../chat/goals#list-goals)
+- [Skills](https://developer.zendesk.com/rest_a../chat/skills#list-skills)
+- [Roles](https://developer.zendesk.com/rest_a../chat/roles#list-roles)
+- [Routing Settings](https://developer.zendesk.com/rest_a../chat/routing_settings#show-account-routing-settings)
 
 ## Performance considerations
 
-The connector is restricted by Zendesk's [requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
+The connector is restricted by Zendesk's [requests limitation](https://developer.zendesk.com/rest_a../voice-api/introduction#rate-limits).
 
 ## Data type map
 

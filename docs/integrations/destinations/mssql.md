@@ -16,9 +16,9 @@ Each stream will be output into its own table in SQL Server. Each table will con
 - `_airbyte_raw_id`: A random UUID assigned to each incoming record. The column type in SQL Server is `VARCHAR(MAX)`.
 - `_airbyte_extracted_at`: A timestamp for when the event was pulled from the data source. The column type in SQL Server is `BIGINT`.
 - `_airbyte_meta`: Additional information about the record. The column type in SQL Server is `TEXT`.
-- `_airbyte_generation_id`: Incremented each time a [refresh](https://docs.airbyte.com/operator-guides/refreshes) is executed.  The column type in SQL Server is `TEXT`.
+- `_airbyte_generation_id`: Incremented each time a [refresh](https://docs.airbyte.com/platform/operator-guides/refreshes) is executed.  The column type in SQL Server is `TEXT`.
 
-See [here](../../understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+See [here](../platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 ## Getting Started
 

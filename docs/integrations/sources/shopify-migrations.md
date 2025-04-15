@@ -5,7 +5,7 @@
 This version contains schema changes for the following streams:
 
 ### Countries
-Due to API deprecation of [Admin REST endpoint](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country) Countries stream now uses [Admin GrapthQl to retrieve all countries](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles).
+Due to API deprecation of [Admin REST endpoint](https://shopify.d../api/admin-rest/2024-04/resources/country) Countries stream now uses [Admin GrapthQl to retrieve all countries](https://shopify.d../api/admin-graphql/latest/queries/deliveryProfiles).
 
 **Important**: now stream requires `read_shipping` access scope. The source returns list of available streams according to existing scopes.
 To obtain the scope follow this steps:
@@ -28,7 +28,7 @@ Fields **added** to schema:
 ### Product Variants
 
 Fields **removed** from schema:
-* `product_variant.fulfillment_service` - API v2025-01 doesn't return this info as part product variant data as of now. Please contact us if you're interested in this info, data can be replaced by [Fulfillment Service](https://shopify.dev/docs/api/admin-graphql/latest/queries/fulfillmentservice) stream.
+* `product_variant.fulfillment_service` - API v2025-01 doesn't return this info as part product variant data as of now. Please contact us if you're interested in this info, data can be replaced by [Fulfillment Service](https://shopify.d../api/admin-graphql/latest/queries/fulfillmentservice) stream.
 * `product_variant.inventory_management` - The fulfillment service that tracks the number of items in stock for the product variant. Use `inventoryItem.tracked` instead.
 
 Fields **added** to schema:
@@ -66,7 +66,7 @@ To clear your data for the impacted streams, follow the steps below:
 2. Select the **Status** tab.
    1. In the **Enabled streams** list, click the three dots on the right side of the stream and select **Clear Data**.
 
-After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
+After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 2.6.1
 

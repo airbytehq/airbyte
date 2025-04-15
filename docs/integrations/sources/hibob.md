@@ -20,14 +20,14 @@ Setup and account in [HiBob](https://www.hibob.com/).
 
 ### Step 2: (For Airbyte Open Source) Obtain an api key
 
-A simple api key is all that is needed to access the HiBob API. This token is generated [here](https://apidocs.hibob.com/docs/api-service-users#step-1-create-a-new-api-service-user).
+A simple api key is all that is needed to access the HiBob API. This token is generated [here](https://apidocs.hibob.c../api-service-users#step-1-create-a-new-api-service-user).
 
 
 #### For Airbyte Cloud:
 
 To set up HiBob as a source in Airbyte Cloud:
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log in to your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **HiBob** from the list of available sources.
 4. Enter a **Source name** of your choosing.
@@ -53,10 +53,10 @@ To set up HiBob as a source in Airbyte Open Source:
 
 ## Supported Sync Modes
 
-The HiBob source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The HiBob source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
 
 Incremental modes are not supported for the HiBob connector at the time of this writing.
 
@@ -66,7 +66,7 @@ The HiBob source connector can sync the following streams.
 
 ### Main Tables
 
-Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
+Link to HiBob API documentation [here](https://apidocs.hibob.c../).
 
 - [Profiles](https://apidocs.hibob.com/reference/get_profiles)
 

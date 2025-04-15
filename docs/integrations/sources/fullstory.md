@@ -21,7 +21,7 @@ API Key (which acts as bearer token) is mandate for this connector to work, It c
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the FullStory connector and select **FullStory** from the Source type dropdown.
 4. Enter your `api_key, uid and start_date`.
@@ -36,7 +36,7 @@ API Key (which acts as bearer token) is mandate for this connector to work, It c
 
 ## Supported sync modes
 
-The FullStory source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The FullStory source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

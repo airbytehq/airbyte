@@ -21,7 +21,7 @@ This Younium source uses the [Younium API](https://developer.younium.com/).
 
 ## Supported sync modes
 
-The Younium source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Younium source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |

@@ -32,7 +32,7 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 
 ## Supported Sync Modes
 
-The Pardot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Pardot source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -53,39 +53,39 @@ Pardot has daily API limits based on plan level. If one of these limits is hit, 
 
 Several output streams are available from this source. Unless noted otherwise, streams are from Pardot's v5 API:
 
-- [Account (Metadata)](https://developer.salesforce.com/docs/marketing/pardot/guide/account-v5.html) (full refresh)
-- [Campaigns](https://developer.salesforce.com/docs/marketing/pardot/guide/campaign-v5.html) (incremental)
-- [Custom Fields](https://developer.salesforce.com/docs/marketing/pardot/guide/custom-field-v5.html) (incremental)
-- [Custom Redirects](https://developer.salesforce.com/docs/marketing/pardot/guide/custom-redirect-v5.html) (full refresh)
-- [Dynamic Content](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-v5.html) (incremental)
-- [Dynamic Content Variations](https://developer.salesforce.com/docs/marketing/pardot/guide/dynamic-content-variation.html) (incremental parent)
-- [Emails](https://developer.salesforce.com/docs/marketing/pardot/guide/email-v5.html) (incremental)
-- [Email Clicks (v4 API)](https://developer.salesforce.com/docs/marketing/pardot/guide/batch-email-clicks-v4.html) (incremental)
-- [Engagement Studio Programs](https://developer.salesforce.com/docs/marketing/pardot/guide/engagement-studio-program-v5.html) (incremental)
-- [Files](https://developer.salesforce.com/docs/marketing/pardot/guide/export-v5.html) (full refresh)
-- [Folders](https://developer.salesforce.com/docs/marketing/pardot/guide/folder-v5.html) (full refresh)
-- [Folder Contents](https://developer.salesforce.com/docs/marketing/pardot/guide/folder-contents-v5.html) (incremental)
-- [Forms](https://developer.salesforce.com/docs/marketing/pardot/guide/form-v5.html) (full refresh)
-- [Form Fields](https://developer.salesforce.com/docs/marketing/pardot/guide/form-field-v5.html) (incremental)
-- [Form Handlers](https://developer.salesforce.com/docs/marketing/pardot/guide/form-handler-v5.html) (full refresh)
-- [Form Handler Fields](https://developer.salesforce.com/docs/marketing/pardot/guide/form-handler-field-v5.html) (full refresh)
-- [Landing Pages](https://developer.salesforce.com/docs/marketing/pardot/guide/landing-page-v5.html) (incremental)
-- [Layout Templates](https://developer.salesforce.com/docs/marketing/pardot/guide/layout-template-v5.html) (full refresh)
-- [Lifecycle Stages](https://developer.salesforce.com/docs/marketing/pardot/guide/lifecycle-stage-v5.html) (incremental)
-- [Lifecycle Histories](https://developer.salesforce.com/docs/marketing/pardot/guide/lifecycle-history-v5.html) (incremental)
-- [Lists](https://developer.salesforce.com/docs/marketing/pardot/guide/list-v5.html) (incremental)
-- [List Emails](https://developer.salesforce.com/docs/marketing/pardot/guide/list-email-v5.html) (incremental)
-- [List Memberships](https://developer.salesforce.com/docs/marketing/pardot/guide/list-membership-v5.html) (incremental)
-- [Opportunities](https://developer.salesforce.com/docs/marketing/pardot/guide/opportunity-v5.html) (incremental)
-- [Prospects](https://developer.salesforce.com/docs/marketing/pardot/guide/prospect-v5.html) (incremental)
-- [Prospect Accounts](https://developer.salesforce.com/docs/marketing/pardot/guide/prospect-account-v5.html) (full refresh)
-- [Tags](https://developer.salesforce.com/docs/marketing/pardot/guide/tag-v5.html) (incremental)
-- [Tracker Domains](https://developer.salesforce.com/docs/marketing/pardot/guide/tracker-domain-v5.html) (full refresh)
-- [Users](https://developer.salesforce.com/docs/marketing/pardot/guide/user-v5.html) (incremental)
-- [Visitors](https://developer.salesforce.com/docs/marketing/pardot/guide/visitor-v5.html) (incremental)
-- [Visitor Activity](https://developer.salesforce.com/docs/marketing/pardot/guide/visitor-activity-v5.html) (incremental)
-- [Visitor Page Views](https://developer.salesforce.com/docs/marketing/pardot/guide/visitor-page-view-v5.html) (incremental)
-- [Visits](https://developer.salesforce.com/docs/marketing/pardot/guide/visit-v5.html) (incremental)
+- [Account (Metadata)](https://developer.salesforce.c../marketing/pardot/guide/account-v5.html) (full refresh)
+- [Campaigns](https://developer.salesforce.c../marketing/pardot/guide/campaign-v5.html) (incremental)
+- [Custom Fields](https://developer.salesforce.c../marketing/pardot/guide/custom-field-v5.html) (incremental)
+- [Custom Redirects](https://developer.salesforce.c../marketing/pardot/guide/custom-redirect-v5.html) (full refresh)
+- [Dynamic Content](https://developer.salesforce.c../marketing/pardot/guide/dynamic-content-v5.html) (incremental)
+- [Dynamic Content Variations](https://developer.salesforce.c../marketing/pardot/guide/dynamic-content-variation.html) (incremental parent)
+- [Emails](https://developer.salesforce.c../marketing/pardot/guide/email-v5.html) (incremental)
+- [Email Clicks (v4 API)](https://developer.salesforce.c../marketing/pardot/guide/batch-email-clicks-v4.html) (incremental)
+- [Engagement Studio Programs](https://developer.salesforce.c../marketing/pardot/guide/engagement-studio-program-v5.html) (incremental)
+- [Files](https://developer.salesforce.c../marketing/pardot/guide/export-v5.html) (full refresh)
+- [Folders](https://developer.salesforce.c../marketing/pardot/guide/folder-v5.html) (full refresh)
+- [Folder Contents](https://developer.salesforce.c../marketing/pardot/guide/folder-contents-v5.html) (incremental)
+- [Forms](https://developer.salesforce.c../marketing/pardot/guide/form-v5.html) (full refresh)
+- [Form Fields](https://developer.salesforce.c../marketing/pardot/guide/form-field-v5.html) (incremental)
+- [Form Handlers](https://developer.salesforce.c../marketing/pardot/guide/form-handler-v5.html) (full refresh)
+- [Form Handler Fields](https://developer.salesforce.c../marketing/pardot/guide/form-handler-field-v5.html) (full refresh)
+- [Landing Pages](https://developer.salesforce.c../marketing/pardot/guide/landing-page-v5.html) (incremental)
+- [Layout Templates](https://developer.salesforce.c../marketing/pardot/guide/layout-template-v5.html) (full refresh)
+- [Lifecycle Stages](https://developer.salesforce.c../marketing/pardot/guide/lifecycle-stage-v5.html) (incremental)
+- [Lifecycle Histories](https://developer.salesforce.c../marketing/pardot/guide/lifecycle-history-v5.html) (incremental)
+- [Lists](https://developer.salesforce.c../marketing/pardot/guide/list-v5.html) (incremental)
+- [List Emails](https://developer.salesforce.c../marketing/pardot/guide/list-email-v5.html) (incremental)
+- [List Memberships](https://developer.salesforce.c../marketing/pardot/guide/list-membership-v5.html) (incremental)
+- [Opportunities](https://developer.salesforce.c../marketing/pardot/guide/opportunity-v5.html) (incremental)
+- [Prospects](https://developer.salesforce.c../marketing/pardot/guide/prospect-v5.html) (incremental)
+- [Prospect Accounts](https://developer.salesforce.c../marketing/pardot/guide/prospect-account-v5.html) (full refresh)
+- [Tags](https://developer.salesforce.c../marketing/pardot/guide/tag-v5.html) (incremental)
+- [Tracker Domains](https://developer.salesforce.c../marketing/pardot/guide/tracker-domain-v5.html) (full refresh)
+- [Users](https://developer.salesforce.c../marketing/pardot/guide/user-v5.html) (incremental)
+- [Visitors](https://developer.salesforce.c../marketing/pardot/guide/visitor-v5.html) (incremental)
+- [Visitor Activity](https://developer.salesforce.c../marketing/pardot/guide/visitor-activity-v5.html) (incremental)
+- [Visitor Page Views](https://developer.salesforce.c../marketing/pardot/guide/visitor-page-view-v5.html) (incremental)
+- [Visits](https://developer.salesforce.c../marketing/pardot/guide/visit-v5.html) (incremental)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 

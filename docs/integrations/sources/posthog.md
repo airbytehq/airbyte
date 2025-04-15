@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the PostHog sou
 
 ## Prerequisites
 
-- api_key - obtain Private API Key for your account following these [steps](https://posthog.com/docs/api/overview#how-to-obtain-a-personal-api-key)
+- api_key - obtain Private API Key for your account following these [steps](https://posthog.c../api/overview#how-to-obtain-a-personal-api-key)
 - base_url - 'https://app.posthog.com' by default, but it can be different if self-hosted posthog instances is used
 
 ## Setup guide
@@ -17,7 +17,7 @@ This page contains the setup guide and reference information for the PostHog sou
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the PostHog connector and select **PostHog** from the Source type dropdown.
 4. Enter your `apikey`.
@@ -36,13 +36,13 @@ This page contains the setup guide and reference information for the PostHog sou
 
 ## Supported streams and sync modes
 
-- [Projects](https://posthog.com/docs/api/projects)
-- [Annotations](https://posthog.com/docs/api/annotations)
-- [Cohorts](https://posthog.com/docs/api/cohorts)
-- [Events](https://posthog.com/docs/api/events) \(Incremental\)
-- [FeatureFlags](https://posthog.com/docs/api/feature-flags)
-- [Insights](https://posthog.com/docs/api/insights)
-- [Persons](https://posthog.com/docs/api/people)
+- [Projects](https://posthog.c../api/projects)
+- [Annotations](https://posthog.c../api/annotations)
+- [Cohorts](https://posthog.c../api/cohorts)
+- [Events](https://posthog.c../api/events) \(Incremental\)
+- [FeatureFlags](https://posthog.c../api/feature-flags)
+- [Insights](https://posthog.c../api/insights)
+- [Persons](https://posthog.c../api/people)
 
 ### Rate limiting
 
@@ -52,7 +52,7 @@ There are separate limits for different kinds of resources.
 
 - For all analytics endpoints (such as calculating insights, retrieving persons, or retrieving session recordings), the rate limits are `240/minute` and `1200/hour`.
 
-- The [HogQL query](https://posthog.com/docs/hogql#api-access) endpoint (`/api/project/:id/query`) has a rate limit of `120/hour`.
+- The [HogQL query](https://posthog.c../hogql#api-access) endpoint (`/api/project/:id/query`) has a rate limit of `120/hour`.
 
 - For the rest of the create, read, update, and delete endpoints, the rate limits are `480/minute` and `4800/hour`.
 
@@ -60,7 +60,7 @@ There are separate limits for different kinds of resources.
 
 These limits apply to **the entire team** (i.e. all users within your PostHog organization). For example, if a script requesting feature flag metadata hits the rate limit, and another user, using a different personal API key, makes a single request to the persons API, this gets rate limited as well.
 
-For large or regular exports of events, use [batch exports](https://posthog.com/docs/cdp).
+For large or regular exports of events, use [batch exports](https://posthog.c../cdp).
 
 Want to use the PostHog API beyond these limits? Email Posthog at `customers@posthog.com`.
 

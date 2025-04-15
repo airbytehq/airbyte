@@ -25,7 +25,7 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 **- OAuth** (Recommended). We highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
 
-**- Private App:** If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) to learn how to obtain the access token.
+**- Private App:** If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.c../api/private-apps) to learn how to obtain the access token.
 
 <!-- /env:cloud -->
 
@@ -33,9 +33,9 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 **For Airbyte Open Source:**
 
-**- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) to learn how to obtain the access token.
+**- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.c../api/private-apps) to learn how to obtain the access token.
 
-**- OAuth setup:** If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
+**- OAuth setup:** If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.c../api/working-with-oauth). To set up the connector, you will need to acquire your:
 
 - Client ID
 - Client Secret
@@ -43,13 +43,13 @@ This page contains the setup guide and reference information for the [HubSpot](h
 <!-- /env:oss -->
 
 More information on HubSpot authentication methods can be found
-[here](https://developers.hubspot.com/docs/api/intro-to-auth).
+[here](https://developers.hubspot.c../api/intro-to-auth).
 
 ### Step 2: Configure the scopes for your streams (Private App only)
 
 These instructions are only relevant if you are using a **Private App** for authentication. You can ignore this if you are authenticating via OAuth.
 
-To set up a Private App, you must manually configure scopes to ensure Airbyte can sync all available data. Each scope relates to a specific stream or streams. Please refer to [Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
+To set up a Private App, you must manually configure scopes to ensure Airbyte can sync all available data. Each scope relates to a specific stream or streams. Please refer to [Hubspot's page on scopes](https://legacydocs.hubspot.c../methods/oauth2/initiate-oauth-integration#scopes) for instructions.
 
 <details>
   <summary>Expand to review scopes</summary>
@@ -92,7 +92,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select HubSpot from the Source type dropdown.
 4. Enter a name for the HubSpot connector.
@@ -131,7 +131,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 ### Experimental streams
 
-[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature. Note that these streams use a Hubspot API that is currently in beta, and they may be modified or unstable as the API continues to develop.
+[Web Analytics](https://developers.hubspot.c../api/events/web-analytics) streams may be enabled as an experimental feature. Note that these streams use a Hubspot API that is currently in beta, and they may be modified or unstable as the API continues to develop.
 
 </FieldAnchor>
 
@@ -139,7 +139,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 ## Supported sync modes
 
-The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -155,53 +155,53 @@ There are two types of incremental sync:
 
 The HubSpot source connector supports the following streams:
 
-- [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
-- [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
-- [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
-- [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
-- [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
-- [Contacts Form Submissions](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
-- [Contacts Merged Audit](https://legacydocs.hubspot.com/docs/methods/contacts/get_batch_by_vid)
-- [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
-- [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
+- [Campaigns](https://developers.hubspot.c../methods/email/get_campaign_data) \(Client-Side Incremental\)
+- [Companies](https://developers.hubspot.c../api/crm/companies) \(Incremental\)
+- [Contact Lists](http://developers.hubspot.c../methods/lists/get_lists) \(Incremental\)
+- [Contacts](https://developers.hubspot.c../methods/contacts/get_contacts) \(Incremental\)
+- [Contacts List Memberships](https://legacydocs.hubspot.c../methods/contacts/get_contacts)
+- [Contacts Form Submissions](https://legacydocs.hubspot.c../methods/contacts/get_contacts)
+- [Contacts Merged Audit](https://legacydocs.hubspot.c../methods/contacts/get_batch_by_vid)
+- [Deal Pipelines](https://developers.hubspot.c../methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
+- [Deals](https://developers.hubspot.c../api/crm/deals) \(including Contact associations\) \(Incremental\)
   - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
-- [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
-- [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
-- [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
-- [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements) \(Incremental\)
-- [Engagements Calls](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental\)
-- [Engagements Emails](https://developers.hubspot.com/docs/api/crm/email) \(Incremental\)
-- [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
-- [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
-- [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
-- [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
-- [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
-- [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
-- [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
-- [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
-- [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
-- [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
-- [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
-- [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
-- [Contacts Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Client-Side Incremental\)
-- [Companies Property History](https://legacydocs.hubspot.com/docs/methods/companies/get-all-companies) \(Client-Side Incremental\)
-- [Deals Property History](https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals) \(Client-Side Incremental\)
-- [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
-- [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
-- [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
-- [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
-- [ContactsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [CompaniesWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [DealsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [TicketsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsCallsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsEmailsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsMeetingsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsNotesWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsTasksWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
+- [Deals Archived](https://developers.hubspot.c../api/crm/deals) \(including Contact associations\) \(Incremental\)
+- [Email Events](https://developers.hubspot.c../methods/email/get_events) \(Incremental\)
+- [Email Subscriptions](https://developers.hubspot.c../methods/email/get_subscriptions)
+- [Engagements](https://legacydocs.hubspot.c../methods/engagements/get-all-engagements) \(Incremental\)
+- [Engagements Calls](https://developers.hubspot.c../api/crm/calls) \(Incremental\)
+- [Engagements Emails](https://developers.hubspot.c../api/crm/email) \(Incremental\)
+- [Engagements Meetings](https://developers.hubspot.c../api/crm/meetings) \(Incremental\)
+- [Engagements Notes](https://developers.hubspot.c../api/crm/notes) \(Incremental\)
+- [Engagements Tasks](https://developers.hubspot.c../api/crm/tasks) \(Incremental\)
+- [Forms](https://developers.hubspot.c../api/marketing/forms) \(Client-Side Incremental\)
+- [Form Submissions](https://legacydocs.hubspot.c../methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
+- [Goals](https://developers.hubspot.c../api/crm/goals) \(Incremental\)
+- [Leads](https://developers.hubspot.c../api/crm/leads) \(Incremental\)
+- [Line Items](https://developers.hubspot.c../api/crm/line-items) \(Incremental\)
+- [Marketing Emails](https://legacydocs.hubspot.c../methods/cms_email/get-all-marketing-email-statistics)
+- [Owners](https://developers.hubspot.c../methods/owners/get_owners) \(Client-Side Incremental\)
+- [Owners Archived](https://legacydocs.hubspot.c../methods/owners/get_owners) \(Client-Side Incremental)
+- [Products](https://developers.hubspot.c../api/crm/products) \(Incremental\)
+- [Contacts Property History](https://legacydocs.hubspot.c../methods/contacts/get_contacts) \(Client-Side Incremental\)
+- [Companies Property History](https://legacydocs.hubspot.c../methods/companies/get-all-companies) \(Client-Side Incremental\)
+- [Deals Property History](https://legacydocs.hubspot.c../methods/deals/get-all-deals) \(Client-Side Incremental\)
+- [Subscription Changes](https://developers.hubspot.c../methods/email/get_subscriptions_timeline) \(Incremental\)
+- [Tickets](https://developers.hubspot.c../api/crm/tickets) \(Incremental\)
+- [Ticket Pipelines](https://developers.hubspot.c../api/crm/pipelines) \(Client-Side Incremental\)
+- [Workflows](https://legacydocs.hubspot.c../methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
+- [ContactsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [CompaniesWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [DealsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [TicketsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [EngagementsCallsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [EngagementsEmailsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [EngagementsMeetingsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [EngagementsNotesWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [EngagementsTasksWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [GoalsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [LineItemsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
+- [ProductsWebAnalytics](https://developers.hubspot.c../api/events/web-analytics) \(Incremental\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -243,7 +243,7 @@ First you need to give the connector some additional permissions:
 
 - **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
 
-- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.c../api/working-with-oauth#scopes).
 
 Then, go to the schema tab of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
@@ -318,7 +318,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
   - Hubspot has **scopes** for each API call.
   - Each stream is tied to a scope and will need access to that scope to sync data.
-  - Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+  - Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.c../api/working-with-oauth#scopes).
   - Additional permissions:
 
     `feedback_submissions`: Service Hub Professional account

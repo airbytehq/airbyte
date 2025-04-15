@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the Teamwork so
 - Teamwork console password
 
 ## Documentation reference:
-Visit `https://apidocs.teamwork.com/docs/teamwork/v3/` for API documentation
+Visit `https://apidocs.teamwork.c../teamwork/v3/` for API documentation
 
 ## Authentication setup
 

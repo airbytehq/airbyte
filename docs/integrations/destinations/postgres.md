@@ -68,7 +68,7 @@ synced data from Airbyte.
 ## Naming Conventions
 
 From
-[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
+[Postgres SQL Identifiers syntax](https://www.postgresql.o../9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
 
 - SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical
   marks and non-Latin letters\) or an underscore \(\_\).
@@ -103,7 +103,7 @@ tables are replaced with underscores.
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new
    destination**.
 3. On the Set up the destination page, enter the name for the Postgres connector and select
@@ -174,7 +174,7 @@ Mode**; otherwise, the connection will fail.
 ## Supported sync modes
 
 The Postgres destination connector supports the
-following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following[ sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                        | Supported?\(Yes/No\) | Notes |
 | :----------------------------- | :------------------- | :---- |
@@ -274,11 +274,11 @@ _where_ it is deployed.
 | 2.4.0   | 2024-08-18 | [\#45434](https://github.com/airbytehq/airbyte/pull/45434) | upgrade all dependencies.                                                          |
 | 2.3.2   | 2024-08-07 | [\#43331](https://github.com/airbytehq/airbyte/pull/43331) | bump java CDK.                                                          |
 | 2.3.1   | 2024-08-07 | [\#43363](https://github.com/airbytehq/airbyte/pull/43363) | Adopt latest CDK.                                                                                                                                          |
-| 2.3.0   | 2024-07-22 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
+| 2.3.0   | 2024-07-22 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../platform/operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
 | 2.2.1   | 2024-07-22 | [\#42423](https://github.com/airbytehq/airbyte/pull/42423) | no-op. Bumping to a clean image                                                                                 |
 | 2.2.0   | 2024-07-22 | [\#42423](https://github.com/airbytehq/airbyte/pull/42423) | Revert refreshes support                                                                                 |
 | 2.1.1   | 2024-07-22 | [\#42415](https://github.com/airbytehq/airbyte/pull/42415) | fixing PostgresSqlOperations.isOtherGenerationIdInTable to close the streams coming from JdbcDatabase.unsafeQuery |
-| 2.1.0   | 2024-07-22 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
+| 2.1.0   | 2024-07-22 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../platform/operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
 | 2.0.15  | 2024-06-26 | [\#40554](https://github.com/airbytehq/airbyte/pull/40554) | Convert all strict-encrypt prod code to kotlin.                                                          |
 | 2.0.14  | 2024-06-26 | [\#40563](https://github.com/airbytehq/airbyte/pull/40563) | Convert all test code to kotlin.                                                          |
 | 2.0.13  | 2024-06-13 | [\#40159](https://github.com/airbytehq/airbyte/pull/40159) | Config error on drop failure when cascade is disabled                                                    |

@@ -19,7 +19,7 @@ Scopes:
 Follow these steps to get the required credentials and inputs:
 
 - `client_id` and `client_secret`
-  - [Create a Strava account](https://developers.strava.com/docs/getting-started/#account)
+  - [Create a Strava account](https://developers.strava.c../getting-started/#account)
   - Continue to follow the instructions from the doc above to obtain `client_id` and `client_secret`
 - `refresh_token`
   - Enter this URL into your browser (make sure to add your `client_id` from previous step:
@@ -57,7 +57,7 @@ Follow these steps to get the required credentials and inputs:
           }
       }
     ```
-  - Refer to Strava's [Getting Started - Oauth](https://developers.strava.com/docs/getting-started/#oauth) or [Authentication](https://developers.strava.com/docs/authentication/) documents for more information
+  - Refer to Strava's [Getting Started - Oauth](https://developers.strava.c../getting-started/#oauth) or [Authentication](https://developers.strava.c../authentication/) documents for more information
 - `athlete_id`
   - Go to your athlete page by clicking your name on the [Strava dashboard](https://www.strava.com/dashboard) or click on "My Profile" on the drop down after hovering on your top bar icon
   - The number at the end of the url will be your `athlete_id`. For example `17831421` would be the `athlete_id` for https://www.strava.com/athletes/17831421
@@ -80,7 +80,7 @@ Follow these steps to get the required credentials and inputs:
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Strava** from the Source type dropdown and enter a name for this connector.
 4. lick `Authenticate your account`.
@@ -103,22 +103,22 @@ Follow these steps to get the required credentials and inputs:
 
 ## Supported sync modes
 
-The Strava source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Strava source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported streams
 
-- [Athlete Stats](https://developers.strava.com/docs/reference/#api-Athletes-getStats)
-- [Activities](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities) \(Incremental\)
+- [Athlete Stats](https://developers.strava.c../reference/#api-Athletes-getStats)
+- [Activities](https://developers.strava.c../reference/#api-Activities-getLoggedInAthleteActivities) \(Incremental\)
 
 ## Performance considerations
 
 Strava API has limitations to 100 requests every 15 minutes, 1000 daily.
-More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.com/docs/rate-limits).
+More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.c../rate-limits).
 
 ## Changelog
 

@@ -51,7 +51,7 @@ This step is not needed in Airbyte Cloud. Skip to the next step.
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
 3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your Typeform account` by selecting Oauth or Personal Access Token for Authentication.

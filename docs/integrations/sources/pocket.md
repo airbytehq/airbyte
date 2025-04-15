@@ -8,7 +8,7 @@ The Pocket source connector only supports full refresh syncs
 
 A single output stream is available from this source:
 
-- [Retrieve](https://getpocket.com/developer/docs/v3/retrieve)
+- [Retrieve](https://getpocket.com/develop../v3/retrieve)
 
 ### Features
 
@@ -19,7 +19,7 @@ A single output stream is available from this source:
 
 ### Performance considerations
 
-For more info on rate limiting, please refer to [Pocket Docs > Rate Limits](https://getpocket.com/developer/docs/rate-limits)
+For more info on rate limiting, please refer to [Pocket Docs > Rate Limits](https://getpocket.com/develop../rate-limits)
 
 ## Getting started
 
@@ -30,7 +30,7 @@ For more info on rate limiting, please refer to [Pocket Docs > Rate Limits](http
 
 ### Setup Guide
 
-In order to obtain the Consumer Key and Access Token, please follow the official [Pocket Authentication docs](https://getpocket.com/developer/docs/authentication).
+In order to obtain the Consumer Key and Access Token, please follow the official [Pocket Authentication docs](https://getpocket.com/develop../authentication).
 
 It's nevertheless, very recommended to follow [this guide](https://www.jamesfmackenzie.com/getting-started-with-the-pocket-developer-api/) by James Mackenzie, which is summarized below:
 

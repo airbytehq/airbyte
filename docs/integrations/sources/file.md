@@ -32,7 +32,7 @@ This page contains the setup guide and reference information for the [File (CSV,
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select File (CSV, JSON, Excel, Feather, Parquet) from the Source type dropdown.
 4. Enter a name for the File (CSV, JSON, Excel, Feather, Parquet) connector.
@@ -71,7 +71,7 @@ This page contains the setup guide and reference information for the [File (CSV,
 
 - `User-Agent` (Optional)
 
-Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to requests (inactive by default).
+Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-../Web/HTTP/Headers/User-Agent) to requests (inactive by default).
 
 </FieldAnchor>
 <FieldAnchor field="provider[GCS]">
@@ -79,7 +79,7 @@ Set this to active if you want to add the [User-Agent header](https://developer.
 
 - `Service Account JSON` (Required for **private** buckets)
 
-To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
+To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://platform/cloud.google.com/i../service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
 </FieldAnchor>
 <FieldAnchor field="provider[S3]">
 
@@ -196,7 +196,7 @@ This connector does not support syncing unstructured data files such as raw text
 
 ## Supported sync modes
 
-The File (CSV, JSON, Excel, Feather, Parquet) source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The File (CSV, JSON, Excel, Feather, Parquet) source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 | Feature                                  | Supported? |
 | ---------------------------------------- | ---------- |

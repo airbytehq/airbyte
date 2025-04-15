@@ -49,10 +49,10 @@
 
 ## Upgrading to 6.0.0
 
-The `SponsoredDisplayReportStream` stream now has an updated schema, thanks to a recent change in the Amazon Ads API. You can find more details in the [Amazon Migration Guide (metrics)](https://advertising.amazon.com/API/docs/en-us/reference/migration-guides/reporting-v2-v3#metrics).
+The `SponsoredDisplayReportStream` stream now has an updated schema, thanks to a recent change in the Amazon Ads API. You can find more details in the [Amazon Migration Guide (metrics)](https://advertising.amazon.com/A../en-us/reference/migration-guides/reporting-v2-v3#metrics).
 
 Please note that SponsoredBrandsReportStream and SponsoredBrandsVideoReportStream will become unavailable as a result of the deprecation of API V2. We recommend switching to SponsoredBrandsV3ReportStream as a great alternative.
-see [Amazon Migration Guide (metrics)](https://advertising.amazon.com/API/docs/en-us/reference/migration-guides/reporting-v2-v3#metrics) for more info.
+see [Amazon Migration Guide (metrics)](https://advertising.amazon.com/A../en-us/reference/migration-guides/reporting-v2-v3#metrics) for more info.
 
 Streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable.
 It is recommended to use `SponsoredBrandsV3ReportStream` as an alternative.
@@ -82,7 +82,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 
 ## Upgrading to 5.0.0
@@ -128,7 +128,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 4.0.0
 
@@ -159,7 +159,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 3.0.0
 

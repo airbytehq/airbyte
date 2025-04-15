@@ -16,8 +16,8 @@ This page contains the setup guide and reference information for the [Instagram]
 
 <!-- env:oss -->
 
-- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/)
+- [Instagram Graph API](https://developers.facebook.c../instagram-api/) to your Facebook app
+- [Facebook Instagram OAuth Reference](https://developers.facebook.c../instagram-platform/reference/oauth-authorize/)
 
 <!-- /env:oss -->
 
@@ -29,7 +29,7 @@ This page contains the setup guide and reference information for the [Instagram]
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Instagram from the Source type dropdown.
 4. Enter a name for the Instagram connector.
@@ -52,7 +52,7 @@ This page contains the setup guide and reference information for the [Instagram]
 4. Enter a name for your source.
 5. Enter **Access Token** generated
    using [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-basic-display-api/getting-started/)
+   or [by using an app you can create on Facebook](https://developers.facebook.c../instagram-basic-display-api/getting-started/)
    with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list,
    pages_read_engagement.
 6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
@@ -66,17 +66,17 @@ This page contains the setup guide and reference information for the [Instagram]
 
 ## Supported sync modes
 
-The Instagram source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Instagram source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 :::note
 
 Incremental sync modes are only available for
-the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
+the [User Insights](https://developers.facebook.c../instagram-api/reference/ig-user/insights)
 stream.
 
 :::
@@ -84,19 +84,19 @@ stream.
 ## Supported Streams
 
 The Instagram source connector supports the following streams. For more information, see
-the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/)
-and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
+the [Instagram Graph API](https://developers.facebook.c../instagram-api/)
+and [Instagram Insights API documentation](https://developers.facebook.c../instagram-api/guides/insights/).
 
-- [User](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
-    - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
-- [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
-    - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
-- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
-    - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+- [User](https://developers.facebook.c../instagram-api/reference/ig-user)
+    - [User Insights](https://developers.facebook.c../instagram-api/reference/ig-user/insights)
+- [Media](https://developers.facebook.c../instagram-api/reference/ig-user/media)
+    - [Media Insights](https://developers.facebook.c../instagram-api/reference/ig-media/insights)
+- [Stories](https://developers.facebook.c../instagram-api/reference/ig-user/stories/)
+    - [Story Insights](https://developers.facebook.c../instagram-api/reference/ig-media/insights)
 
 :::info
 The Instagram connector syncs data related to Users, Media, and Stories and their insights from
-the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data
+the [Instagram Graph API](https://developers.facebook.c../instagram-api/). For performance data
 related to Instagram Ads, use the Facebook Marketing source.
 :::
 
@@ -106,7 +106,7 @@ related to Instagram Ads, use the Facebook Marketing source.
 ## Data type map
 
 AirbyteRecords are required to conform to
-the [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) system.
+the [Airbyte type](https://docs.airbyte.com/platform/understanding-airbyte/supported-data-types/) system.
 This means that all sources must produce schemas and records within these types and all destinations
 must handle records that conform to this type system.
 
@@ -129,7 +129,7 @@ Expand to see details about Instagram connector limitations and troubleshooting.
 #### Rate limiting
 
 Instagram limits the number of requests that can be made at a time. See
-Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api)
+Facebook's [documentation on rate limiting](https://developers.facebook.c../graph-api/overview/rate-limiting/#instagram-graph-api)
 for more information.
 
 ### Troubleshooting

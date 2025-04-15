@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Asana](htt
 
 ## Prerequisites
 
-This connector supports **OAuth** and **Personal Access Tokens**. Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
+This connector supports **OAuth** and **Personal Access Tokens**. Please follow these [steps](https://developers.asana.c../personal-access-token) to obtain Personal Access Token for your account.
 
 ## Setup guide
 
@@ -16,7 +16,7 @@ This connector supports **OAuth** and **Personal Access Tokens**. Please follow 
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. Set the name for your source.
 4. Authenticate using OAuth (recommended) or enter your `personal_access_token`.
@@ -44,7 +44,7 @@ If you have access to multiple projects, Airbyte will sync data related to all p
 
 ## Supported sync modes
 
-The Asana source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Asana source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -54,19 +54,19 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-- [Attachments](https://developers.asana.com/docs/attachments)
-- [Custom fields](https://developers.asana.com/docs/custom-fields)
-- [Projects](https://developers.asana.com/docs/projects)
-- [Portfolios](https://developers.asana.com/docs/portfolios)
+- [Attachments](https://developers.asana.c../attachments)
+- [Custom fields](https://developers.asana.c../custom-fields)
+- [Projects](https://developers.asana.c../projects)
+- [Portfolios](https://developers.asana.c../portfolios)
 - [PortfolioMemberships](https://developers.asana.com/reference/portfolio-memberships)
-- [Sections](https://developers.asana.com/docs/sections)
-- [Stories](https://developers.asana.com/docs/stories)
-- [Tags](https://developers.asana.com/docs/tags)
-- [Tasks](https://developers.asana.com/docs/tasks)
-- [Teams](https://developers.asana.com/docs/teams)
-- [Team Memberships](https://developers.asana.com/docs/team-memberships)
-- [Users](https://developers.asana.com/docs/users)
-- [Workspaces](https://developers.asana.com/docs/workspaces)
+- [Sections](https://developers.asana.c../sections)
+- [Stories](https://developers.asana.c../stories)
+- [Tags](https://developers.asana.c../tags)
+- [Tasks](https://developers.asana.c../tasks)
+- [Teams](https://developers.asana.c../teams)
+- [Team Memberships](https://developers.asana.c../team-memberships)
+- [Users](https://developers.asana.c../users)
+- [Workspaces](https://developers.asana.c../workspaces)
 
 ## Data type map
 
@@ -90,11 +90,11 @@ Expand to see details about Asana connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The connector is restricted by [Asana rate limits](https://developers.asana.com/docs/rate-limits).
+The connector is restricted by [Asana rate limits](https://developers.asana.c../rate-limits).
 
 ### Troubleshooting
 
-- If you encounter access errors while using **OAuth** authentication, please make sure you've followed this [Asana Article](https://developers.asana.com/docs/oauth).
+- If you encounter access errors while using **OAuth** authentication, please make sure you've followed this [Asana Article](https://developers.asana.c../oauth).
 - Check out common troubleshooting issues for the Asana source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>

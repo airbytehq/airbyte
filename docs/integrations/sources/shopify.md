@@ -30,7 +30,7 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Shopify from the Source type dropdown.
 4. Enter a name for the Shopify connector.
@@ -81,7 +81,7 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 
 ### Custom app scopes
 
-Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
+Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.d../api/usage/access-scopes).
 
 - `read_analytics`
 - `read_assigned_fulfillment_orders`
@@ -123,7 +123,7 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 
 ## Supported sync modes
 
-The Shopify source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Shopify source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
 | Feature           | Supported? |
 |:------------------|:-----------|
@@ -132,43 +132,43 @@ The Shopify source connector supports the following [sync modes](https://docs.ai
 
 The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries)
+This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the [Shopify GraphQL BULK API](https://shopify.d../api/usage/bulk-operations/queries)
 
 ## Supported Streams
 
 - [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2024-04/resources/abandoned-checkouts#top)
 - [Articles](https://shopify.dev/api/admin-rest/2024-04/resources/article)
-- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2024-04/resources/transactions)
+- [Balance Transactions](https://shopify.d../api/admin-rest/2024-04/resources/transactions)
 - [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
 - [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
-- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)
-- [Countries](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country)
+- [Collections (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/Collection)
+- [Countries](https://shopify.d../api/admin-rest/2024-04/resources/country)
 - [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)
 - [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
-- [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
-- [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
+- [Customer Journey Summary (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/customerjourneysummary)
+- [Customer Address (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
 - [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
-- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
-- [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
+- [Discount Codes (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/unions/DiscountCode)
+- [Disputes](https://shopify.d../api/admin-rest/2024-04/resources/dispute)
 - [Fulfillments](https://shopify.dev/api/admin-rest/2024-04/resources/fulfillment)
-- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/FulfillmentOrder)
-- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryItem)
-- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryLevel)
+- [Fulfillment Orders (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/FulfillmentOrder)
+- [Inventory Items (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/InventoryItem)
+- [Inventory Levels (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/2024-04/resources/location)
-- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield)
-- [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderAgreement)
+- [Metafields (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/Metafield)
+- [Order Agreements (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/2024-04/resources/order#top)
 - [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
 - [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
 - [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
 - [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
-- [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
-- [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
-- [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
+- [Products (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/queries/products)
+- [Product Images (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/Image)
+- [Product Variants (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/queries/productVariant)
 - [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
 - [Smart Collections](https://shopify.dev/api/admin-rest/2024-04/resources/smartcollection)
 - [Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/transaction#top)
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
+- [Transactions (GraphQL)](https://shopify.d../api/admin-graphql/2024-04/objects/OrderTransaction)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
 ### Entity-Relationship Diagram (ERD)
@@ -180,7 +180,7 @@ The connector captures deletions for records in the `Articles`, `Blogs`, `Custom
 
 When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
 
-Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
+Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.d../api/admin-rest/2024-04/resources/event).
 
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
@@ -229,7 +229,7 @@ Waiting <some_number> seconds then retrying..."
 
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
-For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
+For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.d../api/usage/bulk-operations/queries#operation-restrictions
 
 ### Troubleshooting
 

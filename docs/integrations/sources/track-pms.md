@@ -4,7 +4,7 @@ Enterprise-class property management solutions for vacation rental companies
 
 Website: https://tnsinc.com/  
 API Docs: hhttps://developer.trackhs.com  
-Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication  
+Authentication Docs: https://developer.trackhs.c../authentication#authentication  
 
 ## Configuration
 

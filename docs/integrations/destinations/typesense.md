@@ -6,9 +6,9 @@ The Airbyte Typesense destination allows you to sync data to Airbyte.Typesense i
 
 ### Sync overview
 
-Using overwrite sync, the [auto schema detection](https://typesense.org/docs/0.23.1/api/collections.html#with-auto-schema-detection) is used and all the fields in a document are automatically indexed for searching and filtering
+Using overwrite sync, the [auto schema detection](https://typesense.o../0.23.1/api/collections.html#with-auto-schema-detection) is used and all the fields in a document are automatically indexed for searching and filtering
 
-With append mode, you have to create the collection first and can use [pre-defined schema](https://typesense.org/docs/0.23.1/api/collections.html#with-pre-defined-schema) that gives you fine-grained control over your document fields.
+With append mode, you have to create the collection first and can use [pre-defined schema](https://typesense.o../0.23.1/api/collections.html#with-pre-defined-schema) that gives you fine-grained control over your document fields.
 
 #### Output schema
 
@@ -27,7 +27,7 @@ Each stream will be output into its own collection in Typesense. If an id column
 
 ### Requirements
 
-To use the Typesense destination, you'll need an existing Typesense instance. You can learn about how to create one in the [Typesense docs](https://typesense.org/docs/guide/install-typesense.html).
+To use the Typesense destination, you'll need an existing Typesense instance. You can learn about how to create one in the [Typesense docs](https://typesense.o../guide/install-typesense.html).
 
 ### Setup guide
 

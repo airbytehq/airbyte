@@ -44,7 +44,7 @@ rate limit issues that are not automatically retried successfully.
 - PagerDuty API Key
 
 Please follow the [their documentation for generating a PagerDuty API
-Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a-general-access-rest-api-key).
+Key](https://support.pagerduty.c../generating-api-keys#section-generating-a-general-access-rest-api-key).
 
 ## Changelog
 

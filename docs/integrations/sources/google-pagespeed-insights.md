@@ -6,25 +6,25 @@ This page guides you through the process of setting up the Google PageSpeed Insi
 
 ## Prerequisites
 
-- Your [Google PageSpeed `API Key`](https://developers.google.com/speed/docs/insights/v5/get-started#APIKey)
+- Your [Google PageSpeed `API Key`](https://developers.google.com/spe../insights/v5/get-started#APIKey)
 
 ## Set up the Google PageSpeed Insights source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google PageSpeed Insights** from the Source type dropdown.
 4. Enter a name for your source.
-5. For **API Key**, enter your [Google PageSpeed `API Key`](https://developers.google.com/speed/docs/insights/v5/get-started#APIKey).
+5. For **API Key**, enter your [Google PageSpeed `API Key`](https://developers.google.com/spe../insights/v5/get-started#APIKey).
 6. For **URLs to analyse**, enter one or many URLs you want to create PageSpeed Insights for. Example: https://www.google.com.
 7. For **Analyses Strategies**, enter either "desktop", "mobile" or both to define which Analyses strategy to use.
-8. For **Lighthouse Categories**, select one or many of the provided options. Categories are also called "audits" in some of the [Google Lighthouse documentation](https://developer.chrome.com/docs/lighthouse/overview/).
+8. For **Lighthouse Categories**, select one or many of the provided options. Categories are also called "audits" in some of the [Google Lighthouse documentation](https://developer.chrome.c../lighthouse/overview/).
 9. Click **Set up source**.
 
-> **IMPORTANT:** As of 2022-12-13, the PageSpeed Insights API - as well as this Airbyte Connector - allow to specify a URL with prefix "origin:" - like `origin:https://www.google.com`. This results in condensed, aggregated reports about the specified origin - see [this FAQ](https://developers.google.com/speed/docs/insights/faq). **However**: This option is not specified in any official documentation anymore, therefore it might be deprecated anytime soon!
+> **IMPORTANT:** As of 2022-12-13, the PageSpeed Insights API - as well as this Airbyte Connector - allow to specify a URL with prefix "origin:" - like `origin:https://www.google.com`. This results in condensed, aggregated reports about the specified origin - see [this FAQ](https://developers.google.com/spe../insights/faq). **However**: This option is not specified in any official documentation anymore, therefore it might be deprecated anytime soon!
 
 ## Supported sync modes
 
-The Google PageSpeed Insights source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google PageSpeed Insights source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 
@@ -32,7 +32,7 @@ The Google PageSpeed Insights source connector supports the following [sync mode
 
 The Google PageSpeed Insights source connector supports the following stream:
 
-- [pagespeed](https://developers.google.com/speed/docs/insights/v5/get-started#cli): Full pagespeed report of the selected URLs, lighthouse categories and analyses strategies.
+- [pagespeed](https://developers.google.com/spe../insights/v5/get-started#cli): Full pagespeed report of the selected URLs, lighthouse categories and analyses strategies.
 
 ### Features
 

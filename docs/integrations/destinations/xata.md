@@ -23,7 +23,7 @@ name. If the message has the following shape:
 ```
 
 the table must have the same columns, mapping the names and
-[data types](https://xata.io/docs/concepts/data-model), one-by-one.
+[data types](https://xata.../concepts/data-model), one-by-one.
 
 ## Getting Started
 

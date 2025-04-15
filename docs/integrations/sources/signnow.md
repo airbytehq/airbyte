@@ -1,6 +1,6 @@
 # SignNow
 Website: https://app.signnow.com/
-API Reference: https://docs.signnow.com/docs/signnow/welcome
+API Reference: https://docs.signnow.c../signnow/welcome
 
 ## Configuration
 

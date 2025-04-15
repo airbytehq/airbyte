@@ -69,6 +69,6 @@ Clearing your data is required in order to continue syncing affected stream from
    1. In the **Enabled streams** list, click the three dots on the right side of the impacted stream and select **Clear Data**.
 3. Do the same steps from 1-2.1 for all streams in your connection that were affected by this update. 
 
-After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/platform/operator-guides/reset).
 
 

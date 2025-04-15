@@ -7,7 +7,7 @@ the schema and database of Airbyte's "raw" tables to be compatible with the new
 [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
 format. These changes will likely require updates to downstream dbt / SQL models. After this update,
 Airbyte will only produce the ‘raw’ v2 tables, which store all content in JSON. These changes remove
-the ability to do deduplicated syncs with Clickhouse. (Clickhouse has an overview)[[https://clickhouse.com/docs/en/integrations/dbt]]
+the ability to do deduplicated syncs with Clickhouse. (Clickhouse has an overview)[[https://clickhouse.c../en/integrations/dbt]]
 for integrating with dbt If you are interested in the Clickhouse destination gaining the full features
 of Destinations V2 (including final tables), click [[https://github.com/airbytehq/airbyte/discussions/35339]]
 to register your interest.

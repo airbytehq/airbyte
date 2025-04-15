@@ -28,4 +28,4 @@ Due to this upgrade, no synced streams were affected. However, for unpaid accoun
     > [!NOTE]  
     > This will reset the data in your destination and initiate a fresh sync.
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/platform/operator-guides/reset).

@@ -14,11 +14,11 @@ This page contains the setup guide and reference information for the
 ### Step 1: Create an API Token
 
 For detailed instructions on creating an Atlassian API Token, please refer to the
-[official documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+[official documentation](https://support.atlassian.com/atlassian-accou../manage-api-tokens-for-your-atlassian-account/).
 
 ### Step 2: Set up the Confluence connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
+1. [Log in to your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. In the **API Token** field, enter your Atlassian API Token.
@@ -38,11 +38,11 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 
 ## Supported streams
 
-- [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
-- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-blog-post/#api-blogposts-get)
-- [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
-- [Pages](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get)
-- [Space](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-space/#api-spaces-get)
+- [Audit](https://developer.atlassian.com/platform/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
+- [Blog Posts](https://developer.atlassian.com/platform/cloud/confluence/rest/v2/api-group-blog-post/#api-blogposts-get)
+- [Group](https://developer.atlassian.com/platform/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
+- [Pages](https://developer.atlassian.com/platform/cloud/confluence/rest/v2/api-group-page/#api-pages-get)
+- [Space](https://developer.atlassian.com/platform/cloud/confluence/rest/v2/api-group-space/#api-spaces-get)
 
 :::note
 The `audit` stream requires a Standard or Premium plan.
@@ -50,7 +50,7 @@ The `audit` stream requires a Standard or Premium plan.
 
 ## Data type mapping
 
-The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The [Confluence Cloud REST API](https://developer.atlassian.com/platform/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ## Performance considerations
 

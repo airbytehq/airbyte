@@ -1,6 +1,6 @@
 # Google-webfonts
 
-This page contains the setup guide and reference information for the [Google-webfonts](https://developers.google.com/fonts/docs/developer_api) source connector.
+This page contains the setup guide and reference information for the [Google-webfonts](https://developers.google.com/fon../developer_api) source connector.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ Just pass the generated API key and optional parameters for establishing the con
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Google-webfonts connector and select **Google-webfonts** from the Source type dropdown.
 4. Enter your `api_key`.
@@ -39,7 +39,7 @@ Just pass the generated API key and optional parameters for establishing the con
 
 ## Supported sync modes
 
-The Google-webfonts source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google-webfonts source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -59,7 +59,7 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 
 ## Performance considerations
 
-Google Webfont's [API reference](https://developers.google.com/fonts/docs/developer_api) has v1 at present and v2 is at development. The connector as default uses v1.
+Google Webfont's [API reference](https://developers.google.com/fon../developer_api) has v1 at present and v2 is at development. The connector as default uses v1.
 
 ## Changelog
 

@@ -1,6 +1,6 @@
 # Giphy
 Website: https://giphy.com/
-API Reference: https://developers.giphy.com/docs/api/endpoint/#trending
+API Reference: https://developers.giphy.c../api/endpoint/#trending
 
 ## Configuration
 

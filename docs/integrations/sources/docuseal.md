@@ -1,6 +1,6 @@
 # Docuseal
 Website: https://docuseal.com/
-API Reference: https://www.docuseal.com/docs/api
+API Reference: https://www.docuseal.c../api
 
 ## Configuration
 

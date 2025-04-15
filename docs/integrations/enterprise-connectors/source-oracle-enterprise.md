@@ -8,10 +8,10 @@ Airbyte Enterprise Connectors are a selection of premium connectors available ex
 Airbyte's Oracle enterprise source connector offers the following features:
 
 - Incremental as well as Full Refresh
-  [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing
+  [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes), providing
   flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with
-  [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
+  [checkpointing](https://docs.airbyte.com/platform/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
 The required minimum platform version is v0.58.0 for this connector.

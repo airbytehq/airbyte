@@ -37,18 +37,18 @@ authenticated query is running, which might trigger security alerts on the user'
 
 ## Supported sync modes
 
-The Metabase source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Metabase source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
 
 ## Supported Streams
 
-- [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
-- [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
-- [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
-- [User](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
-- [Databases](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
-- [Native Query Snippet](https://www.metabase.com/docs/latest/api/native-query-snippet#get-apinative-query-snippetid)
+- [Card](https://www.metabase.c../latest/api/card.html#get-apicard)
+- [Collections](https://www.metabase.c../latest/api/collection.html#get-apicollection)
+- [Dashboard](https://www.metabase.c../latest/api/dashboard.html#get-apidashboard)
+- [User](https://www.metabase.c../latest/api/user.html#get-apiuser)
+- [Databases](https://www.metabase.c../latest/api/user.html#get-apiuser)
+- [Native Query Snippet](https://www.metabase.c../latest/api/native-query-snippet#get-apinative-query-snippetid)
 
 ## Tutorials
 

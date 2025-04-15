@@ -8,9 +8,9 @@ This source provides access to the Customer.io API data.
 
 Several output streams are available from this source:
 
-- [Campaigns](https://customer.io/docs/api/#operation/listCampaigns) \(Incremental\)
-- [Campaign Actions](https://customer.io/docs/api/#operation/listCampaignActions) \(Incremental\)
-- [Newsletters](https://customer.io/docs/api/#operation/listNewsletters) \(Incremental\)
+- [Campaigns](https://customer.../api/#operation/listCampaigns) \(Incremental\)
+- [Campaign Actions](https://customer.../api/#operation/listCampaignActions) \(Incremental\)
+- [Newsletters](https://customer.../api/#operation/listNewsletters) \(Incremental\)
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
@@ -38,7 +38,7 @@ rate limit issues.
 
 - Customer.io App API Key
 
-Please follow the [their documentation for generating an App API Key](https://customer.io/docs/managing-credentials/).
+Please follow the [their documentation for generating an App API Key](https://customer.../managing-credentials/).
 
 ## Changelog
 

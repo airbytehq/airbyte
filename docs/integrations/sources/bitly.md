@@ -9,7 +9,7 @@ Bitly is the most widely trusted link management platform in the world. By using
 | `start_date` | `string` | Start date.  |  |
 | `end_date` | `string` | End date.  |  |
 
-Generate API Key [here](https://app.bitly.com/settings/api/) or go to Settings → Developer settings → API → Access token and click Generate token. See [here](https://dev.bitly.com/docs/getting-started/authentication/) for more details. 
+Generate API Key [here](https://app.bitly.com/settings/api/) or go to Settings → Developer settings → API → Access token and click Generate token. See [here](https://dev.bitly.c../getting-started/authentication/) for more details. 
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

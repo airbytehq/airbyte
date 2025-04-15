@@ -8,7 +8,7 @@ Finnhub is a financial data platform that provides real-time stock market, forex
 | `api_key` | `string` | API Key. The API key to use for authentication |  |
 | `symbols` | `array` | Companies.  |  |
 | `market_news_category` | `string` | Market News Category. This parameter can be 1 of the following values general, forex, crypto, merger. | general |
-| `exchange` | `string` | Exchange. More info: https://finnhub.io/docs/api/stock-symbols | US |
+| `exchange` | `string` | Exchange. More info: https://finnhub.../api/stock-symbols | US |
 | `start_date_2` | `string` | Start date.  |  |
 
 ## Streams

@@ -67,7 +67,7 @@ Log into the email you used above and verify your new Salesforce account user. Y
 
 ## For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Destinations and then click + New destination.
 3. On the Set up the source page, select Salesforce from the Source type dropdown.
 4. Enter a name for the Salesforce connector.

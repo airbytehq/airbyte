@@ -9,23 +9,23 @@ This page guides you through setting up the BigQuery destination connector.
 
 - For Airbyte Open Source users using the
   [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector,
-  [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to
+  [upgrade](https://docs.airbyte.com/platform/operator-guides/upgrading-airbyte/) your Airbyte platform to
   version `v0.40.0-alpha` or newer and upgrade your BigQuery connector to version `1.1.14` or newer
-- [A Google Cloud project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console)
-- [A BigQuery dataset](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset)
+- [A Google Cloud project with BigQuery enabled](https://platform/cloud.google.com/bigque../quickstarts/query-public-dataset-console)
+- [A BigQuery dataset](https://platform/cloud.google.com/bigque../quickstarts/quickstart-web-ui#create_a_dataset)
   to sync data to.
 
   **Note:** Queries written in BigQuery can only reference datasets in the same physical location.
   If you plan on combining the data that Airbyte syncs with data from other datasets in your
   queries, create the datasets in the same location on Google Cloud. For more information, read
-  [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
+  [Introduction to Datasets](https://platform/cloud.google.com/bigque../datasets-intro)
 
 - (Required for Airbyte Cloud; Optional for Airbyte Open Source) A Google Cloud
-  [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the
-  [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and
-  [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and
+  [Service Account](https://platform/cloud.google.com/i../service-accounts) with the
+  [`BigQuery User`](https://platform/cloud.google.com/bigque../access-control#bigquery) and
+  [`BigQuery Data Editor`](https://platform/cloud.google.com/bigque../access-control#bigquery) roles and
   the
-  [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+  [Service Account Key in JSON format](https://platform/cloud.google.com/i../creating-managing-service-account-keys).
 
 ## Setup guide
 
@@ -41,13 +41,13 @@ If you want more control of how and where your staging files are stored, you can
 
 To use a Google Cloud Storage bucket:
 
-1. [Create a Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets) with the
+1. [Create a Cloud Storage bucket](https://platform/cloud.google.com/stora../creating-buckets) with the
    Protection Tools set to `none` or `Object versioning`. Make sure the bucket does not have a
-   [retention policy](https://cloud.google.com/storage/docs/samples/storage-set-retention-policy).
-2. [Create an HMAC key and access ID](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create).
+   [retention policy](https://platform/cloud.google.com/stora../samples/storage-set-retention-policy).
+2. [Create an HMAC key and access ID](https://platform/cloud.google.com/stora../authentication/managing-hmackeys#create).
 3. Grant the
-   [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles)
-   to the Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts). This
+   [`Storage Object Admin` role](https://platform/cloud.google.com/stora../access-control/iam-roles#standard-roles)
+   to the Google Cloud [Service Account](https://platform/cloud.google.com/i../service-accounts). This
    must be the same service account as the one you configure for BigQuery access in the
    [BigQuery connector setup step](#step-2-set-up-the-bigquery-connector).
 4. Make sure your Cloud Storage bucket is accessible from the machine running Airbyte. The easiest
@@ -61,13 +61,13 @@ keys (CMEK). You can view this setting under the "Configuration" tab of your GCS
 
 ### Step 2: Set up the BigQuery connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source
+1. Log into your [Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or Airbyte Open Source
    account.
 2. Click **Destinations** and then click **+ New destination**.
 3. On the Set up the destination page, select **BigQuery** from the **Destination type** dropdown.
 4. Enter the name for the BigQuery connector.
 5. For **Project ID**, enter your
-   [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
+   [Google Cloud project ID](https://platform/cloud.google.com/resource-manag../creating-managing-projects#identifying_projects).
 6. For **Dataset Location**, select the location of your BigQuery dataset.
 
 :::warning
@@ -75,21 +75,21 @@ You cannot change the location later.
 :::
 
 7. For **Default Dataset ID**, enter the BigQuery
-   [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
+   [Dataset ID](https://platform/cloud.google.com/bigque../datasets#create-dataset).
 8. For **Loading Method**, select [Batched Standard Inserts](#using-batched-standard-inserts) or
    [GCS Staging](#using-a-google-cloud-storage-bucket).
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
-   [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+   [Service Account Key in JSON format](https://platform/cloud.google.com/i../creating-managing-service-account-keys).
 
 :::note
 Be sure to copy all contents in the Account Key JSON file including the brackets.
 :::
 
 11. For **Transformation Query Run Type (Optional)**, select **interactive** to have
-    [BigQuery run interactive query jobs](https://cloud.google.com/bigquery/docs/running-queries#queries)
+    [BigQuery run interactive query jobs](https://platform/cloud.google.com/bigque../running-queries#queries)
     or **batch** to have
-    [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).
+    [BigQuery run batch queries](https://platform/cloud.google.com/bigque../running-queries#batch).
 
 :::note
 Interactive queries are executed as soon as possible and count towards daily concurrent
@@ -107,7 +107,7 @@ concurrent rate limit, making it easier to start many queries at once.
 ## Supported sync modes
 
 The BigQuery destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+[sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh Sync
 - Incremental - Append Sync
@@ -129,7 +129,7 @@ The raw table contains these fields:
 - `_airbyte_meta`
 - `_airbyte_data`
 
-`_airbyte_data` is a JSON blob with the event data. See [here](/understanding-airbyte/airbyte-metadata-fields)
+`_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
 for more information about the other fields.
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
@@ -143,7 +143,7 @@ The final table contains these fields, in addition to the columns declared in yo
 - `airbyte_extracted_at`
 - `_airbyte_meta`
 
-Again, see [here](/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a
 daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions
@@ -156,7 +156,7 @@ produced tables.)
 ## BigQuery Naming Conventions
 
 Follow
-[BigQuery Datasets Naming conventions](https://cloud.google.com/bigquery/docs/datasets#dataset-naming).
+[BigQuery Datasets Naming conventions](https://platform/cloud.google.com/bigque../datasets#dataset-naming).
 
 Airbyte converts any invalid characters into `_` characters when writing data. However, since
 datasets that begin with `_` are hidden on the BigQuery Explorer panel, Airbyte prepends the
@@ -229,7 +229,7 @@ tutorials:
 | 2.8.1 | 2024-06-25 | [39379](https://github.com/airbytehq/airbyte/pull/39379) | Removing requirement of a redundant permission bigquery.datasets.create permission |
 | 2.8.0 | 2024-06-21 | [39904](https://github.com/airbytehq/airbyte/pull/39904) | Convert all production code to kotlin |
 | 2.7.1 | 2024-06-17 | [39526](https://github.com/airbytehq/airbyte/pull/39526) | Internal code change for improved error reporting in case of source/platform failure (`INCOMPLETE` stream status / empty ConfiguredCatalog). |
-| 2.7.0 | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
+| 2.7.0 | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713) | Support for [refreshes](../platform/operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
 | 2.6.3 | 2024-06-10 | [38331](https://github.com/airbytehq/airbyte/pull/38331) | Internal code changes in preparation for future feature release |
 | 2.6.2 | 2024-06-07 | [38764](https://github.com/airbytehq/airbyte/pull/38764) | Increase message length limit to 50MiB |
 | 2.6.1 | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770) | Internal code change (switch to CDK artifact) |

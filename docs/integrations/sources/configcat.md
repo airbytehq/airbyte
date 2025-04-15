@@ -21,7 +21,7 @@ This source can sync data from the [Configcat API](https://api.configcat.com/doc
 
 ### Performance considerations
 
-Configcat APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://api.configcat.com/docs/#section/Throttling-and-rate-limits)
+Configcat APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://api.configcat.c../#section/Throttling-and-rate-limits)
 
 ## Getting started
 

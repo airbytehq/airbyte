@@ -27,7 +27,7 @@ To set up the Google Ads source connector with Airbyte Open Source, you will nee
 
 1. To proceed with obtaining a developer token, you will first need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard Google Ads accounts cannot generate a developer token.
 
-2. To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
+2. To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/a../first-call/dev-token).
 
 3. When you apply for the token, make sure to include the following:
    - Why you need the token (example: Want to run some internal analytics)
@@ -53,7 +53,7 @@ A single access token can grant varying degrees of access to multiple APIs. A va
 
 The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
 
-Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
+Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/a../access-levels#access_levels_2).
 
 ### Step 3: Set up the Google Ads connector in Airbyte
 
@@ -63,7 +63,7 @@ Each Google Ads API developer token is assigned an access level and "permissible
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Ads from the Source type dropdown.
 4. Enter a name for the Google Ads connector.
@@ -72,7 +72,7 @@ Each Google Ads API developer token is assigned an access level and "permissible
 6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 
 :::note
-If you are accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
+If you are accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/a../concepts/call-structure#cid) of the Manager account.
 :::
 </FieldAnchor>
 
@@ -111,7 +111,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v17/CustomerStatusEnum.CustomerStatus) for more info.
 9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
 10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
-11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
+11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/a../concepts/call-structure#cid) of the Manager account.
 12. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
 13. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
 14. Click **Set up source** and wait for the tests to complete.
@@ -121,12 +121,12 @@ If you are accessing your account through a Google Ads Manager account, you must
 
 ## Supported sync modes
 
-The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 **Incremental Events Streams:**
 
@@ -261,7 +261,7 @@ For incremental streams, data is synced up to the previous day using your Google
 
 ### Primary Key Selection Method
 
-Primary keys are chosen to uniquely identify records within streams. In this selection, we considered the scope of ID uniqueness as detailed in [the Google Ads API structure documentation](https://developers.google.com/google-ads/api/docs/concepts/api-structure#object_ids). This approach guarantees that each record remains unique across various scopes and contexts. Moreover, in the Google Ads API, segmentation is crucial for dissecting performance data. As pointed out in [the Google Ads support documentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation), segments offer a granular insight into data based on specific criteria, like device type or click interactions.
+Primary keys are chosen to uniquely identify records within streams. In this selection, we considered the scope of ID uniqueness as detailed in [the Google Ads API structure documentation](https://developers.google.com/google-ads/a../concepts/api-structure#object_ids). This approach guarantees that each record remains unique across various scopes and contexts. Moreover, in the Google Ads API, segmentation is crucial for dissecting performance data. As pointed out in [the Google Ads support documentation](https://developers.google.com/google-ads/a../reporting/segmentation), segments offer a granular insight into data based on specific criteria, like device type or click interactions.
 
 </HideInUI>
 
@@ -270,7 +270,7 @@ Primary keys are chosen to uniquely identify records within streams. In this sel
 
 Additional streams for Google Ads can be dynamically created using custom queries.
 
-The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v17/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
+The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/a../query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v17/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
 
 Example GAQL Custom Query:
 
@@ -286,7 +286,7 @@ Note that `segments.date` is automatically added to the `WHERE` clause if it is 
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 
-Follow Google's guidance on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords and remove any row that is not associated with a keyword. This is often unobvious and undesired behavior and can lead to missing data records. If you need this field in the stream, add a new stream instead of editing the existing ones.
+Follow Google's guidance on [Selectability between segments and metrics](https://developers.google.com/google-ads/a../reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords and remove any row that is not associated with a keyword. This is often unobvious and undesired behavior and can lead to missing data records. If you need this field in the stream, add a new stream instead of editing the existing ones.
 
 :::info
 For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
@@ -323,7 +323,7 @@ In the case of configuring the Google Ads source connector, each time a sync is 
 
 ## Performance considerations
 
-This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
+This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/a../best-practices/quotas)
 
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>

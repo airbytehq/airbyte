@@ -18,8 +18,8 @@ This page contains the setup guide and reference information for the Trello sour
 
 **For Airbyte Open Source:**
 
-- API Key (see [Authorizing A Client](https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#authorizing-a-client))
-- API Token (see [Authorizing A Client](https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#authorizing-a-client))
+- API Key (see [Authorizing A Client](https://developer.atlassian.com/platform/cloud/trello/guides/rest-api/authorization/#authorizing-a-client))
+- API Token (see [Authorizing A Client](https://developer.atlassian.com/platform/cloud/trello/guides/rest-api/authorization/#authorizing-a-client))
 <!-- /env:oss -->
 
 ## Setup guide
@@ -34,7 +34,7 @@ Create a [Trello Account](https://trello.com).
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Trello** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your Trello account`.
@@ -52,27 +52,27 @@ Create a [Trello Account](https://trello.com).
 
 ## Supported sync modes
 
-The Trello source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Trello source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
 
 ## Supported Streams
 
 This connector outputs the following streams:
 
-- [Boards](https://developer.atlassian.com/cloud/trello/rest/api-group-members/#api-members-id-boards-get) \(Full Refresh\)
-  - [Actions](https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-boardid-actions-get) \(Incremental\)
-  - [Cards](https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-cards-get) \(Full Refresh\)
-  - [Checklists](https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-checklists-get) \(Full Refresh\)
-  - [Lists](https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-lists-get) \(Full Refresh\)
-  - [Users](https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-members-get) \(Full Refresh\)
-  - [Organizations](https://developer.atlassian.com/cloud/trello/rest/api-group-members/#api-members-id-organizations-get) \(Full Refresh\)
+- [Boards](https://developer.atlassian.com/platform/cloud/trello/rest/api-group-members/#api-members-id-boards-get) \(Full Refresh\)
+  - [Actions](https://developer.atlassian.com/platform/cloud/trello/rest/api-group-boards/#api-boards-boardid-actions-get) \(Incremental\)
+  - [Cards](https://developer.atlassian.com/platform/cloud/trello/rest/api-group-boards/#api-boards-id-cards-get) \(Full Refresh\)
+  - [Checklists](https://developer.atlassian.com/platform/cloud/trello/rest/api-group-boards/#api-boards-id-checklists-get) \(Full Refresh\)
+  - [Lists](https://developer.atlassian.com/platform/cloud/trello/rest/api-group-boards/#api-boards-id-lists-get) \(Full Refresh\)
+  - [Users](https://developer.atlassian.com/platform/cloud/trello/rest/api-group-boards/#api-boards-id-members-get) \(Full Refresh\)
+  - [Organizations](https://developer.atlassian.com/platform/cloud/trello/rest/api-group-members/#api-members-id-organizations-get) \(Full Refresh\)
 
 ### Performance considerations
 
-The connector is restricted by normal Trello [requests limitation](https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/).
+The connector is restricted by normal Trello [requests limitation](https://developer.atlassian.com/platform/cloud/trello/guides/rest-api/rate-limits/).
 
 The Trello connector should not run into Trello API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 

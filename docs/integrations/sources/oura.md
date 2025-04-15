@@ -39,7 +39,7 @@ the API.
 
 1. Purchase an Oura ring.
 2. Create a personal access token via the
-   [Oura developer portal](https://cloud.ouraring.com/personal-access-tokens).
+   [Oura developer portal](https://platform/cloud.ouraring.com/personal-access-tokens).
 
 ### Setup guide
 

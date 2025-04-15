@@ -19,15 +19,15 @@ permissions will be requested during authentication:
 - See your user accounts and followers.
 
 For more information on the scopes required for Pinterest OAuth, please refer to the
-[Pinterest API Scopes documentation](https://developers.pinterest.com/docs/getting-started/scopes/#Read%20scopes).
+[Pinterest API Scopes documentation](https://developers.pinterest.c../getting-started/scopes/#Read%20scopes).
 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 To set up the Pinterest source connector with Airbyte Open Source, you'll need your Pinterest
-[App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/) and the
-[refresh token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
+[App ID and secret key](https://developers.pinterest.c../getting-started/set-up-app/) and the
+[refresh token](https://developers.pinterest.c../getting-started/authentication/#Refreshing%20an%20access%20token).
 
 <!-- /env:oss -->
 
@@ -37,7 +37,7 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
 4. Enter the name for the Pinterest connector.
@@ -72,9 +72,9 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
    restriction, the date cannot be more than 90 days in the past.
 6. The **OAuth2.0** authorization method is selected by default. For **Client ID** and **Client
    Secret**, enter your Pinterest
-   [App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/). For
+   [App ID and secret key](https://developers.pinterest.c../getting-started/set-up-app/). For
    **Refresh Token**, enter your Pinterest
-   [Refresh Token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
+   [Refresh Token](https://developers.pinterest.c../getting-started/authentication/#Refreshing%20an%20access%20token).
 7. (Optional) Enter a Start Date using the provided date picker, or by manually entering the date in
    YYYY-MM-DD format. Data added on and after this date will be replicated. If no date is set, it
    will default to the latest allowed date by the report API (913 days from today).
@@ -91,74 +91,74 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 ## Supported sync modes
 
 The Pinterest source connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+[sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
-- [Account analytics](https://developers.pinterest.com/docs/api/v5/#operation/user_account/analytics)
+- [Account analytics](https://developers.pinterest.c../api/v5/#operation/user_account/analytics)
   \(Incremental\)
-- [Boards](https://developers.pinterest.com/docs/api/v5/#operation/boards/list) \(Full refresh\)
-- [Board sections](https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list)
+- [Boards](https://developers.pinterest.c../api/v5/#operation/boards/list) \(Full refresh\)
+- [Board sections](https://developers.pinterest.c../api/v5/#operation/board_sections/list)
   \(Full refresh\)
-- [Pins on board section](https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list_pins)
+- [Pins on board section](https://developers.pinterest.c../api/v5/#operation/board_sections/list_pins)
   \(Full refresh\)
-- [Pins on board](https://developers.pinterest.com/docs/api/v5/#operation/boards/list_pins) \(Full
+- [Pins on board](https://developers.pinterest.c../api/v5/#operation/boards/list_pins) \(Full
   refresh\)
-- [Ad accounts](https://developers.pinterest.com/docs/api/v5/#operation/ad_accounts/list) \(Full
+- [Ad accounts](https://developers.pinterest.c../api/v5/#operation/ad_accounts/list) \(Full
   refresh\)
-- [Ad account analytics](https://developers.pinterest.com/docs/api/v5/#operation/ad_account/analytics)
+- [Ad account analytics](https://developers.pinterest.c../api/v5/#operation/ad_account/analytics)
   \(Incremental\)
-- [Campaigns](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/list)
+- [Campaigns](https://developers.pinterest.c../api/v5/#operation/campaigns/list)
   \(Incremental\)
-- [Campaign analytics](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/list)
+- [Campaign analytics](https://developers.pinterest.c../api/v5/#operation/campaigns/list)
   \(Incremental\)
-- [Campaign Analytics Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Campaign Analytics Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Campaign Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Campaign Targeting Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Ad Groups](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/list)
+- [Ad Groups](https://developers.pinterest.c../api/v5/#operation/ad_groups/list)
   \(Incremental\)
-- [Ad Group Analytics](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
+- [Ad Group Analytics](https://developers.pinterest.c../api/v5/#operation/ad_groups/analytics)
   \(Incremental\)
-- [Ad Group Report](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
+- [Ad Group Report](https://developers.pinterest.c../api/v5/#operation/ad_groups/analytics)
   \(Incremental\)
-- [Ad Group Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
+- [Ad Group Targeting Report](https://developers.pinterest.c../api/v5/#operation/ad_groups/analytics)
   \(Incremental\)
-- [Ads](https://developers.pinterest.com/docs/api/v5/#operation/ads/list) \(Incremental\)
-- [Ad analytics](https://developers.pinterest.com/docs/api/v5/#operation/ads/analytics)
+- [Ads](https://developers.pinterest.c../api/v5/#operation/ads/list) \(Incremental\)
+- [Ad analytics](https://developers.pinterest.c../api/v5/#operation/ads/analytics)
   \(Incremental\)
-- [Catalogs](https://developers.pinterest.com/docs/api/v5/#operation/catalogs/list) \(Full refresh\)
-- [Catalogs Feeds](https://developers.pinterest.com/docs/api/v5/#operation/feeds/list) \(Full
+- [Catalogs](https://developers.pinterest.c../api/v5/#operation/catalogs/list) \(Full refresh\)
+- [Catalogs Feeds](https://developers.pinterest.c../api/v5/#operation/feeds/list) \(Full
   refresh\)
-- [Catalogs Product Groups](https://developers.pinterest.com/docs/api/v5/#operation/catalogs_product_groups/list)
+- [Catalogs Product Groups](https://developers.pinterest.c../api/v5/#operation/catalogs_product_groups/list)
   \(Full refresh\)
-- [Audiences](https://developers.pinterest.com/docs/api/v5/#operation/audiences/list) \(Full
+- [Audiences](https://developers.pinterest.c../api/v5/#operation/audiences/list) \(Full
   refresh\)
-- [Keywords](https://developers.pinterest.com/docs/api/v5/#operation/keywords/get) \(Full refresh\)
-- [Conversion Tags](https://developers.pinterest.com/docs/api/v5/#operation/conversion_tags/list)
+- [Keywords](https://developers.pinterest.c../api/v5/#operation/keywords/get) \(Full refresh\)
+- [Conversion Tags](https://developers.pinterest.c../api/v5/#operation/conversion_tags/list)
   \(Full refresh\)
-- [Customer Lists](https://developers.pinterest.com/docs/api/v5/#tag/customer_lists) \(Full
+- [Customer Lists](https://developers.pinterest.c../api/v5/#tag/customer_lists) \(Full
   refresh\)
-- [Advertizer Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertizer Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Advertizer Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertizer Targeting Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Pin Promotion Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Pin Promotion Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Pin Promotion Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Pin Promotion Targeting Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Product Group Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Product Group Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Product Group Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Product Group Targeting Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Product Item Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Product Item Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Keyword Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Keyword Report](https://developers.pinterest.c../api/v5/#operation/analytics/create_report)
   \(Incremental\)
 
 ## Custom reports
@@ -191,12 +191,12 @@ properties:
     latest allowed date by the report API (913 days from today).
 
 For more detailed information and guidelines on creating custom reports, please refer to the
-[Pinterest API documentation](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report).
+[Pinterest API documentation](https://developers.pinterest.c../api/v5/#operation/analytics/create_report).
 
 ## Performance considerations
 
 The connector is restricted by the Pinterest
-[requests limitation](https://developers.pinterest.com/docs/reference/ratelimits/).
+[requests limitation](https://developers.pinterest.c../reference/ratelimits/).
 
 ## Changelog
 

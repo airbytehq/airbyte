@@ -33,7 +33,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click Sources. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Smartsheets connector and select **Smartsheets** from the Source type dropdown.
 4. Authenticate via OAuth2.0 using the API access token from Prerequisites
@@ -51,7 +51,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 
 ## Supported sync modes
 
-The Smartsheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Smartsheets source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -93,7 +93,7 @@ Additionallly specific metadata fields related to the sheet or row can be includ
 
 The Smartsheet Source is written to pull data from a single Smartsheet spreadsheet. Unlike Google Sheets, Smartsheets only allows one sheet per Smartsheet - so a given Airbyte connector instance can sync only one sheet at a time. To replicate multiple spreadsheets, you can create multiple instances of the Smartsheet Source in Airbyte, reusing the API token for all your sheets that you need to sync.
 
-**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../understanding-airbyte/airbyte-protocol.md).
+**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../platform/understanding-airbyte/airbyte-protocol.md).
 
 ## Data type map
 

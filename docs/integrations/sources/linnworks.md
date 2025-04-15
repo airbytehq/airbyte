@@ -20,7 +20,7 @@ The value of your API Token can be viewed at any time from the main dashboard of
 
 ### Set up the connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+1. Log in to your [Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. From the Airbyte UI, click **Sources** > **+ New Source**.
 3. Select **Linnworks** from the list of available sources.
 4. Enter a **Name** of your choosing.
@@ -30,7 +30,7 @@ The value of your API Token can be viewed at any time from the main dashboard of
 
 ## Supported streams and sync modes
 
-The Linnworks source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Linnworks source connector supports the following streams and [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-mode):
 
 | Stream Name                                                                                    | Full Refresh | Incremental |
 | :--------------------------------------------------------------------------------------------- | :----------- | :---------- |

@@ -11,7 +11,7 @@ The Airbyte Keen destination allows you to stream data from any Airbyte Source i
 
 ## Prerequisites
 
-- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Keen connector to version `0.2.4` or newer
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/platform/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Keen connector to version `0.2.4` or newer
 
 ### Sync overview
 
@@ -59,12 +59,12 @@ Head to the ‘Access’ tab and grab your Project ID and Master API Key
 
 #### API Key and Project ID
 
-The Keen Connector uses the [Keen Kafka Inbound Cluster](https://keen.io/docs/streams/kafka-streaming/kafka-inbound-cluster/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) to stream data. It requires your `Project ID` and `Master Key` for authentication. To get them, navigate to the `Access` tab from the left-hand, side panel and check the `Project Details` section.
+The Keen Connector uses the [Keen Kafka Inbound Cluster](https://keen.../streams/kafka-streaming/kafka-inbound-cluster/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) to stream data. It requires your `Project ID` and `Master Key` for authentication. To get them, navigate to the `Access` tab from the left-hand, side panel and check the `Project Details` section.
 **Important**: This destination requires the Project's **Master** Key.
 
 #### Timestamp Inference
 
-The `Infer Timestamp` field lets you specify if you want the connector to infer the [keen.timestamp](https://keen.io/docs/streams/overview/data-modeling-guide/#timestamp-data-type) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Keen's time series analytics. By default, this property is set to `true`. If toggled off, `keen.timestamp` will be set to the datetime when the data was recorded by Keen.
+The `Infer Timestamp` field lets you specify if you want the connector to infer the [keen.timestamp](https://keen.../streams/overview/data-modeling-guide/#timestamp-data-type) field based on the data from the event that occurred in the source application. This feature allows for historical data synchronization enabling you to fully leverage the power of Keen's time series analytics. By default, this property is set to `true`. If toggled off, `keen.timestamp` will be set to the datetime when the data was recorded by Keen.
 
 ### Setup the Keen destination in Airbyte
 
@@ -74,7 +74,7 @@ Now, you should have all the parameters needed to configure Keen destination.
 - **Master API Key**
 - **Infer Timestamp**
 
-Connect your first source and then head to the Keen application. You can seamlessly run [custom analysis](https://keen.io/docs/compute/data-explorer-guide/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) on your data and [build interactive dashboards](https://keen.io/docs/visualize/dashboard-creator/dashboard-edition/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) for key stakeholders.
+Connect your first source and then head to the Keen application. You can seamlessly run [custom analysis](https://keen.../compute/data-explorer-guide/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) on your data and [build interactive dashboards](https://keen.../visualize/dashboard-creator/dashboard-edition/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) for key stakeholders.
 
 If you have any questions, please reach out to us at team@keen.io and we’ll be happy to help!
 

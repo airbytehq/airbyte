@@ -2,8 +2,8 @@
 
 Airbyte's certified MongoDB connector offers the following features:
 
-- [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/).
-- Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
+- [Change Data Capture (CDC)](https://docs.airbyte.com/platform/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.c../manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.c../manual/core/replica-set-oplog/).
+- Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/platform/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
 - **_NEW_** Full refresh syncing of collections.
 
 ## Quick Start
@@ -16,7 +16,7 @@ in this document.
 
 Here is an outline of the minimum required steps to configure a new MongoDB V2 source connector:
 
-1. Create or discover the configuration of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/), either hosted in [MongoDB Atlas](https://www.mongodb.com/atlas/database) or self-hosted.
+1. Create or discover the configuration of a [MongoDB replica set](https://www.mongodb.c../manual/replication/), either hosted in [MongoDB Atlas](https://www.mongodb.com/atlas/database) or self-hosted.
 2. Create a new MongoDB source in the Airbyte UI
 3. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
@@ -60,8 +60,8 @@ access to the database.
 
 ##### Self Hosted
 
-These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) is installed. To
-install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
+These instructions assume that the [MongoDB shell](https://www.mongodb.c../mongodb-shell/) is installed. To
+install the MongoDB shell, please follow [these instructions](https://www.mongodb.c../mongodb-shell/install/#std-label-mdb-shell-install).
 
 1. From a terminal window, launch the MongoDB shell:
 
@@ -109,7 +109,7 @@ These steps outline how to discover the connection string of your MongoDB instan
 Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/database). Below are the steps to discover
 the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
-1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
+1. Log in to the [MongoDB Atlas dashboard](https://platform/cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
 
 ![Connect to Source Cluster](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
@@ -127,7 +127,7 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 Self-hosted clusters are MongoDB instances that are hosted outside of [MongoDB Atlas](https://www.mongodb.com/atlas/database). Below are the steps to discover
 the connection string for a MongoDB self-hosted replica set cluster.
 
-1.  Refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for instructions
+1.  Refer to the [MongoDB connection string documentation](https://www.mongodb.c../manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for instructions
     on discovering a self-hosted deployment connection string.
 
 #### Step 3: Configure the Airbyte MongoDB Source
@@ -142,7 +142,7 @@ In addtion MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
-Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
+Airbyte utilizes [the change streams feature](https://www.mongodb.c../manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.c../manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/platform/understanding-airbyte/cdc/).
 
 ### Full Refresh
 
@@ -179,16 +179,16 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 | Parameter Name                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | :----------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                                                                                          |
-| Connection String                          | The connection string of the source MongoDB cluster. For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string. For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
+| Connection String                          | The connection string of the source MongoDB cluster. For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string. For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.c../manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
 | Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                                                                                                   |
 | Username                                   | The username which is used to access the database. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                    |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                           |
-| Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                            |
+| Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.c../manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                            |
 | Schema Enforced                            | Controls whether schema is discovered and enforced. See discussion in [Schema Enforcement](#Schema-Enforcement).                                                                                                                                                                                                                                                                                                                           |
 | Initial Waiting Time in Seconds (Advanced) | The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.                                                                                                                                                                                                                                                           |
 | Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                                                                                             |
-| Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection. Default is 10,000 with a valid range of 1,000 to 100,000. See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
-| Update Capture Mode (Advanced)             | Determines how Airbyte looks up the value of an updated document. Default is "Lookup". **IMPORTANT** : "Post image" is only supported in MongoDB version 6.0+. In addition, the collections of interest must be setup to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to do so will lead to data loss.                                       |
+| Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection. Default is 10,000 with a valid range of 1,000 to 100,000. See the [MongoDB sampling method](https://www.mongodb.c../compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
+| Update Capture Mode (Advanced)             | Determines how Airbyte looks up the value of an updated document. Default is "Lookup". **IMPORTANT** : "Post image" is only supported in MongoDB version 6.0+. In addition, the collections of interest must be setup to [return pre and post images](https://www.mongodb.c../manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to do so will lead to data loss.                                       |
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.10/fundamentals/connection/).
 

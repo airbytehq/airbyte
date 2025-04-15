@@ -4,8 +4,8 @@ This page contains the setup guide and reference information for the OneSignal s
 
 ## Prerequisites
 
-- [User Auth Key](https://documentation.onesignal.com/docs/accounts-and-keys#user-auth-key)
-- Applications [credentials](https://documentation.onesignal.com/docs/accounts-and-keys) \(App Id & REST API Key\)
+- [User Auth Key](https://documentation.onesignal.c../accounts-and-keys#user-auth-key)
+- Applications [credentials](https://documentation.onesignal.c../accounts-and-keys) \(App Id & REST API Key\)
 
 ## Setup guide
 
@@ -15,15 +15,15 @@ This page contains the setup guide and reference information for the OneSignal s
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **OneSignal** from the **Source type** dropdown.
 4. Enter a name for the OneSignal connector.
-5. Enter [User Auth Key](https://documentation.onesignal.com/docs/accounts-and-keys#user-auth-key)
+5. Enter [User Auth Key](https://documentation.onesignal.c../accounts-and-keys#user-auth-key)
 6. Enter Applications credentials (repeat for every application):
    1. Enter App Name (for internal purposes only)
-   2. Enter [App ID](https://documentation.onesignal.com/docs/accounts-and-keys#app-id)
-   3. Enter [REST API Key](https://documentation.onesignal.com/docs/accounts-and-keys#rest-api-key)
+   2. Enter [App ID](https://documentation.onesignal.c../accounts-and-keys#app-id)
+   3. Enter [REST API Key](https://documentation.onesignal.c../accounts-and-keys#rest-api-key)
 7. Enter the Start Date in format `YYYY-MM-DDTHH:mm:ssZ`
 8. Enter Outcome names as comma separated values, e.g. `os__session_duration.count,os__click.count,` see the [API docs](https://documentation.onesignal.com/reference/view-outcomes) for more details.
 
@@ -33,22 +33,22 @@ This page contains the setup guide and reference information for the OneSignal s
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **OneSignal** from the Source type dropdown.
 4. Enter the name for the OneSignal connector.
-5. Enter [User Auth Key](https://documentation.onesignal.com/docs/accounts-and-keys#user-auth-key)
+5. Enter [User Auth Key](https://documentation.onesignal.c../accounts-and-keys#user-auth-key)
 6. Enter Applications credentials (repeat for every application):
    1. Enter App Name (for internal purposes only)
-   2. Enter [App ID](https://documentation.onesignal.com/docs/accounts-and-keys#app-id)
-   3. Enter [REST API Key](https://documentation.onesignal.com/docs/accounts-and-keys#rest-api-key)
+   2. Enter [App ID](https://documentation.onesignal.c../accounts-and-keys#app-id)
+   3. Enter [REST API Key](https://documentation.onesignal.c../accounts-and-keys#rest-api-key)
 7. Enter the Start Date in format `YYYY-MM-DDTHH:mm:ssZ`
 8. Enter Outcome names as comma separated values, e.g. `os__session_duration.count,os__click.count,` see the [API docs](https://documentation.onesignal.com/reference/view-outcomes) for more details.
 
 ## Supported sync modes
 
-The OneSignal source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The OneSignal source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -59,7 +59,7 @@ The OneSignal source connector supports the following [sync modes](https://docs.
 
 ## Performance considerations
 
-The connector is restricted by normal OneSignal [rate limits](https://documentation.onesignal.com/docs/rate-limits).
+The connector is restricted by normal OneSignal [rate limits](https://documentation.onesignal.c../rate-limits).
 
 ## Data type mapping
 

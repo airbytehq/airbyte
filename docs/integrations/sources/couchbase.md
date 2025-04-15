@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the Couchbase s
 #### Option A: Couchbase Capella (Cloud)
 
 1. Create a Couchbase Capella account:
-   - Go to the [Couchbase Capella signup page](https://cloud.couchbase.com/sign-up).
+   - Go to the [Couchbase Capella signup page](https://platform/cloud.couchbase.com/sign-up).
    - Follow the prompts to create your account.
 
 2. Create a Capella cluster:
@@ -62,7 +62,7 @@ This page contains the setup guide and reference information for the Couchbase s
 
 ## Supported sync modes
 
-The Couchbase source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Couchbase source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 |:------------------------------|:-----------|

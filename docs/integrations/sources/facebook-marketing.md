@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the [Facebook M
 <!-- env:oss -->
 -  **For Airbyte Open Source**: 
    - [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled 
-   - The following permissions: [ads_management](https://developers.facebook.com/docs/permissions#a), [ads_read](https://developers.facebook.com/docs/permissions#a), [business_management](https://developers.facebook.com/docs/permissions#b) and [read_insights](https://developers.facebook.com/docs/permissions#r). 
+   - The following permissions: [ads_management](https://developers.facebook.c../permissions#a), [ads_read](https://developers.facebook.c../permissions#a), [business_management](https://developers.facebook.c../permissions#b) and [read_insights](https://developers.facebook.c../permissions#r). 
 <!-- /env:oss -->
 
 ## Setup guide
@@ -25,7 +25,7 @@ This page contains the setup guide and reference information for the [Facebook M
 <!-- env:cloud -->
 #### For Airbyte Cloud: 
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
 4. Enter a name for the Facebook Marketing connector.
@@ -46,17 +46,17 @@ This page contains the setup guide and reference information for the [Facebook M
 
 To set up Facebook Marketing as a source in Airbyte Open Source, you will first need to create a Facebook app and generate a Marketing API access token. You will then need to request a rate limit increase from Facebook to ensure your syncs are successful. 
 
-1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and follow the steps provided in the [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create a Facebook app.
+1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and follow the steps provided in the [Facebook documentation](https://developers.facebook.c../development/create-an-app/) to create a Facebook app.
 2. While creating the app, when you are prompted for "What do you want your app to do?", select **Other**. You will also need to set the app type to **Business** when prompted.
-3. From your App’s dashboard, [set up the Marketing API](https://developers.facebook.com/docs/marketing-apis/get-started).
+3. From your App’s dashboard, [set up the Marketing API](https://developers.facebook.c../marketing-apis/get-started).
 4. Generate a Marketing API access token: From your App’s Dashboard, click **Marketing API** --> **Tools**. Select all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click **Get token**. Copy the generated token for later use.
-5. Request a rate limit increase: Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook apps with the default Standard Access tier, making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
+5. Request a rate limit increase: Facebook [heavily throttles](https://developers.facebook.c../marketing-api/overview/authorization#limits) API tokens generated from Facebook apps with the default Standard Access tier, making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
 
    - Ads Management Standard Access
    - ads_read
    - Ads_management
 
-   See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) to request Advanced Access to the relevant permissions.
+   See the Facebook [documentation on Authorization](https://developers.facebook.c../marketing-api/overview/authorization/#access-levels) to request Advanced Access to the relevant permissions.
 
 :::tip
 You can use the [Access Token Tool](https://developers.facebook.com/tools/accesstoken) at any time to view your existing access tokens, including their assigned permissions and lifecycles.
@@ -95,13 +95,13 @@ You can use the [Access Token Tool](https://developers.facebook.com/tools/access
 </FieldAnchor>
 
 <FieldAnchor field="fetch_thumbnail_images">
-7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
+7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.c../marketing-api/creative/).
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights">
 8. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
 
-To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
+To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook documentation](https://developers.facebook.c../marketing-api/insights/breakdowns).
 
    :::info
    Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also update the connections to sync these streams by refreshing the schema.
@@ -171,29 +171,29 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 
 ## Supported sync modes
 
-The Facebook Marketing source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Facebook Marketing source connector supports the following [sync modes](https://docs.airbyte.com/platform/cloud/core-concepts/#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
 
 ## Supported Streams
 
-- [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
-- [AdAccount](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts)
-- [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
-- [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
-- [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
-- [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
-- [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
-- [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
-- [CustomAudiences](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)
+- [Activities](https://developers.facebook.c../marketing-api/reference/ad-activity)
+- [AdAccount](https://developers.facebook.c../marketing-api/business-asset-management/guides/ad-accounts)
+- [AdCreatives](https://developers.facebook.c../marketing-api/reference/ad-creative#fields)
+- [AdSets](https://developers.facebook.c../marketing-api/reference/ad-campaign#fields)
+- [Ads](https://developers.facebook.c../marketing-api/reference/adgroup#fields)
+- [AdInsights](https://developers.facebook.c../marketing-api/reference/adgroup/insights/)
+- [Campaigns](https://developers.facebook.c../marketing-api/reference/ad-campaign-group#fields)
+- [CustomConversions](https://developers.facebook.c../marketing-api/reference/custom-conversion)
+- [CustomAudiences](https://developers.facebook.c../marketing-api/reference/custom-audience)
   :::info Custom Audiences
   The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data` See our Troubleshooting section for more information.
   :::
-- [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
-- [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
+- [Images](https://developers.facebook.c../marketing-api/reference/ad-image)
+- [Videos](https://developers.facebook.c../marketing-api/reference/video)
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 
@@ -227,7 +227,7 @@ You can segment the Ad Insights table into parts based on the following informat
 - Platform & Device
 - Region
 
-For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
+For more information, see the [Facebook Insights API documentation.](https://developers.facebook.c../marketing-api/reference/adgroup/insights/)
 
 <!-- Christo: the note below was commented out as its accuracy could not be verified. If it can be verified and clarified for users, it should be added back in.
 

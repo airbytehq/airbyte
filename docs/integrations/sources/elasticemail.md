@@ -1,7 +1,7 @@
 # Elasticemail
 Elasticemail is an email delivery and marketing platform.
 Using this connector we extract data from streams such as campaigns , contacts , lists and statistics!
-Docs : https://elasticemail.com/developers/api-documentation/rest-api
+Docs : https://elasticemail.com/developers/platform/api-documentation/rest-api
 
 ## Configuration
 

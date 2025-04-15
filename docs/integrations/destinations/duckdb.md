@@ -32,7 +32,7 @@ We do not recommend providing your API token in the `md:` connection string, as 
 
 ### Authenticating to MotherDuck
 
-For authentication, you can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option.
+For authentication, you can provide your [MotherDuck Service Credential](https://motherduck.c../authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option.
 
 ### Sync Overview
 
@@ -46,7 +46,7 @@ Each table will contain 3 columns:
 
 ### Normalization
 
-If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
+If you set [Normalization](https://docs.airbyte.com/platform/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
 
 #### Features
 

@@ -1,6 +1,6 @@
 # AssemblyAI
 Website: https://www.assemblyai.com/
-API Reference: https://www.assemblyai.com/docs/api-reference/overview
+API Reference: https://www.assemblyai.c../api-reference/overview
 
 ## Configuration
 

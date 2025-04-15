@@ -4,7 +4,7 @@
 
 The Zoho CRM source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-Airbyte uses [REST API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html) to fetch data from Zoho CRM.
+Airbyte uses [REST API](https://www.zoho.com/crm/develop../api/v2/modules-api.html) to fetch data from Zoho CRM.
 
 ### Output schema
 
@@ -18,9 +18,9 @@ The discovering of Zoho CRM module schema is made dynamically based on Metadata 
 
 ### Notes:
 
-Some of Zoho CRM Modules may not be available for sync due to limitations of Zoho CRM Edition or permissions scope. For details refer to the [Scopes](https://www.zoho.com/crm/developer/docs/api/v2/scopes.html) section in the Zoho CRM documentation.
+Some of Zoho CRM Modules may not be available for sync due to limitations of Zoho CRM Edition or permissions scope. For details refer to the [Scopes](https://www.zoho.com/crm/develop../api/v2/scopes.html) section in the Zoho CRM documentation.
 
-Connector streams and schemas are built dynamically on top of Metadata that is available from the REST API - please see [Modules API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html), [Modules Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/module-meta.html), [Fields Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/field-meta.html).
+Connector streams and schemas are built dynamically on top of Metadata that is available from the REST API - please see [Modules API](https://www.zoho.com/crm/develop../api/v2/modules-api.html), [Modules Metadata API](https://www.zoho.com/crm/develop../api/v2/module-meta.html), [Fields Metadata API](https://www.zoho.com/crm/develop../api/v2/field-meta.html).
 The list of available streams is the list of Modules as long as Module Metadata is available for each of them from the Zoho CRM API, and Fields Metadata is available for each of the fields. If a module you want to sync is not available from this connector, it's because the Zoho CRM API does not make it available.
 
 ### Data type mapping
@@ -103,7 +103,7 @@ For more information about available environments, please visit [this page](http
 ### Performance considerations
 
 Also, Zoho CRM API calls are associated with credits, each Zoho CRM edition has a limit in a 24-hour rolling window, so please, consider it when configuring your connections.
-More details about Zoho CRM API credit system can be found [here](https://www.zoho.com/crm/developer/docs/api/v2/api-limits.html).
+More details about Zoho CRM API credit system can be found [here](https://www.zoho.com/crm/develop../api/v2/api-limits.html).
 
 ### Note about using the Zoho Developer Environment
 
@@ -123,7 +123,7 @@ To set up a connection with a Zoho CRM source, you will need to choose start syn
 
 ### Create Refresh Token
 
-For generating the refresh token, please refer to [this page](https://www.zoho.com/crm/developer/docs/api/v2/access-refresh.html).
+For generating the refresh token, please refer to [this page](https://www.zoho.com/crm/develop../api/v2/access-refresh.html).
 Make sure to complete the auth flow quickly, as the initial token granted by Zoho CRM is only live for a few minutes before it can no longer be used to generate a refresh token.
 
 ## Changelog

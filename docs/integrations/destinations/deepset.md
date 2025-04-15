@@ -1,6 +1,6 @@
 # deepset AI Platform
 
-deepset AI Platform is a SaaS platform for building LLM applications and managing them across the whole lifecycle - from early prototyping to large-scale production. For details, see [deepset documentation](https://docs.cloud.deepset.ai/docs/getting-started).
+deepset AI Platform is a SaaS platform for building LLM applications and managing them across the whole lifecycle - from early prototyping to large-scale production. For details, see [deepset documentation](https://docs.cloud.deepset.../getting-started).
 
 ## Data Integration with Airbyte
 
@@ -12,10 +12,10 @@ _Note_: The deepset destination connector writes data to your deepset workspace,
 
 The deepset destination connector supports the following sync modes:
 
-* [Full refresh - append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)
-* [Full refresh - overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Incremental sync - append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)
-* [Incremental sync - append + deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+* [Full refresh - append](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-append/)
+* [Full refresh - overwrite](https://docs.airbyte.com/platform/understanding-airbyte/connections/full-refresh-overwrite/)
+* [Incremental sync - append](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append/)
+* [Incremental sync - append + deduped ](https://docs.airbyte.com/platform/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Syncing Data to deepset AI Platform
 
@@ -26,7 +26,7 @@ To use the deepset destination in Airbyte:
 2. Generate the deepset Cloud API key:
 
     - Click your initials in the top right corner and choose Connections.
-    - Scroll down the Connections page to the API Keys section and click _Add new key_. If you need help, see [Generate an API Key](https://docs.cloud.deepset.ai/docs/generate-api-key).
+    - Scroll down the Connections page to the API Keys section and click _Add new key_. If you need help, see [Generate an API Key](https://docs.cloud.deepset.../generate-api-key).
 
 3. Set up the destination connector in Airbyte providing the following details:
 

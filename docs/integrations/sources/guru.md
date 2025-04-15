@@ -8,7 +8,7 @@ To set up the Guru source connector, you'll need the [Guru Auth keys](https://de
 
 ## Set up the Greenhouse connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://platform/cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Guru** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.

@@ -4,8 +4,8 @@
 
 The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
-- [Airbyte Quickstart: An Introduction to Deploying and Syncing](../../using-airbyte/getting-started/readme.md)
-- [Using Connector Builder and the low-code CDK](../../connector-development/connector-builder-ui/overview.md)
+- [Airbyte Quickstart: An Introduction to Deploying and Syncing](../../platform/using-airbyte/getting-started/)
+- [Using Connector Builder and the low-code CDK](../platform/connector-development/connector-builder-ui/overview.md)
 - [How to Build ETL Sources in Under 30 Minutes: A Video Tutorial](https://www.youtube.com/watch?v=kJ3hLoNfz_E&t=13s&ab_channel=Airbyte)
 
 ## Features
@@ -18,7 +18,7 @@ The PokéAPI is primarly used as a tutorial and educational resource, as it requ
 | SSL connection                | No         |
 | Namespaces                    | No         |
 
-This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to serve and retrieve information about Pokémon. This connector should be primarily used for educational purposes or for getting a trial source up and running without needing any dependencies. As this API is fully open and is not rate-limited, no authentication or rate-limiting is performed, so you can use this connector right out of the box without any further configuration.
+This source uses the fully open [PokéAPI](https://pokeapi.../v2#info) to serve and retrieve information about Pokémon. This connector should be primarily used for educational purposes or for getting a trial source up and running without needing any dependencies. As this API is fully open and is not rate-limited, no authentication or rate-limiting is performed, so you can use this connector right out of the box without any further configuration.
 
 ## Output Schema
 
@@ -26,7 +26,7 @@ Currently, only one output stream is available from this source, which is the Po
 
 ## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
 
-According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
+According to the API's [fair use policy](https://pokeapi.../v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
 
 ## Data Type Mapping
 

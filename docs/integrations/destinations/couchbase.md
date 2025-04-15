@@ -81,7 +81,7 @@ Each stream will be output into a collection in Couchbase. The connector follows
 #### Capella Setup
 
 1. **Create Capella Resources**
-   * Log in to [Couchbase Capella](https://cloud.couchbase.com)
+   * Log in to [Couchbase Capella](https://platform/cloud.couchbase.com)
    * Create a new database or use an existing one
    * Create a bucket for your data
 
@@ -93,7 +93,7 @@ Each stream will be output into a collection in Couchbase. The connector follows
 3. **Allow List IP Addresses**
    * In Capella, go to "Security → Network Security"
    * Add the IP addresses that Airbyte will connect from
-   * [Get the IPs from Airbyte documentation](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses)
+   * [Get the IPs from Airbyte documentation](https://docs.airbyte.com/platform/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses)
 
 4. **Get Connection Details**
    * In Capella, go to "Connect"

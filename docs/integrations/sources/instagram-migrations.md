@@ -36,7 +36,7 @@ To ensure uninterrupted syncs, users should follow the instructions below to mig
  This will reset the data in your destination and initiate a fresh sync.
  `
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 3.0.0
 
@@ -44,7 +44,7 @@ The Instagram connector has been upgrade to API v18 (following the deprecation o
 
 - `Media Insights`
 
-  Old metric will be replaced with the new ones, refer to the [IG Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights#metrics) for more info.
+  Old metric will be replaced with the new ones, refer to the [IG Media Insights](https://developers.facebook.c../instagram-api/reference/ig-media/insights#metrics) for more info.
 
   | Old metric                 | New metric         |
   | -------------------------- | ------------------ |
@@ -71,7 +71,7 @@ New metrics for Reels: `ig_reels_avg_watch_time`, `ig_reels_video_view_total_tim
 
 :::note
 
-Due to Instagram limitations, the "Metric Type" will be set to `total_value` for `follower_demographics` metric. Refer to the [docs](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights#metric-type) for more info.
+Due to Instagram limitations, the "Metric Type" will be set to `total_value` for `follower_demographics` metric. Refer to the [docs](https://developers.facebook.c../instagram-api/reference/ig-user/insights#metric-type) for more info.
 
 :::
 
@@ -99,7 +99,7 @@ Please follow the instructions below to migrate to version 3.0.0:
  This will reset the data in your destination and initiate a fresh sync.
  `
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 
