@@ -284,24 +284,6 @@ class SourceStripe(YamlDeclarativeSource):
 
         streams = [
             checkout_sessions,
-            UpdatedCursorIncrementalStripeStream(
-                name="external_account_cards",
-                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
-                legacy_cursor_field=None,
-                extra_request_params={"object": "card"},
-                response_filter=lambda record: record["object"] == "card",
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeStream(
-                name="external_account_bank_accounts",
-                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
-                legacy_cursor_field=None,
-                extra_request_params={"object": "bank_account"},
-                response_filter=lambda record: record["object"] == "bank_account",
-                **args,
-            ),
             UpdatedCursorIncrementalStripeSubStream(
                 name="persons",
                 path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
@@ -340,25 +322,7 @@ class SourceStripe(YamlDeclarativeSource):
                 event_types=["credit_note.created", "credit_note.updated", "credit_note.voided"],
                 **args,
             ),
-            UpdatedCursorIncrementalStripeStream(
-                name="early_fraud_warnings",
-                path="radar/early_fraud_warnings",
-                event_types=["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="authorizations",
-                path="issuing/authorizations",
-                event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
-                **args,
-            ),
             self.customers(**args),
-            IncrementalStripeStream(
-                name="cardholders",
-                path="issuing/cardholders",
-                event_types=["issuing_cardholder.created", "issuing_cardholder.updated"],
-                **args,
-            ),
             IncrementalStripeStream(
                 name="charges",
                 path="charges",
@@ -390,7 +354,6 @@ class SourceStripe(YamlDeclarativeSource):
                 ],
                 **args,
             ),
-            application_fees,
             invoices,
             IncrementalStripeStream(
                 name="invoice_items",
@@ -477,9 +440,6 @@ class SourceStripe(YamlDeclarativeSource):
                     "setup_intent.succeeded",
                 ],
                 **args,
-            ),
-            IncrementalStripeStream(
-                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args
             ),
             IncrementalStripeStream(
                 name="transactions",

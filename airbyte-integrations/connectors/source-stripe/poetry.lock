@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.42.1"
+version = "6.45.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.42.1-py3-none-any.whl", hash = "sha256:7a23fa4d3711173b7dbc1f20d94c8f10bb3fae3f164464be63cf60ad631782ab"},
-    {file = "airbyte_cdk-6.42.1.tar.gz", hash = "sha256:c8fd4760cd68f8a93ea32bdafadd0d436f8274ee01ca316ab574f99433d4684b"},
+    {file = "airbyte_cdk-6.45.1-py3-none-any.whl", hash = "sha256:bd79306da8b8c6c2e7100c407872845e734a82ad5814c0899ac1c33c7b292780"},
+    {file = "airbyte_cdk-6.45.1.tar.gz", hash = "sha256:a9e5ea9c57080604716a9f1d148a8703688ce05bac68dd0a71a4ad8c38afd05d"},
 ]
 
 [package.dependencies]
@@ -572,14 +572,14 @@ files = [
 
 [[package]]
 name = "httpcore"
-version = "1.0.7"
+version = "1.0.8"
 description = "A minimal low-level HTTP client."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "httpcore-1.0.7-py3-none-any.whl", hash = "sha256:a3fff8f43dc260d5bd363d9f9cf1830fa3a458b332856f34282de498ed420edd"},
-    {file = "httpcore-1.0.7.tar.gz", hash = "sha256:8551cb62a169ec7162ac7be8d4817d561f60e08eaa485234898414bb5a8a0b4c"},
+    {file = "httpcore-1.0.8-py3-none-any.whl", hash = "sha256:5254cf149bcb5f75e9d1b2b9f729ea4a4b883d1ad7379fc632b727cec23674be"},
+    {file = "httpcore-1.0.8.tar.gz", hash = "sha256:86e94505ed24ea06514883fd44d2bc02d90e77e7979c8eb71b90f41d364a1bad"},
 ]
 
 [package.dependencies]
