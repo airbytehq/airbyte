@@ -30,7 +30,7 @@ https://gradle.org/
 
 **Pypi**
 
-Find, install and publish Python packages with the Python Package Index
+Find, install and publish Python packages with the Python Package Index.
 
 https://pypi.org/
 
