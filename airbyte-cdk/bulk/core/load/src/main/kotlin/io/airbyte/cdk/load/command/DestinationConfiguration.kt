@@ -61,23 +61,17 @@ import java.nio.file.Path
  * ```
  */
 abstract class DestinationConfiguration : Configuration {
-    open val recordBatchSizeBytes: Long = DEFAULT_RECORD_BATCH_SIZE_BYTES
-    open val processEmptyFiles: Boolean = false
-    open val tmpFileDirectory: Path = Path.of("airbyte-cdk-load")
+    // If this many seconds have passed without finishing data in flight, the framework will force
+    // the workers to finish.
+    open val maxTimeWithoutFlushingDataSeconds: Long =
+        DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS
+    // How often to perform the above check.
+    open val heartbeatIntervalSeconds: Long = DEFAULT_HEARTBEAT_INTERVAL_SECONDS
 
     /** Memory queue settings */
     open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
     open val estimatedRecordMemoryOverheadRatio: Double =
         1.1 // 1.0 => No overhead, 2.0 => 100% overhead
-
-    /**
-     * If we have not flushed state checkpoints in this amount of time, make a best-effort attempt
-     * to force a flush.
-     */
-    open val maxCheckpointFlushTimeMs: Long = 15 * 60 * 1000L // 15 minutes
-
-    /** The max number of threads to use for implementor tasks (e.g. open, processBatch). */
-    open val maxNumImplementorTaskThreads = 64
 
     /**
      * The amount of time given to implementor tasks (e.g. open, processBatch) to complete their
@@ -86,15 +80,26 @@ abstract class DestinationConfiguration : Configuration {
      */
     open val gracefulCancellationTimeoutMs: Long = 10 * 60 * 1000L // 10 minutes
 
+    /** How many calls to StreamLoader.start() can be in flight concurrently. */
     open val numOpenStreamWorkers: Int = 1
+
+    companion object {
+        const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
+        const val DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 60L
+        const val DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS = 15 * 60L
+        const val DEFAULT_GENERATION_ID_METADATA_KEY = "ab-generation-id"
+    }
+
+    // DEPRECATED: Old interface config. TODO: Drop when we're totally migrated.
+    open val recordBatchSizeBytes: Long = DEFAULT_RECORD_BATCH_SIZE_BYTES
+    open val processEmptyFiles: Boolean = false
+    open val tmpFileDirectory: Path = Path.of("airbyte-cdk-load")
     open val numProcessRecordsWorkers: Int = 2
     open val numProcessBatchWorkers: Int = 5
     open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
 
-    companion object {
-        const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
-    }
+    open val generationIdMetadataKey: String = DEFAULT_GENERATION_ID_METADATA_KEY
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

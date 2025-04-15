@@ -3,10 +3,9 @@
 #
 
 import logging
-import traceback
 from http import HTTPStatus
 from itertools import chain
-from typing import Any, Generator, List, Mapping, Optional, Tuple, Union
+from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 from requests import HTTPError
 
@@ -20,6 +19,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, Htt
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
+    BaseStream,
     Campaigns,
     Companies,
     CompaniesPropertyHistory,
@@ -39,7 +39,6 @@ from source_hubspot.streams import (
     DealsPropertyHistory,
     DealsWebAnalytics,
     EmailEvents,
-    EmailSubscriptions,
     Engagements,
     EngagementsCalls,
     EngagementsCallsWebAnalytics,
@@ -58,7 +57,6 @@ from source_hubspot.streams import (
     Leads,
     LineItems,
     LineItemsWebAnalytics,
-    MarketingEmails,
     Owners,
     OwnersArchived,
     Products,
@@ -105,26 +103,26 @@ scopes = {
 properties_scopes = {}
 
 
-def scope_is_granted(stream, granted_scopes):
+def scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
     """
     Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them
     """
     granted_scopes = set(granted_scopes)
-    if isinstance(stream, DeclarativeStream):
-        return len(scopes.get(stream.name, set()).intersection(granted_scopes)) > 0
-    else:
+    if isinstance(stream, BaseStream):
         return stream.scope_is_granted(granted_scopes)
+    else:
+        return len(scopes.get(stream.name, set()).intersection(granted_scopes)) > 0
 
 
-def properties_scope_is_granted(stream, granted_scopes):
+def properties_scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
     """
     Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them
     """
     granted_scopes = set(granted_scopes)
-    if isinstance(stream, DeclarativeStream):
-        return not properties_scopes.get(stream.name, set()) - granted_scopes
-    else:
+    if isinstance(stream, BaseStream):
         return stream.properties_scope_is_granted()
+    else:
+        return not properties_scopes.get(stream.name, set()) - granted_scopes
 
 
 class SourceHubspot(YamlDeclarativeSource):
@@ -187,7 +185,6 @@ class SourceHubspot(YamlDeclarativeSource):
         return dict(api=api, start_date=start_date, credentials=credentials, acceptance_test_config=acceptance_test_config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["start_date"] = config.get("start_date", DEFAULT_START_DATE)
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
         streams = super().streams(config=config)
@@ -204,7 +201,6 @@ class SourceHubspot(YamlDeclarativeSource):
             Deals(**common_params),
             DealsArchived(**common_params),
             EmailEvents(**common_params),
-            # EmailSubscriptions(**common_params),
             Engagements(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),
@@ -216,7 +212,6 @@ class SourceHubspot(YamlDeclarativeSource):
             Goals(**common_params),
             Leads(**common_params),
             LineItems(**common_params),
-            # MarketingEmails(**common_params),
             Owners(**common_params),
             OwnersArchived(**common_params),
             Products(**common_params),
