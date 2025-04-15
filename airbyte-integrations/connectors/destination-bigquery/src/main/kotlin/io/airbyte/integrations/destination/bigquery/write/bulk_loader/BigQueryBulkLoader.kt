@@ -10,7 +10,7 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.file.s3.S3KotlinClient
+import io.airbyte.cdk.load.file.s3.S3Client
 import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.write.db.BulkLoader
@@ -28,7 +28,7 @@ import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Singleton
 
 class BigQueryBulkLoader(
-    private val storageClient: S3KotlinClient,
+    private val storageClient: S3Client,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
     private val stream: DestinationStream,
@@ -79,11 +79,18 @@ class BigqueryConfiguredForBulkLoad : Condition {
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigQueryBulkLoaderFactory(
     private val catalog: DestinationCatalog,
-    private val storageClient: S3KotlinClient,
+    private val storageClient: S3Client,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration
 ) : BulkLoaderFactory<StreamKey, S3Object> {
+    override val numPartWorkers: Int = 2
+    override val numUploadWorkers: Int = 10
     override val maxNumConcurrentLoads: Int = 1
+
+    override val objectSizeBytes: Long = 200 * 1024 * 1024 // 200 MB
+    override val partSizeBytes: Long = 10 * 1024 * 1024 // 10 MB
+    override val maxMemoryRatioReservedForParts: Double = 0.6
+
     override fun create(key: StreamKey, partition: Int): BulkLoader<S3Object> {
         val stream = catalog.getStream(key.stream)
         return BigQueryBulkLoader(storageClient, bigQueryClient, bigQueryConfiguration, stream)
