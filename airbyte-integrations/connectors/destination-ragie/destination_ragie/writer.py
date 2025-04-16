@@ -1,4 +1,3 @@
-
 import logging
 import os
 import uuid
@@ -42,7 +41,7 @@ class RagieWriter:
             self._stream_tuple_to_id(s.stream.namespace, s.stream.name): s
             for s in catalog.streams
         }
-        self.static_metadata = self.config.metadata_static or {}
+        self.static_metadata = self.config.metadata_static_dict or {}
         self.seen_hashes: Dict[str, Set[str]] = {}
         self.hashes_preloaded: Set[str] = set()
         logger.info("RagieWriter initialized.")
@@ -241,7 +240,7 @@ class RagieWriter:
 
     def queue_write_operation(self, record: AirbyteRecordMessage) -> None:
         """
-        Processes Airbyte record, prepares payload for Ragie client (file or JSON).
+        Processes Airbyte record, prepares payload for Ragie client (JSON only).
         """
         stream_id = self._stream_tuple_to_id(record.namespace, record.stream)
         stream_config = self.streams.get(stream_id)
@@ -253,52 +252,30 @@ class RagieWriter:
             return
 
         record_data = record.data
-        # Payload dictionary passed to the client. Client will differentiate handling.
+        # Payload dictionary passed to the client.
         payload: Dict[str, Any] = {}
-        file_info: Optional[Dict[str, Any]] = record.file
         content_to_send: Optional[Dict[str, Any]] = None
-        file_path_to_upload: Optional[str] = None
 
         # --- 1. Identify Record Type & Extract ---
-        
-        is_file_based = isinstance(file_info, dict) and file_info.get("file_url") is not None
-        if is_file_based:
-            file_info = file_info
-            local_file_path = file_info.get("file_url")
-            if not local_file_path or not isinstance(local_file_path, str):
-                 logger.error(f"Invalid 'file.file_url' in stream '{stream_id}'. Skipping. Info: {file_info}")
-                 return
-            # if local_file_path.startswith("file://"): local_file_path = local_file_path[len("file://"):]
-            if not os.path.exists(local_file_path) or not os.path.isfile(local_file_path):
-                logger.error(f"File not found or not a file at path: '{local_file_path}' (from file.file_url). Skipping record.")
-                return
-            file_path_to_upload = local_file_path
-            logger.debug(f"Identified file record. Path: {file_path_to_upload}")
-            payload["file_path"] = file_path_to_upload # Signal to client
-            content_to_send = None
-        else:
-            logger.debug("Identified JSON record.")
-            content_to_send = record_data
-            if not content_to_send:
-                 logger.warning(f"JSON record data empty in stream '{stream_id}'. Skipping.")
-                 return
-            payload["data"] = content_to_send # Key for JSON data
+        logger.debug("Identified JSON record.")
+        content_to_send = record_data
+        if not content_to_send:
+            logger.warning(f"JSON record data empty in stream '{stream_id}'. Skipping.")
+            return
+        payload["data"] = content_to_send  # Key for JSON data
 
         # --- 2. Prepare Metadata ---
-        # This metadata dict will be serialized by the client for file uploads
-        # or sent as part of JSON body for raw uploads.
         final_metadata = self._prepare_metadata(record_data, stream_id)
 
         # --- 3. Determine Name ---
         doc_name = None
         if self.config.document_name_field:
             value = self._get_value_from_path(record_data, self.config.document_name_field)
-            if value is not None: doc_name = str(value)
-        if not doc_name and is_file_based:
-            doc_name = file_info.get("file_relative_path") # Use relative path as default name
-        if not doc_name: # Fallback if still no name
+            if value is not None:
+                doc_name = str(value)
+        if not doc_name:  # Fallback if no name
             doc_name = f"airbyte_{stream_id}_{uuid.uuid4()}"
-        payload["name"] = doc_name # Include name in payload for client
+        payload["name"] = doc_name  # Include name in payload for client
 
         # --- 4. Determine External ID ---
         external_id = None
@@ -306,20 +283,16 @@ class RagieWriter:
             value = self._get_value_from_path(record_data, self.config.external_id_field)
             if value is not None:
                 external_id = str(value)
-                payload["external_id"] = external_id # Include external_id for client
+                payload["external_id"] = external_id  # Include external_id for client
 
         # --- 5. Calculate Content Hash ---
-        # Hash calculation uses the *final* metadata structure (before adding the hash itself)
-        # Pass the metadata dict that will eventually be sent to Ragie
         temp_metadata_for_hashing = copy.deepcopy(final_metadata)
         content_hash = self._calculate_content_hash(
             metadata=temp_metadata_for_hashing,
-            content=content_to_send,
-            file_info=file_info
+            content=content_to_send
         )
-        # Now add the hash to the final metadata dict
         final_metadata[self.METADATA_CONTENT_HASH_FIELD] = content_hash
-        payload["metadata"] = final_metadata # Store final metadata dict in payload
+        payload["metadata"] = final_metadata  # Store final metadata dict in payload
 
         # --- 6. Deduplication Check ---
         if stream_config.destination_sync_mode == DestinationSyncMode.append_dedup:
@@ -332,14 +305,12 @@ class RagieWriter:
 
         # --- 7. Add Other Parameters ---
         payload["mode"] = self.config.processing_mode
-        # Partition is handled by client (either header or form field) based on type
+        payload["partition"] = self.config.partition
 
         # --- 8. Send to Client ---
         try:
-            log_type = "File" if file_path_to_upload else "JSON"
-            logger.debug(f"Queueing {log_type} payload for '{doc_name}' (Stream: {stream_id}, Hash: {content_hash})")
-            # Client's index_documents handles sending immediately
+            logger.debug(f"Queueing JSON payload for '{doc_name}' (Stream: {stream_id}, Hash: {content_hash})")
             self.client.index_documents([payload])
         except Exception as e:
-             logger.error(f"Error during client indexing call: {e}", exc_info=True)
-             raise e # Re-raise for destination write loop
+            logger.error(f"Error during client indexing call: {e}", exc_info=True)
+            raise e  # Re-raise for destination write loop

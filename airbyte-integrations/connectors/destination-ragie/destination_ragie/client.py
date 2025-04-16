@@ -1,5 +1,3 @@
-# client.py
-
 import datetime
 import json
 import logging
@@ -86,7 +84,7 @@ class RagieClient:
         self.session = self._create_session()
         # Store partition header for reuse on *non-file-upload* requests
         self.partition_header = {"partition": config.partition} if config.partition else {}
-        logger.info(f"RagieClient initialized. Base URL: {self.base_url}, Default Partition Scope (for non-file uploads): {config.partition or 'Account-wide'}")
+        logger.info(f"RagieClient initialized. Base URL: {self.base_url}, Default Partition Scope: {config.partition or 'Account-wide'}")
 
     def _create_session(self) -> requests.Session:
         session = requests.Session()
@@ -198,116 +196,57 @@ class RagieClient:
 
     def index_documents(self, documents: List[Dict[str, Any]]):
         """
-        Indexes documents/files one by one.
-        Uses POST /documents for file uploads (multipart/form-data).
+        Indexes documents one by one.
         Uses POST /documents/raw for JSON data uploads (application/json).
         """
         if not documents:
             return
-        logger.info(f"Indexing {len(documents)} items (documents/files) one by one...")
+        logger.info(f"Indexing {len(documents)} JSON documents one by one...")
         successful_count = 0
 
         for item_payload in documents:
             doc_id_log = item_payload.get("external_id") or item_payload.get("name", "N/A")
-            # Check for the special 'file_path' key added by the writer
-            file_path = item_payload.pop("file_path", None)
 
             try:
-                if file_path:
-                    # --- Handle File Upload via POST /documents ---
-                    endpoint = self.DOCUMENTS_GENERAL_ENDPOINT
-                    method = "POST"
+                # --- Handle JSON Data Upload via POST /documents/raw ---
+                endpoint = self.DOCUMENTS_RAW_ENDPOINT
+                method = "POST"
+                # For JSON uploads, we do want the partition header if set
+                headers = self.partition_header
 
-                    if not os.path.exists(file_path):
-                        logger.error(f"File path does not exist, skipping item: {file_path} (ID: {doc_id_log})")
-                        continue
-
-                    file_name = os.path.basename(file_path)
-                    form_data = {} # Payload for form fields
-
-                    # Populate form_data from item_payload keys expected by the API
-                    for key in ["mode", "external_id", "name"]:
-                        if key in item_payload:
-                            form_data[key] = item_payload[key]
-
-                    # Add partition to form data if configured
-                    if self.config.partition:
-                        form_data["partition"] = self.config.partition
-
-                    # Serialize metadata dictionary to JSON string for the form field
-                    if "metadata" in item_payload:
-                        try:
-                            # Ensure metadata is a dict before serializing
-                            if isinstance(item_payload["metadata"], dict):
-                                form_data['metadata'] = json.dumps(item_payload["metadata"])
-                            else:
-                                logger.warning(f"Metadata for file '{doc_id_log}' is not a dict, skipping metadata field. Type: {type(item_payload['metadata'])}")
-                        except TypeError as json_err:
-                             logger.error(f"Could not JSON-serialize metadata for file '{doc_id_log}' ({file_path}): {json_err}. Metadata: {item_payload['metadata']}")
-                             raise AirbyteTracedException(
-                                 message=f"Failed to serialize metadata for file '{doc_id_log}'. Check metadata contents.",
-                                 internal_message=f"Metadata Snippet: {str(item_payload.get('metadata', {}))[:200]}, Error: {json_err}",
-                                 failure_type=FailureType.config_error
-                             ) from json_err
-
-                    logger.debug(f"Uploading file '{file_name}' (ID: {doc_id_log}) to {endpoint} with form data keys: {list(form_data.keys())}")
-                    with open(file_path, 'rb') as f:
-                        files_dict = {'file': (file_name, f)}
-                        # Make the request - no extra headers needed (like partition) as it's in form_data
-                        self._request(
-                            method=method,
-                            endpoint=endpoint,
-                            data=form_data,
-                            files=files_dict,
-                            extra_headers=None # Partition is in form_data
-                        )
-                    logger.debug(f"Successfully requested upload for file: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
-
-                else:
-                    # --- Handle JSON Data Upload via POST /documents/raw ---
-                    endpoint = self.DOCUMENTS_RAW_ENDPOINT
-                    method = "POST"
-                    # For JSON uploads, we *do* want the partition header if set
-                    headers = self.partition_header
-
-                    logger.debug(f"Indexing JSON document via {endpoint}: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
-                    # Make the request with json_data and potential partition header
-                    self._request(
-                        method=method,
-                        endpoint=endpoint,
-                        json_data=item_payload, # Send the whole payload as JSON body
-                        extra_headers=headers # Pass partition header
-                    )
-                    logger.debug(f"Successfully requested indexing for JSON document: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
+                logger.debug(f"Indexing JSON document via {endpoint}: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
+                # Make the request with json_data and potential partition header
+                self._request(
+                    method=method,
+                    endpoint=endpoint,
+                    json_data=item_payload,  # Send the whole payload as JSON body
+                    extra_headers=headers  # Pass partition header
+                )
+                logger.debug(f"Successfully requested indexing for JSON document: Name='{item_payload.get('name', 'N/A')}', ExternalID='{item_payload.get('external_id')}'")
 
                 successful_count += 1
 
             except Exception as e:
-                item_type = "file" if file_path else "document"
-                logger.error(f"Failed to index {item_type} '{doc_id_log}': {e}", exc_info=True)
+                logger.error(f"Failed to index document '{doc_id_log}': {e}", exc_info=True)
 
                 internal_msg = f"PayloadKeys: {list(item_payload.keys())}"
-                if file_path:
-                    internal_msg += f", FilePath: {file_path}"
-                # Avoid logging full error again if already in message from RagieApiError
                 error_details = str(e) if isinstance(e, RagieApiError) else repr(e)
                 internal_msg += f", Error: {error_details}"
 
                 # Determine failure type
-                failure_type = FailureType.system_error # Default
+                failure_type = FailureType.system_error  # Default
                 if isinstance(e, RagieApiError) and e.__cause__:
                     if isinstance(e.__cause__, requests.exceptions.HTTPError):
-                         status = e.__cause__.response.status_code
-                         if 400 <= status < 500 and status not in [404, 429]:
-                             failure_type = FailureType.config_error # User config likely caused 4xx
+                        status = e.__cause__.response.status_code
+                        if 400 <= status < 500 and status not in [404, 429]:
+                            failure_type = FailureType.config_error  # User config likely caused 4xx
 
                 raise AirbyteTracedException(
-                    message=f"Failed to index {item_type} '{doc_id_log}' into Ragie.",
-                    internal_message=internal_msg[:1000], # Limit length
+                    message=f"Failed to index document '{doc_id_log}' into Ragie.",
+                    internal_message=internal_msg[:1000],  # Limit length
                     failure_type=failure_type
                 ) from e
         logger.info(f"Successfully processed {successful_count} indexing requests.")
-
 
     # --- Metadata Filtering/Querying (_build_filter_json, find_ids_by_metadata, find_docs_by_metadata) ---
     def _build_filter_json(self, filter_conditions: Dict[str, Any]) -> Dict[str, Any]:
