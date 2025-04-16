@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.*
@@ -45,33 +44,6 @@ class AirbyteTypeToJsonSchema {
                 val unionNode = JsonNodeFactory.instance.objectNode()
                 val unionOptions = unionNode.putArray("oneOf")
                 airbyteType.options.forEach { unionOptions.add(convert(it)) }
-                unionNode
-            }
-            is LegacyUnionType -> {
-                val unionNode = JsonNodeFactory.instance.objectNode()
-                val typeOptions = unionNode.putArray("type")
-                airbyteType.options.forEach {
-                    val optionSchema = convert(it) as ObjectNode
-                    optionSchema.fields().forEach { (key, value) ->
-                        if (key == "type") {
-                            if (value.isTextual) {
-                                typeOptions.add(value)
-                            } else if (value.isArray) {
-                                typeOptions.addAll(value as ArrayNode)
-                            } else {
-                                throw IllegalStateException("Unexpected `type`: $value")
-                            }
-                        } else {
-                            if (optionSchema.has(key)) {
-                                throw IllegalStateException(
-                                    "Conflicting schema declarations: schema already contains $key (=${optionSchema[key]}); trying to add $value"
-                                )
-                            }
-                            optionSchema.set(key, value)
-                        }
-                    }
-                    typeOptions.add(optionSchema["type"])
-                }
                 unionNode
             }
             is DateType -> ofType("string").put("format", "date")

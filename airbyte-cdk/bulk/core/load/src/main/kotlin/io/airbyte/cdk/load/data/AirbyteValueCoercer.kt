@@ -49,7 +49,6 @@ object AirbyteValueCoercer {
 
                 // Don't touch unions, just pass it through
                 is UnionType -> value
-                is LegacyUnionType -> value
                 // Similarly, if we don't know what type it's supposed to be,
                 // leave it unchanged.
                 is UnknownType -> value

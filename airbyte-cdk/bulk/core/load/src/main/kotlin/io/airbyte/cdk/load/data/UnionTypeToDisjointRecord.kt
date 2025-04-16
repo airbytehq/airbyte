@@ -40,10 +40,7 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
                 is ArrayTypeWithoutSchema,
                 is ObjectTypeWithoutSchema,
                 is ObjectTypeWithEmptySchema -> "object"
-                // anyone using this class is, by definition, not doing the legacy behavior
-                // so handle LegacyUnion identically to default Union
-                is UnionType,
-                is LegacyUnionType -> "union"
+                is UnionType -> "union"
                 is UnknownType -> "unknown"
             }
     }
@@ -85,9 +82,6 @@ class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
             is TimestampTypeWithTimezone,
             is TimestampTypeWithoutTimezone -> value is IntegerValue
             is UnionType -> schema.options.any { matches(it, value) }
-            // anyone using this class is, by definition, not doing the legacy behavior
-            // so handle LegacyUnion identically to default Union
-            is LegacyUnionType -> schema.options.any { matches(it, value) }
             is UnknownType -> false
         }
     }

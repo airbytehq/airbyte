@@ -36,38 +36,23 @@ data object ObjectTypeWithEmptySchema : AirbyteType
 
 data object ObjectTypeWithoutSchema : AirbyteType
 
-data class UnionType(val options: Set<AirbyteType>) : AirbyteType {
+data class UnionType(
+    val options: Set<AirbyteType>,
+    val isLegacyUnion: Boolean,
+) : AirbyteType {
     companion object {
-        fun of(options: Set<AirbyteType>): AirbyteType {
+        fun of(options: Set<AirbyteType>, isLegacyUnion: Boolean = false): AirbyteType {
             if (options.size == 1) {
                 return options.first()
             }
-            return UnionType(options)
+            return UnionType(options, isLegacyUnion)
         }
 
-        fun of(options: List<AirbyteType>): AirbyteType = of(options.toSet())
+        fun of(options: List<AirbyteType>, isLegacyUnion: Boolean = false): AirbyteType =
+            of(options.toSet(), isLegacyUnion)
 
-        fun of(vararg options: AirbyteType): AirbyteType = of(options.toSet())
-    }
-}
-
-/**
- * A legacy type. Identical to [UnionType], but represents `{"type": [...]}` schemas specifically.
- *
- * Modern connectors shouldn't handle this, and should just throw [IllegalArgumentException].
- */
-data class LegacyUnionType(val options: Set<AirbyteType>) : AirbyteType {
-    companion object {
-        fun of(options: Set<AirbyteType>): AirbyteType {
-            if (options.size == 1) {
-                return options.first()
-            }
-            return LegacyUnionType(options)
-        }
-
-        fun of(options: List<AirbyteType>): AirbyteType = of(options.toSet())
-
-        fun of(vararg options: AirbyteType): AirbyteType = of(options.toSet())
+        fun of(vararg options: AirbyteType, isLegacyUnion: Boolean = false): AirbyteType =
+            of(options.toSet(), isLegacyUnion)
     }
 }
 

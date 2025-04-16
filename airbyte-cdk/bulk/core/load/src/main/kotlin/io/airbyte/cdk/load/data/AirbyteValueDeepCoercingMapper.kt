@@ -155,7 +155,6 @@ class AirbyteValueDeepCoercingMapper(
             is TimestampTypeWithTimezone,
             is TimestampTypeWithoutTimezone -> value is StringValue
             is UnionType -> schema.options.any { matchesStrictly(value, it) }
-            is LegacyUnionType -> schema.options.any { matchesStrictly(value, it) }
             is UnknownType -> false
         }
 

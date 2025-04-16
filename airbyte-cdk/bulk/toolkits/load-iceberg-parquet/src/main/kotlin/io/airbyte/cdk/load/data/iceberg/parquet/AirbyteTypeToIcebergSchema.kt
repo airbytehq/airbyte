@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.LegacyUnionType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
@@ -91,8 +90,6 @@ class AirbyteTypeToIcebergSchema {
                 // We stringify nontrivial unions
                 return Types.StringType.get()
             }
-            is LegacyUnionType ->
-                throw IllegalArgumentException("Unexpected legacy union type: $airbyteSchema")
             is UnknownType -> Types.StringType.get()
         }
     }

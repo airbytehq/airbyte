@@ -75,7 +75,6 @@ open class AirbyteValueIdentityMapper(
                     is ArrayType -> mapArray(value, schema, context)
                     is ArrayTypeWithoutSchema -> mapArrayWithoutSchema(value, schema, context)
                     is UnionType -> mapUnion(value, schema, context)
-                    is LegacyUnionType -> mapLegacyUnion(value, schema, context)
                     is BooleanType -> mapBoolean(value, context)
                     is NumberType -> mapNumber(value, context)
                     is StringType -> mapString(value, context)
@@ -176,28 +175,6 @@ open class AirbyteValueIdentityMapper(
         return value to context
     }
 
-    open fun mapLegacyUnion(
-        value: AirbyteValue,
-        schema: LegacyUnionType,
-        context: Context
-    ): Pair<AirbyteValue, Context> {
-        if (!recurseIntoUnions) {
-            return value to context
-        }
-        /*
-           This mapper should not perform validation, so make a best-faith effort to recurse,
-           but if nothing matches the union, pass the value through unchanged. If clients validated
-           upstream, then this must match. If they did not, they won't have anything any more
-           wrong than they started with.
-        */
-        schema.options.forEach {
-            if (optionMatches(it, value)) {
-                return mapInner(value, it, context)
-            }
-        }
-        return value to context
-    }
-
     private fun optionMatches(schema: AirbyteType, value: AirbyteValue): Boolean {
         return when (schema) {
             is StringType -> value is StringValue
@@ -215,7 +192,6 @@ open class AirbyteValueIdentityMapper(
             is TimestampTypeWithTimezone -> value is TimestampWithTimezoneValue
             is TimestampTypeWithoutTimezone -> value is TimestampWithoutTimezoneValue
             is UnionType -> schema.options.any { optionMatches(it, value) }
-            is LegacyUnionType -> schema.options.any { optionMatches(it, value) }
             is UnknownType -> false
         }
     }

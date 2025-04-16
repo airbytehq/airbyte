@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.LegacyUnionType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
@@ -107,8 +106,6 @@ class AirbyteValueToAvroRecord {
                         "No matching Avro type found for $airbyteSchema in $schema (airbyte value: ${airbyteValue.javaClass.simpleName})"
                     )
                 }
-                is LegacyUnionType ->
-                    throw IllegalArgumentException("Unexpected legacy union type: $airbyteSchema")
             }
         } catch (e: Exception) {
             throw RuntimeException(
@@ -137,8 +134,6 @@ class AirbyteValueToAvroRecord {
             TimestampTypeWithoutTimezone ->
                 avroUnionSchema.types.find { it.type == Schema.Type.LONG }
             is UnionType -> throw IllegalArgumentException("Nested unions are not supported")
-            is LegacyUnionType ->
-                throw IllegalArgumentException("Unexpected legacy union type: $airbyteSchema")
         }
             ?: throw IllegalArgumentException(
                 "No matching Avro type found for $airbyteSchema in $avroUnionSchema"

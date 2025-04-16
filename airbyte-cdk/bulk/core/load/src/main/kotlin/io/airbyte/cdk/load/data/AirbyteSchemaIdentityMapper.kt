@@ -25,7 +25,6 @@ interface AirbyteSchemaIdentityMapper : AirbyteSchemaMapper {
             is ObjectTypeWithoutSchema -> mapObjectWithoutSchema(schema)
             is ObjectTypeWithEmptySchema -> mapObjectWithEmptySchema(schema)
             is UnionType -> mapUnion(schema)
-            is LegacyUnionType -> mapLegacyUnion(schema)
             is DateType -> mapDate(schema)
             is TimeTypeWithTimezone -> mapTimeTypeWithTimezone(schema)
             is TimeTypeWithoutTimezone -> mapTimeTypeWithoutTimezone(schema)
@@ -51,9 +50,6 @@ interface AirbyteSchemaIdentityMapper : AirbyteSchemaMapper {
     fun mapObjectWithEmptySchema(schema: ObjectTypeWithEmptySchema): AirbyteType = schema
     fun mapUnion(schema: UnionType): AirbyteType {
         return UnionType.of(schema.options.map { map(it) })
-    }
-    fun mapLegacyUnion(schema: LegacyUnionType): AirbyteType {
-        return LegacyUnionType.of(schema.options.map { map(it) })
     }
     fun mapDate(schema: DateType): AirbyteType = schema
     fun mapTimeTypeWithTimezone(schema: TimeTypeWithTimezone): AirbyteType = schema

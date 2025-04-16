@@ -181,7 +181,7 @@ class JsonSchemaToAirbyteType(
 
     private fun unionOf(options: List<AirbyteType>) =
         when (unionBehavior) {
-            UnionBehavior.LEGACY -> LegacyUnionType.of(options)
-            UnionBehavior.DEFAULT -> UnionType.of(options)
+            UnionBehavior.LEGACY -> UnionType.of(options, isLegacyUnion = true)
+            UnionBehavior.DEFAULT -> UnionType.of(options, isLegacyUnion = false)
         }
 }
