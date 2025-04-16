@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
@@ -41,12 +42,14 @@ class MSSQLBulkLoadStreamLoader(
     private val azureBlobClient: AzureBlobClient,
     private val validateValuesPreLoad: Boolean,
     private val recordBatchSizeOverride: Long? = null,
-    private val streamStateStore: StreamStateStore<MSSQLStreamState>
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>,
+    destinationConfig: DestinationConfiguration,
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     // Bulk-load related collaborators
     private val mssqlFormatFileCreator = MSSQLFormatFileCreator(dataSource, stream, azureBlobClient)
-    private val objectAccumulator = PartToObjectAccumulator(stream, azureBlobClient)
+    private val objectAccumulator =
+        PartToObjectAccumulator(stream, azureBlobClient, destinationConfig)
     private val mssqlBulkLoadHandler =
         MSSQLBulkLoadHandler(
             dataSource,
