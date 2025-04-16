@@ -1,4 +1,4 @@
-# writer.py
+
 import logging
 import os
 import uuid
@@ -230,7 +230,7 @@ class RagieWriter:
 
             final_metadata[new_key] = value
 
-        combined_metadata[self.METADATA_AIRBYTE_STREAM_FIELD] = stream_id
+        final_metadata[self.METADATA_AIRBYTE_STREAM_FIELD] = stream_id
 
 
         # Check metadata size limits (optional but good practice)
