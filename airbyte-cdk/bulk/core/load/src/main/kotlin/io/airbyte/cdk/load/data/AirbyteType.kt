@@ -11,7 +11,7 @@ sealed interface AirbyteType {
      * Utility method for database/warehouse destinations, which assume that the top-level schema is
      * an object.
      */
-    fun getProperties(): LinkedHashMap<String, FieldType> {
+    fun asColumns(): LinkedHashMap<String, FieldType> {
         return linkedMapOf()
     }
 
@@ -48,7 +48,7 @@ data object ArrayTypeWithoutSchema : AirbyteType {
 }
 
 data class ObjectType(val properties: LinkedHashMap<String, FieldType>) : AirbyteType {
-    override fun getProperties(): LinkedHashMap<String, FieldType> {
+    override fun asColumns(): LinkedHashMap<String, FieldType> {
         return properties
     }
 

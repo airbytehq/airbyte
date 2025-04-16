@@ -45,7 +45,7 @@ class TypingDedupingWriter(
                     ),
                     ColumnNameMapping(
                         // TODO handle collisions in column names
-                        stream.schema.getProperties().mapValues { (columnName, _) ->
+                        stream.schema.asColumns().mapValues { (columnName, _) ->
                             finalTableColumnNameGenerator.getColumnName(columnName).displayName
                         }
                     )

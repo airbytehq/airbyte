@@ -157,7 +157,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         columnNameMapping: ColumnNameMapping
     ): String {
         return stream.schema
-            .getProperties()
+            .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName = toDialectType(type.type).name
@@ -252,7 +252,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
     ): String {
         val columnList: String =
             stream.schema
-                .getProperties()
+                .asColumns()
                 .keys
                 .stream()
                 .map { fieldName ->
@@ -300,12 +300,12 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             }
 
         val columnList: String =
-            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
                 val columnName = columnNameMapping[fieldName]!!
                 "`$columnName`,"
             }
         val newRecordColumnList: String =
-            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
                 val columnName = columnNameMapping[fieldName]!!
                 "new_record.`$columnName`,"
             }
@@ -341,7 +341,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
 
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
-        if (stream.schema.getProperties().containsKey(CDC_DELETED_AT_COLUMN)) {
+        if (stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
                 "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND $cursorComparison THEN DELETE"
@@ -355,7 +355,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         }
 
         val columnAssignments: String =
-            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
                 val column = columnNameMapping[fieldName]!!
                 "`$column` = new_record.`$column`,"
             }
@@ -406,7 +406,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
     ): String {
         val columnCasts: String =
             stream.schema
-                .getProperties()
+                .asColumns()
                 .map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName]!!
                     val extractAndCast = extractAndCast(columnName, type.type, forceSafeCasting)
@@ -417,7 +417,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             if (forceSafeCasting) {
                 "[" +
                     stream.schema
-                        .getProperties()
+                        .asColumns()
                         .map { (fieldName, type) ->
                             val columnName = columnNameMapping[fieldName]!!
                             val rawColName = escapeColumnNameForJsonPath(fieldName)
@@ -444,7 +444,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             }
 
         val columnList: String =
-            stream.schema.getProperties().keys.joinToString("\n") { fieldName ->
+            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
                 val columnName = columnNameMapping[fieldName]!!
                 "`$columnName`,"
             }
@@ -465,7 +465,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             // out-of-order records.
 
             var cdcConditionalOrIncludeStatement = ""
-            if (stream.schema.getProperties().containsKey(CDC_DELETED_AT_COLUMN)) {
+            if (stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
                 cdcConditionalOrIncludeStatement =
                     """
                     OR (
