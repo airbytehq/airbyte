@@ -276,7 +276,7 @@ internal class S3DataLakeStreamLoaderTest {
         verify { updateSchema.addColumn(null, "id", Types.LongType.get()) }
         verify(exactly = 0) { updateSchema.commit() }
 
-        runBlocking { streamLoader.close(streamFailure = null) }
+        runBlocking { streamLoader.close(hadNonzeroRecords = true, streamFailure = null) }
         verify { updateSchema.commit() }
     }
 
@@ -424,7 +424,7 @@ internal class S3DataLakeStreamLoaderTest {
         verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
         verify(exactly = 0) { updateSchema.commit() }
 
-        runBlocking { streamLoader.close(streamFailure = null) }
+        runBlocking { streamLoader.close(hadNonzeroRecords = true, streamFailure = null) }
         verify { updateSchema.commit() }
     }
 
