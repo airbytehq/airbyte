@@ -1,4 +1,4 @@
-# Airbyte docs
+# Airbyte documentation
 
 Airbyte is open source data movement infrastructure for building extract and load (EL) data pipelines. It is designed for versatility, scalability, and ease-of-use.
 
