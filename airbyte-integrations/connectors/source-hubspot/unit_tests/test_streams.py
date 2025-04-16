@@ -20,7 +20,6 @@ from source_hubspot.streams import (
     CustomObject,
     DealPipelines,
     Deals,
-    DealsArchived,
     DealSplits,
     EmailEvents,
     EngagementsCalls,
@@ -98,7 +97,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
         (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -205,11 +204,11 @@ def test_streams_read(
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint, cursor_value",
+    "stream_class, endpoint, cursor_value",
     [
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
     ],
     ids=[
         "Contacts stream with v2 field transformations",
@@ -217,14 +216,21 @@ def test_streams_read(
         "DealsArchived stream with v2 field transformations",
     ],
 )
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_stream_read_with_legacy_field_transformation(
-    stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, migrated_properties_list
+    mock_get_custom_object_streams, stream_class, endpoint, cursor_value, requests_mock, common_params, fake_properties_list,
+        migrated_properties_list, config
 ):
-    stream = stream(**common_params)
+    if isinstance(stream_class, str):
+        stream = find_stream(stream_class, config)
+        data_field = stream.retriever.record_selector.extractor.field_path[0]
+    else:
+        stream = stream_class(**common_params)
+        data_field = stream.data_field
     responses = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
@@ -253,7 +259,11 @@ def test_stream_read_with_legacy_field_transformation(
     ]
     stream._sync_mode = SyncMode.full_refresh
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    if isinstance(stream_class, str):
+        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+    else:
+        stream_url = stream.url
+    requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
 
     records = read_full_refresh(stream)
