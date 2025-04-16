@@ -6,10 +6,12 @@ package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
@@ -68,7 +70,8 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         val upload: Deferred<StreamingUpload<T>>,
         override val objectKey: String,
         val partIndex: Int,
-        val isFinal: Boolean
+        val isFinal: Boolean,
+        val empty: Boolean = false,
     ) : PartResult<T> {
         override val state: BatchState = BatchState.STAGED
     }
@@ -96,14 +99,17 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         state: State<T>
     ): BatchAccumulatorResult<State<T>, PartResult<T>> {
         log.info { "Uploading part $input" }
+        if (!input.part.isFinal && input.part.bytes == null) {
+            throw IllegalStateException("Empty non-final part received: this should not happen")
+        }
         input.part.bytes?.let { state.streamingUpload.await().uploadPart(it, input.part.partIndex) }
-            ?: throw IllegalStateException("Empty non-final part received: this should not happen")
         val output =
             LoadedPart(
                 state.streamingUpload,
                 input.part.key,
                 input.part.partIndex,
-                input.part.isFinal
+                input.part.isFinal,
+                input.part.bytes == null,
             )
         return IntermediateOutput(state, output)
     }

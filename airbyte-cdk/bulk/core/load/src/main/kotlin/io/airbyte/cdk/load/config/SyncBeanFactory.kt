@@ -131,12 +131,13 @@ class SyncBeanFactory {
      * LoadStrategy, if any.
      */
     @Singleton
-    @Named("recordQueue")
-    fun recordQueue(
+    @Named("pipelineInputQueue")
+    fun pipelineInputQueue(
         loadStrategy: LoadStrategy? = null,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
+//            Array(loadStrategy?.inputPartitions ?: 1) {
+            Array(1) {
                 ChannelMessageQueue(Channel(Channel.UNLIMITED))
             }
         )

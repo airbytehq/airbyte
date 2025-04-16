@@ -7,8 +7,12 @@ package io.airbyte.cdk.load.pipline.object_storage
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.LoadPipeline
+import io.airbyte.cdk.load.pipline.object_storage.file.FileChunkStep
+import io.airbyte.cdk.load.pipline.object_storage.file.ForwardFileRecordStep
+import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventStep
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 /**
@@ -27,10 +31,36 @@ import jakarta.inject.Singleton
  * - a single completer worker reads the second queue and completes the uploads
  * - state is acked only when the completer finishes each upload
  */
-@Singleton
-@Requires(bean = ObjectLoader::class)
+//@Singleton
+//@Requires(bean = ObjectLoader::class)
+@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     partStep: ObjectLoaderPartFormatterStep,
-    uploadStep: ObjectLoaderPartLoaderStep<T>,
-    completerStep: ObjectLoaderUploadCompleterStep<K, T>,
+    @Named("recordPartLoaderStep") uploadStep: ObjectLoaderPartLoaderStep<T>,
+    @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
 ) : LoadPipeline(listOf(partStep, uploadStep, completerStep))
+
+
+
+@Singleton
+@Requires(bean = ObjectLoader::class)
+//@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "true")
+class ObjectLoaderPipelineWithFiles<K : WithStream, T : RemoteObject<*>>(
+    routeEventStep: RouteEventStep,
+    fileChunkStep: FileChunkStep<T>,
+    @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
+    @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+    forwardFileRecordStep: ForwardFileRecordStep<T>,
+    @Named("fileRecordPartFormatterStep") recordPartStep: ObjectLoaderPartFormatterStep,
+    @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
+    @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+) : LoadPipeline(listOf(
+    routeEventStep,
+    fileChunkStep,
+    fileChunkUploader,
+    fileCompleterStep,
+    forwardFileRecordStep,
+    recordPartStep,
+    recordUploadStep,
+    recordCompleterStep,
+))
