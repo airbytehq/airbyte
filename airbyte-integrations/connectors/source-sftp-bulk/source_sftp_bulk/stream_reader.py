@@ -179,7 +179,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             filename=file_name,
             bytes=file_size,
             updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            source_uri=f"sftp://{self.config.username}@{self.config.host}:{self.config.port}{file.uri}"
+            source_uri=f"sftp://{self.config.username}@{self.config.host}:{self.config.port}{file.uri}",
         )
 
         file_reference = AirbyteRecordMessageFileReference(
