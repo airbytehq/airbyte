@@ -364,7 +364,7 @@ class IncrementalTest(TestCase):
 
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state.state["updated"] == str(cursor_value)
+        assert most_recent_state.stream_state.state["updated"] == cursor_value
 
     @HttpMocker()
     def test_given_state_when_read_then_query_events_using_types_and_state_value_plus_1(self, http_mocker: HttpMocker) -> None:
