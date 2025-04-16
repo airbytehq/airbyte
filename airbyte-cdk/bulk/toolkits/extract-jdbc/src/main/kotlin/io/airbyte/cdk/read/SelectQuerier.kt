@@ -17,6 +17,7 @@ import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -191,8 +192,11 @@ class JdbcSelectQuerier(
                             is LocalDate -> {
                                 resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
                             }
+                            is Timestamp -> {
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setTimestamp(com.google.protobuf.Timestamp.newBuilder().setSeconds(value.time / 1000).setNanos((value.time % 1000 * 1_000_000).toInt())))
+                            }
                             null -> {
-                                // TODO: Set is_null
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setIsNull(true))
                             }
                             else -> {
                                 resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))

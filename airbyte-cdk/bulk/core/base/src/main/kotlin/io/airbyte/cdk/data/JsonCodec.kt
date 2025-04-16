@@ -7,6 +7,7 @@ import java.math.BigDecimal
 import java.net.URI
 import java.net.URL
 import java.nio.ByteBuffer
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -270,11 +271,11 @@ data object LocalTimeCodec : JsonCodec<LocalTime> {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
 }
 
-data object LocalDateTimeCodec : JsonCodec<LocalDateTime> {
+data object LocalDateTimeCodec : JsonCodec<Timestamp> {
     override fun encode(decoded: LocalDateTime): JsonNode =
         Jsons.textNode(decoded.format(formatter))
 
-    override fun decode(encoded: JsonNode): LocalDateTime {
+    override fun decode(encoded: JsonNode): Timestamp {
         val str: String = TextCodec.decode(encoded)
         try {
             return LocalDateTime.parse(str, formatter)

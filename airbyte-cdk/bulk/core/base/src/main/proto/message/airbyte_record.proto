@@ -1,8 +1,12 @@
 /*
  * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
  */
-    syntax = "proto3";
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
 package io.airbyte.protocol;
+
 enum AirbyteRecordChangeType {
   NULLED = 0;
   TRUNCATED = 1;
@@ -49,5 +53,7 @@ message AirbyteValue {
     int64 integer = 3;
     double number = 4;
     bytes binary = 5;
+    google.protobuf.Timestamp timestamp = 6;
   }
+  bool is_null = 7;
 }
