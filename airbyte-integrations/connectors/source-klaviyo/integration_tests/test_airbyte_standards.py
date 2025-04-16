@@ -6,24 +6,17 @@ The FAST Airbyte Standard Tests suite is designed to ensure that connectors meet
 protocol standards.
 """
 
-from pathlib import Path
-
 import pytest
 
-from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.test.declarative.test_suites import (
-    DeclarativeSourceTestSuite,
-    generate_tests,
-)
+from airbyte_cdk.test import standard_tests
 
 
-def pytest_generate_tests(metafunc) -> None:
-    generate_tests(metafunc)
+pytest_plugins = ["airbyte_cdk.test.standard_tests.pytest_hooks"]
 
 
 @pytest.mark.slow
 @pytest.mark.requires_creds
-class TestAirbyteStandardTests(DeclarativeSourceTestSuite):
+class TestAirbyteStandardTests(standard_tests.DeclarativeSourceTestSuite):
     """Test suite for the Airbyte standard tests.
 
     This class inherits from SourceTestSuiteBase and implements all of the tests in the suite.
@@ -31,4 +24,3 @@ class TestAirbyteStandardTests(DeclarativeSourceTestSuite):
     As long as the class name starts with "Test", pytest will automatically discover and run the
     tests in this class.
     """
-
