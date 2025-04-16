@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test
 
 abstract class BigqueryWriteTest(
     configContents: String,
+    additionalMicronautEnvs: List<String> = emptyList()
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
@@ -40,6 +41,7 @@ abstract class BigqueryWriteTest(
                 integerCanBeLarge = false,
             ),
         configUpdater = BigqueryConfigUpdater,
+        additionalMicronautEnvs = additionalMicronautEnvs,
     )
 
 // TODO we should make the config stuff less dumb, this is just the minimal wiring to get something
@@ -68,6 +70,8 @@ class GcsRawOverrideDisableTd :
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
+        // TODO make a base BigqueryGcsWriteTest class to handle this
+        additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
     @Test
     override fun testBasicWrite() {
