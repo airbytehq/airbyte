@@ -56,14 +56,11 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
 @dataclass
 class FlattenFieldWithPrefix(RecordTransformation):
     """
-    Flatten fields only for provided path.
+    Flatten fields only for provided path with a prefix.
 
     field_path: List[Union[InterpolatedString, str]] path to the field to flatten.
-    delete_origin_value: bool = False whether to delete origin field or keep it. Default is False.
-    replace_record: bool = False whether to replace origin record or not. Default is False.
-
+    prefix: str Prefix to add to the flattened fields
     """
-
     config: Config
     field_path: List[Union[InterpolatedString, str]]
     prefix: str
