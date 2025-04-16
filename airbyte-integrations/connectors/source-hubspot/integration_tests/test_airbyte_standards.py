@@ -7,6 +7,7 @@ protocol standards.
 """
 
 import pytest
+from source_hubspot import SourceHubspot
 
 from airbyte_cdk.test import standard_tests
 
@@ -24,3 +25,5 @@ class TestAirbyteStandardTests(standard_tests.SourceTestSuiteBase):
     As long as the class name starts with "Test", pytest will automatically discover and run the
     tests in this class.
     """
+
+    connector = SourceHubspot
