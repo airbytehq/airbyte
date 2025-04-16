@@ -90,7 +90,7 @@ interface S3BucketSpecification {
 
 data class S3BucketConfiguration(
     val s3BucketName: String,
-    val s3BucketRegion: String?,
+    val s3BucketRegion: String,
     val s3Endpoint: String?
 )
 
