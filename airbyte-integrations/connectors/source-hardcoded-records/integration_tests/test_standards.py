@@ -1,29 +1,25 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
-"""Airbyte Standard Tests
+"""Airbyte standard connector tests.
 
-We import Standard Test class from the CDK. This gives us the ability to step-debug tests and
-iterate locally and quickly.
+The FAST Airbyte Standard Tests suite is designed to ensure that connectors meet Airbyte
+protocol standards.
 """
 
 from source_hardcoded_records import SourceHardcodedRecords
 
-from airbyte_cdk.test.declarative.test_suites import (
-    SourceTestSuiteBase,
-    generate_tests,
-)
+from airbyte_cdk.test import standard_tests
 
 
-def pytest_generate_tests(metafunc) -> None:
-    generate_tests(metafunc)
+pytest_plugins = ["airbyte_cdk.test.standard_tests.pytest_hooks"]
 
 
-class TestHardcodedRecords(SourceTestSuiteBase):
-    """Connector standard test suite class.
+class TestAirbyteStandardTests(standard_tests.SourceTestSuiteBase):
+    """Test suite for the Airbyte standard tests.
 
     This class inherits from SourceTestSuiteBase and implements all of the tests in the suite.
 
     As long as the class name starts with "Test", pytest will automatically discover and run the
-    tests in this class and in its base classes.
+    tests in this class.
     """
 
     connector = SourceHardcodedRecords
