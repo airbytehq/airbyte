@@ -51,6 +51,25 @@ data class UnionType(val options: Set<AirbyteType>) : AirbyteType {
     }
 }
 
+/**
+ * A legacy type. Modern connectors shouldn't handle this. Identical to [UnionType], but represents
+ * `{"type": [...]}` schemas specifically.
+ */
+data class LegacyUnionType(val options: Set<AirbyteType>) : AirbyteType {
+    companion object {
+        fun of(options: Set<AirbyteType>): AirbyteType {
+            if (options.size == 1) {
+                return options.first()
+            }
+            return LegacyUnionType(options)
+        }
+
+        fun of(options: List<AirbyteType>): AirbyteType = of(options.toSet())
+
+        fun of(vararg options: AirbyteType): AirbyteType = of(options.toSet())
+    }
+}
+
 data class UnknownType(val schema: JsonNode) : AirbyteType
 
 data class FieldType(val type: AirbyteType, val nullable: Boolean)
