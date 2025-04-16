@@ -559,6 +559,8 @@ class BigQueryDestination : BaseConnector(), Destination {
     }
 }
 
+val additionalMicronautEnvs = listOf(AwsToolkitConstants.MICRONAUT_ENVIRONMENT)
+
 fun main(args: Array<String>) {
     addThrowableForDeinterpolation(BigQueryException::class.java)
     AirbyteDestinationRunner.run(*args)
