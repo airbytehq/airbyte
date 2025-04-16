@@ -82,7 +82,7 @@ interface S3BucketSpecification {
     fun toS3BucketConfiguration(): S3BucketConfiguration {
         return S3BucketConfiguration(
             s3BucketName,
-            s3BucketRegion ?: S3BucketRegion.NO_REGION,
+            (s3BucketRegion ?: S3BucketRegion.NO_REGION).region,
             s3Endpoint
         )
     }
@@ -90,7 +90,7 @@ interface S3BucketSpecification {
 
 data class S3BucketConfiguration(
     val s3BucketName: String,
-    val s3BucketRegion: S3BucketRegion,
+    val s3BucketRegion: String,
     val s3Endpoint: String?
 )
 
