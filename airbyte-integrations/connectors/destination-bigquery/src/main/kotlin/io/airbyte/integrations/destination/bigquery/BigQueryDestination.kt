@@ -30,6 +30,7 @@ import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations
 import io.airbyte.cdk.integrations.destination.operation.SyncOperation
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.staging.operation.StagingStreamOperations
+import io.airbyte.cdk.load.command.aws.AwsToolkitConstants
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons.serialize
 import io.airbyte.commons.json.Jsons.tryDeserialize
