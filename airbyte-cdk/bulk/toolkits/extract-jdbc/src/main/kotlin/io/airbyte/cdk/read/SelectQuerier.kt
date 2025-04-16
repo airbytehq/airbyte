@@ -3,6 +3,9 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.protobuf.ByteString
+import io.airbyte.cdk.data.ArrayAirbyteSchemaType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
@@ -160,47 +163,43 @@ class JdbcSelectQuerier(
                     if (!writeProto) {
                         resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                     } else {
-                        // Fetch and discard the data w/o marshaling to JSON
-                        when (val value = jdbcFieldType.getValueOnly(rs!!, colIdx)) {
-                            is String -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value))
+                        when (column.type.airbyteSchemaType) {
+                            is ArrayAirbyteSchemaType -> TODO()
+                            LeafAirbyteSchemaType.BOOLEAN ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setBoolean(rs!!.getBoolean(colIdx)))
+                            LeafAirbyteSchemaType.STRING ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(rs!!.getString(colIdx)))
+                            LeafAirbyteSchemaType.BINARY ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setBinary(ByteString.copyFrom(rs!!.getBytes(colIdx))))
+                            LeafAirbyteSchemaType.DATE ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(rs!!.getDate(colIdx).toString()))
+                            LeafAirbyteSchemaType.TIME_WITH_TIMEZONE ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(rs!!.getTime(colIdx).toString()))
+                            LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(rs!!.getTime(colIdx).toString()))
+                            LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
+                            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
+                                val ts = rs!!.getTimestamp(colIdx)
+                                resultRow.recordBuilder.setData(
+                                    colIdx - 1,
+                                    resultRow.valueBuilder.setTimestamp(
+                                        com.google.protobuf.Timestamp.newBuilder()
+                                            .setSeconds(ts.time / 1000)
+                                            .setNanos((ts.time % 1000 * 1_000_000).toInt())
+                                    )
+                                )
                             }
-                            is Int -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setInteger(value.toLong()))
-                            }
-                            is Long -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setInteger(value))
-                            }
-                            is BigDecimal -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setNumber(value.toDouble()))
-                            }
-                            is Double -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setNumber(value))
-                            }
-                            is Float -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setNumber(value.toDouble()))
-                            }
-                            is Boolean -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setBoolean(value))
-                            }
-                            is LocalDateTime -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
-                            }
-                            is LocalTime -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
-                            }
-                            is LocalDate -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
-                            }
-                            is Timestamp -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setTimestamp(com.google.protobuf.Timestamp.newBuilder().setSeconds(value.time / 1000).setNanos((value.time % 1000 * 1_000_000).toInt())))
-                            }
-                            null -> {
+                            LeafAirbyteSchemaType.INTEGER ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setInteger(rs!!.getLong(colIdx)))
+                            LeafAirbyteSchemaType.NUMBER ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setNumber(rs!!.getDouble(colIdx)))
+                            LeafAirbyteSchemaType.NULL ->
                                 resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setIsNull(true))
-                            }
-                            else -> {
-                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(value.toString()))
-                            }
+                            LeafAirbyteSchemaType.JSONB ->
+                                resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setString(rs!!.getString(colIdx)))
+                        }
+                        if (rs!!.wasNull()) {
+                            resultRow.recordBuilder.setData(colIdx - 1, resultRow.valueBuilder.setIsNull(true))
                         }
                     }
                 } catch (e: Exception) {

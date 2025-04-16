@@ -332,18 +332,18 @@ data object TimeAccessor : JdbcAccessor<LocalTime> {
     }
 }
 
-data object TimestampAccessor : JdbcAccessor<Timestamp> {
+data object TimestampAccessor : JdbcAccessor<LocalDateTime> {
     override fun get(
         rs: ResultSet,
         colIdx: Int,
-    ): Timestamp? = rs.getTimestamp(colIdx)?.takeUnless { rs.wasNull() }
+    ): LocalDateTime? = rs.getTimestamp(colIdx)?.takeUnless { rs.wasNull() }?.toLocalDateTime()
 
     override fun set(
         stmt: PreparedStatement,
         paramIdx: Int,
-        value: Timestamp,
+        value: LocalDateTime,
     ) {
-        stmt.setTimestamp(paramIdx, value)
+        stmt.setTimestamp(paramIdx, Timestamp.valueOf(value))
     }
 }
 

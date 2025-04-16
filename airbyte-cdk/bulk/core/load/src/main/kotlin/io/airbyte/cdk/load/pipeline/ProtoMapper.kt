@@ -17,6 +17,7 @@ enum class ProtoDataType {
     INTEGER,
     NUMBER,
     BINARY,
+    TIMESTAMP
 }
 
 abstract class ProtoMapper {
@@ -27,11 +28,11 @@ abstract class ProtoMapper {
             Pair("global_id", ProtoDataType.INTEGER),
             Pair("academic_degree", ProtoDataType.STRING),
             Pair("weight", ProtoDataType.NUMBER),
-            Pair("created_at", ProtoDataType.STRING),
+            Pair("created_at", ProtoDataType.TIMESTAMP),
             Pair("language", ProtoDataType.STRING),
             Pair("telephone", ProtoDataType.STRING),
             Pair("title", ProtoDataType.STRING),
-            Pair("updated_at", ProtoDataType.STRING),
+            Pair("updated_at", ProtoDataType.TIMESTAMP),
             Pair("nationality", ProtoDataType.STRING),
             Pair("blood_type", ProtoDataType.STRING),
             Pair("name", ProtoDataType.STRING),

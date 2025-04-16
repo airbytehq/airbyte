@@ -41,6 +41,9 @@ import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
 import java.io.UnsupportedEncodingException
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
@@ -143,6 +146,10 @@ class JsonFormattingWriter(
                 ProtoDataType.BINARY -> generator.writeBinary(
                     record.protoData[i].binary.asReadOnlyByteBuffer().array()
                 )
+                ProtoDataType.TIMESTAMP -> {
+                    val ts = record.protoData[i].timestamp
+                    generator.writeString(LocalDateTime.ofEpochSecond(ts.seconds, ts.nanos, ZoneOffset.UTC).toString())
+                }
             }
         }
         generator.writeEndObject()

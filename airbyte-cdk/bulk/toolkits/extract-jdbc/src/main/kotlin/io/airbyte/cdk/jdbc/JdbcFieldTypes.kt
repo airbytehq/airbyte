@@ -37,7 +37,6 @@ import java.net.URL
 import java.nio.ByteBuffer
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -258,7 +257,7 @@ data object LocalTimeFieldType :
     )
 
 data object LocalDateTimeFieldType :
-    SymmetricJdbcFieldType<Timestamp>(
+    SymmetricJdbcFieldType<LocalDateTime>(
         LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         TimestampAccessor,
         LocalDateTimeCodec,
