@@ -74,6 +74,7 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
     additional_keys: Optional[List[str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    convert_entity_primary_key_to_integer: bool = False
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -101,6 +102,10 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
             for result in results:
                 properties_with_history = result.get("propertiesWithHistory")
                 primary_key = result.get("id")
+                if self.convert_entity_primary_key_to_integer:
+                    # The contacts_property_history on v1 of Hubspot's API returned the vid primary_key as an integer. However,
+                    # v3 returns ids as strings of integers so we convert these back to strings to retain backward compatibility
+                    primary_key = int(primary_key)
                 additional_keys = (
                     {additional_key: result.get(additional_key) for additional_key in self.additional_keys} if self.additional_keys else {}
                 )
