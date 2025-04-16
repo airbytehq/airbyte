@@ -8,7 +8,6 @@ import re
 from datetime import datetime
 from functools import lru_cache
 from io import IOBase
-from os import makedirs, path
 from os.path import getsize
 from typing import Any, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
 
@@ -30,7 +29,7 @@ from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
-from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
+from .exceptions import ErrorFetchingMetadata
 from .utils import (
     FolderNotFoundException,
     MicrosoftSharePointRemoteFile,
@@ -167,7 +166,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftSharePointSpec)
         self._config = value
 
-    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> List[Tuple[str, str, datetime]]:
+    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> Iterable[MicrosoftSharePointRemoteFile]:
         """
         Retrieves a list of all nested files under the specified object.
 
@@ -176,7 +175,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             object_id: The ID of the object to start the search from.
 
         Returns:
-            A list of tuples containing file information (name, download URL, and last modified datetime).
+            An iterable of MicrosoftSharePointRemoteFile instances containing file information.
 
         Raises:
             RuntimeError: If an error occurs during the request.
@@ -186,7 +185,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         headers = {"Authorization": f"Bearer {access_token}"}
         base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
 
-        def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
+        def get_files(url: str, path: str) -> Iterable[MicrosoftSharePointRemoteFile]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
                 error_info = response.json().get("error", {}).get("message", "No additional error information provided.")
@@ -196,8 +195,15 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             for child in data.get("value", []):
                 new_path = path + "/" + child["name"]
                 if child.get("file"):  # Object is a file
+                    # last_modified and created_at are type string e.g. "2025-04-16T14:41:00Z"
                     last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified)
+                    created_at = datetime.strptime(child["createdDateTime"], "%Y-%m-%dT%H:%M:%SZ")
+                    yield MicrosoftSharePointRemoteFile(
+                        uri=new_path,
+                        download_url=child["@microsoft.graph.downloadUrl"],
+                        last_modified=last_modified,
+                        created_at=created_at
+                    )
                 else:  # Object is a folder, retrieve children
                     child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
                     yield from get_files(child_url, new_path)
@@ -218,23 +224,35 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         if item_data.get("file"):  # Initial object is a file
             new_path = path + "/" + item_data["name"]
             last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified)
+            created_at = datetime.strptime(item_data["createdDateTime"], "%Y-%m-%dT%H:%M:%SZ")
+            yield MicrosoftSharePointRemoteFile(
+                uri=new_path,
+                download_url=item_data["@microsoft.graph.downloadUrl"],
+                last_modified=last_modified,
+                created_at=created_at
+            )
         else:
             # Initial object is a folder, start file retrieval
             yield from get_files(f"{item_url}/children", path)
 
-    def _list_directories_and_files(self, root_folder, path):
+    def _list_directories_and_files(self, root_folder, path) -> Iterable[MicrosoftSharePointRemoteFile]:
         """Enumerates folders and files starting from a root folder."""
         drive_items = execute_query_with_retry(root_folder.children.get())
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
-                yield (item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"])
+                # last_modified and created_at are type datetime.datetime e.g. (2025, 2, 18, 19, 32, 4)
+                yield MicrosoftSharePointRemoteFile(
+                    uri=item_path,
+                    download_url=item.properties["@microsoft.graph.downloadUrl"],
+                    last_modified=item.properties["lastModifiedDateTime"],
+                    created_at=item.properties["createdDateTime"]
+                )
             else:
                 yield from self._list_directories_and_files(item, item_path)
         yield from []
 
-    def _get_files_by_drive_name(self, drives, folder_path):
+    def _get_files_by_drive_name(self, drives, folder_path) -> Iterable[MicrosoftSharePointRemoteFile]:
         """Yields files from the specified drive."""
         path_levels = [level for level in folder_path.split("/") if level]
         folder_path = "/".join(path_levels)
@@ -350,7 +368,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         return drives
 
-    def _get_shared_files_from_all_drives(self, parsed_drives):
+    def _get_shared_files_from_all_drives(self, parsed_drives) -> Iterable[MicrosoftSharePointRemoteFile]:
         drive_ids = [drive.id for drive in parsed_drives]
 
         shared_drive_items = execute_query_with_retry(self.one_drive_client.me.drive.shared_with_me())
@@ -361,7 +379,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             if parent_reference and parent_reference["driveId"] not in drive_ids:
                 yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
 
-    def get_all_files(self):
+    def get_all_files(self) -> Iterable[MicrosoftSharePointRemoteFile]:
         if self.config.search_scope in ("ACCESSIBLE_DRIVES", "ALL"):
             # Get files from accessible drives
             yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
@@ -383,17 +401,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         files = self.get_all_files()
 
         files_generator = filter_http_urls(
-            self.filter_files_by_globs_and_start_date(
-                [
-                    MicrosoftSharePointRemoteFile(
-                        uri=path,
-                        download_url=download_url,
-                        last_modified=last_modified,
-                    )
-                    for path, download_url, last_modified in files
-                ],
-                globs,
-            ),
+            self.filter_files_by_globs_and_start_date([file for file in files], globs),
             logger,
         )
 
@@ -500,6 +508,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 filename=file_name,
                 bytes=file_size,
                 source_uri=file.uri,
+                created_at=file.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             )
 

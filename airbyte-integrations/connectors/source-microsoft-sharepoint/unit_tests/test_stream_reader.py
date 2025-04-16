@@ -30,7 +30,11 @@ TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 def create_mock_drive_item(is_file, name, children=None):
     """Helper function to create a mock drive item."""
-    mock_item = MagicMock(properties={"@microsoft.graph.downloadUrl": "test_url", "lastModifiedDateTime": "1991-08-24"})
+    mock_item = MagicMock(properties={
+        "@microsoft.graph.downloadUrl": "test_url", 
+        "lastModifiedDateTime": datetime(1991, 8, 24),
+        "createdDateTime": datetime(1991, 8, 24),
+    })
     mock_item.is_file = is_file
     mock_item.name = name
     mock_item.children.get.return_value.execute_query = Mock(return_value=children or [])
@@ -62,8 +66,18 @@ def create_mock_drive_files():
     Provides mock data for SharePoint drive files (personal drive).
     """
     return [
-        ("file1.csv", "https://example.com/file1.csv", datetime(2021, 1, 1)),
-        ("file2.txt", "https://example.com/file2.txt", datetime(2021, 1, 1)),
+        MicrosoftSharePointRemoteFile(
+            uri="file1.csv",
+            download_url="https://example.com/file1.csv",
+            last_modified=datetime(2021, 1, 1),
+            created_at=datetime(2021, 1, 1)
+        ),
+        MicrosoftSharePointRemoteFile(
+            uri="file2.txt",
+            download_url="https://example.com/file2.txt",
+            last_modified=datetime(2021, 1, 1),
+            created_at=datetime(2021, 1, 1)
+        ),
     ]
 
 
@@ -73,8 +87,18 @@ def create_mock_shared_drive_files():
     Provides mock data for SharePoint drive files (shared drives).
     """
     return [
-        ("file3.csv", "https://example.com/file3.csv", datetime(2021, 3, 1)),
-        ("file4.txt", "https://example.com/file4.txt", datetime(2021, 4, 1)),
+        MicrosoftSharePointRemoteFile(
+            uri="file3.csv",
+            download_url="https://example.com/file3.csv",
+            last_modified=datetime(2021, 3, 1),
+            created_at=datetime(2021, 3, 1)
+        ),
+        MicrosoftSharePointRemoteFile(
+            uri="file4.txt",
+            download_url="https://example.com/file4.txt",
+            last_modified=datetime(2021, 4, 1),
+            created_at=datetime(2021, 4, 1)
+        ),
     ]
 
 
@@ -258,6 +282,7 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
     file_uri = f"{file_uri}.{file_extension}"
     mock_file = Mock(download_url=f"https://example.com/file.{file_extension}", uri=file_uri)
     mock_file.last_modified = datetime(2021, 1, 1)
+    mock_file.created_at = datetime(2021, 1, 1)
     mock_logger = Mock()
     mock_get_access_token.return_value = "dummy_access_token"
 
@@ -381,8 +406,10 @@ def test_list_directories_and_files():
 
     assert len(result) == 2
     assert result == [
-        ("https://example.com/root/folder1/file1.txt", "test_url", "1991-08-24"),
-        ("https://example.com/root/file2.txt", "test_url", "1991-08-24"),
+        MicrosoftSharePointRemoteFile(uri='https://example.com/root/folder1/file1.txt', last_modified=datetime(1991, 8, 24, 0, 0),
+                                      mime_type=None, download_url='test_url', created_at=datetime(1991, 8, 24, 0, 0)),
+        MicrosoftSharePointRemoteFile(uri='https://example.com/root/file2.txt', last_modified=datetime(1991, 8, 24, 0, 0),
+                                      mime_type=None, download_url='test_url', created_at=datetime(1991, 8, 24, 0, 0)),
     ]
 
 
@@ -480,6 +507,7 @@ file_response = {
     "name": "TestFile.txt",
     "@microsoft.graph.downloadUrl": "http://example.com/download",
     "lastModifiedDateTime": "2021-01-01T00:00:00Z",
+    "createdDateTime": "2021-01-01T00:00:00Z"
 }
 
 empty_folder_response = {"folder": True, "value": []}
@@ -504,6 +532,7 @@ not_empty_subfolder_response = {
             "name": "NestedFile.txt",
             "@microsoft.graph.downloadUrl": "http://example.com/nested",
             "lastModifiedDateTime": "2021-01-02T00:00:00Z",
+            "createdDateTime": "2021-01-02T00:00:00Z"
         }
     ],
     "name": "subfolder2",
@@ -518,11 +547,7 @@ not_empty_subfolder_response = {
             file_response,
             [],
             [
-                (
-                    "http://example.com/TestFile.txt",
-                    "http://example.com/download",
-                    datetime.strptime("2021-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-                )
+                MicrosoftSharePointRemoteFile(uri='http://example.com/TestFile.txt', last_modified=datetime(2021, 1, 1, 0, 0), mime_type=None, download_url='http://example.com/download', created_at=datetime(2021, 1, 1, 0, 0)),
             ],
             False,
             None,
@@ -539,11 +564,7 @@ not_empty_subfolder_response = {
                 not_empty_subfolder_response,
             ],
             [
-                (
-                    "http://example.com/subfolder2/NestedFile.txt",
-                    "http://example.com/nested",
-                    datetime.strptime("2021-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-                )
+                MicrosoftSharePointRemoteFile(uri='http://example.com/subfolder2/NestedFile.txt', last_modified=datetime(2021, 1, 2, 0, 0), mime_type=None, download_url='http://example.com/nested', created_at=datetime(2021, 1, 2, 0, 0))
             ],
             False,
             None,
