@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecificationProvider.Companion.getNoCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
@@ -21,15 +20,17 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 
-data class BigqueryBulkLoadConfiguration(
+data class BigqueryBulkLoadConfiguration<T : OutputStream>(
     val bigQueryConfiguration: BigqueryConfiguration,
+    override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>
 ) :
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
@@ -37,7 +38,7 @@ data class BigqueryBulkLoadConfiguration(
     S3BucketConfigurationProvider,
     AWSAccessKeyConfigurationProvider,
     AWSArnRoleConfigurationProvider,
-    ObjectStorageCompressionConfigurationProvider<ByteArrayOutputStream> {
+    ObjectStorageCompressionConfigurationProvider<T> {
     override val objectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = "",
@@ -54,9 +55,6 @@ data class BigqueryBulkLoadConfiguration(
         CSVFormatConfiguration()
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration()
-    override val objectStorageCompressionConfiguration:
-        ObjectStorageCompressionConfiguration<ByteArrayOutputStream> =
-        getNoCompressionConfiguration()
     override val s3BucketConfiguration: S3BucketConfiguration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration
     override val awsArnRoleConfiguration: AWSArnRoleConfiguration = AWSArnRoleConfiguration(null)
@@ -83,5 +81,11 @@ data class BigqueryBulkLoadConfiguration(
 @Factory
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigqueryBLConfigurationProvider(private val config: BigqueryConfiguration) {
-    @Singleton fun get() = BigqueryBulkLoadConfiguration(config)
+    @Singleton
+    fun get() =
+        BigqueryBulkLoadConfiguration(
+            config,
+            objectStorageCompressionConfiguration =
+                ObjectStorageCompressionConfiguration(NoopProcessor)
+        )
 }
