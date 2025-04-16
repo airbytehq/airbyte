@@ -33,6 +33,9 @@ application {
 
 dependencies {
     implementation 'org.apache.commons:commons-text:1.12.0'
+    implementation 'com.google.cloud:google-cloud-bigquery'
+
+    integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
 
     // old CDK dependencies
     implementation 'io.airbyte.cdk:airbyte-cdk-core:0.46.0'

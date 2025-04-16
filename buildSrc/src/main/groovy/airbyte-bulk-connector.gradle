@@ -227,6 +227,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 // integration tests depend on the runtime code
                 integrationTestImplementation project
                 integrationTestLegacyImplementation project
+                integrationTestLegacyImplementation project.sourceSets.integrationTest.output
             }
 
             project.tasks.named('build').configure {
