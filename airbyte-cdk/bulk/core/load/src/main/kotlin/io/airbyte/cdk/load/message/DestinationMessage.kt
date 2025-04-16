@@ -51,7 +51,7 @@ import java.util.UUID
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
- * usability. Data should be marshalled to these from frontline deserialized objects.
+ * usability. Data should be unmarshalled to these from front-line deserialized objects.
  */
 sealed interface DestinationMessage {
     fun asProtocolMessage(): AirbyteMessage

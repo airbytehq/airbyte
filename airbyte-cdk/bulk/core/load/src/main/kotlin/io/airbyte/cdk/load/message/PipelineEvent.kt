@@ -21,7 +21,7 @@ class PipelineMessage<K : WithStream, T>(
     val key: K,
     val value: T,
     val postProcessingCallback: suspend () -> Unit = {},
-    val context: PipelineContext? = null,
+    var context: PipelineContext? = null,
 ) : PipelineEvent<K, T>
 
 /** Broadcast at end-of-stream to all partitions to signal that the stream has ended. */

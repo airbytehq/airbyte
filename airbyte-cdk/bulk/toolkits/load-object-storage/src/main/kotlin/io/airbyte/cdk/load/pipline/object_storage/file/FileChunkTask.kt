@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineContext
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
@@ -15,8 +16,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
-import io.airbyte.cdk.load.state.CheckpointId
-import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
@@ -39,7 +39,7 @@ class FileChunkTask<T>(
 ): Task {
     private val log = KotlinLogging.logger {}
 
-    override val terminalCondition: TerminalCondition = SelfTerminating
+    override val terminalCondition: TerminalCondition = OnEndOfSync
 
     private val partitioner = ObjectLoaderFormattedPartPartitioner<StreamKey, T>()
 
@@ -54,7 +54,7 @@ class FileChunkTask<T>(
                     val key =
                         Path.of(
                             pathFactory.getFinalDirectory(stream),
-                            file.stagingFileUrl,
+                            file.sourceFileRelativePath,
                         ).toString()
 
                     val fileSize = file.fileSizeBytes
@@ -78,7 +78,7 @@ class FileChunkTask<T>(
 
                     do {
                         val outputPart = partFactory.getNextPart()
-                        publishPart(event.key.stream, outputPart, event.checkpointCounts)
+                        publishPart(event.key.stream, outputPart, event.context!!)
                     } while (!outputPart.isFinal)
 
                     log.info { "Finished reading $localFileUrl, deleting." }
@@ -100,21 +100,14 @@ class FileChunkTask<T>(
     private suspend fun publishPart(
         stream: DestinationStream.Descriptor,
         part: Part,
-        checkpointCounts: Map<CheckpointId, Long>,
+        pipelineContext: PipelineContext,
     ) {
         val outputKey = ObjectKey(stream, part.key)
         val partition = partitioner.getPart(outputKey, partition, partQueue.partitions)
-        // pass the checkpoints on the last part
-        // bookkeeping should automatically handle this
-        val checkpointsToForward = if (part.isFinal) {
-            checkpointCounts
-        } else {
-            emptyMap()
-        }
 
         val formattedPart = ObjectLoaderPartFormatter.FormattedPart(part)
 
-        val outputMessage = PipelineMessage(checkpointsToForward, outputKey, formattedPart)
+        val outputMessage = PipelineMessage(emptyMap(), outputKey, formattedPart, context = pipelineContext)
         partQueue.publish(outputMessage, partition)
     }
 }

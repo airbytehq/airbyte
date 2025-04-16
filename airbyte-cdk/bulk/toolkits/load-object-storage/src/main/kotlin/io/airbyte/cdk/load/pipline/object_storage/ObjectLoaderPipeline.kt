@@ -31,27 +31,29 @@ import jakarta.inject.Singleton
  * - a single completer worker reads the second queue and completes the uploads
  * - state is acked only when the completer finishes each upload
  */
-@Singleton
-@Requires(bean = ObjectLoader::class)
+//@Singleton
+//@Requires(bean = ObjectLoader::class)
 @Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     partStep: ObjectLoaderPartFormatterStep,
-    @Named("filePartLoaderStep") uploadStep: ObjectLoaderPartLoaderStep<T>,
-    @Named("fileUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
+    @Named("recordPartLoaderStep") uploadStep: ObjectLoaderPartLoaderStep<T>,
+    @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
 ) : LoadPipeline(listOf(partStep, uploadStep, completerStep))
+
+
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
-@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "true")
+//@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "true")
 class ObjectLoaderPipelineWithFiles<K : WithStream, T : RemoteObject<*>>(
     routeEventStep: RouteEventStep,
     fileChunkStep: FileChunkStep<T>,
     @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
     @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
     forwardFileRecordStep: ForwardFileRecordStep<T>,
-    recordPartStep: ObjectLoaderPartFormatterStep,
-    recordUploadStep: ObjectLoaderPartLoaderStep<T>,
-    recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+    @Named("fileRecordPartFormatterStep") recordPartStep: ObjectLoaderPartFormatterStep,
+    @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
+    @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
 ) : LoadPipeline(listOf(
     routeEventStep,
     fileChunkStep,

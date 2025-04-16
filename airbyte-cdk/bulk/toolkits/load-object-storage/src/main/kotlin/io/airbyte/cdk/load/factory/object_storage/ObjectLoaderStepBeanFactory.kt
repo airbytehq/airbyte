@@ -79,15 +79,13 @@ class ObjectLoaderStepBeanFactory {
         objectLoader: ObjectLoader,
         uploadCompleter: ObjectLoaderUploadCompleter<T>,
         @Named("objectLoaderLoadedPartQueue") inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
-        @Named("objectLoaderCompletedUploadQueue") completedUploadQueue: PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? = null,
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
         taskFactory: LoadPipelineStepTaskFactory,
-    ) = ObjectLoaderUploadCompleterStep(
+    ) = ObjectLoaderUploadCompleterStep<K, T>(
         objectLoader,
         uploadCompleter,
         inputQueue,
-        completedUploadQueue,
-        completedUploadPartitioner,
+        null,
+        null,
         taskFactory,
         "record-upload-completer-step",
     )
@@ -99,7 +97,7 @@ class ObjectLoaderStepBeanFactory {
         uploadCompleter: ObjectLoaderUploadCompleter<T>,
         @Named("fileLoadedPartQueue") inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
         @Named("fileCompletedQueue") completedUploadQueue: PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? = null,
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
+        @Named("fileCompletedOutputPartitioner") completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) = ObjectLoaderUploadCompleterStep(
         objectLoader,

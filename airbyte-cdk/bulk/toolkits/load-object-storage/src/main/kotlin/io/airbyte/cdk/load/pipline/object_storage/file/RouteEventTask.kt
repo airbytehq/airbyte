@@ -3,12 +3,13 @@ package io.airbyte.cdk.load.pipline.object_storage.file
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineContext
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 
@@ -19,7 +20,8 @@ class RouteEventTask(
     private val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partition: Int,
 ) : Task {
-    override val terminalCondition: TerminalCondition = SelfTerminating
+
+    override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {
         inputQueue.consume(partition).collect { event ->
@@ -31,6 +33,13 @@ class RouteEventTask(
             val stream = streamDesc?.let { catalog.getStream(it) }
 
             if (stream?.includeFiles == true) {
+                if (event is PipelineMessage) {
+                    event.context = PipelineContext(
+                        event.checkpointCounts,
+                        event.value,
+                    )
+                }
+
                 fileQueue.publish(event, partition)
             } else {
                 recordQueue.publish(event, partition)

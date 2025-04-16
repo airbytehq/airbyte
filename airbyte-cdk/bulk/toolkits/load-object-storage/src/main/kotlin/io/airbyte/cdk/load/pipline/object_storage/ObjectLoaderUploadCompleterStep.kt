@@ -32,7 +32,7 @@ class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
             taskFactory.createIntermediateStep(
                 uploadCompleter,
                 inputQueue,
-                completedUploadPartitioner!!,
+                completedUploadPartitioner,
                 completedUploadQueue,
                 partition,
                 numWorkers,

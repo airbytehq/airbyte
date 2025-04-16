@@ -168,8 +168,9 @@ class DefaultInputConsumerTask(
                     PipelineMessage(
                         mapOf(manager.getCurrentCheckpointId() to 1),
                         StreamKey(stream.descriptor),
-                        record
-                    ) { reserved.release() }
+                        record,
+                        postProcessingCallback = { reserved.release() }
+                    )
                 val partition = partitioner.getPartition(record, pipelineInputQueue.partitions)
                 pipelineInputQueue.publish(pipelineMessage, partition)
             }

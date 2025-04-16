@@ -68,7 +68,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 ) : Task {
     private val log = KotlinLogging.logger {}
 
-    private val taskName = batchAccumulator::class.java.simpleName
+    private val taskName = taskId
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
