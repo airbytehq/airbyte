@@ -119,7 +119,7 @@ def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog
         "bytes": 46_754_266,
         "filename": file_name,
         "folder": f"/{file_folder}",
-        "source_uri": f"sftp://foo@127.0.0.1:2222/{source_file_relative_path}",
+        "source_uri": f"sftp://{config_fixture_use_file_transfer['username']}@{config_fixture_use_file_transfer['host']}:{config_fixture_use_file_transfer['port']}/{source_file_relative_path}",
         "updated_at": ANY,
     }
     assert len(output.records) == 1
