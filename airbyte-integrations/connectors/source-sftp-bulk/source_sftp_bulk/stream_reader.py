@@ -144,7 +144,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             message = "File size exceeds the 1 GB limit."
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
-        file_paths = self._get_file_transfer_paths(file, local_directory)
+        file_paths = self._get_file_transfer_paths(file.uri, local_directory)
         local_file_path = file_paths[self.LOCAL_FILE_PATH]
         file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
         file_name = file_paths[self.FILE_NAME]
@@ -179,6 +179,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             filename=file_name,
             bytes=file_size,
             updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            source_uri=f"sftp://{self.config.username}@{self.config.host}:{self.config.port}{file.uri}"
         )
 
         file_reference = AirbyteRecordMessageFileReference(

@@ -106,13 +106,19 @@ def test_get_files_empty_files(configured_catalog: ConfiguredAirbyteCatalog, con
 def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_file_transfer: Mapping[str, Any]):
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_file_transfer, state=None)
     output = read(source=source, config=config_fixture_use_file_transfer, catalog=configured_catalog)
+
+    file_folder = "files/file_transfer"
+    file_name = "file_transfer_1.csv"
+    source_file_relative_path = f"{file_folder}/{file_name}"
     expected_file_data = AirbyteRecordMessageFileReference(
         file_size_bytes=46_754_266,
-        source_file_relative_path="files/file_transfer/file_transfer_1.csv",
-        staging_file_url="/tmp/airbyte-file-transfer/files/file_transfer/file_transfer_1.csv",
+        source_file_relative_path=source_file_relative_path,
+        staging_file_url=f"/tmp/airbyte-file-transfer/{source_file_relative_path}",
     )
+    expected_record_data = {'bytes': 46_754_266, 'filename': file_name, 'folder': f'/{file_folder}', 'source_uri': f'sftp://foo@127.0.0.1:2222/{source_file_relative_path}', 'updated_at': ANY}
     assert len(output.records) == 1
     assert list(map(lambda record: record.record.file_reference, output.records)) == [expected_file_data]
+    assert list(map(lambda record: record.record.data, output.records)) == [expected_record_data]
 
     # Additional assertion to check if the file exists at the file_url path
     file_path = expected_file_data.staging_file_url
