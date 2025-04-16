@@ -169,6 +169,7 @@ class SourceHubspot(YamlDeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
+        # Temporarily using `ConcurrentDeclarativeSource.streams()` to validate granted scopes.
         streams = super().streams(config=config)
         streams += [
             Campaigns(**common_params),
@@ -181,7 +182,6 @@ class SourceHubspot(YamlDeclarativeSource):
             DealPipelines(**common_params),
             DealSplits(**common_params),
             Deals(**common_params),
-            DealsArchived(**common_params),
             EmailEvents(**common_params),
             Engagements(**common_params),
             EngagementsCalls(**common_params),
