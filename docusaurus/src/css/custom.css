@@ -18,7 +18,7 @@
   --ifm-code-font-size: 95%;
   --ifm-navbar-height: 82px;
   --ifm-alert-border-color: #615eff;
-  --ifm-navbar-link-color: #615eff;
+
   --ifm-font-family-base: "Inter";
   --ifm-alert-shadow: none;
   --ifm-menu-color: var(--ifm-color-emphasis-900);
@@ -204,6 +204,21 @@ ul.breadcrumbs > li.breadcrumbs__item > a.breadcrumbs__link {
 ul.breadcrumbs > li.breadcrumbs__item > span.breadcrumbs__link {
   color: var(--ifm-font-color-base);
   background: none;
+}
+
+article span.badge {
+  margin-bottom: 20px;
+  background-color: var(--color-green-40);
+  border: 1px solid var(--color-green-800);
+  color: var(--color-green-800);
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+html[data-theme="dark"] article span.badge {
+  background-color: var(--color-grey-40);
+  border: 1px solid var(--color-dark-blue-40);
+  color: var(--color-dark-blue-40);
 }
 
 .cloudStatusLink {
