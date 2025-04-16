@@ -28,7 +28,6 @@ pytest = "^8.0.0"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 responses = "^0.22.0"
-pendulum = "<3.0.0"
 
 
 [tool.poe]
