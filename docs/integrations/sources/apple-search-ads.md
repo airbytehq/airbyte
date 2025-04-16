@@ -1,4 +1,4 @@
-# Apple Ads (FKA Apple Search Ads)
+# Apple Ads (Apple Search Ads)
 
 This page contains the setup guide and reference information for the Apple Ads source connector.
 
