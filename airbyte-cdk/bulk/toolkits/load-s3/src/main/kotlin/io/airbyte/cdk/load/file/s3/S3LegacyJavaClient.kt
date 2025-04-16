@@ -46,7 +46,7 @@ import org.apache.mina.util.ConcurrentHashSet
  * This can be enabled by injecting [io.airbyte.cdk.load.command.s3.S3ClientConfigurationProvider]
  * with [io.airbyte.cdk.load.command.s3.S3ClientConfiguration.useLegacyJavaClient] set to `true`.
  *
- * Currently this exists only to facilitate performance testing, but it may be needed as a fallback
+ * Currently, this exists only to facilitate performance testing, but it may be needed as a fallback
  * if the new SDK cannot meet performance requirements.
  */
 class S3LegacyJavaClient(val amazonS3: AmazonS3, val bucket: S3BucketConfiguration) : S3Client {
