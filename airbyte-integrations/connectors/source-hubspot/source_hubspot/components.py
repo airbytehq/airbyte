@@ -105,15 +105,16 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
                     {additional_key: result.get(additional_key) for additional_key in self.additional_keys} if self.additional_keys else {}
                 )
 
-                for property_name, value_dict in properties_with_history.items():
-                    if property_name == "hs_lastmodifieddate":
-                        # Skipping the lastmodifieddate since it only returns the value
-                        # when one field of a record was changed no matter which
-                        # field was changed. It therefore creates overhead, since for
-                        # every changed property there will be the date it was changed in itself
-                        # and a change in the lastmodifieddate field.
-                        continue
-                    for version in value_dict:
-                        version["property"] = property_name
-                        version[self.entity_primary_key] = primary_key
-                        yield version | additional_keys
+                if properties_with_history:
+                    for property_name, value_dict in properties_with_history.items():
+                        if property_name == "hs_lastmodifieddate":
+                            # Skipping the lastmodifieddate since it only returns the value
+                            # when one field of a record was changed no matter which
+                            # field was changed. It therefore creates overhead, since for
+                            # every changed property there will be the date it was changed in itself
+                            # and a change in the lastmodifieddate field.
+                            continue
+                        for version in value_dict:
+                            version["property"] = property_name
+                            version[self.entity_primary_key] = primary_key
+                            yield version | additional_keys
