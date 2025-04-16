@@ -1,6 +1,8 @@
+import io.netifi.flatbuffers.plugin.tasks.FlatBuffers
 
 plugins {
     id 'com.google.protobuf' version '0.9.4'
+    id 'io.netifi.flatbuffers' version '1.0.7'
 }
 
 // Protobuf source sets
@@ -49,6 +51,17 @@ protobuf {
     }
 }
 
+flatbuffers {
+    flatcPath = '/opt/homebrew/bin/flatc'
+    language = 'java'
+}
+
+tasks.register("generateFbs", FlatBuffers) {
+    inputDir = file("src/main/fbs")
+    outputDir = file("build/generated/fbs")
+    language = 'java'
+}
+
 tasks.withType(Copy).configureEach {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
@@ -93,6 +106,9 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
     implementation 'net.i2p.crypto:eddsa:0.3.0'
     implementation 'org.openapi4j:openapi-schema-validator:1.0.7'
+    implementation 'org.xerial.snappy:snappy-java:1.1.10.7'
+    implementation 'org.lz4:lz4-java:1.8.0'
+    implementation 'com.google.flatbuffers:flatbuffers-java:25.2.10'
 
     // this is only needed because of exclusions in airbyte-protocol
     runtimeOnly 'com.google.guava:guava:33.3.0-jre'
