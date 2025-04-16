@@ -7,7 +7,7 @@ data:
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
   license: MIT
-  name: Apple
+  name: Apple Ads
   remoteRegistries:
     pypi:
       enabled: false
