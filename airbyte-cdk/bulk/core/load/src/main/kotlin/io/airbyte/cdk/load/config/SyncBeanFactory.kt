@@ -56,10 +56,10 @@ class SyncBeanFactory {
         config: DestinationConfiguration,
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ReservationManager {
-        val recordQueueBytes =
-            config.maxMessageQueueMemoryUsageRatio * globalMemoryManager.totalCapacityBytes
+        val recordQueueBytes = 1L
+            //config.maxMessageQueueMemoryUsageRatio * globalMemoryManager.totalCapacityBytes
         val reservation = runBlocking {
-            globalMemoryManager.reserve(recordQueueBytes.toLong(), null)
+            globalMemoryManager.reserve(recordQueueBytes, null)
         }
         return ReservationManager(reservation.bytesReserved)
     }

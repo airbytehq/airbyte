@@ -154,15 +154,8 @@ class SocketInputFlow(
         var count = 0L
         val parser = Protocol.AirbyteMessage.parser()
         socketChannel.use { channel ->
-            Channels.newInputStream(channel)
-                .let {
-                    if (config.inputSerializationFormat == DestinationConfiguration.InputSerializationFormat.PROTOBUF) {
-                        it
-                    } else {
-                        BufferedInputStream(it, config.inputBufferByteSizePerSocket.toInt())
-                    }
-                }
-                .use { maybeBufferedInputStream ->
+            Channels.newInputStream(channel).buffered(config.inputBufferByteSizePerSocket.toInt())
+                .use { bufferedInputStream ->
                     val streamRecordCounts =
                         catalog.streams.associate { it.descriptor to 0L }.toMutableMap()
                     when (config.inputSerializationFormat) {
@@ -170,7 +163,7 @@ class SocketInputFlow(
                         DestinationConfiguration.InputSerializationFormat.SMILE -> {
                             mapper
                                 .readerFor(AirbyteMessage::class.java)
-                                .readValues<AirbyteMessage>(maybeBufferedInputStream)
+                                .readValues<AirbyteMessage>(bufferedInputStream)
                                 .forEach {
                                     val destinationMessage = factory.fromAirbyteMessage(it, "")
                                     handleDestinationMessage(
@@ -184,7 +177,7 @@ class SocketInputFlow(
                         DestinationConfiguration.InputSerializationFormat.PROTOBUF -> {
                             if (config.useCodedInputStream) {
                                 val cis = CodedInputStream.newInstance(
-                                    maybeBufferedInputStream,
+                                    bufferedInputStream,
                                     config.inputBufferByteSizePerSocket.toInt()
                                 )
                                 val builder = Protocol.AirbyteMessage.newBuilder()
@@ -210,10 +203,6 @@ class SocketInputFlow(
                                     )
                                 }
                             } else {
-                                val bufferedInputStream = BufferedInputStream(
-                                    maybeBufferedInputStream,
-                                    config.inputBufferByteSizePerSocket.toInt()
-                                )
                                 while (true) {
                                     val protoMessage =
                                         parser.parseDelimitedFrom(
@@ -235,7 +224,7 @@ class SocketInputFlow(
                             if (devNullContext != null) {
                                 while (true) {
                                     val bytesRead =
-                                        maybeBufferedInputStream.read(devNullContext.byteBuffer)
+                                        bufferedInputStream.read(devNullContext.byteBuffer)
                                     if (bytesRead == -1) {
                                         log.info { "dev-nulled a total of $bytes bytes" }
                                         break
