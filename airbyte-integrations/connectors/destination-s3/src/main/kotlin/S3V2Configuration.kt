@@ -59,6 +59,7 @@ data class S3V2Configuration<T : OutputStream>(
     override val skipJsonOnProto: Boolean,
     override val disableUUID: Boolean,
     override val disableMapper: Boolean,
+    override val useCodedInputStream: Boolean = false,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -97,6 +98,7 @@ class S3V2ConfigurationFactory :
             skipJsonOnProto = pojo.skipJsonOnProto ?: true,
             disableUUID = pojo.disableUUID ?: false,
             disableMapper = pojo.disableMapper ?: false,
+            useCodedInputStream = pojo.useCodedInputStream ?: false,
         )
     }
 }

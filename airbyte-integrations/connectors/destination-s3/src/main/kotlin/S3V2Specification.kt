@@ -111,6 +111,8 @@ class S3V2Specification :
     @get:JsonProperty("disable_uuid") val disableUUID: Boolean? = null
 
     @get:JsonProperty("disable_mapper") val disableMapper: Boolean? = null
+
+    @get:JsonProperty("use_coded_input_stream") val useCodedInputStream: Boolean? = null
 }
 
 @Singleton

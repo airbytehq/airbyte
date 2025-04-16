@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
+import com.google.protobuf.CodedInputStream
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
@@ -32,6 +33,7 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.BufferedInputStream
 import java.io.File
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
@@ -148,12 +150,19 @@ class SocketInputFlow(
             throw IllegalStateException("Failed to connect to socket")
         }
         log.info { "Connected" }
-        val parser = Protocol.AirbyteMessage.parser()
+        var bytesRead = 0L
         var count = 0L
+        val parser = Protocol.AirbyteMessage.parser()
         socketChannel.use { channel ->
             Channels.newInputStream(channel)
-                .buffered(config.inputBufferByteSizePerSocket.toInt())
-                .use { bufferedInputStream ->
+                .let {
+                    if (config.inputSerializationFormat == DestinationConfiguration.InputSerializationFormat.PROTOBUF) {
+                        it
+                    } else {
+                        BufferedInputStream(it, config.inputBufferByteSizePerSocket.toInt())
+                    }
+                }
+                .use { maybeBufferedInputStream ->
                     val streamRecordCounts =
                         catalog.streams.associate { it.descriptor to 0L }.toMutableMap()
                     when (config.inputSerializationFormat) {
@@ -161,7 +170,7 @@ class SocketInputFlow(
                         DestinationConfiguration.InputSerializationFormat.SMILE -> {
                             mapper
                                 .readerFor(AirbyteMessage::class.java)
-                                .readValues<AirbyteMessage>(bufferedInputStream)
+                                .readValues<AirbyteMessage>(maybeBufferedInputStream)
                                 .forEach {
                                     val destinationMessage = factory.fromAirbyteMessage(it, "")
                                     handleDestinationMessage(
@@ -173,17 +182,52 @@ class SocketInputFlow(
                                 }
                         }
                         DestinationConfiguration.InputSerializationFormat.PROTOBUF -> {
-                            while (true) {
-                                val protoMessage =
-                                    parser.parseDelimitedFrom(bufferedInputStream) ?: break
-                                val destinationMessage =
-                                    factory.fromProtobufAirbyteMessage(protoMessage, protoMapperToApply)
-                                handleDestinationMessage(
-                                    destinationMessage,
-                                    streamRecordCounts,
-                                    collector,
-                                    count++
+                            if (config.useCodedInputStream) {
+                                val cis = CodedInputStream.newInstance(
+                                    maybeBufferedInputStream,
+                                    config.inputBufferByteSizePerSocket.toInt()
                                 )
+                                val builder = Protocol.AirbyteMessage.newBuilder()
+                                while (!cis.isAtEnd) {
+                                    val size = cis.readRawVarint32()
+                                    val limit = cis.pushLimit(size)
+                                    builder.mergeFrom(cis).build()
+                                    cis.popLimit(limit)
+                                    cis.resetSizeCounter()
+                                    val protoMessage = builder.build()
+                                    val destinationMessage =
+                                        factory.fromProtobufAirbyteMessage(
+                                            protoMessage,
+                                            protoMapperToApply
+                                        )
+                                    bytesRead += size + 2
+                                    handleDestinationMessage(
+                                        destinationMessage,
+                                        streamRecordCounts,
+                                        collector,
+                                        ++count,
+                                        bytesRead
+                                    )
+                                }
+                            } else {
+                                val bufferedInputStream = BufferedInputStream(
+                                    maybeBufferedInputStream,
+                                    config.inputBufferByteSizePerSocket.toInt()
+                                )
+                                while (true) {
+                                    val protoMessage =
+                                        parser.parseDelimitedFrom(
+                                            bufferedInputStream
+                                        ) ?: break
+                                    val destinationMessage =
+                                        factory.fromProtobufAirbyteMessage(protoMessage, protoMapperToApply)
+                                    handleDestinationMessage(
+                                        destinationMessage,
+                                        streamRecordCounts,
+                                        collector,
+                                        ++ count,
+                                    )
+                                }
                             }
                         }
                         DestinationConfiguration.InputSerializationFormat.DEVNULL -> {
@@ -191,7 +235,7 @@ class SocketInputFlow(
                             if (devNullContext != null) {
                                 while (true) {
                                     val bytesRead =
-                                        bufferedInputStream.read(devNullContext.byteBuffer)
+                                        maybeBufferedInputStream.read(devNullContext.byteBuffer)
                                     if (bytesRead == -1) {
                                         log.info { "dev-nulled a total of $bytes bytes" }
                                         break
@@ -233,10 +277,11 @@ class SocketInputFlow(
         destinationMessage: DestinationMessage,
         streamRecordCounts: MutableMap<DestinationStream.Descriptor, Long>,
         collector: FlowCollector<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-        messageCount: Long
+        messageCount: Long,
+        bytesRead: Long = 0
     ) {
         if (messageCount % 10_000L == 0L) {
-            log.info { "Read $messageCount records from $socketName" }
+            log.info { "Read $messageCount records (${bytesRead}b) from $socketName" }
         }
         when (destinationMessage) {
             is DestinationRecord -> {
