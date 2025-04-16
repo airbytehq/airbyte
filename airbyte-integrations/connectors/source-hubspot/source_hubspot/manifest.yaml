@@ -303,6 +303,7 @@ definitions:
         fields:
           - type: AddedFieldDefinition
             path: ["source-id"]
+            value_type: string
             value: "{{ record.get('sourceId') }}"
           - type: AddedFieldDefinition
             path: ["source-label"]
