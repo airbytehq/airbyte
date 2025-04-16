@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 from source_hubspot.errors import HubspotInvalidAuth
-from source_hubspot.streams import BaseStream, MarketingEmails
+from source_hubspot.streams import BaseStream, Campaigns
 
 
 # Define a mock function to be used with backoff.on_exception
@@ -28,7 +28,7 @@ def mock_retry_func(*args, **kwargs):
 @patch.multiple(BaseStream, __abstractmethods__=set())
 def test_handle_request_with_retry(common_params):
     # Create a mock instance of the BaseStream class
-    stream_instance = MarketingEmails(**common_params)
+    stream_instance = Campaigns(**common_params)
 
     # Mock PreparedRequest
     mock_prepared_request = MagicMock(requests.PreparedRequest)
@@ -49,7 +49,7 @@ def test_handle_request_with_retry(common_params):
 @patch.multiple(BaseStream, __abstractmethods__=set())
 def test_handle_request_with_retry_token_expired(common_params):
     # Create a mock instance of the BaseStream class
-    stream_instance = MarketingEmails(**common_params)
+    stream_instance = Campaigns(**common_params)
 
     # Mock the _send_request method of the BaseStream class to raise HubspotInvalidAuth exception
     with patch.object(stream_instance._http_client, "_send", side_effect=mock_retry_func) as mocked_send_request:
