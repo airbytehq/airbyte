@@ -5,6 +5,9 @@
 package io.airbyte.cdk.load.data
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 sealed interface AirbyteType {
     /**
@@ -67,6 +70,32 @@ data class UnionType(
     val options: Set<AirbyteType>,
     val isLegacyUnion: Boolean,
 ) : AirbyteType {
+    /**
+     * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level
+     * schema looks like this, we still want to be able to extract the object properties (i.e. treat
+     * it as though the string option didn't exist).
+     *
+     * @throws IllegalArgumentException if we cannot extract columns from this schema
+     */
+    override fun asColumns(): LinkedHashMap<String, FieldType> {
+        logger.warn { "asColumns options=$options" }
+        val numObjectOptions = options.count { it.isObject }
+        if (numObjectOptions > 1) {
+            logger.error { "Can't extract columns from a schema with multiple object options" }
+            return LinkedHashMap()
+        }
+
+        var retVal: LinkedHashMap<String, FieldType>
+        try {
+            retVal = options.first { it.isObject }.asColumns()
+        } catch (_: NoSuchElementException) {
+            logger.error { "Can't extract columns from a schema with no object options" }
+            retVal = LinkedHashMap()
+        }
+        logger.warn { "Union.asColumns retVal=$retVal" }
+        return retVal
+    }
+
     companion object {
         fun of(options: Set<AirbyteType>, isLegacyUnion: Boolean = false): AirbyteType {
             if (options.size == 1) {
