@@ -37,7 +37,7 @@ data:
     - cdk:python-file-based
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-MICROSOFT-SHAREPOINTS_CREDS
           fileName: config.json

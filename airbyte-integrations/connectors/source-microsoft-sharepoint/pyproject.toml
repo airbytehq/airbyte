@@ -20,7 +20,7 @@ python = "^3.11,<3.12"
 msal = "==1.27.0"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
-airbyte-cdk = {extras = ["file-based"], version = "6.45.4.post49.dev14495925594"}
+airbyte-cdk = {extras = ["file-based"], version = "6.45.4.post52.dev14501809740"}
 
 [tool.poetry.scripts]
 source-microsoft-sharepoint = "source_microsoft_sharepoint.run:run"
@@ -32,6 +32,7 @@ pytest-mock = "^3.6.1"
 requests-mock = "^1.12.1"
 pytest = "^8"
 poethepoet = "^0.32.2"
+pytest-cov = "^6.1.1"
 
 
 [tool.poe]
