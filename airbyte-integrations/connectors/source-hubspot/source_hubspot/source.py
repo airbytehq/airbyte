@@ -79,6 +79,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
+    "deals_archived": {"contacts", "crm.objects.deals.read"},
 }
 
 
