@@ -801,8 +801,8 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
     )
     config["start_date"] = str(pendulum.now().subtract(days=3))
     stream = stream_by_name("subscription_items", config)
-    records = read_from_stream(stream, "full_refresh", {})
-    assert records == [
+    records = [r.data for r in read_from_stream(stream, "full_refresh", {})]
+    expected_records = [
         {
             "id": "si_OynDmET1kQPTbI",
             "object": "subscription_item",
@@ -820,6 +820,8 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
             "subscription_updated": 1699603174,
         },
     ]
+
+    assert records == expected_records
     assert len(requests_mock.request_history) == 2
     assert "subscription=sub_1OApco2eZvKYlo2CEDCzwLrE" in requests_mock.request_history[-1].url
 
