@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.LegacyUnionType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
@@ -95,6 +96,10 @@ class AirbyteTypeToAvroSchema {
                     LogicalTypes.timestampMicros().addToSchema(schema)
                 }
                 is UnionType -> Schema.createUnion(airbyteSchema.options.map { convert(it, path) })
+                is LegacyUnionType ->
+                    throw IllegalArgumentException(
+                        "Unexpected legacy union type at $path: $airbyteSchema"
+                    )
             }
         } catch (e: Exception) {
             throw IllegalArgumentException("Failed to convert $airbyteSchema at $path", e)

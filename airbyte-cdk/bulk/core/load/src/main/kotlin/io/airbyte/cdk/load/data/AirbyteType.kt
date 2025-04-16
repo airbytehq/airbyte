@@ -52,8 +52,9 @@ data class UnionType(val options: Set<AirbyteType>) : AirbyteType {
 }
 
 /**
- * A legacy type. Modern connectors shouldn't handle this. Identical to [UnionType], but represents
- * `{"type": [...]}` schemas specifically.
+ * A legacy type. Identical to [UnionType], but represents `{"type": [...]}` schemas specifically.
+ *
+ * Modern connectors shouldn't handle this, and should just throw [IllegalArgumentException].
  */
 data class LegacyUnionType(val options: Set<AirbyteType>) : AirbyteType {
     companion object {
