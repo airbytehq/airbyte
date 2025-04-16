@@ -161,6 +161,10 @@ definitions:
         fields:
           - path: ["rootMicId"]
             value: "{{ record['rootMicId'] | string if record.get('rootMicId') is not none else none }}"
+            value_type: string
+        condition: "{{ record.get('rootMicId') is not none and record.get('rootMicId') is not string }}"
+      - type: AddFields
+        fields:
           - path: ["updated"]
             value: "{{ record.get('updated') or record['created'] }}"
     schema_loader:
@@ -172,7 +176,7 @@ definitions:
     $ref: "#/definitions/stream_without_pagination"
     name: email_subscriptions
     retriever:
-      $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/retriever_without_pagination"
       requester:
         $ref: "#/definitions/base_requester"
         path: /email/public/v1/subscriptions
@@ -230,11 +234,77 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  email_subscriptions:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      active:
+        description: Indicates whether the subscription is currently active or not
+        type:
+          - "null"
+          - boolean
+      portalId:
+        description: The unique identifier for the portal associated with the subscription
+        type:
+          - "null"
+          - integer
+      description:
+        description: Additional information or details about the subscription
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier for the subscription
+        type:
+          - "null"
+          - integer
+      name:
+        description: The display name of the subscription
+        type:
+          - "null"
+          - string
+      order:
+        description: The order in which the subscription is displayed or processed
+        type:
+          - "null"
+          - integer
+      businessUnitId:
+        description:
+          The unique identifier for the business unit associated with the
+          subscription
+        type:
+          - "null"
+          - integer
+      internal:
+        description: Indicates whether the subscription is for internal use only
+        type:
+          - "null"
+          - boolean
+      internalName:
+        description: The internal name for the subscription
+        type:
+          - "null"
+          - string
+      category:
+        description: The category to which the subscription belongs
+        type:
+          - "null"
+          - string
+      channel:
+        description: The communication channel through which the subscription is managed
+        type:
+          - "null"
+          - string
+
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#
     type:
       - "null"
       - object
+    additionalProperties: true
     properties:
       id:
         type:
@@ -1345,72 +1415,6 @@ schemas:
           type:
             - "null"
             - integer
-    additionalProperties: true
-
-  email_subscriptions:
-    $schema: http://json-schema.org/draft-07/schema#
-    type:
-      - "null"
-      - object
-    additionalProperties: true
-    properties:
-      active:
-        description: Indicates whether the subscription is currently active or not
-        type:
-          - "null"
-          - boolean
-      portalId:
-        description: The unique identifier for the portal associated with the subscription
-        type:
-          - "null"
-          - integer
-      description:
-        description: Additional information or details about the subscription
-        type:
-          - "null"
-          - string
-      id:
-        description: The unique identifier for the subscription
-        type:
-          - "null"
-          - integer
-      name:
-        description: The display name of the subscription
-        type:
-          - "null"
-          - string
-      order:
-        description: The order in which the subscription is displayed or processed
-        type:
-          - "null"
-          - integer
-      businessUnitId:
-        description:
-          The unique identifier for the business unit associated with the
-          subscription
-        type:
-          - "null"
-          - integer
-      internal:
-        description: Indicates whether the subscription is for internal use only
-        type:
-          - "null"
-          - boolean
-      internalName:
-        description: The internal name for the subscription
-        type:
-          - "null"
-          - string
-      category:
-        description: The category to which the subscription belongs
-        type:
-          - "null"
-          - string
-      channel:
-        description: The communication channel through which the subscription is managed
-        type:
-          - "null"
-          - string
 
   ticket_pipelines:
     $schema: http://json-schema.org/draft-07/schema#

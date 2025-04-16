@@ -1,4 +1,4 @@
-version: 6.33.0
+version: 6.42.1
 
 type: DeclarativeSource
 
@@ -8,11 +8,9 @@ check:
     - events
 
 definitions:
-  # base components
+  # Base components
   base_stream:
     type: DeclarativeStream
-    primary_key:
-      - id
     retriever:
       $ref: "#/definitions/base_retriever"
     schema_loader:
@@ -29,6 +27,7 @@ definitions:
         type: DpathExtractor
         field_path:
           - data
+      transform_before_filtering: true
       schema_normalization: Default
     paginator:
       $ref: "#/definitions/base_paginator"
@@ -42,7 +41,35 @@ definitions:
     request_headers:
       Stripe-Version: "2022-11-15"
       Stripe-Account: '{{ config.get("account_id") }}'
-
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 403
+              error_message: >-
+                {{ response['error']['message'] }}
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+              error_message: >-
+                {{ response['error']['message'] }}
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+              error_message: >-
+                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
+                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['client_secret'] }}"
@@ -88,7 +115,7 @@ definitions:
       field_name: "created[lte]"
       inject_into: "request_parameter"
 
-  # created flow component
+  # Regular flow components
   created_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -97,6 +124,143 @@ definitions:
   created_incremental_sync:
     $ref: "#/definitions/base_incremental_sync"
     cursor_field: created
+
+  # Entity flow components
+  entity_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/entity_with_slice_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated
+            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value_type: integer
+
+  entity_restricted_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/entity_single_slice_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated
+            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value_type: integer
+
+  entity_with_slice_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    step: P{{ config.get('slice_range', 365) }}D
+    cursor_granularity: PT1S
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "created[gte]"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "created[lte]"
+      inject_into: "request_parameter"
+
+  entity_single_slice_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  # Events flow components
+  events_based_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/events_read_slice_cursor"
+    retriever:
+      $ref: "#/definitions/events_objects_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - data
+              - object
+              - is_deleted
+            value: "{{ True }}"
+        condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - data
+              - object
+              - updated
+            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value_type: integer
+        condition: "{{ record.get('data', {}).get('object', False) }}"
+      - type: DpathFlattenFields
+        field_path:
+          - data
+          - object
+        replace_record: true
+
+  events_objects_retriever:
+    $ref: "#/definitions/base_retriever"
+    requester:
+      $ref: "#/definitions/base_requester"
+      path: events
+
+  events_read_slice_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    step: P{{ config.get('slice_range', 365) }}D
+    cursor_granularity: PT1S
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      min_datetime: "{{ (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "created[gte]"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "created[lte]"
+      inject_into: "request_parameter"
 
   streams:
     events:
@@ -125,15 +289,170 @@ definitions:
         path: file_links
         name: file_links
 
+    authorizations:
+      type: StateDelegatingStream
+      $parameters:
+        name: authorizations
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: issuing/authorizations
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"]}}'
+
+    cardholders:
+      type: StateDelegatingStream
+      $parameters:
+        name: cardholders
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: issuing/cardholders
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["issuing_cardholder.created", "issuing_cardholder.updated"]}}'
+
+    application_fees:
+      type: StateDelegatingStream
+      $parameters:
+        name: application_fees
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: application_fees
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["application_fee.created", "application_fee.refunded"]}}'
+
+    cards:
+      type: StateDelegatingStream
+      $parameters:
+        name: cards
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: issuing/cards
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["issuing_card.created", "issuing_card.updated"]}}'
+
+    external_account_cards:
+      type: StateDelegatingStream
+      $parameters:
+        name: external_account_cards
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: accounts/{{ config["account_id"] }}/external_accounts
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              object: "card"
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+            record_filter:
+              condition: "{{ record['object'] == 'card' }}"
+
+    external_account_bank_accounts:
+      type: StateDelegatingStream
+      $parameters:
+        name: external_account_bank_accounts
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: accounts/{{ config["account_id"] }}/external_accounts
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              object: "bank_account"
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+            record_filter:
+              condition: "{{ record['object'] == 'bank_account' }}"
+
+    early_fraud_warnings:
+      type: StateDelegatingStream
+      $parameters:
+        name: early_fraud_warnings
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: radar/early_fraud_warnings
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
+
 streams:
+  # These streams are base incremental streams
   - $ref: "#/definitions/streams/events"
   - $ref: "#/definitions/streams/shipping_rates"
   - $ref: "#/definitions/streams/balance_transactions"
   - $ref: "#/definitions/streams/files"
   - $ref: "#/definitions/streams/file_links"
 
+  ## These streams are state condition streams and have two behaviors depending on whether the state is set:
+  # - No State: Runs the base stream.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
+  - $ref: "#/definitions/streams/application_fees"
+  - $ref: "#/definitions/streams/authorizations"
+  - $ref: "#/definitions/streams/cardholders"
+  - $ref: "#/definitions/streams/cards"
+
+  ## These streams are state condition streams with stricter behavior:
+  # - No State: Runs the base stream (endpoints strictly define allowed query params and return an error if unexpected params are present).
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
+  - $ref: "#/definitions/streams/early_fraud_warnings"
+  - $ref: "#/definitions/streams/external_account_bank_accounts"
+  - $ref: "#/definitions/streams/external_account_cards"
+
 spec:
   type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/stripe
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: Stripe Source Spec
