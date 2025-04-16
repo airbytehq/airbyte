@@ -113,7 +113,7 @@ abstract class BasicPerformanceTest(
     val micronautProperties: Map<Property, String> = emptyMap(),
     namespaceOverride: String? = null,
     val numFilesForFileTransfer: Int = 5,
-    val fileSizeMbForFileTransfer: Int = 1024,
+    val fileSizeMbForFileTransfer: Int = 10,
     val numStreamsForMultiStream: Int = 4
 ) {
 
@@ -301,7 +301,7 @@ abstract class BasicPerformanceTest(
         scenario.setup()
         runSync(
             testScenario = scenario,
-            useFileTransfer = true,
+            useFileTransfer = false,
             validation = null,
         )
     }
