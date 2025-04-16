@@ -251,8 +251,16 @@ definitions:
         fields:
           - path: [ "archivedAt" ]
             value: "{{ record.get('archivedAt') or record['createdAt'] }}"
-      - type: DpathFlattenFields
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.FlattenFieldWithPrefix
         field_path: ["properties"]
+        prefix: properties_
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: archivedAt

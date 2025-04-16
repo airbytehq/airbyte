@@ -8,6 +8,7 @@ from unittest.mock import patch
 import mock
 import pendulum
 import pytest
+from airbyte_cdk.sources.types import Record
 from source_hubspot.streams import (
     Campaigns,
     Companies,
@@ -294,7 +295,8 @@ def test_stream_read_with_legacy_field_transformation(
     else:
         expected_record = expected_record | {"properties_hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
         expected_record["properties"] = expected_record["properties"] | {"hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
-    assert records[0] == expected_record
+    record = records[0].data if isinstance(records[0], Record) else records[0]
+    assert json.dumps(record, sort_keys=True) == json.dumps(expected_record, sort_keys=True)
 
 
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])

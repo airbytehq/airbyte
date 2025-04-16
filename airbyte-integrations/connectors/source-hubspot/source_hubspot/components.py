@@ -2,12 +2,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Optional
+from dataclasses import InitVar, dataclass
+from typing import Any, Dict, List, Mapping, Optional, Union
 
+import dpath
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
+@dataclass
 class NewtoLegacyFieldTransformation(RecordTransformation):
     """
     Implements a custom transformation which adds the legacy field equivalent of v2 fields for streams which contain Deals and Contacts entities.
@@ -17,9 +21,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
     For example:
     hs_v2_date_exited_{stage_id} -> hs_date_exited_{stage_id} where {stage_id} is a user-generated value
     """
-
-    def __init__(self, field_mapping: Dict[str, str]) -> None:
-        self._field_mapping = field_mapping
+    field_mapping: Mapping[str, str]
 
     def transform(
         self,
@@ -36,7 +38,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
         is_record = record_or_schema.get("properties") is not None
 
         for field, value in list(record_or_schema.get("properties", record_or_schema).items()):
-            for legacy_field, new_field in self._field_mapping.items():
+            for legacy_field, new_field in self.field_mapping.items():
                 if new_field in field:
                     transformed_field = field.replace(new_field, legacy_field)
 
@@ -49,3 +51,49 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
                     else:
                         if record_or_schema.get(transformed_field) is None:
                             record_or_schema[transformed_field] = value
+
+
+@dataclass
+class FlattenFieldWithPrefix(RecordTransformation):
+    """
+    Flatten fields only for provided path.
+
+    field_path: List[Union[InterpolatedString, str]] path to the field to flatten.
+    delete_origin_value: bool = False whether to delete origin field or keep it. Default is False.
+    replace_record: bool = False whether to replace origin record or not. Default is False.
+
+    """
+
+    config: Config
+    field_path: List[Union[InterpolatedString, str]]
+    prefix: str
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._field_path = [
+            InterpolatedString.create(path, parameters=parameters) for path in self.field_path
+        ]
+        for path_index in range(len(self.field_path)):
+            if isinstance(self.field_path[path_index], str):
+                self._field_path[path_index] = InterpolatedString.create(
+                    self.field_path[path_index], parameters=parameters
+                )
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        path = [path.eval(self.config) for path in self._field_path]
+        if "*" in path:
+            matched = dpath.values(record, path)
+            extracted = matched[0] if matched else None
+        else:
+            extracted = dpath.get(record, path, default=[])
+
+        if isinstance(extracted, dict):
+            for key, value in extracted.items():
+                new_key = f"{self.prefix}{key}"
+                record[new_key] = value
