@@ -199,10 +199,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                     last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
                     created_at = datetime.strptime(child["createdDateTime"], "%Y-%m-%dT%H:%M:%SZ")
                     yield MicrosoftSharePointRemoteFile(
-                        uri=new_path,
-                        download_url=child["@microsoft.graph.downloadUrl"],
-                        last_modified=last_modified,
-                        created_at=created_at
+                        uri=new_path, download_url=child["@microsoft.graph.downloadUrl"], last_modified=last_modified, created_at=created_at
                     )
                 else:  # Object is a folder, retrieve children
                     child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
@@ -226,10 +223,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
             created_at = datetime.strptime(item_data["createdDateTime"], "%Y-%m-%dT%H:%M:%SZ")
             yield MicrosoftSharePointRemoteFile(
-                uri=new_path,
-                download_url=item_data["@microsoft.graph.downloadUrl"],
-                last_modified=last_modified,
-                created_at=created_at
+                uri=new_path, download_url=item_data["@microsoft.graph.downloadUrl"], last_modified=last_modified, created_at=created_at
             )
         else:
             # Initial object is a folder, start file retrieval
@@ -246,7 +240,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                     uri=item_path,
                     download_url=item.properties["@microsoft.graph.downloadUrl"],
                     last_modified=item.properties["lastModifiedDateTime"],
-                    created_at=item.properties["createdDateTime"]
+                    created_at=item.properties["createdDateTime"],
                 )
             else:
                 yield from self._list_directories_and_files(item, item_path)
