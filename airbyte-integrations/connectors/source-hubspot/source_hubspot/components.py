@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 import dpath
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
@@ -21,6 +22,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
     For example:
     hs_v2_date_exited_{stage_id} -> hs_date_exited_{stage_id} where {stage_id} is a user-generated value
     """
+
     field_mapping: Mapping[str, str]
 
     def transform(
@@ -61,20 +63,17 @@ class FlattenFieldWithPrefix(RecordTransformation):
     field_path: List[Union[InterpolatedString, str]] path to the field to flatten.
     prefix: str Prefix to add to the flattened fields
     """
+
     config: Config
     field_path: List[Union[InterpolatedString, str]]
     prefix: str
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._field_path = [
-            InterpolatedString.create(path, parameters=parameters) for path in self.field_path
-        ]
+        self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
-                self._field_path[path_index] = InterpolatedString.create(
-                    self.field_path[path_index], parameters=parameters
-                )
+                self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def transform(
         self,

@@ -8,7 +8,6 @@ from unittest.mock import patch
 import mock
 import pendulum
 import pytest
-from airbyte_cdk.sources.types import Record
 from source_hubspot.streams import (
     Campaigns,
     Companies,
@@ -43,6 +42,7 @@ from source_hubspot.streams import (
 )
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.types import Record
 
 from .conftest import find_stream
 from .utils import read_full_refresh, read_incremental
@@ -219,8 +219,15 @@ def test_streams_read(
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_stream_read_with_legacy_field_transformation(
-    mock_get_custom_object_streams, stream_class, endpoint, cursor_value, requests_mock, common_params, fake_properties_list,
-        migrated_properties_list, config
+    mock_get_custom_object_streams,
+    stream_class,
+    endpoint,
+    cursor_value,
+    requests_mock,
+    common_params,
+    fake_properties_list,
+    migrated_properties_list,
+    config,
 ):
     if isinstance(stream_class, str):
         stream = find_stream(stream_class, config)
