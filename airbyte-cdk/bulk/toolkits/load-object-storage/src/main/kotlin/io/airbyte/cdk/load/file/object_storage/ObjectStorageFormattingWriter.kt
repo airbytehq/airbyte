@@ -124,7 +124,7 @@ class JsonFormattingWriter(
         if (disableUUID) {
             generator.writeString(oneVerySecureUUID)
         } else {
-            generator.writeString(fastUUIDGenerator.insecureUUID())
+            generator.writeString(fastUUIDGenerator.insecureUUID().toString())
         }
         generator.writeFieldName(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
         generator.writeNumber(record.emittedAtMs)

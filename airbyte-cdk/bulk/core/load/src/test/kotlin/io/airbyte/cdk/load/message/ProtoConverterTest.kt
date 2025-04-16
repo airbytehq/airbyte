@@ -340,15 +340,15 @@ class ProtoConverterTest {
         val threads = 4
 
         val javaUUID = measureTime {
-//            withContext(Dispatchers.IO) {
-//                (0 until threads).map {
-//                    async {
+            withContext(Dispatchers.IO) {
+                (0 until threads).map {
+                    async {
                         repeat(repetitions) {
                             UUID.randomUUID().toString()
                         }
-//                    }
-//                }.joinAll()
-//            }
+                    }
+                }.joinAll()
+            }
         }
 
         val catalog = DestinationCatalog(
@@ -363,18 +363,23 @@ class ProtoConverterTest {
                 )
             )
         )
-        val gen = FastUUIDGenerator(catalog)
+        val gen = FastUUIDGenerator()
         val fastUUID = measureTime {
-//            withContext(Dispatchers.IO) {
-//                (0 until threads).map {
+            withContext(Dispatchers.IO) {
+                (0 until threads).map {
                     repeat(repetitions) {
-                        gen.insecureUUID()
-//                    }
-//                }
+                        gen.insecureUUID().toString()
+                    }
+                }
             }
         }
 
         println("Java UUID: $javaUUID")
         println("Fast UUID: $fastUUID")
+    }
+
+    @Test
+    fun testUUIDFormat() {
+        println(FastUUIDGenerator().insecureUUID().toString())
     }
 }

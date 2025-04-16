@@ -75,7 +75,7 @@ class JdbcSelectQuerier(
     data class ResultRow(
         override var data: ObjectNode = Jsons.objectNode(),
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
-        override val recordBuilder: AirbyteRecordMessage.Builder = AirbyteRecordMessage.newBuilder().also { it.addData(dummyCell) },
+        override val recordBuilder: AirbyteRecordMessage.Builder = AirbyteRecordMessage.newBuilder().also { repeat(17) { _ -> it.addData(dummyCell) } },
         val valueBuilder: AirbyteRecord.AirbyteValue.Builder = AirbyteRecord.AirbyteValue.newBuilder()
     ) : SelectQuerier.ResultRow
 
