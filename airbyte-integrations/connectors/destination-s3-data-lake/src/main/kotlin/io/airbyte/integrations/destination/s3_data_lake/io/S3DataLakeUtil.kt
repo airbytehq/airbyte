@@ -73,7 +73,7 @@ class S3DataLakeUtil(
     fun toCatalogProperties(config: S3DataLakeConfiguration): Map<String, String> {
         val icebergCatalogConfig = config.icebergCatalogConfiguration
         val catalogConfig = icebergCatalogConfig.catalogConfiguration
-        val region = config.s3BucketConfiguration.s3BucketRegion.region
+        val region = config.s3BucketConfiguration.s3BucketRegion
 
         // Build base S3 properties
         val s3Properties = buildS3Properties(config, icebergCatalogConfig)
@@ -205,7 +205,7 @@ class S3DataLakeUtil(
         roleArn: String,
         config: S3DataLakeConfiguration
     ): Map<String, String> {
-        val region = config.s3BucketConfiguration.s3BucketRegion.region
+        val region = config.s3BucketConfiguration.s3BucketRegion
         val (accessKeyId, secretAccessKey, externalId) =
             if (assumeRoleCredentials != null) {
                 Triple(
@@ -254,8 +254,7 @@ class S3DataLakeUtil(
 
         val properties =
             mutableMapOf(
-                AwsClientProperties.CLIENT_REGION to
-                    config.s3BucketConfiguration.s3BucketRegion.region,
+                AwsClientProperties.CLIENT_REGION to config.s3BucketConfiguration.s3BucketRegion,
                 AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                     GlueCredentialsProvider::class.java.name,
                 "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
