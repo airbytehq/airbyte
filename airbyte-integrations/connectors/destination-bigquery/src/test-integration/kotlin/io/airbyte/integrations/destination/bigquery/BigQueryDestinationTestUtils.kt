@@ -11,7 +11,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.Dataset
 import com.google.cloud.bigquery.DatasetInfo
-import io.airbyte.commons.json.Jsons.deserialize
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination.Companion.getServiceAccountCredentials
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getLoadingMethod
 import java.io.IOException
@@ -37,7 +37,7 @@ object BigQueryDestinationTestUtils {
     fun createConfig(configFile: Path?, datasetId: String?, stagingPath: String?): ObjectNode {
         LOGGER.info("Setting default dataset to {}", datasetId)
         val tmpConfigAsString = Files.readString(configFile)
-        val config = deserialize(tmpConfigAsString) as ObjectNode
+        val config = Jsons.readTree(tmpConfigAsString) as ObjectNode
         config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
 
         // This is sort of a hack. Ideally tests shouldn't interfere with each other even when using
