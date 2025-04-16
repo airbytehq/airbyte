@@ -11,6 +11,8 @@ definitions:
   # Base components
   base_stream:
     type: DeclarativeStream
+    primary_key:
+      - id
     retriever:
       $ref: "#/definitions/base_retriever"
     schema_loader:
