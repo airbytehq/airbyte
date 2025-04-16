@@ -538,9 +538,9 @@ definitions:
               - type: ParentStreamConfig
                 parent_key: id
                 partition_field: subscription_id
-                lazy_read_pointer: [ "items" ]
+                lazy_read_pointer: ["items"]
                 extra_fields:
-                  - [ "updated" ]
+                  - ["updated"]
                 stream:
                   $ref: "#/definitions/streams/subscriptions"
         incremental_sync:
