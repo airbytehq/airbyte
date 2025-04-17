@@ -74,6 +74,23 @@ jobs:
             fi
           done
 
+      - name: Trigger Publish Java CDK Workflow
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "publish-java-cdk-command.yml",
+              ref: "${{ github.ref_name }}",
+              inputs: {
+                repo: "airbytehq/airbyte",
+                dry-run: "true",
+                force: "false",
+                gitref: "${{ github.ref_name }}"
+              }
+            })
+
       - name: Commit changes
         run: |
           git add .
