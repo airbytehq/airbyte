@@ -232,9 +232,7 @@
         {
           "type": "category",
           "label": "Transformations",
-          "items": [
-            "cloud/managing-airbyte-cloud/dbt-cloud-integration"
-          ]
+          "items": ["cloud/managing-airbyte-cloud/dbt-cloud-integration"]
         },
         {
           "type": "category",
@@ -331,9 +329,7 @@
             "type": "doc",
             "id": "operator-guides/upgrading-airbyte"
           },
-          "items": [
-            "managing-airbyte/connector-updates"
-          ]
+          "items": ["managing-airbyte/connector-updates"]
         },
         {
           "type": "category",
