@@ -28,10 +28,10 @@ definitions:
 
   default_error_handler:
     type: DefaultErrorHandler
-    max_retries: 10
+    max_retries: 5
     backoff_strategies:
-      - type: ConstantBackoffStrategy
-        backoff_time_in_seconds: 120
+      - type: ExponentialBackoffStrategy
+        factor: 30
     response_filters:
       - error_message_contains: "Unable to authenticate request"
         action: FAIL
@@ -834,5 +834,5 @@ api_budget:
 # A maximum of 5 concurrent queries and 60 queries per hour.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 25
