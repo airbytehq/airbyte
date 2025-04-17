@@ -32,8 +32,11 @@ jobs:
           # git fetch origin master
           # git merge origin/master --allow-unrelated-histories --no-edit --strategy=ort
 
-          # Get the list of modified files between the master branch and the current branch
-          modified_files=$(git diff --name-only master $(git rev-parse --abbrev-ref HEAD))
+          # Determine the default branch name
+          default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+
+          # Get the list of modified files between the default branch and the current branch
+          modified_files=$(git diff --name-only $default_branch $(git rev-parse --abbrev-ref HEAD))
 
           # Filter for folders containing build.gradle files
           for file in $modified_files; do
