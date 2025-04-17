@@ -26,7 +26,7 @@ data class GcsClientConfiguration(
         S3BucketConfiguration(
             gcsBucketName,
             region?.region,
-            "https://storage.googleapis.com",
+            GOOGLE_STORAGE_ENDPOINT,
         )
 }
 

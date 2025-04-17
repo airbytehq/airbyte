@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.gcs.GOOGLE_STORAGE_ENDPOINT
 import io.airbyte.cdk.load.command.gcs.GcsClientConfigurationProvider
 import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
@@ -51,7 +52,7 @@ class GcsClientFactory(
                                         S3BucketConfiguration(
                                             s3BucketName = config.gcsBucketName,
                                             s3BucketRegion = config.region?.region,
-                                            s3Endpoint = "https://storage.googleapis.com"
+                                            s3Endpoint = GOOGLE_STORAGE_ENDPOINT
                                         )
                                 },
                                 assumeRoleCredentials = null,
