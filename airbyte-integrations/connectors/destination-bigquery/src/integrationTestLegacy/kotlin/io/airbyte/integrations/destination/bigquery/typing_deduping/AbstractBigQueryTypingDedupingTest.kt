@@ -98,7 +98,8 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     override val sqlGenerator: SqlGenerator
-        get() = BigQuerySqlGenerator(config!![BigQueryConsts.CONFIG_PROJECT_ID].asText(), null)
+        get() =
+            LegacyBigQuerySqlGenerator(config!![BigQueryConsts.CONFIG_PROJECT_ID].asText(), null)
 
     @Test
     @Throws(Exception::class)

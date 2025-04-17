@@ -19,7 +19,7 @@ import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.string.Strings.addRandomSuffix
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.executeQuery
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getDatasetId
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.LegacyBigQuerySqlGenerator
 import java.io.IOException
 import java.nio.file.Path
 import java.util.*
@@ -123,7 +123,7 @@ abstract class AbstractBigQueryDestinationAcceptanceTest : DestinationAcceptance
         streamSchema: JsonNode
     ): List<JsonNode> {
         val streamId =
-            BigQuerySqlGenerator(null, null)
+            LegacyBigQuerySqlGenerator(null, null)
                 .buildStreamId(
                     namespace,
                     streamName,
@@ -179,9 +179,8 @@ abstract class AbstractBigQueryDestinationAcceptanceTest : DestinationAcceptance
         val config =
             BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId, stagingPathSuffix)
 
-        val projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText()
         this._config = config
-        bigquery = BigQueryDestinationTestUtils.getBigquery(config)
+        bigquery = BigQueryDestinationTestUtils.initBigQuery(config)
         dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId)
     }
 
