@@ -9,8 +9,12 @@ from airbyte_cdk.sources.streams.core import CheckpointMixin
 
 
 class PendoPythonStream(HttpStream, ABC):
-    url_base = "https://app.pendo.io/api/v1/"
     primary_key = None
+    url_base = None
+
+    def __init__(self, url_base: str = "https://app.pendo.io/api/v1/", **kwargs):
+        super().__init__(**kwargs)
+        self.url_base = url_base
 
     def path(self, **kwargs) -> str:
         return self.name

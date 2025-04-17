@@ -3,7 +3,7 @@
 #
 
 from typing import Any, List, Mapping, Tuple
-
+import re
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -11,7 +11,6 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from datetime import datetime, timedelta
 
 from .streams import (
-    PendoPythonStream,
     Feature,
     Guide,
     Page,
@@ -23,7 +22,7 @@ from .streams import (
     Account,
     PageEvents,
     FeatureEvents,
-    GuideEvents
+    GuideEvents,
 )
 
 
@@ -36,13 +35,18 @@ class PendoAuthenticator(HttpAuthenticator):
 
 
 class SourcePendoPython(AbstractSource):
+    def _url_base(self, config: Mapping[str, Any]) -> str:
+        url_base = "https://app.pendo.io/api/v1/" if not re.search(r"\.eu$", config.get("api_key")) else "https://app.eu.pendo.io/api/v1/"
+        print(f"url_base as derived from api_key: {url_base}")
+        return url_base
+
     @staticmethod
     def _get_authenticator(config: Mapping[str, Any]) -> HttpAuthenticator:
         token = config.get("api_key")
         return PendoAuthenticator(token)
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        url = f"{PendoPythonStream.url_base}page"
+        url = f"{self._url_base(config)}page"
         auth = SourcePendoPython._get_authenticator(config)
         try:
             session = requests.get(url, headers=auth.get_auth_header())
@@ -52,7 +56,7 @@ class SourcePendoPython(AbstractSource):
             return False, e
 
     def get_reports(self, config):
-        url = f"{PendoPythonStream.url_base}report"
+        url = f"{self._url_base(config)}report"
         auth = SourcePendoPython._get_authenticator(config)
         try:
             session = requests.get(url, headers=auth.get_auth_header())
@@ -64,31 +68,33 @@ class SourcePendoPython(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
 
-        default_start_date = datetime.now() - timedelta(days=2*365)
-        start_date = config.get("start_date", default_start_date.strftime('%Y-%m-%dT%H:%M:%S'))
+        default_start_date = datetime.now() - timedelta(days=2 * 365)
+        start_date = config.get("start_date", default_start_date.strftime("%Y-%m-%dT%H:%M:%S"))
         day_page_size = config.get("day_page_size", 21)
 
+        url_base = self._url_base(config)
+
         result = [
-            Feature(authenticator=auth),
-            Guide(authenticator=auth),
-            Page(authenticator=auth),
-            Report(authenticator=auth),
-            VisitorMetadata(authenticator=auth),
-            AccountMetadata(authenticator=auth),
-            Visitor(authenticator=auth),
-            Account(authenticator=auth),
-            PageEvents(start_date=start_date, day_page_size=day_page_size, authenticator=auth),
-            FeatureEvents(start_date=start_date, day_page_size=day_page_size, authenticator=auth),
-            GuideEvents(start_date=start_date, day_page_size=day_page_size, authenticator=auth)
+            Feature(authenticator=auth, url_base=url_base),
+            Guide(authenticator=auth, url_base=url_base),
+            Page(authenticator=auth, url_base=url_base),
+            Report(authenticator=auth, url_base=url_base),
+            VisitorMetadata(authenticator=auth, url_base=url_base),
+            AccountMetadata(authenticator=auth, url_base=url_base),
+            Visitor(authenticator=auth, url_base=url_base),
+            Account(authenticator=auth, url_base=url_base),
+            PageEvents(start_date=start_date, day_page_size=day_page_size, authenticator=auth, url_base=url_base),
+            FeatureEvents(start_date=start_date, day_page_size=day_page_size, authenticator=auth, url_base=url_base),
+            GuideEvents(start_date=start_date, day_page_size=day_page_size, authenticator=auth, url_base=url_base),
         ]
 
         report_allowlist = config.get("report_allowlist")
         if report_allowlist and len(report_allowlist) > 0:
             for report_id in report_allowlist:
-                result.append(ReportResult(report=report_id, authenticator=auth))
+                result.append(ReportResult(report=report_id, authenticator=auth, url_base=url_base))
         else:
             all_reports = self.get_reports(config)
             for report in all_reports:
-                result.append(ReportResult(report=report, authenticator=auth))
+                result.append(ReportResult(report=report, authenticator=auth, url_base=url_base))
 
         return result
