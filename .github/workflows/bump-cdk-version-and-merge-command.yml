@@ -1,12 +1,7 @@
 name: Bump Java CDK Version
-
 on:
   issue_comment:
-    types:
-      - created
-
-run-name: "Bump connector versions in PR: #${{ github.event.inputs.pr }}"
-
+    types: [created]
 jobs:
   bumpCdkVersionAndMerge:
     runs-on: ubuntu-24.04
