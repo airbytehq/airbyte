@@ -1654,9 +1654,9 @@ dynamic_streams:
               "record_selector",
               "**",
               "transformations",
-              1,
+              "1",
               "fields",
-              0,
+              "0",
               "value",
             ]
           value: "{{components_values['pivot_by']}}"
