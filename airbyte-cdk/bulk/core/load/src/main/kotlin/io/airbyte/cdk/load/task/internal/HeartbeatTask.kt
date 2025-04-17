@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.delay
 
 @Singleton
@@ -26,7 +27,11 @@ class HeartbeatTask<K : WithStream, V>(
     override suspend fun execute() {
         while (true) {
             delay(config.heartbeatIntervalSeconds * 1000L)
-            recordQueue.broadcast(PipelineHeartbeat())
+            try {
+                recordQueue.broadcast(PipelineHeartbeat())
+            } catch (e: ClosedSendChannelException) {
+                // Do nothing. We don't care. Move on
+            }
         }
     }
 }
