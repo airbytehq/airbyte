@@ -189,7 +189,7 @@ Enter the URI of your REST catalog. You may also need to enter the default names
 
 3. If you're using Airbyte Cloud and authenticating with an IAM role, set the **Role ARN** option to the value you noted earlier while [setting up authentication](#authentication-s3) on S3.
 
-4. If you have an existing Glue table and you want to replace that table with an Airbyte-managed Iceberg table, drop the Glue table. If you don't, you'll encounter the error `Input Glue table is not an iceberg table: <your table name>`.
+4. If you have an existing Glue table, and you want to replace that table with an Airbyte-managed Iceberg table, drop the Glue table. If you don't, you'll encounter the error `Input Glue table is not an iceberg table: <your table name>`.
 
     Dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html). Either wait for AWS to finish their background processing, or use the AWS API to drop all table versions.
 
@@ -209,20 +209,20 @@ In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps ne
 
 This is the full mapping between Airbyte types and Iceberg types.
 
-| Airbyte type                | Iceberg type                   |
-|-----------------------------| ------------------------------ |
-| Boolean                     | Boolean                        |
-| Date                        | Date                           |
-| Integer                     | Long                           |
-| Number                      | Double                         |
-| String                      | String                         |
-| Time with timezone*         | Time                           |
-| Time without timezone       | Time                           |
-| Timestamp with timezone*    | Timestamp with timezone        |
-| Timestamp without timezone  | Timestamp without timezone     |
-| Object                      | String (JSON-serialized value) |
-| Array                       | String (JSON-serialized value) |
-| Union                       | String (JSON-serialized value) |
+| Airbyte type               | Iceberg type                   |
+|----------------------------|--------------------------------|
+| Boolean                    | Boolean                        |
+| Date                       | Date                           |
+| Integer                    | Long                           |
+| Number                     | Double                         |
+| String                     | String                         |
+| Time with timezone*        | Time                           |
+| Time without timezone      | Time                           |
+| Timestamp with timezone*   | Timestamp with timezone        |
+| Timestamp without timezone | Timestamp without timezone     |
+| Object                     | String (JSON-serialized value) |
+| Array                      | String (JSON-serialized value) |
+| Union                      | String (JSON-serialized value) |
 
 *Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
 
@@ -280,7 +280,7 @@ Airbyte uses Iceberg row-level deletes to mark older versions of records as outd
 For example, the following table contains three versions of the 'Alice' record.
 
 | `id` | `name` | `updated_at`     | `_airbyte_extracted_at` |
-| :--- | :----- | :--------------- | :---------------------- |
+|:-----|:-------|:-----------------|:------------------------|
 | 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        |
 | 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        |
 | 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        |
@@ -294,7 +294,7 @@ row_number() over (partition by {primary_key} order by {cursor}, _airbyte_extrac
 Now, you can identify the latest version of the 'Alice' record by querying whether `is_outdated` is false.
 
 | `id` | `name` | `updated_at`     | `_airbyte_extracted_at` | `row_number` | `is_outdated` |
-| :--- | :----- | :--------------- | :---------------------- | ------------ | ------------- |
+|:-----|:-------|:-----------------|:------------------------|--------------|---------------|
 | 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        | 3            | True          |
 | 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | 2            | True          |
 | 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | 1            | False         |
@@ -306,11 +306,12 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
-|:--------|:-----------| :--------------------------------------------------------- |:-------------------------------------------------------------------------------|
-| 0.3.25  | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085) | Internal refactoring |
-| 0.3.24  | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435) | Bug fix: Correctly handle non-positive numbers. |
-| 0.3.23  | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395) | Bug fix: Correctly coerce values inside nested arrays. |
-| 0.3.22  | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+|:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.26  | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104)   | Chore: Now passing a string around for the region                              |
+| 0.3.25  | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085)   | Internal refactoring                                                           |
+| 0.3.24  | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435)   | Bug fix: Correctly handle non-positive numbers.                                |
+| 0.3.23  | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395)   | Bug fix: Correctly coerce values inside nested arrays.                         |
+| 0.3.22  | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.              |
 | 0.3.21  | 2025-03-22 | [\#56347](https://github.com/airbytehq/airbyte/pull/56347) | Bugfix: stream start does not always await iceberg setup                       |
 | 0.3.20  | 2025-03-24 | [\#55849](https://github.com/airbytehq/airbyte/pull/55849) | Internal refactoring                                                           |
 | 0.3.19  | 2025-03-19 | [\#55798](https://github.com/airbytehq/airbyte/pull/55798) | CDK: Typing improvements                                                       |
