@@ -5,9 +5,12 @@
 package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.SinglePartitionQueueWithMultiPartitionBroadcast
+import io.airbyte.cdk.load.message.ResourceReservingPartitionedQueue
+import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
@@ -17,7 +20,6 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 
 data class ObjectKey(override val stream: DestinationStream.Descriptor, val objectKey: String) :
     WithStream
@@ -25,7 +27,6 @@ data class ObjectKey(override val stream: DestinationStream.Descriptor, val obje
 @Factory
 class ObjectLoaderPartQueueFactory(
     val loader: ObjectLoader,
-    @Named("memoryManager") val memoryManager: ReservationManager,
 ) {
     val log = KotlinLogging.logger {}
 
@@ -34,32 +35,38 @@ class ObjectLoaderPartQueueFactory(
     }
 
     /**
+     * If we naively accept the part size and concurrency settings, we might end up with a connector
+     * that passes CI but can't run in a resource-limited production environment, because there
+     * isn't enough memory even for the workers to hold parts in flight.
+     *
+     * Therefore, we will always clamp the part size to fit the available memory. This might still
+     * lead to runtime failures (ie, if it drops below a storage-client-specified minimum), but it
+     * is much less likely.
+     */
+    @Singleton
+    @Named("objectLoaderClampedPartSizeBytes")
+    @Requires(bean = ObjectLoader::class)
+    fun objectLoaderClampedPartSizeBytes(
+        @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
+    ): Long = queue.clampedMessageSize
+
+    /**
      * Queue between step 1 (format parts) and step 2 (load them): it will hold the actual part
      * bytes and needs to be sized based on the available reserved memory.
      */
     @Singleton
     @Named("objectLoaderPartQueue")
     @Requires(bean = ObjectLoader::class)
-    fun objectLoaderPartQueue():
-        SinglePartitionQueueWithMultiPartitionBroadcast<
-            PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
-        val bytes = memoryManager.totalCapacityBytes * loader.maxMemoryRatioReservedForParts
-        val reservation = runBlocking { memoryManager.reserve(bytes.toLong(), this) }
-        val maxNumParts = reservation.bytesReserved / loader.partSizeBytes
-        val numWorkersHoldingParts = loader.numPartWorkers + loader.numUploadWorkers
-        val maxNumPartsEnqueued = maxNumParts - numWorkersHoldingParts
-
-        require(maxNumPartsEnqueued > 0) {
-            "${reservation.bytesReserved}b is not enough for ${loader.numPartWorkers} part workers and ${loader.numUploadWorkers} upload workers each to hold ${loader.partSizeBytes}b parts in memory (max=$maxNumParts- $numWorkersHoldingParts = $maxNumPartsEnqueued < 1)"
-        }
-
-        log.info {
-            "Reserved $bytes/${memoryManager.totalCapacityBytes}b for $maxNumParts ${loader.partSizeBytes}b parts $numWorkersHoldingParts for workers and $maxNumPartsEnqueued enqueued"
-        }
-
-        return SinglePartitionQueueWithMultiPartitionBroadcast(
-            ChannelMessageQueue(Channel(maxNumPartsEnqueued.toInt())),
-            loader.numUploadWorkers
+    fun objectLoaderPartQueue(
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+    ): ResourceReservingPartitionedQueue<
+        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        return ResourceReservingPartitionedQueue(
+            globalMemoryManager,
+            loader.maxMemoryRatioReservedForParts,
+            loader.numUploadWorkers,
+            loader.numPartWorkers,
+            loader.partSizeBytes
         )
     }
 
@@ -71,12 +78,18 @@ class ObjectLoaderPartQueueFactory(
     @Singleton
     @Named("objectLoaderLoadedPartQueue")
     @Requires(bean = ObjectLoader::class)
-    fun objectLoaderLoadedPartQueue():
-        SinglePartitionQueueWithMultiPartitionBroadcast<
-            PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>> {
-        return SinglePartitionQueueWithMultiPartitionBroadcast(
-            ChannelMessageQueue(Channel(OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)),
-            1
+    fun <T : RemoteObject<*>> objectLoaderLoadedPartQueue():
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>> {
+        return StrictPartitionedQueue(
+            (0 until loader.numUploadCompleters)
+                .map {
+                    ChannelMessageQueue(
+                        Channel<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>(
+                            OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers
+                        )
+                    )
+                }
+                .toTypedArray()
         )
     }
 }

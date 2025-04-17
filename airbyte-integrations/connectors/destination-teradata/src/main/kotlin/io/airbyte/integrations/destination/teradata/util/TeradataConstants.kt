@@ -26,5 +26,9 @@ interface TeradataConstants {
         const val DEFAULT_QUERY_BAND_APPNAME = "appname=airbyte;"
         const val QUERY_BAND_SET = "SET QUERY_BAND='"
         const val QUERY_BAND_SESSION = "' FOR SESSION"
+        const val LOG_MECH: String = "logmech"
+        const val AUTH_TYPE: String = "auth_type"
+        const val TD2_LOG_MECH: String = "TD2"
+        const val BROWSER_LOG_MECH: String = "BROWSER"
     }
 }

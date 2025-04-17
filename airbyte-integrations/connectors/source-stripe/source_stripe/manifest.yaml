@@ -876,6 +876,9 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/customers"
               incremental_dependency: true
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
@@ -883,7 +886,7 @@ definitions:
       transformations:
         - type: RemoveFields
           field_pointers:
-            - - updated # Remove filed that added in entity_stream
+            - - updated # Remove field that added in entity_stream
 
     payout_balance_transactions:
       $ref: "#/definitions/entity_stream"
@@ -908,6 +911,9 @@ definitions:
                 - ["updated"]
         $parameters:
           path: balance_transactions
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: updated
@@ -948,6 +954,9 @@ definitions:
                 - ["expires_at"]
         $parameters:
           path: checkout/sessions/{{ stream_partition.checkout_session_id }}/line_items
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: checkout_session_updated
@@ -985,6 +994,9 @@ definitions:
               incremental_dependency: true
         $parameters:
           path: transfers/{{ stream_partition.transfer_id }}/reversals
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
@@ -992,7 +1004,7 @@ definitions:
       transformations:
         - type: RemoveFields
           field_pointers:
-            - - updated # Remove filed that added in entity_stream
+            - - updated # Remove field that added in entity_stream
 
     payment_methods:
       type: StateDelegatingStream
@@ -1387,6 +1399,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           request_parameters:
             setup_intent: "{{  stream_partition.setup_intent_id  }}"
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
       incremental_sync:
         $ref: "#/definitions/entity_with_slice_cursor"
         cursor_field: created
