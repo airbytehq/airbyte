@@ -1,4 +1,4 @@
-version: 6.33.0
+version: 6.42.1
 
 type: DeclarativeSource
 
@@ -879,6 +879,7 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
+        global_substream_cursor: true
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -910,6 +911,7 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: updated
+        global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
@@ -949,6 +951,7 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: checkout_session_updated
+        global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
@@ -985,6 +988,7 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
+        global_substream_cursor: true
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -1090,6 +1094,7 @@ definitions:
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: invoice_updated
+          global_substream_cursor: true
         transformations:
           - type: AddFields
             fields:
@@ -1111,11 +1116,38 @@ definitions:
                 value_type: integer
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          cursor_field: invoice_updated
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - is_deleted
+                value: "{{ True }}"
+            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - invoice_updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+            condition: "{{ record.get('data', {}).get('object', False) }}"
+          - type: DpathFlattenFields
+            field_path:
+              - data
+              - object
+            replace_record: true
+
 
     application_fees_refunds:
       type: StateDelegatingStream
@@ -1157,6 +1189,7 @@ definitions:
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: updated
+          global_substream_cursor: true
         transformations:
           - type: AddFields
             fields:
@@ -1213,6 +1246,7 @@ definitions:
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: subscription_updated
+          global_substream_cursor: true
         transformations:
           - type: AddFields
             fields:
@@ -1222,11 +1256,37 @@ definitions:
                 value_type: integer
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        incremental_sync:
+          $ref: "#/definitions/events_read_slice_cursor"
+          cursor_field: subscription_updated
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
             request_parameters:
               types[]: '{{["customer.subscription.created", "customer.subscription.updated"]}}'
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - is_deleted
+                value: "{{ True }}"
+            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - subscription_updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+            condition: "{{ record.get('data', {}).get('object', False) }}"
+          - type: DpathFlattenFields
+            field_path:
+              - data
+              - object
+            replace_record: true
 
     bank_accounts:
       type: StateDelegatingStream
@@ -1289,6 +1349,7 @@ definitions:
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: updated
+          global_substream_cursor: true
         transformations:
           - type: AddFields
             fields:
