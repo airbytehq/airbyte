@@ -41,7 +41,9 @@ class DefaultFailStreamTask(
                 log.info { "Cannot fail stream $stream, which is already complete, doing nothing." }
             }
             is StreamProcessingFailed -> {
-                syncManager.getStreamLoaderOrNull(stream)?.close(streamResult)
+                syncManager
+                    .getStreamLoaderOrNull(stream)
+                    ?.close(hadNonzeroRecords = streamManager.hadNonzeroRecords(), streamResult)
                     ?: log.warn { "StreamLoader not found for stream $stream, cannot call close." }
             }
         }
