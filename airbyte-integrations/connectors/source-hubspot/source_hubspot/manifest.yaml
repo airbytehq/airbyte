@@ -222,7 +222,7 @@ definitions:
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
-              property_limit: 14000
+              property_limit: 10000
               record_merge_strategy:
                 type: GroupByKeyMergeStrategy
                 key: id
