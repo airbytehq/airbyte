@@ -834,5 +834,5 @@ api_budget:
 # A maximum of 5 concurrent queries and 60 queries per hour.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 25
