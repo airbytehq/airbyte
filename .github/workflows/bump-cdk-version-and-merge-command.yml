@@ -8,9 +8,8 @@ on:
 run-name: "Bump connector versions in PR: #${{ github.event.inputs.pr }}"
 
 jobs:
-  bump-cdk-version:
-    runs-on: ubuntu-latest
-    if: contains(github.event.comment.body, '/bump-cdk')
+  bumpCdkVersionAndMerge:
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
