@@ -96,7 +96,7 @@ internal class BigQueryDestinationTest {
 
     @Throws(IOException::class)
     protected fun initBigQuery(config: JsonNode) {
-        bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId)
+        bigquery = BigQueryDestinationTestUtils.initBigQuery(config)
         try {
             dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId)
         } catch (ex: Exception) {

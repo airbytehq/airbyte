@@ -15,10 +15,7 @@ import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import java.nio.file.Path
 import org.junit.jupiter.api.Test
 
-abstract class BigqueryWriteTest(
-    configContents: String,
-    additionalMicronautEnvs: List<String> = emptyList()
-) :
+abstract class BigqueryWriteTest(configContents: String) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
         BigquerySpecification::class.java,
@@ -85,8 +82,6 @@ class GcsRawOverrideDisableTd :
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
-        // TODO make a base BigqueryGcsWriteTest class to handle this
-        additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
     @Test
     override fun testBasicWrite() {

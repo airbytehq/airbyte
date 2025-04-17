@@ -181,7 +181,7 @@ abstract class AbstractBigQueryDestinationAcceptanceTest : DestinationAcceptance
 
         val projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText()
         this._config = config
-        bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId)
+        bigquery = BigQueryDestinationTestUtils.getBigquery(config)
         dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId)
     }
 
