@@ -1,0 +1,10 @@
+name: Bump Java CDK Version
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  bump-cdk-version-and-merge:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
