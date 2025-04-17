@@ -11,18 +11,66 @@ import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.airbyte.cdk.load.file.s3.S3Client
+import io.airbyte.cdk.load.file.s3.S3Object
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.nio.channels.Channels
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 /** Represents a single blob in Google Cloud Storage. */
 data class GcsBlob(override val key: String, override val storageConfig: GcsClientConfiguration) :
     RemoteObject<GcsClientConfiguration>
 
-class GcsClient(private val storage: Storage, private val config: GcsClientConfiguration) :
-    ObjectStorageClient<GcsBlob> {
+interface GcsClient : ObjectStorageClient<GcsBlob>
+
+fun S3Object.toGcsBlob(config: GcsClientConfiguration) = GcsBlob(this.key, config)
+
+fun GcsBlob.toS3Object() = S3Object(this.key, this.storageConfig.s3BucketConfiguration())
+
+class GcsS3Client(
+    private val s3Client: S3Client,
+    private val config: GcsClientConfiguration,
+) : GcsClient {
+    override suspend fun list(prefix: String): Flow<GcsBlob> =
+        s3Client.list(prefix).map { it.toGcsBlob(config) }
+
+    override suspend fun move(remoteObject: GcsBlob, toKey: String): GcsBlob =
+        s3Client.move(remoteObject.toS3Object(), toKey).toGcsBlob(config)
+
+    override suspend fun move(key: String, toKey: String): GcsBlob =
+        s3Client.move(key, toKey).toGcsBlob(config)
+
+    override suspend fun <U> get(key: String, block: (InputStream) -> U): U =
+        s3Client.get(key, block)
+
+    override suspend fun getMetadata(key: String): Map<String, String> = s3Client.getMetadata(key)
+
+    override suspend fun put(key: String, bytes: ByteArray): GcsBlob =
+        s3Client.put(key, bytes).toGcsBlob(config)
+
+    override suspend fun delete(remoteObject: GcsBlob) = s3Client.delete(remoteObject.toS3Object())
+
+    override suspend fun delete(key: String) = s3Client.delete(key)
+
+    override suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String>
+    ): StreamingUpload<GcsBlob> {
+        val s3Upload = s3Client.startStreamingUpload(key, metadata)
+        return object : StreamingUpload<GcsBlob> {
+            override suspend fun uploadPart(part: ByteArray, index: Int) =
+                s3Upload.uploadPart(part, index)
+
+            override suspend fun complete(): GcsBlob = s3Upload.complete().toGcsBlob(config)
+        }
+    }
+}
+
+class GcsNativeClient(private val storage: Storage, private val config: GcsClientConfiguration) :
+    GcsClient {
 
     private val log = KotlinLogging.logger {}
 

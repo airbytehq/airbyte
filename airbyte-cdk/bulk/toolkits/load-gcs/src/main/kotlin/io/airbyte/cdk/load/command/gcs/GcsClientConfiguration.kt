@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.command.gcs
 
+import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
+
 data class GcsClientConfiguration(
     val gcsBucketName: String,
     val path: String,
@@ -19,6 +21,13 @@ data class GcsClientConfiguration(
         commonSpecification.credential.toGcsAuthConfiguration(),
         regionSpecification,
     )
+
+    fun s3BucketConfiguration() =
+        S3BucketConfiguration(
+            gcsBucketName,
+            region?.region,
+            "https://storage.googleapis.com",
+        )
 }
 
 interface GcsClientConfigurationProvider {
