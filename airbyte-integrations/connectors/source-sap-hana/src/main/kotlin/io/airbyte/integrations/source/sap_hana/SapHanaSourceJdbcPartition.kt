@@ -122,7 +122,7 @@ sealed class SapHanaJdbcSplittablePartition(
 
     val queryTableColumns =
         if (triggerCdcPartitionState == TriggerCdcPartitionState.INCREMENTAL)
-            TriggerTableConfig.SCHEMA
+            TriggerTableConfig.getTriggerTableSchemaFromStream(stream)
         else stream.fields
     val triggerTableName =
         TriggerTableConfig.TRIGGER_TABLE_PREFIX + stream.namespace + '_' + stream.name

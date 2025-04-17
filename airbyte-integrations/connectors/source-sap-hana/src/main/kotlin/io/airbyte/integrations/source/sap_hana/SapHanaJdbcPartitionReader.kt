@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.sap_hana
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.discover.CommonMetaField
@@ -60,12 +61,9 @@ sealed class SapHanaJdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     private fun decorateTriggerBasedCdcRecord(row: SelectQuerier.ResultRow): ObjectNode {
-        val before: JsonNode = row.data[TriggerTableConfig.VALUE_BEFORE_FIELD.id]
-        val after: JsonNode = row.data[TriggerTableConfig.VALUE_AFTER_FIELD.id]
         val isDelete: Boolean =
             row.data[TriggerTableConfig.OPERATION_TYPE_FIELD.id].asText().uppercase() == "DELETE"
-        // Row data is wrapped in a JSON object by trigger already. So we take it as is.
-        val data = if (isDelete) before else after
+        val data = createValueNode(row.data, isDelete)
         val validatedData: ObjectNode = validateDataFieldName(data, stream.schema)
         val transactionTimestampJsonNode: JsonNode = row.data[TriggerTableConfig.CURSOR_FIELD.id]
         validatedData.set<JsonNode>(
@@ -81,6 +79,16 @@ sealed class SapHanaJdbcPartitionReader<P : JdbcPartition<*>>(
             transactionTimestampJsonNode,
         )
         return validatedData
+    }
+
+    private fun createValueNode(data: ObjectNode, isDelete: Boolean): ObjectNode {
+        val valueNode: ObjectNode = JsonNodeFactory.instance.objectNode()
+        val suffix = if (isDelete) "_before" else "_after"
+        stream.schema.forEach {
+            val fieldName = TriggerTableConfig.TRIGGER_TABLE_PREFIX + it.id + suffix
+            valueNode.set<JsonNode>(it.id, data.get(fieldName))
+        }
+        return valueNode
     }
 
     // Validate the data field name with the schema field name so they have the same case.

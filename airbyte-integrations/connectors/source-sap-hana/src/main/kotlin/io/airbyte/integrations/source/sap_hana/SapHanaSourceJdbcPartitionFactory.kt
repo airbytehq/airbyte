@@ -160,7 +160,7 @@ class SapHanaSourceJdbcPartitionFactory(
         val cursorLabel: String = cursors.keys.first()
         val cursor: FieldOrMetaField? =
             stream.schema.find { it.id == cursorLabel }
-                ?: TriggerTableConfig.SCHEMA.find { it.id == cursorLabel }
+                ?: TriggerTableConfig.COMMON_FIELDS.find { it.id == cursorLabel }
         if (cursor !is Field) {
             handler.accept(
                 InvalidCursor(stream.id, cursorLabel),
