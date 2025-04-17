@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.orchestration
 
 interface DestinationHandler {
@@ -9,5 +13,5 @@ interface DestinationHandler {
      * This function should assume that all `namespaces` are valid identifiers, i.e. any special
      * characters have already been escaped, they respect identifier name length, etc.
      */
-    fun createNamespaces(namespaces: List<String>)
+    suspend fun createNamespaces(namespaces: List<String>)
 }

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.data
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.load.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -94,6 +95,37 @@ data class UnionType(
         }
         logger.warn { "Union.asColumns retVal=$retVal" }
         return retVal
+    }
+
+    /**
+     * This matches legacy behavior. Some destinations handle legacy unions by choosing the "best"
+     * type from amongst the options. This is... not great, but it would be painful to change.
+     */
+    fun chooseType(): AirbyteType {
+        check(isLegacyUnion) { "Cannot chooseType for a non-legacy union type" }
+        if (options.isEmpty()) {
+            return UnknownType(Jsons.createObjectNode())
+        }
+        return options.minBy {
+            when (it) {
+                is ArrayType,
+                ArrayTypeWithoutSchema -> -2
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema -> -1
+                StringType -> 0
+                DateType -> 1
+                TimeTypeWithoutTimezone -> 2
+                TimeTypeWithTimezone -> 3
+                TimestampTypeWithoutTimezone -> 4
+                TimestampTypeWithTimezone -> 5
+                NumberType -> 6
+                IntegerType -> 7
+                BooleanType -> 8
+                is UnknownType -> 9
+                is UnionType -> Int.MAX_VALUE
+            }
+        }
     }
 
     companion object {

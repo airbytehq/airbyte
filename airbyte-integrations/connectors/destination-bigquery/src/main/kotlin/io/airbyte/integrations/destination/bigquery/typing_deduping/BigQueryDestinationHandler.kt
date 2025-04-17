@@ -23,6 +23,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import java.util.stream.Stream
 import kotlin.math.min
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
 
@@ -110,16 +112,22 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
         }
     }
 
-    override fun createNamespaces(namespaces: List<String>) {
-        namespaces.forEach { dataset ->
-            logger.info { "Creating dataset if not present $dataset" }
-            try {
-                BigQueryUtils.getOrCreateDataset(bq, dataset, datasetLocation)
-            } catch (e: BigQueryException) {
-                if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.code)) {
-                    throw ConfigErrorException(e.message!!, e)
-                } else {
-                    throw e
+    override suspend fun createNamespaces(namespaces: List<String>) {
+        coroutineScope {
+            namespaces.forEach { dataset ->
+                launch {
+                    logger.info { "Creating dataset if not present $dataset" }
+                    try {
+                        BigQueryUtils.getOrCreateDataset(bq, dataset, datasetLocation)
+                    } catch (e: BigQueryException) {
+                        if (
+                            ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.code)
+                        ) {
+                            throw ConfigErrorException(e.message!!, e)
+                        } else {
+                            throw e
+                        }
+                    }
                 }
             }
         }

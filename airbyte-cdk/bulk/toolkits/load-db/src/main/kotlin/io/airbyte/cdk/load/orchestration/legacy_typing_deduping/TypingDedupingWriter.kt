@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.DestinationHandler
 import io.airbyte.cdk.load.orchestration.DestinationInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.TableNameGenerator
 import io.airbyte.cdk.load.orchestration.TableNames
@@ -25,6 +26,7 @@ class TypingDedupingWriter(
     private val finalTableColumnNameGenerator: ColumnNameGenerator,
     private val stateGatherer:
         DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
+    private val destinationHandler: DestinationHandler,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
     private val disableTypeDedupe: Boolean,
@@ -53,6 +55,11 @@ class TypingDedupingWriter(
             }
 
         Executors.newFixedThreadPool(4).asCoroutineDispatcher().use { dispatcher ->
+            destinationHandler.createNamespaces(
+                names.values.map { (tableNames, _) -> tableNames.rawTableName!!.namespace } +
+                    names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
+            )
+
             val initialInitialStatuses:
                 Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
                 stateGatherer.gatherInitialStatus(names)

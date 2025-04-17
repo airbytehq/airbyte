@@ -49,8 +49,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         airbyteType: AirbyteType,
         forceSafeCast: Boolean
     ): String {
-        // TODO this should actually be LegacyUnionType
-        if (airbyteType is UnionType) {
+        if (airbyteType is UnionType && airbyteType.isLegacyUnion) {
             // This is guaranteed to not be a Union, so we won't recurse infinitely
             val chosenType: AirbyteType = airbyteType.chooseType()
             return extractAndCast(columnName, chosenType, forceSafeCast)
@@ -629,9 +628,8 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         const val QUOTE: String = "`"
         val nameTransformer = BigQuerySQLNameTransformer()
 
-        @JvmStatic
-        fun toDialectType(type: AirbyteType): StandardSQLTypeName {
-            return when (type) {
+        fun toDialectType(type: AirbyteType): StandardSQLTypeName =
+            when (type) {
                 BooleanType -> StandardSQLTypeName.BOOL
                 DateType -> StandardSQLTypeName.DATE
                 IntegerType -> StandardSQLTypeName.INT64
@@ -646,11 +644,14 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 is ObjectType,
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
-                // TODO handle LegacyUnion type (do the Union.chooseType thing)
-                is UnionType,
+                is UnionType ->
+                    if ((type as UnionType).isLegacyUnion) {
+                        toDialectType(type.chooseType())
+                    } else {
+                        StandardSQLTypeName.JSON
+                    }
                 is UnknownType -> StandardSQLTypeName.JSON
             }
-        }
 
         fun clusteringColumns(
             stream: DestinationStream,

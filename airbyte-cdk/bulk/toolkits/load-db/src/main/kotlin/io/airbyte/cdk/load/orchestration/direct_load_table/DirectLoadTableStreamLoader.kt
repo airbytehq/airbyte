@@ -19,7 +19,7 @@ class DirectLoadTableStreamLoader(
         //   * truncate refresh setup
     }
 
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         // TODO
         //   * commit truncate refresh
     }

@@ -62,7 +62,21 @@ class StandardInsertRawOverrideDisableTd :
     }
 }
 
-// @Disabled("Disabling until we have the full flow")
+class StandardInsertRawOverride :
+    BigqueryWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+                configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
+                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
+                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+            )
+            .serializeToString(),
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
 class GcsRawOverrideDisableTd :
     BigqueryWriteTest(
         BigQueryDestinationTestUtils.createConfig(

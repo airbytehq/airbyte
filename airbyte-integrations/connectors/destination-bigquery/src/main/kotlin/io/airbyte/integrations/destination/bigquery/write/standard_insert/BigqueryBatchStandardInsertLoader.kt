@@ -18,9 +18,6 @@ import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
-import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.CONFIG_ERROR_MSG
-import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_FORBIDDEN
-import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_NOT_FOUND
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.TempUtils
@@ -101,5 +98,19 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             }
 
         return BigqueryBatchStandardInsertsLoader(writer)
+    }
+
+    companion object {
+        const val HTTP_STATUS_CODE_FORBIDDEN = 403
+        const val HTTP_STATUS_CODE_NOT_FOUND = 404
+
+        val CONFIG_ERROR_MSG =
+            """
+            |Failed to write to destination schema.
+            |   1. Make sure you have all required permissions for writing to the schema.
+            |   2. Make sure that the actual destination schema's location corresponds to location provided in connector's config.
+            |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the "Destination Default" option.
+            |More details:
+            |""".trimMargin()
     }
 }

@@ -53,13 +53,10 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
     private fun getInitialRawTableState(
         rawTableName: TableName,
         suffix: String
-    ): RawTableInitialStatus {
+    ): RawTableInitialStatus? {
         bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix))
-            ?: // Table doesn't exist. There are no unprocessed records, and no timestamp.
-        return RawTableInitialStatus(
-                hasUnprocessedRecords = false,
-                maxProcessedTimestamp = null,
-            )
+        // Table doesn't exist. There are no unprocessed records, and no timestamp.
+        ?: return null
 
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
         val unloadedRecordTimestamp =
@@ -79,8 +76,7 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
                 .first()
         // If this value is null, then there are no records with null loaded_at.
         // If it's not null, then we can return immediately - we've found some unprocessed records
-        // and their
-        // timestamp.
+        // and their timestamp.
         if (!unloadedRecordTimestamp.isNull) {
             return RawTableInitialStatus(
                 hasUnprocessedRecords = true,
@@ -183,7 +179,7 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
 
         val streamSchema: Map<String, StandardSQLTypeName> =
             (stream.schema as ObjectType).properties.entries.associate {
-                it.key to BigQuerySqlGenerator.toDialectType(it.value)
+                it.key to BigQuerySqlGenerator.toDialectType(it.value.type)
             }
 
         val existingSchema =

@@ -14,6 +14,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryDestinationInitialStatusGatherer
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryFinalTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryRawTableNameGenerator
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -29,9 +33,14 @@ class BigqueryWriterFactory(
     fun make() =
         TypingDedupingWriter(
             catalog,
-            BigqueryInitialStateGatherer(),
-            BigqueryRawTableOperations(),
+            BigqueryRawTableNameGenerator(config.datasetId, config.rawTableDataset),
+            BigqueryFinalTableNameGenerator(config.datasetId),
+            BigqueryColumnNameGenerator(),
+            BigqueryDestinationInitialStatusGatherer(bigquery),
+            destinationHandler,
+            BigqueryRawTableOperations(bigquery),
             TypingDedupingFinalTableOperations(sqlGenerator, destinationHandler),
+            disableTypeDedupe = config.disableTypingDeduping,
         )
 }
 

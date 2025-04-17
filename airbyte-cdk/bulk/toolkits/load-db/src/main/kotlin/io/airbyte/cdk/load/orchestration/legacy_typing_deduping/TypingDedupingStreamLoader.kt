@@ -302,7 +302,7 @@ class TypingDedupingStreamLoader(
         return NO_SUFFIX
     }
 
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         val streamSuccessful = streamFailure == null
         // Overwrite the raw table before doing anything else.
         // This ensures that if T+D fails, we can easily retain the records on the next sync.
@@ -331,26 +331,21 @@ class TypingDedupingStreamLoader(
         // Normal syncs should T+D regardless of status, so the user sees progress after every
         // attempt.
         // We know this is a normal sync, so initialRawTableStatus is nonnull.
-        if (
-            !isTruncateSync &&
-                syncSummary.recordsWritten == 0L &&
-                !initialRawTableStatus.hasUnprocessedRecords
-        ) {
+        if (!isTruncateSync && !hadNonzeroRecords && !initialRawTableStatus.hasUnprocessedRecords) {
             logger.info {
                 "Skipping typing and deduping for stream ${stream.descriptor.toPrettyString()} because it had no records during this sync and no unprocessed records from a previous sync."
             }
         } else if (
             isTruncateSync &&
                 (!streamSuccessful ||
-                    (syncSummary.recordsWritten == 0L &&
-                        !initialRawTableStatus.hasUnprocessedRecords))
+                    (!hadNonzeroRecords && !initialRawTableStatus.hasUnprocessedRecords))
         ) {
             // But truncate syncs should only T+D if the sync was successful, since we're T+Ding
             // into a temp final table anyway.
             // We only run T+D if the current sync had some records, or a previous attempt wrote
             // some records to the temp raw table.
             logger.info {
-                "Skipping typing and deduping for stream ${stream.descriptor.toPrettyString()} running as truncate sync. Stream success: $streamSuccessful; records written: ${syncSummary.recordsWritten}; temp raw table had records: ${initialRawTableStatus.hasUnprocessedRecords}"
+                "Skipping typing and deduping for stream ${stream.descriptor.toPrettyString()} running as truncate sync. Stream success: $streamSuccessful; had nonzero records: $hadNonzeroRecords; temp raw table had records: ${initialRawTableStatus.hasUnprocessedRecords}"
             }
         } else {
             // When targeting the temp final table, we want to read all the raw records
