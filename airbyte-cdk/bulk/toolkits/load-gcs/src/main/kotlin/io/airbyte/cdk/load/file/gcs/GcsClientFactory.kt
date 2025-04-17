@@ -27,6 +27,8 @@ class GcsClientFactory(
 
     @Singleton
     @Secondary
+    // We do this because we want to allow someone to supersede this client if their heart desire
+    // But that at the same time we want to ensure that we always supersede the S3Client ourselves.
     @Replaces(S3Client::class)
     fun make(): GcsClient {
         val config = gcsClientConfigurationProvider.gcsClientConfiguration
