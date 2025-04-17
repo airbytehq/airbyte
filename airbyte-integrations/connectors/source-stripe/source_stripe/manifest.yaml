@@ -1160,7 +1160,6 @@ definitions:
               - object
             replace_record: true
 
-
     application_fees_refunds:
       type: StateDelegatingStream
       $parameters:
