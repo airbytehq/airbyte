@@ -32,6 +32,10 @@ jobs:
           # git fetch origin master
           # git merge origin/master --allow-unrelated-histories --no-edit --strategy=ort
 
+          # Determine the default branch name
+          default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+          echo "Default branch: $default_branch"
+
           # Get the list of modified files between the default branch and the current branch
           modified_files=$(git diff --name-only origin/master ${{ github.ref_name }})
 
