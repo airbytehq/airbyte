@@ -30,6 +30,12 @@ fun S3Object.toGcsBlob(config: GcsClientConfiguration) = GcsBlob(this.key, confi
 
 fun GcsBlob.toS3Object() = S3Object(this.key, this.storageConfig.s3BucketConfiguration())
 
+/**
+ * This client is currently the primary class. It is specifically built around the S3Client. It
+ * exists to allow us to no load the S3 toolkit and avoid client collision. We specifically need it
+ * because we are forced into the HMAC auth for legacy reasons. At the end of the day, this is just
+ * a bare-bone wrapper around the S3Client
+ */
 class GcsS3Client(
     private val s3Client: S3Client,
     private val config: GcsClientConfiguration,
@@ -69,6 +75,10 @@ class GcsS3Client(
     }
 }
 
+/**
+ * THis client should be used when we finally decide to support native GCP auth. We can then swap
+ * over to this client instead of the [GcsS3Client] which will require us to use HMAC auth.
+ */
 class GcsNativeClient(private val storage: Storage, private val config: GcsClientConfiguration) :
     GcsClient {
 
