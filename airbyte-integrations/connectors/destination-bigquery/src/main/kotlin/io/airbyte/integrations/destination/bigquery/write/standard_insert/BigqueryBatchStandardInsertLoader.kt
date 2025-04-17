@@ -10,17 +10,19 @@ import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.TableDataWriteChannel
+import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.orchestration.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -66,14 +68,15 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 class BigqueryBatchStandardInsertsLoaderFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
+    private val names: Map<DestinationStream.Descriptor, Pair<TableNames, ColumnNameMapping>>,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
+        val tableName = names[streamDescriptor]!!.first.rawTableName!!
         val writeChannelConfiguration =
-        // TODO need to write to raw vs final table appropriately
-        WriteChannelConfiguration.newBuilder(TempUtils.rawTableId(config, streamDescriptor))
+            WriteChannelConfiguration.newBuilder(TableId.of(tableName.namespace, tableName.name))
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setFormatOptions(FormatOptions.json())

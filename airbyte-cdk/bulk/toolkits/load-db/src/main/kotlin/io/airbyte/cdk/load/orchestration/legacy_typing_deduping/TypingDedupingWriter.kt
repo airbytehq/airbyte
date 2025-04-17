@@ -4,13 +4,10 @@
 
 package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.DestinationHandler
 import io.airbyte.cdk.load.orchestration.DestinationInitialStatusGatherer
-import io.airbyte.cdk.load.orchestration.TableNameGenerator
 import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -20,10 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class TypingDedupingWriter(
-    private val catalog: DestinationCatalog,
-    private val rawTableTableNameGenerator: TableNameGenerator,
-    private val finalTableTableNameGenerator: TableNameGenerator,
-    private val finalTableColumnNameGenerator: ColumnNameGenerator,
+    private val names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
     private val stateGatherer:
         DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
     private val destinationHandler: DestinationHandler,
@@ -31,29 +25,10 @@ class TypingDedupingWriter(
     private val finalTableOperations: TypingDedupingFinalTableOperations,
     private val disableTypeDedupe: Boolean,
 ) : DestinationWriter {
-    private lateinit var names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>
     private lateinit var initialStatuses:
         Map<DestinationStream, TypingDedupingDestinationInitialStatus>
 
     override suspend fun setup() {
-        // TODO handle collisions in table names
-        names =
-            catalog.streams.associateWith { stream ->
-                Pair(
-                    TableNames(
-                        rawTableName = rawTableTableNameGenerator.getTableName(stream.descriptor),
-                        finalTableName =
-                            finalTableTableNameGenerator.getTableName(stream.descriptor),
-                    ),
-                    ColumnNameMapping(
-                        // TODO handle collisions in column names
-                        stream.schema.asColumns().mapValues { (columnName, _) ->
-                            finalTableColumnNameGenerator.getColumnName(columnName).displayName
-                        }
-                    )
-                )
-            }
-
         Executors.newFixedThreadPool(4).asCoroutineDispatcher().use { dispatcher ->
             destinationHandler.createNamespaces(
                 names.values.map { (tableNames, _) -> tableNames.rawTableName!!.namespace } +

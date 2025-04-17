@@ -55,9 +55,13 @@ fun TableName?.conflictsWith(other: TableName?): Boolean {
 value class ColumnNameMapping(private val columnNameMapping: Map<String, String>) :
     Map<String, String> by columnNameMapping
 
-fun interface TableNameGenerator {
+sealed interface TableNameGenerator {
     fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName
 }
+
+fun interface RawTableNameGenerator : TableNameGenerator
+
+fun interface FinalTableNameGenerator : TableNameGenerator
 
 fun interface ColumnNameGenerator {
     /**
