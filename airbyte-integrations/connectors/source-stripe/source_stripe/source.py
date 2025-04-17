@@ -507,16 +507,6 @@ class SourceStripe(YamlDeclarativeSource):
                 cursor_field="created",
                 **args,
             ),
-            StripeSubStream(
-                name="usage_records",
-                path=lambda self,
-                stream_slice,
-                *args,
-                **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
-                parent=subscription_items,
-                primary_key=None,
-                **args,
-            ),
         ]
 
         state_manager = ConnectorStateManager(state=self._state)

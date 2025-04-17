@@ -1446,6 +1446,9 @@ streams:
   - $ref: "#/definitions/streams/application_fees_refunds"
   - $ref: "#/definitions/streams/subscription_items"
 
+  # These streams are base incremental partition streams with state condition streams as parents using lazy read logic:
+  - $ref: "#/definitions/streams/usage_records"
+
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/stripe
