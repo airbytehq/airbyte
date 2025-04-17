@@ -80,11 +80,7 @@ interface S3BucketSpecification {
     val s3Endpoint: String?
 
     fun toS3BucketConfiguration(): S3BucketConfiguration {
-        return S3BucketConfiguration(
-            s3BucketName,
-            (s3BucketRegion ?: S3BucketRegion.NO_REGION).region,
-            s3Endpoint
-        )
+        return S3BucketConfiguration(s3BucketName, s3BucketRegion?.region, s3Endpoint)
     }
 }
 
