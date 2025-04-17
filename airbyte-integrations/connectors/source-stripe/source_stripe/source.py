@@ -453,20 +453,6 @@ class SourceStripe(YamlDeclarativeSource):
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
                 **args,
             ),
-            ParentIncrementalStripeSubStream(
-                name="customer_balance_transactions",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
-                parent=self.customers(**args),
-                cursor_field="created",
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeSubStream(
-                name="payment_methods",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
-                parent=self.customers(**args),
-                event_types=["payment_method.*"],
-                **args,
-            ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/bank_accounts",
