@@ -26,7 +26,7 @@ jobs:
           provided_version="${{ github.event.inputs.version }}"
           
           # Extract the current version from version.properties
-          current_version=$(grep '^version=' java/airbyte-cdk/core/src/main/resources/version.properties | cut -d'=' -f2)
+          current_version=$(grep '^version=' airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties | cut -d'=' -f2)
           
           # Check if the provided version follows SemVer
           if ! [[ "$provided_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -48,7 +48,7 @@ jobs:
           provided_version="${{ github.event.inputs.version }}"
           
           # Update the version in version.properties
-          sed -i "s/^version=.*/version=$provided_version/" java/airbyte-cdk/core/src/main/resources/version.properties
+          sed -i "s/^version=.*/version=$provided_version/" airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties
           
           echo "Updated version.properties with version '$provided_version'."
 
