@@ -188,6 +188,7 @@ class SocketInputFlow(
                                     cis.popLimit(limit)
                                     cis.resetSizeCounter()
                                     val protoMessage = builder.build()
+                                    builder.clear()
                                     val destinationMessage =
                                         factory.fromProtobufAirbyteMessage(
                                             protoMessage,

@@ -98,7 +98,7 @@ class S3V2ConfigurationFactory :
             skipJsonOnProto = pojo.skipJsonOnProto ?: true,
             disableUUID = pojo.disableUUID ?: false,
             disableMapper = pojo.disableMapper ?: false,
-            useCodedInputStream = pojo.useCodedInputStream ?: false,
+            useCodedInputStream = pojo.useCodedInputStream ?: true,
         )
     }
 }

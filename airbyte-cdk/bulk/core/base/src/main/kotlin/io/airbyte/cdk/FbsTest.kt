@@ -1,8 +1,11 @@
 package io.airbyte.cdk
 
 import com.google.flatbuffers.FlatBufferBuilder
+import io.airbyte.protocol.AirbyteBooleanValue
 import io.airbyte.protocol.AirbyteLongValue
 import io.airbyte.protocol.AirbyteRecordMessage
+import io.airbyte.protocol.AirbyteStringValue
+import io.airbyte.protocol.AirbyteValue
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -33,6 +36,17 @@ fun main(args: Array<String>) {
     } else {
         println("Did not read all messages: $count")
     }
+}
+
+fun testing() {
+    val b = FlatBufferBuilder()
+    val name = b.createString("foo")
+    val namespace = b.createString("bar")
+    val data = arrayOf(
+        AirbyteBooleanValue.createAirbyteBooleanValue(b, true),
+        b.createString("baz").let { offset -> AirbyteStringValue.createAirbyteStringValue(b, offset) },
+        AirbyteLongValue.createAirbyteLongValue(b, 10L),
+    )
 }
 
 fun generateFbsMessages(total: Int): List<AirbyteRecordMessage> {
