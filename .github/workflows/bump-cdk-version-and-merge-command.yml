@@ -21,13 +21,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Update cdkVersionRequired in build.gradle files
         run: |
           # Ensure the branch has the most recent updates from the master branch
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git fetch origin master
-          git merge origin/master --allow-unrelated-histories --no-edit --strategy=ort
+          # git fetch origin master
+          # git merge origin/master --allow-unrelated-histories --no-edit --strategy=ort
 
           # Get the list of modified files between the master branch and the current branch
           modified_files=$(git diff --name-only origin/master $(git rev-parse --abbrev-ref HEAD))
@@ -40,11 +43,6 @@ jobs:
               sed -i "/useLocalCdk/d" "$gradle_file"
             fi
           done
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Commit changes
         run: |
