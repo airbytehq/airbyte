@@ -307,6 +307,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------| :--------------------------------------------------------- |:-------------------------------------------------------------------------------|
+| 0.3.25  | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085) | Internal refactoring |
 | 0.3.24  | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435) | Bug fix: Correctly handle non-positive numbers. |
 | 0.3.23  | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395) | Bug fix: Correctly coerce values inside nested arrays. |
 | 0.3.22  | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
