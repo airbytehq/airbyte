@@ -28,9 +28,7 @@ from source_mixpanel.source import raise_config_error
 class MixpanelHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.api_budget = DEFAULT_API_BUDGET
-        self.error_handler.backoff_strategies = ExponentialBackoffStrategy(
-            factor=30, config=self.config, parameters=parameters
-        )
+        self.error_handler.backoff_strategies = ExponentialBackoffStrategy(factor=30, config=self.config, parameters=parameters)
         super().__post_init__(parameters)
 
     def get_request_headers(
