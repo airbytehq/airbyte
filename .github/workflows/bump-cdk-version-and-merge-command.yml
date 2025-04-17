@@ -3,7 +3,7 @@ on:
   issue_comment:
     types: [created]
 jobs:
-  bumpCdkVersionAndMerge:
+  bump-cdk-version-and-merge:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
