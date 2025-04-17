@@ -215,7 +215,10 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
 
     private fun nullOutOfRangeNumber(numberValue: AirbyteValue): ChangedValue? {
         return if (
-            BigDecimal(Double.MIN_VALUE) <= (numberValue as NumberValue).value &&
+            // Double.MIN_VALUE is the smallest positive number.
+            // Floats/doubles spend one bit on the sign, so we can just negate MAX_VALUE to get the
+            // actual MIN_VALUE.
+            BigDecimal(-Double.MAX_VALUE) <= (numberValue as NumberValue).value &&
                 numberValue.value <= BigDecimal(Double.MAX_VALUE)
         ) {
             null

@@ -11,8 +11,8 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.load.file.TimeProvider
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -446,7 +446,7 @@ class CheckpointManagerTest {
                 is FlushPoint -> {
                     // Mock the persisted ranges by updating the state of the stream managers
                     it.persistedRanges.forEach { (stream, ranges) ->
-                        val mockBatch = SimpleBatch(state = Batch.State.PERSISTED)
+                        val mockBatch = SimpleBatch(state = BatchState.PERSISTED)
                         val rangeSet = TreeRangeSet.create(ranges)
                         val mockBatchEnvelope =
                             BatchEnvelope(

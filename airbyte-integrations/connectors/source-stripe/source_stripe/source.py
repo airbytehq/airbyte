@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -11,9 +11,8 @@ import pendulum
 
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
-from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
-from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -25,7 +24,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
-    Events,
     IncrementalStripeStream,
     ParentIncrementalStripeSubStream,
     SetupAttempts,
@@ -47,23 +45,13 @@ USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
-class SourceStripe(ConcurrentSourceAdapter):
-    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+class SourceStripe(YamlDeclarativeSource):
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
-        Events: ("created[gte]", "created[lte]"),
         CreatedCursorIncrementalStripeStream: ("created[gte]", "created[lte]"),
     }
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
-        if config:
-            concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
-        else:
-            concurrency_level = _DEFAULT_CONCURRENCY
-        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-        concurrent_source = ConcurrentSource.create(
-            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
-        )
-        super().__init__(concurrent_source)
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
         self._state = state
         if catalog:
             self._streams_configured_as_full_refresh = {
@@ -74,6 +62,11 @@ class SourceStripe(ConcurrentSourceAdapter):
         else:
             # things will NOT be executed concurrently
             self._streams_configured_as_full_refresh = set()
+
+    # TODO: Remove this. This property is necessary to safely migrate Stripe during the transition state.
+    @property
+    def is_partially_declarative(self) -> bool:
+        return True
 
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
@@ -291,25 +284,6 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         streams = [
             checkout_sessions,
-            Events(**incremental_args),
-            UpdatedCursorIncrementalStripeStream(
-                name="external_account_cards",
-                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
-                legacy_cursor_field=None,
-                extra_request_params={"object": "card"},
-                response_filter=lambda record: record["object"] == "card",
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeStream(
-                name="external_account_bank_accounts",
-                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
-                legacy_cursor_field=None,
-                extra_request_params={"object": "bank_account"},
-                response_filter=lambda record: record["object"] == "bank_account",
-                **args,
-            ),
             UpdatedCursorIncrementalStripeSubStream(
                 name="persons",
                 path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
@@ -331,10 +305,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                 use_cache=USE_CACHE,
                 **args,
             ),
-            CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
             IncrementalStripeStream(
                 name="refunds",
                 path="refunds",
@@ -352,25 +322,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["credit_note.created", "credit_note.updated", "credit_note.voided"],
                 **args,
             ),
-            UpdatedCursorIncrementalStripeStream(
-                name="early_fraud_warnings",
-                path="radar/early_fraud_warnings",
-                event_types=["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="authorizations",
-                path="issuing/authorizations",
-                event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
-                **args,
-            ),
             self.customers(**args),
-            IncrementalStripeStream(
-                name="cardholders",
-                path="issuing/cardholders",
-                event_types=["issuing_cardholder.created", "issuing_cardholder.updated"],
-                **args,
-            ),
             IncrementalStripeStream(
                 name="charges",
                 path="charges",
@@ -402,7 +354,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            application_fees,
             invoices,
             IncrementalStripeStream(
                 name="invoice_items",
@@ -489,9 +440,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                     "setup_intent.succeeded",
                 ],
                 **args,
-            ),
-            IncrementalStripeStream(
-                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args
             ),
             IncrementalStripeStream(
                 name="transactions",
@@ -595,7 +543,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         ]
 
         state_manager = ConnectorStateManager(state=self._state)
-        return [
+        return super().streams(config=config) + [
             self._to_concurrent(
                 stream,
                 datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc),
