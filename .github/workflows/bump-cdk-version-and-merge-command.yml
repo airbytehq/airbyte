@@ -1,7 +1,5 @@
 name: Bump Java CDK Version
 on:
-  issue_comment:
-    types: [created]
   workflow_dispatch:
     inputs:
       repo:
