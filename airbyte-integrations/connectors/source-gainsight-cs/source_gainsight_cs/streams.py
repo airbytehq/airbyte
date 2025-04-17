@@ -1,10 +1,11 @@
+from time import sleep, time
 import requests
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .authenticator import GainsightCsAuthenticator
-
+import json
 class GainsightCsStream(HttpStream, ABC):
     def __init__(self, authenticator: 'GainsightCsAuthenticator', **kwargs):
         super().__init__(**kwargs)
@@ -101,15 +102,28 @@ class GainsightCsObjectStream(GainsightCsStream):
         }
 
         url = f"{self.url_base}meta/services/objects/{self.name}/describe?idd=true"
-        try:
-            session = requests.get(url, auth=self.authenticator)
-            body = session.json()
-            full_schema = base_schema
-            fields = body['data'][0]['fields']
-            full_schema = self.dynamic_schema(full_schema, fields)
-            self.json_schema = full_schema
-        except requests.exceptions.RequestException:
-            self.json_schema = base_schema
+
+        while True:
+            try:
+                session = requests.get(url, auth=self.authenticator)
+                body = session.json()
+                
+                # Check if the response indicates success
+                if body.get('result', True):
+                    full_schema = base_schema
+                    fields = body['data'][0]['fields']
+                    full_schema = self.dynamic_schema(full_schema, fields)
+                    self.json_schema = full_schema
+                    break
+                else:
+                    # Handle rate limiting
+                    if body.get('result') == False and body.get('errorCode') == 'GS_APIG_2404':
+                        print("Rate limit reached. Will retry after 60 seconds...")
+                        sleep(60)
+                        continue
+            except requests.exceptions.RequestException:
+                self.json_schema = base_schema
+                break
 
         # Workaround for missing gsid in many objects. Primary Key is either None or "Gsid".
         if self.json_schema['properties'].get('Gsid') is not None:
