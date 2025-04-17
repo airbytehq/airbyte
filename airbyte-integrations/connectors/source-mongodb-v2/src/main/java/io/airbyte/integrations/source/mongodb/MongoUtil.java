@@ -121,10 +121,7 @@ public class MongoUtil {
                                                       final Integer sampleSize,
                                                       final boolean isSchemaEnforced,
                                                       final Integer discoverTimeout) {
-    LOGGER.info("Start getAuthorizedCollections  for discovery" + databaseName);
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
-    LOGGER.info("Finish getAuthorizedCollections  for discovery" + databaseName);
-
     return authorizedCollections.parallelStream()
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout))
         .filter(Optional::isPresent)
@@ -356,6 +353,7 @@ public class MongoUtil {
      * "$$each.v" } } } } } } }, { "$unwind" : "$fields" }, { "$group" : { "_id" : $fields } } ] )
      */
     final AggregateIterable<Document> output = collection.aggregate(aggregateList);
+    // try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
     try (final MongoCursor<Document> cursor = output.allowDiskUse(true).maxTime(discoverTimeout, TimeUnit.SECONDS).cursor()) {
       while (cursor.hasNext()) {
         @SuppressWarnings("unchecked")
