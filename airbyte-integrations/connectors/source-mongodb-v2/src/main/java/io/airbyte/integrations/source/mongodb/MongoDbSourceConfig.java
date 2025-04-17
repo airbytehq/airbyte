@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.OptionalInt;
-
-import static io.airbyte.integrations.source.mongodb.MongoConstants.*;
 
 /**
  * Represents the source's configuration, hiding the details of how the underlying JSON

@@ -9,10 +9,7 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConver
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_PRIMARY_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_MODE_DATA_FIELD;
-
-import com.mongodb.client.MongoIterable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -21,6 +18,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Projections;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -126,7 +124,7 @@ public class MongoUtil {
 
     for (Document collection : collections) {
       if (collectionName.equals(collection.getString("name"))
-              && "view".equals(collection.getString("type"))) {
+          && "view".equals(collection.getString("type"))) {
         return true; // The collection is a view
       }
     }
@@ -143,7 +141,7 @@ public class MongoUtil {
     LOGGER.info("Finish getAuthorizedCollections  for discovery" + databaseName);
 
     return authorizedCollections.parallelStream()
-            //.filter(collectionName -> !isView(collectionName, mongoClient, databaseName))
+        // .filter(collectionName -> !isView(collectionName, mongoClient, databaseName))
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout))
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -343,7 +341,9 @@ public class MongoUtil {
                 : null);
   }
 
-  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection, final Integer sampleSize, final Integer discoverTimeout) {
+  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection,
+                                                  final Integer sampleSize,
+                                                  final Integer discoverTimeout) {
     final Set<Field> discoveredFields = new HashSet<>();
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
@@ -364,7 +364,6 @@ public class MongoUtil {
     aggregateList.add(Aggregates.project(new Document("fields", arrayToObjectAggregation)));
     aggregateList.add(Aggregates.unwind("$fields"));
     aggregateList.add(new Document("$group", groupMap));
-
 
     /*
      * Runs the following aggregation query: db.<collection name>.aggregate( [ { "$sample": { "size" :
