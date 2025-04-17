@@ -7,8 +7,7 @@ package io.airbyte.integrations.source.mongodb;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.*;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.DEFAULT_CHUNK_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.MAX_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.MIN_QUEUE_SIZE;
@@ -82,7 +81,8 @@ public class MongoUtilTest {
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
+    final List<AirbyteStream> streams =
+        MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true, DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC);
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(12, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
@@ -110,7 +110,8 @@ public class MongoUtilTest {
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, false);
+    final List<AirbyteStream> streams =
+        MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, false, DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC);
     assertNotNull(streams);
     assertEquals(1, streams.size());
     // In schemaless mode, only the 3 CDC fields + id and data fields should exist.
@@ -148,7 +149,8 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
+    final List<AirbyteStream> streams =
+        MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true, DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC);
     assertNotNull(streams);
     assertEquals(0, streams.size());
   }
@@ -175,7 +177,8 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
+    final List<AirbyteStream> streams =
+        MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true, DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC);
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
@@ -225,7 +228,8 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
+    final List<AirbyteStream> streams =
+        MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true, DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC);
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());

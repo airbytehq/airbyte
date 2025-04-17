@@ -18,7 +18,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Projections;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -117,20 +116,6 @@ public class MongoUtil {
    * @return The list of {@link AirbyteStream}s that map to the available collections in the provided
    *         database.
    */
-
-  private static boolean isView(String collectionName, MongoClient mongoClient, String databaseName) {
-    MongoDatabase database = mongoClient.getDatabase(databaseName);
-    MongoIterable<Document> collections = database.listCollections();
-
-    for (Document collection : collections) {
-      if (collectionName.equals(collection.getString("name"))
-          && "view".equals(collection.getString("type"))) {
-        return true; // The collection is a view
-      }
-    }
-    return false; // The collection is not a view
-  }
-
   public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient,
                                                       final String databaseName,
                                                       final Integer sampleSize,
@@ -141,7 +126,6 @@ public class MongoUtil {
     LOGGER.info("Finish getAuthorizedCollections  for discovery" + databaseName);
 
     return authorizedCollections.parallelStream()
-        // .filter(collectionName -> !isView(collectionName, mongoClient, databaseName))
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout))
         .filter(Optional::isPresent)
         .map(Optional::get)
