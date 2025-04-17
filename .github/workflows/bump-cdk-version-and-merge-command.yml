@@ -79,8 +79,8 @@ jobs:
         with:
           script: |
             github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner: "${{ github.repository_owner }}",
+              repo: "${{ github.event.repository.name }}",
               workflow_id: "publish-java-cdk-command.yml",
               ref: "${{ github.ref_name }}",
               inputs: {
