@@ -89,7 +89,9 @@ data class DestinationStream(
 }
 
 @Singleton
-class DestinationStreamFactory {
+class DestinationStreamFactory(
+    private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
+) {
     fun make(stream: ConfiguredAirbyteStream): DestinationStream {
         return DestinationStream(
             descriptor =
@@ -108,7 +110,7 @@ class DestinationStreamFactory {
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
-            schema = JsonSchemaToAirbyteType().convert(stream.stream.jsonSchema)
+            schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
         )
     }
 }
