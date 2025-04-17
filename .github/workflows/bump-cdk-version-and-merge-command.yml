@@ -33,7 +33,7 @@ jobs:
           # git merge origin/master --allow-unrelated-histories --no-edit --strategy=ort
 
           # Get the list of modified files between the master branch and the current branch
-          modified_files=$(git diff --name-only origin/master $(git rev-parse --abbrev-ref HEAD))
+          modified_files=$(git diff --name-only master $(git rev-parse --abbrev-ref HEAD))
 
           # Filter for folders containing build.gradle files
           for file in $modified_files; do
