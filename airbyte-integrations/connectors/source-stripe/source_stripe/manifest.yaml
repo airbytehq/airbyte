@@ -205,6 +205,7 @@ definitions:
       - id
     incremental_sync:
       $ref: "#/definitions/events_read_slice_cursor"
+      cursor_field: updated
     retriever:
       $ref: "#/definitions/events_objects_retriever"
     transformations:
@@ -239,7 +240,6 @@ definitions:
 
   events_read_slice_cursor:
     type: DatetimeBasedCursor
-    cursor_field: updated
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
@@ -558,11 +558,37 @@ definitions:
                 value_type: integer
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        incremental_sync:
+          $ref: "#/definitions/events_read_slice_cursor"
+          cursor_field: subscription_updated
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
             request_parameters:
               types[]: '{{["customer.subscription.created", "customer.subscription.updated"]}}'
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - is_deleted
+                value: "{{ True }}"
+            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - subscription_updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+            condition: "{{ record.get('data', {}).get('object', False) }}"
+          - type: DpathFlattenFields
+            field_path:
+              - data
+              - object
+            replace_record: true
 streams:
   # These streams are base incremental streams
   - $ref: "#/definitions/streams/events"
