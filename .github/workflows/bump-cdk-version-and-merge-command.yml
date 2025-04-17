@@ -79,15 +79,15 @@ jobs:
         with:
           script: |
             github.rest.actions.createWorkflowDispatch({
-              owner: "${{ github.repository_owner }}",
-              repo: "${{ github.event.repository.name }}",
-              workflow_id: "publish-java-cdk-command.yml",
-              ref: "${{ github.ref_name }}",
+              owner: '${{ github.repository_owner }}',
+              repo: '${{ github.event.repository.name }}',
+              workflow_id: 'publish-java-cdk-command.yml',
+              ref: '${{ github.ref_name }}',
               inputs: {
-                repo: "airbytehq/airbyte",
-                dry-run: "true",
-                force: "false",
-                gitref: "${{ github.ref_name }}"
+                repo: 'airbytehq/airbyte',
+                dry-run: 'true',
+                force: 'false',
+                gitref: '${{ github.ref_name }}'
               }
             })
 
