@@ -232,15 +232,24 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
         for target_record in target_records:
             target_relationships = target_record.get("relationships", {})
 
-            for included_relation in included_relations:
-                included_relation_attributes = included_relation.get("attributes", {})
-                included_relation_type = included_relation["type"]
-                included_relation_id = included_relation["id"]
+            for relationship_type, relationship in target_relationships.items():
+                relationship_data = relationship.get("data", {})
 
-                target_relationship_id = target_relationships.get(included_relation_type, {}).get("data", {}).get("id")
-
-                if included_relation_id == target_relationship_id:
-                    target_relationships[included_relation_type]["data"].update(included_relation_attributes)
+                if isinstance(relationship_data, dict):
+                    # Single object relationship (e.g., metric, profile)
+                    included_type = relationship_data.get("type")
+                    included_id = relationship_data.get("id")
+                    for included_relation in included_relations:
+                        if included_relation.get("type") == included_type and included_relation.get("id") == included_id:
+                            relationship_data.update(included_relation.get("attributes", {}))
+                elif isinstance(relationship_data, list):
+                    # Array of objects relationship (e.g., attributions)
+                    for item in relationship_data:
+                        included_type = item.get("type")
+                        included_id = item.get("id")
+                        for included_relation in included_relations:
+                            if included_relation.get("type") == included_type and included_relation.get("id") == included_id:
+                                item.update(included_relation.get("attributes", {}))
 
             yield target_record
 
