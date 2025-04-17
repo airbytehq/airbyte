@@ -5,6 +5,8 @@ on:
     types:
       - created
 
+run-name: "Bump connector versions in PR: #${{ github.event.inputs.pr }}"
+
 jobs:
   bump-cdk-version:
     runs-on: ubuntu-latest
