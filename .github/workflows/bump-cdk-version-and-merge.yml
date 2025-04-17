@@ -1,0 +1,43 @@
+name: Bump Java CDK Version
+
+on:
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  bump-cdk-version:
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '/bump-cdk')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract new version
+        id: extract-version
+        run: |
+          echo "${{ github.event.comment.body }}" | grep -oP '/bump-cdk \K[0-9]+\.[0-9]+\.[0-9]+' > new_version.txt
+          if [ ! -s new_version.txt ]; then
+            echo "Error: No version found in the command." >&2
+            exit 1
+          fi
+          NEW_VERSION=$(cat new_version.txt)
+          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Update cdkVersionRequired in build.gradle files
+        run: |
+          find airbyte-integrations/connectors -name "build.gradle" | while read gradle_file; do
+            sed -i "s/cdkVersionRequired = '.*'/cdkVersionRequired = '${{ env.new_version }}'/" "$gradle_file"
+            sed -i "/useLocalCdk/d" "$gradle_file"
+          done
+
+      - name: Respond to user
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "Java CDK version bumped to `${{ env.new_version }}` and connectors updated successfully. 🚀"
+            })
