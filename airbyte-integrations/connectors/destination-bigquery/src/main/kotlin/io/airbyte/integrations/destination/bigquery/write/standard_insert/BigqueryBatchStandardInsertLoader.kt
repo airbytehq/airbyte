@@ -69,7 +69,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
-        part: Int
+        part: Int,
     ): BigqueryBatchStandardInsertsLoader {
         val writeChannelConfiguration =
         // TODO need to write to raw vs final table appropriately

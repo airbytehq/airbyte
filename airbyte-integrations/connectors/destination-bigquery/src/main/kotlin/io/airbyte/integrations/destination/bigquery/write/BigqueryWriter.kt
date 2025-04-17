@@ -26,12 +26,11 @@ class BigqueryWriterFactory(
     private val catalog: DestinationCatalog,
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
-    private val sqlGenerator: BigQuerySqlGenerator,
-    private val destinationHandler: BigQueryDestinationHandler,
 ) {
     @Singleton
-    fun make() =
-        TypingDedupingWriter(
+    fun make(): TypingDedupingWriter {
+        val destinationHandler = BigQueryDestinationHandler(bigquery, config.datasetLocation.region)
+        return TypingDedupingWriter(
             catalog,
             BigqueryRawTableNameGenerator(config.datasetId, config.rawTableDataset),
             BigqueryFinalTableNameGenerator(config.datasetId),
@@ -39,9 +38,13 @@ class BigqueryWriterFactory(
             BigqueryDestinationInitialStatusGatherer(bigquery),
             destinationHandler,
             BigqueryRawTableOperations(bigquery),
-            TypingDedupingFinalTableOperations(sqlGenerator, destinationHandler),
+            TypingDedupingFinalTableOperations(
+                BigQuerySqlGenerator(config.projectId, config.datasetLocation.region),
+                destinationHandler,
+            ),
             disableTypeDedupe = config.disableTypingDeduping,
         )
+    }
 }
 
 // TODO delete this - this is definitely duplicated code, and also is definitely wrong
