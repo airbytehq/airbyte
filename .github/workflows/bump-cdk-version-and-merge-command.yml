@@ -20,6 +20,37 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Validate provided version
+        run: |
+          # Extract the provided version
+          provided_version="${{ github.event.inputs.version }}"
+          
+          # Extract the current version from version.properties
+          current_version=$(grep '^version=' java/airbyte-cdk/core/src/main/resources/version.properties | cut -d'=' -f2)
+          
+          # Check if the provided version follows SemVer
+          if ! [[ "$provided_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Provided version '$provided_version' is not a valid SemVer version."
+            exit 1
+          fi
+          
+          # Compare the provided version with the current version
+          if [ "$(printf '%s\n' "$current_version" "$provided_version" | sort -V | head -n1)" = "$provided_version" ] && [ "$current_version" != "$provided_version" ]; then
+            echo "Error: Provided version '$provided_version' is not greater than the current version '$current_version'."
+            exit 1
+          fi
+          
+          echo "Provided version '$provided_version' is valid and greater than the current version '$current_version'."
+
+      - name: Update version.properties
+        run: |
+          # Extract the provided version
+          provided_version="${{ github.event.inputs.version }}"
+          
+          # Update the version in version.properties
+          sed -i "s/^version=.*/version=$provided_version/" java/airbyte-cdk/core/src/main/resources/version.properties
+          
+          echo "Updated version.properties with version '$provided_version'."
 
       - name: Configure Git
         run: |
@@ -30,9 +61,6 @@ jobs:
         run: |
           # Ensure the branch has the most recent updates from the master branch
           git fetch origin master
-          # git merge origin/master --allow-unrelated-histories --no-edit --strategy=ort
-
-          git remote -v
 
           # Get the list of modified files between the default branch and the current branch
           modified_files=$(git diff --name-only origin/master)
