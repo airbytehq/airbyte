@@ -661,23 +661,23 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCreative
+              value: "{{ stream_partition.get('creative_id').split(':')[-1] }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "CREATIVE"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ad_creative_analytics"
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - sponsoredCreative
-            value: "{{ stream_partition.get('creative_id').split(':')[-1] }}"
-            value_type: string
-      - type: AddFields
-        fields:
-          - path:
-              - pivot
-            value: "CREATIVE"
-            value_type: string
     ad_impression_device_analytics:
       type: DeclarativeStream
       name: ad_impression_device_analytics
