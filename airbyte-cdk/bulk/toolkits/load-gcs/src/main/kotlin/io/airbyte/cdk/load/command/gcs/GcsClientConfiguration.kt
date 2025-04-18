@@ -10,8 +10,17 @@ data class GcsClientConfiguration(
     val gcsBucketName: String,
     val path: String,
     val credential: GcsAuthConfiguration,
-    val region: GcsRegion?,
+    val region: String?,
 ) {
+    constructor(
+        commonSpecification: GcsCommonSpecification,
+        regionSpecification: GcsRegion,
+    ) : this(
+        commonSpecification.gcsBucketName,
+        commonSpecification.path,
+        commonSpecification.credential.toGcsAuthConfiguration(),
+        regionSpecification.region,
+    )
 
     /**
      * This is used when creating the S3Client wrapper. We need to be able to use the current config
@@ -20,7 +29,7 @@ data class GcsClientConfiguration(
     fun s3BucketConfiguration() =
         S3BucketConfiguration(
             gcsBucketName,
-            region?.region,
+            region,
             GOOGLE_STORAGE_ENDPOINT,
         )
 }

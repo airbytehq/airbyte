@@ -53,7 +53,7 @@ class GcsClientFactory(
                                     override val s3BucketConfiguration: S3BucketConfiguration =
                                         S3BucketConfiguration(
                                             s3BucketName = config.gcsBucketName,
-                                            s3BucketRegion = config.region?.region,
+                                            s3BucketRegion = config.region,
                                             s3Endpoint = GOOGLE_STORAGE_ENDPOINT
                                         )
                                 },
