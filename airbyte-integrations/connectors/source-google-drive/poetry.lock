@@ -80,7 +80,7 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 type = "git"
 url = "https://github.com/airbytehq/airbyte-python-cdk.git"
 reference = "devin/1744958125-bump-unstructured-to-latest"
-resolved_reference = "a36d12a18cd66eceb339258519e70836fe9de2b0"
+resolved_reference = "e77dc1ba50d5af1d35062497682b2a629dd2cae4"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
