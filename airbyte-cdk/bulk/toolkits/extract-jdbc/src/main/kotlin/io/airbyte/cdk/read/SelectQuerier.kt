@@ -161,12 +161,6 @@ class JdbcSelectQuerier(
             // Read the current row in the ResultSet
             val resultRow = reusable
             resultRow.changes.clear()
-            if (outputFormat == SocketOutputFormat.FLATBUFFERS) {
-                repeat (17) {
-                    resultRow.fbTypeData[it] = 0.toByte()
-                    resultRow.fbData[it] = 0
-                }
-            }
             var colIdx = 1
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }

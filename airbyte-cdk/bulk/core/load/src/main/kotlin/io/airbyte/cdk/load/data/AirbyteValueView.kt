@@ -22,7 +22,7 @@ enum class AirbyteValueViewType {
     TIMESTAMP
 }
 
-private val fakeSortedCatalog: List<Pair<String, AirbyteValueViewType>> =
+private val fakeSortedCatalogLocal: List<Pair<String, AirbyteValueViewType>> =
     listOf(
         Pair("occupation", AirbyteValueViewType.STRING),
         Pair("gender", AirbyteValueViewType.STRING),
@@ -43,9 +43,30 @@ private val fakeSortedCatalog: List<Pair<String, AirbyteValueViewType>> =
         Pair("height", AirbyteValueViewType.NUMBER),
     )
 
+private val fakeSortedCatalogCloud: List<Pair<String, AirbyteValueViewType>> =
+    listOf(
+        Pair("id", AirbyteValueViewType.INTEGER),
+        Pair("age", AirbyteValueViewType.INTEGER),
+        Pair("name", AirbyteValueViewType.STRING),
+        Pair("email", AirbyteValueViewType.STRING),
+        Pair("title", AirbyteValueViewType.STRING),
+        Pair("gender", AirbyteValueViewType.STRING),
+        Pair("height", AirbyteValueViewType.NUMBER),
+        Pair("weight", AirbyteValueViewType.NUMBER),
+        Pair("language", AirbyteValueViewType.STRING),
+        Pair("global_id", AirbyteValueViewType.INTEGER),
+        Pair("telephone", AirbyteValueViewType.STRING),
+        Pair("blood_type", AirbyteValueViewType.STRING),
+        Pair("created_at", AirbyteValueViewType.TIMESTAMP),
+        Pair("occupation", AirbyteValueViewType.STRING),
+        Pair("updated_at", AirbyteValueViewType.TIMESTAMP),
+        Pair("nationality", AirbyteValueViewType.STRING),
+        Pair("academic_degree", AirbyteValueViewType.STRING),
+    )
+
 interface AirbyteValueView {
     val finalSchema: List<Pair<String, AirbyteValueViewType>>
-        get() = fakeSortedCatalog
+        get() = fakeSortedCatalogCloud
 
     fun getString(idx: Int): String?
     fun getBoolean(idx: Int): Boolean?
@@ -146,7 +167,7 @@ class AirbyteValueJsonNodeView(
     private val underlying: ObjectNode,
 ): AirbyteValueView {
     private val indexToName: Map<Int, String> =
-        fakeSortedCatalog.mapIndexed { index, pair -> index to pair.first }.toMap()
+        fakeSortedCatalogLocal.mapIndexed { index, pair -> index to pair.first }.toMap()
 
     override fun getString(idx: Int): String {
         return underlying.get(indexToName[idx]!!).asText()
