@@ -36,7 +36,7 @@ class GcsClientTest {
             GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
             region
         )
-    private val gcsClient = GcsClient(storage, config)
+    private val gcsClient = GcsNativeClient(storage, config)
 
     @Test
     fun `test list with empty prefix`() = runBlocking {
@@ -247,7 +247,7 @@ class GcsClientTest {
                 GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
                 region
             )
-        val gcsClient = GcsClient(storage, config)
+        val gcsClient = GcsNativeClient(storage, config)
         val key = "test-file"
         val blobId = BlobId.of(bucketName, key)
 
@@ -267,7 +267,7 @@ class GcsClientTest {
                 GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
                 region
             )
-        val gcsClient = GcsClient(storage, config)
+        val gcsClient = GcsNativeClient(storage, config)
         val key = "/test-file"
 
         val expectedPath = "path/test-file"
