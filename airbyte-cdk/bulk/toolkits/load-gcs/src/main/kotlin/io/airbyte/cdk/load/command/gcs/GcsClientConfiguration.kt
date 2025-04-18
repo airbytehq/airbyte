@@ -29,7 +29,7 @@ data class GcsClientConfiguration(
     fun s3BucketConfiguration() =
         S3BucketConfiguration(
             gcsBucketName,
-            region?.region,
+            region,
             GOOGLE_STORAGE_ENDPOINT,
         )
 }
