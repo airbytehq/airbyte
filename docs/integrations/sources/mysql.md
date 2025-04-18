@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.10 | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
 | 3.11.9 | 2025-03-14 | [55731](https://github.com/airbytehq/airbyte/pull/55731) | More meaningful errors for variables used in extra checks for CDC |
 | 3.11.8 | 2025-03-14 | [55761](https://github.com/airbytehq/airbyte/pull/55761) | Do not perform complex sampling for source-mysql |
 | 3.11.7 | 2025-03-12 | [55734](https://github.com/airbytehq/airbyte/pull/55734) | Expose additional stream context for debezium properties at startup |
