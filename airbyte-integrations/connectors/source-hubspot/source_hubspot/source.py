@@ -20,7 +20,6 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     BaseStream,
-    Campaigns,
     Companies,
     CompaniesPropertyHistory,
     CompaniesWebAnalytics,
@@ -79,6 +78,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
+    "campaigns": {"crm.lists.read"},
 }
 
 
@@ -171,7 +171,6 @@ class SourceHubspot(YamlDeclarativeSource):
         common_params = self.get_common_params(config=config)
         streams = super().streams(config=config)
         streams += [
-            Campaigns(**common_params),
             Companies(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
