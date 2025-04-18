@@ -353,7 +353,6 @@ public class MongoUtil {
      * "$$each.v" } } } } } } }, { "$unwind" : "$fields" }, { "$group" : { "_id" : $fields } } ] )
      */
     final AggregateIterable<Document> output = collection.aggregate(aggregateList);
-    // try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
     try (final MongoCursor<Document> cursor = output.allowDiskUse(true).maxTime(discoverTimeout, TimeUnit.SECONDS).cursor()) {
       while (cursor.hasNext()) {
         @SuppressWarnings("unchecked")
