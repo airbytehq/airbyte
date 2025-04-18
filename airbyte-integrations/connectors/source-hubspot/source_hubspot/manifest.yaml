@@ -296,7 +296,6 @@ definitions:
           type: KeyTransformation
           prefix: counters_
 
-
 streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/email_subscriptions_stream"
@@ -1499,7 +1498,8 @@ schemas:
     additionalProperties: true
     properties:
       appId:
-        description: The unique identifier of the application associated with the campaign
+        description:
+          The unique identifier of the application associated with the campaign
           data.
         type:
           - "null"
