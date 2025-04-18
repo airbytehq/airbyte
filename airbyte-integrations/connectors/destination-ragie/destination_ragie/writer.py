@@ -88,7 +88,6 @@ class RagieWriter:
         else:
              logger.info("No documents found to delete across overwrite streams.")
 
-
     # --- Helper Methods (_get_value_from_path, _calculate_content_hash, _preload_hashes_if_needed) - No changes needed ---
     def _get_value_from_path(self, data: Dict[str, Any], path_str: Optional[str]) -> Any:
         if not path_str or not isinstance(data, dict): return None
@@ -163,7 +162,6 @@ class RagieWriter:
             self.hashes_preloaded.add(stream_id)
             self.seen_hashes[stream_id] = set()
             logger.warning(f"Deduplication for '{stream_id}' may be incomplete due to hash preload failure.")
-
 
     def _prepare_metadata(self, record_data: Dict[str, Any], stream_id: str) -> Dict[str, Any]:
         """Extracts, combines, and cleans metadata. Ensures values are suitable types."""
