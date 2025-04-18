@@ -17,7 +17,7 @@ DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
 ANALYTICS_FIELDS_V2: List = [
     "actionClicks",
     "adUnitClicks",
-    "approximateUniqueImpressions",
+    "approximateMemberReach",
     "cardClicks",
     "cardImpressions",
     "clicks",
