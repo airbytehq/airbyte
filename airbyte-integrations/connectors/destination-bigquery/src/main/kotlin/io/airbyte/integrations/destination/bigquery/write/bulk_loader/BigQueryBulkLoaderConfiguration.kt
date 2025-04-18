@@ -9,6 +9,8 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.gcs.GOOGLE_STORAGE_ENDPOINT
+import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
+import io.airbyte.cdk.load.command.gcs.GcsClientConfigurationProvider
 import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
@@ -39,6 +41,7 @@ data class BigqueryBulkLoadConfiguration<T : OutputStream>(
     S3BucketConfigurationProvider,
     AWSAccessKeyConfigurationProvider,
     AWSArnRoleConfigurationProvider,
+    GcsClientConfigurationProvider,
     ObjectStorageCompressionConfigurationProvider<T> {
     override val objectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
@@ -59,6 +62,8 @@ data class BigqueryBulkLoadConfiguration<T : OutputStream>(
     override val s3BucketConfiguration: S3BucketConfiguration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration
     override val awsArnRoleConfiguration: AWSArnRoleConfiguration = AWSArnRoleConfiguration(null)
+    override val gcsClientConfiguration: GcsClientConfiguration =
+        (bigQueryConfiguration.loadingMethod as GcsStagingConfiguration).gcsClientConfig
 
     init {
         bigQueryConfiguration.loadingMethod as GcsStagingConfiguration
