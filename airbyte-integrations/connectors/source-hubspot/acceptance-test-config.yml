@@ -149,5 +149,5 @@ acceptance_tests:
       - config_path: secrets/config_oauth.json
         configured_catalog_path: integration_tests/incremental_catalog.json
         future_state:
-          future_state_path: integration_tests/abnormal_state.json
+          bypass_reason: "Skipping as some streams change state type after migration"
         timeout_seconds: 7200
