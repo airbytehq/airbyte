@@ -10,8 +10,8 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.file.s3.S3Client
-import io.airbyte.cdk.load.file.s3.S3Object
+import io.airbyte.cdk.load.file.gcs.GcsBlob
+import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
@@ -28,14 +28,16 @@ import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Singleton
 
 class BigQueryBulkLoader(
-    private val storageClient: S3Client,
+    private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
     private val stream: DestinationStream,
-) : BulkLoader<S3Object> {
-    override suspend fun load(remoteObject: S3Object) {
+) : BulkLoader<GcsBlob> {
+    override suspend fun load(remoteObject: GcsBlob) {
         val rawTableId = TempUtils.rawTableId(bigQueryConfiguration, stream.descriptor)
-        val gcsUri = "gs://${remoteObject.keyWithBucketName}"
+        val cleanedFullPath =
+            "${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}".replace("//", "/")
+        val gcsUri = "gs://${cleanedFullPath}"
 
         val configuration =
             LoadJobConfiguration.builder(rawTableId, gcsUri)
@@ -79,10 +81,10 @@ class BigqueryConfiguredForBulkLoad : Condition {
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigQueryBulkLoaderFactory(
     private val catalog: DestinationCatalog,
-    private val storageClient: S3Client,
+    private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration
-) : BulkLoaderFactory<StreamKey, S3Object> {
+) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
     override val maxNumConcurrentLoads: Int = 1
@@ -91,7 +93,7 @@ class BigQueryBulkLoaderFactory(
     override val partSizeBytes: Long = 10 * 1024 * 1024 // 10 MB
     override val maxMemoryRatioReservedForParts: Double = 0.6
 
-    override fun create(key: StreamKey, partition: Int): BulkLoader<S3Object> {
+    override fun create(key: StreamKey, partition: Int): BulkLoader<GcsBlob> {
         val stream = catalog.getStream(key.stream)
         return BigQueryBulkLoader(storageClient, bigQueryClient, bigQueryConfiguration, stream)
     }
