@@ -290,7 +290,7 @@ definitions:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
-        - "%ms" # Previous Hubspot v1 endpoint returned timestamp as a millisecond string and incoming state may come in that format
+        - "%ms"
       is_client_side_incremental: true
     $parameters:
       name: contacts_property_history
@@ -317,6 +317,11 @@ definitions:
           - type: AddedFieldDefinition
             path: ["updated-by-user-id"]
             value: "{{ record.get('updatedByUserId') }}"
+          - type: AddedFieldDefinition
+            path: ["timestamp"]
+            # The Hubspot v1 API returns time as a millisecond integer, but v3 returns a millisecond ISO8601
+            # string. This transformation retains backwards compatibility without loss of precision
+            value: "{{ format_datetime(record.get('timestamp'), '%ms') }}"
       - type: RemoveFields
         field_pointers:
           - ["sourceId"]
@@ -571,7 +576,6 @@ schemas:
         type:
           - "null"
           - integer
-          - string # The legacy V1 API returned millisecond integer timestamp. V3 returns a ISO8601 string timestamp
       selected:
         description: Indicates whether this property is currently selected or not.
         type:
