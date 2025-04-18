@@ -113,6 +113,20 @@ definitions:
     decoder:
       type: JsonDecoder
 
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updatedAt
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%SZ"
+
   retriever_without_pagination:
     type: SimpleRetriever
     requester:
@@ -222,7 +236,7 @@ definitions:
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
-              property_limit: 10000
+              property_limit: 15000
               record_merge_strategy:
                 type: GroupByKeyMergeStrategy
                 key: id
@@ -257,33 +271,166 @@ definitions:
           hs_date_entered_: "hs_v2_date_entered_"
           hs_date_exited_: "hs_v2_date_exited_"
           hs_time_in_: "hs_v2_latest_time_in_"
-      - type: CustomTransformation
-        class_name: source_hubspot.components.FlattenFieldWithPrefix
+      - type: DpathFlattenFields
         field_path: ["properties"]
-        prefix: properties_
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: archivedAt
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%S.%f+00:00"
-        - "%Y-%m-%dT%H:%M:%SZ"
+      $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/deals_archived"
 
+  forms_stream:
+    $ref: "#/definitions/stream_base"
+    name: forms
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /marketing/v3/forms
+        request_parameters:
+          formTypes: "['hubspot', 'captured', 'flow']"
+            # Not supported by `v1` api version used by the FormSubmissions stream
+            # TODO: consider migrating FormSubmissions stream to use `/v3` api version
+            # then uncomment the last 2 form types.
+            # "blog_comment",
+            # "all",
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/form/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: [ ]
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "updatedAt" ]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/forms"
+
+  form_submissions_stream:
+    $ref: "#/definitions/stream_base"
+    name: form_submissions
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path:  "/form-integrations/v1/submissions/forms/{{ stream_partition['form_id'][0] }}"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/forms_stream"
+              parent_key: "id"
+              partition_field: "form_id"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "updatedAt" ]
+            value: "{{ record.get('updatedAt') or record['submittedAt'] }}"
+          - path: [ "formId" ]
+            value: "{{ stream_slice['form_id'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%ms') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/form_submissions"
+
 streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/deals_archived_stream"
+  - "#/definitions/forms_stream"
+  - "#/definitions/form_submissions_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -1211,6 +1358,367 @@ schemas:
         type:
           - "null"
           - string
+
+  form_submissions:
+    $schema: http://json-schema.org/schema#
+    type:
+    - 'null'
+    - object
+    properties:
+      conversionId:
+        description: The unique identifier for the form submission
+        type:
+        - 'null'
+        - string
+      submittedAt:
+        description: The timestamp when the form was submitted.
+        type:
+        - 'null'
+        - integer
+      updatedAt:
+        description: The timestamp when the form submission data was last updated.
+        type:
+        - 'null'
+        - integer
+      values:
+        description: An array of form field values submitted in the form.
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          properties:
+            name:
+              description: The name or identifier of the form field.
+              type:
+              - 'null'
+              - string
+            value:
+              description: The actual value submitted for the form field.
+              type:
+              - 'null'
+              - string
+            objectTypeId:
+              description: The type identifier of the form field value.
+              type:
+              - 'null'
+              - string
+      pageUrl:
+        description: The URL of the web page where the form was submitted.
+        type:
+        - 'null'
+        - string
+      formId:
+        description: The unique identifier of the form associated with the submission.
+        type:
+        - 'null'
+        - string
+    additionalProperties: true
+
+  forms:
+    $schema: http://json-schema.org/schema#
+    type:
+    - 'null'
+    - object
+    properties:
+      id:
+        description: Unique identifier for the form.
+        type:
+        - 'null'
+        - string
+      name:
+        description: Name of the form.
+        type:
+        - 'null'
+        - string
+      formType:
+        description: Type of the form.
+        type:
+        - 'null'
+        - string
+      createdAt:
+        description: Date and time when the form was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updatedAt:
+        description: Date and time when the form was last updated.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      archived:
+        description: Indicates whether the form is archived.
+        type:
+        - 'null'
+        - boolean
+      deletedAt:
+        description: Date and time when the form was deleted.
+        type:
+        - 'null'
+        - string
+      fieldGroups:
+        description: Groups containing fields of a form.
+        type:
+        - 'null'
+        - array
+        items:
+          description: Field groups in the form.
+          type:
+          - 'null'
+          - object
+          properties:
+            fields:
+              type:
+              - 'null'
+              - array
+              items:
+                description: Properties of each field.
+                type:
+                - 'null'
+                - object
+                properties:
+                  objectTypeId:
+                    description: Object type ID for the field.
+                    type:
+                    - 'null'
+                    - string
+                  name:
+                    description: Name of the field.
+                    type:
+                    - 'null'
+                    - string
+                  label:
+                    description: Label for the field.
+                    type:
+                    - 'null'
+                    - string
+                  required:
+                    description: Indicates whether the field is required.
+                    type:
+                    - 'null'
+                    - boolean
+                  hidden:
+                    description: Indicates whether the field is hidden.
+                    type:
+                    - 'null'
+                    - boolean
+                  fieldType:
+                    description: Type of the field.
+                    type:
+                    - 'null'
+                    - string
+                  validation:
+                    description: Validation settings for the field.
+                    type:
+                    - 'null'
+                    - object
+                    properties:
+                      blockedEmailDomains:
+                        description: List of blocked email domains for validation.
+                        type:
+                        - 'null'
+                        - array
+                        items:
+                          type:
+                          - 'null'
+                          - string
+                      useDefaultBlockList:
+                        description: Indicates whether to use the default block list
+                          for validation.
+                        type:
+                        - 'null'
+                        - boolean
+            groupType:
+              description: Type of field group.
+              type:
+              - 'null'
+              - string
+            richTextType:
+              description: Type of rich text.
+              type:
+              - 'null'
+              - string
+      configuration:
+        description: Configuration settings for the form.
+        type:
+        - 'null'
+        - object
+        properties:
+          language:
+            description: Language setting for the form.
+            type:
+            - 'null'
+            - string
+          cloneable:
+            description: Indicates whether the form is cloneable.
+            type:
+            - 'null'
+            - boolean
+          postSubmitAction:
+            description: Action to be taken after form submission.
+            type:
+            - 'null'
+            - object
+            properties:
+              type:
+                description: Type of post-submit action.
+                type:
+                - 'null'
+                - string
+              value:
+                description: Value of post-submit action.
+                type:
+                - 'null'
+                - string
+          editable:
+            description: Indicates whether the form is editable.
+            type:
+            - 'null'
+            - boolean
+          archivable:
+            description: Indicates whether the form is archivable.
+            type:
+            - 'null'
+            - boolean
+          recaptchaEnabled:
+            description: Indicates whether reCAPTCHA is enabled.
+            type:
+            - 'null'
+            - boolean
+          notifyContactOwner:
+            description: Notification setting for contacting the owner.
+            type:
+            - 'null'
+            - boolean
+          notifyRecipients:
+            description: Notification setting for recipients.
+            type:
+            - 'null'
+            - array
+          createNewContactForNewEmail:
+            description: Creates a new contact for a new email.
+            type:
+            - 'null'
+            - boolean
+          prePopulateKnownValues:
+            description: Pre-populates known values in the form.
+            type:
+            - 'null'
+            - boolean
+          allowLinkToResetKnownValues:
+            description: Allows resetting known values through a link.
+            type:
+            - 'null'
+            - boolean
+          lifecycleStages:
+            description: List of lifecycle stages.
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - string
+      displayOptions:
+        description: Display options for the form.
+        type:
+        - 'null'
+        - object
+        properties:
+          renderRawHtml:
+            description: Indicates whether to render raw HTML.
+            type:
+            - 'null'
+            - boolean
+          theme:
+            description: Theme setting for the form.
+            type:
+            - 'null'
+            - string
+          submitButtonText:
+            description: Text for the submit button.
+            type:
+            - 'null'
+            - string
+          style:
+            description: Style settings for the form.
+            type:
+            - 'null'
+            - object
+            properties:
+              fontFamily:
+                description: Font family style.
+                type:
+                - 'null'
+                - string
+              backgroundWidth:
+                description: Background width style.
+                type:
+                - 'null'
+                - string
+              labelTextColor:
+                description: Label text color style.
+                type:
+                - 'null'
+                - string
+              labelTextSize:
+                description: Label text font size.
+                type:
+                - 'null'
+                - string
+              helpTextColor:
+                description: Help text color style.
+                type:
+                - 'null'
+                - string
+              helpTextSize:
+                description: Help text font size.
+                type:
+                - 'null'
+                - string
+              legalConsentTextColor:
+                description: Legal consent text color style.
+                type:
+                - 'null'
+                - string
+              legalConsentTextSize:
+                description: Legal consent text font size.
+                type:
+                - 'null'
+                - string
+              submitColor:
+                description: Color of submit button.
+                type:
+                - 'null'
+                - string
+              submitAlignment:
+                description: Alignment of submit button.
+                type:
+                - 'null'
+                - string
+              submitFontColor:
+                description: Font color of submit button.
+                type:
+                - 'null'
+                - string
+              submitSize:
+                description: Size of submit button.
+                type:
+                - 'null'
+                - string
+          cssClass:
+            description: CSS class for styling the form.
+            type:
+            - 'null'
+            - string
+      legalConsentOptions:
+        description: Legal consent options for the form.
+        type:
+        - 'null'
+        - object
+    additionalProperties: true
 
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#

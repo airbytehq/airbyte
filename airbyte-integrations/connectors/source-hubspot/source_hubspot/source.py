@@ -80,6 +80,8 @@ scopes = {
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
     "deals_archived": {"contacts", "crm.objects.deals.read"},
+    "forms": {"forms"},
+    "form_submissions": {"forms"},
 }
 
 
@@ -183,6 +185,7 @@ class SourceHubspot(YamlDeclarativeSource):
             DealPipelines(**common_params),
             DealSplits(**common_params),
             Deals(**common_params),
+            # DealsArchived(**common_params),
             EmailEvents(**common_params),
             Engagements(**common_params),
             EngagementsCalls(**common_params),
@@ -190,8 +193,8 @@ class SourceHubspot(YamlDeclarativeSource):
             EngagementsMeetings(**common_params),
             EngagementsNotes(**common_params),
             EngagementsTasks(**common_params),
-            Forms(**common_params),
-            FormSubmissions(**common_params),
+            # Forms(**common_params),
+            # FormSubmissions(**common_params),
             Goals(**common_params),
             Leads(**common_params),
             LineItems(**common_params),
