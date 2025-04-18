@@ -107,7 +107,7 @@ abstract class DestinationConfiguration : Configuration {
         SMILE,
         PROTOBUF,
         DEVNULL,
-        FLATBUFFERS
+        FLATBUFFERS,
     }
 
     open val inputSerializationFormat: InputSerializationFormat = InputSerializationFormat.JSONL

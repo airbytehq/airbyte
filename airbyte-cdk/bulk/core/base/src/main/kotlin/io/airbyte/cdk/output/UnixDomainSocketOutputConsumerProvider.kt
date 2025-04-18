@@ -51,7 +51,7 @@ enum class SocketOutputFormat {
     PROTOBUF,
     SMILE,
     DEVNULL,
-    FLATBUFFERS
+    FLATBUFFERS,
 }
 
 interface SocketConfig {
@@ -253,7 +253,7 @@ class UnixDomainSocketOutputConsumer(
     } else { null }
 
     fun accept(recordData: ObjectNode, recordMessage:  AirbyteRecord.AirbyteRecordMessage?, fbBuffer: ByteArray?,
-               namespace: String, streamName: String) {
+               namespace: String, streamName: String, fbBuilder: FlatBufferBuilder? = null) {
         if (outputFormat == SocketOutputFormat.DEVNULL) {
             return
         }
@@ -264,8 +264,17 @@ class UnixDomainSocketOutputConsumer(
                 .build()
             pMessage.writeDelimitedTo(bufferedOutputStream)
         } else if (outputFormat == SocketOutputFormat.FLATBUFFERS) {
-            bufferedOutputStream.write(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(fbBuffer!!.size).array())
-            bufferedOutputStream.write(fbBuffer)
+            if (fbBuilder != null) {
+                val buffer = fbBuilder.dataBuffer()
+                bufferedOutputStream.write(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(buffer.remaining()).array())
+                bufferedOutputStream.write(buffer.array(), buffer.position(), buffer.remaining())
+            } else {
+                bufferedOutputStream.write(
+                    ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(fbBuffer!!.size)
+                        .array()
+                )
+                bufferedOutputStream.write(fbBuffer)
+            }
         } else {
             val airbyteMessage =
                 AirbyteMessage()
@@ -292,6 +301,12 @@ class UnixDomainSocketOutputConsumer(
                                  namespace: String,
                                  streamName: String
     ) {
+        if (!writeAsync && outputFormat == SocketOutputFormat.FLATBUFFERS) {
+            accept(recordData, null, null, namespace, streamName, fbResult.fbBuilder)
+            fbResult.fbBuilder.clear()
+            return
+        }
+
         val fbBuffer = if (outputFormat == SocketOutputFormat.PROTOBUF) {
             recordBuilder
                 .setNamespace(namespace)
@@ -328,7 +343,7 @@ class UnixDomainSocketOutputConsumer(
 
 
         if (!writeAsync) {
-            accept(recordData, recordBuilder.build(), fbBuffer, namespace, streamName)
+            accept(recordData, recordBuilder.build(),null, namespace, streamName)
             return
         }
 

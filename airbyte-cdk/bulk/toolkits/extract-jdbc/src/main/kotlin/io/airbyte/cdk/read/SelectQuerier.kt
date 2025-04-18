@@ -23,6 +23,8 @@ import io.airbyte.protocol.AirbyteValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
