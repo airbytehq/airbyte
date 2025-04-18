@@ -1966,6 +1966,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 // 50000.0000000000000001 can't be represented as a standard float64,
                 // and gets rounded off.
                 // 1e39 is greater than the typical max 1e39-1 for database/warehouse destinations
+                // (decimal points are to force jackson to recognize it as a decimal)
                 makeRecord(
                     """
                         {
@@ -1973,7 +1974,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "struct": {"foo": 50000.0000000000000001},
                           "number": 50000.0000000000000001,
                           "integer": 99999999999999999999999999999999,
-                          "number": 1e39
+                          "number": 1.0000000000000000000000000000000000000000e39
                         }
                     """.trimIndent(),
                 ),
@@ -2002,7 +2003,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 6,
-                          "number": -2e39,
+                          "number": -2.0000000000000000000000000000000000000000e39,
                           "integer": -99999999999999999999999999999999
                         }
                     """.trimIndent(),
