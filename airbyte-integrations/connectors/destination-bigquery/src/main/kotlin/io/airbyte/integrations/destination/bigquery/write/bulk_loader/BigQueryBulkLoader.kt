@@ -36,11 +36,13 @@ class BigQueryBulkLoader(
     override suspend fun load(remoteObject: GcsBlob) {
         val rawTableId = TempUtils.rawTableId(bigQueryConfiguration, stream.descriptor)
         val cleanedFullPath =
-            "${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}".replace("//", "/")
-        val gcsUri = "gs://${cleanedFullPath}"
+            "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}".replace(
+                "//",
+                "/"
+            )
 
         val configuration =
-            LoadJobConfiguration.builder(rawTableId, gcsUri)
+            LoadJobConfiguration.builder(rawTableId, cleanedFullPath)
                 .setFormatOptions(FormatOptions.csv())
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
@@ -53,7 +55,7 @@ class BigQueryBulkLoader(
             BigQueryUtils.waitForJobFinish(loadJob)
         } catch (e: Exception) {
             throw RuntimeException(
-                "Failed to load CSV data from $gcsUri to table ${rawTableId.dataset}.${rawTableId.table}: ${e.message}",
+                "Failed to load CSV data from $cleanedFullPath to table ${rawTableId.dataset}.${rawTableId.table}: ${e.message}",
                 e
             )
         }
