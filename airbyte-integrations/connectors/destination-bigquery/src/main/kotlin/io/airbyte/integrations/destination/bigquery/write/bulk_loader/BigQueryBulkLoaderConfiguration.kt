@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.gcs.GOOGLE_STORAGE_ENDPOINT
 import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
@@ -64,8 +65,8 @@ data class BigqueryBulkLoadConfiguration<T : OutputStream>(
         s3BucketConfiguration =
             S3BucketConfiguration(
                 s3BucketName = bigQueryConfiguration.loadingMethod.gcsClientConfig.gcsBucketName,
-                s3BucketRegion = bigQueryConfiguration.loadingMethod.gcsClientConfig.region?.region,
-                s3Endpoint = "https://storage.googleapis.com",
+                s3BucketRegion = bigQueryConfiguration.loadingMethod.gcsClientConfig.region,
+                s3Endpoint = GOOGLE_STORAGE_ENDPOINT,
             )
         val credentials =
             bigQueryConfiguration.loadingMethod.gcsClientConfig.credential
