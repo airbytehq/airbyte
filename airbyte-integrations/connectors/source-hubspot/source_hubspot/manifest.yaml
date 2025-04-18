@@ -81,7 +81,7 @@ definitions:
         error_message: >-
           Bad request (400). Please verify your credentials and try again.
 
-  base_paginator:
+  offset_paginator:
     type: DefaultPaginator
     page_token_option:
       type: RequestOption
@@ -94,6 +94,21 @@ definitions:
     pagination_strategy:
       type: OffsetIncrement
       page_size: 100
+      
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
 
   base_selector:
     type: RecordSelector
@@ -109,7 +124,7 @@ definitions:
     record_selector:
       $ref: "#/definitions/base_selector"
     paginator:
-      $ref: "#/definitions/base_paginator"
+      $ref: "#/definitions/offset_paginator"
     decoder:
       type: JsonDecoder
 
@@ -158,7 +173,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /marketing-emails/v1/emails/with-statistics
       paginator:
-        $ref: "#/definitions/base_paginator"
+        $ref: "#/definitions/offset_paginator"
         pagination_strategy:
           type: OffsetIncrement
           page_size: 250
@@ -245,19 +260,7 @@ definitions:
                 type: GroupByKeyMergeStrategy
                 key: id
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: after
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
+        $ref: "#/definitions/cursor_paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -332,19 +335,7 @@ definitions:
                 type: GroupByKeyMergeStrategy
                 key: id
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: after
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
+        $ref: "#/definitions/cursor_paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -389,19 +380,10 @@ definitions:
               parent_key: "id"
               partition_field: "form_id"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: after
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
+        $ref: "#/definitions/cursor_paginator"
         pagination_strategy:
-          type: CursorPagination
+          $ref: "#/definitions/cursor_paginator/pagination_strategy"
           page_size: 50
-          cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -432,12 +414,78 @@ definitions:
       schema:
         $ref: "#/schemas/form_submissions"
 
+  owners_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: owners
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/owners
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "updatedAt" ]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/owners"
+
+  owners_archived_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: owners_archived
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/owners
+        request_parameters:
+          archived: true
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "updatedAt" ]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/owners_archived"
+
 streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/deals_archived_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/form_submissions_stream"
+  - "#/definitions/owners_stream"
+  - "#/definitions/owners_archived_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -2843,3 +2891,161 @@ schemas:
           type:
             - "null"
             - integer
+
+  owners:
+    $schema: http://json-schema.org/schema#
+    type:
+    - 'null'
+    - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The unique identifier of the owner.
+        type:
+        - 'null'
+        - string
+      email:
+        description: The email address of the owner.
+        type:
+        - 'null'
+        - string
+      firstName:
+        description: The first name of the owner.
+        type:
+        - 'null'
+        - string
+      lastName:
+        description: The last name of the owner.
+        type:
+        - 'null'
+        - string
+      userId:
+        description: The unique identifier of the user associated with the owner.
+        type:
+        - 'null'
+        - integer
+      userIdIncludingInactive:
+        description: The unique identifier of the user associated with the owner,
+          including inactive users.
+        type:
+        - 'null'
+        - integer
+      createdAt:
+        description: The date and time when the owner was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the owner was last updated.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      archived:
+        description: Indicates if the owner is archived or not.
+        type:
+        - 'null'
+        - boolean
+      teams:
+        description: An array of teams the owner belongs to.
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          properties:
+            id:
+              description: The unique identifier of the team.
+              type:
+              - 'null'
+              - string
+            name:
+              description: The name of the team.
+              type:
+              - 'null'
+              - string
+            membership:
+              description: The membership status of the owner in the team.
+              type:
+              - 'null'
+              - string
+
+  owners_archived:
+    $schema: http://json-schema.org/schema#
+    type:
+    - 'null'
+    - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The unique identifier of the owner.
+        type:
+        - 'null'
+        - string
+      email:
+        description: The email address of the owner.
+        type:
+        - 'null'
+        - string
+      firstName:
+        description: The first name of the owner.
+        type:
+        - 'null'
+        - string
+      lastName:
+        description: The last name of the owner.
+        type:
+        - 'null'
+        - string
+      userId:
+        description: The user ID associated with the owner.
+        type:
+        - 'null'
+        - integer
+      userIdIncludingInactive:
+        description: The unique identifier of the user associated with the owner,
+          including inactive users.
+        type:
+        - 'null'
+        - integer
+      createdAt:
+        description: The date and time the owner was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updatedAt:
+        description: The date and time the owner was last updated.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      archived:
+        description: Indicates if the owner is archived or not.
+        type:
+        - 'null'
+        - boolean
+      teams:
+        description: A list of teams the owner belongs to.
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          properties:
+            id:
+              description: The unique identifier of the team.
+              type:
+              - 'null'
+              - string
+            name:
+              description: The name of the team.
+              type:
+              - 'null'
+              - string
+            membership:
+              description: The membership status of the owner within the team.
+              type:
+              - 'null'
+              - string
