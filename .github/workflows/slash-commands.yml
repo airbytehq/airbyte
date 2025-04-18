@@ -23,6 +23,7 @@ jobs:
           permission: write
           commands: |
             bump-version
+            bump-cdk-version-and-merge
             format-fix
             test
             test-performance

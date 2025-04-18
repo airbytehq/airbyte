@@ -391,7 +391,7 @@ internal class S3DataLakeUtilTest {
         val s3BucketConfiguration =
             S3BucketConfiguration(
                 s3BucketName = s3BucketName,
-                s3BucketRegion = S3BucketRegion.`us-east-1`,
+                s3BucketRegion = S3BucketRegion.`us-east-1`.region,
                 s3Endpoint = s3Endpoint,
             )
         val icebergCatalogConfiguration =

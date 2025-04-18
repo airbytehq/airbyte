@@ -10,7 +10,6 @@ from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl
 
-import pendulum
 import requests
 from requests.exceptions import HTTPError
 
@@ -23,6 +22,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_jira.type_transfromer import DateTimeTransformer
 
 from .utils import read_full_refresh, read_incremental, safe_max
@@ -190,8 +190,8 @@ class FullRefreshJiraStream(JiraStream):
 class StartDateJiraStream(JiraStream, ABC):
     def __init__(
         self,
-        start_date: Optional[pendulum.DateTime] = None,
-        lookback_window_minutes: pendulum.Duration = pendulum.duration(minutes=0),
+        start_date: Optional[AirbyteDateTime] = None,
+        lookback_window_minutes: timedelta = timedelta(minutes=0),
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -225,19 +225,19 @@ class IncrementalJiraStream(StartDateJiraStream, CheckpointMixin, ABC):
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         compare_date = self.get_starting_point(stream_state)
         if compare_date:
-            compare_date_epoch = compare_date.int_timestamp * 1000
+            compare_date_epoch = compare_date.to_epoch_millis()
             return f"{self.cursor_field} >= {compare_date_epoch}"
 
-    def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+    def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[AirbyteDateTime]:
         if self.cursor_field not in self._starting_point_cache:
             self._starting_point_cache[self.cursor_field] = self._get_starting_point(stream_state=stream_state)
         return self._starting_point_cache[self.cursor_field]
 
-    def _get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+    def _get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[AirbyteDateTime]:
         if stream_state:
             stream_state_value = stream_state.get(self.cursor_field)
             if stream_state_value:
-                stream_state_value = pendulum.parse(stream_state_value) - self._lookback_window_minutes
+                stream_state_value = ab_datetime_parse(stream_state_value) - self._lookback_window_minutes
                 return safe_max(stream_state_value, self._start_date)
         return self._start_date
 
@@ -246,7 +246,7 @@ class IncrementalJiraStream(StartDateJiraStream, CheckpointMixin, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         start_point = self.get_starting_point(stream_state=stream_state)
         for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
-            cursor_value = pendulum.parse(record[self.cursor_field])
+            cursor_value = ab_datetime_parse(record[self.cursor_field])
             self.state = self._get_updated_state(self.state, record)
             if not start_point or cursor_value >= start_point:
                 yield record

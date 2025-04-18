@@ -1945,23 +1945,6 @@ class FormSubmissions(ClientSideIncrementalStream):
                 yield record
 
 
-class MarketingEmails(BaseStream):
-    """Marketing Email, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-emails
-    """
-
-    url = "/marketing-emails/v1/emails/with-statistics"
-    data_field = "objects"
-    limit = 250
-    page_field = "limit"
-    updated_at_field = "updated"
-    created_at_field = "created"
-    primary_key = "id"
-    scopes = {"content"}
-    cast_fields = ["rootMicId"]
-    is_resumable = False
-
-
 class Owners(ClientSideIncrementalStream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
@@ -2398,19 +2381,6 @@ class CustomObject(CRMSearchStream, ABC):
     def properties(self) -> Mapping[str, Any]:
         # do not make extra api calls
         return self.custom_properties
-
-
-class EmailSubscriptions(BaseStream):
-    """EMAIL SUBSCRIPTION, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions
-    """
-
-    url = "/email/public/v1/subscriptions"
-    data_field = "subscriptionDefinitions"
-    primary_key = "id"
-    scopes = {"content"}
-    is_resumable = False
-    filter_old_records = False
 
 
 class WebAnalyticsStream(HttpSubStream, BaseStream):

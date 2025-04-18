@@ -33,11 +33,11 @@ abstract class AbstractMSSQLStreamLoader(
      * Called after processing completes or fails. By default, if there was no failure, attempts to
      * truncate previous data generations.
      */
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             truncatePreviousGenerations()
         }
-        super.close(streamFailure)
+        super.close(hadNonzeroRecords = hadNonzeroRecords, streamFailure)
     }
 
     /** Ensures the table exists, creating it if needed, and updates its schema if necessary. */

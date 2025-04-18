@@ -22,24 +22,16 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
+      let contentTitle = filename;
+      
       // Get the first header of the markdown document
       try {
         const filePath = path.join(dir, `${filename}.md`);
         const fileContent = fs.readFileSync(filePath, "utf8");
         const firstLine = fileContent.split("\n").find((line) => line.trim().startsWith("# "));
-        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, "").trim() : filename;
-        return {
-          type: "doc",
-          id: prefix + filename,
-          label: contentTitle || filename,
-        };
+        contentTitle = firstLine ? firstLine.replace(/^#\s*/, "").trim() : filename;
       } catch (error) {
         console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
-        return {
-          type: "doc",
-          id: prefix + filename,
-          label: filename,
-        };
       }
 
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
@@ -61,7 +53,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
 
       return {
         type: "doc",
-        id: path.join(prefix, filename),
+        id: prefix + filename,
         label: contentTitle,
       };
     });

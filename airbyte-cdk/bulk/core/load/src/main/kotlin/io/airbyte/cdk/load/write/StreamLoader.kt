@@ -57,7 +57,7 @@ interface StreamLoader : BatchAccumulator, FileBatchAccumulator {
     ): FileBatchAccumulator = this
 
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(BatchState.COMPLETE)
-    suspend fun close(streamFailure: StreamProcessingFailed? = null) {}
+    suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed? = null) {}
 }
 
 interface BatchAccumulator {

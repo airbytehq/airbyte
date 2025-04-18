@@ -164,7 +164,7 @@ class PayoutBalanceTransactionsIncrementalTest(TestCase):
     @HttpMocker()
     def test_when_read_then_fetch_from_updated_payouts(self, http_mocker: HttpMocker) -> None:
         config = _config().with_start_date(_START_DATE).build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(_STATE_DATE.timestamp())}).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"state": {"updated": int(_STATE_DATE.timestamp())}}).build()
         catalog = _create_catalog(SyncMode.incremental)
         http_mocker.get(
             _events_request()

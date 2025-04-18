@@ -77,9 +77,9 @@ class MSSQLBulkLoadStreamLoader(
      * If the stream finishes successfully, super.close() will handle truncating previous
      * generations. We also delete the format file from Blob.
      */
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         deleteBlobSafe(formatFilePath)
-        super.close(streamFailure)
+        super.close(hadNonzeroRecords = hadNonzeroRecords, streamFailure)
     }
 
     /**

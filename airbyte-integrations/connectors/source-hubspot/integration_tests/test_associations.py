@@ -12,7 +12,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, Type
 
 @pytest.fixture
 def source(config):
-    return SourceHubspot()
+    return SourceHubspot(config, None, None)
 
 
 @pytest.fixture

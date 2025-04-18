@@ -778,7 +778,7 @@ class ParentIncrementalStripeSubStream(StripeSubStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_state = stream_state or {}
+        stream_state = safe_stream_state(stream_state, self.cursor_field) or {}
         if stream_state:
             # state is shared between self and parent, but cursor fields are different
             stream_state = {self.parent.cursor_field: stream_state.get(self.cursor_field, 0)}

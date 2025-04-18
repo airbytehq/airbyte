@@ -233,7 +233,7 @@ class S3ClientFactory(
 
         val s3SdkClient =
             aws.sdk.kotlin.services.s3.S3Client {
-                region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+                region = bucketConfig.s3BucketConfiguration.s3BucketRegion
                 credentialsProvider = credsProvider
                 endpointUrl =
                     bucketConfig.s3BucketConfiguration.s3Endpoint?.let {
