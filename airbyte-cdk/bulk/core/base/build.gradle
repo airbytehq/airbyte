@@ -169,7 +169,7 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
     implementation 'net.i2p.crypto:eddsa:0.3.0'
     implementation 'org.openapi4j:openapi-schema-validator:1.0.7'
-    implementation 'org.xerial.snappy:snappy-java:1.1.10.7'
+    api 'org.xerial.snappy:snappy-java:1.1.10.7'
     implementation 'org.lz4:lz4-java:1.8.0'
     api 'com.google.flatbuffers:flatbuffers-java:2.0.8'
 

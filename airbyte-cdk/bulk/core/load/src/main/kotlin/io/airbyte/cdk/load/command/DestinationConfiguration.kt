@@ -120,6 +120,7 @@ abstract class DestinationConfiguration : Configuration {
     open val disableUUID: Boolean = false
     open val disableMapper: Boolean = false
     open val useCodedInputStream: Boolean = false
+    open val useSnappy: Boolean = false
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

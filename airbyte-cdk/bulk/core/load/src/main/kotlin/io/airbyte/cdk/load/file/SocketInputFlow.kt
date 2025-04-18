@@ -47,6 +47,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import org.xerial.snappy.SnappyInputStream
 
 class SocketInputFlow(
     private val config: DestinationConfiguration,
@@ -150,7 +151,12 @@ class SocketInputFlow(
         var bytesRead = 0L
         var count = 0L
         socketChannel.use { channel ->
-            Channels.newInputStream(channel).buffered(config.inputBufferByteSizePerSocket.toInt())
+            val inputStream = if (config.useSnappy) {
+                SnappyInputStream(Channels.newInputStream(channel), config.inputBufferByteSizePerSocket.toInt())
+            } else {
+                Channels.newInputStream(channel).buffered(config.inputBufferByteSizePerSocket.toInt())
+            }
+            inputStream
                 .use { bufferedInputStream ->
                     val streamRecordCounts =
                         catalog.streams.associate { it.descriptor to 0L }.toMutableMap()

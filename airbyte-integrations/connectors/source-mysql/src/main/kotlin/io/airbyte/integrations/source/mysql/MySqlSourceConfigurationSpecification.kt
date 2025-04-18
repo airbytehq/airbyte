@@ -216,6 +216,10 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("socket_prefix")
     @JsonSchemaDefault("/var/run/sockets/ab_socket_")
     val socketPrefix: String? = null
+
+    @JsonProperty("use_snappy")
+    @JsonSchemaDefault("false")
+    val useSnappy: Boolean? = false
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

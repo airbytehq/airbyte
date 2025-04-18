@@ -60,6 +60,7 @@ data class S3V2Configuration<T : OutputStream>(
     override val disableUUID: Boolean,
     override val disableMapper: Boolean,
     override val useCodedInputStream: Boolean = false,
+    override val useSnappy: Boolean = false,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -99,6 +100,7 @@ class S3V2ConfigurationFactory :
             disableUUID = pojo.disableUUID ?: false,
             disableMapper = pojo.disableMapper ?: false,
             useCodedInputStream = pojo.useCodedInputStream ?: true,
+            useSnappy = pojo.useSnappy ?: false,
         )
     }
 }

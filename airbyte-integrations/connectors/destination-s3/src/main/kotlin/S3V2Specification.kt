@@ -113,6 +113,8 @@ class S3V2Specification :
     @get:JsonProperty("disable_mapper") val disableMapper: Boolean? = null
 
     @get:JsonProperty("use_coded_input_stream") val useCodedInputStream: Boolean? = null
+
+    @get:JsonProperty("use_snappy") val useSnappy: Boolean? = null
 }
 
 @Singleton

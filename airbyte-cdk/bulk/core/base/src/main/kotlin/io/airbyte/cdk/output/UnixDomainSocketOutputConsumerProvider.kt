@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import org.xerial.snappy.SnappyOutputStream
 
 private val logger = KotlinLogging.logger {}
 
@@ -64,6 +65,7 @@ interface SocketConfig {
     val skipJsonNodeAndUseFakeRecord: Boolean
     val sharedInputChannel: Boolean
     val socketPrefix: String
+    val useSnappy: Boolean
 }
 
 data class FlatBufferResult(
@@ -106,6 +108,7 @@ class UnixDomainSocketOutputConsumerProvider(
                         } else {
                             it.consumeAsFlow()
                         },
+                        configuration.useSnappy
                     )
                 }
         }
@@ -166,9 +169,10 @@ class UnixDomainSocketOutputConsumer(
     private val fakeRecord: Boolean,
     private val outputChannel: Channel<NamedNode>,
     private val inputFlow: Flow<NamedNode>,
+    private val useSnappy: Boolean
 ) : AutoCloseable {
     private val socketChannel: SocketChannel
-    private val bufferedOutputStream: BufferedOutputStream
+    private val bufferedOutputStream: OutputStream
     private var writer: SequenceWriter
     private var numRecords: Int = 0
     var busy: Boolean = false
@@ -221,9 +225,13 @@ class UnixDomainSocketOutputConsumer(
         socketChannel = serverSocketChannel.accept()
         bufferedOutputStream =
             if (devNullAfterSerialization) {
-                DevNullOutputStream().buffered(bufferSize)
+                DevNullOutputStream()
             } else {
-                Channels.newOutputStream(socketChannel).buffered(bufferSize)
+                if (useSnappy) {
+                    SnappyOutputStream(Channels.newOutputStream(socketChannel), bufferSize)
+                } else {
+                    Channels.newOutputStream(socketChannel).buffered(bufferSize)
+                }
             }
 
         writer = writerForMapper()
