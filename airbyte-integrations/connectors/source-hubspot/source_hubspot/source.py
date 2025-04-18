@@ -82,6 +82,8 @@ scopes = {
     "deals_archived": {"contacts", "crm.objects.deals.read"},
     "forms": {"forms"},
     "form_submissions": {"forms"},
+    "owners": {"crm.objects.owners.read"},
+    "owners_archived": {"crm.objects.owners.read"},
 }
 
 
