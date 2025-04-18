@@ -4,23 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.integrations.source.mongodb.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CAPTURE_MODE_LOOKUP_OPTION;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CHECKPOINT_INTERVAL;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_AUTH_SOURCE;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.INITIAL_RECORD_WAITING_TIME_SEC;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -90,6 +74,14 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
       return rawConfig.get(DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY).asInt(DEFAULT_DISCOVER_SAMPLE_SIZE);
     } else {
       return DEFAULT_DISCOVER_SAMPLE_SIZE;
+    }
+  }
+
+  public Integer getStreamDiscoveryTimeoutSeconds() {
+    if (rawConfig.has(STREAM_DISCOVER_TIMEOUT_CONFIGURATION_KEY)) {
+      return rawConfig.get(STREAM_DISCOVER_TIMEOUT_CONFIGURATION_KEY).asInt(DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC);
+    } else {
+      return DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC;
     }
   }
 
