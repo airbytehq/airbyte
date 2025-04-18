@@ -138,8 +138,6 @@ definitions:
 
   stream_base:
     type: DeclarativeStream
-    primary_key:
-      - id
     retriever:
       $ref: "#/definitions/base_retriever"
 
@@ -150,6 +148,8 @@ definitions:
 
   # Stream Definitions
   marketing_emails_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_base"
     name: marketing_emails
     retriever:
@@ -187,6 +187,8 @@ definitions:
         $ref: "#/schemas/marketing_emails"
 
   email_subscriptions_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_without_pagination"
     name: email_subscriptions
     retriever:
@@ -205,6 +207,8 @@ definitions:
         $ref: "#/schemas/email_subscriptions"
 
   deals_archived_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_base"
     name: deals_archived
     retriever:
@@ -278,6 +282,7 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
+      cursor_field: archivedAt
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
@@ -285,6 +290,8 @@ definitions:
         $ref: "#/schemas/deals_archived"
 
   forms_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_base"
     name: forms
     retriever:
