@@ -15,6 +15,7 @@ import com.google.protobuf.CodedInputStream
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteValueHashViewMapper
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -26,14 +27,13 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.pipeline.IdentityProtoMapper
-import io.airbyte.cdk.load.pipeline.ProtoMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.protocol.AirbyteRecordMessage
 import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedInputStream
+import java.io.DataInputStream
 import java.io.File
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
@@ -56,7 +56,6 @@ class SocketInputFlow(
     private val streamCompletionCounts:
         ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>,
     private val syncManager: SyncManager,
-    protoMapper: ProtoMapper,
 ) : Flow<PipelineEvent<StreamKey, DestinationRecordRaw>> {
     private val log = KotlinLogging.logger {}
     private val factory = DestinationMessageFactory(catalog, false)
@@ -90,11 +89,9 @@ class SocketInputFlow(
             initMapper()
         }
 
-    private val protoMapperToApply = if (config.disableMapper) {
-        IdentityProtoMapper()
-    } else {
-        protoMapper
-    }
+    private val mappersToApply = listOfNotNull(
+        if (config.disableMapper) { null } else { AirbyteValueHashViewMapper(setOf(15)) /* email */ }
+    ).toTypedArray()
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
         objectMapper
@@ -152,7 +149,6 @@ class SocketInputFlow(
         log.info { "Connected" }
         var bytesRead = 0L
         var count = 0L
-        val parser = Protocol.AirbyteMessage.parser()
         socketChannel.use { channel ->
             Channels.newInputStream(channel).buffered(config.inputBufferByteSizePerSocket.toInt())
                 .use { bufferedInputStream ->
@@ -175,6 +171,7 @@ class SocketInputFlow(
                                 }
                         }
                         DestinationConfiguration.InputSerializationFormat.PROTOBUF -> {
+                            val parser = Protocol.AirbyteMessage.parser()
                             if (config.useCodedInputStream) {
                                 val cis = CodedInputStream.newInstance(
                                     bufferedInputStream,
@@ -192,7 +189,7 @@ class SocketInputFlow(
                                     val destinationMessage =
                                         factory.fromProtobufAirbyteMessage(
                                             protoMessage,
-                                            protoMapperToApply
+                                            *mappersToApply
                                         )
                                     bytesRead += size + 2
                                     handleDestinationMessage(
@@ -210,7 +207,10 @@ class SocketInputFlow(
                                             bufferedInputStream
                                         ) ?: break
                                     val destinationMessage =
-                                        factory.fromProtobufAirbyteMessage(protoMessage, protoMapperToApply)
+                                        factory.fromProtobufAirbyteMessage(
+                                            protoMessage,
+                                            *mappersToApply
+                                        )
                                     handleDestinationMessage(
                                         destinationMessage,
                                         streamRecordCounts,
@@ -219,6 +219,38 @@ class SocketInputFlow(
                                     )
                                 }
                             }
+                        }
+                        DestinationConfiguration.InputSerializationFormat.FLATBUFFERS -> {
+                            val din = DataInputStream(bufferedInputStream)
+                            while (true) {
+                                val size = ByteArray(4)
+                                val fbBytesRead = din.read(size, 0, 4)
+                                if (fbBytesRead == 4) {
+                                    val messageSize = java.nio.ByteBuffer.wrap(size).order(
+                                        java.nio.ByteOrder.LITTLE_ENDIAN
+                                    ).int
+                                    val dataBuffer = ByteArray(messageSize)
+                                    din.readFully(dataBuffer)
+                                    bytesRead += messageSize + 4
+                                    val message =
+                                        AirbyteRecordMessage.getRootAsAirbyteRecordMessage(
+                                            java.nio.ByteBuffer.wrap(dataBuffer),
+                                        )
+                                    val destinationMessage =
+                                        factory.fromFlatbufferAirbyteMessage(message, *mappersToApply)
+                                    handleDestinationMessage(
+                                        destinationMessage,
+                                        streamRecordCounts,
+                                        collector,
+                                        ++ count,
+                                        bytesRead
+                                    )
+                                } else {
+                                    log.info { "Did not read 4 bytes" }
+                                    break
+                                }
+                            }
+                            log.info { "Flatbuffer socket closed after reading $count messages ($bytesRead b)" }
                         }
                         DestinationConfiguration.InputSerializationFormat.DEVNULL -> {
                             var bytes = 0L

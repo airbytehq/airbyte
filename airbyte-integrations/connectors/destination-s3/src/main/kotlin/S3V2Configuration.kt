@@ -88,7 +88,7 @@ class S3V2ConfigurationFactory :
                     ?: DestinationConfiguration.InputSerializationFormat.PROTOBUF,
             partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
             maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 1.0,
-            inputBufferByteSizePerSocket = pojo.inputBufferByteSizePerSocket ?: (8 * 1024L),
+            inputBufferByteSizePerSocket = pojo.inputBufferByteSizePerSocket ?: (16384),
             socketPrefix = pojo.socketPrefix
                     ?: "/Users/jschmidt/.sockets/ab_socket_", // "/var/run/sockets/ab_socket_",
             socketWaitTimeoutSeconds = pojo.socketWaitTimeoutSeconds ?: 60,

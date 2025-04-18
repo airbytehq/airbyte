@@ -5,10 +5,12 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.flatbuffers.FlatBufferBuilder
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.output.FlatBufferResult
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.UnixDomainSocketOutputConsumer
 import io.airbyte.cdk.output.UnixDomainSocketOutputConsumerProvider
@@ -79,13 +81,14 @@ sealed class FeedBootstrap<T : Feed>(
             recordData: ObjectNode,
             changes: Map<Field, FieldValueChange>?,
             recordBuilder: Builder,
+            fbResult: FlatBufferResult,
             totalNum: Int?,
             num: Long?
         ) {
             if (::socketOutputConsumer.isInitialized.not()) {
                 socketOutputConsumer = socketProvider.getNextFreeSocketConsumer(num!!.toInt())
             }
-            socketOutputConsumer.acceptAsyncMaybe(recordData, recordBuilder, stream.namespace ?: "", stream.name)
+            socketOutputConsumer.acceptAsyncMaybe(recordData, recordBuilder, fbResult, stream.namespace ?: "", stream.name)
         }
 
         override fun accept(
@@ -98,7 +101,9 @@ sealed class FeedBootstrap<T : Feed>(
         }
 
         override fun close() {
-            socketOutputConsumer.busy = false
+            if (::socketOutputConsumer.isInitialized) {
+                socketOutputConsumer.busy = false
+            }
         }
     }
 
@@ -201,6 +206,7 @@ interface StreamRecordConsumer : AutoCloseable {
         recordData: ObjectNode,
         changes: Map<Field, FieldValueChange>?,
         recordBuilder: AirbyteRecord.AirbyteRecordMessage.Builder,
+        fbResult: FlatBufferResult,
         totalNum: Int? = null,
         num: Long? = null
     ) {

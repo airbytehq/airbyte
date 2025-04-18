@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.SocketConfig
+import io.airbyte.cdk.output.SocketOutputFormat
 import io.airbyte.cdk.read.JdbcSelectQuerier
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
@@ -29,7 +30,7 @@ class MySqlSourceSelectQuerier(
         parameters: SelectQuerier.Parameters,
         cursorQuery: Boolean
     ) : JdbcSelectQuerier.Result(jdbcConnectionFactory, q, parameters,
-            writeProto = (!cursorQuery) && socketConfig.outputFormat.startsWith("proto")) {
+        if (cursorQuery) { SocketOutputFormat.JSONL } else { socketConfig.outputFormat }) {
         override fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
@@ -46,7 +47,7 @@ class MySqlSourceSelectQuerier(
                 rs!!.fetchSize = fetchSize
             }
         }
-    }
+    }   
 
     override fun executeQuery(
         q: SelectQuery,

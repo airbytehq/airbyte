@@ -47,6 +47,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             row.data,
             row.changes,
             row.recordBuilder,
+            row.fbr,
             sharedState.configuration.maxConcurrency,
             partitionNum
         )

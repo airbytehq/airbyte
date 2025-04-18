@@ -59,7 +59,6 @@ table AirbyteRecordMessage {
   stream_name:string;
   data:[AirbyteValue];
   emitted_at:long;
-  meta:AirbyteRecordMessageMeta;
 }
 
 root_type AirbyteRecordMessage;

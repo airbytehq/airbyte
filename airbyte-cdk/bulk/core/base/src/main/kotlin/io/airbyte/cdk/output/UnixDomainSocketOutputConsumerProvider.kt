@@ -15,21 +15,22 @@ import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.google.protobuf.ByteString
+import com.google.flatbuffers.FlatBufferBuilder
 import io.airbyte.cdk.output.UnixDomainSocketOutputConsumer.NamedNode
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.AirbyteRecord
+import io.airbyte.protocol.AirbyteValue
 import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.channels.Channels
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
@@ -44,10 +45,18 @@ import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
 
+enum class SocketOutputFormat {
+    JSONL,
+    PROTOBUF,
+    SMILE,
+    DEVNULL,
+    FLATBUFFERS
+}
+
 interface SocketConfig {
     val numSockets: Int
     val bufferByteSize: Int
-    val outputFormat: String
+    val outputFormat: SocketOutputFormat
     val devNullAfterSerialization: Boolean
     val inputChannelCapacity: Int
     val devNullBeforePosting: Boolean
@@ -57,6 +66,12 @@ interface SocketConfig {
     val socketPrefix: String
 }
 
+data class FlatBufferResult(
+    val fbBuilder: FlatBufferBuilder = FlatBufferBuilder(),
+    var fbDataVector: Int = -1,
+    var fbDataTypeVector: Int = -1,
+)
+
 @Singleton
 class UnixDomainSocketOutputConsumerProvider(
     clock: Clock,
@@ -64,7 +79,7 @@ class UnixDomainSocketOutputConsumerProvider(
 ) : AutoCloseable {
     private val numSockets = configuration.numSockets
     private val bufferByteSize = configuration.bufferByteSize
-    private val outputFormat: String = configuration.outputFormat
+    private val outputFormat: SocketOutputFormat = configuration.outputFormat
 
     private val sharedInputChannel: Channel<NamedNode> = Channel(configuration.inputChannelCapacity)
 
@@ -144,7 +159,7 @@ class UnixDomainSocketOutputConsumer(
     socketPath: String,
     private val clock: Clock,
     bufferSize: Int = DEFAULT_BUFFER_SIZE,
-    private val outputFormat: String,
+    private val outputFormat: SocketOutputFormat,
     devNullAfterSerialization: Boolean = false,
     private val devNullBeforePosting: Boolean = false,
     private val writeAsync: Boolean,
@@ -167,7 +182,8 @@ class UnixDomainSocketOutputConsumer(
         val namespace: String,
         val streamName: String,
         val recordData: ObjectNode,
-        val recordMessage: AirbyteRecord.AirbyteRecordMessage,
+        val recordMessage: AirbyteRecord.AirbyteRecordMessage?,
+        val fbBuffer: ByteArray? = null,
     )
 
     private fun configure(objectMapper: ObjectMapper): ObjectMapper {
@@ -214,7 +230,7 @@ class UnixDomainSocketOutputConsumer(
     }
 
     private fun writerForMapper(): SequenceWriter {
-        return if (outputFormat == "json") {
+        return if (outputFormat == SocketOutputFormat.JSONL) {
                 OBJECT_MAPPER.writerFor(AirbyteMessage::class.java)
                     .with(MinimalPrettyPrinter(System.lineSeparator()))
             } else {
@@ -223,19 +239,25 @@ class UnixDomainSocketOutputConsumer(
             .writeValues(bufferedOutputStream)
     }
 
-    val messageBuilder = Protocol.AirbyteMessage.newBuilder()
-        .setType(Protocol.AirbyteMessageType.RECORD)
+    private val messageBuilder = if (outputFormat == SocketOutputFormat.PROTOBUF) {
+        Protocol.AirbyteMessage.newBuilder()
+            .setType(Protocol.AirbyteMessageType.RECORD)
+    } else { null }
 
-    fun accept(recordData: ObjectNode, recordMessage:  AirbyteRecord.AirbyteRecordMessage, namespace: String, streamName: String) {
-        if (outputFormat == "devnull") {
+    fun accept(recordData: ObjectNode, recordMessage:  AirbyteRecord.AirbyteRecordMessage?, fbBuffer: ByteArray?,
+               namespace: String, streamName: String) {
+        if (outputFormat == SocketOutputFormat.DEVNULL) {
             return
         }
 
-        if (outputFormat in listOf("proto", "protobuf")) {
-            val pMessage = messageBuilder
+        if (outputFormat == SocketOutputFormat.PROTOBUF) {
+            val pMessage = messageBuilder!!
                 .setRecord(recordMessage)
                 .build()
             pMessage.writeDelimitedTo(bufferedOutputStream)
+        } else if (outputFormat == SocketOutputFormat.FLATBUFFERS) {
+            bufferedOutputStream.write(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(fbBuffer!!.size).array())
+            bufferedOutputStream.write(fbBuffer)
         } else {
             val airbyteMessage =
                 AirbyteMessage()
@@ -258,20 +280,51 @@ class UnixDomainSocketOutputConsumer(
 
     suspend fun acceptAsyncMaybe(recordData: ObjectNode,
                                  recordBuilder: AirbyteRecord.AirbyteRecordMessage.Builder,
+                                 fbResult: FlatBufferResult,
                                  namespace: String,
                                  streamName: String
     ) {
-        recordBuilder
-            .setNamespace(namespace)
-            .setStream(streamName)
-            .setEmittedAt(clock.millis())
+        val fbBuffer = if (outputFormat == SocketOutputFormat.PROTOBUF) {
+            recordBuilder
+                .setNamespace(namespace)
+                .setStream(streamName)
+                .setEmittedAt(clock.millis())
+            null
+        } else if (outputFormat == SocketOutputFormat.FLATBUFFERS) {
+            val namespaceOffset = fbResult.fbBuilder.createString(namespace)
+            val nameOffset = fbResult.fbBuilder.createString(streamName)
+
+            io.airbyte.protocol.AirbyteRecordMessage.startAirbyteRecordMessage(fbResult.fbBuilder)
+            io.airbyte.protocol.AirbyteRecordMessage.addStreamNamespace(fbResult.fbBuilder, namespaceOffset)
+            io.airbyte.protocol.AirbyteRecordMessage.addStreamName(fbResult.fbBuilder, nameOffset)
+            io.airbyte.protocol.AirbyteRecordMessage.addDataType(fbResult.fbBuilder, fbResult.fbDataTypeVector)
+            io.airbyte.protocol.AirbyteRecordMessage.addData(fbResult.fbBuilder, fbResult.fbDataVector)
+            io.airbyte.protocol.AirbyteRecordMessage.addEmittedAt(fbResult.fbBuilder, clock.millis())
+            val root = io.airbyte.protocol.AirbyteRecordMessage.endAirbyteRecordMessage(fbResult.fbBuilder)
+            fbResult.fbBuilder.finish(root)
+
+            fbResult.fbBuilder.sizedByteArray().also {
+                fbResult.fbBuilder.clear()
+                fbResult.fbDataVector = -1
+                fbResult.fbDataTypeVector = -1
+            }
+        } else {
+            null
+        }
+
+        val abMessage = if (outputFormat == SocketOutputFormat.PROTOBUF) {
+            recordBuilder.build()
+        } else {
+            null
+        }
+
 
         if (!writeAsync) {
-            accept(recordData, recordBuilder.build(), namespace, streamName)
+            accept(recordData, recordBuilder.build(), fbBuffer, namespace, streamName)
             return
         }
 
-        val namedNode = NamedNode(namespace, streamName, recordData, recordBuilder.build())
+        val namedNode = NamedNode(namespace, streamName, recordData, abMessage, fbBuffer)
         if (devNullBeforePosting) {
             return
         }
@@ -279,7 +332,9 @@ class UnixDomainSocketOutputConsumer(
     }
 
     suspend fun writeToSocketUntilComplete() {
-        inputFlow.collect { (namespace, name, recordData, recordMessage) -> accept(recordData, recordMessage, namespace, name) }
+        inputFlow.collect { (namespace, name, recordData, recordMessage, fbBuffer) ->
+            accept(recordData, recordMessage, fbBuffer, namespace, name)
+        }
     }
 
     override fun close() {

@@ -33,7 +33,13 @@ import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.Protocol
 import io.airbyte.protocol.Protocol.AirbyteMessage as AirbyteMessageProto
-import io.airbyte.cdk.load.pipeline.ProtoMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.flatbuffers.UnionVector
+import io.airbyte.cdk.load.data.AirbyteValueFlatbufferView
+import io.airbyte.cdk.load.data.AirbyteValueJsonNodeView
+import io.airbyte.cdk.load.data.AirbyteValueProtoView
+import io.airbyte.cdk.load.data.AirbyteValueView
+import io.airbyte.cdk.load.data.AirbyteValueViewMapper
 import io.airbyte.protocol.AirbyteRecord
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -192,7 +198,7 @@ data class DestinationRecord(
     val serialized: String,
     val schema: AirbyteType,
     val meta: Meta?,
-    val dataProto: List<AirbyteRecord.AirbyteValue> = emptyList()
+    val airbyteValueView: AirbyteValueView = AirbyteValueJsonNodeView(data as ObjectNode),
 ) : DestinationRecordDomainMessage {
     constructor(
         stream: DestinationStream,
@@ -228,7 +234,7 @@ data class DestinationRecord(
         )
     }
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, data, emittedAtMs, meta, serialized, schema, dataProto)
+        return DestinationRecordRaw(stream, data, emittedAtMs, meta, serialized, schema, airbyteValueView)
     }
 }
 
@@ -321,7 +327,7 @@ data class DestinationRecordRaw(
     private val meta: Meta?,
     private val serialized: String,
     private val schema: AirbyteType,
-    val protoData: List<AirbyteRecord.AirbyteValue> = emptyList()
+    val airbyteValueView: AirbyteValueView
 ) {
     constructor(
         stream: DestinationStream,
@@ -336,7 +342,8 @@ data class DestinationRecordRaw(
             Meta(meta.changes.map { Meta.Change(it.field, it.change, it.reason) })
         },
         serialized,
-        schema
+        schema,
+        AirbyteValueJsonNodeView(rawData.record.data as ObjectNode)
     )
 
     fun asRawJson(): JsonNode {
@@ -810,7 +817,7 @@ class DestinationMessageFactory(
 
     fun fromProtobufAirbyteMessage(
         airbyteMessage: AirbyteMessageProto,
-        protoMapper: ProtoMapper,
+        vararg mappers: AirbyteValueViewMapper
     ): DestinationMessage {
         return when (airbyteMessage.type) {
             Protocol.AirbyteMessageType.RECORD -> {
@@ -819,6 +826,10 @@ class DestinationMessageFactory(
                         namespace = airbyteMessage.record.namespace,
                         name = airbyteMessage.record.stream,
                     )
+                var mapper = AirbyteValueProtoView(airbyteMessage.record.dataList) as AirbyteValueView
+                for (m in mappers) {
+                    mapper = m.wrap(mapper)
+                }
                 return DestinationRecord(
                     stream = stream,
                     message = null,
@@ -826,7 +837,7 @@ class DestinationMessageFactory(
                     schema = stream.schema,
                     emittedAtMs = airbyteMessage.record.emittedAt,
                     data = fakeJsonNode,
-                    dataProto = protoMapper.mapData(airbyteMessage.record.dataList.toMutableList()),
+                    airbyteValueView = mapper,
                     meta =
                         airbyteMessage.record.meta?.let { meta ->
                             Meta(
@@ -854,6 +865,33 @@ class DestinationMessageFactory(
             }
             else -> Undefined
         }
+    }
+
+    fun fromFlatbufferAirbyteMessage(message: io.airbyte.protocol.AirbyteRecordMessage, vararg mappers: AirbyteValueViewMapper): DestinationMessage {
+        val stream =
+            catalog.getStream(
+                namespace = message.streamNamespace(),
+                name = message.streamName(),
+            )
+        if (message.dataVector() == null) {
+            throw IllegalArgumentException(
+                "Flatbuffer message data vector is null. This is not expected."
+            )
+        }
+        var mapper = AirbyteValueFlatbufferView(message.dataTypeVector(), message.dataVector()) as AirbyteValueView
+        for (m in mappers) {
+            mapper = m.wrap(mapper)
+        }
+        return DestinationRecord(
+            stream = stream,
+            message = null,
+            serialized = "",
+            schema = stream.schema,
+            emittedAtMs = message.emittedAt(),
+            data = fakeJsonNode,
+            meta = null,
+            airbyteValueView = mapper
+        )
     }
 
     private fun fromAirbyteStreamState(streamState: AirbyteStreamState): Checkpoint {

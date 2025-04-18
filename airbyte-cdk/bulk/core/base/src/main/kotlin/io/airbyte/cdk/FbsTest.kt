@@ -89,6 +89,7 @@ fun readFbsFromInput(inputStream: InputStream): Int {
                 AirbyteRecordMessage.getRootAsAirbyteRecordMessage(
                     ByteBuffer.wrap(dataBuffer),
                 )
+            //message.data(AirbyteRecordMessag)
             count++
         }
     }

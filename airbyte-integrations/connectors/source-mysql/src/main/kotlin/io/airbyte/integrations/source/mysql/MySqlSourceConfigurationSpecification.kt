@@ -20,6 +20,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.output.SocketOutputFormat
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
@@ -188,7 +189,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("buffer_byte_size") @JsonSchemaDefault("8192") val bufferByteSize: Int? = null
 
-    @JsonProperty("output_format") @JsonSchemaDefault("jsonl") val outputFormat: String? = null
+    @JsonProperty("output_format") @JsonSchemaDefault("jsonl") val outputFormat: SocketOutputFormat? = null
 
     @JsonProperty("dev_null_after_serialization")
     @JsonSchemaDefault("false")

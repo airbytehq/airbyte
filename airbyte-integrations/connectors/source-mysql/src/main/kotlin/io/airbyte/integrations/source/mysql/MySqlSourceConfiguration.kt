@@ -10,6 +10,7 @@ import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.output.SocketConfig
+import io.airbyte.cdk.output.SocketOutputFormat
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -46,7 +47,7 @@ data class MySqlSourceConfiguration(
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
     val skipSynchronizedCounts: Boolean,
     override val bufferByteSize: Int,
-    override val outputFormat: String,
+    override val outputFormat: SocketOutputFormat,
     override val devNullAfterSerialization: Boolean,
     override val inputChannelCapacity: Int,
     override val devNullBeforePosting: Boolean,
@@ -171,7 +172,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             checkPrivileges = pojo.checkPrivileges ?: true,
             skipSynchronizedCounts = pojo.tmpSkipSynchronizedCounts ?: false,
             bufferByteSize = pojo.bufferByteSize ?: (8 * 1024),
-            outputFormat = pojo.outputFormat ?: "json",
+            outputFormat = pojo.outputFormat ?: SocketOutputFormat.JSONL,
             devNullAfterSerialization = pojo.devNullAfterSerialization ?: false,
             inputChannelCapacity = pojo.inputChannelCapacity ?: 20_000,
             devNullBeforePosting = pojo.devNullBeforePosting ?: false,

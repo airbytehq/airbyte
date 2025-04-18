@@ -6,9 +6,6 @@ package io.airbyte.cdk.load.file.object_storage
 
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SequenceWriter
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
@@ -17,6 +14,7 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.AirbyteValueViewType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -30,8 +28,6 @@ import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.pipeline.ProtoDataType
-import io.airbyte.cdk.load.pipeline.ProtoMapper
 import io.airbyte.cdk.load.util.FastUUIDGenerator
 import io.airbyte.cdk.load.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -42,7 +38,6 @@ import java.io.Closeable
 import java.io.OutputStream
 import java.io.UnsupportedEncodingException
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
@@ -61,7 +56,6 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
-    private val protoMapper: ProtoMapper,
     private val config: DestinationConfiguration,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
@@ -76,7 +70,6 @@ class DefaultObjectStorageFormattingWriterFactory(
                 stream,
                 outputStream,
                 flatten,
-                protoMapper,
                 disableUUID = config.disableUUID,
             )
             is AvroFormatConfiguration ->
@@ -104,7 +97,6 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
-    private val protoMapper: ProtoMapper,
     private val disableUUID: Boolean,
 ) : ObjectStorageFormattingWriter {
     private val generator =
@@ -118,10 +110,6 @@ class JsonFormattingWriter(
     val fastUUIDGenerator = FastUUIDGenerator()
 
     override fun accept(record: DestinationRecordRaw) {
-        if (record.protoData.isEmpty()) {
-            throw UnsupportedEncodingException("We done temporarily disabled everything but proto y'all")
-        }
-
         generator.writeStartObject()
         generator.writeFieldName(Meta.COLUMN_NAME_AB_RAW_ID)
         if (disableUUID) {
@@ -135,20 +123,40 @@ class JsonFormattingWriter(
         generator.writeNumber(stream.generationId)
         generator.writeFieldName(Meta.COLUMN_NAME_DATA)
         generator.writeStartObject()
-        val schema = protoMapper.finalSchema
+        val schema = record.airbyteValueView.finalSchema
         for (i in schema.indices) {
-            generator.writeFieldName(schema[i].first)
             when (schema[i].second) {
-                ProtoDataType.STRING -> generator.writeString(record.protoData[i].string)
-                ProtoDataType.BOOLEAN -> generator.writeBoolean(record.protoData[i].boolean)
-                ProtoDataType.INTEGER -> generator.writeNumber(record.protoData[i].integer)
-                ProtoDataType.NUMBER -> generator.writeNumber(record.protoData[i].number)
-                ProtoDataType.BINARY -> generator.writeBinary(
-                    record.protoData[i].binary.asReadOnlyByteBuffer().array()
-                )
-                ProtoDataType.TIMESTAMP -> {
-                    val ts = record.protoData[i].timestamp
-                    generator.writeString(LocalDateTime.ofEpochSecond(ts.seconds, ts.nanos, ZoneOffset.UTC).toString())
+                AirbyteValueViewType.STRING -> record.airbyteValueView.getString(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeString(it)
+                }
+                AirbyteValueViewType.BOOLEAN -> record.airbyteValueView.getBoolean(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeBoolean(it)
+                }
+                AirbyteValueViewType.INTEGER -> record.airbyteValueView.getInteger(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeNumber(it)
+                }
+                AirbyteValueViewType.NUMBER -> record.airbyteValueView.getNumber(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeNumber(it)
+                }
+                AirbyteValueViewType.BINARY -> {
+                    generator.writeFieldName(schema[i].first)
+                    record.airbyteValueView.getString(i)?.let {
+                        generator.writeBinary(
+                            Base64.getDecoder().decode(it)
+                        )
+                    }
+                }
+                AirbyteValueViewType.TIMESTAMP -> {
+                    record.airbyteValueView.getTimestamp(i)?.let {
+                        generator.writeFieldName(schema[i].first)
+                        generator.writeNumber(
+                            it.toInstant(ZoneOffset.UTC).toEpochMilli()
+                        )
+                    }
                 }
             }
         }
@@ -156,6 +164,7 @@ class JsonFormattingWriter(
         generator.writeEndObject()
         generator.writeRaw(System.lineSeparator())
     }
+
 
     override fun flush() {
         outputStream.flush()
