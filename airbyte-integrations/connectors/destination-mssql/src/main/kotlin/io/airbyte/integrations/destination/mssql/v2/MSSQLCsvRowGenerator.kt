@@ -33,8 +33,11 @@ object LIMITS {
     // Maximum value for BIGINT in SQL Server
     val MAX_BIGINT = BigInteger("9223372036854775807")
     val MIN_BIGINT = BigInteger("-9223372036854775808")
-    val MAX_NUMERIC: BigDecimal = BigDecimal("1e38").minus(BigDecimal.ONE).divide(BigDecimal("1e8"))
-    val MIN_NUMERIC: BigDecimal = BigDecimal("-1e39").divide(BigDecimal("1e8"))
+
+    // see MssqlType. We currently use precision=38, scale=8.
+    private val NUMERIC_SCALE = BigDecimal("1e8")
+    val MAX_NUMERIC: BigDecimal = BigDecimal("1e38").minus(BigDecimal.ONE).divide(NUMERIC_SCALE)
+    val MIN_NUMERIC: BigDecimal = BigDecimal("-1e38").plus(BigDecimal.ONE).divide(NUMERIC_SCALE)
 
     val TRUE = IntegerValue(1)
     val FALSE = IntegerValue(0)
