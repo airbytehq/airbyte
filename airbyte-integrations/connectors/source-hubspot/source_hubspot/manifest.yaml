@@ -262,7 +262,6 @@ definitions:
           class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
           field_path: ["results"]
           entity_primary_key: vid
-          convert_entity_primary_key_to_integer: true # The legacy v1 API returned vid as an integer vs v3 which returns strings. This conversion retains backwards compatibility with the existing schema
           additional_keys: ["archived"] # The old additional_keys aren't valid for the Hubspot V3 endpoint
       paginator:
         type: DefaultPaginator
@@ -301,6 +300,10 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - type: AddedFieldDefinition
+            path: ["vid"]
+            value: "{{ record.get('vid') }}"
+            value_type: integer
           - type: AddedFieldDefinition
             path: ["source-id"]
             value_type: string
