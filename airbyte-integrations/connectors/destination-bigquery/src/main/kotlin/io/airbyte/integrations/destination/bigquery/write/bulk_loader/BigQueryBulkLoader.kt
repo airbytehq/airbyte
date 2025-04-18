@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 
+import com.google.cloud.bigquery.*
 import com.google.cloud.bigquery.BigQuery
-import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -39,9 +39,17 @@ class BigQueryBulkLoader(
             "${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}".replace("//", "/")
         val gcsUri = "gs://$cleanedFullPath"
 
+        val csvOptions =
+            CsvOptions.newBuilder()
+                .setSkipLeadingRows(1) // <‑‑ skip header
+                .setAllowQuotedNewLines(true) // safe for long JSON strings
+                .setAllowJaggedRows(true)
+                .build()
+
         val configuration =
             LoadJobConfiguration.builder(rawTableId, gcsUri)
-                .setFormatOptions(FormatOptions.csv())
+                .setFormatOptions(csvOptions)
+                //                .setAutodetect(true)
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
                 .setJobTimeoutMs(600000L) // 10 min timeout
