@@ -26,7 +26,6 @@ import io.airbyte.cdk.load.orchestration.TableNames
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.FinalTableInitialStatus
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingDestinationInitialStatus
-import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase
@@ -141,7 +140,7 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
             val tempRawTableState =
                 getInitialRawTableState(
                     tableNames.rawTableName!!,
-                    AbstractStreamOperation.TMP_TABLE_SUFFIX
+                    TableNames.TMP_TABLE_SUFFIX,
                 )
             TypingDedupingDestinationInitialStatus(
                 finalTableStatus,
