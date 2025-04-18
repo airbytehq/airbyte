@@ -4,9 +4,11 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.LoadPipeline
+import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.pipline.object_storage.file.FileChunkStep
 import io.airbyte.cdk.load.pipline.object_storage.file.ForwardFileRecordStep
 import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventStep
@@ -40,12 +42,10 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
 ) : LoadPipeline(listOf(partStep, uploadStep, completerStep))
 
-
-
 @Singleton
 @Requires(bean = ObjectLoader::class)
-//@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "true")
-class ObjectLoaderPipelineWithFiles<K : WithStream, T : RemoteObject<*>>(
+class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
+    catalog: DestinationCatalog,
     routeEventStep: RouteEventStep,
     fileChunkStep: FileChunkStep<T>,
     @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
@@ -53,8 +53,9 @@ class ObjectLoaderPipelineWithFiles<K : WithStream, T : RemoteObject<*>>(
     forwardFileRecordStep: ForwardFileRecordStep<T>,
     @Named("fileRecordPartFormatterStep") recordPartStep: ObjectLoaderPartFormatterStep,
     @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
-    @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
-) : LoadPipeline(listOf(
+    @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>
+) : LoadPipeline(selectPipelineSteps(
+    catalog,
     routeEventStep,
     fileChunkStep,
     fileChunkUploader,
@@ -63,4 +64,36 @@ class ObjectLoaderPipelineWithFiles<K : WithStream, T : RemoteObject<*>>(
     recordPartStep,
     recordUploadStep,
     recordCompleterStep,
-))
+)) {
+    companion object {
+        fun hasFileTransfer(catalog: DestinationCatalog): Boolean =
+            catalog.streams.any { it.includeFiles }
+
+        fun <K : WithStream, T : RemoteObject<*>> selectPipelineSteps(
+            catalog: DestinationCatalog,
+            routeEventStep: RouteEventStep,
+            fileChunkStep: FileChunkStep<T>,
+            @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
+            @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+            forwardFileRecordStep: ForwardFileRecordStep<T>,
+            @Named("fileRecordPartFormatterStep") recordPartStep: ObjectLoaderPartFormatterStep,
+            @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
+            @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+        ): List<LoadPipelineStep> {
+            return if (hasFileTransfer(catalog)) {
+                listOf(
+                    routeEventStep,
+                    fileChunkStep,
+                    fileChunkUploader,
+                    fileCompleterStep,
+                    forwardFileRecordStep,
+                    recordPartStep,
+                    recordUploadStep,
+                    recordCompleterStep,
+                )
+            } else {
+                listOf(recordPartStep, recordUploadStep, recordCompleterStep)
+            }
+        }
+    }
+}
