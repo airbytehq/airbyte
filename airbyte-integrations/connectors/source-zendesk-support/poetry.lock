@@ -2,20 +2,21 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.45.4.post49.dev14495925594"
+version = "6.45.4.post14.dev14544463167"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.45.4.post49.dev14495925594-py3-none-any.whl", hash = "sha256:088059eb9bdd8d30f8a2360597a2b284844d0f8207f5862a72439431644895f3"},
-    {file = "airbyte_cdk-6.45.4.post49.dev14495925594.tar.gz", hash = "sha256:1d589e04633a2449de6d23c9802d5295783c4efc420955583b76e84e177d0079"},
+    {file = "airbyte_cdk-6.45.4.post14.dev14544463167-py3-none-any.whl", hash = "sha256:5e1744a4b03f900d5fa2fbe70796c557dab109d4f9553f88236bcf3d5ba2ffa7"},
+    {file = "airbyte_cdk-6.45.4.post14.dev14544463167.tar.gz", hash = "sha256:06d159bbae959dab730e1f5e29c305119d52cdb93b2d04b1f8dd2b6b40d7497d"},
 ]
 
 [package.dependencies]
 airbyte-protocol-models-dataclasses = ">=0.15,<0.16"
 anyascii = ">=0.3.2,<0.4.0"
 backoff = "*"
+boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
 cryptography = ">=44.0.0,<45.0.0"
 dpath = ">=2.1.6,<3.0.0"
@@ -154,6 +155,18 @@ groups = ["main"]
 files = [
     {file = "backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8"},
     {file = "backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba"},
+]
+
+[[package]]
+name = "boltons"
+version = "25.0.0"
+description = "When they're not builtins, they're boltons."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "boltons-25.0.0-py3-none-any.whl", hash = "sha256:dc9fb38bf28985715497d1b54d00b62ea866eca3938938ea9043e254a3a6ca62"},
+    {file = "boltons-25.0.0.tar.gz", hash = "sha256:e110fbdc30b7b9868cb604e3f71d4722dd8f4dcb4a5ddd06028ba8f1ab0b5ace"},
 ]
 
 [[package]]
@@ -2225,4 +2238,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "fb106f56b7c813a2dc6b4e94d9723fe22a3e467bfe5c34f8cdc354a3bb50e2dc"
+content-hash = "7071fe4a91d3c90ead3e13e2ca6cec09f1d72974e0bcda4f4a9380ec900741c7"
