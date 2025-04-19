@@ -50,7 +50,7 @@ class RagieConfig(BaseModel):
         title="Mode",
         description="Processing mode for ingestion ('fast' or 'hi-res').",
         default="fast",
-        enum=["fast", "hi-res"],
+        enum=["fast", "hi_res"],
         order=4,
         examples=["fast"],
         always_show=True
