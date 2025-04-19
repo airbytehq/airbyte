@@ -67,6 +67,7 @@ class GoogleDriveRemoteFile(RemoteFile):
     # Only populated for items in shared drives.
     drive_id: Optional[str] = None
     created_at: datetime
+
     @property
     def url(self) -> str:
         if self.drive_id:
