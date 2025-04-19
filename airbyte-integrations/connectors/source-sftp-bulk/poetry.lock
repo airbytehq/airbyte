@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.45.4.post49.dev14495925594"
+version = "6.45.4.post13.dev14543731901"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.45.4.post49.dev14495925594-py3-none-any.whl", hash = "sha256:088059eb9bdd8d30f8a2360597a2b284844d0f8207f5862a72439431644895f3"},
-    {file = "airbyte_cdk-6.45.4.post49.dev14495925594.tar.gz", hash = "sha256:1d589e04633a2449de6d23c9802d5295783c4efc420955583b76e84e177d0079"},
+    {file = "airbyte_cdk-6.45.4.post13.dev14543731901-py3-none-any.whl", hash = "sha256:45e26ebc0a36193604dc65bca8b4638db943edfb9e228f25a50e9823b0220e3a"},
+    {file = "airbyte_cdk-6.45.4.post13.dev14543731901.tar.gz", hash = "sha256:a41942122820602777d87c34d2998d13120420ecb50f3fccc37b3802f6a0ada4"},
 ]
 
 [package.dependencies]
@@ -17,6 +17,7 @@ airbyte-protocol-models-dataclasses = ">=0.15,<0.16"
 anyascii = ">=0.3.2,<0.4.0"
 avro = {version = ">=1.11.2,<1.13.0", optional = true, markers = "extra == \"file-based\""}
 backoff = "*"
+boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
 cryptography = ">=44.0.0,<45.0.0"
 dpath = ">=2.1.6,<3.0.0"
@@ -270,6 +271,18 @@ chardet = ["chardet"]
 charset-normalizer = ["charset-normalizer"]
 html5lib = ["html5lib"]
 lxml = ["lxml"]
+
+[[package]]
+name = "boltons"
+version = "25.0.0"
+description = "When they're not builtins, they're boltons."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "boltons-25.0.0-py3-none-any.whl", hash = "sha256:dc9fb38bf28985715497d1b54d00b62ea866eca3938938ea9043e254a3a6ca62"},
+    {file = "boltons-25.0.0.tar.gz", hash = "sha256:e110fbdc30b7b9868cb604e3f71d4722dd8f4dcb4a5ddd06028ba8f1ab0b5ace"},
+]
 
 [[package]]
 name = "bracex"
@@ -3564,4 +3577,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "6f5ddf5baf77636e8b0c5bafece604cdd2016334f94b87db4b6413be903cfea4"
+content-hash = "64fd21c091fa27ff1790b48902c7f1a7f8894a8691ae708b6733f4081395f50c"
