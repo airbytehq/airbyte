@@ -165,7 +165,7 @@ class RagieClient:
 
     def check_connection(self) -> Optional[str]:
         """Checks API key and connectivity using GET /documents."""
-        logger.info(f"Performing connection check using GET {self.DOCUMENTS_GENERAL_ENDPOINT} with partition scope: {self.config.partition or 'Default/Account-wide'}")
+        logger.info(f"Performing connection check using GET {self.DOCUMENTS_GENERAL_ENDPOINT} with partition scope: {self.config.partition or 'default'}")
         try:
             # Use the general partition header for this GET request
             response = self._request(
