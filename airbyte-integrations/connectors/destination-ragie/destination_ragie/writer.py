@@ -254,11 +254,22 @@ class RagieWriter:
         payload: Dict[str, Any] = {}
         content_to_send: Optional[Dict[str, Any]] = None
 
-        # --- 1. Identify Record Type & Extract ---
-        logger.debug("Identified JSON record.")
-        content_to_send = record_data
+        # --- 1. Extract Content Based on Config ---
+        if self.config.content_fields:
+            # Extract specified keys, supporting dot notation for nested fields
+            content_to_send = {}
+            for key in self.config.content_fields:
+                value = self._get_value_from_path(record_data, key)
+                if value is not None:
+                    content_to_send[key] = value
+                else:
+                    logger.warning(f"Key '{key}' not found in record data for stream '{stream_id}'.")
+        else:
+            # Use the entire record data
+            content_to_send = record_data
+
         if not content_to_send:
-            logger.warning(f"JSON record data empty in stream '{stream_id}'. Skipping.")
+            logger.warning(f"Content data is empty in stream '{stream_id}'. Skipping.")
             return
         payload["data"] = content_to_send  # Key for JSON data
 
