@@ -6810,6 +6810,19 @@ definitions:
                   type:
                   - "null"
                   - string
+            VendorRef:
+              type:
+              - "null"
+              - object
+              properties:
+                name:
+                  type:
+                  - "null"
+                  - string
+                value:
+                  type:
+                  - "null"
+                  - string
             HourlyRate:
               type:
               - "null"
@@ -14400,6 +14413,19 @@ streams:
               type:
               - "null"
               - string
+        VendorRef:
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              type:
+              - "null"
+              - string
+            value:
+              type:
+              - "null"
+              - string
         HourlyRate:
           type:
           - "null"
@@ -20378,6 +20404,19 @@ schemas:
         - "null"
         - string
       EmployeeRef:
+        type:
+        - "null"
+        - object
+        properties:
+          name:
+            type:
+            - "null"
+            - string
+          value:
+            type:
+            - "null"
+            - string
+      VendorRef:
         type:
         - "null"
         - object
