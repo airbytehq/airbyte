@@ -22,7 +22,7 @@ wcmatch = "^10.0"
 dill = "^0.3.4"
 transformers = "^4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "6.45.4.post49.dev14495925594"}
+airbyte-cdk = {extras = ["file-based"], version = "6.45.4.post14.dev14544463167"}
 pendulum = "^3.0.0"
 
 [tool.poetry.scripts]
