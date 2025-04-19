@@ -21,7 +21,7 @@ google-api-python-client = "==2.104.0"
 google-auth-httplib2 = "==0.1.1"
 google-auth-oauthlib = "==1.1.0"
 google-api-python-client-stubs = "==1.18.0"
-airbyte-cdk = {extras = ["file-based"], version = "6.45.4.post49.dev14495925594"}
+airbyte-cdk = {extras = ["file-based"], version = "6.45.4.post13.dev14543731901"}
 
 
 [tool.poetry.scripts]

@@ -66,7 +66,7 @@ class GoogleDriveRemoteFile(RemoteFile):
     view_link: str
     # Only populated for items in shared drives.
     drive_id: Optional[str] = None
-
+    created_at: datetime
     @property
     def url(self) -> str:
         if self.drive_id:
@@ -147,7 +147,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             request = service.files().list(
                 q=f"'{folder_id}' in parents",
                 pageSize=1000,
-                fields="nextPageToken, files(id, name, modifiedTime, mimeType, webViewLink, driveId)",
+                fields="nextPageToken, files(id, name, modifiedTime, mimeType, webViewLink, driveId, createdTime)",
                 supportsAllDrives=True,
                 includeItemsFromAllDrives=True,
             )
@@ -170,6 +170,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         continue
                     else:
                         last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                        created_at = datetime.strptime(new_file["createdTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
                         original_mime_type = new_file["mimeType"]
                         mime_type = (
                             self._get_export_mime_type(original_mime_type)
@@ -179,6 +180,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         remote_file = GoogleDriveRemoteFile(
                             uri=file_name,
                             last_modified=last_modified,
+                            created_at=created_at,
                             id=new_file["id"],
                             original_mime_type=original_mime_type,
                             mime_type=mime_type,
@@ -311,6 +313,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 bytes=file_size,
                 id=file.id,
                 mime_type=file.mime_type,
+                created_at=file.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 source_uri=file.url,
             )
