@@ -109,3 +109,30 @@ docker push ghcr.io/NAMESPACE/destination-google-sheets:latest
 ```
 
 Now, when you install Airbyte, images will come from the custom image registry you configured.
+
+## Advanced configurations
+
+### Per-Image Registry overrides
+When implementing a custom global image registry, you may wish to overide your global configuration for one or more individual images for airbyte components referenced in the helm charts.
+
+For example:
+
+assuming you have set this global configuration:
+```yaml title="values.yaml"
+    global:
+      image:
+        registry: "my-registry.example.com"
+```
+you may want to configure a public AWS ECR for individual images in the chart.
+This can be achieved by setting the `image.registry`, `image.repository` and `image.tag` subkeys for the relevent airbyte component in the airbyte values.yaml.
+
+An example below shows what this looks like for the keycloak initDB container:
+```yaml title="values.yaml"
+keycloak:
+  initContainers:
+    initDb:
+      image:
+        registry: public.ecr.aws
+        repository: docker/library/postgres
+        tag: 13-alpine
+```
