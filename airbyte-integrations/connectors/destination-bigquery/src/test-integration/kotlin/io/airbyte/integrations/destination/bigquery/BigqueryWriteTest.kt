@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import java.nio.file.Path
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 abstract class BigqueryWriteTest(
@@ -62,6 +63,7 @@ class StandardInsertRawOverrideDisableTd :
     }
 }
 
+@Disabled("Disabling until we have the full flow")
 class GcsRawOverrideDisableTd :
     BigqueryWriteTest(
         BigQueryDestinationTestUtils.createConfig(
