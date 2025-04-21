@@ -11,11 +11,9 @@ import com.google.common.collect.Lists
 import io.airbyte.cdk.integrations.base.DestinationConfig
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
-import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.commons.string.Strings.addRandomSuffix
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.createPartitionedTableIfNotExists
-import io.airbyte.integrations.destination.bigquery.BigQueryUtils.executeQuery
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getDatasetLocation
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getGcsJsonNodeConfig
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getOrCreateDataset
@@ -27,14 +25,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
 import java.util.*
-import java.util.function.Function
-import java.util.stream.Collectors
-import java.util.stream.Stream
-import java.util.stream.StreamSupport
 import org.junit.jupiter.api.*
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.mock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,48 +35,6 @@ internal class BigQueryDestinationTest {
     protected var bigquery: BigQuery? = null
     protected var dataset: Dataset? = null
     private var s3Client: AmazonS3? = null
-
-    private fun successTestConfigProviderBase(): Stream<Arguments> {
-        return Stream.of(Arguments.of("config"), Arguments.of("configWithProjectId"))
-    }
-
-    private fun successTestConfigProvider(): Stream<Arguments> {
-        return Stream.concat(
-            successTestConfigProviderBase(),
-            Stream.of(Arguments.of("gcsStagingConfig"))
-        )
-    }
-
-    private fun failCheckTestConfigProvider(): Stream<Arguments> {
-        return Stream.of(
-            Arguments.of(
-                "configWithBadProjectId",
-                "User does not have bigquery.datasets.create permission in project"
-            ),
-            Arguments.of(
-                "insufficientRoleConfig",
-                "User does not have bigquery.datasets.create permission"
-            ),
-            Arguments.of(
-                "gcsStagingConfigWithBadCopyPermission",
-                "Permission bigquery.tables.updateData denied on table"
-            ),
-        )
-    }
-
-    private fun failWriteTestConfigProvider(): Stream<Arguments> {
-        return Stream.of(
-            Arguments.of(
-                "configWithBadProjectId",
-                "User does not have bigquery.datasets.create permission in project"
-            ),
-            Arguments.of(
-                "noEditPublicSchemaRoleConfig",
-                "Failed to write to destination schema."
-            ), // (or it may not exist)
-            Arguments.of("insufficientRoleConfig", "Permission bigquery.tables.create denied")
-        )
-    }
 
     @Throws(IOException::class)
     protected fun initBigQuery(config: JsonNode) {
@@ -119,25 +68,6 @@ internal class BigQueryDestinationTest {
         BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER)
     }
 
-    @Disabled @Test @Throws(Exception::class) fun testSpec() {}
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("successTestConfigProvider")
-    @Throws(IOException::class)
-    fun testCheckSuccess(configName: String) {}
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("failCheckTestConfigProvider")
-    fun testCheckFailures(configName: String, error: String?) {}
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("successTestConfigProvider")
-    @Throws(Exception::class)
-    fun testWriteSuccess(configName: String) {}
-
     @Test
     @Throws(Exception::class)
     fun testCreateTableSuccessWhenTableAlreadyExists() {
@@ -164,159 +94,15 @@ internal class BigQueryDestinationTest {
 
         val tableId = TableId.of(tmpTestSchemaName, "test_already_existing_table")
 
-        getOrCreateDataset(bigquery!!, tmpTestSchemaName, getDatasetLocation(config!!))
+        getOrCreateDataset(bigquery!!, tmpTestSchemaName, getDatasetLocation(config))
 
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow {
+        Assertions.assertDoesNotThrow {
             // Create table
             createPartitionedTableIfNotExists(bigquery!!, tableId, schema)
 
             // Try to create it one more time. Shouldn't throw exception
             createPartitionedTableIfNotExists(bigquery!!, tableId, schema)
         }
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("failWriteTestConfigProvider")
-    @Throws(Exception::class)
-    fun testWriteFailure(configName: String, error: String?) {}
-
-    @Throws(InterruptedException::class)
-    private fun fetchNamesOfTablesInDb(): Set<String> {
-        if (dataset == null || bigquery == null) {
-            return emptySet()
-        }
-        val queryConfig =
-            QueryJobConfiguration.newBuilder(
-                    String.format(
-                        "SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES`;",
-                        dataset!!.datasetId.dataset
-                    )
-                )
-                .setUseLegacySql(false)
-                .build()
-
-        if (!dataset!!.exists()) {
-            return emptySet()
-        }
-        return StreamSupport.stream(
-                executeQuery(bigquery!!, queryConfig)
-                    .getLeft()
-                    .getQueryResults()
-                    .iterateAll()
-                    .spliterator(),
-                false
-            )
-            .map { v: FieldValueList -> v["TABLE_NAME"].stringValue }
-            .collect(Collectors.toSet())
-    }
-
-    @Throws(InterruptedException::class)
-    private fun assertTmpTablesNotPresent(tableNames: List<String>) {
-        val tmpTableNamePrefixes =
-            tableNames.stream().map { name: String -> name + "_" }.collect(Collectors.toSet())
-        val finalTableNames =
-            tableNames.stream().map { name: String -> name + "_raw" }.collect(Collectors.toSet())
-        // search for table names that have the tmp table prefix but are not raw tables.
-        org.junit.jupiter.api.Assertions.assertTrue(
-            fetchNamesOfTablesInDb()
-                .stream()
-                .filter { tableName: String -> !finalTableNames.contains(tableName) }
-                .noneMatch { tableName: String ->
-                    tmpTableNamePrefixes.stream().anyMatch { prefix: String ->
-                        tableName.startsWith(prefix)
-                    }
-                }
-        )
-    }
-
-    @Throws(Exception::class)
-    private fun retrieveRecords(tableName: String): List<JsonNode> {
-        val queryConfig =
-            QueryJobConfiguration.newBuilder(
-                    String.format(
-                        "SELECT * FROM `%s.%s`;",
-                        dataset!!.datasetId.dataset,
-                        tableName.lowercase(Locale.getDefault())
-                    )
-                )
-                .setUseLegacySql(false)
-                .build()
-
-        executeQuery(bigquery!!, queryConfig)
-
-        return StreamSupport.stream<FieldValueList>(
-                executeQuery(bigquery!!, queryConfig)
-                    .getLeft()
-                    .getQueryResults()
-                    .iterateAll()
-                    .spliterator(),
-                false
-            )
-            .map<String>(
-                Function<FieldValueList, String> { v: FieldValueList ->
-                    v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue()
-                }
-            )
-            .map<JsonNode> { jsonString: String? -> deserialize(jsonString) }
-            .collect(Collectors.toList<JsonNode>())
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("successTestConfigProviderBase")
-    @Throws(Exception::class)
-    fun testWritePartitionOverUnpartitioned(configName: String) {}
-
-    private fun createUnpartitionedTable(
-        bigquery: BigQuery?,
-        dataset: Dataset?,
-        tableName: String
-    ) {
-        val tableId = TableId.of(dataset!!.datasetId.dataset, tableName)
-        bigquery!!.delete(tableId)
-        val schema =
-            Schema.of(
-                com.google.cloud.bigquery.Field.of(
-                    JavaBaseConstants.COLUMN_NAME_AB_ID,
-                    StandardSQLTypeName.STRING
-                ),
-                com.google.cloud.bigquery.Field.of(
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-                    StandardSQLTypeName.TIMESTAMP
-                ),
-                com.google.cloud.bigquery.Field.of(
-                    JavaBaseConstants.COLUMN_NAME_DATA,
-                    StandardSQLTypeName.STRING
-                )
-            )
-        val tableDefinition = StandardTableDefinition.newBuilder().setSchema(schema).build()
-        val tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build()
-        bigquery.create(tableInfo)
-    }
-
-    @Throws(InterruptedException::class)
-    private fun isTablePartitioned(
-        bigquery: BigQuery?,
-        dataset: Dataset?,
-        tableName: String
-    ): Boolean {
-        val queryConfig =
-            QueryJobConfiguration.newBuilder(
-                    String.format(
-                        "SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
-                        bigquery!!.options.projectId,
-                        dataset!!.datasetId.dataset,
-                        tableName
-                    )
-                )
-                .setUseLegacySql(false)
-                .build()
-        val result = executeQuery(bigquery, queryConfig)
-        for (row in result.getLeft().getQueryResults().values) {
-            return !row["is_partitioned"].isNull && row["is_partitioned"].stringValue == "YES"
-        }
-        return false
     }
 
     companion object {
@@ -413,17 +199,6 @@ internal class BigQueryDestinationTest {
                             )
                         )
                         .withEmittedAt(NOW.toEpochMilli())
-                )
-        protected val MESSAGE_STATE: AirbyteMessage =
-            AirbyteMessage()
-                .withType(AirbyteMessage.Type.STATE)
-                .withState(
-                    AirbyteStateMessage()
-                        .withData(
-                            jsonNode(
-                                ImmutableMap.builder<Any, Any>().put("checkpoint", "now!").build()
-                            )
-                        )
                 )
 
         protected var projectId: String? = null
