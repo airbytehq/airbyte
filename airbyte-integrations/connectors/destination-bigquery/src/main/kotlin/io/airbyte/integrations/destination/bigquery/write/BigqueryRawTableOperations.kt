@@ -8,7 +8,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableResult
-import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.TableName
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingRawTableOperations
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
@@ -79,7 +79,7 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
         if (result.totalRows == 0L) {
             return null
         }
-        val value = result.iterateAll().first().get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+        val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
         return if (value == null || value.isNull) {
             0
         } else {

@@ -13,12 +13,12 @@ import com.google.cloud.bigquery.TableDefinition
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TimePartitioning
 import com.google.common.annotations.VisibleForTesting
-import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.DestinationInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.TableName
@@ -197,7 +197,7 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
                 .stream()
                 .filter { name: String ->
                     !containsIgnoreCase(streamSchema.keys, name) &&
-                        !containsIgnoreCase(JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS, name)
+                        !containsIgnoreCase(Meta.COLUMN_NAMES, name)
                 }
                 .collect(Collectors.toSet())
 
