@@ -1056,6 +1056,7 @@ class EventLogFileEventsStream(IncrementalRestSalesforceStream):
             # parse CSV and yield each row as an individual record
             reader = csv.DictReader(resp.text.splitlines())
             for row in reader:
+                new_record = record.copy()
                 # Add event_log_id to the new record
-                row['event_log_id'] = record.get("Id")
-                yield row
+                new_record['data'] = row
+                yield new_record
