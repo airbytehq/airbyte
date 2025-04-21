@@ -102,3 +102,89 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
 8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
+
+# Fabrix Build
+
+Run from Devcontainer (so airbyte-ci is runnable)
+
+Build for arm
+```bash
+airbyte-ci connectors --name=source-salesforce build --architecture linux/arm64 -t arm
+```
+
+Build for AMD64
+```bash
+airbyte-ci connectors --name=source-salesforce build --architecture linux/amd64 -t amd
+```
+
+Export images to files - Extract for dev container to local docker for ECR push
+
+```bash
+# Export ARM image to tar file
+docker save airbyte/source-salesforce:arm -o salesforce-connector-arm.tar
+
+# Export AMD64 image to tar file
+docker save airbyte/source-salesforce:amd -o salesforce-connector-amd.tar
+
+# You can then copy these tar files to your host machine and load them into Docker
+# On your host machine:
+docker load -i salesforce-connector-arm.tar
+docker load -i salesforce-connector-amd.tar
+```
+
+## Push to ECR
+
+After loading the Docker images, you can tag and push them to your ECR repository:
+
+```bash
+# Login to ECR (ensure AWS credentials are configured)
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 794038212761.dkr.ecr.us-east-1.amazonaws.com
+
+# Version tag to use
+VERSION="1.0.0"
+
+# Tag and push ARM image with version and 'arm' tag
+docker tag airbyte/source-salesforce:arm 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-arm
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-arm
+
+# Also push as 'arm' tag for latest reference
+docker tag airbyte/source-salesforce:arm 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:arm
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:arm
+
+# Tag and push AMD64 image with version and 'amd' tag
+docker tag airbyte/source-salesforce:amd 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-amd
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-amd
+
+# Also push as 'amd' tag for latest reference
+docker tag airbyte/source-salesforce:amd 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:amd
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:amd
+
+# Create and push a multi-architecture manifest
+# This will create a manifest that points to both ARM and AMD images and selects the right one based on the cluster's architecture
+docker manifest create 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION} \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-arm \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-amd
+
+# Annotate the manifest with architecture information
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION} \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-arm --os linux --arch arm64
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION} \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}-amd --os linux --arch amd64
+
+# Push the manifest
+docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:${VERSION}
+
+# Also create a 'latest' manifest for convenience
+docker manifest create 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:latest \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:arm \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:amd
+
+# Annotate the latest manifest
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:latest \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:arm --os linux --arch arm64
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:latest \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:amd --os linux --arch amd64
+
+# Push the latest manifest
+docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-salesforce/docker:latest
+```
