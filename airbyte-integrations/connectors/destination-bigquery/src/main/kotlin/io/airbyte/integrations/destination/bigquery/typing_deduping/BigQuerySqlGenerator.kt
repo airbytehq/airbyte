@@ -643,9 +643,9 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 ArrayTypeWithoutSchema,
                 is ObjectType,
                 ObjectTypeWithEmptySchema,
-                ObjectTypeWithoutSchema,
+                ObjectTypeWithoutSchema -> StandardSQLTypeName.JSON
                 is UnionType ->
-                    if ((type as UnionType).isLegacyUnion) {
+                    if (type.isLegacyUnion) {
                         toDialectType(type.chooseType())
                     } else {
                         StandardSQLTypeName.JSON
