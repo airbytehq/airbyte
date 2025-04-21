@@ -5,7 +5,10 @@
 package io.airbyte.integrations.destination.bigquery
 
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
+import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -18,15 +21,18 @@ import org.junit.jupiter.api.Test
 abstract class BigqueryWriteTest(
     configContents: String,
     dataDumper: DestinationDataDumper,
+    expectedRecordMapper: ExpectedRecordMapper,
     preserveUndeclaredFields: Boolean,
+    supportsDedup: Boolean,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
         BigquerySpecification::class.java,
-        dataDumper = dataDumper,
+        dataDumper,
         NoopDestinationCleaner,
+        recordMangler = expectedRecordMapper,
         isStreamSchemaRetroactive = true,
-        supportsDedup = true,
+        supportsDedup = supportsDedup,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -57,7 +63,9 @@ class StandardInsertRawOverrideDisableTd :
             )
             .serializeToString(),
         BigqueryRawTableDataDumper,
+        UncoercedExpectedRecordMapper,
         preserveUndeclaredFields = true,
+        supportsDedup = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -74,7 +82,9 @@ class StandardInsertRawOverride :
             )
             .serializeToString(),
         BigqueryFinalTableDataDumper,
+        NoopExpectedRecordMapper,
         preserveUndeclaredFields = false,
+        supportsDedup = true,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -91,7 +101,9 @@ class GcsRawOverrideDisableTd :
             )
             .serializeToString(),
         BigqueryRawTableDataDumper,
+        UncoercedExpectedRecordMapper,
         preserveUndeclaredFields = true,
+        supportsDedup = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -108,7 +120,9 @@ class GcsRawOverride :
             )
             .serializeToString(),
         BigqueryFinalTableDataDumper,
+        NoopExpectedRecordMapper,
         preserveUndeclaredFields = false,
+        supportsDedup = true,
     ) {
     @Test
     override fun testBasicWrite() {
