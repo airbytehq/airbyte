@@ -23,13 +23,13 @@ import io.airbyte.cdk.load.orchestration.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.DestinationInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.TableName
 import io.airbyte.cdk.load.orchestration.TableNames
+import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.AlterTableReport
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.FinalTableInitialStatus
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingDestinationInitialStatus
-import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport
-import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
-import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase
-import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey
+import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
+import io.airbyte.cdk.util.CollectionUtils.containsIgnoreCase
+import io.airbyte.cdk.util.CollectionUtils.matchingKey
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigInteger
 import java.util.stream.Collectors
@@ -231,13 +231,10 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
                 )
                 .collect(Collectors.toSet())
 
-        val isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keys)
-
         return AlterTableReport(
             columnsToAdd,
             columnsToRemove,
             columnsToChangeType,
-            isDestinationV2Format
         )
     }
 
@@ -261,21 +258,6 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
                 .field
                 .equals("_airbyte_extracted_at", ignoreCase = true) &&
             TimePartitioning.Type.DAY == existingTable.timePartitioning!!.type
-    }
-
-    /**
-     * Checks the schema to determine whether the table contains all expected final table airbyte
-     * columns
-     *
-     * @param columnNames the column names of the schema to check
-     * @return whether all the [JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS] are present
-     */
-    @VisibleForTesting
-    fun schemaContainAllFinalTableV2AirbyteColumns(columnNames: Collection<String>?): Boolean {
-        return JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().allMatch { column: String?
-            ->
-            containsIgnoreCase(columnNames!!, column!!)
-        }
     }
 
     private fun getPks(
