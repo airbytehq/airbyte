@@ -13,11 +13,10 @@ import com.google.cloud.bigquery.JobStatistics
 import com.google.cloud.bigquery.JobStatus
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.common.collect.Streams
-import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.orchestration.DestinationHandler
 import io.airbyte.cdk.load.orchestration.Sql
-import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.cdk.util.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
@@ -51,7 +50,6 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                     QueryJobConfiguration.newBuilder(statement).build()
                 )
             )
-        AirbyteExceptionHandler.addStringForDeinterpolation(job.etag)
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
         while (JobStatus.State.DONE != job.status.state) {
             Thread.sleep(1000L)
