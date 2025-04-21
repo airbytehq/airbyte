@@ -33,8 +33,8 @@ import jakarta.inject.Singleton
  * - a single completer worker reads the second queue and completes the uploads
  * - state is acked only when the completer finishes each upload
  */
-//@Singleton
-//@Requires(bean = ObjectLoader::class)
+// @Singleton
+// @Requires(bean = ObjectLoader::class)
 @Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     partStep: ObjectLoaderPartFormatterStep,
@@ -54,17 +54,20 @@ class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
     @Named("fileRecordPartFormatterStep") recordPartStep: ObjectLoaderPartFormatterStep,
     @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
     @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>
-) : LoadPipeline(selectPipelineSteps(
-    catalog,
-    routeEventStep,
-    fileChunkStep,
-    fileChunkUploader,
-    fileCompleterStep,
-    forwardFileRecordStep,
-    recordPartStep,
-    recordUploadStep,
-    recordCompleterStep,
-)) {
+) :
+    LoadPipeline(
+        selectPipelineSteps(
+            catalog,
+            routeEventStep,
+            fileChunkStep,
+            fileChunkUploader,
+            fileCompleterStep,
+            forwardFileRecordStep,
+            recordPartStep,
+            recordUploadStep,
+            recordCompleterStep,
+        )
+    ) {
     companion object {
         fun hasFileTransfer(catalog: DestinationCatalog): Boolean =
             catalog.streams.any { it.includeFiles }

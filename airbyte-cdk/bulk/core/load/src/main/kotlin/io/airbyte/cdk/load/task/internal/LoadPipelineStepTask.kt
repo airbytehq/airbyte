@@ -64,7 +64,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val part: Int,
     private val numWorkers: Int,
     private val taskId: String,
-    private val streamCompletions: ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>
+    private val streamCompletions:
+        ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>
 ) : Task {
     private val log = KotlinLogging.logger {}
 
@@ -264,7 +265,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         // Only publish the output if there's a next step.
         outputQueue?.let {
             val outputKey = outputPartitioner!!.getOutputKey(inputKey, output)
-            val message = PipelineMessage(checkpointCounts.toMap(), outputKey, output, context = context)
+            val message =
+                PipelineMessage(checkpointCounts.toMap(), outputKey, output, context = context)
             val outputPart = outputPartitioner.getPart(outputKey, part, it.partitions)
             it.publish(message, outputPart)
         }

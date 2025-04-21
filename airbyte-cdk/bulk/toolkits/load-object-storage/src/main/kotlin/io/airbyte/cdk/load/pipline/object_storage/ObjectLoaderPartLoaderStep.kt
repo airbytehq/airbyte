@@ -16,8 +16,10 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
     loader: ObjectLoader,
     private val partLoader: ObjectLoaderPartLoader<T>,
-    private val inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    private val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
+    private val inputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+    private val outputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
     private val taskFactory: LoadPipelineStepTaskFactory,
     private val taskId: String,
 ) : LoadPipelineStep {

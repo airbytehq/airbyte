@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -11,8 +15,11 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ForwardFileRecordStep<T>(
-    @Named("fileCompletedQueue") private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
-    @Named("recordQueue") private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("fileCompletedQueue")
+    private val inputQueue:
+        PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
+    @Named("recordQueue")
+    private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
 ) : LoadPipelineStep {
     override val numWorkers: Int = 1
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -19,8 +23,11 @@ import jakarta.inject.Singleton
 class FileChunkStep<T : RemoteObject<*>>(
     private val catalog: DestinationCatalog,
     private val fileLoader: ObjectLoader,
-    @Named("fileQueue") val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    @Named("filePartQueue") val partQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+    @Named("fileQueue")
+    val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("filePartQueue")
+    val partQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     val pathFactory: ObjectStoragePathFactory,
 ) : LoadPipelineStep {
     override val numWorkers: Int = 1

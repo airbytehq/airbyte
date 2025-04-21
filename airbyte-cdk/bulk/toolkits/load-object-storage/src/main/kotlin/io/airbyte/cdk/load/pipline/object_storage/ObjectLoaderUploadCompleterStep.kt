@@ -17,8 +17,11 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
     objectLoader: ObjectLoader,
     private val uploadCompleter: ObjectLoaderUploadCompleter<T>,
-    private val inputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
-    private val completedUploadQueue: PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? = null,
+    private val inputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
+    private val completedUploadQueue:
+        PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
+        null,
     private val completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
     private val taskFactory: LoadPipelineStepTaskFactory,
     private val taskId: String,

@@ -125,9 +125,7 @@ class SyncBeanFactory {
     @Named("checkpointById")
     fun isCheckpointById(loadStrategy: LoadStrategy? = null): Boolean = loadStrategy != null
 
-    /**
-     * True if the catalog has at least one stream that includeFiles.
-     */
+    /** True if the catalog has at least one stream that includeFiles. */
     @Singleton
     @Named("isFileTransfer")
     fun isFileTransfer(catalog: DestinationCatalog): Boolean =

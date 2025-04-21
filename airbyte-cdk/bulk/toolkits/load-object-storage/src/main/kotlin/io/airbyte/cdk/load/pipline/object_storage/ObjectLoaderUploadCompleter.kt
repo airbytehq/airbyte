@@ -54,7 +54,12 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
                     Part(
                         key = state.objectKey,
                         fileNumber = 0L, // ignored
-                        bytes = if (input.empty) { null } else { ByteArray(0) },
+                        bytes =
+                            if (input.empty) {
+                                null
+                            } else {
+                                ByteArray(0)
+                            },
                         isFinal = input.isFinal,
                         partIndex = input.partIndex
                     )

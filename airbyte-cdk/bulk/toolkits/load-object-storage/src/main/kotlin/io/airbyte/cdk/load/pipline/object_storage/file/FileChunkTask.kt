@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -34,9 +38,10 @@ class FileChunkTask<T>(
     val pathFactory: ObjectStoragePathFactory,
     val fileLoader: ObjectLoader,
     val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    val partQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+    val partQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     val partition: Int
-): Task {
+) : Task {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
@@ -53,9 +58,10 @@ class FileChunkTask<T>(
 
                     val key =
                         Path.of(
-                            pathFactory.getFinalDirectory(stream),
-                            file.sourceFileRelativePath,
-                        ).toString()
+                                pathFactory.getFinalDirectory(stream),
+                                file.sourceFileRelativePath,
+                            )
+                            .toString()
 
                     val fileSize = file.fileSizeBytes
                     val localFileUrl = file.stagingFileUrl
@@ -66,15 +72,16 @@ class FileChunkTask<T>(
                     val localFile = File(localFileUrl)
                     val fileInputStream = localFile.inputStream()
 
-                    val partFactory = FilePartFactory(
-                        fileInputStream,
-                        localFileUrl,
-                        fileLoader.partSizeBytes.toInt(),
-                        PartFactory(
-                            key = key,
-                            fileNumber = 0,
-                        ),
-                    )
+                    val partFactory =
+                        FilePartFactory(
+                            fileInputStream,
+                            localFileUrl,
+                            fileLoader.partSizeBytes.toInt(),
+                            PartFactory(
+                                key = key,
+                                fileNumber = 0,
+                            ),
+                        )
 
                     do {
                         val outputPart = partFactory.getNextPart()
@@ -85,11 +92,9 @@ class FileChunkTask<T>(
                     fileInputStream.close()
                     localFile.delete()
                 }
-
                 is PipelineEndOfStream -> {
                     partQueue.broadcast(PipelineEndOfStream(event.stream))
                 }
-
                 is PipelineHeartbeat<*, *> -> {
                     log.info { "Unexpected heartbeat. Ignoring..." }
                 }
@@ -107,7 +112,8 @@ class FileChunkTask<T>(
 
         val formattedPart = ObjectLoaderPartFormatter.FormattedPart(part)
 
-        val outputMessage = PipelineMessage(emptyMap(), outputKey, formattedPart, context = pipelineContext)
+        val outputMessage =
+            PipelineMessage(emptyMap(), outputKey, formattedPart, context = pipelineContext)
         partQueue.publish(outputMessage, partition)
     }
 }

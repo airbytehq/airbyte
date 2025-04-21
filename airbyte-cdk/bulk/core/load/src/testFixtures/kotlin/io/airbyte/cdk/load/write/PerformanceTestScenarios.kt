@@ -169,7 +169,7 @@ class SingleStreamFileTransfer(
     private val log = KotlinLogging.logger {}
 
     init {
-      fileSizeMb = 10
+        fileSizeMb = 10
     }
 
     private val descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName)
@@ -219,12 +219,14 @@ class SingleStreamFileTransfer(
         repeat(numFiles) {
             val fileName = makeFileName(it.toLong())
 
-            val file = AirbyteRecordMessageFileReference()
-                .withFileSizeBytes(fileSizeMb * 1024 * 1024L)
-                .withStagingFileUrl(stagingDirectory.resolve(fileName).toString())
-                .withSourceFileRelativePath(fileName)
+            val file =
+                AirbyteRecordMessageFileReference()
+                    .withFileSizeBytes(fileSizeMb * 1024 * 1024L)
+                    .withStagingFileUrl(stagingDirectory.resolve(fileName).toString())
+                    .withSourceFileRelativePath(fileName)
 
-            val dataStr = """
+            val dataStr =
+                """
                 {
                       "id": 12138758717583,
                       "url": "https://d3v-airbyte.zendesk.com/api/v2/help_center/articles/attachments/12138758717583",
@@ -242,16 +244,17 @@ class SingleStreamFileTransfer(
                     }
             """.trimIndent()
 
-            val msg = AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(
-                    AirbyteRecordMessage()
-                        .withStream(stream.descriptor.name)
-                        .withNamespace(stream.descriptor.namespace)
-                        .withEmittedAt(System.currentTimeMillis())
-                        .withFileReference(file)
-                        .withData(Jsons.deserialize(dataStr))
-            )
+            val msg =
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage()
+                            .withStream(stream.descriptor.name)
+                            .withNamespace(stream.descriptor.namespace)
+                            .withEmittedAt(System.currentTimeMillis())
+                            .withFileReference(file)
+                            .withData(Jsons.deserialize(dataStr))
+                    )
 
             destination.sendMessage(msg)
         }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -10,11 +14,12 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.airbyte.cdk.load.task.TerminalCondition
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ForwardFileRecordTask<T>(
-    private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
+    private val inputQueue:
+        PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
     private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partition: Int,
 ) : Task {
@@ -24,23 +29,22 @@ class ForwardFileRecordTask<T>(
 
     override suspend fun execute() {
         inputQueue.consume(partition).collect { event ->
-            val toPublish: PipelineEvent<StreamKey, DestinationRecordRaw>? = when (event) {
-                is PipelineMessage -> {
-                    if (event.value.remoteObject == null) {
-                        null
-                    } else {
-                        PipelineMessage(
-                            event.context!!.parentCheckpointCounts!!,
-                            event.key,
-                            event.context!!.parentRecord!!,
-                        )
+            val toPublish: PipelineEvent<StreamKey, DestinationRecordRaw>? =
+                when (event) {
+                    is PipelineMessage -> {
+                        if (event.value.remoteObject == null) {
+                            null
+                        } else {
+                            PipelineMessage(
+                                event.context!!.parentCheckpointCounts!!,
+                                event.key,
+                                event.context!!.parentRecord!!,
+                            )
+                        }
                     }
-
-
+                    is PipelineEndOfStream<*, *> -> PipelineEndOfStream(event.stream)
+                    is PipelineHeartbeat<*, *> -> null
                 }
-                is PipelineEndOfStream<*, *> -> PipelineEndOfStream(event.stream)
-                is PipelineHeartbeat<*, *> -> null
-            }
 
             toPublish?.let { outputQueue.publish(it, 1) }
         }

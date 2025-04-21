@@ -18,7 +18,8 @@ class ObjectLoaderPartFormatterStep(
     objectLoader: ObjectLoader,
     private val partFormatter: ObjectLoaderPartFormatter<*>,
     private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    private val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+    private val outputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     private val taskFactory: LoadPipelineStepTaskFactory,
     private val taskId: String,
 ) : LoadPipelineStep {

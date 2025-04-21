@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
-import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.PipelineEvent
 import java.util.concurrent.atomic.AtomicReference
 import org.apache.mina.util.ConcurrentHashSet
 

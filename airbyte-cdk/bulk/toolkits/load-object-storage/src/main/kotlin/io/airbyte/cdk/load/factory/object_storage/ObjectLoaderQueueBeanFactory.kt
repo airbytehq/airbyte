@@ -99,9 +99,7 @@ class ObjectLoaderPartQueueFactory(
         )
     }
 
-    /**
-     * A queue for records uploading.
-     */
+    /** A queue for records uploading. */
     @Singleton
     @Named("recordQueue")
     fun recordQueue(
@@ -114,9 +112,7 @@ class ObjectLoaderPartQueueFactory(
         )
     }
 
-    /**
-     * A queue for records with file references for file uploading.
-     */
+    /** A queue for records with file references for file uploading. */
     @Singleton
     @Named("fileQueue")
     fun fileQueue(
@@ -149,9 +145,9 @@ class ObjectLoaderPartQueueFactory(
     }
 
     /**
-     * Queue between upload file parts and the upload completer. It will hold the fact of
-     * upload completion only, so in theory it can be [Channel.UNLIMITED], but to be safe we'll
-     * limit it to 10,000 queued completions.
+     * Queue between upload file parts and the upload completer. It will hold the fact of upload
+     * completion only, so in theory it can be [Channel.UNLIMITED], but to be safe we'll limit it to
+     * 10,000 queued completions.
      */
     @Singleton
     @Named("fileLoadedPartQueue")
@@ -170,9 +166,7 @@ class ObjectLoaderPartQueueFactory(
         )
     }
 
-    /**
-     * Completed file uploads.
-     */
+    /** Completed file uploads. */
     @Singleton
     @Named("fileCompletedQueue")
     fun <T> completedUploadQueue() =

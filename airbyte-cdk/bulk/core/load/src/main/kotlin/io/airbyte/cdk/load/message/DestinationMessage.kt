@@ -295,11 +295,12 @@ data class FileReference(
     val fileSizeBytes: Long,
 ) {
     companion object {
-        fun fromProtocol(proto: AirbyteRecordMessageFileReference): FileReference = FileReference(
-            proto.stagingFileUrl,
-            proto.sourceFileRelativePath,
-            proto.fileSizeBytes,
-        )
+        fun fromProtocol(proto: AirbyteRecordMessageFileReference): FileReference =
+            FileReference(
+                proto.stagingFileUrl,
+                proto.sourceFileRelativePath,
+                proto.fileSizeBytes,
+            )
     }
 }
 
@@ -309,9 +310,8 @@ data class DestinationRecordRaw(
     private val serialized: String,
     private val schema: AirbyteType,
 ) {
-    val fileReference: FileReference? = rawData.record?.fileReference?.let {
-        FileReference.fromProtocol(it)
-    }
+    val fileReference: FileReference? =
+        rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
 
     fun asRawJson(): JsonNode {
         return rawData.record.data

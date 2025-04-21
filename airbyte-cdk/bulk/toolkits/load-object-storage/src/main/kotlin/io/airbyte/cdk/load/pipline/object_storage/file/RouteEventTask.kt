@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -25,19 +29,21 @@ class RouteEventTask(
 
     override suspend fun execute() {
         inputQueue.consume(partition).collect { event ->
-            val streamDesc = when (event) {
-                is PipelineMessage -> event.key.stream
-                is PipelineEndOfStream<*, *> -> event.stream
-                is PipelineHeartbeat<*, *> -> null
-            }
+            val streamDesc =
+                when (event) {
+                    is PipelineMessage -> event.key.stream
+                    is PipelineEndOfStream<*, *> -> event.stream
+                    is PipelineHeartbeat<*, *> -> null
+                }
             val stream = streamDesc?.let { catalog.getStream(it) }
 
             if (stream?.includeFiles == true) {
                 if (event is PipelineMessage) {
-                    event.context = PipelineContext(
-                        event.checkpointCounts,
-                        event.value,
-                    )
+                    event.context =
+                        PipelineContext(
+                            event.checkpointCounts,
+                            event.value,
+                        )
                 }
 
                 fileQueue.publish(event, partition)
