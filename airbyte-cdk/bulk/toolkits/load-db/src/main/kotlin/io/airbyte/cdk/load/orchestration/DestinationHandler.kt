@@ -13,5 +13,5 @@ interface DestinationHandler {
      * This function should assume that all `namespaces` are valid identifiers, i.e. any special
      * characters have already been escaped, they respect identifier name length, etc.
      */
-    suspend fun createNamespaces(namespaces: List<String>)
+    suspend fun createNamespaces(namespaces: Collection<String>)
 }

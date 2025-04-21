@@ -110,7 +110,7 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
         }
     }
 
-    override suspend fun createNamespaces(namespaces: List<String>) {
+    override suspend fun createNamespaces(namespaces: Collection<String>) {
         coroutineScope {
             namespaces.forEach { dataset ->
                 launch {

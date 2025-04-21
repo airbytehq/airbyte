@@ -30,10 +30,10 @@ class TypingDedupingWriter(
 
     override suspend fun setup() {
         Executors.newFixedThreadPool(4).asCoroutineDispatcher().use { dispatcher ->
-            destinationHandler.createNamespaces(
+            val namespaces =
                 names.values.map { (tableNames, _) -> tableNames.rawTableName!!.namespace } +
                     names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
-            )
+            destinationHandler.createNamespaces(namespaces.toSet())
 
             val initialInitialStatuses:
                 Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
