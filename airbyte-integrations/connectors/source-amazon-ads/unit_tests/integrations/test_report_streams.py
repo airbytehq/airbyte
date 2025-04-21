@@ -65,6 +65,14 @@ class TestDisplayReportStreams:
     def test_given_file_when_read_brands_v3_report_then_return_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
+        """
+        Check Sponsored Brands V3 report stream: normal stream read flow
+        In this test, we prepare HTTP mocks to handle report initiation, status checks, and file downloads.
+        Request structure:
+            1. POST request to initiate report processing.
+            2. GET request to check report status and retrieve the download URL.
+            3. GET request to download the gzipped report file.
+        """
         report_id = "report-id-brands-v3"
         download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
         requests_mock.post(
@@ -95,6 +103,15 @@ class TestDisplayReportStreams:
     def test_given_file_when_read_display_report_then_return_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
+        """
+        Check display report streams: normal stream read flow for multiple streams
+        This test iterates over several Sponsored Display report streams, mocking the API responses for each.
+        It ensures that each stream can successfully initiate, check status, and download a report.
+        Request structure:
+            1. POST request to initiate report processing for each stream.
+            2. GET request to check report status and retrieve the download URL for each stream.
+            3. GET request to download the gzipped report file for each stream.
+        """
         number_of_records = 0
         for stream_name in (
             "sponsored_display_campaigns_report_stream",
@@ -130,6 +147,15 @@ class TestDisplayReportStreams:
     def test_given_file_when_read_products_report_then_return_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
+        """
+        Check Sponsored Products report streams: normal stream read flow for multiple streams
+        This test iterates over several Sponsored Products report streams, mocking the API responses for each.
+        It ensures that each stream can successfully initiate, check status, and download a report.
+        Request structure:
+            1. POST request to initiate report processing for each stream.
+            2. GET request to check report status and retrieve the download URL for each stream.
+            3. GET request to download the gzipped report file for each stream.
+        """
         number_of_records = 0
         for stream_name in (
             "sponsored_products_campaigns_report_stream",
@@ -167,6 +193,15 @@ class TestDisplayReportStreams:
     def test_given_known_error_when_read_brands_v3_report_then_skip_report(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
+        """
+        Check error handling for Sponsored Brands V3 report stream
+        This test simulates known errors (400, 401, 406) by mocking API responses to return empty reports.
+        It verifies that the stream skips the report gracefully without logging warnings.
+        Request structure:
+            1. POST request to initiate report processing.
+            2. GET request to check report status and retrieve the download URL.
+            3. GET request to download the gzipped empty report file.
+        """
         ERRORS = [
             (400, "KDP authors do not have access to Sponsored Brands functionality"),
             (401, "Not authorized to access scope 0001"),
@@ -202,6 +237,15 @@ class TestDisplayReportStreams:
     def test_given_known_error_when_read_display_report_then_partially_skip_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
+        """
+        Check partial error handling for Sponsored Display report streams
+        This test simulates errors for some streams by mocking empty reports for odd-indexed streams.
+        It ensures that the source skips failed streams gracefully while processing successful ones.
+        Request structure:
+            1. POST request to initiate report processing for each stream.
+            2. GET request to check report status and retrieve the download URL for each stream.
+            3. GET request to download the gzipped report file (data for even-indexed, empty for odd-indexed).
+        """
         streams = (
             "sponsored_display_campaigns_report_stream",
             "sponsored_display_adgroups_report_stream",
@@ -257,6 +301,15 @@ class TestDisplayReportStreams:
         ],
     )
     def test_daily_stream(self, requests_mock, config, mock_oauth, mock_profiles, stream_name):
+        """
+        Check daily report streams: parameterized test for all daily streams
+        This test verifies that each daily stream can fetch and process records with the 'date' field.
+        It uses HTTP mocks to simulate report initiation, status checks, and downloading gzipped daily data.
+        Request structure:
+            1. POST request to initiate report processing for the specified stream.
+            2. GET request to check report status and retrieve the download URL.
+            3. GET request to download the gzipped report file containing daily data.
+        """
         report_id = f"report-id-{stream_name}"
         download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
         requests_mock.post(
