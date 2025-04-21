@@ -43,9 +43,9 @@ data class OutputRecord(
         data: Map<String, Any?>,
         airbyteMeta: Meta?,
     ) : this(
-        UUID.fromString(rawId),
-        Instant.ofEpochMilli(extractedAt),
-        loadedAt?.let { Instant.ofEpochMilli(it) },
+        rawId,
+        extractedAt,
+        loadedAt,
         generationId,
         ObjectValue.from(data),
         airbyteMeta,
