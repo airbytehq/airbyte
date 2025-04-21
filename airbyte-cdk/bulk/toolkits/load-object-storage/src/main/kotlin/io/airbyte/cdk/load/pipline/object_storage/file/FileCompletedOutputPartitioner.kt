@@ -1,23 +1,20 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.pipeline.db
+package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
-import io.airbyte.cdk.load.write.db.BulkLoaderFactory
-import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
-@Secondary
-@Requires(bean = BulkLoaderFactory::class)
-class BulkLoadCompletedUploadPartitioner<T : RemoteObject<*>> :
+@Named("fileCompletedOutputPartitioner")
+class FileCompletedOutputPartitioner<T : RemoteObject<*>> :
     ObjectLoaderCompletedUploadPartitioner<StreamKey, T> {
     override fun getOutputKey(
         inputKey: ObjectKey,
@@ -27,6 +24,6 @@ class BulkLoadCompletedUploadPartitioner<T : RemoteObject<*>> :
     }
 
     override fun getPart(outputKey: StreamKey, inputPart: Int, numParts: Int): Int {
-        return Math.floorMod(outputKey.stream.hashCode(), numParts)
+        return 0
     }
 }

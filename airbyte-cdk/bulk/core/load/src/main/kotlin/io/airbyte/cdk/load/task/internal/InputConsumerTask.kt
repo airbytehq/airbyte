@@ -78,8 +78,8 @@ class DefaultInputConsumerTask(
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
     // Required by new interface
-    @Named("recordQueue")
-    private val recordQueueForPipeline:
+    @Named("pipelineInputQueue")
+    private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
@@ -168,21 +168,22 @@ class DefaultInputConsumerTask(
                     PipelineMessage(
                         mapOf(manager.getCurrentCheckpointId() to 1),
                         StreamKey(stream.descriptor),
-                        record
-                    ) { reserved.release() }
-                val partition = partitioner.getPartition(record, recordQueueForPipeline.partitions)
-                recordQueueForPipeline.publish(pipelineMessage, partition)
+                        record,
+                        postProcessingCallback = { reserved.release() }
+                    )
+                val partition = partitioner.getPartition(record, pipelineInputQueue.partitions)
+                pipelineInputQueue.publish(pipelineMessage, partition)
             }
             is DestinationRecordStreamComplete -> {
                 manager.markEndOfStream(true)
                 log.info { "Read COMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(PipelineEndOfStream(stream.descriptor))
+                pipelineInputQueue.broadcast(PipelineEndOfStream(stream.descriptor))
                 reserved.release()
             }
             is DestinationRecordStreamIncomplete -> {
                 manager.markEndOfStream(false)
                 log.info { "Read INCOMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(PipelineEndOfStream(stream.descriptor))
+                pipelineInputQueue.broadcast(PipelineEndOfStream(stream.descriptor))
                 reserved.release()
             }
             is DestinationFile -> {
@@ -299,7 +300,7 @@ class DefaultInputConsumerTask(
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
             fileTransferQueue.close()
-            recordQueueForPipeline.close()
+            pipelineInputQueue.close()
         }
     }
 }
@@ -315,7 +316,7 @@ interface InputConsumerTaskFactory {
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+        pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -337,7 +338,7 @@ class DefaultInputConsumerTaskFactory(
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+        pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -352,7 +353,7 @@ class DefaultInputConsumerTaskFactory(
             fileTransferQueue,
 
             // Required by new interface
-            recordQueueForPipeline,
+            pipelineInputQueue,
             loadPipeline,
             partitioner,
             openStreamQueue,

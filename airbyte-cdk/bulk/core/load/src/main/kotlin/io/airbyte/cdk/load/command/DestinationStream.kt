@@ -28,6 +28,7 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
+    val includeFiles: Boolean = false,
 ) {
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -59,10 +60,12 @@ data class DestinationStream(
                     .withNamespace(descriptor.namespace)
                     .withName(descriptor.name)
                     .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
+                    .withIsFileBased(includeFiles)
             )
             .withGenerationId(generationId)
             .withMinimumGenerationId(minimumGenerationId)
             .withSyncId(syncId)
+            .withIncludeFiles(includeFiles)
             .apply {
                 when (importType) {
                     is Append -> {
@@ -111,6 +114,7 @@ class DestinationStreamFactory(
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
             schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
+            includeFiles = stream.includeFiles ?: false,
         )
     }
 }

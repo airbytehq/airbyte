@@ -20,7 +20,7 @@ import kotlinx.coroutines.delay
 @Singleton
 class HeartbeatTask<K : WithStream, V>(
     private val config: DestinationConfiguration,
-    @Named("recordQueue") private val recordQueue: PartitionedQueue<PipelineEvent<K, V>>
+    @Named("pipelineInputQueue") private val inputQueue: PartitionedQueue<PipelineEvent<K, V>>
 ) : Task {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
@@ -28,7 +28,7 @@ class HeartbeatTask<K : WithStream, V>(
         while (true) {
             delay(config.heartbeatIntervalSeconds * 1000L)
             try {
-                recordQueue.broadcast(PipelineHeartbeat())
+                inputQueue.broadcast(PipelineHeartbeat())
             } catch (e: ClosedSendChannelException) {
                 // Do nothing. We don't care. Move on
             }

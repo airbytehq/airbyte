@@ -145,8 +145,8 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
 
     // New interface shim
-    @Named("recordQueue")
-    private val recordQueueForPipeline:
+    @Named("pipelineInputQueue")
+    private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     private val loadPipeline: LoadPipeline?,
@@ -214,7 +214,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 checkpointQueue = checkpointQueue,
                 fileTransferQueue = fileTransferQueue,
                 destinationTaskLauncher = this,
-                recordQueueForPipeline = recordQueueForPipeline,
+                pipelineInputQueue = pipelineInputQueue,
                 loadPipeline = loadPipeline,
                 partitioner = partitioner,
                 openStreamQueue = openStreamQueue,
@@ -283,7 +283,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        recordQueueForPipeline.close()
+        pipelineInputQueue.close()
         batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()
