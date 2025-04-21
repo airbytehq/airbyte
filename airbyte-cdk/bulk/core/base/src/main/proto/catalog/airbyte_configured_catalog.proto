@@ -1,0 +1,18 @@
+/*
+  * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+  */
+
+syntax = "proto3";
+import "airbyte_commons.proto";
+package io.airbyte.protocol;
+
+message ConfiguredAirbyteStream {
+  AirbyteStream stream = 1;
+  SyncMode sync_mode = 2;
+  repeated string cursor_field = 3;
+  DestinationSyncMode destination_sync_mode = 4;
+  repeated AirbytePrimaryKey primary_key = 5;
+  optional int64 generation_id = 6;
+  optional int64 minimum_generation_id = 7;
+  optional int64 sync_id = 8;
+}

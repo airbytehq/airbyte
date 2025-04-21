@@ -1,9 +1,11 @@
 ---
 airbyte:
   connector:
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
     extract:
       jdbc:
-        mode: sequential
+        mode: concurrent
         with-sampling: true
         table-sample-size: 1024
         throughput-bytes-per-second: 10000000

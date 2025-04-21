@@ -90,6 +90,12 @@ interface ObjectLoader : LoadStrategy {
 
     val stateAfterUpload: BatchState
         get() = BatchState.COMPLETE
+
+    // TEMP FOR SOCKET TEST
+    val useGarbagePart: Boolean
+        get() = false
+    val skipUpload: Boolean
+        get() = false
 }
 
 fun DestinationConfiguration.metadataFor(stream: DestinationStream): Map<String, String> =

@@ -101,6 +101,27 @@ abstract class DestinationConfiguration : Configuration {
 
     open val generationIdMetadataKey: String = DEFAULT_GENERATION_ID_METADATA_KEY
 
+    /** TEMPORARY FOR SOCKET TEST */
+    enum class InputSerializationFormat {
+        JSONL,
+        SMILE,
+        PROTOBUF,
+        DEVNULL,
+        FLATBUFFERS,
+    }
+
+    open val inputSerializationFormat: InputSerializationFormat = InputSerializationFormat.JSONL
+    open val numSockets: Int = 4
+    open val inputBufferByteSizePerSocket: Long = 8 * 1024L
+    open val socketPrefix: String = "/var/run/sockets/ab_socket"
+    open val socketWaitTimeoutSeconds: Int = 5 * 60
+    open val devNullAfterDeserialization: Boolean = false
+    open val skipJsonOnProto: Boolean = false
+    open val disableUUID: Boolean = false
+    open val disableMapper: Boolean = false
+    open val useCodedInputStream: Boolean = false
+    open val useSnappy: Boolean = false
+
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.

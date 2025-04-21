@@ -4,6 +4,9 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
+import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
@@ -11,6 +14,7 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.AirbyteValueViewType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -23,14 +27,19 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.cdk.load.util.write
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.util.FastUUIDGenerator
+import io.airbyte.cdk.load.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
+import java.io.UnsupportedEncodingException
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
 
@@ -47,6 +56,7 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
+    private val config: DestinationConfiguration,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
@@ -56,7 +66,12 @@ class DefaultObjectStorageFormattingWriterFactory(
         // TODO: FileWriter
 
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
-            is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
+            is JsonFormatConfiguration -> JsonFormattingWriter(
+                stream,
+                outputStream,
+                flatten,
+                disableUUID = config.disableUUID,
+            )
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
                     stream,
@@ -82,24 +97,81 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
+    private val disableUUID: Boolean,
 ) : ObjectStorageFormattingWriter {
+    private val generator =
+        Jsons.createGenerator(outputStream)
+    private val writer =
+        Jsons.writerFor(JsonNode::class.java)
+            .with(MinimalPrettyPrinter(System.lineSeparator()))
+            .writeValues(outputStream)
+
+    val oneVerySecureUUID = UUID.randomUUID().toString()
+    val fastUUIDGenerator = FastUUIDGenerator()
 
     override fun accept(record: DestinationRecordRaw) {
-        val data =
-            record
-                .asDestinationRecordAirbyteValue()
-                .dataWithAirbyteMeta(stream, rootLevelFlattening)
-                .toJson()
-                .serializeToString()
-        outputStream.write(data)
-        outputStream.write("\n")
+        generator.writeStartObject()
+        generator.writeFieldName(Meta.COLUMN_NAME_AB_RAW_ID)
+        if (disableUUID) {
+            generator.writeString(oneVerySecureUUID)
+        } else {
+            generator.writeString(fastUUIDGenerator.insecureUUID().toString())
+        }
+        generator.writeFieldName(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
+        generator.writeNumber(record.emittedAtMs)
+        generator.writeFieldName(Meta.COLUMN_NAME_AB_GENERATION_ID)
+        generator.writeNumber(stream.generationId)
+        generator.writeFieldName(Meta.COLUMN_NAME_DATA)
+        generator.writeStartObject()
+        val schema = record.airbyteValueView.finalSchema
+        for (i in schema.indices) {
+            when (schema[i].second) {
+                AirbyteValueViewType.STRING -> record.airbyteValueView.getString(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeString(it)
+                }
+                AirbyteValueViewType.BOOLEAN -> record.airbyteValueView.getBoolean(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeBoolean(it)
+                }
+                AirbyteValueViewType.INTEGER -> record.airbyteValueView.getInteger(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeNumber(it)
+                }
+                AirbyteValueViewType.NUMBER -> record.airbyteValueView.getNumber(i)?.let {
+                    generator.writeFieldName(schema[i].first)
+                    generator.writeNumber(it)
+                }
+                AirbyteValueViewType.BINARY -> {
+                    generator.writeFieldName(schema[i].first)
+                    record.airbyteValueView.getString(i)?.let {
+                        generator.writeBinary(
+                            Base64.getDecoder().decode(it)
+                        )
+                    }
+                }
+                AirbyteValueViewType.TIMESTAMP -> {
+                    record.airbyteValueView.getTimestamp(i)?.let {
+                        generator.writeFieldName(schema[i].first)
+                        generator.writeNumber(
+                            it.toInstant(ZoneOffset.UTC).toEpochMilli()
+                        )
+                    }
+                }
+            }
+        }
+        generator.writeEndObject()
+        generator.writeEndObject()
+        generator.writeRaw(System.lineSeparator())
     }
+
 
     override fun flush() {
         outputStream.flush()
     }
 
     override fun close() {
+        writer.close()
         outputStream.close()
     }
 }

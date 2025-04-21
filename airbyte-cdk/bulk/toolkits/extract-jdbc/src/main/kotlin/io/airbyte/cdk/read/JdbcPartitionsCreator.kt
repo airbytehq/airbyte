@@ -66,7 +66,7 @@ sealed class JdbcPartitionsCreator<
         }
         log.info { "Querying maximum cursor column value." }
         val record: ObjectNode? =
-            selectQuerier.executeQuery(cursorUpperBoundQuery).use {
+            selectQuerier.executeQuery(cursorUpperBoundQuery, cursorQuery = true).use {
                 if (it.hasNext()) it.next().data else null
             }
         if (record == null) {
@@ -102,7 +102,7 @@ sealed class JdbcPartitionsCreator<
             // If that's still not enough, don't sample at all.
             values.clear()
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
-            selectQuerier.executeQuery(samplingQuery).use {
+            selectQuerier.executeQuery(samplingQuery, cursorQuery = true).use {
                 for (row in it) {
                     values.add(recordMapper(row.data))
                 }
@@ -223,7 +223,8 @@ class JdbcConcurrentPartitionsCreator<
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
-        val expectedTableByteSize: Long = rowByteSizeSample.sampledValues.sum() * sample.valueWeight
+        val expectedTableByteSize: Long =
+            1_000_000_000_000L /*rowByteSizeSample.sampledValues.sum() * sample.valueWeight / 3*/
         log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
         // Handle edge case where the table can't be split.
         if (partition !is JdbcSplittablePartition<*>) {
@@ -246,6 +247,7 @@ class JdbcConcurrentPartitionsCreator<
                     1.0
                 }
             }
+
         val random = Random(expectedTableByteSize) // RNG output is repeatable.
         val splitBoundaries: List<OpaqueStateValue> =
             sample.sampledValues

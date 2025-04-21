@@ -89,13 +89,13 @@ class AirbyteJavaConnectorExtension {
                 testFixturesCompileOnly "org.projectlombok:lombok:1.18.30"
                 testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
                 // pre-v0.19 module structure
-                implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
+                implementation(platform("com.fasterxml.jackson:jackson-bom:2.18.3"))
                 implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
-                implementation "com.fasterxml.jackson.core:jackson-annotations:2.15.2"
-                implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
-                implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2"
-                implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2"
+                implementation "com.fasterxml.jackson.core:jackson-annotations:2.18.3"
+                implementation "com.fasterxml.jackson.core:jackson-databind:2.18.3"
+                implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3"
+                implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3"
 
                 implementation "com.google.guava:guava:31.1-jre"
                 implementation "commons-io:commons-io:2.7"

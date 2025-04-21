@@ -155,10 +155,11 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 stream.id to
                     object : StreamRecordConsumer {
                         override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
-
                         override fun accept(
                             recordData: ObjectNode,
-                            changes: Map<Field, FieldValueChange>?
+                            changes: Map<Field, FieldValueChange>?,
+                            totalNum: Int?,
+                            num: Long?
                         ) {
                             outputConsumer.accept(
                                 AirbyteRecordMessage()

@@ -130,6 +130,7 @@ interface PartitionReader {
      * [checkpoint]) regardless of timeouts.
      */
     suspend fun run()
+    fun setNum(num: Long) {}
 
     /**
      * Returns the forward progress made by the execution of [run].

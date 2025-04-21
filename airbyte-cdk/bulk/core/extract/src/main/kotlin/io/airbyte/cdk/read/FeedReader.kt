@@ -8,6 +8,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.withLock
@@ -32,7 +34,13 @@ class FeedReader(
     private val log = KotlinLogging.logger {}
 
     private val feedBootstrap: FeedBootstrap<*> =
-        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed)
+        FeedBootstrap.create(
+            root.outputConsumer,
+            root.metaFieldDecorator,
+            root.stateManager,
+            feed,
+            root.unixDomainSocketOutputConsumerProvider
+        )
 
     /** Reads records from this [feed]. */
     suspend fun read() {
@@ -179,7 +187,10 @@ class FeedReader(
         while (true) {
             val status: PartitionReader.TryAcquireResourcesStatus =
             // Resource acquisition always executes serially.
-            root.resourceAcquisitionMutex.withLock { partitionReader.tryAcquireResources() }
+            root.resourceAcquisitionMutex.withLock {
+                    delay(1.seconds)
+                    partitionReader.tryAcquireResources()
+                }
             if (status == PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
@@ -205,6 +216,7 @@ class FeedReader(
                 log.info {
                     "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
                 }
+                partitionReader.setNum(partitionReaderID)
                 withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
             }
             log.info {
@@ -312,9 +324,9 @@ class FeedReader(
         if (stateMessages.isEmpty()) {
             return
         }
-        log.info { "checkpoint of ${stateMessages.size} state message(s)" }
-        for (stateMessage in stateMessages) {
-            root.outputConsumer.accept(stateMessage)
-        }
+        log.info { "dev-nulling checkpoint of ${stateMessages.size} state message(s)" }
+        // for (stateMessage in stateMessages) {
+        // root.outputConsumer.accept(stateMessage)
+        // }
     }
 }

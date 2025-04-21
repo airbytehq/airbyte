@@ -1,9 +1,11 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -15,6 +17,8 @@ import kotlinx.coroutines.ensureActive
 sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
+    private val log = KotlinLogging.logger {}
+    private var partitionNum: Long = 0L
 
     val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream
@@ -24,6 +28,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         streamState.streamFeedBootstrap.streamRecordConsumer()
 
     private val acquiredResources = AtomicReference<AcquiredResources>()
+
+    private var devNulledRows: Long = 0
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -36,12 +42,23 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
-    fun out(row: SelectQuerier.ResultRow) {
-        streamRecordConsumer.accept(row.data, row.changes)
+    suspend fun out(row: SelectQuerier.ResultRow) {
+        streamRecordConsumer.acceptAsync(
+            row.data,
+            row.changes,
+            row.recordBuilder,
+            row.fbr,
+            sharedState.configuration.maxConcurrency,
+            partitionNum
+        )
     }
 
+    override fun setNum(num: Long) {
+        partitionNum = num
+    }
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
+        streamRecordConsumer.close()
     }
 
     /** If configured max feed read time elapsed we exit with a transient error */
@@ -58,6 +75,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
+    private val log = KotlinLogging.logger {}
 
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
@@ -74,16 +92,25 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                 q = partition.nonResumableQuery,
                 parameters =
                     SelectQuerier.Parameters(
-                        reuseResultObject = true,
+                        reuseResultObject = false,
                         fetchSize = streamState.fetchSize
                     ),
             )
             .use { result: SelectQuerier.Result ->
+                var count = 0L
                 for (row in result) {
                     out(row)
-                    numRecords.incrementAndGet()
+                    if (!partition.skipSynchronizedCounts) {
+                        numRecords.incrementAndGet()
+                    } else {
+                        count++
+                    }
+                }
+                if (partition.skipSynchronizedCounts) {
+                    numRecords.addAndGet(count)
                 }
             }
+
         runComplete.set(true)
     }
 
@@ -92,7 +119,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         if (!runComplete.get()) throw RuntimeException("cannot checkpoint non-resumable read")
         // The run method executed to completion without a LIMIT clause.
         // This implies that the partition boundary has been reached.
-        return PartitionReadCheckpoint(partition.completeState, numRecords.get())
+        return PartitionReadCheckpoint(JsonNodeFactory.instance.objectNode(), numRecords.get())
     }
 }
 

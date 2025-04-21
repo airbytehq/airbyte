@@ -201,8 +201,37 @@ class MySqlSourceOperations :
         when (this) {
             NoFrom -> ""
             is From -> if (this.namespace == null) "FROM `$name`" else "FROM `$namespace`.`$name`"
-            // just return the first sample_size of rows from the table for the best performance
-            is FromSample -> From(name, namespace).sql()
+            is FromSample -> {
+                val from: String = From(name, namespace).sql()
+                // On a table that is very big we limit sampling to no less than 0.05%
+                // chance of a row getting picked. This comes at a price of bias to the beginning
+                // of table on very large tables ( > 100s million of rows)
+                val greatestRate: String = 0.0005.toString()
+                // We only do a full count in case information schema contains no row count.
+                // This is the case for views.
+                val fullCount = "SELECT COUNT(*) FROM `$namespace`.`$name`"
+                // Quick approximation to "select count(*) from table" which doesn't require
+                // full table scan. However, note this could give delayed summary info about a table
+                // and thus a new table could be treated as empty despite we recently added rows.
+                // To prevent that from happening and resulted for skipping the table altogether,
+                // the minimum count is set to 10.
+
+                /*
+                SELECT GREATEST(5.0E-6, (
+                	SELECT CAST(1024 / table_rows AS DOUBLE) FROM information_schema.tables WHERE table_schema = '10gb' AND table_name = 'users')))
+
+                */
+                //                val quickCount =
+                //                    "SELECT GREATEST(10, COALESCE(table_rows, ($fullCount))) FROM
+                // information_schema.tables WHERE table_schema = '$namespace' AND table_name =
+                // '$name'"
+                val greatest =
+                    "GREATEST($greatestRate, (SELECT CAST($sampleSize / GREATEST(10, COALESCE(table_rows, ($fullCount))) AS DOUBLE) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'))"
+                // Rand returns a value between 0 and 1
+                val where = "WHERE RAND() < $greatest "
+                //                "$from $where"
+                from
+            }
         }
 
     fun WhereNode.sql(): String =
