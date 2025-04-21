@@ -50,10 +50,11 @@ class LegacyBigQuerySqlGenerator
     override fun buildColumnId(name: String, suffix: String?): ColumnId {
         val nameWithSuffix = name + suffix
         return ColumnId(
-            nameTransformer.getIdentifier(nameWithSuffix),
-            name, // Bigquery columns are case-insensitive, so do all our validation on the
+            nameTransformer.convertStreamName(nameWithSuffix),
+            name,
+            // Bigquery columns are case-insensitive, so do all our validation on the
             // lowercased name
-            nameTransformer.getIdentifier(nameWithSuffix.lowercase(Locale.getDefault()))
+            nameTransformer.convertStreamName(nameWithSuffix.lowercase(Locale.getDefault()))
         )
     }
 

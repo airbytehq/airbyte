@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import io.airbyte.cdk.integrations.base.DestinationConfig
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.json.Jsons.jsonNode
@@ -426,8 +425,6 @@ internal class BigQueryDestinationTest {
                             )
                         )
                 )
-
-        private val NAMING_RESOLVER: NamingConventionTransformer = BigQuerySQLNameTransformer()
 
         protected var projectId: String? = null
         protected var datasetId: String? = null

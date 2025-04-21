@@ -42,10 +42,10 @@ class BigqueryFinalTableNameGenerator(val config: BigqueryConfiguration) : Final
 class BigqueryColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
         return ColumnNameGenerator.ColumnName(
-            nameTransformer.getIdentifier(column),
+            nameTransformer.convertStreamName(column),
             // Bigquery columns are case-insensitive, so do all our validation on the
             // lowercased name
-            nameTransformer.getIdentifier(column.lowercase(Locale.getDefault())),
+            nameTransformer.convertStreamName(column.lowercase(Locale.getDefault())),
         )
     }
 }
