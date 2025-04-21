@@ -94,5 +94,17 @@ class BigQueryRecordFormatter {
                 Field.of(JavaBaseConstants.COLUMN_NAME_AB_META, StandardSQLTypeName.STRING),
                 Field.of(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, StandardSQLTypeName.INT64)
             )
+
+        val CSV_SCHEMA: Schema =
+            Schema.of(
+                Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
+                Field.of(
+                    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+                    StandardSQLTypeName.TIMESTAMP
+                ),
+                Field.of(JavaBaseConstants.COLUMN_NAME_AB_META, StandardSQLTypeName.STRING),
+                Field.of(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, StandardSQLTypeName.INT64),
+                Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
+            )
     }
 }

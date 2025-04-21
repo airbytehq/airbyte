@@ -20,7 +20,6 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
-import io.airbyte.integrations.destination.bigquery.spec.GcsStagingSpecification
 import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
@@ -41,7 +40,7 @@ class BigQueryBulkLoader(
 
         val csvOptions =
             CsvOptions.newBuilder()
-                .setSkipLeadingRows(1) // <‑‑ skip header
+                .setSkipLeadingRows(1)
                 .setAllowQuotedNewLines(true) // safe for long JSON strings
                 .setAllowJaggedRows(true)
                 .build()
@@ -49,8 +48,7 @@ class BigQueryBulkLoader(
         val configuration =
             LoadJobConfiguration.builder(rawTableId, gcsUri)
                 .setFormatOptions(csvOptions)
-                //                .setAutodetect(true)
-                .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
+                .setSchema(BigQueryRecordFormatter.CSV_SCHEMA)
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
                 .setJobTimeoutMs(600000L) // 10 min timeout
                 .build()
@@ -67,7 +65,7 @@ class BigQueryBulkLoader(
         }
 
         val loadingMethodPostProcessing =
-            (bigQueryConfiguration.loadingMethod as GcsStagingSpecification).filePostProcessing
+            (bigQueryConfiguration.loadingMethod as GcsStagingConfiguration).filePostProcessing
         if (loadingMethodPostProcessing == GcsFilePostProcessing.DELETE) {
             storageClient.delete(remoteObject)
         }
