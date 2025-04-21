@@ -58,7 +58,11 @@ public class ElasticsearchConnection {
 
     // Create the low-level client
     httpHost = HttpHost.create(config.getEndpoint());
-    final RestClientBuilder builder = RestClient.builder(httpHost);
+    if (config.getPathPrefix != null) {
+      final RestClientBuilder builder = RestClient.builder(httpHost).setPathPrefix(config.getPathPrefix());
+    } else {
+      final RestClientBuilder builder = RestClient.builder(httpHost);
+    }
 
     // Set custom user's certificate if provided
     if (config.getCaCertificate() != null && !config.getCaCertificate().isEmpty()) {
