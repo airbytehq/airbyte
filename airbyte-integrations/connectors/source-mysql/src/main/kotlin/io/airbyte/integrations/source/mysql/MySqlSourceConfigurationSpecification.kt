@@ -220,6 +220,10 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("use_snappy")
     @JsonSchemaDefault("false")
     val useSnappy: Boolean? = false
+
+    @JsonProperty("use_flow")
+    @JsonSchemaDefault("false")
+    val useFlow: Boolean? = false
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

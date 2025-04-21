@@ -66,6 +66,7 @@ interface SocketConfig {
     val sharedInputChannel: Boolean
     val socketPrefix: String
     val useSnappy: Boolean
+    val useFlow: Boolean
 }
 
 data class FlatBufferResult(
@@ -103,10 +104,14 @@ class UnixDomainSocketOutputConsumerProvider(
                         configuration.writeAsync,
                         configuration.skipJsonNodeAndUseFakeRecord,
                         it,
-                        if (configuration.sharedInputChannel) {
-                            it.receiveAsFlow()
+                        if (configuration.useFlow) {
+                            if (configuration.sharedInputChannel) {
+                                it.receiveAsFlow()
+                            } else {
+                                it.consumeAsFlow()
+                            }
                         } else {
-                            it.consumeAsFlow()
+                            null
                         },
                         configuration.useSnappy
                     )
@@ -168,7 +173,7 @@ class UnixDomainSocketOutputConsumer(
     private val writeAsync: Boolean,
     private val fakeRecord: Boolean,
     private val outputChannel: Channel<NamedNode>,
-    private val inputFlow: Flow<NamedNode>,
+    private val inputFlow: Flow<NamedNode>? = null,
     private val useSnappy: Boolean
 ) : AutoCloseable {
     private val socketChannel: SocketChannel
@@ -355,8 +360,20 @@ class UnixDomainSocketOutputConsumer(
     }
 
     suspend fun writeToSocketUntilComplete() {
-        inputFlow.collect { (namespace, name, recordData, recordMessage, fbBuffer) ->
-            accept(recordData, recordMessage, fbBuffer, namespace, name)
+        if (inputFlow != null) {
+            inputFlow.collect { (namespace, name, recordData, recordMessage, fbBuffer) ->
+                accept(recordData, recordMessage, fbBuffer, namespace, name)
+            }
+        } else {
+            for (namedNode in outputChannel) {
+                accept(
+                    namedNode.recordData,
+                    namedNode.recordMessage,
+                    namedNode.fbBuffer,
+                    namedNode.namespace,
+                    namedNode.streamName
+                )
+            }
         }
     }
 
