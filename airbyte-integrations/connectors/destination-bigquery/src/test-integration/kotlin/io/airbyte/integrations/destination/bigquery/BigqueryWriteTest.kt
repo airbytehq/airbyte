@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery
 
+import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.util.serializeToString
@@ -15,11 +16,15 @@ import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import java.nio.file.Path
 import org.junit.jupiter.api.Test
 
-abstract class BigqueryWriteTest(configContents: String) :
+abstract class BigqueryWriteTest(
+    configContents: String,
+    dataDumper: DestinationDataDumper,
+    preserveUndeclaredFields: Boolean,
+) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
         BigquerySpecification::class.java,
-        FakeDataDumper,
+        dataDumper = dataDumper,
         NoopDestinationCleaner,
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
@@ -27,7 +32,7 @@ abstract class BigqueryWriteTest(configContents: String) :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = false,
+        preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
         commitDataIncrementally = true,
         allTypesBehavior =
@@ -52,6 +57,8 @@ class StandardInsertRawOverrideDisableTd :
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
+        BigqueryRawTableDataDumper,
+        preserveUndeclaredFields = true,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -67,6 +74,8 @@ class StandardInsertRawOverride :
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
+        FakeDataDumper,
+        preserveUndeclaredFields = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -82,6 +91,25 @@ class GcsRawOverrideDisableTd :
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
+        BigqueryRawTableDataDumper,
+        preserveUndeclaredFields = true,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+class GcsRawOverride :
+    BigqueryWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+                configFile = Path.of("secrets/credentials-1s1t-gcs-raw-override.json"),
+                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
+                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+            )
+            .serializeToString(),
+        FakeDataDumper,
+        preserveUndeclaredFields = false,
     ) {
     @Test
     override fun testBasicWrite() {
