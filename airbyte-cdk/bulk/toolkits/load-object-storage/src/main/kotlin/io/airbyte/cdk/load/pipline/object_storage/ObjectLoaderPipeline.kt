@@ -73,12 +73,12 @@ class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
             catalog: DestinationCatalog,
             routeEventStep: RouteEventStep,
             fileChunkStep: FileChunkStep<T>,
-            @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
-            @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+            fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
+            fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
             forwardFileRecordStep: ForwardFileRecordStep<T>,
-            @Named("fileRecordPartFormatterStep") recordPartStep: ObjectLoaderPartFormatterStep,
-            @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
-            @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+            recordPartStep: ObjectLoaderPartFormatterStep,
+            recordUploadStep: ObjectLoaderPartLoaderStep<T>,
+            recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
         ): List<LoadPipelineStep> {
             return if (hasFileTransfer(catalog)) {
                 listOf(
