@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery
 
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
-import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -74,7 +73,7 @@ class StandardInsertRawOverride :
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
-        FakeDataDumper,
+        BigqueryFinalTableDataDumper,
         preserveUndeclaredFields = false,
     ) {
     @Test
@@ -108,7 +107,7 @@ class GcsRawOverride :
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
-        FakeDataDumper,
+        BigqueryFinalTableDataDumper,
         preserveUndeclaredFields = false,
     ) {
     @Test
