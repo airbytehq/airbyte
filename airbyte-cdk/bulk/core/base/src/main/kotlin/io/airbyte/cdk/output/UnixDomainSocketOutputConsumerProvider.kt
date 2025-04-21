@@ -130,7 +130,7 @@ class UnixDomainSocketOutputConsumerProvider(
         synchronized(this) {
             return socketConsumers
                 .first { it.busy.not() }
-                .use {
+                .let {
                     it.busy = true
                     it
                 }
@@ -268,6 +268,7 @@ class UnixDomainSocketOutputConsumer(
                 .setRecord(recordMessage)
                 .build()
             pMessage.writeDelimitedTo(bufferedOutputStream)
+            messageBuilder.clear()
         } else if (outputFormat == SocketOutputFormat.FLATBUFFERS) {
             if (fbBuilder != null) {
                 val buffer = fbBuilder.dataBuffer()

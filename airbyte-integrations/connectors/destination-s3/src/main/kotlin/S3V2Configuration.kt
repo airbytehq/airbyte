@@ -86,7 +86,7 @@ class S3V2ConfigurationFactory :
             numUploadWorkers = pojo.numPartLoaders ?: 10,
             numPartWorkers = pojo.numPartFormatters ?: pojo.numSockets ?: 1,
             inputSerializationFormat = pojo.inputSerializationFormat
-                    ?: DestinationConfiguration.InputSerializationFormat.FLATBUFFERS,
+                    ?: DestinationConfiguration.InputSerializationFormat.PROTOBUF,
             partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
             maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 1.0,
             inputBufferByteSizePerSocket = pojo.inputBufferByteSizePerSocket ?: (16384),
