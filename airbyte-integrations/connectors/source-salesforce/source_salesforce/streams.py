@@ -1019,10 +1019,13 @@ class Describe(Stream):
             yield self.sf_api.describe(sobject=sobject)
 
 
-class EventLogFileEventsStream(RestSalesforceStream):
+class EventLogFileEventsStream(IncrementalRestSalesforceStream):
     """
     Special stream to expand EventLogFile: fetch CSV content for each record and yield each line as a separate record.
     """
+    def __init__(self, replication_key: str = "LogDate", **kwargs):
+        super().__init__(replication_key=replication_key, **kwargs)
+        
     def read_records(
         self,
         sync_mode,
@@ -1035,6 +1038,8 @@ class EventLogFileEventsStream(RestSalesforceStream):
             log_file_path = record.get("LogFile")
             if not log_file_path:
                 continue
+            # Store slice information to use for state management
+            self._slice = stream_slice
             # download the CSV file using HttpClient to include auth
             url = f"{self.url_base}{log_file_path}"
             # send_request returns (prepared_request, response)
