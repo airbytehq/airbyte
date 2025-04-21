@@ -73,7 +73,34 @@ data class FlatBufferResult(
     val fbBuilder: FlatBufferBuilder = FlatBufferBuilder(),
     var fbDataVector: Int = -1,
     var fbDataTypeVector: Int = -1,
-)
+) {
+    fun finish(namespace: String, streamName: String) {
+        val namespaceOffset = fbBuilder.createString(namespace)
+        val nameOffset = fbBuilder.createString(streamName)
+
+        io.airbyte.protocol.AirbyteRecordMessage.startAirbyteRecordMessage(fbBuilder)
+        io.airbyte.protocol.AirbyteRecordMessage.addStreamNamespace(
+            fbBuilder,
+            namespaceOffset
+        )
+        io.airbyte.protocol.AirbyteRecordMessage.addStreamName(fbBuilder, nameOffset)
+        io.airbyte.protocol.AirbyteRecordMessage.addDataType(
+            fbBuilder,
+            fbDataTypeVector
+        )
+        io.airbyte.protocol.AirbyteRecordMessage.addData(fbBuilder, fbDataVector)
+        io.airbyte.protocol.AirbyteRecordMessage.addEmittedAt(fbBuilder, System.currentTimeMillis())
+        val root =
+            io.airbyte.protocol.AirbyteRecordMessage.endAirbyteRecordMessage(fbBuilder)
+        fbBuilder.finish(root)
+    }
+
+    fun clear() {
+        fbDataVector = -1
+        fbDataTypeVector = -1
+        fbBuilder.clear()
+    }
+}
 
 @Singleton
 class UnixDomainSocketOutputConsumerProvider(
@@ -258,7 +285,7 @@ class UnixDomainSocketOutputConsumer(
     } else { null }
 
     fun accept(recordData: ObjectNode, recordMessage:  AirbyteRecord.AirbyteRecordMessage?, fbBuffer: ByteArray?,
-               namespace: String, streamName: String, fbBuilder: FlatBufferBuilder? = null) {
+               namespace: String, streamName: String, fbResult: FlatBufferResult? = null) {
         if (outputFormat == SocketOutputFormat.DEVNULL) {
             return
         }
@@ -270,10 +297,19 @@ class UnixDomainSocketOutputConsumer(
             pMessage.writeDelimitedTo(bufferedOutputStream)
             messageBuilder.clear()
         } else if (outputFormat == SocketOutputFormat.FLATBUFFERS) {
-            if (fbBuilder != null) {
-                val buffer = fbBuilder.dataBuffer()
-                bufferedOutputStream.write(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(buffer.remaining()).array())
-                bufferedOutputStream.write(buffer.array(), buffer.position(), buffer.remaining())
+            if (fbResult != null) {
+                fbResult.finish(namespace, streamName)
+                val buffer = fbResult.fbBuilder.dataBuffer()
+                bufferedOutputStream.write(
+                    ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+                        .putInt(buffer.remaining()).array()
+                )
+                bufferedOutputStream.write(
+                    buffer.array(),
+                    buffer.position(),
+                    buffer.remaining()
+                )
+                fbResult.clear()
             } else {
                 bufferedOutputStream.write(
                     ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(fbBuffer!!.size)
@@ -308,7 +344,7 @@ class UnixDomainSocketOutputConsumer(
                                  streamName: String
     ) {
         if (!writeAsync && outputFormat == SocketOutputFormat.FLATBUFFERS) {
-            accept(recordData, null, null, namespace, streamName, fbResult.fbBuilder)
+            accept(recordData, null, null, namespace, streamName, fbResult)
             fbResult.fbBuilder.clear()
             return
         }
@@ -320,22 +356,9 @@ class UnixDomainSocketOutputConsumer(
                 .setEmittedAt(clock.millis())
             null
         } else if (outputFormat == SocketOutputFormat.FLATBUFFERS) {
-            val namespaceOffset = fbResult.fbBuilder.createString(namespace)
-            val nameOffset = fbResult.fbBuilder.createString(streamName)
-
-            io.airbyte.protocol.AirbyteRecordMessage.startAirbyteRecordMessage(fbResult.fbBuilder)
-            io.airbyte.protocol.AirbyteRecordMessage.addStreamNamespace(fbResult.fbBuilder, namespaceOffset)
-            io.airbyte.protocol.AirbyteRecordMessage.addStreamName(fbResult.fbBuilder, nameOffset)
-            io.airbyte.protocol.AirbyteRecordMessage.addDataType(fbResult.fbBuilder, fbResult.fbDataTypeVector)
-            io.airbyte.protocol.AirbyteRecordMessage.addData(fbResult.fbBuilder, fbResult.fbDataVector)
-            io.airbyte.protocol.AirbyteRecordMessage.addEmittedAt(fbResult.fbBuilder, clock.millis())
-            val root = io.airbyte.protocol.AirbyteRecordMessage.endAirbyteRecordMessage(fbResult.fbBuilder)
-            fbResult.fbBuilder.finish(root)
-
+            fbResult.finish(namespace, streamName)
             fbResult.fbBuilder.sizedByteArray().also {
-                fbResult.fbBuilder.clear()
-                fbResult.fbDataVector = -1
-                fbResult.fbDataTypeVector = -1
+                fbResult.clear()
             }
         } else {
             null
