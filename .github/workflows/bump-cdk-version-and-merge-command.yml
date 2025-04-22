@@ -80,7 +80,7 @@ jobs:
         run: |
           gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
           
-          RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }})
+          RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }} --status queued --status in_progress)
 
           echo "Triggered workflow run ID: $RUN_ID"
 
