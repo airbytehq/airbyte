@@ -81,7 +81,7 @@ class FileChunkTask<T>(
                                 FieldType(StringType, nullable = true)
                             )
                         destRecord.asRawJson().let { jsonNode ->
-                            (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, key)
+                            (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, filePath)
                         }
                     }
 
