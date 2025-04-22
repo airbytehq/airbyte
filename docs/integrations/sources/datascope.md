@@ -64,6 +64,8 @@ GET https://www.mydatascope.com/api/external/locations
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.2.22 | 2025-04-19 | [58330](https://github.com/airbytehq/airbyte/pull/58330) | Update dependencies |
+| 0.2.21 | 2025-04-12 | [57791](https://github.com/airbytehq/airbyte/pull/57791) | Update dependencies |
 | 0.2.20 | 2025-04-05 | [57226](https://github.com/airbytehq/airbyte/pull/57226) | Update dependencies |
 | 0.2.19 | 2025-03-29 | [56535](https://github.com/airbytehq/airbyte/pull/56535) | Update dependencies |
 | 0.2.18 | 2025-03-22 | [55919](https://github.com/airbytehq/airbyte/pull/55919) | Update dependencies |

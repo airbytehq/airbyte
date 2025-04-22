@@ -130,4 +130,4 @@ class HubspotTestCase:
     def read_from_stream(
         cls, cfg, stream: str, sync_mode: SyncMode, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
     ) -> EntrypointOutput:
-        return read(SourceHubspot(), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)
+        return read(SourceHubspot(cfg, None, None), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)

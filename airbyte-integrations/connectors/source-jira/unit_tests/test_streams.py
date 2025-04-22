@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+from datetime import timedelta
+
 import pytest
 import responses
 from conftest import find_stream
@@ -14,6 +15,7 @@ from source_jira.utils import read_full_refresh, read_incremental
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -716,8 +718,8 @@ def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pul
     issue_fields_stream = IssueFields(**args)
     incremental_args = {
         **args,
-        "start_date": pendulum.parse(config["start_date"]),
-        "lookback_window_minutes": 0,
+        "start_date": ab_datetime_parse(config["start_date"]),
+        "lookback_window_minutes": timedelta(minutes=0),
     }
     pull_requests_stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
 
@@ -734,8 +736,8 @@ def test_python_pull_requests_stream_has_pull_request(
     issue_fields_stream = IssueFields(**args)
     incremental_args = {
         **args,
-        "start_date": pendulum.parse(config["start_date"]),
-        "lookback_window_minutes": 0,
+        "start_date": ab_datetime_parse(config["start_date"]),
+        "lookback_window_minutes": timedelta(minutes=0),
     }
     stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
 
@@ -754,7 +756,7 @@ def test_python_pull_requests_stream_has_pull_request(
 @pytest.mark.parametrize(
     "start_date, lookback_window, stream_state, expected_query",
     [
-        (pendulum.parse("2023-09-09T00:00:00Z"), 0, None, None),
+        (ab_datetime_parse("2023-09-09T00:00:00Z"), 0, None, None),
         (None, 10, {"updated": "2023-12-14T09:47:00"}, "updated >= 1702546620000"),
         (None, 0, {"updated": "2023-12-14T09:47:00"}, "updated >= 1702547220000"),
     ],
@@ -765,7 +767,7 @@ def test_issues_stream_jql_compare_date(config, start_date, lookback_window, str
         "authenticator": authenticator,
         "domain": config["domain"],
         "projects": config.get("projects", []) + ["Project3"],
-        "lookback_window_minutes": pendulum.duration(minutes=lookback_window),
+        "lookback_window_minutes": timedelta(minutes=lookback_window),
     }
     stream = Issues(**args)
     assert stream.jql_compare_date(stream_state) == expected_query

@@ -49,6 +49,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.20 | 2025-04-19 | [58427](https://github.com/airbytehq/airbyte/pull/58427) | Update dependencies |
+| 0.4.19 | 2025-04-12 | [57940](https://github.com/airbytehq/airbyte/pull/57940) | Update dependencies |
 | 0.4.18 | 2025-04-05 | [57423](https://github.com/airbytehq/airbyte/pull/57423) | Update dependencies |
 | 0.4.17 | 2025-03-29 | [56877](https://github.com/airbytehq/airbyte/pull/56877) | Update dependencies |
 | 0.4.16 | 2025-03-22 | [56246](https://github.com/airbytehq/airbyte/pull/56246) | Update dependencies |

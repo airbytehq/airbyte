@@ -46,7 +46,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         override val state = BatchState.STAGED
     }
 
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             when (val importType = stream.importType) {
                 is Append -> {

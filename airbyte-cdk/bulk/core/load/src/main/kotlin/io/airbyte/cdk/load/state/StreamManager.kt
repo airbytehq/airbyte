@@ -132,6 +132,13 @@ interface StreamManager {
      * marked as complete.
      */
     fun isBatchProcessingCompleteForCheckpoints(): Boolean
+
+    /**
+     * Some destinations need to perform expensive post-processing at the end of a sync, but can
+     * skip that post-processing if the sync had 0 records. So we should tell the destination
+     * whether any records were processed.
+     */
+    fun hadNonzeroRecords(): Boolean
 }
 
 class DefaultStreamManager(
@@ -495,6 +502,10 @@ class DefaultStreamManager(
                 .sumOf { it.records }
 
         return completedCount == readCount
+    }
+
+    override fun hadNonzeroRecords(): Boolean {
+        return recordCount.get() > 0
     }
 }
 
