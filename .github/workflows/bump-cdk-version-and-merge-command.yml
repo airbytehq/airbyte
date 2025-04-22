@@ -84,6 +84,8 @@ jobs:
 
           echo "Triggered workflow run ID: $RUN_ID"
 
+          sleep 30
+
           # --- Watch the workflow run until it completes ---
           # gh run watch blocks until the run finishes
           # It exits with a non-zero code if the watched run fails or is cancelled
