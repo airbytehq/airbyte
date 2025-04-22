@@ -103,10 +103,10 @@ jobs:
       #    echo "Workflow run $RUN_ID finished."
       #  working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
   mysql-1m-run:
-    uses: ./.github/workflows/connector-performance-command.yml
+    uses: ./.github/workflows/publish-java-cdk-command.yml
     with:
-      connector: "connectors/source-mysql"
-      dataset: 1m
+      git-ref: ${{ github.ref_name }}
+      dry-run: true
     secrets: inherit
 
 
