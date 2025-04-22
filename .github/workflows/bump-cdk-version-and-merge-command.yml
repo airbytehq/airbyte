@@ -78,7 +78,27 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
         run: |
-            gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
+          RUN_URL=$(gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }})
+          
+          echo "Triggered workflow run URL: $RUN_URL"
+
+          # --- Extract the run ID from the URL ---
+          # The URL format is typically https://github.com/owner/repo/actions/runs/RUN_ID
+          RUN_ID=$(echo $RUN_URL | awk -F'/' '{print $NF}')
+
+          if [ -z "$RUN_ID" ]; then
+            echo "Failed to extract run ID from URL: $RUN_URL"
+            exit 1
+          fi
+
+          echo "Triggered workflow run ID: $RUN_ID"
+
+          # --- Watch the workflow run until it completes ---
+          # gh run watch blocks until the run finishes
+          # It exits with a non-zero code if the watched run fails or is cancelled
+          echo "Waiting for workflow run $RUN_ID to finish..."
+          gh run watch $RUN_ID --repo ${{ github.repository }} # --repo is good practice, especially if in a different repo
+          echo "Workflow run $RUN_ID finished."
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
       - name: Commit changes
