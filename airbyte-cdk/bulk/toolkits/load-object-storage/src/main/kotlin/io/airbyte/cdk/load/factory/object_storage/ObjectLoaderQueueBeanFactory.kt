@@ -27,7 +27,12 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 
-data class ObjectKey(override val stream: DestinationStream.Descriptor, val objectKey: String) :
+data class ObjectKey(
+    override val stream: DestinationStream.Descriptor,
+    val objectKey: String,
+    // optional string id to differentiate between uploads with the same key
+    val uploadId: String? = null,
+) :
     WithStream
 
 @Factory
