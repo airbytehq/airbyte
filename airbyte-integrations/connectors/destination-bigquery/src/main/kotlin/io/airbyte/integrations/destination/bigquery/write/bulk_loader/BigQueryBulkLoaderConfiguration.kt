@@ -29,11 +29,11 @@ import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 
-data class BigqueryBulkLoadConfiguration<T : OutputStream>(
+data class BigqueryBulkLoadConfiguration<ByteArrayOutputStream : OutputStream>(
     val bigQueryConfiguration: BigqueryConfiguration,
-    override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>
 ) :
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
@@ -42,7 +42,7 @@ data class BigqueryBulkLoadConfiguration<T : OutputStream>(
     AWSAccessKeyConfigurationProvider,
     AWSArnRoleConfigurationProvider,
     GcsClientConfigurationProvider,
-    ObjectStorageCompressionConfigurationProvider<T> {
+    ObjectStorageCompressionConfigurationProvider<ByteArrayOutputStream> {
     override val objectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = "",
@@ -82,16 +82,13 @@ data class BigqueryBulkLoadConfiguration<T : OutputStream>(
                 secretAccessKey = credentials.secretAccessKey
             )
     }
+
+    override val objectStorageCompressionConfiguration =
+        ObjectStorageCompressionConfiguration(NoopProcessor)
 }
 
 @Factory
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigqueryBLConfigurationProvider(private val config: BigqueryConfiguration) {
-    @Singleton
-    fun get() =
-        BigqueryBulkLoadConfiguration(
-            config,
-            objectStorageCompressionConfiguration =
-                ObjectStorageCompressionConfiguration(NoopProcessor)
-        )
+    @Singleton fun get() = BigqueryBulkLoadConfiguration<ByteArrayOutputStream>(config)
 }
