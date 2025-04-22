@@ -11,6 +11,8 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Config, Record
 
+TEST_VARIABLE = "potato"
+
 
 @dataclass
 class CustomPageIncrement(PaginationStrategy):
@@ -58,4 +60,5 @@ class CustomPageIncrement(PaginationStrategy):
             return None
 
     def get_page_size(self) -> Optional[int]:
+        print(f"I am a {TEST_VARIABLE}")
         return self._page_size

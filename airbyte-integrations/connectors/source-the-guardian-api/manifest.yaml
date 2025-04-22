@@ -2,11 +2,9 @@ version: 6.44.0
 
 type: DeclarativeSource
 
-description: >-
+description: |-
   Website: https://open-platform.theguardian.com/
-
-  API Reference:
-  https://open-platform.theguardian.com/documentation/
+  API Reference: https://open-platform.theguardian.com/documentation/
 
 check:
   type: CheckStream
@@ -18,10 +16,24 @@ definitions:
     content:
       type: DeclarativeStream
       name: content
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: body_data
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CustomPaginationStrategy
+            page_size: 10
+            class_name: source_declarative_manifest.components.CustomPageIncrement
         requester:
           $ref: "#/definitions/base_requester"
           path: /search
@@ -39,50 +51,36 @@ definitions:
             field_path:
               - response
               - results
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: body_data
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CustomPaginationStrategy
-            page_size: 10
-            class_name: source_declarative_manifest.components.CustomPageIncrement
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: webPublicationDate
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] }}"
-          datetime_format: "%Y-%m-%d"
-        start_time_option:
-          type: RequestOption
-          field_name: from-date
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: to-date
-          inject_into: request_parameter
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
-          datetime_format: "%Y-%m-%d"
-        step: P7D
-        cursor_granularity: PT1S
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/content"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P7D
+        cursor_field: webPublicationDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: to-date
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: from-date
+          inject_into: request_parameter
+        cursor_granularity: PT1S
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
   base_requester:
     type: HttpRequester
     url_base: https://content.guardianapis.com
@@ -109,34 +107,34 @@ spec:
           a list of all tags, and <a
           href="https://open-platform.theguardian.com/documentation/tag">here</a>
           for the tags endpoint documentation.
+        order: 0
         title: Tag
         examples:
           - environment/recycling
           - environment/plasticbags
           - environment/energyefficiency
-        order: 0
       query:
         type: string
         description: >-
           (Optional) The query (q) parameter filters the results to only those
           that include that search term. The q parameter supports AND, OR and
           NOT operators.
+        order: 1
         title: Query
         examples:
           - environment AND NOT water
           - environment AND political
           - amusement park
           - political
-        order: 1
       api_key:
         type: string
         description: >-
           Your API Key. See <a
           href="https://open-platform.theguardian.com/access/">here</a>. The key
           is case sensitive.
+        order: 2
         title: API Key
         airbyte_secret: true
-        order: 2
       section:
         type: string
         description: >-
@@ -146,75 +144,52 @@ spec:
           for a list of all sections, and <a
           href="https://open-platform.theguardian.com/documentation/section">here</a>
           for the sections endpoint documentation.
+        order: 3
         title: Section
         examples:
           - media
           - technology
           - housing-network
-        order: 3
       end_date:
         type: string
         description: >-
           (Optional) Use this to set the maximum date (YYYY-MM-DD) of the
           results. Results newer than the end_date will not be shown. Default is
           set to the current date (today) for incremental syncs.
+        order: 4
         title: End Date
         pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
         examples:
           - YYYY-MM-DD
-        order: 4
       start_date:
         type: string
         description: >-
           Use this to set the minimum date (YYYY-MM-DD) of the results. Results
           older than the start_date will not be shown.
+        order: 5
         title: Start Date
         pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
         examples:
           - YYYY-MM-DD
-        order: 5
     additionalProperties: true
 
 metadata:
-  autoImportSchema:
-    content: false
+  assist: {}
   testedStreams:
     content:
+      hasRecords: true
       streamHash: 42367479876486b61ffefebbbe8bd86c341dc6d2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-  assist: {}
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    content: false
 
 schemas:
   content:
     type: object
     $schema: http://json-schema.org/draft-04/schema#
-    properties:
-      type:
-        type: string
-      apiUrl:
-        type: string
-      id:
-        type: string
-      isHosted:
-        type: boolean
-      pillarId:
-        type: string
-      pillarName:
-        type: string
-      sectionId:
-        type: string
-      sectionName:
-        type: string
-      webPublicationDate:
-        type: string
-      webTitle:
-        type: string
-      webUrl:
-        type: string
     required:
       - id
       - type
@@ -227,4 +202,27 @@ schemas:
       - isHosted
       - pillarId
       - pillarName
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      apiUrl:
+        type: string
+      webUrl:
+        type: string
+      isHosted:
+        type: boolean
+      pillarId:
+        type: string
+      webTitle:
+        type: string
+      sectionId:
+        type: string
+      pillarName:
+        type: string
+      sectionName:
+        type: string
+      webPublicationDate:
+        type: string
     additionalProperties: true
