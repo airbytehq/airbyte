@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.pipline.object_storage.file
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -75,8 +74,15 @@ class FileChunkTask<T>(
                     // We enrich the record with the file_path. Ideally the schema modification
                     // should be handled outside of this scope but the hook doesn't exist.
                     event.context?.parentRecord?.let { destRecord ->
-                        (destRecord.stream.schema as? ObjectType)?.properties?.put(COLUMN_NAME_AIRBYTE_FILE_PATH, FieldType(StringType, nullable = true))
-                        destRecord.asRawJson().let { jsonNode -> (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, key) }
+                        (destRecord.stream.schema as? ObjectType)
+                            ?.properties
+                            ?.put(
+                                COLUMN_NAME_AIRBYTE_FILE_PATH,
+                                FieldType(StringType, nullable = true)
+                            )
+                        destRecord.asRawJson().let { jsonNode ->
+                            (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, key)
+                        }
                     }
 
                     val fileSize = file.fileSizeBytes
@@ -99,7 +105,8 @@ class FileChunkTask<T>(
                             ),
                         )
 
-                    // generate a unique upload id to keep track of the upload in the case of file name collisions
+                    // generate a unique upload id to keep track of the upload in the case of file
+                    // name collisions
                     val uploadId = UUID.randomUUID().toString()
                     val objectKey = ObjectKey(stream.descriptor, filePath, uploadId)
 
