@@ -11,6 +11,8 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Config, Record
 
+TEST_VARIABLE = "potato"
+
 
 @dataclass
 class CustomPageIncrement(PaginationStrategy):
