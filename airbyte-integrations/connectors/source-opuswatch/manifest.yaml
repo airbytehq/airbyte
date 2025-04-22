@@ -2,7 +2,84 @@ version: 6.44.0
 
 type: DeclarativeSource
 
-description: Connect to your OPUS data
+description: >-
+  ## Unlock Horticultural Insights with Airbyte and OPUSWatch
+
+
+  **What is OPUSWatch?**
+
+  OPUSWatch is a smart wearable solution developed by OPUS Solutions B.V., based
+  in the Netherlands. This innovative smartwatch is specifically designed for
+  the horticulture industry to digitize and streamline various operational
+  processes within greenhouses and nurseries. It empowers growers to gain
+  real-time insights into their labor, productivity, and overall operations.
+  Employees use the OPUSWatch to easily record their tasks, track their work on
+  specific crops, and even manage orders directly from their wrist. This data is
+  then fed into a central system for analysis and decision-making.
+
+
+  Website: opuswatch.nl
+
+
+  **What does the OPUSWatch Airbyte Connector do?**
+
+  The Airbyte connector for OPUSWatch allows you to seamlessly extract valuable
+  data from the OPUSWatch platform and load it into your data warehouse or lake.
+  By connecting OPUSWatch to Airbyte, you can centralize your horticultural
+  operational data with other business-critical information, enabling
+  comprehensive analysis and reporting.
+
+
+  **With the OPUSWatch Airbyte connector, you can retrieve the following streams
+  of data:**
+
+  * **Clients:** Information about your clients or customers.
+
+  * **Locations:** Details about the different locations or areas within your
+  greenhouse or nursery.
+
+  * **Rows:** Data pertaining to the specific rows or sections where plants are
+  cultivated.
+
+  * **Users:** Information about the individuals who have access to the
+  OPUSWatch system.
+
+  * **Workers:** Details about your workforce, including their identification
+  and potentially other relevant attributes.
+
+  * **Worker Groups:** Information about how your workers are organized into
+  teams or groups.
+
+  * **Tasks:** Data on the various activities or jobs that are performed by
+  workers.
+
+  * **Task Groups:** Information about how tasks are categorized or grouped
+  together.
+
+  * **Labels:** Details about the different labels used for plants, products, or
+  processes.
+
+  * **Varieties:** Information on the different plant varieties being
+  cultivated.
+
+  * **Registrations Initial:** A snapshot of initial work registrations recorded
+  by the OPUSWatch devices.
+
+  * **Registrations Incremental:** Updates and new work registrations recorded
+  by the OPUSWatch devices since the last synchronization.
+
+  * **Sessions Initial:** A snapshot of initial work sessions or periods tracked
+  by the OPUSWatch devices.
+
+  * **Sessions Incremental:** Updates and new work sessions or periods tracked
+  by the OPUSWatch devices since the last synchronization.
+
+
+  By leveraging the OPUSWatch Airbyte connector, horticultural businesses can
+  break down data silos and gain a holistic view of their operations. This
+  enables data-driven decision-making for optimizing labor allocation, improving
+  productivity, and ultimately enhancing the efficiency of their greenhouse or
+  nursery operations.
 
 check:
   type: CheckStream
@@ -221,7 +298,7 @@ definitions:
           path: transactional/registrations
           http_method: GET
           request_parameters:
-            date: "{{config['initial_data']}}"
+            date: "{{config['start_date']}}"
             return_breaks: "true"
             return_leaves: "true"
             days_from_date: "366"
@@ -289,7 +366,7 @@ definitions:
           path: transactional/sessions
           http_method: GET
           request_parameters:
-            date: "{{config['initial_data']}}"
+            date: "{{config['start_date']}}"
             return_breaks: "true"
             return_leaves: "true"
             days_from_date: "366"
@@ -381,17 +458,17 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      - initial_data
+      - start_date
     properties:
       api_key:
         type: string
         order: 0
         title: API Key
         airbyte_secret: true
-      initial_data:
+      start_date:
         type: string
         order: 1
-        title: Initial Data
+        title: Start Date
         default: "20250101"
     additionalProperties: true
 
@@ -413,12 +490,12 @@ metadata:
     sessions incremental: true
   testedStreams:
     client:
+      hasRecords: true
       streamHash: 458dc3c34c8cdc41d65a487fe04539baff961cd4
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     locations:
       hasRecords: true
       streamHash: 469d7f00d6275b884c1ce26c51b42275dc0638bc
@@ -427,89 +504,89 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     rows:
+      hasRecords: true
       streamHash: 631f1fff505413bc3cad14685b0382194823ebf6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users:
+      hasRecords: true
       streamHash: d7f3751ed13b6487152de34d3bf8895d7ebd9409
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     workers:
+      hasRecords: true
       streamHash: f9b8c62bed717866a2248f7431c2dbae58b77f22
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     worker groups:
+      hasRecords: true
       streamHash: 0fa5cb71fd0d4885cbb5158b6db4915fa2901443
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tasks:
+      hasRecords: true
       streamHash: 3482cfdc83dacd3f72ff76ec5610450b4f561a13
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     task groups:
+      hasRecords: true
       streamHash: 3d7ee279c97dd6918045cdceaee9a8db753156c8
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     labels:
+      hasRecords: true
       streamHash: c4c8e11d360e7b08a4db4f8b14169f5592b93849
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     varieties:
+      hasRecords: true
       streamHash: 56c4fce77cbdfdabdf6f076c22cbc7cb926f3ea2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     registrations initial:
-      streamHash: 99390bdbf4a5252eee15a4ea942434ca87b953cf
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 0334407aaa680c8157e0c57ebbd72c3787913617
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     registrations incremental:
+      hasRecords: true
       streamHash: 03f101e616dfa77a57d08c1addf7e460235ba375
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sessions initial:
-      streamHash: e1c7d044aca8d1329a2ffdaeb7222b023fd597ad
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 5f31e5d9f1ff2576987ada8569dea39b6983f78e
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sessions incremental:
+      hasRecords: true
       streamHash: b3d1cad140437c559a7e88618608988591e38810
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: >-
       https://docs.google.com/document/d/1-4Dq6OZnnPI2VQKEyaANxUEdiAVytfYTSReyyrnCPDM/edit?usp=sharing
