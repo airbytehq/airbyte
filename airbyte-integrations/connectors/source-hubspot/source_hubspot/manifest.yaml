@@ -190,9 +190,9 @@ definitions:
       schema:
         $ref: "#/schemas/email_subscriptions"
 
-  campaigns_base:
+  campaigns_stream:
     $ref: "#/definitions/stream_base"
-    name: campaigns_base
+    name: campaigns
     primary_key:
       - id
     retriever:
@@ -227,68 +227,20 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaigns"
-
-  campaigns_stream:
-    $ref: "#/definitions/stream_without_pagination"
-    name: campaigns
-    primary_key:
-      - id
-    retriever:
-      $ref: "#/definitions/retriever_without_pagination"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: "/email/public/v1/campaigns/{{ stream_partition['campaigns_id'] }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: id
-            partition_field: campaigns_id
-            extra_fields:
-              - ["id"]
-              - ["lastUpdatedTime"]
-              - ["appId"]
-              - ["appName"]
-            stream:
-              $ref: "#/definitions/campaigns_base"
-      decoder:
-        type: JsonDecoder
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: lastUpdatedTime
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%ms"
-      datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
-      cursor_datetime_formats:
-        - "%ms"
-      is_client_side_incremental: true
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/campaigns"
     transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - id
-            value: '{{ stream_partition["extra_fields"]["id"] }}'
-          - path:
-              - lastUpdatedTime
-            value: '{{ stream_partition["extra_fields"]["lastUpdatedTime"] }}'
-          - path:
-              - appId
-            value: '{{ stream_partition["extra_fields"]["appId"] }}'
-          - path:
-              - appName
-            value: '{{ stream_partition["extra_fields"]["appName"] }}'
+      - type: CustomTransformation
+        class_name: source_hubspot.components.AddFieldsFromEndpointTransformation
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/email/public/v1/campaigns/{{ stream_slice['parent_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [ ]
+        $parameters:
+          # Requester and Selector require stream name as a param.
+          name: campaigns
       - type: DpathFlattenFields
         field_path:
           - counters
