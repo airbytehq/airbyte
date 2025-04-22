@@ -84,25 +84,37 @@ jobs:
           git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
           git push
 
-      - name: Release the CDK
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
-        run: |
-          gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
-          
-          sleep 30
-          RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }})
+      #- name: Release the CDK
+      #  env:
+      #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+      #  run: |
+      #    gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
+      #
+      #    sleep 30
+      #    RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }})
+#
+      #    echo "Triggered workflow run ID: $RUN_ID"
+#
+      #    # --- Watch the workflow run until it completes ---
+      #    # gh run watch blocks until the run finishes
+      #    # It exits with a non-zero code if the watched run fails or is cancelled
+      #    echo "Waiting for workflow run $RUN_ID to finish..."
+      #    gh run watch $RUN_ID --interval 30
+      #    echo "Workflow run $RUN_ID finished."
+      #  working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
+  mysql-1m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: "connectors/source-mysql"
+      dataset: 1m
+    secrets: inherit
 
-          echo "Triggered workflow run ID: $RUN_ID"
 
-          # --- Watch the workflow run until it completes ---
-          # gh run watch blocks until the run finishes
-          # It exits with a non-zero code if the watched run fails or is cancelled
-          echo "Waiting for workflow run $RUN_ID to finish..."
-          gh run watch $RUN_ID --interval 30
-          echo "Workflow run $RUN_ID finished."
-        working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
-
+  publish-connectors:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Release the connector
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
@@ -122,14 +134,3 @@ jobs:
             gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-options="--name=$folder"
           done
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
-
-      - name: Respond to user
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "Java CDK version bumped to `${{ env.new_version }}` and connectors updated successfully. 🚀"
-            })
