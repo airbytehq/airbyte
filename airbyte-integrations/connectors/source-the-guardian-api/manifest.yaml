@@ -2,11 +2,10 @@ version: 6.44.0
 
 type: DeclarativeSource
 
-description: >-
+description: |-
   Website: https://open-platform.theguardian.com/
 
-  API Reference:
-  https://open-platform.theguardian.com/documentation/
+  API Reference: https://open-platform.theguardian.com/documentation/
 
 check:
   type: CheckStream
