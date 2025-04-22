@@ -237,7 +237,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
         $parameters:
           # Requester and Selector require stream name as a param.
           name: campaigns
