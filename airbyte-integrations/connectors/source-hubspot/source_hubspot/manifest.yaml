@@ -211,7 +211,7 @@ definitions:
         page_token_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: vidOffset
+          field_name: offset
         page_size_option:
           type: RequestOption
           inject_into: request_parameter
@@ -219,7 +219,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           page_size: 500
-          cursor_value: "{{ response.get('vid-offset'), {}) }}"
+          cursor_value: "{{ response.get('offset') }}"
           stop_condition: "{{ not response.get('hasMore') }}"
       decoder:
         type: JsonDecoder
