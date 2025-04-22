@@ -143,7 +143,7 @@ class AirbyteTypeToMsqlTypeTest {
 
     @Test
     fun testConvertUnionType() {
-        val unionType = UnionType(setOf(StringType, NumberType))
+        val unionType = UnionType(setOf(StringType, NumberType), isLegacyUnion = false)
         val result = converter.convert(unionType)
         assertEquals(MssqlType.TEXT, result)
     }
