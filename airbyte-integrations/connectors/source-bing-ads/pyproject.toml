@@ -19,7 +19,7 @@ include = "source_bing_ads"
 python = "^3.10,<3.12"
 bingads = "==13.0.18.1"
 urllib3 = "==1.26.18"
-airbyte-cdk = "^5"
+airbyte-cdk = "^6"
 cached-property = "==1.5.2"
 
 [tool.poetry.scripts]
@@ -29,7 +29,7 @@ source-bing-ads = "source_bing_ads.run:run"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"
 pytest = "^8.0.0"
-requests-mock = "^1.9.3"
+requests-mock = "^1.12.1"
 
 
 [tool.poe]

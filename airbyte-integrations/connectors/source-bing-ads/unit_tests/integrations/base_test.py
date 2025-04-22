@@ -21,6 +21,15 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 class BaseTest(TestCase):
+    def setUp(self) -> None:
+        self._http_mocker = HttpMocker()
+        self._http_mocker.__enter__()
+
+        self._auth_client(self._http_mocker)
+
+    def tearDown(self) -> None:
+        self._http_mocker.__exit__(None, None, None)
+
     @property
     def service_manager(self) -> Union[ReportingServiceManager, BulkServiceManager]:
         pass
@@ -38,7 +47,7 @@ class BaseTest(TestCase):
             state = json.loads(f.read())
             return StateBuilder().with_stream_state(stream_name, state).build()
 
-    def auth_client(self, http_mocker: HttpMocker) -> None:
+    def _auth_client(self, http_mocker: HttpMocker) -> None:
         http_mocker.post(request=build_request(self._config), responses=response_with_status("oauth", 200))
 
     def read_stream(
