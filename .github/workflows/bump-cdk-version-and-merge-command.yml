@@ -84,8 +84,15 @@ jobs:
         run: |
           gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
           
-          # sleep 30
-          RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }} --status queued --status in_progress --status requested --status waiting --status pending)
+          sleep 30
+          RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }} \
+            --status queued \
+            --status in_progress \
+            --status requested \
+            --status waiting \
+            --status pending \
+            --status pending \
+          )
 
           echo "Triggered workflow run ID: $RUN_ID"
 
@@ -114,7 +121,7 @@ jobs:
           echo "$connector_folders" | while read -r folder; do
             # Call the function, passing the current folder name as an argument
             echo "Triggering workflow for connector: $folder"
-            # gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-option="--name=$folder"
+            gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-option="--name=$folder"
           done
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
