@@ -88,7 +88,7 @@ jobs:
           # gh run watch blocks until the run finishes
           # It exits with a non-zero code if the watched run fails or is cancelled
           echo "Waiting for workflow run $RUN_ID to finish..."
-          gh run watch $RUN_ID --repo ${{ github.repository }} # --repo is good practice, especially if in a different repo
+          gh run watch $RUN_ID 
           echo "Workflow run $RUN_ID finished."
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
