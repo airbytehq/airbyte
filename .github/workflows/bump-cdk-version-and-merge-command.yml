@@ -103,6 +103,7 @@ jobs:
       #    echo "Workflow run $RUN_ID finished."
       #  working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
   publish-java-cdk:
+    needs: [bump-cdk-version]
     uses: ./.github/workflows/publish-java-cdk-command.yml
     with:
       gitref: ${{ github.ref_name }}
@@ -111,6 +112,7 @@ jobs:
     secrets: inherit
 
   publish-connectors:
+    needs: [publish-java-cdk]
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
