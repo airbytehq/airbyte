@@ -32,8 +32,7 @@ data class ObjectKey(
     val objectKey: String,
     // optional string id to differentiate between uploads with the same key
     val uploadId: String? = null,
-) :
-    WithStream
+) : WithStream
 
 @Factory
 class ObjectLoaderPartQueueFactory(
