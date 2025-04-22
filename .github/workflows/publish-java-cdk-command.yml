@@ -30,13 +30,6 @@ on:
       gitref:
         description: "The git ref to check out from the specified repository."
         required: true
-      comment-id:
-        description: "Optional comment-id of the slash command. Ignore if not applicable."
-        required: false
-      pr:
-        description: "PR Number (Unused)"
-        type: number
-        required: false
   workflow_dispatch:
     inputs:
       repo:
