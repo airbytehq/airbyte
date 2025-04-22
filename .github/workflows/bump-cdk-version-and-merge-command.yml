@@ -110,3 +110,23 @@ jobs:
               repo: context.repo.repo,
               body: "Java CDK version bumped to `${{ env.new_version }}` and connectors updated successfully. 🚀"
             })
+
+      - name: Trigger the target workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+        run: |
+          modified_files=$(git diff --name-only origin/master)
+          
+          # Process the list to get the unique connector folder names
+          connector_folders=$(echo "$modified_files" | \
+          grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
+          sort | \
+          uniq)
+          
+          # Read each line from the connector_folders variable
+          echo "$connector_folders" | while read -r folder; do
+          # Call the function, passing the current folder name as an argument
+            gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-option="--name=$folder" -F gitref=${{ github.ref_name }}
+          done
+        working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
+
