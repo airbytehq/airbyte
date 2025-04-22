@@ -338,7 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.7.0      | 2025-04-23 | [58226](https://github.com/airbytehq/airbyte/pull/58226) | Migrate incremental streams: contact_lists                                                                                                                                       |
+| 4.7.0      | 2025-04-23 | [58592](https://github.com/airbytehq/airbyte/pull/58592) | Migrate incremental streams: contact_lists                                                                                                                                       |
 | 4.6.3 | 2025-04-19 | [58226](https://github.com/airbytehq/airbyte/pull/58226) | Update dependencies |
 | 4.6.2 | 2025-04-18 | [58137](https://github.com/airbytehq/airbyte/pull/58137) | Promoting release candidate 4.6.2-rc.1 to a main version. |
 | 4.6.2-rc.1 | 2025-04-13 | [57534](https://github.com/airbytehq/airbyte/pull/57534) | Migrate marketing_emails and email_subscriptions to low code |
