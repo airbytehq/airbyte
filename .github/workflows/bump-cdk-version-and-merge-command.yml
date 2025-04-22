@@ -75,21 +75,11 @@ jobs:
           done
 
       - name: Trigger Publish Java CDK Workflow
-        uses: actions/github-script@v6
+        uses: ./.github/workflows/connector-performance-command.yml
         with:
-          script: |
-            github.rest.actions.createWorkflowDispatch({
-              owner: '${{ github.repository_owner }}',
-              repo: '${{ github.event.repository.name }}',
-              workflow_id: 'publish-java-cdk-command.yml',
-              ref: '${{ github.ref_name }}',
-              inputs: {
-                repo: 'airbytehq/airbyte',
-                dry-run: 'true',
-                force: 'false',
-                gitref: '${{ github.ref_name }}'
-              }
-            })
+          dry-run: dry-run
+          gitref: ${{ github.event.inputs.gitref }}
+        secrets: inherit
 
       - name: Commit changes
         run: |
