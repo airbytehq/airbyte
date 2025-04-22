@@ -78,17 +78,25 @@ jobs:
             fi
           done
 
+
       - name: Release the CDK
-        uses: ./.github/workflows/publish-java-cdk-command.yml
-        with:
-          git_branch: ${{ github.ref_name }}
-          force: false
-          dry-run: true
-          context: "Bump Java CDK Version"
-          # The following inputs are not used in this workflow, but are required by the action
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          airbyte_ci_binary_url: ${{ secrets.AIRBYTE_CI_BINARY_URL }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+        run: |
+          gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
+          
+          sleep 30
+          RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }})
+
+          echo "Triggered workflow run ID: $RUN_ID"
+
+          # --- Watch the workflow run until it completes ---
+          # gh run watch blocks until the run finishes
+          # It exits with a non-zero code if the watched run fails or is cancelled
+          echo "Waiting for workflow run $RUN_ID to finish..."
+          # gh run watch $RUN_ID 
+          echo "Workflow run $RUN_ID finished."
+        working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
       - name: Release the connector
         env:
