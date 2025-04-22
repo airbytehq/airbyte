@@ -99,8 +99,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         def refresh():
             if self.config.aws_access_key_id and self.config.aws_secret_access_key:
                 boto_session = boto3.Session(
-                    aws_access_key_id=self.config.aws_access_key_id,
-                    aws_secret_access_key=self.config.aws_secret_access_key
+                    aws_access_key_id=self.config.aws_access_key_id, aws_secret_access_key=self.config.aws_secret_access_key
                 )
             else:
                 boto_session = boto3.setup_default_session()
