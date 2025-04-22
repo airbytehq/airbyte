@@ -219,6 +219,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.7 | 2025-04-19 | [58453](https://github.com/airbytehq/airbyte/pull/58453) | Update dependencies |
 | 2.7.6 | 2025-04-12 | [57976](https://github.com/airbytehq/airbyte/pull/57976) | Update dependencies |
 | 2.7.5 | 2025-04-05 | [57424](https://github.com/airbytehq/airbyte/pull/57424) | Update dependencies |
 | 2.7.4 | 2025-03-27 | [53689](https://github.com/airbytehq/airbyte/pull/53689) | catch JSONDecodeError for error response |
