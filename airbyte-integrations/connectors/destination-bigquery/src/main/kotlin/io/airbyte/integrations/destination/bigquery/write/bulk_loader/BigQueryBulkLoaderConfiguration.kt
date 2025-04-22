@@ -30,9 +30,8 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
-import java.io.OutputStream
 
-data class BigqueryBulkLoadConfiguration<ByteArrayOutputStream : OutputStream>(
+data class BigqueryBulkLoadConfiguration(
     val bigQueryConfiguration: BigqueryConfiguration,
 ) :
     ObjectStoragePathConfigurationProvider,
@@ -53,6 +52,8 @@ data class BigqueryBulkLoadConfiguration<ByteArrayOutputStream : OutputStream>(
     override val awsArnRoleConfiguration: AWSArnRoleConfiguration = AWSArnRoleConfiguration(null)
     override val gcsClientConfiguration: GcsClientConfiguration =
         (bigQueryConfiguration.loadingMethod as GcsStagingConfiguration).gcsClientConfig
+    override val objectStorageCompressionConfiguration =
+        ObjectStorageCompressionConfiguration(NoopProcessor)
 
     init {
         bigQueryConfiguration.loadingMethod as GcsStagingConfiguration
@@ -78,13 +79,10 @@ data class BigqueryBulkLoadConfiguration<ByteArrayOutputStream : OutputStream>(
                 fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
             )
     }
-
-    override val objectStorageCompressionConfiguration =
-        ObjectStorageCompressionConfiguration(NoopProcessor)
 }
 
 @Factory
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigqueryBLConfigurationProvider(private val config: BigqueryConfiguration) {
-    @Singleton fun get() = BigqueryBulkLoadConfiguration<ByteArrayOutputStream>(config)
+    @Singleton fun get() = BigqueryBulkLoadConfiguration(config)
 }
