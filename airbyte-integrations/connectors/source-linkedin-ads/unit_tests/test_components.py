@@ -10,12 +10,9 @@ import pytest
 from requests import Response, Session
 from requests.models import PreparedRequest
 from source_linkedin_ads.components import (
-    AnalyticsDatetimeBasedCursor,
-    LinkedInAdsCustomRetriever,
     LinkedInAdsRecordExtractor,
     SafeEncodeHttpRequester,
     SafeHttpClient,
-    StreamSlice,
 )
 
 
@@ -82,28 +79,6 @@ def test_safe_encode_http_requester_post_init():
     assert isinstance(requester._http_client, SafeHttpClient)
 
 
-def test_analytics_datetime_based_cursor_chunk_analytics_fields(mock_analytics_cursor_params):
-    cursor = AnalyticsDatetimeBasedCursor(**mock_analytics_cursor_params)
-    chunks = list(cursor.chunk_analytics_fields(fields=["field1", "field2", "field3"], fields_chunk_size=2))
-
-    assert len(chunks) == 2
-    for chunk in chunks:
-        assert "dateRange" in chunk and "pivotValues" in chunk
-
-
-def test_analytics_datetime_based_cursor_partition_daterange(mock_analytics_cursor_params):
-    cursor = AnalyticsDatetimeBasedCursor(**mock_analytics_cursor_params)
-    start = datetime(2024, 9, 1)
-    end = datetime(2024, 9, 5)
-    step = timedelta(days=2)
-
-    slices = cursor._partition_daterange(start=start, end=end, step=step)
-
-    assert len(slices) == 3
-    for slice_ in slices:
-        assert "field_date_chunks" in slice_.cursor_slice
-
-
 def test_linkedin_ads_record_extractor_extract_records(mock_response):
     extractor = LinkedInAdsRecordExtractor()
     records = list(extractor.extract_records(response=mock_response))
@@ -112,25 +87,3 @@ def test_linkedin_ads_record_extractor_extract_records(mock_response):
     for record in records:
         assert "lastModified" in record
         assert "created" in record
-
-
-def test_linkedin_ads_custom_retriever_stream_slices(mock_retriever_params):
-    retriever = LinkedInAdsCustomRetriever(**mock_retriever_params)
-    slices = list(retriever.stream_slices())
-
-    assert len(slices) > 0
-
-
-def test_linkedin_ads_custom_retriever_read_records(mock_response, mock_retriever_params):
-    retriever = LinkedInAdsCustomRetriever(**mock_retriever_params)
-
-    retriever._apply_transformations = MagicMock()
-    retriever.stream_slicer = MagicMock()
-    retriever.stream_slicer.stream_slices = MagicMock(return_value=[StreamSlice(partition={}, cursor_slice={})])
-    retriever.read_records = MagicMock(return_value=mock_response.json()["elements"])
-
-    records = list(retriever.read_records(records_schema={}, stream_slice=StreamSlice(partition={}, cursor_slice={})))
-
-    assert len(records) == 2
-    for record in records:
-        assert "data" in record

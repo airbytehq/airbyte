@@ -42,7 +42,7 @@ A single stream clear will sync all enabled streams on the next sync.
 
 ## Clear behavior
 
-When clearing data is successfully completed, all the records are deleted from your destination tables (and files, if using local JSON or local CSV as the destination). The tables or files are not removed, they will only be emptied.
+When clearing data is successfully completed, all the records are deleted from your destination tables (and files, if using local JSON or local CSV as the destination). The tables are not removed, they will only be emptied. However, files will be deleted.
 
 Clearing your data causes data downtime, meaning that your final tables will be empty once the Clear is complete. Clearing your data also blocks the running of regularly-scheduled syncs until they are complete. If you choose to clear your data while another sync is running, it will enqueue, and start at the end of the currently running sync.
 

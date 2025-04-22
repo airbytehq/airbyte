@@ -32,8 +32,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
         val record =
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
-                declaredFields = emptyMap(),
-                undeclaredFields = emptyMap(),
+                declaredFields = linkedMapOf(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
                 meta = null
             )
@@ -79,7 +79,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
     @Test
     fun `test allTypedFields property`() {
         val declaredFields =
-            mapOf(
+            linkedMapOf(
                 "field1" to
                     EnrichedAirbyteValue(
                         StringValue("value1"),
@@ -100,7 +100,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
                 declaredFields = declaredFields,
-                undeclaredFields = emptyMap(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
                 meta = null
             )
@@ -144,7 +144,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
             )
         field2.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
 
-        val declaredFields = mapOf("field1" to field1, "field2" to field2)
+        val declaredFields = linkedMapOf("field1" to field1, "field2" to field2)
 
         // Create meta with its own changes
         val meta =
@@ -163,7 +163,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
                 declaredFields = declaredFields,
-                undeclaredFields = emptyMap(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
                 meta = meta
             )
@@ -215,8 +215,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
         val record1 =
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
-                declaredFields = emptyMap(),
-                undeclaredFields = emptyMap(),
+                declaredFields = linkedMapOf(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
                 meta = null
             )
@@ -224,8 +224,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
         val record2 =
             EnrichedDestinationRecordAirbyteValue(
                 stream = destinationStream,
-                declaredFields = emptyMap(),
-                undeclaredFields = emptyMap(),
+                declaredFields = linkedMapOf(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = emittedAtMs,
                 meta = null
             )

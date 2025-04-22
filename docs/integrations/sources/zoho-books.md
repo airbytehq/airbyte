@@ -38,6 +38,7 @@ The Zoho Books connector  enables seamless integration of financial data, automa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-04-19 | [58537](https://github.com/airbytehq/airbyte/pull/58537) | Update dependencies |
 | 0.0.19 | 2025-04-13 | [58054](https://github.com/airbytehq/airbyte/pull/58054) | Update dependencies |
 | 0.0.18 | 2025-04-05 | [57378](https://github.com/airbytehq/airbyte/pull/57378) | Update dependencies |
 | 0.0.17 | 2025-03-29 | [56845](https://github.com/airbytehq/airbyte/pull/56845) | Update dependencies |

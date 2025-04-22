@@ -28,6 +28,7 @@ API Reference: https://docs.imagga.com/#introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2025-04-19 | [58222](https://github.com/airbytehq/airbyte/pull/58222) | Update dependencies |
 | 0.0.2 | 2025-04-12 | [57722](https://github.com/airbytehq/airbyte/pull/57722) | Update dependencies |
 | 0.0.1 | 2025-04-05 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 

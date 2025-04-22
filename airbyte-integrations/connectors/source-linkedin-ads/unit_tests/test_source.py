@@ -169,12 +169,12 @@ class TestAllStreams:
             (
                 400,
                 False,
-                ("Bad request. Please check your request parameters."),
+                ("Stream accounts is not available: Bad request. Please check your request parameters."),
             ),
             (
                 403,
                 False,
-                ("Forbidden. You don't have permission to access this resource."),
+                ("Stream accounts is not available: Forbidden. You don't have permission to access this resource."),
             ),
             (200, True, None),
         ),

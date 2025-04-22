@@ -26,6 +26,7 @@ DBT Source Connector provides streams with your DBT projects, repositories, user
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.16 | 2025-04-19 | [57768](https://github.com/airbytehq/airbyte/pull/57768) | Update dependencies |
 | 0.0.15 | 2025-04-05 | [57224](https://github.com/airbytehq/airbyte/pull/57224) | Update dependencies |
 | 0.0.14 | 2025-03-29 | [56540](https://github.com/airbytehq/airbyte/pull/56540) | Update dependencies |
 | 0.0.13 | 2025-03-22 | [55990](https://github.com/airbytehq/airbyte/pull/55990) | Update dependencies |

@@ -307,6 +307,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.27  | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                          |
 | 0.3.26  | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104)   | Chore: Now passing a string around for the region                              |
 | 0.3.25  | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085)   | Internal refactoring                                                           |
 | 0.3.24  | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435)   | Bug fix: Correctly handle non-positive numbers.                                |

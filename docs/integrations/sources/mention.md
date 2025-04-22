@@ -33,6 +33,7 @@ Docs: https://dev.mention.com/current/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2025-04-19 | [58161](https://github.com/airbytehq/airbyte/pull/58161) | Update dependencies |
 | 0.0.20 | 2025-04-12 | [57682](https://github.com/airbytehq/airbyte/pull/57682) | Update dependencies |
 | 0.0.19 | 2025-04-05 | [57053](https://github.com/airbytehq/airbyte/pull/57053) | Update dependencies |
 | 0.0.18 | 2025-03-29 | [56033](https://github.com/airbytehq/airbyte/pull/56033) | Update dependencies |

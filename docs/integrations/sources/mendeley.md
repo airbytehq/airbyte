@@ -35,6 +35,7 @@ API Reference: https://dev.mendeley.com/methods/#introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2025-04-19 | [58180](https://github.com/airbytehq/airbyte/pull/58180) | Update dependencies |
 | 0.0.2 | 2025-04-12 | [57676](https://github.com/airbytehq/airbyte/pull/57676) | Update dependencies |
 | 0.0.1 | 2025-04-08 | [57512](https://github.com/airbytehq/airbyte/pull/57512) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
