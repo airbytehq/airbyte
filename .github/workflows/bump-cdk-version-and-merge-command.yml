@@ -78,7 +78,6 @@ jobs:
             fi
           done
 
-    release-cdk:
       - name: Release the CDK
         uses: ./.github/workflows/publish-java-cdk-command.yml
         with:
