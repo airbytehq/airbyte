@@ -30,7 +30,7 @@ on:
       gitref:
         description: "The git ref to check out from the specified repository."
         required: true
-        tyoe: sting
+        type: sting
   workflow_dispatch:
     inputs:
       repo:
