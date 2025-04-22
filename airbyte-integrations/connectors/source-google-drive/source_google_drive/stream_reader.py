@@ -310,7 +310,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
             file_record_data = FileRecordData(
                 folder=file_paths[self.FILE_FOLDER],
-                filename=file_name,
+                file_name=file_name,
                 bytes=file_size,
                 id=file.id,
                 mime_type=file.mime_type,

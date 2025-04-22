@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.45.4.post14.dev14544463167"
+version = "6.45.8.post2.dev14604759065"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.45.4.post14.dev14544463167-py3-none-any.whl", hash = "sha256:5e1744a4b03f900d5fa2fbe70796c557dab109d4f9553f88236bcf3d5ba2ffa7"},
-    {file = "airbyte_cdk-6.45.4.post14.dev14544463167.tar.gz", hash = "sha256:06d159bbae959dab730e1f5e29c305119d52cdb93b2d04b1f8dd2b6b40d7497d"},
+    {file = "airbyte_cdk-6.45.8.post2.dev14604759065-py3-none-any.whl", hash = "sha256:0cb0992c124700bad46a0f97f05775251191a99c9687d41e227e43fbc95be2ee"},
+    {file = "airbyte_cdk-6.45.8.post2.dev14604759065.tar.gz", hash = "sha256:b966a2f97fa39e13f17f89a02e4ea6c1b7f0bcbb2f4166c151cd4aeb8658743a"},
 ]
 
 [package.dependencies]
@@ -1237,7 +1237,7 @@ files = [
     {file = "lxml-5.3.2-cp310-cp310-musllinux_1_2_ppc64le.whl", hash = "sha256:aa837e6ee9534de8d63bc4c1249e83882a7ac22bd24523f83fad68e6ffdf41ae"},
     {file = "lxml-5.3.2-cp310-cp310-musllinux_1_2_s390x.whl", hash = "sha256:da4c9223319400b97a2acdfb10926b807e51b69eb7eb80aad4942c0516934858"},
     {file = "lxml-5.3.2-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:dc0e9bdb3aa4d1de703a437576007d366b54f52c9897cae1a3716bb44fc1fc85"},
-    {file = "lxml-5.3.2-cp310-cp310-win32.whl", hash = "sha256:5f94909a1022c8ea12711db7e08752ca7cf83e5b57a87b59e8a583c5f35016ad"},
+    {file = "lxml-5.3.2-cp310-cp310-win32.win32.whl", hash = "sha256:dd755a0a78dd0b2c43f972e7b51a43be518ebc130c9f1a7c4480cf08b4385486"},
     {file = "lxml-5.3.2-cp310-cp310-win_amd64.whl", hash = "sha256:d64ea1686474074b38da13ae218d9fde0d1dc6525266976808f41ac98d9d7980"},
     {file = "lxml-5.3.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:9d61a7d0d208ace43986a92b111e035881c4ed45b1f5b7a270070acae8b0bfb4"},
     {file = "lxml-5.3.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:856dfd7eda0b75c29ac80a31a6411ca12209183e866c33faf46e77ace3ce8a79"},
@@ -3458,4 +3458,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "4ce4bb366bbbd0f47346b5996304f495c3e110fd14c10c30f0a9cdf80d71cd15"
+content-hash = "3aed4473a21cb6bf44bb3824a205616e78392361c02fe55d86efb6e136767e4f"
