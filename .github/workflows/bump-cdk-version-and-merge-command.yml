@@ -74,11 +74,12 @@ jobs:
             fi
           done
 
-      - name: Trigger Publish Java CDK Workflow
-        uses: ./.github/workflows/publish-java-cdk-command.yml
-        with:
-          dry-run: dry-run
-          gitref: ${{ github.event.inputs.gitref }}
+      - name: Trigger the target workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+        run: |
+            gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F message="Triggered from triggering-workflow on push"
+        working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
       - name: Commit changes
         run: |
