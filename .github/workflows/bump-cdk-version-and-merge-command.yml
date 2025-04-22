@@ -70,11 +70,12 @@ jobs:
             sort | \
             uniq)
 
-          # Filter for folders containing build.gradle files
           for folder in $connector_folders; do
             gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
-            sed -i "s/cdkVersionRequired = '.*'/cdkVersionRequired = '${{ github.event.inputs.version }}'/" "$gradle_file"
-            sed -i "/useLocalCdk/d" "$gradle_file"
+            if [ -f "$gradle_file" ]; then
+              sed -i "s/cdkVersionRequired = '.*'/cdkVersionRequired = '${{ github.event.inputs.version }}'/" "$gradle_file"
+              sed -i "/useLocalCdk/d" "$gradle_file"
+            fi
           done
 
       - name: Release the CDK
