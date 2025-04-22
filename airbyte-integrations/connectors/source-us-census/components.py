@@ -52,6 +52,7 @@ class USCensusRecordExtractor(RecordExtractor):
     def extract_records(self, response: requests.Response) -> List[Record]:  # type: ignore
         # Where we accumulate a "row" of data until we encounter ']'
         buffer = ""
+        print("HELLO I AM A TEST")
         # The response is in a tabular format where the first list of strings
         # is the "header" of the table which we use as keys in the final dictionary
         # we produce
