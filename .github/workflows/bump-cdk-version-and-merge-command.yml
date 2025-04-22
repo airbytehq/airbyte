@@ -84,7 +84,7 @@ jobs:
         run: |
           gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
           
-          sleep 30
+          # sleep 30
           RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }} --status queued --status in_progress --status requested --status waiting --status pending)
 
           echo "Triggered workflow run ID: $RUN_ID"
@@ -94,7 +94,7 @@ jobs:
           # gh run watch blocks until the run finishes
           # It exits with a non-zero code if the watched run fails or is cancelled
           echo "Waiting for workflow run $RUN_ID to finish..."
-          gh run watch $RUN_ID 
+          # gh run watch $RUN_ID 
           echo "Workflow run $RUN_ID finished."
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
