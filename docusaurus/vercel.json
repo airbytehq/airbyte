@@ -36,11 +36,6 @@
       "statusCode": 301
     },
     {
-      "source": "/connector-development/tutorials/cdk-tutorial-python-http/:path*",
-      "destination": "/platform/connector-development/tutorials/custom-python-connector/getting-started",
-      "statusCode": 301
-    },
-    {
       "source": "/project-overview/changelog",
       "destination": "/release-notes/",
       "statusCode": 301
@@ -93,11 +88,6 @@
     {
       "source": "/project-overview/slack-code-of-conduct",
       "destination": "/platform/community/code-of-conduct",
-      "statusCode": 301
-    },
-    {
-      "source": "/project-overview/licenses/:path*",
-      "destination": "/platform/developer-guides/licenses/:path*",
       "statusCode": 301
     },
     {
@@ -278,6 +268,16 @@
     {
       "source": "/getting-started/",
       "destination": "/platform/",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/licenses/:path*",
+      "destination": "/platform/developer-guides/licenses/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/tutorials/cdk-tutorial-python-http/:path*",
+      "destination": "/platform/connector-development/tutorials/custom-python-connector/getting-started",
       "statusCode": 301
     },
     {
