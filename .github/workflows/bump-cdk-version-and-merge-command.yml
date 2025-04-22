@@ -109,7 +109,6 @@ jobs:
       dry-run: true
     secrets: inherit
 
-
   publish-connectors:
     runs-on: ubuntu-24.04
     steps:
