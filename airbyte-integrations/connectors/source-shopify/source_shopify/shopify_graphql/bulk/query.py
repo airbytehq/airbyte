@@ -2749,6 +2749,8 @@ class ProductVariant(ShopifyBulkQuery):
         measurement_weight = record.get("inventoryItem", {}).get("measurement", {}).get("weight")
         record["weight"] = measurement_weight.get("value", 0.0) if measurement_weight is not None else 0.0
         record["weight_unit"] = measurement_weight.get("unit") if measurement_weight else None
+        record["tracked"] = inventory_item.get("tracked") if inventory_item else None
+        record["requires_shipping"] = inventory_item.get("requires_shipping") if inventory_item else None
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
         image = record.get("image", {})
         record["image_src"] = image.get("image_src") if image else None
