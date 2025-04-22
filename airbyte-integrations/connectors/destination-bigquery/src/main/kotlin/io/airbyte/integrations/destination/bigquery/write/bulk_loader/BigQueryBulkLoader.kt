@@ -34,9 +34,7 @@ class BigQueryBulkLoader(
 ) : BulkLoader<GcsBlob> {
     override suspend fun load(remoteObject: GcsBlob) {
         val rawTableId = TempUtils.rawTableId(bigQueryConfiguration, stream.descriptor)
-        val cleanedFullPath =
-            "${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}".replace("//", "/")
-        val gcsUri = "gs://$cleanedFullPath"
+        val gcsUri = "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}"
 
         val csvOptions =
             CsvOptions.newBuilder()
