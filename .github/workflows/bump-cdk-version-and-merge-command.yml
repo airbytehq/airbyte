@@ -107,6 +107,7 @@ jobs:
     with:
       gitref: ${{ github.ref_name }}
       dry-run: true
+      force: false
     secrets: inherit
 
   publish-connectors:
