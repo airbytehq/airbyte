@@ -28,6 +28,7 @@ API Reference: https://www.fastly.com/documentation/reference/api/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2025-04-19 | [58337](https://github.com/airbytehq/airbyte/pull/58337) | Update dependencies |
 | 0.0.2 | 2025-04-12 | [57843](https://github.com/airbytehq/airbyte/pull/57843) | Update dependencies |
 | 0.0.1 | 2025-04-09 | [57528](https://github.com/airbytehq/airbyte/pull/57528) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
