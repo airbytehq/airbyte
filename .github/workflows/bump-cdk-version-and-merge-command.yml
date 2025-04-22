@@ -75,11 +75,10 @@ jobs:
           done
 
       - name: Trigger Publish Java CDK Workflow
-        uses: ./.github/workflows/connector-performance-command.yml
+        uses: ./.github/workflows/publish-java-cdk-command.yml
         with:
           dry-run: dry-run
           gitref: ${{ github.event.inputs.gitref }}
-        secrets: inherit
 
       - name: Commit changes
         run: |
