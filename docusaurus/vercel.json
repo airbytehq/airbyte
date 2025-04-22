@@ -1,5 +1,6 @@
 {
   "redirects": [
+    { "source": "/robin", "destination": "/batman/robin-and-the-joker", "permanent": false },
     { "source": "/robin", "destination": "/batman/robin", "permanent": false },
     {
       "source": "/access-management/:path*",
