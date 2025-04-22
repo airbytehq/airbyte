@@ -82,6 +82,5 @@ data class ObjectStorageCompressionConfiguration<T : OutputStream>(
 )
 
 interface ObjectStorageCompressionConfigurationProvider<T : OutputStream> {
-    val objectStorageCompressionConfiguration:
-        ObjectStorageCompressionConfiguration<ByteArrayOutputStream>
+    val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>
 }
