@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
@@ -60,12 +61,8 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
                     row.get(Meta.COLUMN_NAME_AB_EXTRACTED_AT).timestampInstant.toEpochMilli(),
                 // loadedAt is nullable (e.g. if we disabled T+D, then it will always be null)
                 loadedAt =
-                    row.get(Meta.COLUMN_NAME_AB_LOADED_AT).let {
-                        if (it.isNull) {
-                            null
-                        } else {
-                            it.timestampInstant.toEpochMilli()
-                        }
+                    row.get(Meta.COLUMN_NAME_AB_LOADED_AT).mapNotNull {
+                        it.timestampInstant.toEpochMilli()
                     },
                 generationId = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID).longValue,
                 data =
@@ -103,32 +100,34 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
                     .associateTo(linkedMapOf()) { field ->
                         val value: FieldValue = row.get(field.name)
                         val airbyteValue =
-                            when (field.type) {
-                                LegacySQLTypeName.BOOLEAN -> BooleanValue(value.booleanValue)
-                                LegacySQLTypeName.BIGNUMERIC -> NumberValue(value.numericValue)
-                                LegacySQLTypeName.FLOAT ->
-                                    NumberValue(BigDecimal(value.doubleValue))
-                                LegacySQLTypeName.NUMERIC -> NumberValue(value.numericValue)
-                                LegacySQLTypeName.INTEGER -> IntegerValue(value.longValue)
-                                LegacySQLTypeName.STRING -> StringValue(value.stringValue)
-                                // TODO check these
-                                LegacySQLTypeName.DATE -> DateValue(value.stringValue)
-                                LegacySQLTypeName.DATETIME ->
-                                    TimestampWithoutTimezoneValue(value.stringValue)
-                                LegacySQLTypeName.TIME ->
-                                    TimeWithoutTimezoneValue(value.stringValue)
-                                LegacySQLTypeName.TIMESTAMP ->
-                                    TimestampWithTimezoneValue(
-                                        value.timestampInstant.atOffset(ZoneOffset.UTC)
-                                    )
-                                LegacySQLTypeName.JSON ->
-                                    value.stringValue.deserializeToNode().toAirbyteValue()
-                                else ->
-                                    throw UnsupportedOperationException(
-                                        "Bigquery data dumper doesn't know how to dump type ${field.type} with value $value"
-                                    )
+                            value.mapNotNull {
+                                when (field.type) {
+                                    LegacySQLTypeName.BOOLEAN -> BooleanValue(it.booleanValue)
+                                    LegacySQLTypeName.BIGNUMERIC -> NumberValue(it.numericValue)
+                                    LegacySQLTypeName.FLOAT ->
+                                        NumberValue(BigDecimal(it.doubleValue))
+                                    LegacySQLTypeName.NUMERIC -> NumberValue(it.numericValue)
+                                    LegacySQLTypeName.INTEGER -> IntegerValue(it.longValue)
+                                    LegacySQLTypeName.STRING -> StringValue(it.stringValue)
+                                    // TODO check these
+                                    LegacySQLTypeName.DATE -> DateValue(it.stringValue)
+                                    LegacySQLTypeName.DATETIME ->
+                                        TimestampWithoutTimezoneValue(it.stringValue)
+                                    LegacySQLTypeName.TIME ->
+                                        TimeWithoutTimezoneValue(it.stringValue)
+                                    LegacySQLTypeName.TIMESTAMP ->
+                                        TimestampWithTimezoneValue(
+                                            it.timestampInstant.atOffset(ZoneOffset.UTC)
+                                        )
+                                    LegacySQLTypeName.JSON ->
+                                        it.stringValue.deserializeToNode().toAirbyteValue()
+                                    else ->
+                                        throw UnsupportedOperationException(
+                                            "Bigquery data dumper doesn't know how to dump type ${field.type} with value $it"
+                                        )
+                                }
                             }
-                        field.name to airbyteValue
+                        field.name to (airbyteValue ?: NullValue)
                     }
             OutputRecord(
                 rawId = row.get(Meta.COLUMN_NAME_AB_RAW_ID).stringValue,
@@ -167,4 +166,12 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
         changes = changes,
         syncId = metaJson["sync_id"].longValue(),
     )
+}
+
+fun <T> FieldValue.mapNotNull(f: (FieldValue) -> T): T? {
+    return if (this.isNull) {
+        null
+    } else {
+        f(this)
+    }
 }
