@@ -27,13 +27,9 @@ from source_hubspot.streams import (
     EngagementsMeetings,
     EngagementsNotes,
     EngagementsTasks,
-    Forms,
-    FormSubmissions,
     Goals,
     Leads,
     LineItems,
-    Owners,
-    OwnersArchived,
     Products,
     RecordUnnester,
     TicketPipelines,
@@ -108,14 +104,14 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (EngagementsMeetings, "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsNotes, "notes", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsTasks, "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Forms, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (FormSubmissions, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("forms", "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("form_submissions", "form", {"updatedAt": 1675121674227}),
         (Goals, "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Leads, "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("marketing_emails", "", {"updated": "1634050455543"}),
-        (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (OwnersArchived, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -184,12 +180,15 @@ def test_streams_read(
         }
     ]
 
-    is_form_submission = isinstance(stream, FormSubmissions)
+    is_form_submission = stream_class == "form_submissions"
     stream._sync_mode = SyncMode.full_refresh
     if isinstance(stream_class, str):
         stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+        if is_form_submission:
+            stream_url = stream_url.replace("{{ stream_partition['form_id'][0] }}", "test_id")
     else:
         stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    print(stream_url)
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
@@ -438,13 +437,15 @@ def test_contact_lists_transform(requests_mock, common_params):
     assert records[2]["filters"][0][0]["value"] == "1000"
 
 
-def test_client_side_incremental_stream(requests_mock, common_params, fake_properties_list):
-    stream = Forms(**common_params)
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_client_side_incremental_stream(mock_get_custom_object_streams, requests_mock, common_params, fake_properties_list, config):
+    stream = find_stream("forms", config)
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
     latest_cursor_value = "2030-01-30T23:46:36.287Z"
     responses = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {"id": "test_id_1", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-01-30T23:46:36.287Z"},
                     {"id": "test_id_2", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": latest_cursor_value},
                     {"id": "test_id_3", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-02-20T23:46:36.287Z"},
@@ -462,7 +463,9 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
         }
     ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+
+    requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
 
     list(stream.read_records(SyncMode.incremental))
@@ -488,8 +491,9 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
         "State + old record",
     ],
 )
-def test_empty_string_in_state(state, record, expected, requests_mock, common_params, fake_properties_list):
-    stream = Forms(**common_params)
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_empty_string_in_state(mock_get_custom_object_streams, state, record, expected, requests_mock, common_params, fake_properties_list, config):
+    stream = find_stream("forms", config)
     stream.state = state
     # overcome the availability strartegy issues by mocking the responses
     # A.K.A: not related to the test at all, but definetely required.
@@ -502,7 +506,9 @@ def test_empty_string_in_state(state, record, expected, requests_mock, common_pa
             "status_code": 200,
         }
     ]
-    requests_mock.register_uri("GET", stream.url, json=record)
+    stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+
+    requests_mock.register_uri("GET", stream_url, json=record)
     requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
     # end of mocking `availability strategy`
 
@@ -809,13 +815,12 @@ def test_cast_record_fields_with_schema_if_needed(
         }
     ]
 
-    is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
 
     if isinstance(stream_class, str):
         stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
     else:
-        stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+        stream_url = stream.url
 
     stream._sync_mode = None
 
@@ -889,9 +894,8 @@ def test_cast_record_fields_if_needed(
         }
     ]
 
-    is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
-    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    stream_url = stream.url
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)

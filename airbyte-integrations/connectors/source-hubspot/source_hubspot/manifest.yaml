@@ -233,7 +233,7 @@ definitions:
         path: /crm/v3/objects/deals
         request_parameters:
           associations: "['contacts', 'companies', 'line_items']"
-          archived: true
+          archived: "true"
           properties:
             type: QueryProperties
             property_list:
@@ -396,7 +396,7 @@ definitions:
           - path: [ "updatedAt" ]
             value: "{{ record.get('updatedAt') or record['submittedAt'] }}"
           - path: [ "formId" ]
-            value: "{{ stream_slice['form_id'] }}"
+            value: "{{ stream_slice['form_id'][0] }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -456,7 +456,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /crm/v3/owners
         request_parameters:
-          archived: true
+          archived: "true"
       paginator:
         $ref: "#/definitions/cursor_paginator"
       record_selector:
