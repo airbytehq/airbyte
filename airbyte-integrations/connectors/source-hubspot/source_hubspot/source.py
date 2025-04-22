@@ -24,7 +24,6 @@ from source_hubspot.streams import (
     Companies,
     CompaniesPropertyHistory,
     CompaniesWebAnalytics,
-    ContactLists,
     Contacts,
     ContactsFormSubmissions,
     ContactsListMemberships,
@@ -79,6 +78,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
+    "contact_lists": {"crm.lists.read"},
 }
 
 
@@ -173,7 +173,6 @@ class SourceHubspot(YamlDeclarativeSource):
         streams += [
             Campaigns(**common_params),
             Companies(**common_params),
-            ContactLists(**common_params),
             Contacts(**common_params),
             ContactsFormSubmissions(**common_params),
             ContactsListMemberships(**common_params),
