@@ -78,7 +78,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
         run: |
-            gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true
+            gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.event.inputs.gitref }}
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
       - name: Commit changes
