@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.Part
@@ -28,6 +27,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileInputStream
 import java.nio.file.Path
+import java.util.UUID
 
 /**
  * Given an input stream of file references, reads the files and chunks them into parts, emitting
@@ -56,7 +56,7 @@ class FileChunkTask<T>(
 
                     val stream = catalog.getStream(event.key.stream)
 
-                    val key =
+                    val filePath =
                         Path.of(
                                 pathFactory.getFinalDirectory(stream),
                                 file.sourceFileRelativePath,
@@ -78,14 +78,18 @@ class FileChunkTask<T>(
                             localFileUrl,
                             fileLoader.partSizeBytes.toInt(),
                             PartFactory(
-                                key = key,
+                                key = filePath,
                                 fileNumber = 0,
                             ),
                         )
 
+                    // generate a unique upload id to keep track of the upload in the case of file name collisions
+                    val uploadId = UUID.randomUUID().toString()
+                    val objectKey = ObjectKey(stream.descriptor, filePath, uploadId)
+
                     do {
                         val outputPart = partFactory.getNextPart()
-                        publishPart(event.key.stream, outputPart, event.context!!)
+                        publishPart(objectKey, outputPart, event.context!!)
                     } while (!outputPart.isFinal)
 
                     log.info { "Finished reading $localFileUrl, deleting." }
@@ -103,17 +107,17 @@ class FileChunkTask<T>(
     }
 
     private suspend fun publishPart(
-        stream: DestinationStream.Descriptor,
+        outputKey: ObjectKey,
         part: Part,
         pipelineContext: PipelineContext,
     ) {
-        val outputKey = ObjectKey(stream, part.key)
         val partition = partitioner.getPart(outputKey, partition, partQueue.partitions)
 
         val formattedPart = ObjectLoaderPartFormatter.FormattedPart(part)
 
         val outputMessage =
             PipelineMessage(emptyMap(), outputKey, formattedPart, context = pipelineContext)
+
         partQueue.publish(outputMessage, partition)
     }
 }

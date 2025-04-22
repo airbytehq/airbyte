@@ -80,7 +80,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
 
     override suspend fun start(key: ObjectKey, part: Int): State<T> {
         val stream = catalog.getStream(key.stream)
-        return uploads.byKey.computeIfAbsent(key.objectKey) {
+        return uploads.byKey.computeIfAbsent(key.uploadId ?: key.objectKey) {
             State(
                 key.objectKey,
                 CoroutineScope(Dispatchers.IO).async {
