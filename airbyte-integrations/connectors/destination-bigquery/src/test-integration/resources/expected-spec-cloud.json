@@ -61,8 +61,8 @@
                 "properties" : {
                   "credential_type" : {
                     "type" : "string",
-                    "enum" : [ "HMAC key" ],
-                    "default" : "HMAC key"
+                    "enum" : [ "HMAC_KEY" ],
+                    "default" : "HMAC_KEY"
                   },
                   "hmac_key_access_id" : {
                     "type" : "string",
@@ -96,22 +96,22 @@
               "title" : "GCS Tmp Files Post-Processing",
               "order" : 3
             },
-            "gcs_bucket_path" : {
-              "type" : "string",
-              "description" : "Directory under the GCS bucket where data will be written.",
-              "title" : "GCS Bucket Path",
-              "examples" : [ "data_sync/test" ],
-              "order" : 2
-            },
             "gcs_bucket_name" : {
               "type" : "string",
               "description" : "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
               "title" : "GCS Bucket Name",
               "examples" : [ "airbyte_sync" ],
               "order" : 1
+            },
+            "gcs_bucket_path" : {
+              "type" : "string",
+              "description" : "Directory under the GCS bucket where data will be written.",
+              "title" : "GCS Bucket Path",
+              "examples" : [ "data_sync/test" ],
+              "order" : 2
             }
           },
-          "required" : [ "method", "credential", "gcs_bucket_path", "gcs_bucket_name" ]
+          "required" : [ "method", "credential", "gcs_bucket_name", "gcs_bucket_path" ]
         } ],
         "description" : "The way data will be uploaded to BigQuery.",
         "title" : "Loading Method",

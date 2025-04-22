@@ -62,6 +62,7 @@ class StandardInsertRawOverrideDisableTd :
     }
 }
 
+// @Disabled("Disabling until we have the full flow")
 class GcsRawOverrideDisableTd :
     BigqueryWriteTest(
         BigQueryDestinationTestUtils.createConfig(

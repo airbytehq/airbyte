@@ -13,7 +13,9 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.gcs.GcsAuthSpecification
 import io.airbyte.cdk.load.command.gcs.GcsCommonSpecification
+import io.airbyte.cdk.load.command.gcs.GcsHmacKeySpecification
 import io.airbyte.cdk.load.command.gcs.GcsRegion
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -116,7 +118,7 @@ class BatchedStandardInsertSpecification :
 @JsonSchemaDescription(
     "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery."
 )
-abstract class GcsStagingSpecification :
+class GcsStagingSpecification :
     GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
     @get:JsonSchemaTitle("GCS Tmp Files Post-Processing")
     @get:JsonPropertyDescription(
@@ -126,6 +128,10 @@ abstract class GcsStagingSpecification :
     @get:JsonProperty("keep_files_in_gcs-bucket", defaultValue = "Delete all tmp files from GCS")
     @get:JsonSchemaInject(json = """{"order": 3}""")
     val filePostProcessing: GcsFilePostProcessing? = null
+    override val gcsBucketName: String = ""
+    override val path: String = ""
+    override val credential: GcsAuthSpecification =
+        GcsHmacKeySpecification(accessKeyId = "", secretAccessKey = "")
 }
 
 // bigquery supports a subset of GCS regions.
