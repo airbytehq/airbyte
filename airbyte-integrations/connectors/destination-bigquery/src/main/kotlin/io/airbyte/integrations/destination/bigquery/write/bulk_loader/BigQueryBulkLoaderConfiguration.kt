@@ -43,18 +43,7 @@ data class BigqueryBulkLoadConfiguration<ByteArrayOutputStream : OutputStream>(
     AWSArnRoleConfigurationProvider,
     GcsClientConfigurationProvider,
     ObjectStorageCompressionConfigurationProvider<ByteArrayOutputStream> {
-    override val objectStoragePathConfiguration =
-        ObjectStoragePathConfiguration(
-            prefix = "",
-            // This is equivalent to the default,
-            // but is nicer for tests,
-            // and also matches user intuition more closely.
-            // The default puts the `<date>_<epoch>_` into the path format,
-            // which is (a) confusing, and (b) makes the file transfer tests more annoying.
-            // TODO: This is unverified. We need to understand what the current behavior is
-            pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/",
-            fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
-        )
+    override val objectStoragePathConfiguration: ObjectStoragePathConfiguration
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration =
         CSVFormatConfiguration()
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
@@ -80,6 +69,13 @@ data class BigqueryBulkLoadConfiguration<ByteArrayOutputStream : OutputStream>(
             AWSAccessKeyConfiguration(
                 accessKeyId = credentials.accessKeyId,
                 secretAccessKey = credentials.secretAccessKey
+            )
+
+        objectStoragePathConfiguration =
+            ObjectStoragePathConfiguration(
+                prefix = bigQueryConfiguration.loadingMethod.gcsClientConfig.path,
+                pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/",
+                fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
             )
     }
 
