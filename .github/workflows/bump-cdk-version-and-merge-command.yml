@@ -78,7 +78,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
         run: |
-          RUN_URL=$(gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }} --json url --jq '.url')
+          RUN_URL=$(gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }} --json url)
           
           echo "Triggered workflow run URL: $RUN_URL"
 
