@@ -60,7 +60,10 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         with("value.converter.replace.null.with.default", "false")
         // Timeout for DebeziumEngine's close() method.
         // We find that in production, substantial time is in fact legitimately required here.
-        with("debezium.embedded.shutdown.pause.before.interrupt.ms", 5.minutes.inWholeMilliseconds.toString())
+        with(
+            "debezium.embedded.shutdown.pause.before.interrupt.ms",
+            5.minutes.inWholeMilliseconds.toString()
+        )
         // Unblock CDC syncs by skipping errors caused by unparseable DDLs
         with("schema.history.internal.skip.unparseable.ddl", "true")
     }

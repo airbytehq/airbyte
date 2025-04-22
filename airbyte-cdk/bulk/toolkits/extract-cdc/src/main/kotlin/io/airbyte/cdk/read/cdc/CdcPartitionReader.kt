@@ -153,9 +153,7 @@ class CdcPartitionReader<T : Comparable<T>>(
             // At this point, if we haven't returned already, we need to close down the engine.
             log.info { "Shutting down Debezium engine: ${closeReason.message}." }
             // TODO : send close analytics message
-            runBlocking() {
-                launch(Dispatchers.IO + Job()) { engine.close() }
-            }
+            runBlocking() { launch(Dispatchers.IO + Job()) { engine.close() } }
         }
 
         private fun emitRecord(event: DebeziumEvent): EventType {
