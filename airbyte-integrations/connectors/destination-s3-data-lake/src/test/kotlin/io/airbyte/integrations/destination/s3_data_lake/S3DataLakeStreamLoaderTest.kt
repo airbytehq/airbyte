@@ -119,7 +119,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { secretAccessKey } returns "secret-access-key"
         }
         val bucketConfiguration: S3BucketConfiguration = mockk {
-            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`
+            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`.region
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
@@ -194,7 +194,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { secretAccessKey } returns "secret-access-key"
         }
         val bucketConfiguration: S3BucketConfiguration = mockk {
-            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`
+            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`.region
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
@@ -344,7 +344,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { secretAccessKey } returns "secret-access-key"
         }
         val bucketConfiguration: S3BucketConfiguration = mockk {
-            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`
+            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`.region
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
