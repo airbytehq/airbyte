@@ -121,7 +121,7 @@ jobs:
           echo "$connector_folders" | while read -r folder; do
             # Call the function, passing the current folder name as an argument
             echo "Triggering workflow for connector: $folder"
-            gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-option="--name=$folder"
+            gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-options="--name=$folder"
           done
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
 
