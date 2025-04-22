@@ -84,24 +84,6 @@ jobs:
           git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
           git push
 
-      #- name: Release the CDK
-      #  env:
-      #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
-      #  run: |
-      #    gh workflow run 'Publish Java CDK' --ref ${{ github.ref_name }} -F dry-run=true -F gitref=${{ github.ref_name }}
-      #
-      #    sleep 30
-      #    RUN_ID=$(gh run list --workflow 'Publish Java CDK' --branch ${{ github.ref_name }} --limit 1 --json databaseId --jq '.[0].databaseId' --repo ${{ github.repository }})
-#
-      #    echo "Triggered workflow run ID: $RUN_ID"
-#
-      #    # --- Watch the workflow run until it completes ---
-      #    # gh run watch blocks until the run finishes
-      #    # It exits with a non-zero code if the watched run fails or is cancelled
-      #    echo "Waiting for workflow run $RUN_ID to finish..."
-      #    gh run watch $RUN_ID --interval 30
-      #    echo "Workflow run $RUN_ID finished."
-      #  working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
   publish-java-cdk:
     needs: [bump-cdk-version]
     uses: ./.github/workflows/publish-java-cdk-command.yml
@@ -117,10 +99,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
       - name: Release the connector
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
         run: |
+          # Ensure the branch has the most recent updates from the master branch
+          git fetch origin master
+          
           modified_files=$(git diff --name-only origin/master)
 
           # Process the list to get the unique connector folder names
