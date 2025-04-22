@@ -78,6 +78,11 @@ jobs:
             fi
           done
 
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
+          git push
 
       - name: Release the CDK
         env:
@@ -117,12 +122,6 @@ jobs:
             gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-options="--name=$folder"
           done
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
-
-      - name: Commit changes
-        run: |
-          git add .
-          git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
-          git push
 
       - name: Respond to user
         uses: actions/github-script@v6
