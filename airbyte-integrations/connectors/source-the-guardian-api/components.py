@@ -58,4 +58,5 @@ class CustomPageIncrement(PaginationStrategy):
             return None
 
     def get_page_size(self) -> Optional[int]:
+        print("YOLOSWAG")
         return self._page_size
