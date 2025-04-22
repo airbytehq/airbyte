@@ -1,16 +1,14 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source
+package io.airbyte.integrations.source.cdk
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
-import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.MetaField
-import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
@@ -24,8 +22,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.sql.Connection
-import java.util.function.Supplier
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DynamicContainer
 import org.junit.jupiter.api.DynamicNode
@@ -40,6 +37,8 @@ abstract class AbstractSourceDatatypeIntegrationTest {
 
     abstract val configSpec: ConfigurationSpecification
     abstract val jdbcConfig: JdbcSourceConfiguration
+    abstract val setupDdl: List<String>
+    abstract val teardownDdl: List<String>
     abstract val testCases: List<TestCase>
 
     private val allStreamNamesAndRecordData: Map<String, List<JsonNode>> by lazy {
@@ -50,11 +49,33 @@ abstract class AbstractSourceDatatypeIntegrationTest {
         return testCases.find { streamName.uppercase() in it.streamNamesToRecordData.keys }
     }
 
+    companion object {
+        lateinit var ops: IntegrationTestOperations
+
+        @AfterAll
+        @JvmStatic
+        fun teardown() {
+            ops.close()
+        }
+    }
+
     @TestFactory
     @Timeout(300)
-    fun syncTests(): Iterable<DynamicNode> {
+    fun tests(): Iterable<DynamicNode> {
+        ops =
+            IntegrationTestOperations(
+                configSpec,
+                jdbcConfig,
+                setupDdl,
+                teardownDdl,
+            )
+        ops.setup()
         val actual =
-            DiscoverAndReadAll(configSpec, jdbcConfig, testCases, allStreamNamesAndRecordData)
+            DiscoverAndReadAll(
+                ops,
+                testCases.stream().flatMap { case -> case.dml.stream() }.toList(),
+                allStreamNamesAndRecordData
+            )
         val discoverAndReadAllTest: DynamicNode =
             DynamicTest.dynamicTest("discover-and-read-all", actual)
         val testCases: List<DynamicNode> =
@@ -121,9 +142,8 @@ abstract class AbstractSourceDatatypeIntegrationTest {
     }
 
     class DiscoverAndReadAll(
-        private val configSpec: ConfigurationSpecification,
-        private val jdbcConfig: JdbcSourceConfiguration,
-        private val testCases: List<TestCase>,
+        private val ops: IntegrationTestOperations,
+        private val dmlStatements: List<String>,
         private val allStreamNamesAndRecordData: Map<String, List<JsonNode>>,
     ) : Executable {
         private val log = KotlinLogging.logger {}
@@ -131,55 +151,26 @@ abstract class AbstractSourceDatatypeIntegrationTest {
         // JDBC DISCOVER and READ intermediate values and final results.
         // Intermediate values are present here as `lateinit var` instead of local variables
         // to make debugging of individual test cases easier.
-        lateinit var jdbcConnectionFactory: JdbcConnectionFactory
         lateinit var jdbcStreams: Map<String, AirbyteStream>
         lateinit var jdbcConfiguredCatalog: ConfiguredAirbyteCatalog
         lateinit var jdbcReadOutput: BufferingOutputConsumer
         lateinit var jdbcMessages: List<AirbyteMessage>
         lateinit var jdbcMessagesByStream: Map<String, BufferingOutputConsumer>
 
-        private val connectionFactory: Supplier<Connection> = JdbcConnectionFactory(jdbcConfig)
-
         override fun execute() {
-            jdbcConnectionFactory = JdbcConnectionFactory(jdbcConfig)
-            log.info { "Executing DDL statements." }
-            connectionFactory.get().use { connection: Connection ->
-                for (case in testCases) {
-                    for (sql in case.ddl) {
-                        log.info { "test case ${case.id}: executing $sql" }
-                        connection.createStatement().use { stmt -> stmt.execute(sql) }
-                    }
-                }
-            }
             log.info { "Executing DML statements." }
-            jdbcConnectionFactory.get().use { connection: Connection ->
-                for (case in testCases) {
-                    for (sql in case.dml) {
-                        log.info { "test case ${case.id}: executing $sql" }
-                        connection.createStatement().use { stmt -> stmt.execute(sql) }
-                    }
-                }
-            }
+            ops.execute(dmlStatements)
             log.info { "Running JDBC DISCOVER operation." }
-            jdbcStreams = discover(configSpec)
+            jdbcStreams = ops.discover()
             jdbcConfiguredCatalog = configuredCatalog(jdbcStreams)
             log.info { "Running JDBC READ operation." }
-            jdbcReadOutput = CliRunner.source("read", configSpec, jdbcConfiguredCatalog).run()
+            jdbcReadOutput = ops.sync(jdbcConfiguredCatalog)
             Assertions.assertNotEquals(emptyList<AirbyteStateMessage>(), jdbcReadOutput.states())
             Assertions.assertNotEquals(emptyList<AirbyteRecordMessage>(), jdbcReadOutput.records())
             Assertions.assertEquals(emptyList<AirbyteLogMessage>(), jdbcReadOutput.logs())
             jdbcMessages = jdbcReadOutput.messages()
             jdbcMessagesByStream = byStream(jdbcMessages)
             log.info { "Done." }
-        }
-
-        private fun discover(configSpec: ConfigurationSpecification): Map<String, AirbyteStream> {
-            val output: BufferingOutputConsumer = CliRunner.source("discover", configSpec).run()
-            val streams: Map<String, AirbyteStream> =
-                output.catalogs().firstOrNull()?.streams?.filterNotNull()?.associateBy { it.name }
-                    ?: mapOf()
-            Assertions.assertFalse(streams.isEmpty())
-            return streams
         }
 
         private fun configuredCatalog(
@@ -233,9 +224,9 @@ abstract class AbstractSourceDatatypeIntegrationTest {
     }
 
     data class TestCase(
+        val namespace: String,
         val sqlType: String,
         val values: Map<String, String>,
-        val ddlFunction: (tableName: String, columnName: String) -> List<String>,
         val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
     ) {
         val id: String
@@ -252,12 +243,11 @@ abstract class AbstractSourceDatatypeIntegrationTest {
         val columnName: String
             get() = "col_$id"
 
-        val ddl: List<String>
-            get() = ddlFunction(tableName, columnName)
-
         val dml: List<String>
             get() {
-                return values.keys.map { "INSERT INTO $tableName ($columnName) VALUES ($it)" }
+                return values.keys.map {
+                    "INSERT INTO $namespace.$tableName ($columnName) VALUES ($it)"
+                }
             }
 
         val streamNamesToRecordData: Map<String, List<JsonNode>>

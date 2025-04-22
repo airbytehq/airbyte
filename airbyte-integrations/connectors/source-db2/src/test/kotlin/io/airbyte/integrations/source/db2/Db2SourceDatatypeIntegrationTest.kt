@@ -4,7 +4,9 @@ package io.airbyte.integrations.source.db2
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.integrations.source.AbstractSourceDatatypeIntegrationTest
+import io.airbyte.integrations.source.cdk.AbstractSourceDatatypeIntegrationTest
+import io.airbyte.integrations.source.cdk.NamespacedContainer
+import io.airbyte.integrations.source.db2.config.Db2ContainerFactory
 import io.airbyte.integrations.source.db2.config.Db2SourceConfigurationFactory
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
@@ -12,19 +14,22 @@ import org.testcontainers.containers.Db2Container
 
 class Db2SourceDatatypeIntegrationTest : AbstractSourceDatatypeIntegrationTest() {
 
-    override val configSpec = Db2ContainerFactory.configSpecification(dbContainer)
+    override val configSpec = Db2ContainerFactory.configSpecification(namespacedContainer)
 
     override val jdbcConfig: JdbcSourceConfiguration
         get() = Db2SourceConfigurationFactory().make(configSpec)
 
     companion object {
-        lateinit var dbContainer: Db2Container
+        lateinit var namespacedContainer: NamespacedContainer<Db2Container>
+        lateinit var schema: String
 
         @JvmStatic
         @BeforeAll
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
-            dbContainer = Db2ContainerFactory.exclusive()
+            namespacedContainer =
+                Db2ContainerFactory.shared(Db2SourceDatatypeIntegrationTest::class)
+            schema = namespacedContainer.namespace
         }
     }
 
@@ -243,25 +248,29 @@ class Db2SourceDatatypeIntegrationTest : AbstractSourceDatatypeIntegrationTest()
             db2TestCase("XML", LeafAirbyteSchemaType.STRING, xmlValues),
         )
 
+    override val setupDdl: List<String> =
+        listOf("CREATE SCHEMA $schema")
+            .plus(
+                testCases.map {
+                    """
+                    CREATE TABLE $schema.${it.tableName}
+                    (id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                    ${it.columnName} ${it.sqlType})
+                    """.trimIndent()
+                }
+            )
+
+    override val teardownDdl: List<String> =
+        testCases
+            .map { "DROP TABLE IF EXISTS $schema.${it.tableName}" }
+            .plus("DROP SCHEMA $schema RESTRICT")
+
     private fun db2TestCase(
         sqlType: String,
         type: AirbyteSchemaType,
         values: Map<String, String>
     ): TestCase {
-        return TestCase(
-            sqlType,
-            values,
-            { tableName: String, columnName: String ->
-                listOf(
-                    """
-                    CREATE TABLE $tableName
-                    (id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                    $columnName $sqlType)
-                """.trimIndent()
-                )
-            },
-            type
-        )
+        return TestCase(schema, sqlType, values, type)
     }
 
     // pads the json string map values to a fixed length

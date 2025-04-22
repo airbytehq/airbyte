@@ -1,9 +1,10 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.db2
+package io.airbyte.integrations.source.db2.config
 
 import io.airbyte.cdk.testcontainers.TestContainerFactory
-import io.airbyte.integrations.source.db2.config.Db2SourceConfigurationSpecification
+import io.airbyte.integrations.source.cdk.NamespacedContainer
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.reflect.KClass
 import org.testcontainers.containers.Db2Container
 import org.testcontainers.utility.DockerImageName
 
@@ -12,7 +13,7 @@ object Db2ContainerFactory {
     private val IMAGE_NAME = DockerImageName.parse("icr.io/db2_community/db2")
 
     init {
-        TestContainerFactory.register(IMAGE_NAME, ::LicensedContainer)
+        TestContainerFactory.register(IMAGE_NAME, Db2ContainerFactory::LicensedContainer)
     }
 
     // This constructor allows us to accept an EULA required by the IBM Db2 image.
@@ -25,24 +26,22 @@ object Db2ContainerFactory {
         }
     }
 
-    fun exclusive(): Db2Container {
-        return TestContainerFactory.exclusive(IMAGE_NAME)
-    }
-
-    fun shared(): Db2Container {
-        return TestContainerFactory.shared(IMAGE_NAME)
+    fun shared(testClass: KClass<*>): NamespacedContainer<Db2Container> {
+        return NamespacedContainer(TestContainerFactory.shared(IMAGE_NAME), testClass)
     }
 
     @JvmStatic
-    fun configSpecification(db2Container: Db2Container): Db2SourceConfigurationSpecification =
+    fun configSpecification(
+        namespacedContainer: NamespacedContainer<Db2Container>
+    ): Db2SourceConfigurationSpecification =
         Db2SourceConfigurationSpecification().apply {
-            host = db2Container.host
-            port = db2Container.firstMappedPort
-            database = db2Container.databaseName
-            username = db2Container.username
-            password = db2Container.password
+            host = namespacedContainer.container.host
+            port = namespacedContainer.container.firstMappedPort
+            database = namespacedContainer.container.databaseName
+            username = namespacedContainer.container.username
+            password = namespacedContainer.container.password
             jdbcUrlParams = ""
-            schemas = listOf(db2Container.username)
+            schemas = listOf(namespacedContainer.namespace)
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
         }
