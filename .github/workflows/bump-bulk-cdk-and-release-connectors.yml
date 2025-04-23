@@ -1,6 +1,5 @@
 name: Bump Bulk CDK Version
 on:
-  workflow_call:
   workflow_dispatch:
     inputs:
       repo:
