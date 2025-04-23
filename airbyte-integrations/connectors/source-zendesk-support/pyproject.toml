@@ -17,7 +17,7 @@ include = "source_zendesk_support"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "6.45.4.post14.dev14544463167"
+airbyte-cdk = "^6"
 pendulum = "<3.0.0"
 
 [tool.poetry.scripts]
