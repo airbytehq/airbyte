@@ -16,12 +16,10 @@ import javax.inject.Singleton
 
 data class TableNameInfo(val tableNames: TableNames, val columnNameMapping: ColumnNameMapping)
 
-@JvmInline
-value class TableCatalog(private val catalog: Map<DestinationStream, TableNameInfo>) :
+data class TableCatalog(private val catalog: Map<DestinationStream, TableNameInfo>) :
     Map<DestinationStream, TableNameInfo> by catalog
 
-@JvmInline
-value class TableCatalogByDescriptor(
+data class TableCatalogByDescriptor(
     private val catalog: Map<DestinationStream.Descriptor, TableNameInfo>
 ) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog
 
