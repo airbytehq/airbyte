@@ -78,7 +78,7 @@ jobs:
           
           echo "modified_connectors=${MODIFIED_LIST_JSON}" >> $GITHUB_OUTPUT
 
-          for folder in $connector_folders; do
+          echo "$connector_folders" | while read -r folder; do
             gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
             if [ -f "$gradle_file" ]; then
               sed -i "s/cdkVersionRequired = '.*'/cdkVersionRequired = '${{ github.event.inputs.version }}'/" "$gradle_file"
