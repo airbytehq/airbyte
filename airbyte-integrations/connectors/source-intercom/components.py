@@ -10,8 +10,8 @@ from typing import Mapping, Optional, Union
 import requests
 
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
-
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction, FailureType
+from urllib.parse import urlparse, parse_qs
 
 RequestInput = Union[str, Mapping[str, str]]
 
@@ -152,3 +152,19 @@ class ErrorHandlerWithRateLimiter(DefaultErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         # Check for response.headers to define the backoff time before the next api call
         return super().interpret_response(response_or_exception)
+    
+class CompaniesFirstPage500ErrorHandler:
+    def interpret_response(self, response_or_exception):
+        if isinstance(response_or_exception, requests.Response):
+            response = response_or_exception
+            if response.status_code == 500:
+                # Check if it's the first page by looking for 'scroll_param' in the query parameters
+                parsed_url = urlparse(response.request.url)
+                query_params = parse_qs(parsed_url.query)
+                if 'scroll_param' not in query_params:
+                    return ErrorResolution(
+                        response_action=ResponseAction.RETRY,
+                        failure_type=FailureType.transient_error,
+                        error_message="500 error on first page, retrying",
+                    )
+        return None  # Let other error handlers handle it
