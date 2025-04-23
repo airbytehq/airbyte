@@ -868,13 +868,20 @@ definitions:
         $parameters:
           path: customers/{{ stream_partition.customer_id }}/balance_transactions
         partition_router:
-          type: SubstreamPartitionRouter
+        - type: CustomPartitionRouter
+          class_name: source_stripe.components.CustomerIdPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: customer_id
               stream:
                 $ref: "#/definitions/streams/customers"
+              incremental_dependency: true
+            - type: ParentStreamConfig
+              parent_key: customer
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/streams/invoices"
               incremental_dependency: true
       # This stream is not truly incremental on the child level.
       # We're configuring it this way to support incremental syncs on the parent only,
