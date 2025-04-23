@@ -103,17 +103,17 @@ jobs:
   #     force: false
   #   secrets: inherit
 
-  publish-connectors:
-    needs: [bump-cdk-version]
-    # needs: [publish-java-cdk]
-    uses: ./.github/workflows/publish_connectors.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
-    with:
-      connectors-options: "--name=${{ matrix.connector_name }}"
-    secrets: inherit
+  # publish-connectors:
+  #   needs: [bump-cdk-version]
+  #   # needs: [publish-java-cdk]
+  #   uses: ./.github/workflows/publish_connectors.yml
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
+  #   with:
+  #     connectors-options: "--name=${{ matrix.connector_name }}"
+  #   secrets: inherit
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
@@ -124,7 +124,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Release the connector
+      - name: Merge the changelog of the connectors
+        working-directory: airbyte-ci/connectors/pipelines/
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
           AUTO_MERGE_PRODUCTION: false
@@ -153,6 +154,4 @@ jobs:
             git push
           done
     
-          # poetry install
           # poetry run auto-merge
-        working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
