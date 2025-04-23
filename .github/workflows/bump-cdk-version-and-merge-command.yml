@@ -72,7 +72,7 @@ jobs:
           
           echo "Modified connector folders: $connector_folders"
           
-          MODIFIED_LIST_JSON=$(echo "connector_folders" | tr ',' '\n' | jq -R . | jq -s .)
+          MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -s .)
           
           echo ${MODIFIED_LIST_JSON}
           
