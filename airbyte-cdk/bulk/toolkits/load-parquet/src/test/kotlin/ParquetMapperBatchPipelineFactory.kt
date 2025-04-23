@@ -40,7 +40,8 @@ class ParquetMapperBatchPipelineFactory {
                                                                 )
                                                             ),
                                                             StringType
-                                                        )
+                                                        ),
+                                                        isLegacyUnion = false,
                                                     ),
                                                     true
                                                 ),
@@ -48,7 +49,8 @@ class ParquetMapperBatchPipelineFactory {
                                         )
                                     ),
                                     StringType
-                                )
+                                ),
+                                isLegacyUnion = false,
                             ),
                             true
                         )

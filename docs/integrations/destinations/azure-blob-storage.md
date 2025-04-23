@@ -133,6 +133,7 @@ With root level flattening, the output JSONL is:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2   | 2025-04-14 | [57563](https://github.com/airbytehq/airbyte/pull/57563)   | Fix signature spec example |
 | 1.0.1   | 2025-04-09 | [57541](https://github.com/airbytehq/airbyte/pull/57541)   | Fix metadata to actually certify.                                                                                                                               |
 | 1.0.0   | 2025-04-03 | [56391](https://github.com/airbytehq/airbyte/pull/56391)   | Bring into compliance with modern connector standards; certify connector.                                                                                       |
 | 0.2.5   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                               |
