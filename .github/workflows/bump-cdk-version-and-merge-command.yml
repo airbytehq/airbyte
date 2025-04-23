@@ -59,6 +59,8 @@ jobs:
 
       - name: Update cdkVersionRequired in build.gradle files
         run: |
+          set -o xtrace
+          
           # Ensure the branch has the most recent updates from the master branch
           git fetch origin master
 
