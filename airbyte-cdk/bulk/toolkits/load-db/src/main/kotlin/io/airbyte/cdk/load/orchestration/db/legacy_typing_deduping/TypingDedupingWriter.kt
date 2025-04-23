@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
-import io.airbyte.cdk.load.orchestration.db.DestinationInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import java.util.concurrent.Executors
@@ -16,15 +16,14 @@ import kotlinx.coroutines.runBlocking
 
 class TypingDedupingWriter(
     private val names: TableCatalog,
-    private val stateGatherer:
-        DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
+    private val stateGatherer: DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus>,
     private val databaseHandler: DatabaseHandler,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
     private val disableTypeDedupe: Boolean,
 ) : DestinationWriter {
     private lateinit var initialStatuses:
-        Map<DestinationStream, TypingDedupingDestinationInitialStatus>
+        Map<DestinationStream, TypingDedupingDatabaseInitialStatus>
 
     override suspend fun setup() {
         Executors.newFixedThreadPool(4).asCoroutineDispatcher().use { dispatcher ->
@@ -34,7 +33,7 @@ class TypingDedupingWriter(
             databaseHandler.createNamespaces(namespaces.toSet())
 
             val initialInitialStatuses:
-                Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
+                Map<DestinationStream, TypingDedupingDatabaseInitialStatus> =
                 stateGatherer.gatherInitialStatus(names)
 
             // TODO migrations - we should probably actually drop all existing migrations as part of

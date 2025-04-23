@@ -4,15 +4,15 @@
 
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
-import io.airbyte.cdk.load.orchestration.db.DestinationInitialStatus
+import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatus
 import java.time.Instant
 
-data class TypingDedupingDestinationInitialStatus(
+data class TypingDedupingDatabaseInitialStatus(
     /** Initial status of the final table, or null if the table doesn't exist yet. */
     val finalTableStatus: FinalTableInitialStatus?,
     val rawTableStatus: RawTableInitialStatus?,
     val tempRawTableStatus: RawTableInitialStatus?,
-) : DestinationInitialStatus
+) : DatabaseInitialStatus
 
 data class FinalTableInitialStatus(
     val isSchemaMismatch: Boolean,

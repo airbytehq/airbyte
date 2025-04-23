@@ -18,7 +18,7 @@ private val logger = KotlinLogging.logger {}
 
 class TypingDedupingStreamLoader(
     override val stream: DestinationStream,
-    private val initialStatus: TypingDedupingDestinationInitialStatus,
+    private val initialStatus: TypingDedupingDatabaseInitialStatus,
     private val tableNames: TableNames,
     private val columnNameMapping: ColumnNameMapping,
     private val rawTableOperations: TypingDedupingRawTableOperations,

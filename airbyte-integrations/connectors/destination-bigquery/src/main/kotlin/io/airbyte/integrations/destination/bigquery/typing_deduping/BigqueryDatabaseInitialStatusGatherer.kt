@@ -20,14 +20,14 @@ import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.DestinationInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.AlterTableReport
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.FinalTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDestinationInitialStatus
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDatabaseInitialStatus
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.CollectionUtils.containsIgnoreCase
 import io.airbyte.cdk.util.CollectionUtils.matchingKey
@@ -38,8 +38,8 @@ import java.util.stream.Stream
 
 private val logger = KotlinLogging.logger {}
 
-class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
-    DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus> {
+class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
+    DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus> {
     private fun findExistingTable(finalTableName: TableName): TableDefinition? {
         val table = bq.getTable(finalTableName.namespace, finalTableName.name)
         return table?.getDefinition()
@@ -116,7 +116,7 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
 
     override suspend fun gatherInitialStatus(
         streams: TableCatalog,
-    ): Map<DestinationStream, TypingDedupingDestinationInitialStatus> {
+    ): Map<DestinationStream, TypingDedupingDatabaseInitialStatus> {
         return streams.mapValues { (stream, names) ->
             val (tableNames, columnNameMapping) = names
             val finalTable = findExistingTable(tableNames.finalTableName!!)
@@ -143,7 +143,7 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
                     tableNames.rawTableName!!,
                     TableNames.TMP_TABLE_SUFFIX,
                 )
-            TypingDedupingDestinationInitialStatus(
+            TypingDedupingDatabaseInitialStatus(
                 finalTableStatus,
                 rawTableState,
                 tempRawTableState,

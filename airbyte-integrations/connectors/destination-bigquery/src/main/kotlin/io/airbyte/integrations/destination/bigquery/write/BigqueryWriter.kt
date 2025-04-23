@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupin
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryDestinationInitialStatusGatherer
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryDatabaseInitialStatusGatherer
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -26,7 +26,7 @@ class BigqueryWriterFactory(
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
         return TypingDedupingWriter(
             names,
-            BigqueryDestinationInitialStatusGatherer(bigquery),
+            BigqueryDatabaseInitialStatusGatherer(bigquery),
             destinationHandler,
             BigqueryRawTableOperations(bigquery),
             TypingDedupingFinalTableOperations(
