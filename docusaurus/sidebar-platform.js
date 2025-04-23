@@ -117,6 +117,7 @@ const buildAConnector = {
         },
       ],
     },
+    "connector-development/local-connector-development",
     {
       type: "category",
       label: "Testing Connectors",
