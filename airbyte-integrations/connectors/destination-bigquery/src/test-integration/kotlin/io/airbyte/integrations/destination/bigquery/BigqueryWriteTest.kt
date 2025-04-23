@@ -71,6 +71,10 @@ class StandardInsertRawOverrideDisableTd :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
 }
 
 class StandardInsertRawOverride :
@@ -89,6 +93,10 @@ class StandardInsertRawOverride :
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
+    }
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
     }
 }
 
