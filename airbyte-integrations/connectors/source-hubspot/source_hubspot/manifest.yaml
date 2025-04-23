@@ -247,6 +247,16 @@ definitions:
             - path: [ "updatedAt" ]
               value: "{{ record['createdAt'] }}"
         condition: "{{ record.get('updatedAt') is none }}"
+      - type: AddFields
+        fields:
+            - path: [ "updatedAt" ]
+              value: "{{ str_to_datetime(record['updatedAt']) }}"
+            - path: [ "updatedAt" ]
+              value: "{{ format_datetime(record['updatedAt'], '%ms', '%Y-%m-%d %H:%M:%S.%f%z') }}"
+            - path: [ "createdAt" ]
+              value: "{{ str_to_datetime(record['createdAt']) }}"
+            - path: [ "createdAt" ]
+              value: "{{ format_datetime(record['createdAt'], '%ms', '%Y-%m-%d %H:%M:%S.%f%z') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
