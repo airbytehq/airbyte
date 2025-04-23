@@ -69,6 +69,8 @@ jobs:
             grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
             sort | \
             uniq)
+          
+          echo "modified_connextors=${connector_folders}" >> $GITHUB_OUTPUT
 
           for folder in $connector_folders; do
             gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
@@ -95,43 +97,48 @@ jobs:
 
   publish-connectors:
     needs: [publish-java-cdk]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Release the connector
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
-          AUTO_MERGE_PRODUCTION: false
-        run: |
-          # Ensure the branch has the most recent updates from the master branch
-          git fetch origin master
-          
-          modified_files=$(git diff --name-only origin/master)
+    uses: ./.github/workflows/publish_connectors.yml
+    with:
+      connectors-options: "--name=$modified_connectors"
+      ref: ${{ github.ref_name }}
+    secrets: inherit
+    #runs-on: ubuntu-24.04
+    #steps:
+    #  - name: Checkout repository
+    #    uses: actions/checkout@v4
+    #  - name: Configure Git
+    #    run: |
+    #      git config user.name "github-actions[bot]"
+    #      git config user.email "github-actions[bot]@users.noreply.github.com"
+    #  - name: Release the connector
+    #    env:
+    #      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+    #      AUTO_MERGE_PRODUCTION: false
+    #    run: |
+    #      # Ensure the branch has the most recent updates from the master branch
+    #      git fetch origin master
+    #
+    #      modified_files=$(git diff --name-only origin/master)
+#
+    #      # Process the list to get the unique connector folder names
+    #      connector_folders=$(echo "$modified_files" | \
+    #      grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
+    #      sort | \
+    #      uniq)
 
-          # Process the list to get the unique connector folder names
-          connector_folders=$(echo "$modified_files" | \
-          grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
-          sort | \
-          uniq)
+    #      poetry install
 
-          poetry install
-
-          # Read each line from the connector_folders variable
-          echo "$connector_folders" | while read -r folder; do
-            # Call the function, passing the current folder name as an argument
-            echo "Triggering workflow for connector: $folder"
-            # gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-options="--name=$folder"
-            poetry run airbyte-ci connectors --name="$folder" add-changelog --message="Update CDK version"git ad
-            git add .
-            git commit -m "Update changelog for $folder"
-            git push
-          done
-          
-          # poetry install
-          # poetry run auto-merge
-        working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
+    #      # Read each line from the connector_folders variable
+    #      echo "$connector_folders" | while read -r folder; do
+    #        # Call the function, passing the current folder name as an argument
+    #        echo "Triggering workflow for connector: $folder"
+    #        # gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-options="--name=$folder"
+    #        poetry run airbyte-ci connectors --name="$folder" add-changelog --message="Update CDK version"git ad
+    #        git add .
+    #        git commit -m "Update changelog for $folder"
+    #        git push
+    #      done
+    #
+    #      # poetry install
+    #      # poetry run auto-merge
+    #    working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
