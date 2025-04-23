@@ -123,7 +123,6 @@ jobs:
           echo "$connector_folders" | while read -r folder; do
             # Call the function, passing the current folder name as an argument
             echo "Triggering workflow for connector: $folder"
-            # gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-options="--name=$folder"
             airbyte-ci connectors --name="$folder" add-changelog --message="Update CDK version" --type=<change-type>
             git add .
             git commit -m "Update changelog for $folder"
