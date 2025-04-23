@@ -7,7 +7,7 @@ When developing connectors locally, you'll want to install the following tools l
 1. [**Poe the Poet**](#poe-the-poet) - Used as a common task interface for defining and running development tasks.
 1. [`docker`](#docker) - Used when building and running connector container images.
 1. [`airbyte-ci`](#airbyte-ci) - Used for a large number of tasks such as building and publishing.
-1. [`gradle`](Gradle) - Useful when working on Java and Kotlin connectors.
+1. [`gradle`](#gradle) - Useful when working on Java and Kotlin connectors.
 
 ## Poe the Poet
 
