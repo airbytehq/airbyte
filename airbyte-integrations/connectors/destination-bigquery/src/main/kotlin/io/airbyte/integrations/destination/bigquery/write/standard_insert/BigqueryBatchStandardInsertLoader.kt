@@ -10,20 +10,20 @@ import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.TableDataWriteChannel
+import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
-import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.CONFIG_ERROR_MSG
-import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_FORBIDDEN
-import io.airbyte.integrations.destination.bigquery.operation.BigQueryDirectLoadingStorageOperation.Companion.HTTP_STATUS_CODE_NOT_FOUND
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -69,14 +69,19 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 class BigqueryBatchStandardInsertsLoaderFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
+    private val names: TableCatalogByDescriptor,
+    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
-        part: Int
+        part: Int,
     ): BigqueryBatchStandardInsertsLoader {
+        val tableName = names[streamDescriptor]!!.tableNames.rawTableName!!
+        val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
         val writeChannelConfiguration =
-        // TODO need to write to raw vs final table appropriately
-        WriteChannelConfiguration.newBuilder(TempUtils.rawTableId(config, streamDescriptor))
+            WriteChannelConfiguration.newBuilder(
+                    TableId.of(tableName.namespace, tableName.name + rawTableNameSuffix)
+                )
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setFormatOptions(FormatOptions.json())
@@ -101,5 +106,19 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             }
 
         return BigqueryBatchStandardInsertsLoader(writer)
+    }
+
+    companion object {
+        const val HTTP_STATUS_CODE_FORBIDDEN = 403
+        const val HTTP_STATUS_CODE_NOT_FOUND = 404
+
+        val CONFIG_ERROR_MSG =
+            """
+            |Failed to write to destination schema.
+            |   1. Make sure you have all required permissions for writing to the schema.
+            |   2. Make sure that the actual destination schema's location corresponds to location provided in connector's config.
+            |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the "Destination Default" option.
+            |More details:
+            |""".trimMargin()
     }
 }

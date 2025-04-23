@@ -18,7 +18,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupi
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
-import io.airbyte.integrations.destination.bigquery.BigQueryDestination.Companion.getBigQuery
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getDatasetId
 import io.airbyte.protocol.models.v0.*
@@ -44,7 +43,7 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
         val stagingPath = "test_path$uniqueSuffix"
         val config =
             BigQueryDestinationTestUtils.createConfig(Path.of(configPath), datasetId, stagingPath)
-        bq = getBigQuery(config!!)
+        bq = BigQueryDestinationTestUtils.initBigQuery(config!!)
         return config
     }
 
@@ -99,7 +98,8 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     override val sqlGenerator: SqlGenerator
-        get() = BigQuerySqlGenerator(config!![BigQueryConsts.CONFIG_PROJECT_ID].asText(), null)
+        get() =
+            LegacyBigQuerySqlGenerator(config!![BigQueryConsts.CONFIG_PROJECT_ID].asText(), null)
 
     @Test
     @Throws(Exception::class)

@@ -126,6 +126,9 @@ data class Meta(
                 COLUMN_NAME_AB_GENERATION_ID,
             )
 
+        /** A legacy column name. Used in "DV2" destinations' raw tables. */
+        const val COLUMN_NAME_AB_LOADED_AT = "_airbyte_loaded_at"
+
         fun getMetaValue(metaColumnName: String, value: String): AirbyteValue {
             if (!COLUMN_NAMES.contains(metaColumnName)) {
                 throw IllegalArgumentException("Invalid meta column name: $metaColumnName")
