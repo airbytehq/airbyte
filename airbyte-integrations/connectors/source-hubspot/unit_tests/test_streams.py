@@ -37,10 +37,10 @@ from source_hubspot.streams import (
     Workflows,
 )
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.types import Record
 
-from .conftest import find_stream
+from .conftest import find_stream, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -142,6 +142,23 @@ def test_streams_read(
         }
     ]
 
+    is_form_submission = stream_class == "form_submissions"
+
+    if is_form_submission:
+        forms_response = [
+        {
+            "json": {
+                data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-02-25T16:43:11Z",
+                        "updatedAt": "2022-02-25T16:43:11Z"
+                    }
+                ],
+            }
+        }
+    ]
+
     properties_response = [
         {
             "json": [
@@ -180,7 +197,6 @@ def test_streams_read(
         }
     ]
 
-    is_form_submission = stream_class == "form_submissions"
     stream._sync_mode = SyncMode.full_refresh
     if isinstance(stream_class, str):
         stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
@@ -188,13 +204,12 @@ def test_streams_read(
             stream_url = stream_url.replace("{{ stream_partition['form_id'][0] }}", "test_id")
     else:
         stream_url = stream.url + "/test_id" if is_form_submission else stream.url
-    print(stream_url)
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
     requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
-    requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
+    requests_mock.register_uri("GET", "/marketing/v3/forms", responses if not is_form_submission else forms_response)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
@@ -441,7 +456,7 @@ def test_contact_lists_transform(requests_mock, common_params):
 def test_client_side_incremental_stream(mock_get_custom_object_streams, requests_mock, common_params, fake_properties_list, config):
     stream = find_stream("forms", config)
     data_field = stream.retriever.record_selector.extractor.field_path[0]
-    latest_cursor_value = "2030-01-30T23:46:36.287Z"
+    latest_cursor_value = "2024-01-30T23:46:36.287000Z"
     responses = [
         {
             "json": {
@@ -468,8 +483,8 @@ def test_client_side_incremental_stream(mock_get_custom_object_streams, requests
     requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
 
-    list(stream.read_records(SyncMode.incremental))
-    assert stream.state == {stream.cursor_field: pendulum.parse(latest_cursor_value).to_rfc3339_string()}
+    output = read_from_stream(config, "forms", SyncMode.incremental)
+    assert output.state_messages[-1].state.stream.stream_state.__dict__[stream.cursor_field] == latest_cursor_value
 
 
 @pytest.mark.parametrize(
@@ -478,12 +493,12 @@ def test_client_side_incremental_stream(mock_get_custom_object_streams, requests
         (
             {"updatedAt": ""},
             {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"},
-            (True, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"}),
+            (True, {"updatedAt": "2023-01-30T23:46:36.287000Z"}),
         ),
         (
             {"updatedAt": "2023-01-30T23:46:36.287000+00:00"},
             {"id": "test_id_1", "updatedAt": "2023-01-29T01:02:03.123Z"},
-            (False, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"}),
+            (False, {"updatedAt": "2023-01-30T23:46:36.287000Z"}),
         ),
     ],
     ids=[
@@ -492,9 +507,20 @@ def test_client_side_incremental_stream(mock_get_custom_object_streams, requests
     ],
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_empty_string_in_state(mock_get_custom_object_streams, state, record, expected, requests_mock, common_params, fake_properties_list, config):
+def test_empty_string_in_state(mock_get_custom_object_streams, state, record, expected, requests_mock, fake_properties_list, config):
     stream = find_stream("forms", config)
-    stream.state = state
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
+
+    response = [
+        {
+            "json": {
+                data_field: [
+                    record,
+                ],
+            }
+        }
+    ]
+    # stream.state = state
     # overcome the availability strartegy issues by mocking the responses
     # A.K.A: not related to the test at all, but definetely required.
     properties_response = [
@@ -508,13 +534,22 @@ def test_empty_string_in_state(mock_get_custom_object_streams, state, record, ex
     ]
     stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
 
-    requests_mock.register_uri("GET", stream_url, json=record)
+    requests_mock.register_uri("GET", stream_url, response)
     requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
     # end of mocking `availability strategy`
 
-    result = stream.filter_by_state(stream.state, record)
-    assert result == expected[0]
-    assert stream.state == expected[1]
+    state_message = AirbyteStateMessage(
+        type=AirbyteStateType.STREAM,
+        stream=AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name="forms"),
+            stream_state=AirbyteStateBlob(**state),
+        ),
+    )
+
+    output = read_from_stream(config, "forms", SyncMode.incremental, [state_message])
+
+    assert (len(output.records) > 0) == expected[0]
+    assert output.most_recent_state.stream_state.__dict__[stream.cursor_field] == expected[1][stream.cursor_field]
 
 
 @pytest.fixture(name="custom_object_schema")
@@ -827,7 +862,6 @@ def test_cast_record_fields_with_schema_if_needed(
     requests_mock.register_uri("GET", stream_url, responses)
     records = read_full_refresh(stream)
     record = records[0]
-    print(record)
     for casted_key, casted_value in expected_casted_data.items():
         assert record[casted_key] == casted_value
 

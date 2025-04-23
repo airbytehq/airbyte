@@ -6,6 +6,8 @@ import pytest
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API
 
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -108,3 +110,9 @@ def find_stream(stream_name, config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+def read_from_stream(
+    cfg, stream: str, sync_mode, state = None, expecting_exception: bool = False
+) -> EntrypointOutput:
+    return read(SourceHubspot(cfg, None, None), cfg, CatalogBuilder().with_stream(stream, sync_mode).build(), state, expecting_exception)
