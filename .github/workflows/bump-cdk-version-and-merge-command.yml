@@ -106,6 +106,7 @@ jobs:
       - name: Release the connector
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+          AUTO_MERGE_PRODUCTION: false
         run: |
           # Ensure the branch has the most recent updates from the master branch
           git fetch origin master
@@ -123,5 +124,12 @@ jobs:
             # Call the function, passing the current folder name as an argument
             echo "Triggering workflow for connector: $folder"
             gh workflow run 'Connector Ops CI - Publish Connectors' --ref ${{ github.ref_name }} -F connectors-options="--name=$folder"
+            airbyte-ci connectors --name="$folder" add-changelog --message="Update CDK version" --type=<change-type>
+            git add .
+            git commit -m "Update changelog for $folder"
+            git push
           done
+          
+          poetry install
+          poetry run auto-merge
         working-directory: ${{ github.workspace }} # Ensure gh command runs from the repo root
