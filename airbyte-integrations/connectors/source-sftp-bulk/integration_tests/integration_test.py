@@ -117,7 +117,7 @@ def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog
     )
     expected_record_data = {
         "bytes": 46_754_266,
-        "filename": file_name,
+        "file_name": file_name,
         "folder": f"/{file_folder}",
         "source_uri": f"sftp://{config_fixture_use_file_transfer['username']}@{config_fixture_use_file_transfer['host']}:{config_fixture_use_file_transfer['port']}/{source_file_relative_path}",
         "updated_at": ANY,
