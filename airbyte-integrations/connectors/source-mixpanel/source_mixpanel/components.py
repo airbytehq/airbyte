@@ -315,20 +315,23 @@ class ExportHttpRequester(MixpanelHttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
 
-        self._from_date_lookback_window = max(
+        _from_date_lookback_window = max(
             self.config.get("export_lookback_window", 0), self.config.get("attribution_window", 0) * 24 * 60 * 60
         )
-        self._to_date_lookback_window = 1
-        self._time_lookback_window = self.config.get("export_lookback_window", 0)
-
+        _to_date_lookback_window = 1
         if self.config.get("end_date"):
             self._validate_end_date()
             self._end_date = pendulum.parse(self.config.get("end_date")).date()
         else:
             self._end_date = (
                 pendulum.today(tz=self.config.get("project_timezone", self.default_project_timezone))
-                - timedelta(days=self._to_date_lookback_window)
+                - timedelta(days=_to_date_lookback_window)
             ).date()
+
+        if self.config.get("start_date"):
+            self._start_date = pendulum.parse(self.config.get("start_date")).date() - timedelta(seconds=_from_date_lookback_window)
+        else:
+            self._start_date = (pendulum.now() - timedelta(days=365)).date()
 
     def _validate_end_date(self) -> None:
         date_str = self.config.get("end_date")
@@ -346,15 +349,12 @@ class ExportHttpRequester(MixpanelHttpRequester):
     ) -> MutableMapping[str, Any]:
         request_params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        start_time = stream_slice.cursor_slice.get("start_time")
+        start_time = int(pendulum.parse(stream_slice.cursor_slice.get("start_time")).timestamp())
+        end_time = int(pendulum.parse(stream_slice.cursor_slice.get("end_time")).timestamp())
 
-        from_date_value = (pendulum.parse(start_time) - timedelta(seconds=self._from_date_lookback_window)).date()
-        to_date_value = self._end_date
-        time_value = int((pendulum.parse(start_time) - timedelta(seconds=self._time_lookback_window)).timestamp())
-
-        request_params["from_date"] = from_date_value.format("YYYY-MM-DD")
-        request_params["to_date"] = to_date_value.format("YYYY-MM-DD")
-        request_params["where"] = f'properties["$time"]>=datetime({time_value})'
+        request_params["from_date"] = self._start_date
+        request_params["to_date"] = self._end_date
+        request_params["where"] = f'properties["$time"]>=datetime({start_time}) and properties["$time"]<datetime({end_time})'
 
         return request_params
 

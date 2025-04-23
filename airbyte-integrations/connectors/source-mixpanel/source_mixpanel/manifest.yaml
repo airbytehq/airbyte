@@ -496,7 +496,7 @@ definitions:
     - type: AddFields
       fields:
         - path: ["time"]
-          value: "{{ format_datetime(record['time'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          value: "{{ format_datetime(record.get('time', record.get('properties', {}).get('time')), '%Y-%m-%dT%H:%M:%SZ') }}"
 
   export_schema_loader:
     type: DynamicSchemaLoader
@@ -721,15 +721,22 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: time
+      step: "P{{ config.get('date_window_size', 30) }}D"
+      cursor_granularity: PT1S
+      lookback_window:  "PT{{ config.get('export_lookback_window', 0) }}S"
       cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%d %H:%M:%S"
         - "%Y-%m-%d"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ format_datetime(config.start_date, '%Y-%m-%dT%H:%M:%SZ')  if config.get('start_date') else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.end_date, '%Y-%m-%dT%H:%M:%SZ') if config.get('end_date') else today_with_timezone(config.get('project_timezone', 'US/Pacific')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
     transformations:
       $ref: "#/definitions/export_transformations"
     schema_loader:

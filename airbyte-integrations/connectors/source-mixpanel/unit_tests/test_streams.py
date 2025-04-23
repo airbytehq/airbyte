@@ -792,15 +792,20 @@ def test_export_incremental_read(export_config, engage_response):
     )
     responses.add(responses.GET, url="https://mixpanel.com/api/query/events/properties/top", json={}, status=200)
 
-    start_from_date = (pendulum.parse(state_value) - timedelta(days=config["attribution_window"])).format("YYYY-MM-DD")
+    time_ts = int((pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp())
     request_params = [
-        ({"from_date": start_from_date, "to_date": "2022-06-01"}, {"properties": {"time": "2022-04-18T21:59:59Z"}}),
+        (
+            {"from_date": "2021-12-27", "to_date": "2022-06-01", "from_time": time_ts, "to_time": 1650758339},
+            {"properties": {"time": "2022-04-18T21:59:59Z"}},
+        ),
     ]
 
-    time_ts = (pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp()
-
     for params, json_data in request_params:
-        params.update({"where": f'properties["$time"]>=datetime({int(time_ts)})'})
+        params.update(
+            {"where": f'properties["$time"]>=datetime({params["from_time"]}) and properties["$time"]<datetime({params["to_time"]})'}
+        )
+        del params["from_time"]
+        del params["to_time"]
         responses.add(
             responses.GET, url="https://data.mixpanel.com/api/2.0/export?" + urllib.parse.urlencode(params), json=json_data, status=200
         )
@@ -858,7 +863,7 @@ def test_export_lookback_window(export_config):
 
     # Verify slice parameters
     expected_end = pendulum.parse("2021-07-10T00:00:00Z").format("YYYY-MM-DD")  # From config end_date
-    expected_start = (pendulum.parse(state_value) - timedelta(days=config["attribution_window"])).format(
+    expected_start = (pendulum.parse(config["start_date"]) - timedelta(days=config["attribution_window"])).format(
         "YYYY-MM-DD"
     )  # 16:28:00 - 2 hours due to lookback
 
@@ -868,14 +873,18 @@ def test_export_lookback_window(export_config):
         b'{"event": "Clicked Button", "properties": {"time": 1623864480, "distinct_id": "user2", "$insert_id": "insert2"}}'
     )
 
+    time_ts = int((pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp())
+
     request_params = [
-        ({"from_date": expected_start, "to_date": expected_end}, export_response_multiple),
+        ({"from_date": expected_start, "to_date": expected_end, "from_time": time_ts, "to_time": 1625875200}, export_response_multiple),
     ]
 
-    time_ts = (pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp()
-
     for params, body_data in request_params:
-        params.update({"where": f'properties["$time"]>=datetime({int(time_ts)})'})
+        params.update(
+            {"where": f'properties["$time"]>=datetime({params["from_time"]}) and properties["$time"]<datetime({params["to_time"]})'}
+        )
+        del params["from_time"]
+        del params["to_time"]
         responses.add(
             responses.GET, url="https://data.mixpanel.com/api/2.0/export?" + urllib.parse.urlencode(params), body=body_data, status=200
         )
