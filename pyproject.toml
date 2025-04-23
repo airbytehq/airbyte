@@ -5,7 +5,7 @@ description = "Airbyte monorepo root configuration"
 
 [tool.poe.tasks.connector]
 help = "Run a poe task in a connector's directory. Usage: poe connector <connector-name> <task> [args...]"
-shell = "cd airbyte-integrations/connectors/${connector} && poetry run ${connector} ${task_and_args}"
+shell = "cd airbyte-integrations/connectors/$1 && shift && poe \"$@\""
 args = [
   { name = "connector", positional = true, help = "Name of the connector (e.g., source-hardcoded-records)" },
   { name = "task_and_args", positional = true, multiple = true, help = "Task name and its arguments" }
