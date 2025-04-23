@@ -103,7 +103,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
 
     override suspend fun processBatch(batch: Batch): Batch = objectAccumulator.processBatch(batch)
 
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure != null) {
             log.info { "Sync failed, persisting destination state for next run" }
         } else if (stream.shouldBeTruncatedAtEndOfSync()) {
