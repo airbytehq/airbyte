@@ -70,6 +70,8 @@ jobs:
             sort | \
             uniq)
           
+          echo "Modified connector folders: $connector_folders"
+          
           echo "modified_connectors=${connector_folders}" >> $GITHUB_OUTPUT
 
           for folder in $connector_folders; do
