@@ -1171,8 +1171,7 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     @property
     def url(self):
-        object_type_id = self.fully_qualified_name or self.entity
-        return f"/crm/v3/objects/{object_type_id}/search" if self.state else f"/crm/v3/objects/{object_type_id}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -2369,6 +2368,11 @@ class CustomObject(CRMSearchStream, ABC):
         self.schema = schema
         self.fully_qualified_name = fully_qualified_name
         self.custom_properties = custom_properties
+
+    @property
+    def url(self):
+        object_type_id = self.fully_qualified_name or f"p_{self.entity}"
+        return f"/crm/v3/objects/{object_type_id}/search" if self.state else f"/crm/v3/objects/{object_type_id}"
 
     @property
     def name(self) -> str:

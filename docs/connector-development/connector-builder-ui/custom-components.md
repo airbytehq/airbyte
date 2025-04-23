@@ -59,10 +59,12 @@ If you deploy Airbyte with abctl, follow the steps below to update your values a
    ```yaml title="values.yaml"
    workload-launcher:
      extraEnv:
-       AIRBYTE_ENABLE_UNSAFE_CODE: true
+       - name: AIRBYTE_ENABLE_UNSAFE_CODE
+         value: "true"
    connector-builder-server:
      extraEnv:
-       AIRBYTE_ENABLE_UNSAFE_CODE: true
+       - name: AIRBYTE_ENABLE_UNSAFE_CODE
+         value: "true"
    ```
 
 2. Use this file during deployment with the abctl command:
@@ -80,10 +82,12 @@ If you're deploying Airbyte using public Helm charts without abctl, follow the s
    ```yaml title="values.yaml"
    workload-launcher:
      extraEnv:
-       AIRBYTE_ENABLE_UNSAFE_CODE: true
+       - name: AIRBYTE_ENABLE_UNSAFE_CODE
+         value: "true"
    connector-builder-server:
      extraEnv:
-       AIRBYTE_ENABLE_UNSAFE_CODE: true
+       - name: AIRBYTE_ENABLE_UNSAFE_CODE
+         value: "true"
    ```
 
 2. Apply the configuration during Helm installation or upgrade:
