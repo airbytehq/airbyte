@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       # Output the matrix config as a JSON string
-      matrix: ${{ steps.export-connection-modified.outputs.modified_connectors }}
+      modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
