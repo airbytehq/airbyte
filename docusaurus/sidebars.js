@@ -23,7 +23,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       let contentTitle = filename;
-      
+
       // Get the first header of the markdown document
       try {
         const filePath = path.join(dir, `${filename}.md`);
@@ -313,7 +313,7 @@ const buildAConnector = {
         },
       ],
     },
-    "connector-development/developing-connector-locally",
+    "connector-development/local-connector-development",
     {
       type: "category",
       label: "Testing Connectors",
