@@ -100,7 +100,8 @@ jobs:
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
-      connector_name: ${{modified_connectors}}
+      matrix:
+        connector_name: ${{modified_connectors}}
     with:
       connectors-options: "--name=${{ matrix.connector_name }}"
       ref: ${{ github.ref_name }}
