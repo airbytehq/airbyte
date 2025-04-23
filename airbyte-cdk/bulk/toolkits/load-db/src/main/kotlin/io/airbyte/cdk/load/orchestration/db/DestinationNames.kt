@@ -20,9 +20,9 @@ data class TableNames(
         }
     }
 
-    fun conflictsWith(other: TableNames) =
-        this.rawTableName.conflictsWith(other.rawTableName) ||
-            this.finalTableName.conflictsWith(other.finalTableName)
+    fun hasNamingConflictWith(other: TableNames) =
+        this.rawTableName.hasNamingConflictWith(other.rawTableName) ||
+            this.finalTableName.hasNamingConflictWith(other.finalTableName)
 
     fun prettyPrint() =
         "Raw table: ${rawTableName?.prettyPrint()}; Final table: ${finalTableName?.prettyPrint()}"
@@ -40,7 +40,7 @@ data class TableName(val namespace: String, val name: String) {
         "$quote$namespace$quote.$quote$name$suffix$quote"
 }
 
-fun TableName?.conflictsWith(other: TableName?): Boolean {
+fun TableName?.hasNamingConflictWith(other: TableName?): Boolean {
     if (this == null || other == null) {
         return false
     }
