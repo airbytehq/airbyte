@@ -71,7 +71,7 @@ definitions:
           request_parameters:
             q: accounts
             count: "500"
-            accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
+            accounts: "urn:li:sponsoredAccount:{{ stream_slice.get('account_id') }}"
           request_headers:
             Linkedin-Version: "202502"
           error_handlers:
@@ -527,7 +527,7 @@ definitions:
         - end_date
         - sponsoredCampaign
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_campaign_analytics
         requester:
@@ -541,9 +541,9 @@ definitions:
             q: analytics
             pivot: "(value:CAMPAIGN)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -555,20 +555,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "CAMPAIGN"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -584,8 +570,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -597,6 +582,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "CAMPAIGN"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -608,7 +606,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_creative_analytics
         requester:
@@ -622,9 +620,9 @@ definitions:
             q: analytics
             pivot: "(value:CREATIVE)"
             timeGranularity: "(value:DAILY)"
-            creatives: "List(urn%3Ali%3AsponsoredCreative%3A{{stream_slice.get('creative_id').split(':')[-1]}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            creatives: "List(urn%3Ali%3AsponsoredCreative%3A{{ stream_partition.get('creative_id').split(':')[-1] }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -636,20 +634,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCreative
-                    value: "{{stream_slice.get('creative_id').split(':')[-1]}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "CREATIVE"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -665,8 +649,7 @@ definitions:
                 stream:
                   $ref: "#/definitions/streams/creatives"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -678,6 +661,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCreative
+              value: "{{ stream_partition.get('creative_id').split(':')[-1] }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "CREATIVE"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -689,7 +685,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_impression_device_analytics
         requester:
@@ -703,9 +699,9 @@ definitions:
             q: analytics
             pivot: "(value:IMPRESSION_DEVICE_TYPE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -717,20 +713,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "IMPRESSION_DEVICE_TYPE"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -746,8 +728,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -759,6 +740,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "IMPRESSION_DEVICE_TYPE"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -770,7 +764,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_company_size_analytics
         requester:
@@ -784,9 +778,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_COMPANY_SIZE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -798,20 +792,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_COMPANY_SIZE"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -827,8 +807,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -840,6 +819,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_COMPANY_SIZE"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -851,7 +843,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_country_analytics
         requester:
@@ -865,9 +857,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_COUNTRY_V2)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -879,20 +871,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_COUNTRY_V2"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -908,8 +886,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -921,6 +898,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_COUNTRY_V2"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -932,7 +922,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_job_function_analytics
         requester:
@@ -946,9 +936,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_JOB_FUNCTION)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -960,20 +950,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_JOB_FUNCTION"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -989,8 +965,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1002,6 +977,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_JOB_FUNCTION"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1013,7 +1001,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_job_title_analytics
         requester:
@@ -1027,9 +1015,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_JOB_TITLE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -1041,20 +1029,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_JOB_TITLE"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -1070,8 +1044,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1083,6 +1056,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_JOB_TITLE"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1094,7 +1080,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_industry_analytics
         requester:
@@ -1108,9 +1094,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_INDUSTRY)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -1122,20 +1108,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_INDUSTRY"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -1151,8 +1123,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1164,6 +1135,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_INDUSTRY"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1175,7 +1159,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_seniority_analytics
         requester:
@@ -1189,9 +1173,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_SENIORITY)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -1203,20 +1187,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_SENIORITY"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -1232,8 +1202,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1245,6 +1214,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_SENIORITY"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1256,7 +1238,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_region_analytics
         requester:
@@ -1270,9 +1252,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_REGION_V2)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -1284,20 +1266,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_REGION_V2"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -1313,8 +1281,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1326,6 +1293,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_REGION_V2"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1337,7 +1317,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: ad_member_company_analytics
         requester:
@@ -1351,9 +1331,9 @@ definitions:
             q: analytics
             pivot: "(value:MEMBER_COMPANY)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -1365,20 +1345,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "MEMBER_COMPANY"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -1394,8 +1360,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1407,6 +1372,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "MEMBER_COMPANY"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1419,7 +1397,7 @@ definitions:
         - end_date
         - sponsoredCampaign
       retriever:
-        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        type: SimpleRetriever
         $parameters:
           name: custom_analytics_report
         requester:
@@ -1433,9 +1411,9 @@ definitions:
             q: analytics
             pivot: "DYNAMIC_FIELD"
             timeGranularity: "DYNAMIC_FIELD"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
@@ -1447,20 +1425,6 @@ definitions:
                 factor: 5
         record_selector:
           type: RecordSelector
-          $parameters:
-            transformations:
-              - type: AddFields
-                fields:
-                  - path:
-                      - sponsoredCampaign
-                    value: "{{stream_slice.get('campaign_id')}}"
-                    value_type: string
-              - type: AddFields
-                fields:
-                  - path:
-                      - pivot
-                    value: "DYNAMIC_FIELD"
-                    value_type: string
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
@@ -1476,8 +1440,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        type: DatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1489,6 +1452,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "DYNAMIC_FIELD"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1515,6 +1491,120 @@ definitions:
     authenticators:
       oAuth2.0: "#/definitions/oauth_authenticator"
       access_token: "#/definitions/bearer_authenticator"
+
+  # Analytics streams require including which properties to query for in the API request. They also only allow
+  # for a maximum of 20 fields per request, so we use PropertyChunking to make multiple requests to assemble
+  # the entire record
+  analytics_query_properties:
+    type: QueryProperties
+    property_list:
+      - actionClicks
+      - adUnitClicks
+      - approximateMemberReach
+      - cardClicks
+      - cardImpressions
+      - clicks
+      - commentLikes
+      - comments
+      - companyPageClicks
+      - conversionValueInLocalCurrency
+      - costInLocalCurrency
+      - costInUsd
+      - dateRange
+      - documentCompletions
+      - documentFirstQuartileCompletions
+      - documentMidpointCompletions
+      - documentThirdQuartileCompletions
+      - downloadClicks
+      - externalWebsiteConversions
+      - externalWebsitePostClickConversions
+      - externalWebsitePostViewConversions
+      - follows
+      - fullScreenPlays
+      - impressions
+      - jobApplications
+      - jobApplyClicks
+      - landingPageClicks
+      - leadGenerationMailContactInfoShares
+      - leadGenerationMailInterestedClicks
+      - likes
+      - oneClickLeadFormOpens
+      - oneClickLeads
+      - opens
+      - otherEngagements
+      - pivotValues
+      - postClickJobApplications
+      - postClickJobApplyClicks
+      - postClickRegistrations
+      - postViewJobApplications
+      - postViewJobApplyClicks
+      - postViewRegistrations
+      - reactions
+      - registrations
+      - sends
+      - shares
+      - talentLeads
+      - textUrlClicks
+      - totalEngagements
+      - validWorkEmailLeads
+      - videoCompletions
+      - videoFirstQuartileCompletions
+      - videoMidpointCompletions
+      - videoStarts
+      - videoThirdQuartileCompletions
+      - videoViews
+      - viralCardClicks
+      - viralCardImpressions
+      - viralClicks
+      - viralCommentLikes
+      - viralComments
+      - viralCompanyPageClicks
+      - viralDocumentCompletions
+      - viralDocumentFirstQuartileCompletions
+      - viralDocumentMidpointCompletions
+      - viralDocumentThirdQuartileCompletions
+      - viralDownloadClicks
+      - viralExternalWebsiteConversions
+      - viralExternalWebsitePostClickConversions
+      - viralExternalWebsitePostViewConversions
+      - viralFollows
+      - viralFullScreenPlays
+      - viralImpressions
+      - viralJobApplications
+      - viralJobApplyClicks
+      - viralLandingPageClicks
+      - viralLikes
+      - viralOneClickLeadFormOpens
+      - viralOneClickLeads
+      - viralOtherEngagements
+      - viralPostClickJobApplications
+      - viralPostClickJobApplyClicks
+      - viralPostClickRegistrations
+      - viralPostViewJobApplications
+      - viralPostViewJobApplyClicks
+      - viralPostViewRegistrations
+      - viralReactions
+      - viralRegistrations
+      - viralShares
+      - viralTotalEngagements
+      - viralVideoCompletions
+      - viralVideoFirstQuartileCompletions
+      - viralVideoMidpointCompletions
+      - viralVideoStarts
+      - viralVideoThirdQuartileCompletions
+      - viralVideoViews
+    # dateRange and pivotValue fields are used to merge records back together so they must be in every API request
+    always_include_properties:
+      - dateRange
+      - pivotValues
+    property_chunking:
+      type: PropertyChunking
+      property_limit_type: property_count
+      property_limit: 18
+      record_merge_strategy:
+        type: GroupByKeyMergeStrategy
+        key: ["end_date", "string_of_pivot_values"]
+
 streams:
   - $ref: "#/definitions/streams/accounts"
   - $ref: "#/definitions/streams/account_users"
@@ -1564,9 +1654,9 @@ dynamic_streams:
               "record_selector",
               "**",
               "transformations",
-              1,
+              "1",
               "fields",
-              0,
+              "0",
               "value",
             ]
           value: "{{components_values['pivot_by']}}"

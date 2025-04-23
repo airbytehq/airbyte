@@ -584,6 +584,7 @@ definitions:
                 $ref: "#/definitions/streams/conversations"
               parent_key: id
               partition_field: id
+              incremental_dependency: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -596,6 +597,7 @@ definitions:
         cursor_datetime_formats:
           - "%s"
         is_client_side_incremental: true
+        global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
@@ -606,6 +608,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversation_parts"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.SubstreamStateMigration
     company_segments:
       description: >-
         https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies
@@ -662,10 +667,14 @@ definitions:
         cursor_datetime_formats:
           - "%s"
         is_client_side_incremental: true
+        global_substream_cursor: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/company_segments"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.SubstreamStateMigration
     tickets:
       type: DeclarativeStream
       description: >-

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.command
 
+import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -57,7 +58,10 @@ class DestinationCatalogTest {
                     ),
                 )
 
-        val streamFactory = DestinationStreamFactory()
+        val streamFactory =
+            DestinationStreamFactory(
+                JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT)
+            )
         val catalogFactory = DefaultDestinationCatalogFactory(originalCatalog, streamFactory)
         val destinationCatalog = catalogFactory.make()
         assertEquals(originalCatalog, destinationCatalog.asProtocolObject())

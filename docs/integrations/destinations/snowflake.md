@@ -171,7 +171,7 @@ username/password or key pair authentication:
 
     Alternatively, use this command to generate an encrypted private key file:
 
-      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8`
+      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v2 aes-256-cbc -out rsa_key.p8`
 
     Once you have your private key, you need to generate a matching public key.
     You can do so with the following command:
@@ -279,9 +279,10 @@ desired namespace.
   <summary>Expand to review</summary>
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
-| :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.15.4 | 2025-01-10 | [51503](https://github.com/airbytehq/airbyte/pull/51503) | Use a non root base image |
-| 3.15.3 | 2024-12-18 | [49913](https://github.com/airbytehq/airbyte/pull/49913) | Use a base image: airbyte/java-connector-base:1.0.0 |
+|:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.15.5          | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                |
+| 3.15.4          | 2025-01-10 | [51503](https://github.com/airbytehq/airbyte/pull/51503)   | Use a non root base image                                                                                                                                                        |
+| 3.15.3          | 2024-12-18 | [49913](https://github.com/airbytehq/airbyte/pull/49913)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                                              |
 | 3.15.2          | 2024-10-31 | [\#48070](https://github.com/airbytehq/airbyte/pull/48070) | upgrade JDBC driver to 3.20.0                                                                                                                                                    |
 | 3.15.1          | 2024-10-20 | [\#46989](https://github.com/airbytehq/airbyte/pull/46989) | add snowflake transaction wrapper for rollback support                                                                                                                           |
 | 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437) | upgrade all dependencies                                                                                                                                                         |

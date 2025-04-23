@@ -91,6 +91,11 @@ Required properties are 'Queue URL', 'AWS Region' and 'Delete Messages After Rea
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 1.0.12 | 2025-04-19 | [58293](https://github.com/airbytehq/airbyte/pull/58293) | Update dependencies |
+| 1.0.11 | 2025-04-12 | [57609](https://github.com/airbytehq/airbyte/pull/57609) | Update dependencies |
+| 1.0.10 | 2025-04-05 | [57146](https://github.com/airbytehq/airbyte/pull/57146) | Update dependencies |
+| 1.0.9 | 2025-03-29 | [56614](https://github.com/airbytehq/airbyte/pull/56614) | Update dependencies |
+| 1.0.8 | 2025-03-22 | [56083](https://github.com/airbytehq/airbyte/pull/56083) | Update dependencies |
 | 1.0.7 | 2025-03-08 | [54832](https://github.com/airbytehq/airbyte/pull/54832) | Update dependencies |
 | 1.0.6 | 2025-03-01 | [54738](https://github.com/airbytehq/airbyte/pull/54738) | fix: Update source-amazon-sqs to use nltk 3.9.1 or higher |
 | 1.0.5 | 2025-02-22 | [54271](https://github.com/airbytehq/airbyte/pull/54271) | Update dependencies |

@@ -7,7 +7,7 @@ from unittest.mock import patch
 import freezegun
 import pendulum
 
-from airbyte_cdk.models import AirbyteStateBlob, SyncMode
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStreamStatus, SyncMode
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -26,7 +26,7 @@ _NOW = datetime.now(timezone.utc)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
-class TestPostsCommentsVotesStreamFullRefresh(TestCase):
+class TestPostsCommentVotesStreamFullRefresh(TestCase):
     @property
     def _config(self):
         return (
@@ -95,13 +95,11 @@ class TestPostsCommentsVotesStreamFullRefresh(TestCase):
 
         output = read_stream("post_comment_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
-
-        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert output.get_stream_statuses("post_comment_votes")[-1] == AirbyteStreamStatus.INCOMPLETE
         assert any(
             [
-                "Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-                in error
-                for error in info_logs
+                "failed with status code '403' and error message" in error
+                for error in get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
             ]
         )
 
@@ -131,13 +129,11 @@ class TestPostsCommentsVotesStreamFullRefresh(TestCase):
 
         output = read_stream("post_comment_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
-
-        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert output.get_stream_statuses("post_comment_votes")[-1] == AirbyteStreamStatus.INCOMPLETE
         assert any(
             [
-                "Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-                in error
-                for error in info_logs
+                "failed with status code '404' and error message" in error
+                for error in get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
             ]
         )
 
@@ -175,7 +171,7 @@ class TestPostsCommentsVotesStreamFullRefresh(TestCase):
 
 
 @freezegun.freeze_time(_NOW.isoformat())
-class TestPostsCommentsStreamIncremental(TestCase):
+class TestPostsCommentVotesStreamIncremental(TestCase):
     @property
     def _config(self):
         return (
@@ -197,13 +193,21 @@ class TestPostsCommentsStreamIncremental(TestCase):
         api_token_authenticator = self._get_authenticator(self._config)
         _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
-        posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
+        post_updated_at = string_to_datetime(self._config["start_date"]).add(minutes=5)
+        posts_record_builder = given_posts(
+            http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator, post_updated_at
+        )
         post = posts_record_builder.build()
 
-        posts_comments_record_builder = given_post_comments(
-            http_mocker, string_to_datetime(self._config["start_date"]), post["id"], api_token_authenticator
+        post_comments_updated_at = string_to_datetime(self._config["start_date"]).add(minutes=10)
+        post_comments_record_builder = given_post_comments(
+            http_mocker,
+            string_to_datetime(self._config["start_date"]),
+            post["id"],
+            api_token_authenticator,
+            post_comments_updated_at,
         )
-        post_comment = posts_comments_record_builder.build()
+        post_comment = post_comments_record_builder.build()
 
         post_comment_votes_record_builder = PostCommentVotesRecordBuilder.post_commetn_votes_record()
         post_comment_votes = post_comment_votes_record_builder.build()
@@ -222,7 +226,37 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": post_comment_votes["updated_at"]})
+        post_comment_votes_state_value = str(string_to_datetime(post_comment_votes["updated_at"]).int_timestamp)
+        assert output.most_recent_state.stream_state == AirbyteStateBlob(
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {
+                            "id": {"comment_id": post_comment["id"], "post_id": post["id"]},
+                            "parent_slice": {"parent_slice": {}, "post_id": post["id"]},
+                        },
+                        "cursor": {"updated_at": post_comment_votes_state_value},
+                    }
+                ],
+                "state": {"updated_at": post_comment_votes_state_value},
+                "lookback_window": 0,
+                "parent_state": {
+                    "post_comments": {
+                        "use_global_cursor": False,
+                        "state": {"updated_at": datetime_to_string(post_comments_updated_at)},
+                        "lookback_window": 0,
+                        "states": [
+                            {
+                                "partition": {"parent_slice": {}, "post_id": post["id"]},
+                                "cursor": {"updated_at": datetime_to_string(post_comments_updated_at)},
+                            }
+                        ],
+                        "parent_state": {"posts": {"updated_at": datetime_to_string(post_updated_at)}},
+                    }
+                },
+            }
+        )
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker):
@@ -237,10 +271,18 @@ class TestPostsCommentsStreamIncremental(TestCase):
 
         state = {"updated_at": datetime_to_string(state_start_date)}
 
-        posts_record_builder = given_posts(http_mocker, state_start_date, api_token_authenticator)
+        post_updated_at = state_start_date.add(minutes=5)
+        posts_record_builder = given_posts(http_mocker, state_start_date, api_token_authenticator, post_updated_at)
         post = posts_record_builder.build()
 
-        post_comments_record_builder = given_post_comments(http_mocker, state_start_date, post["id"], api_token_authenticator)
+        post_comments_updated_at = state_start_date.add(minutes=10)
+        post_comments_record_builder = given_post_comments(
+            http_mocker,
+            state_start_date,
+            post["id"],
+            api_token_authenticator,
+            post_comments_updated_at,
+        )
         post_comment = post_comments_record_builder.build()
 
         post_comment_votes_first_record_builder = PostCommentVotesRecordBuilder.post_commetn_votes_record().with_field(
@@ -253,7 +295,11 @@ class TestPostsCommentsStreamIncremental(TestCase):
             .with_start_time(datetime_to_string(state_start_date))
             .with_page_size(100)
             .build(),
-            PostCommentVotesResponseBuilder.post_comment_votes_response()
+            PostCommentVotesResponseBuilder.post_comment_votes_response(
+                PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+                .with_page_size(100)
+                .build()
+            )
             .with_pagination()
             .with_record(post_comment_votes_first_record_builder)
             .build(),
@@ -280,4 +326,34 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 2
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": datetime_to_string(last_page_record_updated_at)})
+        post_comment_votes_state_value = str(string_to_datetime(post_comment_votes_last_record_builder.build()["updated_at"]).int_timestamp)
+        assert output.most_recent_state.stream_state == AirbyteStateBlob(
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {
+                            "id": {"comment_id": post_comment["id"], "post_id": post["id"]},
+                            "parent_slice": {"parent_slice": {}, "post_id": post["id"]},
+                        },
+                        "cursor": {"updated_at": post_comment_votes_state_value},
+                    }
+                ],
+                "state": {"updated_at": post_comment_votes_state_value},
+                "lookback_window": 0,
+                "parent_state": {
+                    "post_comments": {
+                        "use_global_cursor": False,
+                        "state": {"updated_at": datetime_to_string(post_comments_updated_at)},
+                        "lookback_window": 0,
+                        "states": [
+                            {
+                                "partition": {"parent_slice": {}, "post_id": post["id"]},
+                                "cursor": {"updated_at": datetime_to_string(post_comments_updated_at)},
+                            }
+                        ],
+                        "parent_state": {"posts": {"updated_at": datetime_to_string(post_updated_at)}},
+                    }
+                },
+            }
+        )

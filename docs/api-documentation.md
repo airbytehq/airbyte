@@ -27,6 +27,6 @@ Only for OSS users, to access the API in the OSS edition, you need to use the `/
 
 ## Configuration API (Deprecated)
 
-The configuration API is now deprecated and no longer supported. It is an internal API that is designed for communications between different Airbyte components ratther than managing your Airbyte workspace.
+The configuration API is now deprecated and no longer supported. It is an internal API that is designed for communications between different Airbyte components rather than managing your Airbyte workspace.
 
 Users utilize the Config API at their own risk. This API is utilized internally by the Airbyte Engineering team and may be modified in the future if the need arises.

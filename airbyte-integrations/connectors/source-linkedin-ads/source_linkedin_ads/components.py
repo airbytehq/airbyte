@@ -1,44 +1,30 @@
 #
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 
-import datetime
-from collections import defaultdict
-from copy import deepcopy
-from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from dataclasses import dataclass
+from typing import Any, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlencode
 
 import pendulum
 import requests
-from isodate import Duration, parse_duration
 from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.transformations import AddFields
-from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 
-from .utils import ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE, transform_data
+from .utils import transform_data
 
 
 class SafeHttpClient(HttpClient):
@@ -90,6 +76,7 @@ class SafeEncodeHttpRequester(HttpRequester):
     request_headers: Optional[RequestInput] = None
     request_parameters: Optional[RequestInput] = None
     request_body_data: Optional[RequestInput] = None
+    query_properties_key: Optional[str] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         """
@@ -101,6 +88,7 @@ class SafeEncodeHttpRequester(HttpRequester):
             request_body_json=self.request_body_json,
             request_headers=self.request_headers,
             request_parameters=self.request_parameters,
+            query_properties_key=self.query_properties_key,
             config=self.config,
             parameters=parameters or {},
         )
@@ -121,71 +109,6 @@ class SafeEncodeHttpRequester(HttpRequester):
             disable_retries=self.disable_retries,
             message_repository=self.message_repository,
         )
-
-
-@dataclass
-class AnalyticsDatetimeBasedCursor(DatetimeBasedCursor):
-    """
-    A cursor for LinkedIn Ads that chunks requests into smaller groups due to the API's limitation
-    of a maximum of 20 fields per request. This class splits the date range into slices and ensures
-    each chunk includes necessary fields like `dateRange`.
-    """
-
-    @staticmethod
-    def chunk_analytics_fields(
-        fields: List = ANALYTICS_FIELDS_V2,
-        fields_chunk_size: int = FIELDS_CHUNK_SIZE,
-    ) -> Iterable[List]:
-        """
-        Chunks the list of available fields into smaller chunks, ensuring required fields are included.
-        """
-
-        # Make chunks
-        chunks = list((fields[f : f + fields_chunk_size] for f in range(0, len(fields), fields_chunk_size)))
-
-        # Make sure base_fields are within the chunks
-        for chunk in chunks:
-            if "dateRange" not in chunk:
-                chunk.append("dateRange")
-            if "pivotValues" not in chunk:
-                chunk.append("pivotValues")
-        yield from chunks
-
-    def _partition_daterange(
-        self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]
-    ) -> List[StreamSlice]:
-        """
-        Partitions a date range into slices, applying field chunking to ensure API constraints are respected.
-        """
-        start_field = self._partition_field_start.eval(self.config)
-        end_field = self._partition_field_end.eval(self.config)
-        dates = []
-        while start <= end:
-            next_start = self._evaluate_next_start_date_safely(start, step)
-            end_date = self._get_date(next_start - self._cursor_granularity, end, min)
-            date_slice_with_fields: List = []
-            for fields_set in self.chunk_analytics_fields():
-                date_range = {
-                    "start.day": start.day,
-                    "start.month": start.month,
-                    "start.year": start.year,
-                    "end.day": end_date.day,
-                    "end.month": end_date.month,
-                    "end.year": end_date.year,
-                }
-
-                fields = ",".join(fields_set)
-                date_slice_with_fields.append(
-                    {
-                        start_field: self._format_datetime(start),
-                        end_field: self._format_datetime(end_date),
-                        "fields": fields,
-                        **date_range,
-                    }
-                )
-            dates.append(StreamSlice(partition={}, cursor_slice={"field_date_chunks": date_slice_with_fields}))
-            start = next_start
-        return dates
 
 
 @dataclass
@@ -210,91 +133,6 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         """
         for record in transform_data(response.json().get("elements")):
             yield self._date_time_to_rfc3339(record)
-
-
-@dataclass
-class LinkedInAdsCustomRetriever(SimpleRetriever):
-    """
-    A custom retriever for LinkedIn Ads that reads and merges records for each field date chunk,
-    ensuring that records are appropriately grouped by date slices.
-    """
-
-    partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = field(
-        default_factory=lambda: SinglePartitionRouter(parameters={})
-    )
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        """
-        Initializes the cursor and partition router for the retriever.
-        """
-        super().__post_init__(parameters)
-        self.cursor = self._initialize_cursor()
-
-    def _initialize_cursor(self):
-        """
-        Initializes the cursor for the retriever, supporting multiple partition routers.
-        """
-        partition_router = (
-            CartesianProductStreamSlicer(self.partition_router, parameters={})
-            if isinstance(self.partition_router, list)
-            else self.partition_router
-        )
-
-        return PerPartitionCursor(
-            cursor_factory=CursorFactory(
-                lambda: deepcopy(self.stream_slicer),
-            ),
-            partition_router=partition_router,
-        )
-
-    def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
-        """
-        Generates stream slices based on the cursor's partitioning.
-        """
-        return self.cursor.stream_slices()
-
-    def read_records(
-        self,
-        records_schema: Mapping[str, Any],
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> Iterable[StreamData]:
-        """
-        Reads and merges records for each field date chunk in the stream slice.
-        """
-        merged_records = defaultdict(dict)
-
-        self._apply_transformations()
-
-        for field_slice in stream_slice.cursor_slice.get("field_date_chunks", []):
-            updated_slice = StreamSlice(partition=stream_slice.partition, cursor_slice={**field_slice})
-            for record in super().read_records(records_schema, stream_slice=updated_slice):
-                merged_records[f"{record['end_date']}-{record['pivotValues']}"].update(record)
-
-        yield from merged_records.values()
-
-    def _apply_transformations(self):
-        """
-        Applies transformations to the records based on the configured record selector.
-        """
-        transformations = [
-            AddFields(
-                fields=[
-                    AddedFieldDefinition(
-                        path=field["path"],
-                        value=InterpolatedString(string=field["value"], default=field["value"], parameters={}),
-                        value_type=str,
-                        parameters={},
-                    )
-                    for field in transformation.get("fields", [])
-                ],
-                parameters={},
-            )
-            for transformation in self.record_selector.transformations
-            if isinstance(transformation, dict)
-        ]
-
-        if transformations:
-            self.record_selector.transformations = transformations
 
 
 @dataclass

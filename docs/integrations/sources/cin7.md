@@ -39,6 +39,13 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.2 | 2025-04-19 | [58350](https://github.com/airbytehq/airbyte/pull/58350) | Update dependencies |
+| 0.2.1 | 2025-04-12 | [57816](https://github.com/airbytehq/airbyte/pull/57816) | Update dependencies |
+| 0.2.0 | 2025-04-07 | [56931](https://github.com/airbytehq/airbyte/pull/56931) | removed incremental from unordered streams |
+| 0.1.2 | 2025-04-05 | [57183](https://github.com/airbytehq/airbyte/pull/57183) | Update dependencies |
+| 0.1.1 | 2025-03-29 | [56590](https://github.com/airbytehq/airbyte/pull/56590) | Update dependencies |
+| 0.1.0 | 2025-03-27 | [56429](https://github.com/airbytehq/airbyte/pull/56429) | refactor connector, add backoff and fix endpoints |
+| 0.0.16 | 2025-03-22 | [56121](https://github.com/airbytehq/airbyte/pull/56121) | Update dependencies |
 | 0.0.15 | 2025-03-08 | [55421](https://github.com/airbytehq/airbyte/pull/55421) | Update dependencies |
 | 0.0.14 | 2025-03-01 | [54886](https://github.com/airbytehq/airbyte/pull/54886) | Update dependencies |
 | 0.0.13 | 2025-02-22 | [54257](https://github.com/airbytehq/airbyte/pull/54257) | Update dependencies |

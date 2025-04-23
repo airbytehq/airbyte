@@ -19,29 +19,65 @@
       },
       "credentials": {
         "type": "object",
-        "title": "Authentication via Google (OAuth)",
-        "description": "Google API Credentials for connecting to Google Sheets and Google Drive APIs",
-        "required": ["client_id", "client_secret", "refresh_token"],
-        "properties": {
-          "client_id": {
-            "title": "Client ID",
-            "type": "string",
-            "description": "The Client ID of your Google Sheets developer application.",
-            "airbyte_secret": true
+        "title": "Authentication",
+        "description": "Authentication method to access Google Sheets",
+        "oneOf": [
+          {
+            "title": "Authenticate via Google (OAuth)",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2.0",
+                "default": "oauth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your Google Sheets developer application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The Client Secret of your Google Sheets developer application.",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "The token for obtaining new access token.",
+                "airbyte_secret": true
+              }
+            }
           },
-          "client_secret": {
-            "title": "Client Secret",
-            "type": "string",
-            "description": "The Client Secret of your Google Sheets developer application.",
-            "airbyte_secret": true
-          },
-          "refresh_token": {
-            "title": "Refresh Token",
-            "type": "string",
-            "description": "The token for obtaining new access token.",
-            "airbyte_secret": true
+          {
+            "title": "Service Account Key Authentication",
+            "type": "object",
+            "required": ["auth_type", "service_account_info"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "service",
+                "default": "service",
+                "order": 0
+              },
+              "service_account_info": {
+                "title": "Service Account Information",
+                "type": "string",
+                "description": "Enter your service account key in JSON format. See the <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#service-account'>docs</a> for more information on how to generate this key.",
+                "airbyte_secret": true
+              }
+            }
           }
-        }
+        ]
       }
     }
   },

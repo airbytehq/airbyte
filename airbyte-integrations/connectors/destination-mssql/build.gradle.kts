@@ -9,7 +9,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-azure-blob-storage")
+    toolkits = listOf("load-azure-blob-storage", "load-db")
     cdk = "local"
 }
 

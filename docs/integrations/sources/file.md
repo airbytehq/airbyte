@@ -298,6 +298,10 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.29 | 2025-04-19 | [57801](https://github.com/airbytehq/airbyte/pull/57801) | Update dependencies |
+| 0.5.28 | 2025-04-05 | [57281](https://github.com/airbytehq/airbyte/pull/57281) | Update dependencies |
+| 0.5.27 | 2025-03-29 | [56485](https://github.com/airbytehq/airbyte/pull/56485) | Update dependencies |
+| 0.5.26 | 2025-03-22 | [55921](https://github.com/airbytehq/airbyte/pull/55921) | Update dependencies |
 | 0.5.25 | 2025-03-08 | [55282](https://github.com/airbytehq/airbyte/pull/55282) | Update dependencies |
 | 0.5.24 | 2025-03-06 | [55205](https://github.com/airbytehq/airbyte/pull/55205) | Fix client error when reading zip files with non-canonical file extensions (e.g. .Zip, .ZIP) |
 | 0.5.23 | 2025-02-22 | [54387](https://github.com/airbytehq/airbyte/pull/54387) | Update dependencies |

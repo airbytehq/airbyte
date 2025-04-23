@@ -87,6 +87,11 @@ Senseforce utilizes an undocumented rate limit which - under normal use - should
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.23 | 2025-04-19 | [58378](https://github.com/airbytehq/airbyte/pull/58378) | Update dependencies |
+| 0.2.22 | 2025-04-12 | [58005](https://github.com/airbytehq/airbyte/pull/58005) | Update dependencies |
+| 0.2.21 | 2025-04-05 | [57476](https://github.com/airbytehq/airbyte/pull/57476) | Update dependencies |
+| 0.2.20 | 2025-03-29 | [56906](https://github.com/airbytehq/airbyte/pull/56906) | Update dependencies |
+| 0.2.19 | 2025-03-22 | [56323](https://github.com/airbytehq/airbyte/pull/56323) | Update dependencies |
 | 0.2.18 | 2025-03-08 | [55611](https://github.com/airbytehq/airbyte/pull/55611) | Update dependencies |
 | 0.2.17 | 2025-03-01 | [55006](https://github.com/airbytehq/airbyte/pull/55006) | Update dependencies |
 | 0.2.16 | 2025-02-23 | [54562](https://github.com/airbytehq/airbyte/pull/54562) | Update dependencies |

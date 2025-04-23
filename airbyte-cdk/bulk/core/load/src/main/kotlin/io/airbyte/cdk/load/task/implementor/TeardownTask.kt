@@ -41,6 +41,7 @@ class DefaultTeardownTask(
             return
         }
 
+        log.info { "All streams processed successfully, awaiting all checkpoints flushed" }
         checkpointManager.awaitAllCheckpointsFlushed()
         log.info { "Starting teardown task" }
         destination.teardown()

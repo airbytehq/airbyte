@@ -31,6 +31,8 @@ acceptance_tests:
             bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
           - name: "ActiveScratchOrgShare"
             bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
+          - name: "ActiveFeatureLicenseMetric"
+            bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
           - name: "Describe"
             bypass_reason: "Data is not permanent"
           - name: "LeadHistory"

@@ -64,6 +64,10 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.1.29 | 2025-04-19 | [57684](https://github.com/airbytehq/airbyte/pull/57684) | Update dependencies |
+| 0.1.28 | 2025-04-05 | [57100](https://github.com/airbytehq/airbyte/pull/57100) | Update dependencies |
+| 0.1.27 | 2025-03-29 | [56631](https://github.com/airbytehq/airbyte/pull/56631) | Update dependencies |
+| 0.1.26 | 2025-03-22 | [56043](https://github.com/airbytehq/airbyte/pull/56043) | Update dependencies |
 | 0.1.25 | 2025-03-08 | [55454](https://github.com/airbytehq/airbyte/pull/55454) | Update dependencies |
 | 0.1.24 | 2025-03-01 | [54768](https://github.com/airbytehq/airbyte/pull/54768) | Update dependencies |
 | 0.1.23 | 2025-02-22 | [54356](https://github.com/airbytehq/airbyte/pull/54356) | Update dependencies |

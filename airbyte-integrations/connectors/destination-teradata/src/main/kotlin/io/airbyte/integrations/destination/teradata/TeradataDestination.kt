@@ -14,17 +14,20 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
 import io.airbyte.commons.json.Jsons
+import io.airbyte.commons.map.MoreMaps
 import io.airbyte.integrations.destination.teradata.util.TeradataConstants
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.util.*
+import java.util.regex.Pattern
 import javax.sql.DataSource
 
 /**
  * The TeradataDestination class is responsible for handling the connection to the Teradata database
  * as destination from Airbyte. It extends the AbstractJdbcDestination class and implements the
- * Destination interface, facilitating the configuration and management of database interactions
+ * Destination interface, facilitating the configuration and management of database interactions,
+ * including setting a query band.
  */
 class TeradataDestination :
     AbstractJdbcDestination(
@@ -41,13 +44,35 @@ class TeradataDestination :
      */
     override fun getDataSource(config: JsonNode): DataSource {
         val jdbcConfig = toJdbcConfig(config)
-        return DataSourceFactory.create(
-            jdbcConfig[JdbcUtils.USERNAME_KEY]?.asText(),
-            jdbcConfig[JdbcUtils.PASSWORD_KEY]?.asText(),
-            TeradataConstants.DRIVER_CLASS,
-            jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
-            getConnectionProperties(config)
-        )
+        val dataSource =
+            DataSourceFactory.create(
+                jdbcConfig[JdbcUtils.USERNAME_KEY]?.asText(),
+                jdbcConfig[JdbcUtils.PASSWORD_KEY]?.asText(),
+                TeradataConstants.DRIVER_CLASS,
+                jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
+                getConnectionProperties(config)
+            )
+        // set session query band
+        setQueryBand(getDatabase(dataSource))
+        return dataSource
+    }
+
+    public override fun getConnectionProperties(config: JsonNode): Map<String, String> {
+        return MoreMaps.merge(appendLogMech(config), super.getConnectionProperties(config))
+    }
+    /** Appends Logging Mechanism to JDBC URL */
+    private fun appendLogMech(config: JsonNode): Map<String, String> {
+        val logmechParams: MutableMap<String, String> = HashMap()
+        if (
+            config.has(TeradataConstants.LOG_MECH) &&
+                config.get(TeradataConstants.LOG_MECH).has(TeradataConstants.AUTH_TYPE) &&
+                config.get(TeradataConstants.LOG_MECH).get(TeradataConstants.AUTH_TYPE).asText() !=
+                    TeradataConstants.TD2_LOG_MECH
+        ) {
+            logmechParams[TeradataConstants.LOG_MECH] =
+                config.get(TeradataConstants.LOG_MECH).get(TeradataConstants.AUTH_TYPE).asText()
+        }
+        return logmechParams
     }
     /**
      * Retrieves the JdbcDatabase instance based on the provided DataSource.
@@ -55,8 +80,21 @@ class TeradataDestination :
      * @param dataSource The DataSource to create the JdbcDatabase from.
      * @return The JdbcDatabase instance.
      */
-    override fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    public override fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
+    }
+    /**
+     * Sets the Teradata session query band to identify the source of SQL requests originating from
+     * Airbyte.
+     *
+     * @param jdbcDatabase The JdbcDatabase instance for which to set the query band.
+     */
+    private fun setQueryBand(jdbcDatabase: JdbcDatabase) {
+        val setQueryBandSql =
+            TeradataConstants.QUERY_BAND_SET +
+                Companion.queryBand +
+                TeradataConstants.QUERY_BAND_SESSION
+        jdbcDatabase.execute(setQueryBandSql)
     }
 
     /**
@@ -66,7 +104,7 @@ class TeradataDestination :
      * @param config The configuration settings as a JsonNode.
      * @return A map of default connection properties.
      */
-    override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
+    public override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
         val additionalParameters: MutableMap<String, String> = HashMap()
         if (
             config.has(TeradataConstants.PARAM_SSL) &&
@@ -79,6 +117,12 @@ class TeradataDestination :
             } else {
                 additionalParameters[TeradataConstants.PARAM_SSLMODE] = TeradataConstants.REQUIRE
             }
+        }
+        if (config.has(TeradataConstants.QUERY_BAND_KEY)) {
+            Companion.queryBand =
+                handleUserQueryBandText(
+                    config[TeradataConstants.QUERY_BAND_KEY].asText(),
+                )
         }
         additionalParameters[TeradataConstants.ENCRYPTDATA] = TeradataConstants.ENCRYPTDATA_ON
         return additionalParameters
@@ -113,6 +157,51 @@ class TeradataDestination :
         }
     }
     /**
+     * Handles and validates the user-defined query band text.
+     *
+     * @param queryBandText The user-defined query band text.
+     * @return The validated query band text, ensuring required parameters are presentin required
+     * format.
+     */
+    private fun handleUserQueryBandText(queryBandText: String?): String {
+        if (queryBandText.isNullOrBlank()) {
+            return Companion.queryBand
+        }
+        var updatedQueryBand = StringBuilder(queryBandText)
+        // checking org doesn't exist in query_band, appending 'org=teradata-internal-telem'
+        // If it exists, user might have set some value of their own, so doing nothing in that case
+        val orgMatcher = Pattern.compile("org\\s*=").matcher(queryBandText)
+        if (!orgMatcher.find()) {
+            if (queryBandText.isNotBlank() && !queryBandText.endsWith(";")) {
+                updatedQueryBand.append(";")
+            }
+            updatedQueryBand.append(TeradataConstants.DEFAULT_QUERY_BAND_ORG)
+        }
+
+        // Ensure appname contains airbyte is present or append it if it exists with different value
+        val appNameMatcher = Pattern.compile("appname\\s*=\\s*([^;]*)").matcher(updatedQueryBand)
+        if (appNameMatcher.find()) {
+            val appNameValue = appNameMatcher.group(1).trim { it <= ' ' }
+            if (!appNameValue.lowercase(Locale.getDefault()).contains("airbyte")) {
+                updatedQueryBand =
+                    StringBuilder(
+                        updatedQueryBand
+                            .toString()
+                            .replace(
+                                "appname\\s*=\\s*([^;]*)".toRegex(),
+                                "appname=" + appNameValue + "_airbyte",
+                            ),
+                    )
+            }
+        } else {
+            if (updatedQueryBand.isNotEmpty() && !updatedQueryBand.toString().endsWith(";")) {
+                updatedQueryBand.append(";")
+            }
+            updatedQueryBand.append(TeradataConstants.DEFAULT_QUERY_BAND_APPNAME)
+        }
+        return updatedQueryBand.toString()
+    }
+    /**
      * Converts the provided configuration into JDBC configuration settings.
      *
      * @param config The configuration settings as a JsonNode.
@@ -121,8 +210,8 @@ class TeradataDestination :
     override fun toJdbcConfig(config: JsonNode): JsonNode {
         val schema = config[JdbcUtils.SCHEMA_KEY]?.asText() ?: TeradataConstants.DEFAULT_SCHEMA_NAME
         val jdbcUrl = String.format("jdbc:teradata://%s/", config[JdbcUtils.HOST_KEY].asText())
-        val userName = config[JdbcUtils.USERNAME_KEY]?.asText()
-        val password = config[JdbcUtils.PASSWORD_KEY]?.asText()
+        val userName = config[TeradataConstants.LOG_MECH]?.get(JdbcUtils.USERNAME_KEY)?.asText()
+        val password = config[TeradataConstants.LOG_MECH]?.get(JdbcUtils.PASSWORD_KEY)?.asText()
         val configBuilder =
             ImmutableMap.builder<Any, Any>()
                 .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
@@ -135,7 +224,12 @@ class TeradataDestination :
         return Jsons.jsonNode(configBuilder.build())
     }
 
+    val queryBand: String
+        get() = Companion.queryBand
+
     companion object {
+
+        private var queryBand = TeradataConstants.DEFAULT_QUERY_BAND
 
         @Throws(Exception::class)
         @JvmStatic
