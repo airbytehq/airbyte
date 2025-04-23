@@ -104,7 +104,8 @@ jobs:
   #   secrets: inherit
 
   publish-connectors:
-    needs: [publish-java-cdk]
+    needs: [bump-cdk-version]
+    # needs: [publish-java-cdk]
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
