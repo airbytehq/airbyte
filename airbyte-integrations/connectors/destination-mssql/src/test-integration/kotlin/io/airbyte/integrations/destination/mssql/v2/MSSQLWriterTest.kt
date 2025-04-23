@@ -66,7 +66,11 @@ abstract class MSSQLWriterTest(
         supportFileTransfer = false,
         commitDataIncrementally = true,
         allTypesBehavior =
-            StronglyTyped(integerCanBeLarge = false, nestedFloatLosesPrecision = false),
+            StronglyTyped(
+                integerCanBeLarge = false,
+                numberCanBeLarge = false,
+                nestedFloatLosesPrecision = false,
+            ),
         unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
         configUpdater = configUpdater,
@@ -132,7 +136,7 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream,
-    ): List<String> {
+    ): Map<String, String> {
         throw UnsupportedOperationException("destination-mssql doesn't support file transfer")
     }
 }
@@ -264,8 +268,8 @@ internal class StandardInsert :
     ) {
 
     @Test
-    override fun testUnknownTypes() {
-        super.testUnknownTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 
     companion object {
@@ -302,6 +306,11 @@ internal class BulkInsert :
                     )
             ) { spec -> MSSQLConfigurationFactory().makeWithOverrides(spec, emptyMap()) },
     ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
     companion object {
         const val CONFIG_FILE = "secrets/bulk_upload_config.json"
     }

@@ -301,6 +301,10 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.6.3 | 2025-04-19 | [58295](https://github.com/airbytehq/airbyte/pull/58295) | Update dependencies |
+| 0.6.2 | 2025-04-12 | [57627](https://github.com/airbytehq/airbyte/pull/57627) | Update dependencies |
+| 0.6.1 | 2025-04-05 | [43869](https://github.com/airbytehq/airbyte/pull/43869) | Update dependencies |
+| 0.6.0 | 2025-03-31 | [56466](https://github.com/airbytehq/airbyte/pull/56466) | Upgrading dependencies and CDK and Python to 3.11 |
 | 0.5.0 | 2025-01-02 | [50398](https://github.com/airbytehq/airbyte/pull/50398) | Add client_credentials auth for Azure Service Principals |
 | 0.4.4 | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2 |
 | 0.4.3 | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover |
