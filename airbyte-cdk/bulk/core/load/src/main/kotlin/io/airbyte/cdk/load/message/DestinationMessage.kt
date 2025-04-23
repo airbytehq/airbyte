@@ -290,7 +290,7 @@ data class EnrichedDestinationRecordAirbyteValue(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream,
-    private val rawData: AirbyteMessage,
+    val rawData: AirbyteMessage,
     private val serialized: String,
     private val schema: AirbyteType
 ) {
