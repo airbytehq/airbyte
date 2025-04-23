@@ -1,5 +1,6 @@
 name: Bump Bulk CDK Version
 on:
+  workflow_call:
   workflow_dispatch:
     inputs:
       repo:
@@ -10,8 +11,15 @@ on:
         options:
           - airbytehq/airbyte
 jobs:
+  publish-bulk-cdk:
+    uses: ./.github/workflows/publish-bulk-cdk.yml
+    env:
+      DRY_RUN: true
+    secrets: inherit
+
   bump-cdk-version-and-merge:
     runs-on: ubuntu-24.04
+    needs: [ bump-cdk-version ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
