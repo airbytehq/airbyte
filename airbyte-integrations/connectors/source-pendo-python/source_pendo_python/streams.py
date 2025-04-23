@@ -36,6 +36,8 @@ class PendoPythonStream(HttpStream, ABC):
         output_types = []
         if field_type == "time":
             output_types = ["null", "integer"]
+        elif field_type == "date":
+            output_types = ["null", "number"]
         elif field_type == "float":
             output_types = ["null", "number"]
         elif field_type == "list":
