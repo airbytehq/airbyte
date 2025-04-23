@@ -103,7 +103,6 @@ jobs:
       matrix:
         connector_name: ${{ needs.bump-cdk-version.outputs.modified_connectors }}
     with:
-      gitref: ${{ github.ref_name }}
       connectors-options: "--name=${{ matrix.connector_name }}"
     secrets: inherit
     #runs-on: ubuntu-24.04
