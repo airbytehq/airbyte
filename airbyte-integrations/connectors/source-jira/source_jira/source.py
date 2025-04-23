@@ -1,10 +1,10 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+from datetime import timedelta
 from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
 from pydantic import ValidationError
 from requests.exceptions import InvalidURL
 
@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .streams import IssueFields, Issues, PullRequests
@@ -65,8 +66,8 @@ class SourceJira(YamlDeclarativeSource):
     def _validate_and_transform_config(self, config: Mapping[str, Any]):
         start_date = config.get("start_date")
         if start_date:
-            config["start_date"] = pendulum.parse(start_date)
-        config["lookback_window_minutes"] = pendulum.duration(minutes=config.get("lookback_window_minutes", 0))
+            config["start_date"] = ab_datetime_parse(start_date).to_datetime()
+        config["lookback_window_minutes"] = timedelta(minutes=config.get("lookback_window_minutes", 0))
         config["projects"] = config.get("projects", [])
         return config
 
