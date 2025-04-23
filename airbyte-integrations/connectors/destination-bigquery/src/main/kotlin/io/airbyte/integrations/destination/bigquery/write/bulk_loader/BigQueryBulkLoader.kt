@@ -13,6 +13,8 @@ import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
@@ -30,9 +32,10 @@ class BigQueryBulkLoader(
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
     private val rawTableName: TableName,
+    private val rawTableSuffix: String,
 ) : BulkLoader<GcsBlob> {
     override suspend fun load(remoteObject: GcsBlob) {
-        val rawTableId = TableId.of(rawTableName.namespace, rawTableName.name)
+        val rawTableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
         val gcsUri = "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}"
 
         val csvOptions =
@@ -86,7 +89,8 @@ class BigQueryBulkLoaderFactory(
     private val names: TableCatalogByDescriptor,
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
-    private val bigQueryConfiguration: BigqueryConfiguration
+    private val bigQueryConfiguration: BigqueryConfiguration,
+    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
@@ -102,6 +106,7 @@ class BigQueryBulkLoaderFactory(
             bigQueryClient,
             bigQueryConfiguration,
             names[key.stream]!!.tableNames.rawTableName!!,
+            streamStateStore.get(key.stream)!!.rawTableSuffix,
         )
     }
 }

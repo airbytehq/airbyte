@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.NO_SUFFIX
 import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
@@ -24,6 +25,7 @@ class TypingDedupingStreamLoader(
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
     private val disableTypeDedupe: Boolean,
+    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
 ) : StreamLoader {
     private val isTruncateSync =
         when (stream.minimumGenerationId) {
@@ -60,6 +62,11 @@ class TypingDedupingStreamLoader(
             logger.info { "Typing and deduping disabled, skipping final table initialization" }
             finalTmpTableSuffix = NO_SUFFIX
         }
+
+        streamStateStore.put(
+            stream.descriptor,
+            TypingDedupingExecutionConfig(rawTableSuffix),
+        )
     }
 
     private fun prepareStageForTruncate(): Pair<RawTableInitialStatus, String> {
