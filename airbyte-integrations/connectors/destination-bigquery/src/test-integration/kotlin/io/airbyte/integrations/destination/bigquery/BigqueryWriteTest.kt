@@ -39,7 +39,7 @@ abstract class BigqueryWriteTest(
         unionBehavior = UnionBehavior.PASS_THROUGH,
         preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
-        commitDataIncrementally = true,
+        commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(
                 convertAllValuesToString = false,
@@ -72,8 +72,8 @@ class StandardInsertRawOverrideDisableTd :
         super.testBasicWrite()
     }
     @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
     }
 }
 
