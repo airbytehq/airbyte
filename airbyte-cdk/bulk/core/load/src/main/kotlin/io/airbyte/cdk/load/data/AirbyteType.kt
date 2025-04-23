@@ -10,48 +10,46 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-sealed interface AirbyteType {
+sealed class AirbyteType {
     /**
      * Utility method for database/warehouse destinations, which assume that the top-level schema is
      * an object.
      */
-    fun asColumns(): LinkedHashMap<String, FieldType> {
+    open fun asColumns(): LinkedHashMap<String, FieldType> {
         return linkedMapOf()
     }
 
-    val isObject: Boolean
-        get() = false
-    val isArray: Boolean
-        get() = false
+    open val isObject: Boolean = false
+    open val isArray: Boolean = false
 }
 
-data object StringType : AirbyteType
+data object StringType : AirbyteType()
 
-data object BooleanType : AirbyteType
+data object BooleanType : AirbyteType()
 
-data object IntegerType : AirbyteType
+data object IntegerType : AirbyteType()
 
-data object NumberType : AirbyteType
+data object NumberType : AirbyteType()
 
-data object DateType : AirbyteType
+data object DateType : AirbyteType()
 
-data object TimestampTypeWithTimezone : AirbyteType
+data object TimestampTypeWithTimezone : AirbyteType()
 
-data object TimestampTypeWithoutTimezone : AirbyteType
+data object TimestampTypeWithoutTimezone : AirbyteType()
 
-data object TimeTypeWithTimezone : AirbyteType
+data object TimeTypeWithTimezone : AirbyteType()
 
-data object TimeTypeWithoutTimezone : AirbyteType
+data object TimeTypeWithoutTimezone : AirbyteType()
 
-data class ArrayType(val items: FieldType) : AirbyteType {
+data class ArrayType(val items: FieldType) : AirbyteType() {
     override val isArray = true
 }
 
-data object ArrayTypeWithoutSchema : AirbyteType {
+data object ArrayTypeWithoutSchema : AirbyteType() {
     override val isArray = true
 }
 
-data class ObjectType(val properties: LinkedHashMap<String, FieldType>) : AirbyteType {
+data class ObjectType(val properties: LinkedHashMap<String, FieldType>) : AirbyteType() {
     override fun asColumns(): LinkedHashMap<String, FieldType> {
         return properties
     }
@@ -59,18 +57,18 @@ data class ObjectType(val properties: LinkedHashMap<String, FieldType>) : Airbyt
     override val isObject = true
 }
 
-data object ObjectTypeWithEmptySchema : AirbyteType {
+data object ObjectTypeWithEmptySchema : AirbyteType() {
     override val isObject = true
 }
 
-data object ObjectTypeWithoutSchema : AirbyteType {
+data object ObjectTypeWithoutSchema : AirbyteType() {
     override val isObject = true
 }
 
 data class UnionType(
     val options: Set<AirbyteType>,
     val isLegacyUnion: Boolean,
-) : AirbyteType {
+) : AirbyteType() {
     /**
      * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level
      * schema looks like this, we still want to be able to extract the object properties (i.e. treat
@@ -144,6 +142,6 @@ data class UnionType(
     }
 }
 
-data class UnknownType(val schema: JsonNode) : AirbyteType
+data class UnknownType(val schema: JsonNode) : AirbyteType()
 
 data class FieldType(val type: AirbyteType, val nullable: Boolean)
