@@ -125,6 +125,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Install Python
+        id: install_python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
       - name: Install Poetry
         id: install_poetry
         uses: snok/install-poetry@v1
