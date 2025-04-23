@@ -72,8 +72,8 @@ class StandardInsertRawOverrideDisableTd :
         super.testBasicWrite()
     }
     @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
     }
 }
 

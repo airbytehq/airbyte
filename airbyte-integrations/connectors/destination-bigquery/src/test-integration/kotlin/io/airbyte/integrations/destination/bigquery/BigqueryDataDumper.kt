@@ -9,6 +9,7 @@ import com.google.cloud.bigquery.FieldValue
 import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.LegacySQLTypeName
 import com.google.cloud.bigquery.QueryJobConfiguration
+import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableResult
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
@@ -35,9 +36,12 @@ import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.time.ZoneOffset
 import java.util.LinkedHashMap
+
+private val logger = KotlinLogging.logger {}
 
 object BigqueryRawTableDataDumper : DestinationDataDumper {
     override fun dumpRecords(
@@ -46,10 +50,19 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryClientFactory(config).make()
+
         // TODO handle special characters
         val namespace = stream.descriptor.namespace ?: config.datasetId
         val rawTableName =
             TypingDedupingUtil.concatenateRawTableName(namespace, stream.descriptor.name)
+
+        if (bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName)) == null) {
+            logger.warn {
+                "Raw table does not exist: $namespace.$rawTableName. Returning empty list."
+            }
+            return emptyList()
+        }
+
         val result: TableResult =
             bigquery.query(
                 QueryJobConfiguration.of("SELECT * FROM ${config.rawTableDataset}.$rawTableName")
@@ -87,9 +100,16 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryClientFactory(config).make()
+
         // TODO handle special characters
         val namespace = stream.descriptor.namespace ?: config.datasetId
         val name = stream.descriptor.name
+
+        if (bigquery.getTable(TableId.of(namespace, name)) == null) {
+            logger.warn { "Final table does not exist: $namespace.$name. Returning empty list." }
+            return emptyList()
+        }
+
         val result: TableResult =
             bigquery.query(QueryJobConfiguration.of("SELECT * FROM $namespace.$name"))
         return result.iterateAll().map { row: FieldValueList ->
