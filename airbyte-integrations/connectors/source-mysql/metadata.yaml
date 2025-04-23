@@ -26,6 +26,7 @@ data:
       enabled: true
   releaseStage: alpha
   supportLevel: certified
+  supportsFileTransfer: true
   tags:
     - language:java
   connectorTestSuitesOptions:
