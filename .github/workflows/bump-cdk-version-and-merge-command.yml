@@ -70,7 +70,7 @@ jobs:
             sort | \
             uniq)
           
-          echo "modified_connextors=${connector_folders}" >> $GITHUB_OUTPUT
+          echo "modified_connectors=${connector_folders}" >> $GITHUB_OUTPUT
 
           for folder in $connector_folders; do
             gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
@@ -98,8 +98,11 @@ jobs:
   publish-connectors:
     needs: [publish-java-cdk]
     uses: ./.github/workflows/publish_connectors.yml
+    strategy:
+      fail-fast: false
+      connector_name: ${{modified_connectors}}
     with:
-      connectors-options: "--name=$modified_connectors"
+      connectors-options: "--name=${{ matrix.connector_name }}"
       ref: ${{ github.ref_name }}
     secrets: inherit
     #runs-on: ubuntu-24.04
