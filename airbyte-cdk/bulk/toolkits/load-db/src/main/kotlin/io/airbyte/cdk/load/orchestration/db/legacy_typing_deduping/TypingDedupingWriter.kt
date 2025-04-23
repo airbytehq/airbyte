@@ -17,13 +17,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class TypingDedupingWriter(
-  private val names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
-  private val stateGatherer:
-  DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
-  private val destinationHandler: DestinationHandler,
-  private val rawTableOperations: TypingDedupingRawTableOperations,
-  private val finalTableOperations: TypingDedupingFinalTableOperations,
-  private val disableTypeDedupe: Boolean,
+    private val names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
+    private val stateGatherer:
+        DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
+    private val destinationHandler: DestinationHandler,
+    private val rawTableOperations: TypingDedupingRawTableOperations,
+    private val finalTableOperations: TypingDedupingFinalTableOperations,
+    private val disableTypeDedupe: Boolean,
 ) : DestinationWriter {
     private lateinit var initialStatuses:
         Map<DestinationStream, TypingDedupingDestinationInitialStatus>

@@ -26,11 +26,11 @@ interface TypingDedupingSqlGenerator {
      * this to true.
      */
     fun createFinalTable(
-      stream: DestinationStream,
-      tableName: TableName,
-      columnNameMapping: ColumnNameMapping,
-      finalTableSuffix: String,
-      replace: Boolean
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        finalTableSuffix: String,
+        replace: Boolean
     ): Sql
 
     /**
@@ -69,12 +69,12 @@ interface TypingDedupingSqlGenerator {
      * which handles casting exceptions.
      */
     fun updateFinalTable(
-      stream: DestinationStream,
-      tableNames: TableNames,
-      columnNameMapping: ColumnNameMapping,
-      finalTableSuffix: String,
-      maxProcessedTimestamp: Instant?,
-      useExpensiveSaferCasting: Boolean,
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
+        finalTableSuffix: String,
+        maxProcessedTimestamp: Instant?,
+        useExpensiveSaferCasting: Boolean,
     ): Sql
 
     /**
@@ -84,18 +84,18 @@ interface TypingDedupingSqlGenerator {
      * non-empty. Callers are responsible for verifying those are true.
      */
     fun overwriteFinalTable(
-      stream: DestinationStream,
-      finalTableName: TableName,
-      finalTableSuffix: String,
+        stream: DestinationStream,
+        finalTableName: TableName,
+        finalTableSuffix: String,
     ): Sql
 
     fun clearLoadedAt(stream: DestinationStream, rawTableName: TableName): Sql
 
     /** Typically we need to create a soft reset temporary table and clear loaded at values */
     fun prepareTablesForSoftReset(
-      stream: DestinationStream,
-      tableNames: TableNames,
-      columnNameMapping: ColumnNameMapping,
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
     ): Sql {
         val createTempTable =
             createFinalTable(

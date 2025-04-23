@@ -18,7 +18,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 class BigqueryRawTableOperations(private val bigquery: BigQuery) :
-  TypingDedupingRawTableOperations {
+    TypingDedupingRawTableOperations {
     override fun prepareRawTable(rawTableName: TableName, suffix: String, replace: Boolean) {
         // Prepare staging table. For overwrite, it does drop-create so we can skip explicit create.
         if (replace) {

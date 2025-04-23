@@ -38,7 +38,7 @@ import java.util.stream.Stream
 private val logger = KotlinLogging.logger {}
 
 class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
-  DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus> {
+    DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus> {
     private fun findExistingTable(finalTableName: TableName): TableDefinition? {
         val table = bq.getTable(finalTableName.namespace, finalTableName.name)
         return table?.getDefinition()
@@ -50,8 +50,8 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
     }
 
     private fun getInitialRawTableState(
-      rawTableName: TableName,
-      suffix: String
+        rawTableName: TableName,
+        suffix: String
     ): RawTableInitialStatus? {
         bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix))
         // Table doesn't exist. There are no unprocessed records, and no timestamp.
@@ -151,9 +151,9 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
     }
 
     private fun existingSchemaMatchesStreamConfig(
-      stream: DestinationStream,
-      columnNameMapping: ColumnNameMapping,
-      existingTable: TableDefinition
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        existingTable: TableDefinition
     ): Boolean {
         val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
         var tableClusteringMatches = false
@@ -170,9 +170,9 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
     }
 
     private fun buildAlterTableReport(
-      stream: DestinationStream,
-      columnNameMapping: ColumnNameMapping,
-      existingTable: TableDefinition,
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        existingTable: TableDefinition,
     ): AlterTableReport {
         val pks = getPks(stream, columnNameMapping)
 
@@ -240,9 +240,9 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
 
     @VisibleForTesting
     fun clusteringMatches(
-      stream: DestinationStream,
-      columnNameMapping: ColumnNameMapping,
-      existingTable: StandardTableDefinition,
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        existingTable: StandardTableDefinition,
     ): Boolean {
         return (existingTable.clustering != null &&
             containsAllIgnoreCase(

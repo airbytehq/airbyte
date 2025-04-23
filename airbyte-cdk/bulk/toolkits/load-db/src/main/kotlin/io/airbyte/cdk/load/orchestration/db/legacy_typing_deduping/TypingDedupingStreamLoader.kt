@@ -17,13 +17,13 @@ import java.time.Instant
 private val logger = KotlinLogging.logger {}
 
 class TypingDedupingStreamLoader(
-  override val stream: DestinationStream,
-  private val initialStatus: TypingDedupingDestinationInitialStatus,
-  private val tableNames: TableNames,
-  private val columnNameMapping: ColumnNameMapping,
-  private val rawTableOperations: TypingDedupingRawTableOperations,
-  private val finalTableOperations: TypingDedupingFinalTableOperations,
-  private val disableTypeDedupe: Boolean,
+    override val stream: DestinationStream,
+    private val initialStatus: TypingDedupingDestinationInitialStatus,
+    private val tableNames: TableNames,
+    private val columnNameMapping: ColumnNameMapping,
+    private val rawTableOperations: TypingDedupingRawTableOperations,
+    private val finalTableOperations: TypingDedupingFinalTableOperations,
+    private val disableTypeDedupe: Boolean,
 ) : StreamLoader {
     private val isTruncateSync =
         when (stream.minimumGenerationId) {
@@ -102,7 +102,7 @@ class TypingDedupingStreamLoader(
                 )
                 // We nuked the temp raw table, so create a new initial raw table status.
                 return Pair(
-                  RawTableInitialStatus.emptyTableStatus,
+                    RawTableInitialStatus.emptyTableStatus,
                     TMP_TABLE_SUFFIX,
                 )
             }
@@ -132,7 +132,7 @@ class TypingDedupingStreamLoader(
                 )
                 return Pair(
                     // Create a fresh raw table status, since we created a fresh temp stage.
-                  RawTableInitialStatus.emptyTableStatus,
+                    RawTableInitialStatus.emptyTableStatus,
                     TMP_TABLE_SUFFIX,
                 )
             }
@@ -147,7 +147,7 @@ class TypingDedupingStreamLoader(
             )
             return Pair(
                 // Create a fresh raw table status, since we created a fresh temp stage.
-              RawTableInitialStatus.emptyTableStatus,
+                RawTableInitialStatus.emptyTableStatus,
                 TMP_TABLE_SUFFIX,
             )
         }

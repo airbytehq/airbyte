@@ -8,10 +8,10 @@ import io.airbyte.cdk.load.orchestration.db.DestinationInitialStatus
 import java.time.Instant
 
 data class TypingDedupingDestinationInitialStatus(
-  /** Initial status of the final table, or null if the table doesn't exist yet. */
+    /** Initial status of the final table, or null if the table doesn't exist yet. */
     val finalTableStatus: FinalTableInitialStatus?,
-  val rawTableStatus: RawTableInitialStatus?,
-  val tempRawTableStatus: RawTableInitialStatus?,
+    val rawTableStatus: RawTableInitialStatus?,
+    val tempRawTableStatus: RawTableInitialStatus?,
 ) : DestinationInitialStatus
 
 data class FinalTableInitialStatus(

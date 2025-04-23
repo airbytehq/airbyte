@@ -24,6 +24,6 @@ interface DestinationInitialStatus
  */
 fun interface DestinationInitialStatusGatherer<InitialStatus : DestinationInitialStatus> {
     suspend fun gatherInitialStatus(
-      streams: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
+        streams: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
     ): Map<DestinationStream, InitialStatus>
 }

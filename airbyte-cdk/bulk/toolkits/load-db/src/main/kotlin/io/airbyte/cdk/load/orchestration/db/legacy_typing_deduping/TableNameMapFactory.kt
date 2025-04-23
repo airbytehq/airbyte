@@ -16,10 +16,10 @@ import javax.inject.Singleton
 
 @Factory
 class TypingDedupingTableNameMapFactory(
-  private val catalog: DestinationCatalog,
-  private val rawTableNameGenerator: RawTableNameGenerator,
-  private val finalTableNameGenerator: FinalTableNameGenerator,
-  private val finalTableColumnNameGenerator: ColumnNameGenerator,
+    private val catalog: DestinationCatalog,
+    private val rawTableNameGenerator: RawTableNameGenerator,
+    private val finalTableNameGenerator: FinalTableNameGenerator,
+    private val finalTableColumnNameGenerator: ColumnNameGenerator,
 ) {
     @Singleton
     fun get(): Map<DestinationStream, Pair<TableNames, ColumnNameMapping>> {
@@ -43,7 +43,7 @@ class TypingDedupingTableNameMapFactory(
 
 @Factory
 class TypingDedupingTableNameMapByDescriptorFactory(
-  private val map: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
+    private val map: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
 ) {
     @Singleton
     fun get(): Map<DestinationStream.Descriptor, Pair<TableNames, ColumnNameMapping>> {
