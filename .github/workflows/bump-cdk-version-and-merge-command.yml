@@ -74,7 +74,7 @@ jobs:
           
           MODIFIED_LIST_JSON=$(echo "connector_folders" | tr ',' '\n' | jq -R . | jq -s .)
           
-          echo MODIFIED_LIST_JSON
+          echo ${MODIFIED_LIST_JSON}
           
           echo "modified_connectors=${MODIFIED_LIST_JSON}" >> $GITHUB_OUTPUT
 
