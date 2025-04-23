@@ -5,12 +5,12 @@
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.DestinationHandler
+import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.TableName
 
 class DirectLoadTableOperations(
     private val sqlGenerator: DirectLoadSqlGenerator,
-    private val destinationHandler: DestinationHandler,
+    private val databaseHandler: DatabaseHandler,
 ) {
     fun createTable(
         stream: DestinationStream,
@@ -18,7 +18,7 @@ class DirectLoadTableOperations(
         suffix: String,
         replace: Boolean
     ) {
-        destinationHandler.execute(TODO())
+        databaseHandler.execute(TODO())
     }
 
     fun alterTable(

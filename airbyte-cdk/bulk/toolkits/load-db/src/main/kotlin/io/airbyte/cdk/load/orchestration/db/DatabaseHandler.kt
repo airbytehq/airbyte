@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db
 
-interface DestinationHandler {
+interface DatabaseHandler {
     fun execute(sql: Sql)
 
     /**

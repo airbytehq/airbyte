@@ -38,9 +38,8 @@ import org.apache.commons.lang3.StringUtils
 
 /**
  * @param projectId
- * @param datasetLocation This is technically redundant with [BigQueryDestinationHandler] setting
- * the query execution location, but let's be explicit since this is typically a compliance
- * requirement.
+ * @param datasetLocation This is technically redundant with [BigQueryDatabaseHandler] setting the
+ * query execution location, but let's be explicit since this is typically a compliance requirement.
  */
 class BigQuerySqlGenerator(private val projectId: String?, private val datasetLocation: String?) :
     TypingDedupingSqlGenerator {

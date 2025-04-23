@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.DestinationHandler
+import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.SOFT_RESET_SUFFIX
@@ -17,7 +17,7 @@ private val logger = KotlinLogging.logger {}
 
 class TypingDedupingFinalTableOperations(
     private val sqlGenerator: TypingDedupingSqlGenerator,
-    private val destinationHandler: DestinationHandler,
+    private val databaseHandler: DatabaseHandler,
 ) {
     fun createFinalTable(
         stream: DestinationStream,
@@ -29,7 +29,7 @@ class TypingDedupingFinalTableOperations(
         logger.info {
             "Creating final table for stream ${stream.descriptor.toPrettyString()} with name ${finalTableName.prettyPrint()}"
         }
-        destinationHandler.execute(
+        databaseHandler.execute(
             sqlGenerator.createFinalTable(
                 stream,
                 finalTableName,
@@ -49,7 +49,7 @@ class TypingDedupingFinalTableOperations(
         logger.info {
             "Executing soft reset for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.prettyPrint()}"
         }
-        destinationHandler.execute(
+        databaseHandler.execute(
             sqlGenerator.prepareTablesForSoftReset(stream, tableNames, columnNameMapping)
         )
         typeAndDedupe(
@@ -59,7 +59,7 @@ class TypingDedupingFinalTableOperations(
             maxProcessedTimestamp = null,
             finalTableSuffix = SOFT_RESET_SUFFIX,
         )
-        destinationHandler.execute(
+        databaseHandler.execute(
             sqlGenerator.overwriteFinalTable(
                 stream,
                 tableNames.finalTableName!!,
@@ -80,7 +80,7 @@ class TypingDedupingFinalTableOperations(
         logger.info {
             "Overwriting final table for stream ${stream.descriptor.toPrettyString()} with name ${finalTableName.prettyPrint()} using temp table with suffix $finalTableSuffix"
         }
-        destinationHandler.execute(
+        databaseHandler.execute(
             sqlGenerator.overwriteFinalTable(
                 stream,
                 finalTableName,
@@ -109,7 +109,7 @@ class TypingDedupingFinalTableOperations(
                     maxProcessedTimestamp = maxProcessedTimestamp,
                     useExpensiveSaferCasting = false,
                 )
-            destinationHandler.execute(unsafeSql)
+            databaseHandler.execute(unsafeSql)
         } catch (e: Exception) {
             if (sqlGenerator.supportsExpensiveSaferCasting) {
                 logger.info(e) {
@@ -124,7 +124,7 @@ class TypingDedupingFinalTableOperations(
                         maxProcessedTimestamp = maxProcessedTimestamp,
                         useExpensiveSaferCasting = true,
                     )
-                destinationHandler.execute(saferSql)
+                databaseHandler.execute(saferSql)
             } else {
                 logger.info(e) {
                     "Encountered Exception on unsafe SQL for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.prettyPrint()} with suffix $finalTableSuffix, not retrying"

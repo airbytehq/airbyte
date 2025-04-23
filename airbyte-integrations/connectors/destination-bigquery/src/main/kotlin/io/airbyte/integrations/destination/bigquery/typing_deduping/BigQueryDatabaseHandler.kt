@@ -14,7 +14,7 @@ import com.google.cloud.bigquery.JobStatus
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.common.collect.Streams
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.load.orchestration.db.DestinationHandler
+import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.util.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
@@ -27,8 +27,8 @@ import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
 
-class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLocation: String) :
-    DestinationHandler {
+class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocation: String) :
+    DatabaseHandler {
     @Throws(InterruptedException::class)
     override fun execute(sql: Sql) {
         val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION")

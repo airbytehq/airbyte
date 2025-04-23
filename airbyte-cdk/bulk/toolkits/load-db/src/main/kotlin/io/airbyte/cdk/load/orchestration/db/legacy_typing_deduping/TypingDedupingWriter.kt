@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.DestinationHandler
+import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.DestinationInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.write.DestinationWriter
@@ -20,7 +20,7 @@ class TypingDedupingWriter(
     private val names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
     private val stateGatherer:
         DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
-    private val destinationHandler: DestinationHandler,
+    private val databaseHandler: DatabaseHandler,
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
     private val disableTypeDedupe: Boolean,
@@ -33,7 +33,7 @@ class TypingDedupingWriter(
             val namespaces =
                 names.values.map { (tableNames, _) -> tableNames.rawTableName!!.namespace } +
                     names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
-            destinationHandler.createNamespaces(namespaces.toSet())
+            databaseHandler.createNamespaces(namespaces.toSet())
 
             val initialInitialStatuses:
                 Map<DestinationStream, TypingDedupingDestinationInitialStatus> =
