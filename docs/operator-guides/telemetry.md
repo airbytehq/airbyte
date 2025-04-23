@@ -46,4 +46,19 @@ Also check our [privacy policy](https://airbyte.com/privacy-policy) for more det
     to any value.
 
   </TabItem>
+  <TabItem value="abctl" label="abctl">
+    When running [abctl](https://docs.airbyte.com/using-airbyte/getting-started/oss-quickstart#1-install-abctl) for the first time on a new machine,
+    you'll be informed that anonymous usage data is collected.
+
+    Anonymous usage tracking ("telemetry") helps us understand how abctl is being used,
+    including issues encountered during installation. This helps us to prioritize product improvements which benefit users of abctl as well as Airbyte Cloud,
+    OSS, and Enterprise.
+
+    We will _never_ collect any information which could be considered PII (personally identifiable
+    information) or sensitive data. We _do not_ collect IP addresses, hostnames, or any other
+    information that could be used to identify you or your organization.
+
+    You can opt-out of anonymous usage reporting by setting the environment variable `DO_NOT_TRACK`
+    to any value.
+  </TabItem>
 </Tabs>
