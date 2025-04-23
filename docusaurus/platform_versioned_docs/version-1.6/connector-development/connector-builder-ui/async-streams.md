@@ -5,6 +5,7 @@ In the Connector Builder UI, you can create two types of streams: **Synchronous 
 ## Synchronous Streams
 
 Synchronous streams operate in real-time, where:
+
 - The connector makes a request to an API endpoint
 - The API responds immediately with data
 - The connector processes and returns that data in the same operation
@@ -14,6 +15,7 @@ This is the simpler, more common pattern used for most APIs that can return data
 ## Asynchronous Streams
 
 Asynchronous streams handle scenarios where data extraction happens over multiple steps:
+
 1. **Creation**: You request a job to be created (like a report generation)
 2. **Polling**: You periodically check if the job is complete
 3. **Download**: Once the job is complete, you download the results
@@ -23,6 +25,7 @@ This approach is necessary for APIs that handle large datasets or resource-inten
 ## When to Use Asynchronous Streams
 
 Use asynchronous streams when:
+
 - The API requires you to trigger a job and wait for it to complete
 - You're working with large datasets that need server-side processing
 - The API documentation mentions job creation, status checking, and result download
@@ -58,7 +61,7 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
 
 - **URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports`
 - **HTTP Method** dropdown: `POST`
-- In the **Authentication** section: 
+- In the **Authentication** section:
   - Select **Bearer Token** authentication type
   - Fill out the **API Key** user input with your SendGrid API key
 
@@ -175,30 +178,34 @@ To view the details of the creation and polling stages:
 1. After running a test, look for the "Other Requests" panel at the bottom of the screen
 2. Select a request from the dropdown menu (they are typically labeled like "Async Job -- Create" or "Async Job -- Polling")
 3. Use the tabs to switch between the request and response details
-    - Request tab: The request URL, method, headers, and body
-    - Response tab: The response status, headers, and body
+   - Request tab: The request URL, method, headers, and body
+   - Response tab: The response status, headers, and body
 
 ## How Asynchronous Data Extraction Works
 
 Let's walk through the complete flow using the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts) example:
 
 1. **Job Creation**:
+
    - The connector sends a POST request to the exports endpoint with the user's API key
    - SendGrid begins generating the export and returns a response with a job ID
    - In the Other Requests panel, you'll see this creation request and its response
 
 2. **Status Checking**:
+
    - The connector uses the job ID to construct the polling URL
    - It periodically sends GET requests to this URL to check the status
    - SendGrid returns updates about the job status
    - In the Other Requests panel, you'll see these polling requests and responses
 
 3. **Status Evaluation**:
+
    - The connector extracts the status value (e.g., "pending") using the Status Extractor
    - It maps this to a standard status (e.g., "running") using the Status Mapping
    - It continues polling until the status changes to "ready" (mapped to "completed")
 
 4. **Download URL Extraction**:
+
    - When the job is complete, the connector extracts the download URL using the Download Target Extractor
    - In the Other Requests panel, you'll see the final polling response that contains this URL
 
@@ -210,8 +217,9 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
 ## Best Practices for Asynchronous Streams
 
 1. **Verify Each Stage**: Use the Other Requests panel to verify that each stage is working correctly:
+
    - Confirm the job creation request is successful
-   - Verify that status is at the expected place with the expected values in the polling response 
+   - Verify that status is at the expected place with the expected values in the polling response
    - Ensure the download target is correctly extracted by checking the main Request tab URL
 
 2. **Configure Status Mapping Properly**: Include all possible API status values in your status mapping.
@@ -220,4 +228,4 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
 
 4. **Check for Rate Limits**: Many APIs limit how frequently you can poll for job status. Configure appropriate error handling if you hit these limits.
 
-Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs. 
+Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs.

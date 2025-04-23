@@ -42,15 +42,15 @@ For best performance, run Airbyte on a machine with 4 or more CPUs and at least 
 
 ## Part 1: Install abctl
 
-abctl is Airbyte's command-line tool for deploying and managing Airbyte. 
+abctl is Airbyte's command-line tool for deploying and managing Airbyte.
 
 ### Install abctl the fast way (Mac, Linux)
 
 1. Open a terminal and run the following command.
 
-    ```shell
-    curl -LsfS https://get.airbyte.com | bash -
-    ```
+   ```shell
+   curl -LsfS https://get.airbyte.com | bash -
+   ```
 
 2. If your terminal asks you to enter your password, do so.
 
@@ -69,49 +69,49 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
 2. Run the following commands after Homebrew is installed.
 
-    ```bash
-    brew tap airbytehq/tap
-    brew install abctl
-    ```
+   ```bash
+   brew tap airbytehq/tap
+   brew install abctl
+   ```
 
 3. Keep abctl up to date with Homebrew, too.
 
-    ```bash
-    brew upgrade abctl
-    ```
+   ```bash
+   brew upgrade abctl
+   ```
 
 </TabItem>
 <TabItem value="abctl-linux" label="Linux" default>
 
 1. Verify your processor architecture.
 
-    ```bash
-    uname -m
-    ```
+   ```bash
+   uname -m
+   ```
 
-    If the output is `x86_64`, you'll download the **linux-amd64** release. If the output is `aarch64` or similar, you'll download the **linux-arm64** release.
+   If the output is `x86_64`, you'll download the **linux-amd64** release. If the output is `aarch64` or similar, you'll download the **linux-arm64** release.
 
 2. Download the file that is compatible with your machine's processor architecture
 
-    <a class="abctl-download button button--primary" data-architecture="linux" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest Linux Release</a>
+   <a class="abctl-download button button--primary" data-architecture="linux" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest Linux Release</a>
 
 3. Extract the archive. This creates a directory named `abctl`, which contains the executable and other needed files.
 
-    ```bash
-    tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
-    ```
+   ```bash
+   tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
+   ```
 
 4. Make the extracted executable accessible. This allows you to run `abctl` as a command.
 
-    ```bash
-    chmod +x abctl/abctl
-    ```
+   ```bash
+   chmod +x abctl/abctl
+   ```
 
 5. Add `abctl` to your PATH. This allows you to run `abctl` from any directory in your terminal.
 
-    ```bash
-    sudo mv abctl /usr/local/bin
-    ```
+   ```bash
+   sudo mv abctl /usr/local/bin
+   ```
 
 6. Verify the installation. If this command prints the installed version of abctl, you can now use it to manage a local Airbyte instance.
 
@@ -124,39 +124,39 @@ abctl version
 
 1. Verify your processor architecture.
 
-    1. Press <kbd><FontAwesomeIcon icon={faWindows} /> Windows</kbd> + <kbd>I</kbd>.
+   1. Press <kbd><FontAwesomeIcon icon={faWindows} /> Windows</kbd> + <kbd>I</kbd>.
 
-    2. Click **System** > **About**.
+   2. Click **System** > **About**.
 
-    3. Next to **Processor**, if it says `AMD`, you'll download the **windows-amd64** release. If the output is `ARM` or similar, you'll download the **windows-arm64** release.
+   3. Next to **Processor**, if it says `AMD`, you'll download the **windows-amd64** release. If the output is `ARM` or similar, you'll download the **windows-arm64** release.
 
 2. Download the latest release of `abctl`.
 
-    <a class="abctl-download button button--primary" data-architecture="windows" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest Windows Release</a>
+   <a class="abctl-download button button--primary" data-architecture="windows" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest Windows Release</a>
 
 3. Extract the zip file to a destination of your choice. This creates a folder containing the abctl executable and other required files. Copy the filepath because you'll need this in a moment.
 
 4. Add the executable to your `Path` environment variable.
 
-    1. Click <FontAwesomeIcon icon={faWindows} /> **Start** and type `environment`.
+   1. Click <FontAwesomeIcon icon={faWindows} /> **Start** and type `environment`.
 
-    2. Click **Edit the system environment variables**. The System Properties opens.
+   2. Click **Edit the system environment variables**. The System Properties opens.
 
-    3. Click **Environment Variables**.
+   3. Click **Environment Variables**.
 
-    4. Find the Path variable and click **Edit**.
+   4. Find the Path variable and click **Edit**.
 
-    5. Click **New**, then paste the filepath you saved in step 3.
+   5. Click **New**, then paste the filepath you saved in step 3.
 
-    6. Click **OK**, then click **OK**, then close the System Properties.
+   6. Click **OK**, then click **OK**, then close the System Properties.
 
 5. Open a new Command Prompt or PowerShell window. Changes to your Path variable only take effect in a new Window.
 
 6. Verify abctl is installed correctly. If this command prints the installed version of abctl, you can now use it to manage a local Airbyte instance.
 
-    ```bash
-    abctl version
-    ```
+   ```bash
+   abctl version
+   ```
 
 </TabItem>
 </Tabs>
@@ -167,31 +167,31 @@ abctl version
 
 2. Install Airbyte.
 
-    To run Airbyte with on a machine with the recommended resources (4 or more CPUs), use this command:
+   To run Airbyte with on a machine with the recommended resources (4 or more CPUs), use this command:
 
-    ```bash
-    abctl local install
-    ```
+   ```bash
+   abctl local install
+   ```
 
-    <!-- [[[This is good to know but I don't think it's within the scope of this guide.]]]
-    To make Airbyte accessible outside `localhost`, specify the `--host` flag to the local install command, and provide a fully qualified domain name for Airbyte's host.
+   <!-- [[[This is good to know but I don't think it's within the scope of this guide.]]]
+   To make Airbyte accessible outside `localhost`, specify the `--host` flag to the local install command, and provide a fully qualified domain name for Airbyte's host.
 
-    ```bash
-    abctl local install --host airbyte.example.com
-    ``` 
-    -->
+   ```bash
+   abctl local install --host airbyte.example.com
+   ```
+   -->
 
-    To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command.
+   To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command.
 
-    ```bash
-    abctl local install --low-resource-mode
-    ```
+   ```bash
+   abctl local install --low-resource-mode
+   ```
 
-    :::note
-    If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation will complete anyway. See [Suggested resources](#suggested-resources).
-    :::
+   :::note
+   If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation will complete anyway. See [Suggested resources](#suggested-resources).
+   :::
 
-    Installation may take up to 15 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000). As long as your Docker Desktop daemon is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
+   Installation may take up to 15 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000). As long as your Docker Desktop daemon is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
 
 3. Enter your **Email** and **Organization name**, then click **Get Started**. Airbyte asks you to log in with a password.
 
@@ -201,30 +201,30 @@ To access your Airbyte instance, you need a password.
 
 1. Get your default password.
 
-    ```bash
-    abctl local credentials
-    ```
+   ```bash
+   abctl local credentials
+   ```
 
-    This outputs something like this:
+   This outputs something like this:
 
-    ```shell
-    Credentials:
-    Email: user@example.com
-    // highlight-next-line
-    Password: random_password
-    Client-Id: 03ef466c-5558-4ca5-856b-4960ba7c161b
-    Client-Secret: m2UjnDO4iyBQ3IsRiy5GG3LaZWP6xs9I
-    ```
+   ```shell
+   Credentials:
+   Email: user@example.com
+   // highlight-next-line
+   Password: random_password
+   Client-Id: 03ef466c-5558-4ca5-856b-4960ba7c161b
+   Client-Secret: m2UjnDO4iyBQ3IsRiy5GG3LaZWP6xs9I
+   ```
 
 2. Return to your browser and use that password to log into Airbyte.
 
 3. Optional: Since you probably want to set your own password, you can change it any time.
 
-    ```bash
-    abctl local credentials --password YourStrongPasswordExample
-    ```
+   ```bash
+   abctl local credentials --password YourStrongPasswordExample
+   ```
 
-    Your Airbyte server restarts. Once it finishes, use your new password to log into Airbyte again.
+   Your Airbyte server restarts. Once it finishes, use your new password to log into Airbyte again.
 
 ## What's next
 
@@ -250,15 +250,15 @@ To stop running containers and delete all data:
 
 1. Uninstall Airbyte with the `--persisted` flag.
 
-    ```shell
-    abctl local uninstall --persisted
-    ```
+   ```shell
+   abctl local uninstall --persisted
+   ```
 
 2. Clear any remaining information abctl created.
 
-    ```shell
-    rm -rf ~/.airbyte/abctl
-    ```
+   ```shell
+   rm -rf ~/.airbyte/abctl
+   ```
 
 <!-- --Preserving for posterity but probably not relevant to include in the quick start. May move to deployment section later.--
 

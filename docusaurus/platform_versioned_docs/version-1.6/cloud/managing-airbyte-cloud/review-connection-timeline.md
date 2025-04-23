@@ -32,23 +32,23 @@ The Connection Timeline includes the following event types:
 
 - Connection settings changes
 
-    - Changing connection settings like name or sync schedule
+  - Changing connection settings like name or sync schedule
 
-    - Manually enabling or disabling a connection
+  - Manually enabling or disabling a connection
 
-    - Airbyte disabling a connection due to a billing issue or consecutive failures
+  - Airbyte disabling a connection due to a billing issue or consecutive failures
 
 - Schema updates
 
 - Schema configuration changes
 
-    - Enabling or disabling streams and fields
+  - Enabling or disabling streams and fields
 
-    - Changing primary keys or cursors
+  - Changing primary keys or cursors
 
-    - Changing the sync mode
+  - Changing the sync mode
 
-    - Adding or removing streams/fields after clicking "Refresh source schema"
+  - Adding or removing streams/fields after clicking "Refresh source schema"
 
 The Connection Timeline also shows who took an action, if that's relevant to the event.
 
@@ -61,7 +61,7 @@ Completed syncs, [refreshes](/platform/operator-guides/refreshes), and [clears](
 | Succeeded  | Airbyte extracted 100% of the data and loaded to the destination.                                                                      |
 | Incomplete | The sync encountered an error, and should resolve itself. Airbyte loaded a subset or none of the data to the destination.              |
 | Failed     | The sync encountered a fatal error, and needs intervention to resolve. Airbyte loaded a subset or none of the data to the destination. |
-| Cancelled  | Someone cancelled the sync before it finished.                                                                                          |
+| Cancelled  | Someone cancelled the sync before it finished.                                                                                         |
 | Running    | The sync is currently running.                                                                                                         |
 
 ### How the Connection Timeline reflects moved data
@@ -72,7 +72,7 @@ For sync and refresh events, Airbyte also shows the volume of synced data, such 
 | -------------------------------- | -------------------------------------------------------------- |
 | `x` GB (also measured in KB, MB) | Amount of data moved during the sync.                          |
 | `x` extracted records            | Number of records read from the source during the sync.        |
-| `x` loaded records               | Number of records the destination confirmed it received.        |
+| `x` loaded records               | Number of records the destination confirmed it received.       |
 | `xh xm xs`                       | Total time (hours, minutes, seconds) for the sync to complete. |
 
 ### How the Connection Timeline reflects failed syncs

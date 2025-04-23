@@ -1,6 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const { parseMarkdownContentTitle, parseMarkdownFile } = require("@docusaurus/utils");
+const {
+  parseMarkdownContentTitle,
+  parseMarkdownFile,
+} = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -23,15 +26,21 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       let contentTitle = filename;
-      
+
       // Get the first header of the markdown document
       try {
         const filePath = path.join(dir, `${filename}.md`);
         const fileContent = fs.readFileSync(filePath, "utf8");
-        const firstLine = fileContent.split("\n").find((line) => line.trim().startsWith("# "));
-        contentTitle = firstLine ? firstLine.replace(/^#\s*/, "").trim() : filename;
+        const firstLine = fileContent
+          .split("\n")
+          .find((line) => line.trim().startsWith("# "));
+        contentTitle = firstLine
+          ? firstLine.replace(/^#\s*/, "").trim()
+          : filename;
       } catch (error) {
-        console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
+        console.warn(
+          `Warning: Using filename as title for ${path.join(prefix, filename)}`,
+        );
       }
 
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
@@ -195,73 +204,72 @@ const destinationPostgres = {
 };
 
 const connectorCatalog = {
-    type: "category",
-    label: "Connectors",
-    collapsible: false,
-    link: {
-      type: "doc",
-      id: "README",
-    },
-    items: [
-      {
-        type: "category",
-        label: "Sources",
-        link: {
-          type: "doc",
-          id: "sources/README",
-        },
-        items: [
-          sourcePostgres,
-          sourceMongoDB,
-          sourceMysql,
-          sourceMssql,
-          ...getSourceConnectors(),
-        ].sort((itemA, itemB) => {
-          const labelA = itemA?.label || "";
-          const labelB = itemB?.label || "";
-          return labelA.localeCompare(labelB);
-        }),
-      },
-      {
-        type: "category",
-        label: "Destinations",
-        link: {
-          type: "doc",
-          id: "destinations/README",
-        },
-        items: [destinationS3, destinationPostgres, ...getDestinationConnectors()].sort(
-          (itemA, itemB) => {
-            const labelA = itemA?.label || "";
-            const labelB = itemB?.label || "";
-            return labelA.localeCompare(labelB);
-          },
-        ),
-      },
-      {
-        type: "category",
-        label: "Enterprise Connectors",
-        link: {
-            type: "doc",
-            id: "enterprise-connectors/README",
-        },
-        items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
-            const labelA = itemA?.label || "";
-            const labelB = itemB?.label || "";
-            return labelA.localeCompare(labelB);
-        }),
-      },
-      "connector-support-levels",
-      {
+  type: "category",
+  label: "Connectors",
+  collapsible: false,
+  link: {
+    type: "doc",
+    id: "README",
+  },
+  items: [
+    {
+      type: "category",
+      label: "Sources",
+      link: {
         type: "doc",
-        id: "custom-connectors",
+        id: "sources/README",
       },
-      "locating-files-local-destination",
-    ],
-  };
-
+      items: [
+        sourcePostgres,
+        sourceMongoDB,
+        sourceMysql,
+        sourceMssql,
+        ...getSourceConnectors(),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || "";
+        const labelB = itemB?.label || "";
+        return labelA.localeCompare(labelB);
+      }),
+    },
+    {
+      type: "category",
+      label: "Destinations",
+      link: {
+        type: "doc",
+        id: "destinations/README",
+      },
+      items: [
+        destinationS3,
+        destinationPostgres,
+        ...getDestinationConnectors(),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || "";
+        const labelB = itemB?.label || "";
+        return labelA.localeCompare(labelB);
+      }),
+    },
+    {
+      type: "category",
+      label: "Enterprise Connectors",
+      link: {
+        type: "doc",
+        id: "enterprise-connectors/README",
+      },
+      items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
+        const labelA = itemA?.label || "";
+        const labelB = itemB?.label || "";
+        return labelA.localeCompare(labelB);
+      }),
+    },
+    "connector-support-levels",
+    {
+      type: "doc",
+      id: "custom-connectors",
+    },
+    "locating-files-local-destination",
+  ],
+};
 
 module.exports = {
-    connectors: [
-        connectorCatalog,
-    ],
+  connectors: [connectorCatalog],
 };

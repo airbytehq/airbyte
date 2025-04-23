@@ -15,12 +15,12 @@ It is possible to configure resources for all four jobs, but this article focuse
 
 There are four different ways to configure connector resource requirements for a sync. The narrower in scope the configuration, the higher the precedence.
 
-| Configuration type   | Description                                                               | Precedence     | Overrides                           | Overridden by                           |
-| -------------------- | ------------------------------------------------------------------------- | -------------- | ----------------------------------- | --------------------------------------- |
-| Instance-wide        | Applies to all containers.                                                | Lowest         | Nothing                             | All others                              |
-| Connector definition | Applies to all connectors of that type (for example, all Stripe sources). | Second-lowest  | Instance-wide                       | Connector-specific, connection-specific |
-| Connector-specific   | Applies to one connector (for example, only _this_ Stripe source).          | Second-highest | Instance-wide, connector definition | Connection-specific                     |
-| Connection-specific  | Applies to this connection only (i.e. only _this_ source/destination combination).                                          | Highest        | All others                          | Nothing                                 |
+| Configuration type   | Description                                                                        | Precedence     | Overrides                           | Overridden by                           |
+| -------------------- | ---------------------------------------------------------------------------------- | -------------- | ----------------------------------- | --------------------------------------- |
+| Instance-wide        | Applies to all containers.                                                         | Lowest         | Nothing                             | All others                              |
+| Connector definition | Applies to all connectors of that type (for example, all Stripe sources).          | Second-lowest  | Instance-wide                       | Connector-specific, connection-specific |
+| Connector-specific   | Applies to one connector (for example, only _this_ Stripe source).                 | Second-highest | Instance-wide, connector definition | Connection-specific                     |
+| Connection-specific  | Applies to this connection only (i.e. only _this_ source/destination combination). | Highest        | All others                          | Nothing                                 |
 
 ## Best Practices for Allocating Resources
 
@@ -86,10 +86,10 @@ Database Connectors:
 
 ## Configuring Connection-Specific Requirements
 
-1. Navigate to the connection in the Airbyte UI and extract the connection id from the url. 
+1. Navigate to the connection in the Airbyte UI and extract the connection id from the url.
 
    - The URL format is `<base_url>/workspaces/<workspace-id>/connections/<connection-id>/status`. So, if the url is `localhost:8000/workspaces/92ad8c0e-d204-4bb4-9c9e-30fe25614eee/connections/5432b428-b04a-4562-a12b-21c7b9e8b63a/status`,
-      the connection id is `5432b428-b04a-4562-a12b-21c7b9e8b63a`.
+     the connection id is `5432b428-b04a-4562-a12b-21c7b9e8b63a`.
 
 2. Connect to the database and run the following command with the connection id and resource requirements filled in.
 

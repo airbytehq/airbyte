@@ -8,7 +8,7 @@ Use mappings to hash, encrypt, and rename fields, and filter rows. You set up ma
 
 ![Screenshot of mappings feature showing several streams with mappings applied](images/mappings.png)
 
-## More about mapping in Airbyte 
+## More about mapping in Airbyte
 
 It’s often the case that you want to move data from a source to a destination in a non-literal way, obscuring sensitive information and improving the consistency and usability of that data in its destination. Mapping allows you to match a field from your source to your destination and sync data in a way that is still accurate, but also more meaningful and appropriate for your needs.
 
@@ -54,7 +54,7 @@ This is an example of the public key format Airbyte expects, but make sure you g
 
 ### Rename field
 
-Renaming fields helps you ensure clarity, consistency, and compatibility in your destination data. 
+Renaming fields helps you ensure clarity, consistency, and compatibility in your destination data.
 
 ![](images/mapping-rename.png)
 
@@ -66,7 +66,7 @@ There are many reasons you might want to rename fields.
 
 ### Filter rows
 
-Filtering rows is how you ensure you only sync relevant, high-quality, and meaningful data to your destination. 
+Filtering rows is how you ensure you only sync relevant, high-quality, and meaningful data to your destination.
 
 ![](images/mapping-filter.png)
 
@@ -86,11 +86,11 @@ Before you begin mapping fields, consider the following.
 
 - Don't map a cursor or primary key field if the [sync mode](core-concepts/sync-modes) depends on it. Doing this disrupts Airbyte's ability to use them for incremental syncing and deduplication.
 
-- If you set up mapping on an existing connection, Airbyte prompts you to refresh affected streams. If a given destination does not support refreshes, Airbyte prompts you to clear it, instead. You almost certainly should do this. Not doing this could result in undesirable or unexpected behavior. For example, if you set up hashing on a field that contains PII, you want all data in that column to be hashed, not just new data. In a case like this, it's critical that you [clear historical data](../operator-guides/clear) before syncing again. 
+- If you set up mapping on an existing connection, Airbyte prompts you to refresh affected streams. If a given destination does not support refreshes, Airbyte prompts you to clear it, instead. You almost certainly should do this. Not doing this could result in undesirable or unexpected behavior. For example, if you set up hashing on a field that contains PII, you want all data in that column to be hashed, not just new data. In a case like this, it's critical that you [clear historical data](../operator-guides/clear) before syncing again.
 
-    :::note
-    If you're dealing with an extremely large database, a complete resync might take a significant amount of time.
-    :::
+  :::note
+  If you're dealing with an extremely large database, a complete resync might take a significant amount of time.
+  :::
 
 ## Create a new mapping
 
@@ -101,7 +101,7 @@ Follow these steps to create a new mapping. Once you add a mapping to a stream, 
 3. Click **Mappings**.
 4. Click **Select stream** or **Add stream**.
 5. Select the stream on which you want to set up mappings.
-6. Define your mappings for that stream. 
+6. Define your mappings for that stream.
 7. When you're done, click **Submit**. Airbyte may prompt you to refresh or clear your destination to avoid unexpected behavior. The mapping is applied next time you sync data.
 
 ## Modify a mapping

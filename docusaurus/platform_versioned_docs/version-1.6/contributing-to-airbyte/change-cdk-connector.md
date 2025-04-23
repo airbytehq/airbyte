@@ -8,11 +8,11 @@ Before jumping into the code:
 
 1. Check if the improvement you want to make or bug you want to fix is already captured in an [existing issue](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fconnectors+-label%3Aneeds-triage+label%3Acommunity)
 2. If you don't find an existing issue, either
-  - [Report a Connector Bug](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug%2Carea%2Fconnectors%2Cneeds-triage&projects=&template=1-issue-connector.yaml), or
-  - [Request a New Connector Feature](https://github.com/airbytehq/airbyte/discussions/categories/connector-ideas-and-features)
+
+- [Report a Connector Bug](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug%2Carea%2Fconnectors%2Cneeds-triage&projects=&template=1-issue-connector.yaml), or
+- [Request a New Connector Feature](https://github.com/airbytehq/airbyte/discussions/categories/connector-ideas-and-features)
 
 This will enable our team to make sure your contribution does not overlap with existing works and will comply with the design orientation we are currently heading the product toward. If you do not receive an update on the issue from our team, please ping us on [Slack](https://slack.airbyte.io)!
-
 
 ### Code your contribution
 

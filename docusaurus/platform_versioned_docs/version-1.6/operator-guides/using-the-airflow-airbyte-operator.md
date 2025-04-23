@@ -13,7 +13,6 @@ For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Air
 
 :::
 
-
 The Airbyte Provider documentation on Airflow project can be found [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html).
 
 ## 1. Set up the tools

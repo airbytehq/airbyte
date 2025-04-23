@@ -40,9 +40,9 @@ If you haven't, you're using Airbyte's default service account, `airbyte-sa`.
 
 1. Run the following kubectl command.
 
-    ```bash
-    kubectl -n <namespace> patch role airbyte-admin-role --type='json' -p='[{"op": "replace", "path": "/rules/0/resources", "value": ["jobs", "pods", "pods/log", "pods/exec", "pods/attach", "secrets"]}]'
-    ```
+   ```bash
+   kubectl -n <namespace> patch role airbyte-admin-role --type='json' -p='[{"op": "replace", "path": "/rules/0/resources", "value": ["jobs", "pods", "pods/log", "pods/exec", "pods/attach", "secrets"]}]'
+   ```
 
 2. Upgrade Airbyte as you normally would.
 
@@ -50,19 +50,19 @@ If you haven't, you're using Airbyte's default service account, `airbyte-sa`.
 
 1. Upgrade your service account/role to grant it **secrets** access. The role should look approximately like this:
 
-    ```yaml
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: Role
-    metadata:
-      name: roleName    app.kubernetes.io/managed-by: Helm
-      annotations:
-        helm.sh/hook: pre-install
-        helm.sh/hook-weight: "-5"
-    rules:
-      - apiGroups: ["*"]
-      //highlight-next-line
-        resources: ["jobs", "pods", "pods/log", "pods/exec", "pods/attach", "secrets"]
-        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-    ```
+   ```yaml
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: Role
+   metadata:
+     name: roleName    app.kubernetes.io/managed-by: Helm
+     annotations:
+       helm.sh/hook: pre-install
+       helm.sh/hook-weight: "-5"
+   rules:
+     - apiGroups: ["*"]
+     //highlight-next-line
+       resources: ["jobs", "pods", "pods/log", "pods/exec", "pods/attach", "secrets"]
+       verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+   ```
 
 2. Upgrade Airbyte as your normally would.

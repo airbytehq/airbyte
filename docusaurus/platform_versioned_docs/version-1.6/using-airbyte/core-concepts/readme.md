@@ -26,10 +26,10 @@ A connection is an automated data pipeline that replicates data from a source to
 
 | Concept                                                                                                                         | Description                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| [Stream and Field Selection](/platform/cloud/managing-airbyte-cloud/configuring-connections/#modify-streams-in-your-connection)  | What data should be replicated from the source to the destination? |
-| [Sync Mode](/platform/using-airbyte/core-concepts/sync-modes/)                                                            | How should the streams be replicated (read and written)?           |
+| [Stream and Field Selection](/platform/cloud/managing-airbyte-cloud/configuring-connections/#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
+| [Sync Mode](/platform/using-airbyte/core-concepts/sync-modes/)                                                                  | How should the streams be replicated (read and written)?           |
 | [Sync Schedule](/platform/using-airbyte/core-concepts/sync-schedules)                                                           | When should a data sync be triggered?                              |
-| [Destination Namespace and Stream Prefix](/platform/using-airbyte/core-concepts/namespaces)                                      | Where should the replicated data be written?                       |
+| [Destination Namespace and Stream Prefix](/platform/using-airbyte/core-concepts/namespaces)                                     | Where should the replicated data be written?                       |
 | [Schema Propagation](/platform/using-airbyte/schema-change-management)                                                          | How should Airbyte handle schema drift in sources?                 |
 
 ## Stream
@@ -91,7 +91,7 @@ Read more about each [sync mode](/platform/using-airbyte/core-concepts/sync-mode
 
 ## Resumability
 
-[Resumability](/platform/understanding-airbyte/resumability/) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood. 
+[Resumability](/platform/understanding-airbyte/resumability/) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood.
 
 ## Typing and Deduping
 

@@ -26,7 +26,6 @@ Upon a successful sync, the final stream state will be the datetime of the last 
 
 Refer to the schema for both [`DatetimeBasedCursor`](reference.md#/definitions/DatetimeBasedCursor) and [`MinMaxDatetime`](reference.md#/definitions/MinMaxDatetime) in the YAML reference for more details.
 
-
 Example:
 
 ```yaml
@@ -94,23 +93,26 @@ Nested streams, subresources, or streams that depend on other streams can be imp
 The default state format is **per partition with fallback to global**, but there are options to enhance efficiency depending on your use case: **incremental_dependency** and **global_substream_cursor**. Here's when and how to use each option, with examples:
 
 #### Per Partition with Fallback to Global (Default)
+
 - **Description**: This is the default state format, where each partition has its own cursor. However, when the number of records in the parent sync exceeds two times the set limit, the cursor automatically falls back to a global state to manage efficiency and scalability.
 - **Limitation**: The per partition state has a limit of 10,000 partitions. Once this limit is exceeded, the global cursor takes over, aggregating the state across partitions to avoid inefficiencies.
 - **When to Use**: Use this as the default option for most cases. It provides the flexibility of managing partitions while preventing performance degradation when large numbers of records are involved.
 - **Example State**:
   ```json
   {
-      "states": [
-          {"partition_key": "partition_1", "cursor_field": "2021-01-15"},
-          {"partition_key": "partition_2", "cursor_field": "2021-02-14"}
-      ],
-      "state": {
-          "cursor_field": "2021-02-15"
-      },
-      "use_global_cursor": false
+    "states": [
+      { "partition_key": "partition_1", "cursor_field": "2021-01-15" },
+      { "partition_key": "partition_2", "cursor_field": "2021-02-14" }
+    ],
+    "state": {
+      "cursor_field": "2021-02-15"
+    },
+    "use_global_cursor": false
   }
   ```
+
 #### Incremental Dependency
+
 - **Description**: This option allows the parent stream to be read incrementally, ensuring that only new data is synced.
 - **Requirement**: The API must ensure that the parent record's cursor is updated whenever child records are added or updated. If this requirement is not met, child records added to older parent records will be lost.
 - **When to Use**: Use this option if the parent stream is incremental and you want to read it with the state. The parent state is updated after processing all the child records for the parent record.
@@ -128,18 +130,19 @@ The default state format is **per partition with fallback to global**, but there
   ```
 
 #### Global Substream Cursor
+
 - **Description**: This option uses a single global cursor for all partitions, significantly reducing the state size. It enforces a minimal lookback window based on the previous sync's duration to avoid losing records added or updated during the sync. Since the global cursor is already part of the per partition with fallback to global approach, it should only be used cautiously for custom connectors with exceptionally large parent streams to avoid managing state per partition.
 - **When to Use**: Use this option cautiously for custom connectors where the number of partitions in the parent stream is extremely high (e.g., millions of records per sync). The global cursor avoids the inefficiency of managing state per partition but sacrifices some granularity, which may not be suitable for every use case.
 - **Operational Detail**: The global cursor is updated only at the end of the sync. If the sync fails, only the parent state is updated, provided that the incremental dependency is enabled. The global cursor ensures that records are captured through a lookback window, even if they were added during the sync.
 - **Example State**:
   ```json
-  [
-    { "timestamp": "2024-08-01"}
-  ]
+  [{ "timestamp": "2024-08-01" }]
   ```
 
 ### Summary
+
 Summary
+
 - **Per Partition with Fallback to Global (Default)**: Best for managing scalability and optimizing state size. Starts with per partition cursors, and automatically falls back to a global cursor if the number of records in the parent sync exceeds two times the partition limit.
 - **Incremental Dependency**: Use for incremental parent streams with a dependent child cursor. Ensure the API updates the parent cursor when child records are added or updated.
 - **Global Substream Cursor**: Use cautiously for custom connectors with very large parent streams. Avoids per partition state management but sacrifices some granularity.

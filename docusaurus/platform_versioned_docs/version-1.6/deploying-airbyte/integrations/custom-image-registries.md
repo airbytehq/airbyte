@@ -2,7 +2,7 @@
 products: oss-community, oss-enterprise
 ---
 
-import ContainerProviders from '@site/static/_docker_image_registries.md';
+import ContainerProviders from '@site/static/\_docker_image_registries.md';
 
 # Custom image registry
 
@@ -70,27 +70,27 @@ If your registry requires authentication, you can create a Kubernetes secret and
 
 1. Create a Kubernetes secret. In this example, you create a secret called `regcred` from a config file. That file contains authentication information for a private custom image registry. [Learn more about Kubernetes secrets](https://kubernetes.io/docs/tasks/configmap-secret/).
 
-    ```bash
-    kubectl create secret generic regcred \
-    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
-    --type=kubernetes.io/dockerconfigjson
-    ```
+   ```bash
+   kubectl create secret generic regcred \
+   --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+   --type=kubernetes.io/dockerconfigjson
+   ```
 
 2. Add the secret you created to your `values.yaml` file. In this example, you use your `regcred` secret to authenticate.
 
-    ```yaml title="values.yaml"
-    global:
-      image:
-        registry: ghcr.io/NAMESPACE
-      // highlight-start
-      imagePullSecrets:
-        - name: regcred
-      // highlight-end
-    ```
+   ```yaml title="values.yaml"
+   global:
+     image:
+       registry: ghcr.io/NAMESPACE
+     // highlight-start
+     imagePullSecrets:
+       - name: regcred
+     // highlight-end
+   ```
 
 ## Step 2: Tag and push Airbyte images
 
-Tag and push Airbyte's images to your custom image registry. 
+Tag and push Airbyte's images to your custom image registry.
 
 In this example, you tag all platform images and push them all to GitHub.
 
@@ -105,7 +105,7 @@ In this example, you pull a connector from Docker, tag it, and push it to GitHub
 ```bash
 docker pull airbyte/destination-google-sheets:latest
 docker tag airbyte/desination-google-sheets:latest ghcr.io/NAMESPACE/desination-google-sheets:latest
-docker push ghcr.io/NAMESPACE/destination-google-sheets:latest    
+docker push ghcr.io/NAMESPACE/destination-google-sheets:latest
 ```
 
 Now, when you install Airbyte, images will come from the custom image registry you configured.

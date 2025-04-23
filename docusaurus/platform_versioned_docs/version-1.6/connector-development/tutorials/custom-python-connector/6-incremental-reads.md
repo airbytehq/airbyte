@@ -17,6 +17,7 @@ used to identify it in the timeline.
 
 The `get_updated_state` method is used to update the stream's state. We'll set its value to the
 maximum between the current state's value and the value extracted from the record.
+
 ```python
 # import the following library
 import datetime

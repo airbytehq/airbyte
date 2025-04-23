@@ -48,12 +48,13 @@ HTTPAPIBudget:
 An `HTTPAPIBudget` may contain one or more rate policies. These policies define how rate limits should be enforced.
 
 ## Example usage
+
 ```yaml
 api_budget:
   type: "HTTPAPIBudget"
   ratelimit_reset_header: "X-RateLimit-Reset"
   ratelimit_remaining_header: "X-RateLimit-Remaining"
-  status_codes_for_ratelimit_hit: [ 429 ]
+  status_codes_for_ratelimit_hit: [429]
   policies:
     - type: "UnlimitedCallRatePolicy"
       matchers: []
@@ -73,15 +74,17 @@ api_budget:
           url_base: "https://api.example.com"
           url_path_pattern: "^/users"
 ```
+
 Above, we define:
 
 1. **UnlimitedCallRatePolicy**: A policy with no limit on requests.
 2. **FixedWindowCallRatePolicy**: Allows a set number of calls within a fixed time window (in the example, 1000 calls per 1 hour).
 3. **MovingWindowCallRatePolicy**: Uses a moving time window to track how many calls were made in the last interval. In the example, up to 100 calls per 1 minute for `POST /users`.
 
-
 ## Rate Policies
+
 ### Unlimited call rate policy
+
 Use this policy if you want to allow unlimited calls for a subset of requests.
 For instance, the policy below will not limit requests that match its `matchers`:
 
@@ -104,6 +107,7 @@ UnlimitedCallRatePolicy:
 ```
 
 #### Example
+
 ```yaml
 api_budget:
   type: "HTTPAPIBudget"
@@ -115,9 +119,11 @@ api_budget:
           url_base: "https://api.example.com"
           url_path_pattern: "^/sandbox"
 ```
+
 Here, any request matching the above matcher is not rate-limited.
 
 ### Fixed Window Call Rate Policy
+
 This policy allows **n** calls per specified interval (for example, 1000 calls per hour). After the time window ends (the “fixed window”), it resets, and you can make new calls.
 
 ```yaml
@@ -145,25 +151,28 @@ FixedWindowCallRatePolicy:
         "$ref": "#/definitions/HttpRequestRegexMatcher"
     additionalProperties: true
 ```
+
 - **period**: In ISO 8601 duration format (e.g. `PT1H` for 1 hour, `PT15M` for 15 minutes).
 - **call_limit**: Maximum allowed calls within that period.
 - **matchers**: A list of request matchers (by HTTP method, URL path, etc.) that this policy applies to.
 
 #### Example
+
 ```yaml
 api_budget:
- type: "HTTPAPIBudget"
- policies:
-   - type: "FixedWindowCallRatePolicy"
-     period: "PT1H"
-     call_limit: 1000
-     matchers:
-       - method: "GET"
-         url_base: "https://api.example.com"
-         url_path_pattern: "^/users"
+  type: "HTTPAPIBudget"
+  policies:
+    - type: "FixedWindowCallRatePolicy"
+      period: "PT1H"
+      call_limit: 1000
+      matchers:
+        - method: "GET"
+          url_base: "https://api.example.com"
+          url_path_pattern: "^/users"
 ```
 
 ### Moving Window Call Rate Policy
+
 This policy allows a certain number of calls in a “sliding” or “moving” window, using timestamps for each call. For example, 100 requests allowed within the last 60 seconds.
 
 ```yaml
@@ -195,6 +204,7 @@ MovingWindowCallRatePolicy:
 - **limit**: Number of calls allowed within that interval.
 
 #### Example
+
 ```yaml
 api_budget:
   type: "HTTPAPIBudget"
@@ -208,9 +218,11 @@ api_budget:
           url_base: "https://api.example.com"
           url_path_pattern: "^/orders"
 ```
+
 In this example, at most 100 requests to `GET /orders` can be made in any rolling 1-minute period.
 
 ## Matching requests with matchers
+
 Each policy has a `matchers` array of objects defining which requests it applies to. The schema for each matcher:
 
 ```yaml
@@ -234,14 +246,16 @@ HttpRequestRegexMatcher:
       additionalProperties: true
   additionalProperties: true
 ```
+
 - **method**: Matches if the request method equals the one in the matcher (case-insensitive).
 - **url_base**: Matches the scheme + host portion (no trailing slash).
 - **url_path_pattern**: Regex is tested against the request path.
 - **params**: The query parameters must match.
 - **headers**: The headers must match.
-A request is rate-limited by the first policy whose matchers pass. If no policy matches, then the request will be allowed if you have not defined a default/other policy that catches everything else.
+  A request is rate-limited by the first policy whose matchers pass. If no policy matches, then the request will be allowed if you have not defined a default/other policy that catches everything else.
 
 ## Putting it all together
+
 You may define multiple policies for different endpoints. For example:
 
 ```yaml
@@ -287,6 +301,7 @@ api_budget:
         - url_base: "https://api.example.com"
           url_path_pattern: "^/internal"
 ```
-1. The request attempts to match the first policy (unlimited on `GET /sandbox`). If it matches, it’s unlimited. 
-2. Otherwise, it checks the second policy (1000/hour for `GET /users`), etc. 
+
+1. The request attempts to match the first policy (unlimited on `GET /sandbox`). If it matches, it’s unlimited.
+2. Otherwise, it checks the second policy (1000/hour for `GET /users`), etc.
 3. If still no match, it is not rate-limited by these defined policies (unless you add a “catch-all” policy).

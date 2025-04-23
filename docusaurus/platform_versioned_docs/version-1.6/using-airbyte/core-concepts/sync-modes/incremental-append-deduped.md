@@ -6,7 +6,7 @@ products: all
 
 ## High-Level Context
 
-This sync mode syncs data **incrementally**, which means that only new or modified data will be synced. In contrast with the [Incremental Append mode](./incremental-append.md), this mode updates rows that have been modified instead of adding a new version of the row with the updated data. 
+This sync mode syncs data **incrementally**, which means that only new or modified data will be synced. In contrast with the [Incremental Append mode](./incremental-append.md), this mode updates rows that have been modified instead of adding a new version of the row with the updated data.
 
 If you've synced a row before and it has since been updated, this sync mode will combine the two rows in the destination and use the most recent data. On the other hand, the [Incremental Append mode](./incremental-append.md) would just add a new row with the updated data.
 

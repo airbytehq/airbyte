@@ -48,7 +48,7 @@ function ConnectorTable({ connectors, connectorSupportLevel }) {
           .map((connector) => {
             const docsLink = connector.documentationUrl_oss?.replace(
               "https://docs.airbyte.com",
-              ""
+              "",
             ); // not using documentationUrl so we can have relative links
 
             return (

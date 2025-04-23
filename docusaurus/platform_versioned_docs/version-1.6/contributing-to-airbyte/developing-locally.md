@@ -85,12 +85,13 @@ cd airbyte
 ```
 
 3. Make sure that `abctl` is running correctly with the following command `abctl local status`. Verify the status check
-was successful
+   was successful
 
 4. Then, build the connector image:
-    - Verify the `airbyte-ci` tool is installed by running `airbyte-ci --help`, install the command with the instructions in the Prerequisites if the command is not found.
-    - Run `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
-    - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+   - Verify the `airbyte-ci` tool is installed by running `airbyte-ci --help`, install the command with the instructions in the Prerequisites if the command is not found.
+   - Run `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+   - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
 
 5. Verify the image was published locally by running:
 
@@ -99,6 +100,7 @@ docker images ls | grep airbyte/source-<source-name>:dev
 ```
 
 You should see output similar to:
+
 ```shell
 airbyte/destination-s3 | dev | 70516a5908ce | 2 minutes ago | 968MB
 ```
@@ -124,7 +126,6 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 Now when you run a sync with that connector, it will use your local docker image
 
-
 ### Connector Specification Caching
 
 The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a
@@ -138,6 +139,7 @@ connector, you will need to clear this cache so the new changes are registered. 
 - Click `Change` to save the changes, which will refresh the dev connectors spec
 
 ## Platform Contributions
+
 1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
 2. Clone the fork on your workstation:
 
@@ -147,7 +149,7 @@ cd airbyte-platform
 ```
 
 3. Make sure that `abctl` is running correctly with the following command `abctl local status`. Verify the status check
-was successful
+   was successful
 
 ### Build with `gradle`
 
@@ -160,7 +162,6 @@ To compile and build the platform, run the following command in your local `airb
 This will build all the code and run all the unit tests.
 
 `./gradlew build` creates all the necessary artifacts \(Webapp, Jars, and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
-
 
 :::info
 
@@ -349,7 +350,6 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-[//]: # (### Inspecting the messages passed between connectors)
-
-[//]: # ()
-[//]: # (From your local `airbyte-platform` repository, you can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`)
+[//]: # "### Inspecting the messages passed between connectors"
+[//]: #
+[//]: # "From your local `airbyte-platform` repository, you can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`"

@@ -48,7 +48,7 @@ Create a new tag and add it to one of your connections.
 
 3. If the connection has no tags, click **Add a tag** <svg fill="none" data-icon="plus" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2"></path></svg>. If the connection already has tags, click **Edit tags** <svg fill="none" data-icon="pencil" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-.71-.29 1 1 0 0 0-.71.29l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8q.138-.146.22-.33.015-.12 0-.24a.7.7 0 0 0 0-.14zM6.83 20H4v-2.83l9.93-9.93 2.83 2.83zM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82z"></path></svg>.
 
-3. Type a name for your tag and click **Create `tag name`**.
+4. Type a name for your tag and click **Create `tag name`**.
 
 Airbyte creates the tag and applies it to that connection. Tag colors are defined automatically, but you can [change them](#change-tag-properties).
 

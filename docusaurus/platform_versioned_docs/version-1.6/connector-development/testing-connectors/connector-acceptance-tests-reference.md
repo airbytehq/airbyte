@@ -143,7 +143,7 @@ Verify that a `spec` operation issued to the connector returns a valid connector
 Additional tests are validating the backward compatibility of the current specification compared to the specification of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped.
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 One more test validates the specification against containing exposed secrets. This means fields that potentially could hold a secret value should be explicitly marked with `"airbyte_secret": true`. If an input field like `api_key` / `password` / `client_secret` / etc. is exposed, the test will fail.
-The inputs in the table are set under the `acceptance_tests.spec.tests` key. 
+The inputs in the table are set under the `acceptance_tests.spec.tests` key.
 
 | Input                                                            | Type    | Default             | Note                                                                                                                  |
 | :--------------------------------------------------------------- | :------ | :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
@@ -158,7 +158,7 @@ The inputs in the table are set under the `acceptance_tests.spec.tests` key.
 ## Test Connection
 
 Verify that a check operation issued to the connector with the input config file returns a successful response.
-The inputs in the table are set under the `acceptance_tests.connection.tests` key. 
+The inputs in the table are set under the `acceptance_tests.connection.tests` key.
 
 | Input             | Type                           | Default               | Note                                                               |
 | :---------------- | :----------------------------- | :-------------------- | :----------------------------------------------------------------- |
@@ -171,10 +171,10 @@ The inputs in the table are set under the `acceptance_tests.connection.tests` ke
 Verifies when a `discover` operation is run on the connector using the given config file, a valid catalog is produced by the connector.
 Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped.
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
-The inputs in the table are set under the `acceptance_tests.discovery.tests` key. 
+The inputs in the table are set under the `acceptance_tests.discovery.tests` key.
 
 | Input                                                            | Type    | Default                                     | Note                                                                                                                  |
-|:-----------------------------------------------------------------|:--------|:--------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| :--------------------------------------------------------------- | :------ | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
 | `config_path`                                                    | string  | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
 | `configured_catalog_path`                                        | string  | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
 | `timeout_seconds`                                                | int     | 30                                          | Test execution timeout in seconds                                                                                     |
@@ -189,7 +189,7 @@ Set `validate_data_points=True` if possible. This validation is going to be enab
 The inputs in the table are set under the `acceptance_tests.basic_reac.tests` key.
 
 | Input                                           | Type             | Default                                     | Note                                                                                                         |
-|:------------------------------------------------|:-----------------|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------|
+| :---------------------------------------------- | :--------------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------- |
 | `config_path`                                   | string           | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                           |
 | `configured_catalog_path`                       | string           | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                   |
 | `empty_streams`                                 | array of objects | \[\]                                        | List of streams that might be empty with a `bypass_reason`                                                   |

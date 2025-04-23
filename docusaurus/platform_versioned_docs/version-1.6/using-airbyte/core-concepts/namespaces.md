@@ -10,7 +10,7 @@ As a part of connection setup, you select where in the destination you want to w
 
 | Destination Namespace | Description                                                                                                                                                                                                                                                                                                                                 |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Custom                | All streams will be replicated to a single user-defined namespace. See<a href="/using-airbyte/core-concepts/namespaces#custom"> Custom format</a> for more details                                                                                                                                                                       |
+| Custom                | All streams will be replicated to a single user-defined namespace. See<a href="/using-airbyte/core-concepts/namespaces#custom"> Custom format</a> for more details                                                                                                                                                                          |
 | Destination-defined   | All streams will be replicated to the single default namespace defined in the Destination's settings.                                                                                                                                                                                                                                       |
 | Source-defined        | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option. |
 
@@ -86,8 +86,9 @@ The following table summarises how this works. In this example, we're looking at
 Basic normalization has been deprecated in favor of [Typing & Deduping](/platform/using-airbyte/core-concepts/typing-deduping).
 :::
 
-As part of the connection settings, it is possible to configure the namespace used by: 
-1. destination connectors: to store the `_airbyte_raw_*` tables. 
+As part of the connection settings, it is possible to configure the namespace used by:
+
+1. destination connectors: to store the `_airbyte_raw_*` tables.
 2. basic normalization: to store the final normalized tables.
 
 When basic normalization is enabled, this is the location that both your normalized and raw data will get written to. Your raw data will show up with the prefix `_airbyte_raw_` in the namespace you define. If you don't enable basic normalization, you will only receive the raw tables.

@@ -56,6 +56,7 @@ stringData:
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
 }
 ```
+
 </TabItem>
 
 <TabItem label="Azure Key Vault" value="Azure">
@@ -70,6 +71,7 @@ stringData:
   azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
   azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
 ```
+
 </TabItem>
 
 </Tabs>

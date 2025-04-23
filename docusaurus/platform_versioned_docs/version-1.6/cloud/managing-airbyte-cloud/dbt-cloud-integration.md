@@ -13,6 +13,7 @@ Transforming data may cause an increase in your destination's compute cost. This
 :::
 
 ## Prerequisites
+
 - To use the dbt Cloud integration, you must use a paid version of dbt Cloud.
 - The service token must have Member, Job Admin, or Account Admin permissions.
 
@@ -28,7 +29,7 @@ Generate a [service token](https://docs.getdbt.com/docs/dbt-cloud-apis/service-t
 
 ## Step 3: Add a dbt transformation to an individual connection
 
-1. Click **Connections** and select the connection you want to add a dbt transformation to. Go to the **Transformation** tab and click **+ Add transformation**. 
+1. Click **Connections** and select the connection you want to add a dbt transformation to. Go to the **Transformation** tab and click **+ Add transformation**.
 
 2. Select the dbt job from the dropdown and click **Save changes**. The dbt job will run after the subsequent syncs until you remove it. You can repeat these steps to add additional transformations for a connection.
 

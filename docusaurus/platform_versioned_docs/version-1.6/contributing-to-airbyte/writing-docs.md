@@ -138,7 +138,7 @@ The [Good Docs Project](https://www.thegooddocsproject.dev/) maintains a collect
 | --------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | Concept         | Explain a concept, context, or background information about a product or its features.              | [Template](https://gitlab.com/tgdp/templates/-/tree/main/concept)         |
 | How-to          | A concise set of numbered steps to do one task with the product.                                    | [Template](https://gitlab.com/tgdp/templates/-/tree/main/how-to)          |
-| Tutorial        | Instructions to set up an example project intended for hands-on learning.        | [Template](https://gitlab.com/tgdp/templates/-/tree/main/tutorial)        |
+| Tutorial        | Instructions to set up an example project intended for hands-on learning.                           | [Template](https://gitlab.com/tgdp/templates/-/tree/main/tutorial)        |
 | Troubleshooting | Common problems experienced by users, an explanation of the causes, and steps to resolve the issue. | [Template](https://gitlab.com/tgdp/templates/-/tree/main/troubleshooting) |
 | Reference       | Specific, in-depth details about a particular topic.                                                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/reference)       |
 | Release note    | Communicate new features, improvements, bug fixes, and known issues about a product.                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/release-notes)   |
@@ -346,15 +346,15 @@ You can run Vale in a command line tool or you can install an extension for most
 
    - To lint a file, type the relative path to the file.
 
-      ```bash
-      vale ../docs/myfolder/myfile.md
-      ```
+     ```bash
+     vale ../docs/myfolder/myfile.md
+     ```
 
    - To lint a folder, type the relative path to that folder and end with a slash.
 
-      ```bash
-      vale ../docs/myfolder/
-      ```
+     ```bash
+     vale ../docs/myfolder/
+     ```
 
    - For more command-line tool help, see [Vale's docs](https://vale.sh/docs/cli).
 
@@ -380,29 +380,29 @@ brew install markdownlint-cli2
 
 To lint files:
 
-   - To lint a single file:
+- To lint a single file:
 
-      ```bash
-      markdownlint-cli2 "./docs/myfolder/myfile.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/myfolder/myfile.md"
+  ```
 
-   - To lint a single directory but not its subdirectories:
+- To lint a single directory but not its subdirectories:
 
-      ```bash
-      markdownlint-cli2 "./docs/myfolder/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/myfolder/*.md"
+  ```
 
-   - To lint a directory and its subdirectories recursively:
+- To lint a directory and its subdirectories recursively:
 
-      ```bash
-      markdownlint-cli2 "./docs/folder/**/*.md
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/folder/**/*.md
+  ```
 
-   - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
+- To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
 
-      ```bash
-      markdownlint-cli2 --fix "../docs/myfolder/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 --fix "../docs/myfolder/*.md"
+  ```
 
 For full usage details, see the tool's [GitHub readme](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#use).
 

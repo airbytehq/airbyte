@@ -41,12 +41,12 @@ class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
 
 We'll also need to update the `streams` method to wrap the streams in an adapter class to enable
 concurrency.
+
 ```python
 # import the following libraries
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField, ConcurrentCursor, FinalStateCursor
 ```
-
 
 ```python
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

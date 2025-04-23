@@ -27,7 +27,6 @@ If you need support along the way, visit the [Slack channel](https://airbytehq.s
 | [Python Connector Development Kit (CDK)](./cdk-python/basic-concepts.md)            | While this method provides the most flexibility to developers, it also requires the most code and maintenance. This library provides classes that work out-of-the-box for most scenarios you’ll encounter along with the generators to make the connector scaffolds for you. We maintain an [in-depth guide](./tutorials/custom-python-connector/0-getting-started.md) to building a connector using the Python CDK.                                         |
 | [Java CDK](./tutorials/building-a-java-destination.md)                              | If you're bulding a source or a destination against a traditional database (not an HTTP API, not a vector database), you should use the Java CDK instead.                                                                                                                                                                                                                                                                                                    |
 
-
 ### Community maintained CDKs
 
 - The [Typescript CDK](https://github.com/faros-ai/airbyte-connectors) is actively maintained by

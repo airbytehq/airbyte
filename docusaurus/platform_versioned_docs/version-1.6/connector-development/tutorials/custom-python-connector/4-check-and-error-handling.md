@@ -51,6 +51,7 @@ Next, we'll improve the error handling.
 
 First, we'll disable the availability strategy. Availability strategies are a legacy concept used to
 filter out streams that might not be available given a user's permissions.
+
 ```python
 # import this library
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -65,6 +66,7 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 
 Instead of using an availability strategy, we'll raise a config error if we're unable to
 authenticate:
+
 ```python
 # import the following library
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType

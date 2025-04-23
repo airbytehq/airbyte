@@ -12,7 +12,7 @@ that has been deployed on EC2 instances.
 ## Policies
 
 You will need to create an AWS Role and associate that Role with either an AWS User when using Access Credentials, or an
-Instance Profile or Kubernetes Service Account when using IAM Roles for Service Accounts. That Role will need the 
+Instance Profile or Kubernetes Service Account when using IAM Roles for Service Accounts. That Role will need the
 following policies depending on in for integrate with S3 and AWS Secret Manager respectively.
 
 ### AWS S3 Policy
@@ -28,7 +28,7 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
       {
         "Effect": "Allow",
         "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME"
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME",
       },
       {
         "Effect": "Allow",
@@ -38,11 +38,11 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             "s3:PutObjectAcl",
             "s3:GetObject",
             "s3:GetObjectAcl",
-            "s3:DeleteObject"
+            "s3:DeleteObject",
           ],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
-      }
-    ]
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
+      },
+    ],
 }
 ```
 
@@ -52,27 +52,27 @@ The [following policies](https://docs.aws.amazon.com/mediaconnect/latest/ug/iam-
 
 ```yaml
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "secretsmanager:GetSecretValue",
-                "secretsmanager:CreateSecret",
-                "secretsmanager:ListSecrets",
-                "secretsmanager:DescribeSecret",
-                "secretsmanager:TagResource",
-                "secretsmanager:UpdateSecret"
-            ],
-            "Resource": [
-                "*"
-            ],
-            "Condition": {
-                "ForAllValues:StringEquals": {
-                    "secretsmanager:ResourceTag/AirbyteManaged": "true"
-                }
-            }
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement":
+    [
+      {
+        "Effect": "Allow",
+        "Action":
+          [
+            "secretsmanager:GetSecretValue",
+            "secretsmanager:CreateSecret",
+            "secretsmanager:ListSecrets",
+            "secretsmanager:DescribeSecret",
+            "secretsmanager:TagResource",
+            "secretsmanager:UpdateSecret",
+          ],
+        "Resource": ["*"],
+        "Condition":
+          {
+            "ForAllValues:StringEquals":
+              { "secretsmanager:ResourceTag/AirbyteManaged": "true" },
+          },
+      },
+    ],
 }
 ```

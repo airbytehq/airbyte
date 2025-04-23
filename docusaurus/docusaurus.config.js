@@ -92,12 +92,12 @@ const config = {
   plugins: [
     // This plugin controls "platform" docs, which are to be versioned
     [
-      '@docusaurus/plugin-content-docs',
+      "@docusaurus/plugin-content-docs",
       {
-        id: 'platform',
-        path: '../docs/platform',
-        routeBasePath: '/platform',
-        sidebarPath: './sidebar-platform.js',
+        id: "platform",
+        path: "../docs/platform",
+        routeBasePath: "/platform",
+        sidebarPath: "./sidebar-platform.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
@@ -109,12 +109,12 @@ const config = {
     ],
     // This plugin controls release notes, which are unversioned
     [
-      '@docusaurus/plugin-content-docs',
+      "@docusaurus/plugin-content-docs",
       {
-        id: 'release_notes',
-        path: '../docs/release_notes',
-        routeBasePath: '/release_notes',
-        sidebarPath: './sidebar-release_notes.js',
+        id: "release_notes",
+        path: "../docs/release_notes",
+        routeBasePath: "/release_notes",
+        sidebarPath: "./sidebar-release_notes.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
@@ -126,12 +126,12 @@ const config = {
     ],
     // This plugin controls "connector/source/destination" docs, which are unversioned by Docusaurus and use their own versioning
     [
-      '@docusaurus/plugin-content-docs',
+      "@docusaurus/plugin-content-docs",
       {
-        id: 'connectors',
-        path: '../docs/integrations',
-        routeBasePath: '/integrations',
-        sidebarPath: './sidebar-connectors.js',
+        id: "connectors",
+        path: "../docs/integrations",
+        routeBasePath: "/integrations",
+        sidebarPath: "./sidebar-connectors.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
         remarkPlugins: [
@@ -188,11 +188,11 @@ const config = {
         indexName: "airbyte",
       },
       announcementBar: {
-        id: 'try_airbyte_cloud',
+        id: "try_airbyte_cloud",
         content:
           '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 14 days, no credit card needed.',
-        backgroundColor: '#615eff',
-        textColor: '#ffffff',
+        backgroundColor: "#615eff",
+        textColor: "#ffffff",
         isCloseable: true,
       },
       navbar: {
@@ -205,25 +205,25 @@ const config = {
         },
         items: [
           {
-            type: 'docSidebar',
-            position: 'left',
+            type: "docSidebar",
+            position: "left",
             docsPluginId: "platform",
-            sidebarId: 'platform',
-            label: 'Platform',
+            sidebarId: "platform",
+            label: "Platform",
           },
           {
-            type: 'docSidebar',
-            position: 'left',
+            type: "docSidebar",
+            position: "left",
             docsPluginId: "connectors",
-            sidebarId: 'connectors',
-            label: 'Connectors',
+            sidebarId: "connectors",
+            label: "Connectors",
           },
           {
-            type: 'docSidebar',
-            position: 'left',
+            type: "docSidebar",
+            position: "left",
             docsPluginId: "release_notes",
-            sidebarId: 'releaseNotes',
-            label: 'Release notes',
+            sidebarId: "releaseNotes",
+            label: "Release notes",
           },
           {
             href: "https://support.airbyte.com/",
@@ -233,15 +233,15 @@ const config = {
           {
             href: "https://status.airbyte.com",
             label: "Status",
-            className: "cloudStatusLink"
+            className: "cloudStatusLink",
           },
           // --- Right side ---
           // Platform docs version selector
           {
-            type: 'docsVersionDropdown',
-            position: 'right',
-            docsPluginId: 'platform',
-            label: 'Version',
+            type: "docsVersionDropdown",
+            position: "right",
+            docsPluginId: "platform",
+            label: "Version",
             dropdownActiveClassDisabled: true, // do not style the dropdown as active when viewing platform docs
           },
           {

@@ -54,7 +54,7 @@ The types of changes which will be stored in `_airbyte_meta.changes` include:
   Destinations V2 will allow us to trim records which cannot fit into destinations, but retain the
   primary key(s) and cursors and include "too big" changes messages.
 
-Also, sources can make use of the same tooling to denote that there was a problem emitting the Airbyte record to begin with, 
+Also, sources can make use of the same tooling to denote that there was a problem emitting the Airbyte record to begin with,
 possibly also creating an entry in `_airbyte_meta.changes`.
 
 Depending on your use-case, it may still be valuable to consider rows with changes, especially for
@@ -83,11 +83,11 @@ The data from one stream will now be mapped to one table in your schema as below
 
 #### Final Destination Table Name: _public.users_
 
-| _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                                 | id  | first_name | age  | address                                   |
-| -------------------------------------------- | ---------------- | ---------------------- | -------------------------------------------------------------- | --- | ---------- | ---- | ----------------------------------------- |
-| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | `{}`                                                           | 1   | sarah      | 39   | `{ city: “San Francisco”, zip: “94131” }` |
+| _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                                                             | id  | first_name | age  | address                                   |
+| -------------------------------------------- | ---------------- | ---------------------- | ------------------------------------------------------------------------------------------ | --- | ---------- | ---- | ----------------------------------------- |
+| Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | `{}`                                                                                       | 1   | sarah      | 39   | `{ city: “San Francisco”, zip: “94131” }` |
 | Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | `{ changes: {"field": "age", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}}` | 2   | evan       | NULL | `{ city: “Menlo Park”, zip: “94002” }`    |
-| Not-yet-typed ⟶                              |                  |                        |                                                                |     |            |      |                                           |
+| Not-yet-typed ⟶                              |                  |                        |                                                                                            |     |            |      |                                           |
 
 In legacy normalization, columns of
 [Airbyte type](/platform/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination

@@ -15,17 +15,17 @@ version.
 
 **Note: Upgrades require temporarily turning off Airbyte.**
 
-During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 
+During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded:
 
-   1. If a connector is not used, it will be upgraded to the latest version 
-   
-   2. If a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
+1.  If a connector is not used, it will be upgraded to the latest version
+
+2.  If a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a specific connector, do so in the settings page in the webapp.
 
 Refer to [Managing Connector Updates](/platform/managing-airbyte/connector-updates) for more details about keeping connectors updated.
 
 ## Upgrading on K8s using Helm
 
-Production setup of our Open Source Software is best accomplished by running it as a Kubernetes deployment via Helm Charts. This simplifies the configuration and deployment process. 
+Production setup of our Open Source Software is best accomplished by running it as a Kubernetes deployment via Helm Charts. This simplifies the configuration and deployment process.
 
 When deployed this way, you'll upgrade by modifying the `values.yaml` file. If you're not using a `values.yaml` to deploy Airbyte using Helm, you can jump directly to step `4`.
 
@@ -49,7 +49,7 @@ When deployed this way, you'll upgrade by modifying the `values.yaml` file. If y
 
 ## Upgrading with abctl
 
-`abctl` streamlines the way you manage a local installation of Airbyte OSS. 
+`abctl` streamlines the way you manage a local installation of Airbyte OSS.
 
 Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd like to ensure you're running the latest version of Airbyte, you can check the value of the Helm Chart's app version by running `abctl local status`.
 

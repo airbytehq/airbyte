@@ -37,7 +37,7 @@ In Airbyte Cloud, the process depends on a [connector's support level](/integrat
 
 ### Airbyte connectors
 
-For Airbyte connectors, client credentials are securely managed by Airbyte. You only need to click the authentication button and use the third-party platform's UI to authorize Airbyte. 
+For Airbyte connectors, client credentials are securely managed by Airbyte. You only need to click the authentication button and use the third-party platform's UI to authorize Airbyte.
 
 ### Marketplace and custom connectors
 

@@ -22,8 +22,6 @@ and so on.
 
 Given that these problems each have a very finite number of solutions, we can remove the need for writing the code to build these API connectors by providing configurable off-the-shelf components to solve them. In doing so, we significantly decrease development effort and bugs while improving maintainability and accessibility. In this paradigm, instead of having to write the exact lines of code to solve this problem over and over, a developer can pick the solution to each problem from an available component, and rely on the framework to run the logic for them.
 
-
-
 ## Overview of the process
 
 To use the low-code framework to build an REST API Source connector:
@@ -55,12 +53,12 @@ spec:
 
 The following table describes the components of the YAML file:
 
-| Component     | Description                                                                                                                                                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `version`     | Indicates the framework version                                                                                                                                                                                                      |
-| `definitions` | Describes the objects to be reused in the YAML connector                                                                                                                                                                             |
-| `streams`     | Lists the streams of the source                                                                                                                                                                                                      |
-| `check`       | Describes how to test the connection to the source by trying to read a record from a specified list of streams and failing if no records could be read                                                                               |
+| Component     | Description                                                                                                                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`     | Indicates the framework version                                                                                                                                                                                   |
+| `definitions` | Describes the objects to be reused in the YAML connector                                                                                                                                                          |
+| `streams`     | Lists the streams of the source                                                                                                                                                                                   |
+| `check`       | Describes how to test the connection to the source by trying to read a record from a specified list of streams and failing if no records could be read                                                            |
 | `spec`        | A [connector specification](../../understanding-airbyte/airbyte-protocol#actor-specification) which describes the required and optional parameters which can be input by the end user to configure this connector |
 
 :::tip
@@ -84,7 +82,6 @@ For each stream, configure the following components:
 | Transformations        |                  | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                    |
 
 For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
-
 
 ## Sample connectors
 

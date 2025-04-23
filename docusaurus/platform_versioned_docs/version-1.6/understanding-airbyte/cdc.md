@@ -27,7 +27,7 @@ We add some metadata columns for CDC sources which all begin with the `_ab_cdc_`
 - Newly created tables/collections in your schema will cause the CDC snapshot to be ahead of what Airbyte has in the connection state. A refresh is required after any new table/collection is added.
 - There are database-specific limitations. See the documentation pages for individual connectors for more information.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
-- The final table will not show the records whose most recent entry has been deleted, as denoted by _ab_cdc_deleted_at.
+- The final table will not show the records whose most recent entry has been deleted, as denoted by \_ab_cdc_deleted_at.
 
 ## Current Support
 

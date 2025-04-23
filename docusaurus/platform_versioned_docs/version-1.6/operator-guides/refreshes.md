@@ -103,7 +103,7 @@ Notice that user #2’s latest entry doesn’t belong to the current (e.g. `max(
 
 They're completely identical! A Full Refresh | Append + Overwite sync is running a refresh on every sync and retaining all records. A Full Refresh | Overwrite sync is running a refresh on every sync and removing any reecords that no longer appear in the source. Notably, this means that `_airbyte_generation_id` will increment on every sync.
 
-### Does the generation ID reset to 0 after running a Clear and sync again? 
+### Does the generation ID reset to 0 after running a Clear and sync again?
 
 The generation ID will be incremented whenever you run a clear or refresh. Airbyte will never decrease the generation ID.
 

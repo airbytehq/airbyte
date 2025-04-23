@@ -25,7 +25,7 @@ function showDocSurvey() {
           (w[c].fastUrl = "https://fast.chameleon.io/");
         var m =
           "identify alias track clear set show on off custom help _data".split(
-            " "
+            " ",
           );
         for (var s = 0; s < m.length; s++) {
           !(function () {
@@ -47,7 +47,7 @@ function showDocSurvey() {
       window.analytics?.user().id() ??
         window.analytics?.user().anonymousId() ??
         "chmln-no-segment-user",
-      {}
+      {},
     );
   } else {
     showSurvey();

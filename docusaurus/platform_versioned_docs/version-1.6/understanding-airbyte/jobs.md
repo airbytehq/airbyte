@@ -1,6 +1,6 @@
 # Workloads & Jobs
 
-In Airbyte, all connector operations are run as 'workloads' — a pod encapsulating the discrete invocation of one or more connectors' interface method(s) (READ, WRITE, CHECK, DISCOVER, SPEC). 
+In Airbyte, all connector operations are run as 'workloads' — a pod encapsulating the discrete invocation of one or more connectors' interface method(s) (READ, WRITE, CHECK, DISCOVER, SPEC).
 
 Generally, there are 2 types of workload pods:
 
@@ -9,8 +9,8 @@ Generally, there are 2 types of workload pods:
 - Connector Job (CHECK, DISCOVER, SPEC) pods
   - Calls the specified interface method on the connector image
 
-|    ![](/.gitbook/assets/replication_mono_pod.png)     |                              ![](/.gitbook/assets/connector_pod.png)                               |
-|:-------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
+|              ![](/.gitbook/assets/replication_mono_pod.png)               |                               ![](/.gitbook/assets/connector_pod.png)                                |
+| :-----------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
 | <em>The source, destination and orchestrator all run in a single pod</em> | <em>The sidecar processes the output of the connector and forwards it back to the core platform</em> |
 
 ## Airbyte Middleware and Bookkeeping Containers
@@ -18,26 +18,28 @@ Generally, there are 2 types of workload pods:
 Inside any connector operation pod, a special airbyte controlled container will run alongside the connector container(s) to process and interpret the results as well as perform necessary side effects.
 
 There are two types of middleware containers:
-* The Container Orchestrator
-* The Connector Sidecar
+
+- The Container Orchestrator
+- The Connector Sidecar
 
 #### Container Orchestrator
 
 An airbyte controlled container that sits between the source and destination connector containers inside a Replication Pod.
 
 Responsibilities:
-* Hosts middleware capabilities such as scrubbing PPI, aggregating stats, transforming data, and checkpointing progress.
-* Interprets and records connector operation results
-* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
+
+- Hosts middleware capabilities such as scrubbing PPI, aggregating stats, transforming data, and checkpointing progress.
+- Interprets and records connector operation results
+- Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
 
 #### Connector Sidecar
 
 An airbyte controlled container that reads the output of a connector container inside a Connector Pod (CHECK, DISCOVER, SPEC).
 
 Responsibilities:
-* Interprets and records connector operation results
-* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
 
+- Interprets and records connector operation results
+- Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
 
 ## Workload launching architecture
 
@@ -56,6 +58,7 @@ The **Workload API Server** places the job in a queue. The **Launcher** picks up
 job creation based on available resources, minimising deadlock situations.
 
 With this set up, Airbyte now supports:
+
 - configuring the maximum number of concurrent jobs via `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.`
 - configuring the maximum number of jobs that can be started at once via ``
 - differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.

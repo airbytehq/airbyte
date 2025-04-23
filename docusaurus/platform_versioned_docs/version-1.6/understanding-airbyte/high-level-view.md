@@ -27,7 +27,7 @@ flowchart LR
     T(fa:fa-calendar Temporal/Scheduler)
     W2[1..n Airbyte Workers]
     WL[fa:fa-server Workload API Server]
-    
+
     W -->|sends API requests| S
     S -->|store data| D
     S -->|create workflow| T

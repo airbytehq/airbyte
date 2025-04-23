@@ -10,7 +10,6 @@ Multiple tests suites compose the Airbyte connector testing pyramid
 - [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/): Connector-agnostic tests that verify that a connector adheres to the [Airbyte protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol). Credentials to a source/destination sandbox account are **required**.
 - [Regression Tests](https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests): Connector-agnostic tests that verify that the behavior of a connector hasn’t changed unexpectedly between connector versions. A sandbox cloud connection is required. Currently only available for API source connectors.
 
-
 ## 🤖 CI
 
 If you want to run the global test suite, exactly like what is run in CI, you should install [`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) and use the following command:
@@ -55,4 +54,3 @@ We run Java connector tests with gradle.
 ```
 
 Please note that according to the test implementation you might have to provide connector configurations as a `config.json` file in a `.secrets` folder in the connector code directory.
-

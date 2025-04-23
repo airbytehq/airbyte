@@ -6,11 +6,11 @@ products: all
 
 For each connection, you can select between three options that allow a sync to run. The three options for `Schedule Type` are:
 
-| Schedule Setting | Definition |
-|--|--| 
-| Scheduled | Runs the syncs at the specified time interval (e.g. every 24 hours, every 2 hours) | 
-| Cron | Runs the syncs based on the user-defined cron expression | 
-| Manual | You are required to run the syncs manually | 
+| Schedule Setting | Definition                                                                         |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| Scheduled        | Runs the syncs at the specified time interval (e.g. every 24 hours, every 2 hours) |
+| Cron             | Runs the syncs based on the user-defined cron expression                           |
+| Manual           | You are required to run the syncs manually                                         |
 
 ## Scheduled syncs
 
@@ -54,7 +54,6 @@ When setting up the cron expression, you will also be asked to choose a time zon
 When the connection is set to replicate with `Manual` frequency, the sync will not automatically run.
 
 It can be triggered by clicking the "Sync Now" button at any time through the UI or be triggered through the API.
-
 
 ## Sync Considerations
 

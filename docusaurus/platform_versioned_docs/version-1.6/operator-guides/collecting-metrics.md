@@ -34,15 +34,15 @@ Airbyte sends specific metrics to provide you with health insight in the followi
 
 2. Update Airbyte's `values.yaml` file to enable OpenTelemetry.
 
-    ```yaml title="values.yaml"
-    global:
-        edition: enterprise # This is an enterprise-only feature
-        metrics:
-            enabled: true
-            otlp:
-                enabled: true
-                collectorEndpoint: "YOUR_ENDPOINT" # The OTel collector endpoint Airbyte sends metrics to. You configure this endpoint outside of Airbyte as part of your OTel deployment.
-    ```
+   ```yaml title="values.yaml"
+   global:
+     edition: enterprise # This is an enterprise-only feature
+     metrics:
+       enabled: true
+       otlp:
+         enabled: true
+         collectorEndpoint: "YOUR_ENDPOINT" # The OTel collector endpoint Airbyte sends metrics to. You configure this endpoint outside of Airbyte as part of your OTel deployment.
+   ```
 
 3. Redeploy Airbyte with the updated values.
 

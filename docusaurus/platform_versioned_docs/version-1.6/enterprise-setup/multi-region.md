@@ -128,7 +128,7 @@ Include the following parameters in your request.
 | Body parameter | Required? | Description                                                                                                         |
 | -------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
 | `name`         | Required  | The name of your data plane. For simplicity, you might want to name it based on the region in which you created it. |
-| `enabled`      | Optional  | Defaults to true. Set this to `false` if you don't want this data plane enabled.                                        |
+| `enabled`      | Optional  | Defaults to true. Set this to `false` if you don't want this data plane enabled.                                    |
 
 For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
 
@@ -279,7 +279,7 @@ data:
   # Insert the data plane credentials received in step 2
   DATA_PLANE_CLIENT_ID: your-data-plane-client-id
   DATA_PLANE_CLIENT_SECRET: your-data-plane-client-id
-  
+
   # Only set these values if they are also set on your control plane
   AWS_SECRET_MANAGER_ACCESS_KEY_ID: your-aws-secret-manager-access-key
   AWS_SECRET_MANAGER_SECRET_ACCESS_KEY: your-aws-secret-manager-secret-key
@@ -321,7 +321,7 @@ stringData:
   # Insert the data plane credentials received in step 2
   DATA_PLANE_CLIENT_ID: your-data-plane-client-id
   DATA_PLANE_CLIENT_SECRET: your-data-plane-client-id
-  
+
   # Only set these values if they are also set on your control plane
   AWS_SECRET_MANAGER_ACCESS_KEY_ID: your-aws-secret-manager-access-key
   AWS_SECRET_MANAGER_SECRET_ACCESS_KEY: your-aws-secret-manager-secret-key
@@ -389,7 +389,7 @@ storage:
   bucket:
     log: my-bucket-name
     state: my-bucket-name
-    workloadOutput: my-bucket-name 
+    workloadOutput: my-bucket-name
   s3:
     region: "us-west-2"
     authenticationType: credentials
@@ -402,9 +402,9 @@ secretsManager:
   secretName: airbyte-config-secrets
   type: AWS_SECRET_MANAGER
   awsSecretManager:
-    region: us-west-2 
+    region: us-west-2
     authenticationType: credentials
-    accessKeyIdSecretKey: AWS_SECRET_MANAGER_ACCESS_KEY_ID 
+    accessKeyIdSecretKey: AWS_SECRET_MANAGER_ACCESS_KEY_ID
     secretAccessKeySecretKey: AWS_SECRET_MANAGER_SECRET_ACCESS_KEY
 ```
 
@@ -452,6 +452,6 @@ Response:
   "workspaceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
   "name": "Acme Company",
   //highlight-next-line
-  "dataResidency": "auto",
+  "dataResidency": "auto"
 }
 ```

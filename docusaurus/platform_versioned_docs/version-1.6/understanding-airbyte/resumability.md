@@ -19,7 +19,7 @@ and the destination can commit them. In order to achieve this resumability, Airb
 
 Consider a Postgres source. We could build a query that does `select * from users`, which would guarantee that each row is emitted only once, but that would lead to some problems:
 
-- First, it would keep a long-lasting transaction lock on the `users` table for the duration of the sync.  This would slow down the source.
+- First, it would keep a long-lasting transaction lock on the `users` table for the duration of the sync. This would slow down the source.
 - Tables over a certain size would not be able to fit in memory. This would dramatically slow down the database while syncing (or even crashing) the database.
 - There is no logical cursor that Airbyte can use as a placeholder to resume from if we need to retry the sync.
 
@@ -41,8 +41,7 @@ Resumability applies to all sync modes, including standard Full Refresh + Overwr
 
 ## Resumable Full Refresh
 
-Resumability is an inherent feature of Incremental syncs. 
-
+Resumability is an inherent feature of Incremental syncs.
 
 Although incremental syncs are superior in all cases, they require implementing a cursor, which is not always possible.
 
@@ -56,28 +55,31 @@ These cursors are artificial as they are often not present in the data schema, e
 change i.e. without external control or input. This differs from a proper cursor column, e.g. an `update_at` column, that is present in the data schema,
 and changes in response to user input.
 
-
 ### Enabling Resumable Full Refresh
 
 Resuamble Full Refresh is automatically enabled on connections with:
-1) A Resumable-Full-Refresh-enabled Source
-2) A Refresh-enabled Destination
+
+1. A Resumable-Full-Refresh-enabled Source
+2. A Refresh-enabled Destination
 
 The following Database Sources support Resumable Full Refresh as of 9th July 2024:
-1) **Source MySql >= 3.4.7**
-   1) Tables without primary keys do not support Resumable Full Refresh.
-2) **Source MsSql >= 4.0.27**
-   1) Tables without primary keys do not support Resumable Full Refresh.
-3) **Source Postgres >= 3.4.10**
-   1) views do not support Resumable Full Refresh.
-4) **Source Mongo >= 1.3.14**
+
+1. **Source MySql >= 3.4.7**
+   1. Tables without primary keys do not support Resumable Full Refresh.
+2. **Source MsSql >= 4.0.27**
+   1. Tables without primary keys do not support Resumable Full Refresh.
+3. **Source Postgres >= 3.4.10**
+   1. views do not support Resumable Full Refresh.
+4. **Source Mongo >= 1.3.14**
 
 The following API Sources support Resumable Full Refresh as of 9th July 2024:
-1) All Sources on Python CDK version 1.1.0 and above.
+
+1. All Sources on Python CDK version 1.1.0 and above.
 
 ### Identifying Resumed Streams
 
 The platform emits the following log lines to help identify resumed streams:
+
 ```angular2html
 2024-07-08 22:58:40 replication-orchestrator > Number of Resumed Full Refresh Streams: {1}
 2024-07-08 22:58:40 replication-orchestrator >  Resumed stream name: activities namespace: null

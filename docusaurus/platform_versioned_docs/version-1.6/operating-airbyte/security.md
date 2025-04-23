@@ -44,6 +44,7 @@ You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
 - Deploy Airbyte behind a reverse proxy and handle the access control and SSL encryption on the reverse proxy side.
+
   ```
   # Example nginx reverse proxy config
   server {
@@ -60,8 +61,9 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- By default, Airbyte generates a secure password during a deploy (either via Helm or `abctl`). To change the default 
-password follow the instructions found [here](../../platform/deploying-airbyte/integrations/authentication)
+
+- By default, Airbyte generates a secure password during a deploy (either via Helm or `abctl`). To change the default
+  password follow the instructions found [here](../../platform/deploying-airbyte/integrations/authentication)
 
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
@@ -87,7 +89,7 @@ Most Airbyte Open Source connectors support encryption-in-transit (SSL or HTTPS)
 ### Sensitive Data
 
 To facilitate troubleshooting, the Server component may output initial user configurations to the log stream when server loglevel is set to `DEBUG`.
-To keep this information private, it is recommended to keep loglevel set to `INFO`  outside of troubleshooting.
+To keep this information private, it is recommended to keep loglevel set to `INFO` outside of troubleshooting.
 
 ## Securing Airbyte Cloud
 
@@ -142,7 +144,7 @@ Airbyte Cloud allows you to log in to the platform using your email and password
 
 Airbyte Cloud supports [user management](/platform/using-airbyte/core-concepts/).
 
-In addition, Airbyte Cloud and  Airbyte Enterprise support [role-based access control](/platform/access-management/rbac) allowing admins to manage varying access levels across users in their instance.
+In addition, Airbyte Cloud and Airbyte Enterprise support [role-based access control](/platform/access-management/rbac) allowing admins to manage varying access levels across users in their instance.
 
 ### Compliance
 

@@ -10,6 +10,7 @@ view your password and you are running Airbyte through `abctl` you can run the f
 ```shell
 abctl local credentials
 ```
+
 Which should output something similar to:
 
 ```shell
@@ -20,7 +21,7 @@ Which should output something similar to:
 }
 ```
 
-If you have deployed to your own Kubernetes cluster using Helm, then you can view your credentials by running the 
+If you have deployed to your own Kubernetes cluster using Helm, then you can view your credentials by running the
 following:
 
 ```shell
@@ -53,8 +54,8 @@ echo 'cmhvQkhCODlMRmh1REdXMWt3REpHZTJMaUd3N3c2MjU=' | base64 -d
 
 ## Turning Off Authentication
 
-There may be times when your wish to turn off authentication, for instance if you have already configured a proxy that 
-authenticates users with your organization's SSO. In these cases you can turn off Airbyte's authentication by adding the 
+There may be times when your wish to turn off authentication, for instance if you have already configured a proxy that
+authenticates users with your organization's SSO. In these cases you can turn off Airbyte's authentication by adding the
 following to your values.yaml file:
 
 ```yaml
@@ -71,7 +72,7 @@ abctl local install --values ./values.yaml
 
 ## Setting a Password via Secrets
 
-You can also control the default password by supplying your own values as a Kubernetes secret. Start by creating a file 
+You can also control the default password by supplying your own values as a Kubernetes secret. Start by creating a file
 called `secret.yaml` and add the following Kubernetes Secret into that file:
 
 ```yaml
@@ -82,6 +83,7 @@ metadata:
 type: Opaque
 stringData:
   instance-admin-password: # password
+
 
   # Override these if you want to access the API with known credentials
   #instance-admin-client-id: # my-client-id
@@ -105,6 +107,7 @@ You may need to restart the airbyte-server pod for the changes to take effect.
 ## Cookie Security Settings
 
 ### Disabling Secure Cookies
+
 For users running Airbyte on a non-localhost domain without HTTPS, secure cookies cannot be set. To disable secure cookies, update your `values.yaml` file with the following snippet:
 
 ```yaml
@@ -112,9 +115,11 @@ global:
   auth:
     cookieSecureSetting: "false"
 ```
+
 This setting should only be used if HTTPS is not available, as it reduces security by allowing cookies to be transmitted over non-secure connections.
 
 ### Modifying Cookie SameSite Setting
+
 By default, Airbyte uses a `cookieSameSiteSetting` of `"Strict"`. If you need to allow cookies to be sent in a cross-site context, you can change this setting to `"None"`. Update your `values.yaml` file with the following:
 
 ```yaml

@@ -4,7 +4,7 @@ products: oss-enterprise
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import ContainerProviders from '@site/static/_docker_image_registries.md';
+import ContainerProviders from '@site/static/\_docker_image_registries.md';
 
 # Implementation Guide
 
@@ -15,26 +15,27 @@ Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to en
 ## Prerequisites
 
 ### Infrastructure Prerequisites
+
 For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
 
 Prior to deploying Self-Managed Enterprise, we recommend having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
 
-| Component                | Recommendation                                                                                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Component                | Recommendation                                                                                                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
-| Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                                     |
-| Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.                                                                         |
-| Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
-| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
-
+| Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                                                      |
+| Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.                                                                                          |
+| Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                                   |
+| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                             |
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
-* We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
-* We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
-* While we support GKE Autopilot, we do not support Amazon EKS on Fargate. 
-* We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
+
+- We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
+- We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+- While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
+- We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -84,7 +85,6 @@ You may apply your Kubernetes secrets by applying the example manifests below to
 
 While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
 
-
 <details>
 <summary>airbyte-config-secrets</summary>
 
@@ -130,7 +130,6 @@ stringData:
   # Azure Secret Manager
   azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
   azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
-
 ```
 
 You can also use `kubectl` to create the secret directly from the CLI:
@@ -152,12 +151,10 @@ kubectl create secret generic airbyte-config-secrets \
   --namespace airbyte
 ```
 
-
 </TabItem>
 <TabItem value="GCS" label="GCS">
 
 First, create a new file `gcp.json` containing the credentials JSON blob for the service account you are looking to assume.
-
 
 ```yaml
 apiVersion: v1
@@ -247,8 +244,6 @@ auth:
       clientSecretSecretKey: client-secret
 ```
 
-
-
 4. You must configure the public facing URL of your Airbyte instance to your `values.yaml` file, under `global`:
 
 ```yaml
@@ -305,21 +300,21 @@ global:
 
     # -- The database host
     host: ""
-    # -- The key within `secretName` where host is stored 
+    # -- The key within `secretName` where host is stored
     #hostSecretKey: "" # e.g. "database-host"
 
     # -- The database port
     port: ""
-    # -- The key within `secretName` where port is stored 
-    #portSecretKey: "" # e.g. "database-port" 
+    # -- The key within `secretName` where port is stored
+    #portSecretKey: "" # e.g. "database-port"
 
     # -- The database name
     database: ""
-    # -- The key within `secretName` where the database name is stored 
-    #databaseSecretKey: "" # e.g. "database-name" 
+    # -- The key within `secretName` where the database name is stored
+    #databaseSecretKey: "" # e.g. "database-name"
 
     # -- The database user
-    user: "" # -- The key within `secretName` where the user is stored 
+    user: "" # -- The key within `secretName` where the user is stored
     #userSecretKey: "" # e.g. "database-user"
 
     # -- The key within `secretName` where password is stored
@@ -392,6 +387,7 @@ global:
     azure:
       connectionStringSecretKey: azure-blob-store-connection-string
 ```
+
 </TabItem>
 
 </Tabs>
@@ -622,26 +618,26 @@ Implementing Airbyte this way has several advantages.
 
 1. Set up your custom image registry. The examples in this article use GitHub, but you have many options. Here are some popular ones:
 
-    <ContainerProviders/>
+<ContainerProviders/>
 
 2. Install `abctl`. Although abctl is typically only used to manage local installations of Airbyte, it has some helpful commands for this process.
 
-    <Tabs>
-      <TabItem value="abctl-brew" label="Homebrew" default>
-        ```bash
-        brew tap airbytehq/tap
-        brew install abctl
-        ```
-      </TabItem>
-      <TabItem value="abctl-go" label="Go">
-        ```bash
-        go install github.com/airbytehq/abctl@latest
-        ```
-      </TabItem>
-      <TabItem value="abctl-gh" label="GitHub">
-        See [GitHub releases](https://github.com/airbytehq/abctl/releases/latest).
-      </TabItem>
-    </Tabs>
+<Tabs>
+  <TabItem value="abctl-brew" label="Homebrew" default>
+    ```bash
+    brew tap airbytehq/tap
+    brew install abctl
+    ```
+  </TabItem>
+  <TabItem value="abctl-go" label="Go">
+    ```bash
+    go install github.com/airbytehq/abctl@latest
+    ```
+  </TabItem>
+  <TabItem value="abctl-gh" label="GitHub">
+    See [GitHub releases](https://github.com/airbytehq/abctl/releases/latest).
+  </TabItem>
+</Tabs>
 
 </details>
 
@@ -695,30 +691,30 @@ If your registry requires authentication, you can create a Kubernetes secret and
 
 1. Create a Kubernetes secret. In this example, you create a secret called `regcred` from a config file. That file contains authentication information for a private custom image registry. [Learn more about Kubernetes secrets](https://kubernetes.io/docs/tasks/configmap-secret/).
 
-    ```bash
-    kubectl create secret generic regcred \
-    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
-    --type=kubernetes.io/dockerconfigjson
-    ```
+   ```bash
+   kubectl create secret generic regcred \
+   --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+   --type=kubernetes.io/dockerconfigjson
+   ```
 
 2. Add the secret you created to your `values.yaml` file. In this example, you use your `regcred` secret to authenticate.
 
-    ```yaml title="values.yaml"
-    global:
-      image:
-        registry: ghcr.io/NAMESPACE
-      // highlight-start
-      imagePullSecrets:
-        - name: regcred
-      // highlight-end
-    ```
+   ```yaml title="values.yaml"
+   global:
+     image:
+       registry: ghcr.io/NAMESPACE
+     // highlight-start
+     imagePullSecrets:
+       - name: regcred
+     // highlight-end
+   ```
 
 </details>
 
 <details>
 <summary>Step 2: Tag and push Airbyte images</summary>
 
-Tag and push Airbyte's images to your custom image registry. 
+Tag and push Airbyte's images to your custom image registry.
 
 In this example, you tag all platform images and push them all to GitHub.
 
@@ -733,7 +729,7 @@ In this example, you pull a connector from Docker, tag it, and push it to GitHub
 ```bash
 docker pull airbyte/destination-google-sheets:latest
 docker tag airbyte/desination-google-sheets:latest ghcr.io/NAMESPACE/desination-google-sheets:latest
-docker push ghcr.io/NAMESPACE/destination-google-sheets:latest    
+docker push ghcr.io/NAMESPACE/destination-google-sheets:latest
 ```
 
 Now, when you install Airbyte, images will come from the custom image registry you configured.
@@ -761,7 +757,7 @@ Ensure your access key is tied to an IAM user or you are using a Role with the f
 
 ### AWS S3 Policy
 
-The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allow the cluster to communicate with  S3 storage
+The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html#iam-policy-ex0), allow the cluster to communicate with S3 storage
 
 ```yaml
 {
@@ -772,7 +768,7 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
       {
         "Effect": "Allow",
         "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME"
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME",
       },
       {
         "Effect": "Allow",
@@ -782,40 +778,39 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             "s3:PutObjectAcl",
             "s3:GetObject",
             "s3:GetObjectAcl",
-            "s3:DeleteObject"
+            "s3:DeleteObject",
           ],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
-      }
-    ]
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
+      },
+    ],
 }
 ```
 
 ### AWS Secret Manager Policy
 
-
 ```yaml
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "secretsmanager:GetSecretValue",
-                "secretsmanager:CreateSecret",
-                "secretsmanager:ListSecrets",
-                "secretsmanager:DescribeSecret",
-                "secretsmanager:TagResource",
-                "secretsmanager:UpdateSecret"
-            ],
-            "Resource": [
-                "*"
-            ],
-            "Condition": {
-                "ForAllValues:StringEquals": {
-                    "secretsmanager:ResourceTag/AirbyteManaged": "true"
-                }
-            }
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement":
+    [
+      {
+        "Effect": "Allow",
+        "Action":
+          [
+            "secretsmanager:GetSecretValue",
+            "secretsmanager:CreateSecret",
+            "secretsmanager:ListSecrets",
+            "secretsmanager:DescribeSecret",
+            "secretsmanager:TagResource",
+            "secretsmanager:UpdateSecret",
+          ],
+        "Resource": ["*"],
+        "Condition":
+          {
+            "ForAllValues:StringEquals":
+              { "secretsmanager:ResourceTag/AirbyteManaged": "true" },
+          },
+      },
+    ],
 }
 ```

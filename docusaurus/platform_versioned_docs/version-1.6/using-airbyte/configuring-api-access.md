@@ -9,9 +9,10 @@ import TabItem from "@theme/TabItem";
 
 The Airbyte API enables you to programmatically interact with Airbyte: create sources, destinations, run syncs, list workspaces, and much more.
 
-Access to the API is controlled through application keys. Applications keys are tied to individual users and their respective permissions. 
+Access to the API is controlled through application keys. Applications keys are tied to individual users and their respective permissions.
 
 # Prerequisites
+
 <Tabs groupId="cloud-hosted">
   <TabItem value="cloud" label="Cloud">
    Access to a Cloud workspace.
@@ -24,14 +25,13 @@ Access to the API is controlled through application keys. Applications keys are 
 
 ## Step 1: Create an Application
 
-While logged into the Airbyte UI, go to Settings -> Account -> Applications. Click the button "Create an application". 
+While logged into the Airbyte UI, go to Settings -> Account -> Applications. Click the button "Create an application".
 
 ![Create an Application](./assets/applications-ui.png)
 
 Name your application for easy identification.
 
 ![Name Application](./assets/applications-create.png)
- 
 
 A `client_id` and `client_secret` will be automatically generated. The `client_secret` can be exposed by clicking on the icon next to the secret.
 
@@ -39,10 +39,9 @@ A `client_id` and `client_secret` will be automatically generated. The `client_s
 
 ## Step 2: Obtain an Access Token
 
-Once the `client_secret` is exposed, you can use the button in the UI to get an access token to do a quick test. 
+Once the `client_secret` is exposed, you can use the button in the UI to get an access token to do a quick test.
 
 You can also use the `client_id` and `client_secret` to retrive an access token using the [Get an Access Token endpoint](https://reference.airbyte.com/reference/createaccesstoken).
-
 
 <Tabs groupId="cloud-hosted">
   <TabItem value="cloud" label="Cloud">
@@ -54,9 +53,9 @@ You can also use the `client_id` and `client_secret` to retrive an access token 
     Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
 
     ```yaml
-    { 
-      "client_id": "", 
-      "client_secret": "" 
+    {
+      "client_id": "",
+      "client_secret": ""
       }
     ```
 
@@ -71,11 +70,12 @@ You can also use the `client_id` and `client_secret` to retrive an access token 
     Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
 
     ```yaml
-    { 
-      "client_id": "", 
-      "client_secret": "" 
+    {
+      "client_id": "",
+      "client_secret": ""
       }
     ```
+
   </TabItem>
 </Tabs>
 

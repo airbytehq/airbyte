@@ -40,14 +40,14 @@ To view the connection status:
 
 2. Optionally, filter the connections on the page and on the dashboard based on connection status, source, destination, tag, and name.
 
-3. Select a single connection to view more details about the connection and for a breakdown of the status of each Stream in that connection.  
+3. Select a single connection to view more details about the connection and for a breakdown of the status of each Stream in that connection.
 
-    | Icon                                               | Status      | Description                                                         |
-    | -------------------------------------------------- | ----------- | ------------------------------------------------------------------- |
-    | ![Healthy](./assets/connection_synced.png)         | **Healthy** | The most recent sync for this connection succeeded                  |
-    | ![Failed](./assets/connection_action_required.png) | **Failed**  | The most recent sync for this connection failed                     |
-    | ![Running](./assets/connection_syncing.png)        | **Running** | The connection is currently actively syncing                        |
-    | ![Paused](./assets/connection_disabled.png)        | **Paused**  | The connection is disabled and isn't scheduled to run automatically |
+   | Icon                                               | Status      | Description                                                         |
+   | -------------------------------------------------- | ----------- | ------------------------------------------------------------------- |
+   | ![Healthy](./assets/connection_synced.png)         | **Healthy** | The most recent sync for this connection succeeded                  |
+   | ![Failed](./assets/connection_action_required.png) | **Failed**  | The most recent sync for this connection failed                     |
+   | ![Running](./assets/connection_syncing.png)        | **Running** | The connection is currently actively syncing                        |
+   | ![Paused](./assets/connection_disabled.png)        | **Paused**  | The connection is disabled and isn't scheduled to run automatically |
 
 4. On the **Status** tab for a connection, there is a list of associated Streams. To the left of the name for each Stream, there is an icon that displays its status.
 
@@ -55,14 +55,14 @@ To view the connection status:
 
 The stream status allows you to monitor an individual stream's latest status. Connections often sync more than one stream. This view allows you to more easily determine if there is a problem with a given stream that could be causing problems with the connection.
 
-| Icon                                                            | Status                   | Description                                                                                                                                        |
-| --------------------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![Synced](./assets/connection_synced.png)                       | **Synced**               | The stream's last sync was successful.                                                                                                             |
+| Icon                                                            | Status                   | Description                                                                                                                                  |
+| --------------------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Synced](./assets/connection_synced.png)                       | **Synced**               | The stream's last sync was successful.                                                                                                       |
 | ![Syncing](./assets/connection_syncing.png)                     | **Syncing**              | The stream is currently actively syncing. Airbyte highlights the stream in grey to indicate the sync is actively extracting or loading data. |
-| ![Queued](./assets/connection_not_yet_synced.png)               | **Queued**               | The stream hasn't synced yet, and is going to sync in the current ongoing sync                                                           |
-| ![Queued for next sync](./assets/connection_not_yet_synced.png) | **Queued for next sync** | The stream hasn't synced yet, and is going to sync in the next scheduled sync                                                            |
-| ![Error](./assets/connection_incomplete.png)                    | **Error**                | The connection didn't succeed on its most recent sync, but Airbyte expects it to recover on the next one                                                 |
-| ![Action Required](./assets/connection_action_required.png)     | **Action Required**      | A breaking change related to the source or destination requires attention to resolve                                                               |
+| ![Queued](./assets/connection_not_yet_synced.png)               | **Queued**               | The stream hasn't synced yet, and is going to sync in the current ongoing sync                                                               |
+| ![Queued for next sync](./assets/connection_not_yet_synced.png) | **Queued for next sync** | The stream hasn't synced yet, and is going to sync in the next scheduled sync                                                                |
+| ![Error](./assets/connection_incomplete.png)                    | **Error**                | The connection didn't succeed on its most recent sync, but Airbyte expects it to recover on the next one                                     |
+| ![Action Required](./assets/connection_action_required.png)     | **Action Required**      | A breaking change related to the source or destination requires attention to resolve                                                         |
 
 Once the sync is complete, each stream displays the time since Airbyte loaded the last record to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record loaded.
 

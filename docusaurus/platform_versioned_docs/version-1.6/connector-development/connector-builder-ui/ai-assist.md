@@ -1,6 +1,7 @@
 ---
 title: AI Assistant
 ---
+
 # AI Assistant for the Connector Builder (Beta)
 
 Welcome to the **AI Assistant**, your personal helper for creating Airbyte connectors through our Connector Builder. While still in beta, this AI tool promises to significantly speed up your development time by automating and simplifying the process of building connectors.
@@ -10,13 +11,13 @@ Check out our [Hands-on Tutorial](https://airbyte.com/blog/hands-on-with-the-new
 ## Key Features
 
 1. **Pre-fill and Configure Connectors**: When starting a new connector, AI Assistant can automatically prefill and configure a number of fields and sections in the Airbyte Connector Builder, drastically reducing setup time. This currently includes:
-    - Base URL
-    - Authentication
-    - Pagination
-    - Primary Key
-    - Record Selection
-    - Available streams
-    - Stream configuration
+   - Base URL
+   - Authentication
+   - Pagination
+   - Primary Key
+   - Record Selection
+   - Available streams
+   - Stream configuration
 2. **Ongoing Field and Section Suggestions**: As you continue working on a connector, AI Assistant will provide intelligent suggestions, helping you fine-tune your connector’s configuration.
 
 ## Why You’ll Love It
@@ -60,6 +61,7 @@ After configuration, you can run tests to ensure the setup is correct. If the As
 ## Where Can I Use It?
 
 You can use the AI Assistant in the following scenarios:
+
 - **When creating a new connector** from scratch in the Airbyte Connector Builder.
 - **Within your existing connectors** by clicking the "AI Assist" button at the top of the builder.
 

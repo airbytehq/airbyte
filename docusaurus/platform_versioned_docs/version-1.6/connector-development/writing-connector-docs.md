@@ -65,7 +65,7 @@ This content is rendered everywhere.
 
 <HideInUI>
 
-## For open source: 
+## For open source:
 
 </HideInUI>
 
@@ -132,56 +132,56 @@ How it works:
 - Highlight the same section for multiple fields by separating them with commas, like this: `<FieldAnchor field="replication_method.replication_slot,replication_method.queue_size">`.
 - To highlight a section after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`, where the `value-of-selection-key` is the value of a `const` field nested inside that `oneOf`.
 
-    For example, if the specification of the `oneOf` field is:
+  For example, if the specification of the `oneOf` field is:
 
-    ```json
-    "replication_method": {
-      "type": "object",
-      "title": "Update Method",
-      "oneOf": [
-        {
-          "title": "Read Changes using Binary Log (CDC)",
-          "required": ["method"],
-          "properties": {
-            "method": {
-              "type": "string",
-              <!-- highlight-next-line -->
-              "const": "CDC",
-              "order": 0
-            },
-            "initial_waiting_seconds": {
-              "type": "integer",
-              "title": "Initial Waiting Time in Seconds (Advanced)",
-            },
-          }
-        },
-        {
-          "title": "Scan Changes with User Defined Cursor",
-          "required": ["method"],
-          "properties": {
-            "method": {
-              "type": "string",
-              <!-- highlight-next-line -->
-              "const": "STANDARD",
-              "order": 0
-            }
+  ```json
+  "replication_method": {
+    "type": "object",
+    "title": "Update Method",
+    "oneOf": [
+      {
+        "title": "Read Changes using Binary Log (CDC)",
+        "required": ["method"],
+        "properties": {
+          "method": {
+            "type": "string",
+            <!-- highlight-next-line -->
+            "const": "CDC",
+            "order": 0
+          },
+          "initial_waiting_seconds": {
+            "type": "integer",
+            "title": "Initial Waiting Time in Seconds (Advanced)",
+          },
+        }
+      },
+      {
+        "title": "Scan Changes with User Defined Cursor",
+        "required": ["method"],
+        "properties": {
+          "method": {
+            "type": "string",
+            <!-- highlight-next-line -->
+            "const": "STANDARD",
+            "order": 0
           }
         }
-      ]
-    }
-    ```
+      }
+    ]
+  }
+  ```
 
-    The selection keys are `CDC` and `STANDARD`. Wrap a specific replication method's documentation section with a `<FieldAnchor field="replication_method[CDC]">...</FieldAnchor>` tag to highlight it if the user selects CDC replication in the UI.
+  The selection keys are `CDC` and `STANDARD`. Wrap a specific replication method's documentation section with a `<FieldAnchor field="replication_method[CDC]">...</FieldAnchor>` tag to highlight it if the user selects CDC replication in the UI.
 
 ### Documenting PyAirbyte usage
 
 PyAirbyte is a Python library that allows you to run syncs within a Python script for a subset of Airbyte's connectors. Documentation around PyAirbyte connectors is automatically generated from the connector's JSON schema spec. There are a few approaches to combine full control over the documentation with automatic generation for common cases:
 
 - If a connector:
-    
-    1. Is PyAirbyte-enabled (`remoteRegistries.pypi.enabled` is set in the `metadata.yaml` file of the connector), and 
-    2. Has no second-level heading `Usage with PyAirbyte` in the documentation 
-    
+
+  1. Is PyAirbyte-enabled (`remoteRegistries.pypi.enabled` is set in the `metadata.yaml` file of the connector), and
+  2. Has no second-level heading `Usage with PyAirbyte` in the documentation
+
   The documentation will be automatically generated and placed above the `Changelog` section.
 
 - By manually specifying a `Usage with PyAirbyte` section, this is disabled. The following is a good starting point for this section:

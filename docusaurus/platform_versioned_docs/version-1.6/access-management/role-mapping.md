@@ -16,10 +16,10 @@ Organization-wide permissions and each set of workspace permissions each count a
 
 1. [Get a list of current Airbyte users in your organization](https://reference.airbyte.com/reference/listuserswithinanorganization).
 2. [Get a list of current Airbyte workspaces](https://reference.airbyte.com/reference/listworkspaces).
-2. [Create a permission for an Airbyte user to access to a new workspace](https://reference.airbyte.com/reference/createpermission).
-3. [Get a list of a user's current permissions](https://reference.airbyte.com/reference/listpermissions).
-3. [Modify permission scope or level of access](https://reference.airbyte.com/reference/updatepermission).
-4. [Delete a permission](https://reference.airbyte.com/reference/deletepermission).
+3. [Create a permission for an Airbyte user to access to a new workspace](https://reference.airbyte.com/reference/createpermission).
+4. [Get a list of a user's current permissions](https://reference.airbyte.com/reference/listpermissions).
+5. [Modify permission scope or level of access](https://reference.airbyte.com/reference/updatepermission).
+6. [Delete a permission](https://reference.airbyte.com/reference/deletepermission).
 
 ## Script Example
 
@@ -28,9 +28,9 @@ Organization-wide permissions and each set of workspace permissions each count a
 1. A mapping of user emails to your company-specific roles (e.g. `finance-team`, `security-team`, `us-employee`, etc.):
 
 ```yaml
-{ 
-"user1@company.com": ["companyGroup1", "companyGroup2"], 
-"user1@company.com": ["companyGroup2", "companyGroup3"] 
+{
+"user1@company.com": ["companyGroup1", "companyGroup2"],
+"user1@company.com": ["companyGroup2", "companyGroup3"]
 }
 ```
 
@@ -38,28 +38,32 @@ Organization-wide permissions and each set of workspace permissions each count a
 
 ```yaml
 {
-  "companyGroup1": [
-    {
-      "scope": "workspace",
-      "scopeId": "11111111-11111111-11111111-11111111",
-      "permissionType": "workspace_admin"
-    },
-    {
-      "scope": "workspace",
-      "scopeId": "22222222-22222222-22222222-22222222",
-      "permissionType": "workspace_reader"
-    }
-  ],
-  "companyGroup2": [
-    {
-      "scope": "workspace",
-      "scopeId": "33333333-33333333-33333333-33333333",
-      "permissionType": "workspace_reader"
-    }
-  ]
+  "companyGroup1":
+    [
+      {
+        "scope": "workspace",
+        "scopeId": "11111111-11111111-11111111-11111111",
+        "permissionType": "workspace_admin",
+      },
+      {
+        "scope": "workspace",
+        "scopeId": "22222222-22222222-22222222-22222222",
+        "permissionType": "workspace_reader",
+      },
+    ],
+  "companyGroup2":
+    [
+      {
+        "scope": "workspace",
+        "scopeId": "33333333-33333333-33333333-33333333",
+        "permissionType": "workspace_reader",
+      },
+    ],
 }
 ```
+
 Notes:
+
 - `scope` must be set to either 'workspace' or 'organization'.
 - `scopeId` must the identifier of scope access is granted for. It is a GUID and for organization scope is always '00000000-00000000-00000000-00000000'. For workspace, refer to the UI and the output of a list workspace to identify your workspaceId.
 - `permissionType` must be set to a valid value, e.g. 'workspace_admin', 'workspace_reader', 'organization_admin', etc. All valid values are listed [here](https://github.com/airbytehq/airbyte-api-python-sdk/blob/main/src/airbyte_api/models/publicpermissiontype.py).
@@ -81,7 +85,7 @@ usersGroups = json.load(usersGroupsFile)
 groupPermissionsFile = open('groupPermissions.json')
 groupPermissions = json.load(groupPermissionsFile)
 
-# 0. - Enter your own credentials to use Airbyte API. 
+# 0. - Enter your own credentials to use Airbyte API.
 s = airbyte_api.AirbyteAPI(
   security=models.Security(
     bearer_auth='...'

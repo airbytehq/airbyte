@@ -64,7 +64,7 @@ Setting the start date in the "Testing values" to a date in the past like **2023
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-09T00:00:00Z</b>&to-date={`now`}'
 </pre>
 
-The most recent encountered date will be saved as the [*state*](../../understanding-airbyte/airbyte-protocol.md#state--checkpointing) of the connection - when the next sync is running, it picks up from that cutoff date as the new start date. Let's assume the last ecountered article looked like this:
+The most recent encountered date will be saved as the [_state_](../../understanding-airbyte/airbyte-protocol.md#state--checkpointing) of the connection - when the next sync is running, it picks up from that cutoff date as the new start date. Let's assume the last ecountered article looked like this:
 
 <pre>
 {`{

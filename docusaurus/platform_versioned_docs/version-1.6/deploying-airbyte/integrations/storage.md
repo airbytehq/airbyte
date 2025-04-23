@@ -27,7 +27,6 @@ stringData:
   # AWS S3 Secrets
   s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
 ```
 
 </TabItem>
@@ -54,6 +53,7 @@ stringData:
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
   }
 ```
+
 </TabItem>
 
 <TabItem value="Azure Blob" label="Azure" default>
@@ -72,7 +72,6 @@ stringData:
 ```
 
 </TabItem>
-
 
 </Tabs>
 
@@ -136,6 +135,7 @@ global:
     azure:
       connectionStringSecretKey: azure-blob-store-connection-string # key of your Kubernetes secret
 ```
+
 </TabItem>
 
 </Tabs>

@@ -15,7 +15,7 @@ First, make sure you have Docker installed. We'll be using the `docker-compose` 
 
 ### **Start Airbyte**
 
-If this is your first time using Airbyte, we suggest going through our [Quickstart](../using-airbyte/getting-started/oss-quickstart). 
+If this is your first time using Airbyte, we suggest going through our [Quickstart](../using-airbyte/getting-started/oss-quickstart).
 
 For the purposes of this tutorial, set your Connection's **sync frequency** to **manual**. Prefect will be responsible for manually triggering the Airbyte job.
 

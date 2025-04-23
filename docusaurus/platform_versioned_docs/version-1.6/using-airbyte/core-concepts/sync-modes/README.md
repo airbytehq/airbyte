@@ -14,7 +14,7 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
 2. The second part of the sync mode name denotes how the destination connector writes data. This is not affected by how the source connector produced the data:
    1. Overwrite: Overwrite by replacing pre-existing data in the destination.
    2. Append: Write by adding data to existing tables in the destination.
-   3. Append Deduped: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is 
+   3. Append Deduped: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is
       produced by de-duplicating the intermediate ones using a primary key.
    4. Overwrite Deduped: Overwrite by replacing pre-existing data in the destination and deduplicate the final data using a primary key.
 

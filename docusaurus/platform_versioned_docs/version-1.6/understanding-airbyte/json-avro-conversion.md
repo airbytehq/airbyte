@@ -162,10 +162,10 @@ will become this in Avro schema:
 
 Some union edge cases can result in unexpected behavior or break syncs.
 
-* A union of two of the same time types (`timestamp_with_timezone` and `timestamp_without_timezone`; or `time_with_timezone` and `time_without_timezone`) will work as expected, but a union of any `time_...` type with any `timestamp_...` type will break the sync.
-* A union of a `date` with `time` or `timestamp` type will result in undefined behavior.
-* A union of a `string` and a time type will not work as expected. The synced data will always be a string, regardless of whether it is a legal timestamp.
-* A union of an `integer` with a time type will not work as expected when processing timestamps. Before version 1.0, this would break the sync. Now it will result in the timestamp being nulled and the failure added to change capture.
+- A union of two of the same time types (`timestamp_with_timezone` and `timestamp_without_timezone`; or `time_with_timezone` and `time_without_timezone`) will work as expected, but a union of any `time_...` type with any `timestamp_...` type will break the sync.
+- A union of a `date` with `time` or `timestamp` type will result in undefined behavior.
+- A union of a `string` and a time type will not work as expected. The synced data will always be a string, regardless of whether it is a legal timestamp.
+- A union of an `integer` with a time type will not work as expected when processing timestamps. Before version 1.0, this would break the sync. Now it will result in the timestamp being nulled and the failure added to change capture.
 
 See [this issue](https://github.com/airbytehq/airbyte/issues/43378).
 
@@ -383,10 +383,7 @@ the corresponding Avro schema and object will be:
   "fields": [
     {
       "name": "identifier",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "default": null
     }
   ]
@@ -403,12 +400,12 @@ the corresponding Avro schema and object will be:
 
 Three Airbyte specific fields will be added to each Avro record:
 
-| Field                            | Schema             |                                          Document                                           |
-| :------------------------------- | :----------------- | :-----------------------------------------------------------------------------------------: |
-| `_airbyte_raw_id`                | `uuid`             |                 [link](http://avro.apache.org/docs/current/spec.html#UUID)                  |
-| `_airbyte_extracted_at`          | `timestamp-millis` | [link](http://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
-| `_airbyte_generation_id`         | `long`             |                     https://github.com/airbytehq/airbyte/issues/17011                       |
-| `_airbyte_meta`                  | `record`           |                                                                                             |
+| Field                    | Schema             |                                          Document                                           |
+| :----------------------- | :----------------- | :-----------------------------------------------------------------------------------------: |
+| `_airbyte_raw_id`        | `uuid`             |                 [link](http://avro.apache.org/docs/current/spec.html#UUID)                  |
+| `_airbyte_extracted_at`  | `timestamp-millis` | [link](http://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
+| `_airbyte_generation_id` | `long`             |                      https://github.com/airbytehq/airbyte/issues/17011                      |
+| `_airbyte_meta`          | `record`           |                                                                                             |
 
 ### Additional Properties
 
@@ -544,35 +541,35 @@ Its corresponding Avro schema will be:
       "type": "long"
     },
     {
-      "name" : "_airbyte_meta",
-      "type" : {
-        "type" : "record",
-        "name" : "_airbyte_meta",
-        "namespace" : "",
-        "fields" : [
+      "name": "_airbyte_meta",
+      "type": {
+        "type": "record",
+        "name": "_airbyte_meta",
+        "namespace": "",
+        "fields": [
           {
-            "name" : "sync_id",
-            "type" : "long"
+            "name": "sync_id",
+            "type": "long"
           },
           {
-            "name" : "changes",
-            "type" : {
-              "type" : "array",
-              "items" : {
-                "type" : "record",
-                "name" : "change",
-                "fields" : [
+            "name": "changes",
+            "type": {
+              "type": "array",
+              "items": {
+                "type": "record",
+                "name": "change",
+                "fields": [
                   {
-                    "name" : "field",
-                    "type" : "string"
+                    "name": "field",
+                    "type": "string"
                   },
                   {
-                    "name" : "change",
-                    "type" : "string"
+                    "name": "change",
+                    "type": "string"
                   },
                   {
-                    "name" : "reason",
-                    "type" : "string"
+                    "name": "reason",
+                    "type": "string"
                   }
                 ]
               }
@@ -612,10 +609,7 @@ Its corresponding Avro schema will be:
     },
     {
       "name": "created_at",
-      "type": [
-        "null",
-        { "type": "long", "logicalType": "timestamp-micros" }
-      ],
+      "type": ["null", { "type": "long", "logicalType": "timestamp-micros" }],
       "default": null
     }
   ]

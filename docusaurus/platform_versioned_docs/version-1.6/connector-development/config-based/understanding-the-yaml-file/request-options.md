@@ -91,7 +91,7 @@ RequestOption:
         description: The key where the value will be injected. Used for non-nested injection
       field_path:
         type: array
-          items: 
+          items:
             type: string
           description: For body_json injection, specifies the nested path to the inject values. Particularly useful for GraphQL queries where values need to be injected into the variables object.
 ```
