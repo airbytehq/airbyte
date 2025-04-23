@@ -1,0 +1,8 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks.connector]
+help = "Run a poe task in a connector's directory. Usage: poe connector <connector-name> <task> [args...]"
+shell = "cd airbyte-integrations/connectors/$1 && shift && poe \"$@\""
+args = ["connector", "task_and_args"]
