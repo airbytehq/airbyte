@@ -4,7 +4,11 @@
 
 package io.airbyte.cdk.load.pipline.object_storage.file
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.Part
@@ -42,6 +46,10 @@ class FileChunkTask<T>(
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     val partition: Int
 ) : Task {
+    companion object {
+        const val COLUMN_NAME_AIRBYTE_FILE_PATH = "_airbyte_file_path"
+    }
+
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
@@ -63,6 +71,20 @@ class FileChunkTask<T>(
                             )
                             .toString()
 
+                    // We enrich the record with the file_path. Ideally the schema modification
+                    // should be handled outside of this scope but the hook doesn't exist.
+                    event.context?.parentRecord?.let { destRecord ->
+                        (destRecord.stream.schema as? ObjectType)
+                            ?.properties
+                            ?.put(
+                                COLUMN_NAME_AIRBYTE_FILE_PATH,
+                                FieldType(StringType, nullable = true)
+                            )
+                        destRecord.asRawJson().let { jsonNode ->
+                            (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, filePath)
+                        }
+                    }
+
                     val fileSize = file.fileSizeBytes
                     val localFileUrl = file.stagingFileUrl
                     // We expect a final marker even if size % partSize == 0.
@@ -83,7 +105,8 @@ class FileChunkTask<T>(
                             ),
                         )
 
-                    // generate a unique upload id to keep track of the upload in the case of file name collisions
+                    // generate a unique upload id to keep track of the upload in the case of file
+                    // name collisions
                     val uploadId = UUID.randomUUID().toString()
                     val objectKey = ObjectKey(stream.descriptor, filePath, uploadId)
 
