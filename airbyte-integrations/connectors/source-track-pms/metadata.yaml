@@ -38,7 +38,7 @@ data:
         upgradeDeadline: "2025-03-28"
       4.0.0:
         message: "Prune units schema, add guestBreakdown back to reservations stream, fix connector API stream links in the docs, lower retries, disable connector auto schema generation."
-        upgradeDeadline: "2025-04-10"
+        upgradeDeadline: "2025-05-10"
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: acceptanceTests
