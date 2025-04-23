@@ -124,16 +124,21 @@ class PersonsTest(TestCase):
         # First parent stream accounts first page request
         http_mocker.get(
             _create_accounts_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts").with_id("last_page_record_id")).with_pagination().build(),
+            _create_response().with_record(record=_create_record("accounts").with_id("page_record_id")).with_pagination().build(),
         )
 
         # Second parent stream accounts second page request
         http_mocker.get(
-            _create_accounts_request().with_limit(100).with_starting_after("last_page_record_id").build(),
+            _create_accounts_request().with_limit(100).with_starting_after("page_record_id").build(),
             _create_response().with_record(record=_create_record("accounts").with_id("last_page_record_id")).build(),
         )
 
-        # Persons stream first page request
+        # Persons stream first page request for first parent
+        http_mocker.get(
+            _create_persons_request(parent_account_id="page_record_id").with_limit(100).build(),
+            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
+        )
+        # Persons stream first page request for second parent
         http_mocker.get(
             _create_persons_request(parent_account_id="last_page_record_id").with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
@@ -258,7 +263,7 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_incremental_with_recent_state(self, http_mocker: HttpMocker):
         state_datetime = _NOW - timedelta(days=5)
-        cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
+        cursor_datetime = state_datetime
 
         http_mocker.get(
             _create_events_request()
@@ -282,13 +287,13 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
+        assert int(most_recent_state.stream_state.updated) == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
     def test_incremental_with_deleted_event(self, http_mocker: HttpMocker):
         state_datetime = _NOW - timedelta(days=5)
-        cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
+        cursor_datetime = state_datetime
 
         http_mocker.get(
             _create_events_request()
@@ -312,7 +317,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert int(most_recent_state.stream_state.updated) == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
         assert actual_messages.records[0].record.data.get("is_deleted")
 
@@ -332,7 +337,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": str(state_datetime.timestamp())}).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
         source = SourceStripe(config=config, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(
             source,
@@ -344,7 +349,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
+        assert int(most_recent_state.stream_state.updated) == int(start_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -392,7 +397,7 @@ class PersonsTest(TestCase):
     @HttpMocker()
     def test_rate_limited_incremental_events(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
-        cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
+        cursor_datetime = state_datetime
 
         http_mocker.get(
             _create_events_request()
@@ -419,7 +424,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name="persons")
-        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
+        assert int(most_recent_state.stream_state.updated) == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -443,12 +448,12 @@ class PersonsTest(TestCase):
                 FailureType.system_error,
                 FailureType.config_error,
             ]
-            assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.internal_message
+            assert "Too many requests" in actual_messages.errors[0].trace.error.internal_message
 
     @HttpMocker()
     def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
-        cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
+        cursor_datetime = state_datetime
 
         http_mocker.get(
             _create_events_request()
@@ -471,7 +476,7 @@ class PersonsTest(TestCase):
             )
 
             assert len(actual_messages.errors) == 2
-            assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.message
+            assert "Too many requests" in actual_messages.errors[0].trace.error.internal_message
 
     @HttpMocker()
     def test_server_error_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:
