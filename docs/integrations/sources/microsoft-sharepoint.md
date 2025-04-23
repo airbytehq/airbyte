@@ -306,6 +306,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.9.3 | 2025-04-19 | [58471](https://github.com/airbytehq/airbyte/pull/58471) | Update dependencies |
 | 0.9.2 | 2025-04-12 | [57920](https://github.com/airbytehq/airbyte/pull/57920) | Update dependencies |
 | 0.9.1 | 2025-04-05 | [57065](https://github.com/airbytehq/airbyte/pull/57065) | Update dependencies |
 | 0.9.0 | 2025-04-01 | [55912](https://github.com/airbytehq/airbyte/pull/55912) | Provide ability to iterate all sharepoint sites |
