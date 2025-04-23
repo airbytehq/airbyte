@@ -36,6 +36,8 @@ class PendoPythonStream(HttpStream, ABC):
         output_types = []
         if field_type == "time":
             output_types = ["null", "integer"]
+        elif field_type == "date":
+            output_types = ["null", "number"]
         elif field_type == "float":
             output_types = ["null", "number"]
         elif field_type == "list":
@@ -270,7 +272,7 @@ class ReportResult(PendoPythonStream):
                 }
             }
 
-            url = f"{PendoPythonStream.url_base}{self.path()}"
+            url = f"{self.url_base}{self.path()}"
             auth_headers = self.authenticator.get_auth_header()
             try:
                 session = requests.get(url, headers=auth_headers)
@@ -321,7 +323,7 @@ class Visitor(PendoAggregationStream):
             return self.json_schema
 
         base_schema = super().get_json_schema()
-        url = f"{PendoPythonStream.url_base}metadata/schema/visitor"
+        url = f"{self.url_base}metadata/schema/visitor"
         auth_headers = self.authenticator.get_auth_header()
         try:
             session = requests.get(url, headers=auth_headers)
@@ -363,7 +365,7 @@ class Account(PendoAggregationStream):
             return self.json_schema
 
         base_schema = super().get_json_schema()
-        url = f"{PendoPythonStream.url_base}metadata/schema/account"
+        url = f"{self.url_base}metadata/schema/account"
         auth_headers = self.authenticator.get_auth_header()
         try:
             session = requests.get(url, headers=auth_headers)
