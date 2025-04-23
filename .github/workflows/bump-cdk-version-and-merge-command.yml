@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        connector_name: ${{modified_connectors}}
+        connector_name: ${{ needs.bump-cdk-version.outputs.modified_connectors }}
     with:
       connectors-options: "--name=${{ matrix.connector_name }}"
       ref: ${{ github.ref_name }}
