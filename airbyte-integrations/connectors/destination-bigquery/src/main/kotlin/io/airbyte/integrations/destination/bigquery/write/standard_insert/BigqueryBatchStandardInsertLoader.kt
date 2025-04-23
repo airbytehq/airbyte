@@ -16,8 +16,10 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
@@ -68,14 +70,18 @@ class BigqueryBatchStandardInsertsLoaderFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
     private val names: TableCatalogByDescriptor,
+    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
         val tableName = names[streamDescriptor]!!.tableNames.rawTableName!!
+        val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
         val writeChannelConfiguration =
-            WriteChannelConfiguration.newBuilder(TableId.of(tableName.namespace, tableName.name))
+            WriteChannelConfiguration.newBuilder(
+                    TableId.of(tableName.namespace, tableName.name + rawTableNameSuffix)
+                )
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setFormatOptions(FormatOptions.json())
