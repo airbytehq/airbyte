@@ -22,8 +22,8 @@ jobs:
           echo "Fetching versions from $REPO_URL" >&2 # Log output to standard error
 
           # 2. Fetch HTML, extract versions (X.Y), sort, get the latest
-          latest_version=$(curl -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -s "$REPO_URL" | grep -o 'href="[0-9]\+\.[0-9]\+/"' | sed 's/^href="//; s/\/$//' | sort -V | tail -n 1)
-
+          latest_version=$(curl -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -s "$REPO_URL" | grep -o 'href="[0-9]\+\.[0-9]\+/"' | sed 's/^href="//; s/\/"$//' | sort -V | tail -n 1)
+          
           # 3. Check if we found a version string
           if [[ -z "$latest_version" ]]; then
             echo "Error: Could not find any valid version strings (format X.Y) at $REPO_URL" >&2
