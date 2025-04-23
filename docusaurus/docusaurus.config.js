@@ -61,6 +61,13 @@ const config = {
         content: "plvcr4wcl9abmq0itvi63c",
       },
     },
+    {
+      tagName: "meta",
+      attributes: {
+        name: "google-site-verification",
+        content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
+      },
+    },
   ],
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
