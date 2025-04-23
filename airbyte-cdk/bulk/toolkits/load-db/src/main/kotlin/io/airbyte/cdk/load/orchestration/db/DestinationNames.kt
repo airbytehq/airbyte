@@ -24,8 +24,8 @@ data class TableNames(
         this.rawTableName.hasNamingConflictWith(other.rawTableName) ||
             this.finalTableName.hasNamingConflictWith(other.finalTableName)
 
-    fun prettyPrint() =
-        "Raw table: ${rawTableName?.prettyPrint()}; Final table: ${finalTableName?.prettyPrint()}"
+    fun toPrettyString() =
+        "Raw table: ${rawTableName?.toPrettyString()}; Final table: ${finalTableName?.toPrettyString()}"
 
     companion object {
         const val NO_SUFFIX = ""
@@ -36,7 +36,7 @@ data class TableNames(
 }
 
 data class TableName(val namespace: String, val name: String) {
-    fun prettyPrint(quote: String = "", suffix: String = "") =
+    fun toPrettyString(quote: String = "", suffix: String = "") =
         "$quote$namespace$quote.$quote$name$suffix$quote"
 }
 

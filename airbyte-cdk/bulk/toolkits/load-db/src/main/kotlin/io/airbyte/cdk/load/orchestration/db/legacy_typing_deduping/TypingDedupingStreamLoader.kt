@@ -211,7 +211,7 @@ class TypingDedupingStreamLoader(
         // No special handling if final table doesn't exist, just create and return
         if (initialStatus.finalTableStatus == null) {
             logger.info {
-                "Final table does not exist for stream ${stream.descriptor.toPrettyString()}, creating ${tableNames.finalTableName!!.prettyPrint()}."
+                "Final table does not exist for stream ${stream.descriptor.toPrettyString()}, creating ${tableNames.finalTableName!!.toPrettyString()}."
             }
             finalTableOperations.createFinalTable(
                 stream,
@@ -323,7 +323,7 @@ class TypingDedupingStreamLoader(
 
         if (disableTypeDedupe) {
             logger.info {
-                "Typing and deduping disabled, skipping final table finalization. Raw records can be found at ${tableNames.rawTableName!!.prettyPrint()}"
+                "Typing and deduping disabled, skipping final table finalization. Raw records can be found at ${tableNames.rawTableName!!.toPrettyString()}"
             }
             return
         }

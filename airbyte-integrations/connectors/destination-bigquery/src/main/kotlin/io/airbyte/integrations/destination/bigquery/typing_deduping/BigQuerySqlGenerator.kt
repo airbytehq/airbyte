@@ -134,7 +134,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
         val forceCreateTable = if (replace) "OR REPLACE" else ""
-        val finalTableId = tableName.prettyPrint(QUOTE, finalTableSuffix)
+        val finalTableId = tableName.toPrettyString(QUOTE, finalTableSuffix)
         return Sql.of(
             """
             CREATE $forceCreateTable TABLE `$projectId`.$finalTableId (
@@ -196,12 +196,12 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         finalTableName: TableName,
         suffix: String,
     ): Sql {
-        val tableId = finalTableName.prettyPrint(QUOTE, suffix)
+        val tableId = finalTableName.toPrettyString(QUOTE, suffix)
         return Sql.of("""DROP TABLE IF EXISTS `$projectId`.$tableId;""")
     }
 
     override fun clearLoadedAt(stream: DestinationStream, rawTableName: TableName): Sql {
-        val rawTableId = rawTableName.prettyPrint(QUOTE)
+        val rawTableId = rawTableName.toPrettyString(QUOTE)
         return Sql.of(
             """UPDATE `$projectId`.$rawTableId SET _airbyte_loaded_at = NULL WHERE 1=1;"""
         )
@@ -266,7 +266,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 forceSafeCasting,
                 minRawTimestamp
             )
-        val finalTableId = tableNames.finalTableName!!.prettyPrint(QUOTE, finalSuffix)
+        val finalTableId = tableNames.finalTableName!!.toPrettyString(QUOTE, finalSuffix)
 
         return """
                INSERT INTO `$projectId`.$finalTableId
@@ -357,7 +357,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 val column = columnNameMapping[fieldName]!!
                 "`$column` = new_record.`$column`,"
             }
-        val finalTableId = tableNames.finalTableName!!.prettyPrint(QUOTE, finalSuffix)
+        val finalTableId = tableNames.finalTableName!!.toPrettyString(QUOTE, finalSuffix)
 
         return """
                MERGE `$projectId`.$finalTableId target_table
@@ -448,7 +448,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
             }
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
 
-        val rawTableId = tableNames.rawTableName!!.prettyPrint(QUOTE)
+        val rawTableId = tableNames.rawTableName!!.toPrettyString(QUOTE)
         if (stream.importType is Dedupe) {
             val importType = stream.importType as Dedupe
             // When deduping, we need to dedup the raw records. Note the row_number() invocation in
@@ -570,7 +570,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
 
     @VisibleForTesting
     fun commitRawTable(rawTableName: TableName, minRawTimestamp: Instant?): String {
-        val rawTableId = rawTableName.prettyPrint(QUOTE)
+        val rawTableId = rawTableName.toPrettyString(QUOTE)
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
         return """
                UPDATE `$projectId`.$rawTableId
@@ -586,8 +586,8 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
         finalTableName: TableName,
         finalTableSuffix: String,
     ): Sql {
-        val finalTableId = finalTableName.prettyPrint(QUOTE)
-        val tempFinalTableId = finalTableName.prettyPrint(QUOTE, finalTableSuffix)
+        val finalTableId = finalTableName.toPrettyString(QUOTE)
+        val tempFinalTableId = finalTableName.toPrettyString(QUOTE, finalTableSuffix)
         return Sql.separately(
             "DROP TABLE IF EXISTS `$projectId`.$finalTableId;",
             "ALTER TABLE `$projectId`.$tempFinalTableId RENAME TO `${finalTableName.name}`;"
