@@ -313,7 +313,7 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
     assert file_reference.staging_file_url == expected_staging_file_url
     assert file_reference.file_size_bytes == expected_file_bytes
 
-    assert os.path.basename(expected_staging_file_url) == file_record_data.filename
+    assert os.path.basename(expected_staging_file_url) == file_record_data.file_name
     assert os.path.dirname(expected_staging_file_url.replace(f"{TEST_LOCAL_DIRECTORY}", "")) == file_record_data.folder
     assert file_record_data.source_uri == file_uri
 

@@ -499,7 +499,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
             file_record_data = FileRecordData(
                 folder=file_paths[self.FILE_FOLDER],
-                filename=file_name,
+                file_name=file_name,
                 bytes=file_size,
                 source_uri=file.uri,
                 created_at=file.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
