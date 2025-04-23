@@ -3,9 +3,6 @@ sidebar_label: Okta
 products: oss-enterprise, cloud-teams
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 # Set up single sign on using Okta
 
 This guide shows you how to set up Okta and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) using OpenID Connect (OIDC). 
