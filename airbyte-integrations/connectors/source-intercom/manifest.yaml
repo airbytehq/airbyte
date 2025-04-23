@@ -254,25 +254,6 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                    predicate: "{{ response.status_code == 500 and '?' not in response.request.url }}"
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 500
-                    predicate: "{{ response.status_code == 500 and '?' not in response.request.url }}"
-                    error_message: "500 error on first page after retries. Please restart the sync to continue fetching companies."
-              - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
@@ -293,10 +274,15 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    action: FAIL
+                    action: RETRY
                     http_codes:
                       - 500
+                    #We cannot retry 500 errors, so we fail the stream. Docs: https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
+                    #We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, Tracked here: https://github.com/airbytehq/airbyte-internal-issues/issues/12107
                     error_message: "A network timeout occurred. Please restart the sync to continue fetching companies. Stream: companies must be restarted to continue fetching companies."
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
         record_selector:
           type: RecordSelector
           extractor:
@@ -305,12 +291,14 @@ definitions:
               - data
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: scroll_param
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('scroll_param') }}"
             stop_condition: "{{ not response.get('data') }}"
-          page_token_option:
-            type: RequestPath
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -584,7 +572,6 @@ definitions:
                 $ref: "#/definitions/streams/conversations"
               parent_key: id
               partition_field: id
-              incremental_dependency: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -597,7 +584,6 @@ definitions:
         cursor_datetime_formats:
           - "%s"
         is_client_side_incremental: true
-        global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
@@ -608,9 +594,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversation_parts"
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.SubstreamStateMigration
     company_segments:
       description: >-
         https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies
@@ -667,14 +650,10 @@ definitions:
         cursor_datetime_formats:
           - "%s"
         is_client_side_incremental: true
-        global_substream_cursor: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/company_segments"
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.SubstreamStateMigration
     tickets:
       type: DeclarativeStream
       description: >-
