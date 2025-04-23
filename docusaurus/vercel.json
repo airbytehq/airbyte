@@ -72,12 +72,12 @@
     },
     {
       "source": "/project-overview/product-support-levels",
-      "destination": "/platform/integrations/connector-support-levels",
+      "destination": "/integrations/connector-support-levels",
       "statusCode": 301
     },
     {
-      "source": "- /project-overview/product-release-stages",
-      "destination": "/platform/integrations/connector-support-levels",
+      "source": "/project-overview/product-release-stages",
+      "destination": "/integrations/connector-support-levels",
       "statusCode": 301
     },
     {
@@ -217,7 +217,7 @@
     },
     {
       "source": "/operator-guides/locating-files-local-destination",
-      "destination": "/platform/integrations/locating-files-local-destination",
+      "destination": "/integrations/locating-files-local-destination",
       "statusCode": 301
     },
     {
