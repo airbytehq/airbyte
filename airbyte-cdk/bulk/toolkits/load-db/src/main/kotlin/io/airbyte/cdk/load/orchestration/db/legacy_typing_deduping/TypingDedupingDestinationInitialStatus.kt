@@ -2,16 +2,16 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
+package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
-import io.airbyte.cdk.load.orchestration.DestinationInitialStatus
+import io.airbyte.cdk.load.orchestration.db.DestinationInitialStatus
 import java.time.Instant
 
 data class TypingDedupingDestinationInitialStatus(
-    /** Initial status of the final table, or null if the table doesn't exist yet. */
+  /** Initial status of the final table, or null if the table doesn't exist yet. */
     val finalTableStatus: FinalTableInitialStatus?,
-    val rawTableStatus: RawTableInitialStatus?,
-    val tempRawTableStatus: RawTableInitialStatus?,
+  val rawTableStatus: RawTableInitialStatus?,
+  val tempRawTableStatus: RawTableInitialStatus?,
 ) : DestinationInitialStatus
 
 data class FinalTableInitialStatus(

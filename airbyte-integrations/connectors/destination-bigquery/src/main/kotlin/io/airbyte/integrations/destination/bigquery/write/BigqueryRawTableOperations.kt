@@ -9,8 +9,8 @@ import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableResult
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.TableName
-import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingRawTableOperations
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingRawTableOperations
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -18,7 +18,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 class BigqueryRawTableOperations(private val bigquery: BigQuery) :
-    TypingDedupingRawTableOperations {
+  TypingDedupingRawTableOperations {
     override fun prepareRawTable(rawTableName: TableName, suffix: String, replace: Boolean) {
         // Prepare staging table. For overwrite, it does drop-create so we can skip explicit create.
         if (replace) {

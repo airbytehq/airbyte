@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.bigquery.write
 
 import com.google.cloud.bigquery.BigQuery
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.TableNames
-import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingFinalTableOperations
-import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingWriter
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingFinalTableOperations
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingWriter
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator

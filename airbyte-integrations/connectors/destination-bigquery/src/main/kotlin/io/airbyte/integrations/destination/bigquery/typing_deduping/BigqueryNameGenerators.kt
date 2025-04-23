@@ -5,11 +5,11 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.RawTableNameGenerator
-import io.airbyte.cdk.load.orchestration.TableName
-import io.airbyte.cdk.load.orchestration.legacy_typing_deduping.TypingDedupingUtil
+import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
+import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator.Companion.nameTransformer
 import java.util.Locale

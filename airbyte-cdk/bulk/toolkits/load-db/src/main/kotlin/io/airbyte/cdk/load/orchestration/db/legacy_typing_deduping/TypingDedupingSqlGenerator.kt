@@ -2,14 +2,14 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
+package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.Sql
-import io.airbyte.cdk.load.orchestration.TableName
-import io.airbyte.cdk.load.orchestration.TableNames
-import io.airbyte.cdk.load.orchestration.TableNames.Companion.SOFT_RESET_SUFFIX
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.Sql
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.SOFT_RESET_SUFFIX
 import java.time.Instant
 
 interface TypingDedupingSqlGenerator {
@@ -26,11 +26,11 @@ interface TypingDedupingSqlGenerator {
      * this to true.
      */
     fun createFinalTable(
-        stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping,
-        finalTableSuffix: String,
-        replace: Boolean
+      stream: DestinationStream,
+      tableName: TableName,
+      columnNameMapping: ColumnNameMapping,
+      finalTableSuffix: String,
+      replace: Boolean
     ): Sql
 
     /**
@@ -69,12 +69,12 @@ interface TypingDedupingSqlGenerator {
      * which handles casting exceptions.
      */
     fun updateFinalTable(
-        stream: DestinationStream,
-        tableNames: TableNames,
-        columnNameMapping: ColumnNameMapping,
-        finalTableSuffix: String,
-        maxProcessedTimestamp: Instant?,
-        useExpensiveSaferCasting: Boolean,
+      stream: DestinationStream,
+      tableNames: TableNames,
+      columnNameMapping: ColumnNameMapping,
+      finalTableSuffix: String,
+      maxProcessedTimestamp: Instant?,
+      useExpensiveSaferCasting: Boolean,
     ): Sql
 
     /**
@@ -84,18 +84,18 @@ interface TypingDedupingSqlGenerator {
      * non-empty. Callers are responsible for verifying those are true.
      */
     fun overwriteFinalTable(
-        stream: DestinationStream,
-        finalTableName: TableName,
-        finalTableSuffix: String,
+      stream: DestinationStream,
+      finalTableName: TableName,
+      finalTableSuffix: String,
     ): Sql
 
     fun clearLoadedAt(stream: DestinationStream, rawTableName: TableName): Sql
 
     /** Typically we need to create a soft reset temporary table and clear loaded at values */
     fun prepareTablesForSoftReset(
-        stream: DestinationStream,
-        tableNames: TableNames,
-        columnNameMapping: ColumnNameMapping,
+      stream: DestinationStream,
+      tableNames: TableNames,
+      columnNameMapping: ColumnNameMapping,
     ): Sql {
         val createTempTable =
             createFinalTable(

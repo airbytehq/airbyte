@@ -2,29 +2,29 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
+package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.DestinationHandler
-import io.airbyte.cdk.load.orchestration.TableName
-import io.airbyte.cdk.load.orchestration.TableNames
-import io.airbyte.cdk.load.orchestration.TableNames.Companion.SOFT_RESET_SUFFIX
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.DestinationHandler
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.SOFT_RESET_SUFFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
 
 class TypingDedupingFinalTableOperations(
-    private val sqlGenerator: TypingDedupingSqlGenerator,
-    private val destinationHandler: DestinationHandler,
+  private val sqlGenerator: TypingDedupingSqlGenerator,
+  private val destinationHandler: DestinationHandler,
 ) {
     fun createFinalTable(
-        stream: DestinationStream,
-        finalTableName: TableName,
-        columnNameMapping: ColumnNameMapping,
-        finalTableSuffix: String,
-        replace: Boolean
+      stream: DestinationStream,
+      finalTableName: TableName,
+      columnNameMapping: ColumnNameMapping,
+      finalTableSuffix: String,
+      replace: Boolean
     ) {
         logger.info {
             "Creating final table for stream ${stream.descriptor.toPrettyString()} with name ${finalTableName.prettyPrint()}"
@@ -42,9 +42,9 @@ class TypingDedupingFinalTableOperations(
 
     /** Reset the final table using a temp table or ALTER existing table's columns. */
     fun softResetFinalTable(
-        stream: DestinationStream,
-        tableNames: TableNames,
-        columnNameMapping: ColumnNameMapping,
+      stream: DestinationStream,
+      tableNames: TableNames,
+      columnNameMapping: ColumnNameMapping,
     ) {
         logger.info {
             "Executing soft reset for stream ${stream.descriptor.toPrettyString()} on tables ${tableNames.prettyPrint()}"
@@ -73,9 +73,9 @@ class TypingDedupingFinalTableOperations(
      * specific, INSERT INTO..SELECT * and DROP TABLE OR CREATE OR REPLACE ... SELECT *, DROP TABLE
      */
     fun overwriteFinalTable(
-        stream: DestinationStream,
-        finalTableName: TableName,
-        finalTableSuffix: String,
+      stream: DestinationStream,
+      finalTableName: TableName,
+      finalTableSuffix: String,
     ) {
         logger.info {
             "Overwriting final table for stream ${stream.descriptor.toPrettyString()} with name ${finalTableName.prettyPrint()} using temp table with suffix $finalTableSuffix"
@@ -90,11 +90,11 @@ class TypingDedupingFinalTableOperations(
     }
 
     fun typeAndDedupe(
-        stream: DestinationStream,
-        tableNames: TableNames,
-        columnNameMapping: ColumnNameMapping,
-        maxProcessedTimestamp: Instant?,
-        finalTableSuffix: String
+      stream: DestinationStream,
+      tableNames: TableNames,
+      columnNameMapping: ColumnNameMapping,
+      maxProcessedTimestamp: Instant?,
+      finalTableSuffix: String
     ) {
         try {
             logger.info {

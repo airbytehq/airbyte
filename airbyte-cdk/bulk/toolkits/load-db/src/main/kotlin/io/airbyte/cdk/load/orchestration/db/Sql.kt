@@ -1,4 +1,4 @@
-package io.airbyte.cdk.load.orchestration
+package io.airbyte.cdk.load.orchestration.db
 
 import java.util.function.Consumer
 

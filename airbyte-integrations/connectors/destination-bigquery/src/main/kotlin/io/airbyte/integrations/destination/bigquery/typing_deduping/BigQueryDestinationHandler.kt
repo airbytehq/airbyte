@@ -14,8 +14,8 @@ import com.google.cloud.bigquery.JobStatus
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.common.collect.Streams
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.load.orchestration.DestinationHandler
-import io.airbyte.cdk.load.orchestration.Sql
+import io.airbyte.cdk.load.orchestration.db.DestinationHandler
+import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.util.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.github.oshai.kotlinlogging.KotlinLogging

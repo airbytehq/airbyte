@@ -2,24 +2,24 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration.legacy_typing_deduping
+package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.RawTableNameGenerator
-import io.airbyte.cdk.load.orchestration.TableNames
+import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 
 @Factory
 class TypingDedupingTableNameMapFactory(
-    private val catalog: DestinationCatalog,
-    private val rawTableNameGenerator: RawTableNameGenerator,
-    private val finalTableNameGenerator: FinalTableNameGenerator,
-    private val finalTableColumnNameGenerator: ColumnNameGenerator,
+  private val catalog: DestinationCatalog,
+  private val rawTableNameGenerator: RawTableNameGenerator,
+  private val finalTableNameGenerator: FinalTableNameGenerator,
+  private val finalTableColumnNameGenerator: ColumnNameGenerator,
 ) {
     @Singleton
     fun get(): Map<DestinationStream, Pair<TableNames, ColumnNameMapping>> {
@@ -43,7 +43,7 @@ class TypingDedupingTableNameMapFactory(
 
 @Factory
 class TypingDedupingTableNameMapByDescriptorFactory(
-    private val map: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
+  private val map: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
 ) {
     @Singleton
     fun get(): Map<DestinationStream.Descriptor, Pair<TableNames, ColumnNameMapping>> {

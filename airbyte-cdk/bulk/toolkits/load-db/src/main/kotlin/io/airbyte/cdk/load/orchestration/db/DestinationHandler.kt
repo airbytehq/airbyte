@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration
+package io.airbyte.cdk.load.orchestration.db
 
 interface DestinationHandler {
     fun execute(sql: Sql)
