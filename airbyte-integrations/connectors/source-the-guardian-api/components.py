@@ -58,4 +58,5 @@ class CustomPageIncrement(PaginationStrategy):
             return None
 
     def get_page_size(self) -> Optional[int]:
+        print("Hello earthlings")
         return self._page_size
