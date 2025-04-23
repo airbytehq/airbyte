@@ -63,7 +63,7 @@ class TypingDedupingWriter(
             // Refetch their statuses.
             val statusesAfterSoftReset =
                 stateGatherer.gatherInitialStatus(
-                    names.filterKeys { streamsNeedingSoftReset.containsKey(it) }
+                    TableCatalog(names.filterKeys { streamsNeedingSoftReset.containsKey(it) })
                 )
             // second map "wins" when adding two maps together, so we'll retain the newer statuses.
             initialStatuses = initialInitialStatuses + statusesAfterSoftReset
