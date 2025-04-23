@@ -14,6 +14,14 @@
 #   poe source hardcoded-records check-all
 #   poe destination motherduck check-all
 
+[tasks.docs-build]
+help = "Build the docs.airbyte.com site documentation using Docusaurus."
+shell = '''
+cd $POE_ROOT/docusaurus
+pnpm install
+pnpm build
+'''
+
 [tasks.connector]
 help = "Run a poe task in a connector's directory. Usage: poe connector <connector-name> <task> [args...]"
 
