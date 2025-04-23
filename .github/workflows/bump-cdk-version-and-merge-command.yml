@@ -17,6 +17,9 @@ on:
 jobs:
   bump-cdk-version:
     runs-on: ubuntu-24.04
+    outputs:
+      # Output the matrix config as a JSON string
+      matrix: ${{ steps.export-connection-modified.outputs.modified_connectors }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,9 +61,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Update cdkVersionRequired in build.gradle files
+        id: export-connection-modified
         run: |
-          set -o xtrace
-          
           # Ensure the branch has the most recent updates from the master branch
           git fetch origin master
 
@@ -75,8 +77,6 @@ jobs:
           echo "Modified connector folders: $connector_folders"
           
           MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -c -s .)
-          
-          echo ${MODIFIED_LIST_JSON}
           
           echo "modified_connectors=${MODIFIED_LIST_JSON}" >> $GITHUB_OUTPUT
 
@@ -94,14 +94,14 @@ jobs:
           git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
           git push
 
-  publish-java-cdk:
-    needs: [bump-cdk-version]
-    uses: ./.github/workflows/publish-java-cdk-command.yml
-    with:
-      gitref: ${{ github.ref_name }}
-      dry-run: true
-      force: false
-    secrets: inherit
+  # publish-java-cdk:
+  #   needs: [bump-cdk-version]
+  #   uses: ./.github/workflows/publish-java-cdk-command.yml
+  #   with:
+  #     gitref: ${{ github.ref_name }}
+  #     dry-run: true
+  #     force: false
+  #   secrets: inherit
 
   publish-connectors:
     needs: [publish-java-cdk]
