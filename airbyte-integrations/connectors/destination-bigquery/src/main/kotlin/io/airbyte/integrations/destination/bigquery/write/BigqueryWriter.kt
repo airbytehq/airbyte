@@ -5,9 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write
 
 import com.google.cloud.bigquery.BigQuery
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingFinalTableOperations
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingWriter
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
@@ -21,7 +19,7 @@ import jakarta.inject.Singleton
 class BigqueryWriterFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
-    private val names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
+    private val names: TableCatalog,
 ) {
     @Singleton
     fun make(): TypingDedupingWriter {

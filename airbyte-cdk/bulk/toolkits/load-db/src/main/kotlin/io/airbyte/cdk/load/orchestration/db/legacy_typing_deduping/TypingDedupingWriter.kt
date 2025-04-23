@@ -5,10 +5,8 @@
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.DestinationInitialStatusGatherer
-import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import java.util.concurrent.Executors
@@ -17,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class TypingDedupingWriter(
-    private val names: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
+    private val names: TableCatalog,
     private val stateGatherer:
         DestinationInitialStatusGatherer<TypingDedupingDestinationInitialStatus>,
     private val databaseHandler: DatabaseHandler,

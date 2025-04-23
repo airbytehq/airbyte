@@ -26,6 +26,7 @@ import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.AlterTableReport
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.FinalTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.RawTableInitialStatus
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDestinationInitialStatus
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.CollectionUtils.containsIgnoreCase
@@ -114,7 +115,7 @@ class BigqueryDestinationInitialStatusGatherer(private val bq: BigQuery) :
     }
 
     override suspend fun gatherInitialStatus(
-        streams: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>
+        streams: TableCatalog,
     ): Map<DestinationStream, TypingDedupingDestinationInitialStatus> {
         return streams.mapValues { (stream, names) ->
             val (tableNames, columnNameMapping) = names

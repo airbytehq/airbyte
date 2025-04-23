@@ -8,13 +8,11 @@ import com.google.cloud.bigquery.*
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
@@ -85,7 +83,7 @@ class BigqueryConfiguredForBulkLoad : Condition {
 @Singleton
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigQueryBulkLoaderFactory(
-    private val names: Map<DestinationStream.Descriptor, Pair<TableNames, ColumnNameMapping>>,
+    private val names: TableCatalogByDescriptor,
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration
@@ -103,7 +101,7 @@ class BigQueryBulkLoaderFactory(
             storageClient,
             bigQueryClient,
             bigQueryConfiguration,
-            names[key.stream]!!.first.rawTableName!!,
+            names[key.stream]!!.tableNames.rawTableName!!,
         )
     }
 }

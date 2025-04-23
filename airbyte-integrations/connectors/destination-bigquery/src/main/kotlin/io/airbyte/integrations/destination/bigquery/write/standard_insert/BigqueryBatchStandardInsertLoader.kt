@@ -15,8 +15,7 @@ import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
@@ -68,13 +67,13 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 class BigqueryBatchStandardInsertsLoaderFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
-    private val names: Map<DestinationStream.Descriptor, Pair<TableNames, ColumnNameMapping>>,
+    private val names: TableCatalogByDescriptor,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
-        val tableName = names[streamDescriptor]!!.first.rawTableName!!
+        val tableName = names[streamDescriptor]!!.tableNames.rawTableName!!
         val writeChannelConfiguration =
             WriteChannelConfiguration.newBuilder(TableId.of(tableName.namespace, tableName.name))
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)

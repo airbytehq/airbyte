@@ -14,39 +14,52 @@ import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 
+data class TableNameInfo(val tableNames: TableNames, val columnNameMapping: ColumnNameMapping)
+
+@JvmInline
+value class TableCatalog(private val catalog: Map<DestinationStream, TableNameInfo>) :
+    Map<DestinationStream, TableNameInfo> by catalog
+
+@JvmInline
+value class TableCatalogByDescriptor(
+    private val catalog: Map<DestinationStream.Descriptor, TableNameInfo>
+) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog
+
 @Factory
-class TypingDedupingTableNameMapFactory(
+class TableCatalogFactory(
     private val catalog: DestinationCatalog,
     private val rawTableNameGenerator: RawTableNameGenerator,
     private val finalTableNameGenerator: FinalTableNameGenerator,
     private val finalTableColumnNameGenerator: ColumnNameGenerator,
 ) {
     @Singleton
-    fun get(): Map<DestinationStream, Pair<TableNames, ColumnNameMapping>> {
+    fun get(): TableCatalog {
         // TODO handle collisions in table names
-        return catalog.streams.associateWith { stream ->
-            Pair(
-                TableNames(
-                    rawTableName = rawTableNameGenerator.getTableName(stream.descriptor),
-                    finalTableName = finalTableNameGenerator.getTableName(stream.descriptor),
-                ),
-                ColumnNameMapping(
-                    // TODO handle collisions in column names
-                    stream.schema.asColumns().mapValues { (columnName, _) ->
-                        finalTableColumnNameGenerator.getColumnName(columnName).displayName
-                    }
+        return TableCatalog(
+            catalog.streams.associateWith { stream ->
+                TableNameInfo(
+                    TableNames(
+                        rawTableName = rawTableNameGenerator.getTableName(stream.descriptor),
+                        finalTableName = finalTableNameGenerator.getTableName(stream.descriptor),
+                    ),
+                    ColumnNameMapping(
+                        // TODO handle collisions in column names
+                        stream.schema.asColumns().mapValues { (columnName, _) ->
+                            finalTableColumnNameGenerator.getColumnName(columnName).displayName
+                        }
+                    )
                 )
-            )
-        }
+            }
+        )
     }
 }
 
 @Factory
-class TypingDedupingTableNameMapByDescriptorFactory(
-    private val map: Map<DestinationStream, Pair<TableNames, ColumnNameMapping>>,
+class TableCatalogByDescriptorFactory(
+    private val map: TableCatalog,
 ) {
     @Singleton
-    fun get(): Map<DestinationStream.Descriptor, Pair<TableNames, ColumnNameMapping>> {
-        return map.mapKeys { (k, _) -> k.descriptor }
+    fun get(): TableCatalogByDescriptor {
+        return TableCatalogByDescriptor(map.mapKeys { (k, _) -> k.descriptor })
     }
 }
