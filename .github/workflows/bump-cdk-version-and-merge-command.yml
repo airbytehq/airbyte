@@ -154,7 +154,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
       - name: Install Python
         id: install_python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           check-latest: true
@@ -364,8 +364,6 @@ jobs:
           sort | \
           uniq)
 
-          # poetry install
-
           # Read each line from the connector_folders variable
           echo "$connector_folders" | while read -r folder; do
             CONNECTOR_NAME=$(echo "$folder" | cut -d'-' -f2-)
@@ -376,5 +374,16 @@ jobs:
             git commit -m "Update changelog for $folder"
             git push
           done
-    
-          # poetry run auto-merge
+
+      - name: Run auto merge
+        shell: bash
+        working-directory: airbyte-ci/connectors/auto_merge
+        env:
+          # We need a custom Github Token as some API endpoints
+          # are not available from GHA auto generated tokens
+          # like the one to list branch protection rules...
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          AUTO_MERGE_PRODUCTION: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE }}
+        run: |
+          poetry install
+          poetry run auto-merge
