@@ -74,8 +74,9 @@ data class BigqueryBulkLoadConfiguration(
 
         objectStoragePathConfiguration =
             ObjectStoragePathConfiguration(
-                prefix = bigQueryConfiguration.loadingMethod.gcsClientConfig.path,
-                pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/",
+                prefix = bigQueryConfiguration.loadingMethod.gcsClientConfig.gcsBucketName,
+                pathPattern =
+                    "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${UUID}",
                 fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
             )
     }
