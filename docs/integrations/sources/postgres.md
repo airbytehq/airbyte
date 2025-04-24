@@ -344,6 +344,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------| ---------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.6.31 | 2025-04-24 | [58126](https://github.com/airbytehq/airbyte/pull/58126) | Update CDK version |
 | 3.6.30 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
 | 3.6.29 | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649) | Fix issue that column default value did not get converted |
 | 3.6.28 | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870) | Use airbyte/java-connector-base:2.0.0 |
