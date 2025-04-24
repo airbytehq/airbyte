@@ -126,8 +126,8 @@ jobs:
     uses: ./.github/workflows/publish-java-cdk-command.yml
     with:
       gitref: ${{ github.ref_name }}
-      dry-run: false
-      force: false
+      dry-run: true
+      force: true
     secrets: inherit
 
   publish-connectors:
@@ -135,7 +135,7 @@ jobs:
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
-      publish-options: --main-release
+      publish-options: --pre-release
       matrix:
         connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
     with:
