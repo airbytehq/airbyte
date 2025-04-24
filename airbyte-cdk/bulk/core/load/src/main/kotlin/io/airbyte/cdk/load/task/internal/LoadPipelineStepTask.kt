@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.internal
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -69,8 +70,6 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 ) : Task {
     private val log = KotlinLogging.logger {}
 
-    private val taskName = taskId
-
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     /**
@@ -92,7 +91,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     is PipelineMessage -> {
                         if (stateStore.streamsEnded.contains(input.key.stream)) {
                             throw IllegalStateException(
-                                "$taskName[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
+                                "$taskId[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
                             )
                         }
                         // Get or create the accumulator state associated w/ the input key.
@@ -204,7 +203,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         // Track which tasks are complete
                         stateStore.streamsEnded.add(input.stream)
                         batchUpdateQueue.publish(
-                            BatchEndOfStream(input.stream, taskName, part, inputCountEos)
+                            BatchEndOfStream(input.stream, taskId, part, inputCountEos)
                         )
 
                         stateStore
@@ -254,7 +253,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         }
     }
 
-    private suspend fun handleOutput(
+    @VisibleForTesting
+    suspend fun handleOutput(
         inputKey: K1,
         checkpointCounts: Map<CheckpointId, Long>,
         output: U,
@@ -278,7 +278,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     stream = inputKey.stream,
                     checkpointCounts = checkpointCounts.toMap(),
                     state = output.state,
-                    taskName = taskName,
+                    taskName = taskId,
                     part = part,
                     inputCount = inputCount
                 )
