@@ -430,6 +430,16 @@
       "source": "/using-airbyte/:path*",
       "destination": "/platform/using-airbyte/:path*",
       "statusCode": 301
-    }
+    },
+    {
+      "source": "/connector-specification-reference#airbyte-modifications-to-jsonschema",
+      "destination": "/platform/connector-development/connector-specification-reference#airbyte-modifications-to-jsonschema",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-specification-reference",
+      "destination": "/platform/connector-development/connector-specification-reference",
+      "statusCode": 301
+    },
   ]
 }
