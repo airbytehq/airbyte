@@ -4,7 +4,7 @@
 
 ### Airbyte field names
 
-This version updates the Azure Blob Storage destination connector to use the [DV2 Airbyte metadata field names](../../understanding-airbyte/airbyte-metadata-fields). You should update any downstream consumers to reference the new field names. Specifically, these two fields have been renamed:
+This version updates the Azure Blob Storage destination connector to use the [DV2 Airbyte metadata field names](../../platform/understanding-airbyte/airbyte-metadata-fields). You should update any downstream consumers to reference the new field names. Specifically, these two fields have been renamed:
 
 | Old field name        | New field name             |
 | --------------------- | -------------------------- |
