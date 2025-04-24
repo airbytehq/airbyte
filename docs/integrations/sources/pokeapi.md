@@ -4,8 +4,8 @@
 
 The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
-- [Airbyte Quickstart: An Introduction to Deploying and Syncing](../../using-airbyte/getting-started/readme.md)
-- [Using Connector Builder and the low-code CDK](../../connector-development/connector-builder-ui/overview.md)
+- [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
+- [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
 - [How to Build ETL Sources in Under 30 Minutes: A Video Tutorial](https://www.youtube.com/watch?v=kJ3hLoNfz_E&t=13s&ab_channel=Airbyte)
 
 ## Features
@@ -39,6 +39,7 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.20 | 2025-04-19 | [58517](https://github.com/airbytehq/airbyte/pull/58517) | Update dependencies |
 | 0.3.19 | 2025-04-12 | [57849](https://github.com/airbytehq/airbyte/pull/57849) | Update dependencies |
 | 0.3.18 | 2025-04-05 | [57292](https://github.com/airbytehq/airbyte/pull/57292) | Update dependencies |
 | 0.3.17 | 2025-03-29 | [56733](https://github.com/airbytehq/airbyte/pull/56733) | Update dependencies |

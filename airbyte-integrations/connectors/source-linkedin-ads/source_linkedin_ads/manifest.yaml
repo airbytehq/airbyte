@@ -1500,7 +1500,7 @@ definitions:
     property_list:
       - actionClicks
       - adUnitClicks
-      - approximateUniqueImpressions
+      - approximateMemberReach
       - cardClicks
       - cardImpressions
       - clicks

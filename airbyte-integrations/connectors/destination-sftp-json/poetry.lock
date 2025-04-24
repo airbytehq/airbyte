@@ -2,19 +2,20 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.45.1"
+version = "6.45.7"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.45.1-py3-none-any.whl", hash = "sha256:bd79306da8b8c6c2e7100c407872845e734a82ad5814c0899ac1c33c7b292780"},
-    {file = "airbyte_cdk-6.45.1.tar.gz", hash = "sha256:a9e5ea9c57080604716a9f1d148a8703688ce05bac68dd0a71a4ad8c38afd05d"},
+    {file = "airbyte_cdk-6.45.7-py3-none-any.whl", hash = "sha256:78efa1190203ade46ed7beca3fabdff6ed1947cae28e4ae2834dfbc6651e31da"},
+    {file = "airbyte_cdk-6.45.7.tar.gz", hash = "sha256:94c6d05c4a52493cd71b07353ac771f87d64f6b76e419d83371a6e3124220663"},
 ]
 
 [package.dependencies]
 airbyte-protocol-models-dataclasses = ">=0.14,<0.15"
 anyascii = ">=0.3.2,<0.4.0"
 backoff = "*"
+boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
 cryptography = ">=44.0.0,<45.0.0"
 dpath = ">=2.1.6,<3.0.0"
@@ -211,6 +212,17 @@ files = [
 [package.extras]
 tests = ["pytest (>=3.2.1,!=3.3.0)"]
 typecheck = ["mypy"]
+
+[[package]]
+name = "boltons"
+version = "25.0.0"
+description = "When they're not builtins, they're boltons."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "boltons-25.0.0-py3-none-any.whl", hash = "sha256:dc9fb38bf28985715497d1b54d00b62ea866eca3938938ea9043e254a3a6ca62"},
+    {file = "boltons-25.0.0.tar.gz", hash = "sha256:e110fbdc30b7b9868cb604e3f71d4722dd8f4dcb4a5ddd06028ba8f1ab0b5ace"},
+]
 
 [[package]]
 name = "bracex"

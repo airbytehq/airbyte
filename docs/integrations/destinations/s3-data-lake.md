@@ -236,12 +236,12 @@ This connector never rewrites existing Iceberg data files. This means Airbyte ca
 
 You have the following options to manage schema evolution.
 
-- To handle unsupported schema changes automatically, use [Full Refresh - Overwrite](../../using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) as your [sync mode](../../using-airbyte/core-concepts/sync-modes).
+- To handle unsupported schema changes automatically, use [Full Refresh - Overwrite](../../platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) as your [sync mode](../../platform/using-airbyte/core-concepts/sync-modes).
 - To handle unsupported schema changes as they occur, wait for a sync to fail, then take action to restore it. Either:
 
     - Manually edit your table schema in Iceberg directly.
-    - [Refresh](../../operator-guides/refreshes) your connection in Airbyte.
-    - [Clear](../../operator-guides/clear) your connection in Airbyte.
+    - [Refresh](../../platform/operator-guides/refreshes) your connection in Airbyte.
+    - [Clear](../../platform/operator-guides/clear) your connection in Airbyte.
 
 ## Deduplication
 
@@ -257,7 +257,7 @@ The S3 Data Lake connector assumes that one of two things is true:
 - The source never emits the same primary key twice in a single sync attempt.
 - If the source emits the same primary key multiple times in a single attempt, it always emits those records in cursor order from oldest to newest.
 
-If these conditions aren't met, you may see inaccurate data in Iceberg in the form of older records taking precedence over newer records. If this happens, use append or overwrite as your [sync modes](../../using-airbyte/core-concepts/sync-modes/).
+If these conditions aren't met, you may see inaccurate data in Iceberg in the form of older records taking precedence over newer records. If this happens, use append or overwrite as your [sync modes](../../platform/using-airbyte/core-concepts/sync-modes/).
 
 An unknown number of API sources have streams that don't meet these conditions. Airbyte knows [Stripe](../sources/stripe) and [Monday](../sources/monday) don't, but there are probably others.
 
@@ -285,7 +285,7 @@ For example, the following table contains three versions of the 'Alice' record.
 | 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        |
 | 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        |
 
-To mitigate this, generate a flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` [metadata field](../../understanding-airbyte/airbyte-metadata-fields.md) that assists with this.
+To mitigate this, generate a flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` [metadata field](../../platform/understanding-airbyte/airbyte-metadata-fields) that assists with this.
 
 ```sql
 row_number() over (partition by {primary_key} order by {cursor}, _airbyte_extracted_at)) != 1 OR _ab_cdc_deleted_at IS NOT NULL as is_outdated;
@@ -307,6 +307,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.27  | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                          |
 | 0.3.26  | 2025-04-17 | [58104](https://github.com/airbytehq/airbyte/pull/58104)   | Chore: Now passing a string around for the region                              |
 | 0.3.25  | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085)   | Internal refactoring                                                           |
 | 0.3.24  | 2025-03-27 | [56435](https://github.com/airbytehq/airbyte/pull/56435)   | Bug fix: Correctly handle non-positive numbers.                                |

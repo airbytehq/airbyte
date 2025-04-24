@@ -37,6 +37,7 @@ Refer `https://docs.split.io/reference/authentication` for more details.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.19 | 2025-04-19 | [58407](https://github.com/airbytehq/airbyte/pull/58407) | Update dependencies |
 | 0.0.18 | 2025-04-12 | [57992](https://github.com/airbytehq/airbyte/pull/57992) | Update dependencies |
 | 0.0.17 | 2025-04-05 | [57469](https://github.com/airbytehq/airbyte/pull/57469) | Update dependencies |
 | 0.0.16 | 2025-03-29 | [56844](https://github.com/airbytehq/airbyte/pull/56844) | Update dependencies |

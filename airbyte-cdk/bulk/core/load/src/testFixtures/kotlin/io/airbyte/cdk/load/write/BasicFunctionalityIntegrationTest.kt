@@ -89,6 +89,8 @@ data class StronglyTyped(
     val nestedFloatLosesPrecision: Boolean = true,
     /** Whether the destination supports integers larger than int64 */
     val integerCanBeLarge: Boolean = true,
+    /** Whether the destination supports numbers larger than 1e39-1 */
+    val numberCanBeLarge: Boolean = true,
 ) : AllTypesBehavior
 
 data object Untyped : AllTypesBehavior
@@ -1963,13 +1965,16 @@ abstract class BasicFunctionalityIntegrationTest(
                 // 99999999999999999999999999999999 is out of range for int64.
                 // 50000.0000000000000001 can't be represented as a standard float64,
                 // and gets rounded off.
+                // 1e39 is greater than the typical max 1e39-1 for database/warehouse destinations
+                // (decimal points are to force jackson to recognize it as a decimal)
                 makeRecord(
                     """
                         {
                           "id": 4,
                           "struct": {"foo": 50000.0000000000000001},
                           "number": 50000.0000000000000001,
-                          "integer": 99999999999999999999999999999999
+                          "integer": 99999999999999999999999999999999,
+                          "number": 1.0000000000000000000000000000000000000000e39
                         }
                     """.trimIndent(),
                 ),
@@ -1992,10 +1997,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 ),
                 // Another record that verifies numeric behavior.
                 // -99999999999999999999999999999999 is out of range for int64.
+                // -1e39 is out of range for many database/warehouse destinations,
+                // where the maximum precision of a numeric type is 38.
                 makeRecord(
                     """
                         {
                           "id": 6,
+                          "number": -2.0000000000000000000000000000000000000000e39,
                           "integer": -99999999999999999999999999999999
                         }
                     """.trimIndent(),
@@ -2044,6 +2052,9 @@ abstract class BasicFunctionalityIntegrationTest(
         val positiveBigInt: BigInteger?
         val bigIntChanges: List<Change>
         val negativeBigInt: BigInteger?
+        val positiveBigNumber: BigDecimal?
+        val bigNumberChanges: List<Change>
+        val negativeBigNumber: BigDecimal?
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
@@ -2074,6 +2085,26 @@ abstract class BasicFunctionalityIntegrationTest(
                         listOf(
                             Change(
                                 "integer",
+                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            )
+                        )
+                    }
+                if (allTypesBehavior.numberCanBeLarge) {
+                    positiveBigNumber = BigDecimal("1e39")
+                    negativeBigNumber = BigDecimal("-2e39")
+                } else {
+                    positiveBigNumber = null
+                    negativeBigNumber = null
+                }
+                bigNumberChanges =
+                    if (allTypesBehavior.numberCanBeLarge) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            Change(
+                                "number",
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
                                 AirbyteRecordMessageMetaChange.Reason
                                     .DESTINATION_FIELD_SIZE_LIMITATION,
@@ -2124,6 +2155,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 positiveBigInt = BigInteger("99999999999999999999999999999999")
                 negativeBigInt = BigInteger("-99999999999999999999999999999999")
                 bigIntChanges = emptyList()
+                positiveBigNumber = BigDecimal("1e39")
+                negativeBigNumber = BigDecimal("-2e39")
+                bigNumberChanges = emptyList()
                 badValuesData =
                     // note that the values have different types than what's declared in the schema
                     mapOf(
@@ -2197,8 +2231,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             "struct" to schematizedObject(linkedMapOf("foo" to nestedFloat)),
                             "number" to topLevelFloat,
                             "integer" to positiveBigInt,
+                            "number" to positiveBigNumber,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                    airbyteMeta =
+                        OutputRecord.Meta(syncId = 42, changes = bigNumberChanges + bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,
@@ -2213,8 +2249,10 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 6,
                             "integer" to negativeBigInt,
+                            "number" to negativeBigNumber,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                    airbyteMeta =
+                        OutputRecord.Meta(syncId = 42, changes = bigNumberChanges + bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,
