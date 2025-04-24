@@ -159,7 +159,8 @@ jobs:
           # Read each line from the connector_folders variable
           echo "$connector_folders" | while read -r folder; do
             connectorName = echo "$folder" | cut -d'-' -f2-
-            poetry run airbyte-ci add-changelog --name="$folder" --message="Update CDK version" --type=patch
+            poetry run airbyte-ci --help
+            poetry run airbyte-ci --name="$folder" add-changelog --message="Update CDK version" --type=patch
             # isDocPresent = modified_files | grep docs/integrations | grep "$folder"
           done
     
