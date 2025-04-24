@@ -4,6 +4,7 @@
       "stream": {
         "name": "balances",
         "json_schema": {},
+        "default_cursor_field": ["as_of_time"],
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",

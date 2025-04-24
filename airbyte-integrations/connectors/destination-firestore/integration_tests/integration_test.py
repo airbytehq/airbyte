@@ -1,12 +1,16 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
+import logging
 from typing import Any, Dict, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
+from destination_firestore import DestinationFirestore
+from destination_firestore.writer import FirestoreWriter
+from google.cloud import firestore
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,9 +23,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_firestore import DestinationFirestore
-from destination_firestore.writer import FirestoreWriter
-from google.cloud import firestore
 
 
 @pytest.fixture(name="config")
@@ -35,13 +36,13 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {"type": "object", "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}}}
 
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="append_stream", json_schema=stream_schema),
+        stream=AirbyteStream(name="append_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
 
     overwrite_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="overwrite_stream", json_schema=stream_schema),
+        stream=AirbyteStream(name="overwrite_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
@@ -63,12 +64,12 @@ def client_fixture(config) -> FirestoreWriter:
 
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationFirestore().check(AirbyteLogger(), config)
+    outcome = DestinationFirestore().check(logging.getLogger("airbyte"), config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationFirestore().check(AirbyteLogger(), {"project_id": "not_a_real_id"})
+    outcome = DestinationFirestore().check(logging.getLogger("airbyte"), {"project_id": "not_a_real_id"})
     assert outcome.status == Status.FAILED
 
 

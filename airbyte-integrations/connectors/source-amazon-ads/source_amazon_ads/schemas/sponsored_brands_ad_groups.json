@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "campaignId": { "type": ["null", "string"] },
+    "adGroupId": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "extendedData": { "type": ["null", "object"] }
+  },
+  "title": "sponsored_brands_ad_groups",
+  "type": ["null", "object"]
+}

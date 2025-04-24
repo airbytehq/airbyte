@@ -1,0 +1,189 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - docker_hub
+streams:
+  - type: DeclarativeStream
+    name: docker_hub
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://hub.docker.com/v2/
+        path: repositories/{{ config['docker_username'] }}/
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: SessionTokenAuthenticator
+          login_requester:
+            type: HttpRequester
+            url_base: >-
+              https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull/
+            path: ""
+            authenticator:
+              type: NoAuth
+            http_method: GET
+            request_parameters: {}
+            request_headers: {}
+            request_body_json: {}
+          session_token_path:
+            - token
+          request_authentication:
+            type: ApiKey
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          user:
+            description: The user associated with the repository.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the repository.
+            type:
+              - "null"
+              - string
+          namespace:
+            description: The namespace associated with the repository.
+            type:
+              - "null"
+              - string
+          repository_type:
+            description: The type of the repository.
+            type:
+              - "null"
+              - string
+          status:
+            description: The status of the repository.
+            type:
+              - "null"
+              - integer
+          description:
+            description: The description of the repository.
+            type:
+              - "null"
+              - string
+          is_private:
+            description: Indicates whether the repository is private.
+            type:
+              - "null"
+              - boolean
+          is_automated:
+            description: Indicates whether the repository is automated.
+            type:
+              - "null"
+              - boolean
+          can_edit:
+            description: Indicates whether the user has edit permissions for the repository.
+            type:
+              - "null"
+              - boolean
+          star_count:
+            description: The count of stars or likes for the repository.
+            type:
+              - "null"
+              - integer
+          pull_count:
+            description: The count of pulls or downloads for the repository.
+            type:
+              - "null"
+              - integer
+          date_registered:
+            description: The date when the repository was registered on Docker Hub.
+            type:
+              - "null"
+              - string
+          status_description:
+            description: The description of the status of the repository.
+            type:
+              - "null"
+              - string
+          content_types:
+            description: The content types supported by the repository.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          media_types:
+            description: The media types supported by the repository.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          last_updated:
+            description: The date when the repository was last updated.
+            type:
+              - "null"
+              - string
+          is_migrated:
+            description: Indicates whether the repository has been migrated.
+            type:
+              - "null"
+              - boolean
+          collaborator_count:
+            description: The count of collaborators associated with the repository.
+            type:
+              - "null"
+              - integer
+          affiliation:
+            description: The affiliation of the user or organization that owns the repository.
+            type:
+              - "null"
+              - string
+          hub_user:
+            description: The user associated with the repository on Docker Hub.
+            type:
+              - "null"
+              - string
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/dockerhub
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - docker_username
+    properties:
+      docker_username:
+        type: string
+        order: 0
+        title: Docker Username
+        description: >-
+          Username of DockerHub person or organization (for
+          https://hub.docker.com/v2/repositories/USERNAME/ API call)
+        pattern: ^[a-z0-9_\-]+$
+        examples:
+          - airbyte

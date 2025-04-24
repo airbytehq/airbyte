@@ -3,79 +3,153 @@
   "type": "object",
   "properties": {
     "page_id": {
-      "type": "string"
+      "description": "Identifier of the page the question belongs to",
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "string"
+      "description": "Unique identifier for the question",
+      "type": ["string", "null"]
     },
     "position": {
-      "type": "integer"
+      "description": "Position of the question within the survey",
+      "type": ["integer", "null"]
     },
     "visible": {
-      "type": "boolean"
+      "description": "Indicates if the question is visible",
+      "type": ["boolean", "null"]
     },
     "family": {
-      "type": "string"
+      "description": "Family to which the question belongs",
+      "type": ["string", "null"]
     },
     "subtype": {
-      "type": "string"
+      "description": "Specific type of question",
+      "type": ["string", "null"]
     },
     "layout": {
+      "description": "Layout style of the question",
       "type": ["object", "null"]
     },
     "sorting": {
-      "type": ["string", "null"]
+      "description": "Sorting options for the question",
+      "type": ["object", "null"],
+      "properties": {
+        "ignore_last": {
+          "description": "Boolean to ignore the last option for sorting",
+          "type": ["boolean", "null"]
+        },
+        "type": {
+          "description": "Type of sorting",
+          "type": ["string", "null"]
+        }
+      }
     },
     "required": {
-      "type": ["string", "null"]
+      "description": "Indicates if the question is required",
+      "type": ["object", "null"],
+      "properties": {
+        "amount": {
+          "description": "Number of required choices",
+          "type": ["string", "null"]
+        },
+        "text": {
+          "description": "Text specifying requirement",
+          "type": ["string", "null"]
+        },
+        "type": {
+          "description": "Type of requirement",
+          "type": ["string", "null"]
+        }
+      }
     },
     "validation": {
-      "type": ["string", "null"]
+      "description": "Validation rules for the question",
+      "type": ["object", "null"],
+      "properties": {
+        "max": {
+          "description": "Maximum value for validation",
+          "type": ["integer", "null"]
+        },
+        "min": {
+          "description": "Minimum value for validation",
+          "type": ["integer", "null"]
+        },
+        "sum": {
+          "description": "Sum value for validation",
+          "type": ["integer", "null"]
+        },
+        "sum_text": {
+          "description": "Sum text for validation",
+          "type": ["string", "null"]
+        },
+        "text": {
+          "description": "Text validation message",
+          "type": ["string", "null"]
+        },
+        "type": {
+          "description": "Type of validation",
+          "type": ["string", "null"]
+        }
+      }
     },
     "forced_ranking": {
-      "type": "boolean"
+      "description": "Indicates if the question uses forced ranking",
+      "type": ["boolean", "null"]
     },
     "headings": {
-      "type": "array",
+      "description": "Array of headings for the question",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "description": "Represents an individual heading",
+        "type": ["object", "null"],
         "properties": {
           "heading": {
-            "type": "string"
+            "description": "Text of the heading",
+            "type": ["string", "null"]
           }
         }
       }
     },
     "href": {
-      "type": "string"
+      "description": "Hyperlink reference for the question",
+      "type": ["string", "null"]
     },
     "answers": {
-      "type": "object",
+      "description": "Contains information about answer choices for the question",
+      "type": ["object", "null"],
       "properties": {
         "choices": {
-          "type": "array",
+          "description": "An array of answer choices for the question",
+          "type": ["array", "null"],
           "items": {
-            "type": "object",
+            "description": "Represents an individual answer choice",
+            "type": ["object", "null"],
             "properties": {
               "position": {
-                "type": "integer"
+                "description": "Position of the answer choice in the list",
+                "type": ["integer", "null"]
               },
               "visible": {
-                "type": "boolean"
+                "description": "Boolean indicating if the answer choice is visible",
+                "type": ["boolean", "null"]
               },
               "text": {
-                "type": "string"
+                "description": "Text of the answer choice",
+                "type": ["string", "null"]
               },
               "quiz_options": {
-                "type": "object",
+                "description": "Optional properties specific to quiz questions",
+                "type": ["object", "null"],
                 "properties": {
                   "score": {
-                    "type": "integer"
+                    "description": "Score associated with the answer choice",
+                    "type": ["integer", "null"]
                   }
                 }
               },
               "id": {
-                "type": "string"
+                "description": "Unique identifier for the answer choice",
+                "type": ["string", "null"]
               }
             }
           }

@@ -1,0 +1,973 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+description: >-
+  For Magic The Gathering fans. Here is a simple data source for all the cards
+  and sets!
+
+check:
+  type: CheckStream
+  stream_names:
+    - cards
+
+definitions:
+  streams:
+    cards:
+      type: DeclarativeStream
+      name: cards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cards/search
+          http_method: GET
+          request_parameters:
+            q: "*"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next_page') }}"
+            stop_condition: "{{ not response.get('has_more', False) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cards"
+    sets:
+      type: DeclarativeStream
+      name: sets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sets"
+    symbols:
+      type: DeclarativeStream
+      name: symbols
+      primary_key:
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /symbology
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next_page') }}"
+            stop_condition: "{{ not response.get('has_more', False) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/symbols"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.scryfall.com
+
+streams:
+  - $ref: "#/definitions/streams/cards"
+  - $ref: "#/definitions/streams/sets"
+  - $ref: "#/definitions/streams/symbols"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    cards: true
+    sets: true
+    symbols: true
+  testedStreams:
+    cards:
+      streamHash: fb858474dc662e181e79f15e1c7dba63c83984cb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sets:
+      streamHash: cc787a89d7bf4510cef4dc199b42ef0dc4f82a3f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    symbols:
+      streamHash: ff6430a79c8dade00db4cee7cee8c6792a1283e4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://scryfall.com/docs/api
+
+schemas:
+  cards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      all_parts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            component:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            type_line:
+              type:
+                - string
+                - "null"
+            uri:
+              type:
+                - string
+                - "null"
+      arena_id:
+        type:
+          - number
+          - "null"
+      artist:
+        type:
+          - string
+          - "null"
+      artist_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      booster:
+        type:
+          - boolean
+          - "null"
+      border_color:
+        type:
+          - string
+          - "null"
+      card_back_id:
+        type:
+          - string
+          - "null"
+      card_faces:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            artist:
+              type:
+                - string
+                - "null"
+            artist_id:
+              type:
+                - string
+                - "null"
+            color_indicator:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            colors:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            flavor_text:
+              type:
+                - string
+                - "null"
+            illustration_id:
+              type:
+                - string
+                - "null"
+            image_uris:
+              type:
+                - object
+                - "null"
+              properties:
+                art_crop:
+                  type:
+                    - string
+                    - "null"
+                border_crop:
+                  type:
+                    - string
+                    - "null"
+                large:
+                  type:
+                    - string
+                    - "null"
+                normal:
+                  type:
+                    - string
+                    - "null"
+                png:
+                  type:
+                    - string
+                    - "null"
+                small:
+                  type:
+                    - string
+                    - "null"
+            loyalty:
+              type:
+                - string
+                - "null"
+            mana_cost:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            oracle_text:
+              type:
+                - string
+                - "null"
+            power:
+              type:
+                - string
+                - "null"
+            toughness:
+              type:
+                - string
+                - "null"
+            type_line:
+              type:
+                - string
+                - "null"
+            watermark:
+              type:
+                - string
+                - "null"
+      cardmarket_id:
+        type:
+          - number
+          - "null"
+      cmc:
+        type:
+          - number
+          - "null"
+      collector_number:
+        type:
+          - string
+          - "null"
+      color_identity:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      color_indicator:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      digital:
+        type:
+          - boolean
+          - "null"
+      edhrec_rank:
+        type:
+          - number
+          - "null"
+      finishes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      flavor_text:
+        type:
+          - string
+          - "null"
+      foil:
+        type:
+          - boolean
+          - "null"
+      frame:
+        type:
+          - string
+          - "null"
+      frame_effects:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      full_art:
+        type:
+          - boolean
+          - "null"
+      games:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      highres_image:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      illustration_id:
+        type:
+          - string
+          - "null"
+      image_status:
+        type:
+          - string
+          - "null"
+      image_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          art_crop:
+            type:
+              - string
+              - "null"
+          border_crop:
+            type:
+              - string
+              - "null"
+          large:
+            type:
+              - string
+              - "null"
+          normal:
+            type:
+              - string
+              - "null"
+          png:
+            type:
+              - string
+              - "null"
+          small:
+            type:
+              - string
+              - "null"
+      keywords:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      lang:
+        type:
+          - string
+          - "null"
+      layout:
+        type:
+          - string
+          - "null"
+      legalities:
+        type:
+          - object
+          - "null"
+        properties:
+          alchemy:
+            type:
+              - string
+              - "null"
+          brawl:
+            type:
+              - string
+              - "null"
+          commander:
+            type:
+              - string
+              - "null"
+          duel:
+            type:
+              - string
+              - "null"
+          explorer:
+            type:
+              - string
+              - "null"
+          future:
+            type:
+              - string
+              - "null"
+          gladiator:
+            type:
+              - string
+              - "null"
+          historic:
+            type:
+              - string
+              - "null"
+          legacy:
+            type:
+              - string
+              - "null"
+          modern:
+            type:
+              - string
+              - "null"
+          oathbreaker:
+            type:
+              - string
+              - "null"
+          oldschool:
+            type:
+              - string
+              - "null"
+          pauper:
+            type:
+              - string
+              - "null"
+          paupercommander:
+            type:
+              - string
+              - "null"
+          penny:
+            type:
+              - string
+              - "null"
+          pioneer:
+            type:
+              - string
+              - "null"
+          predh:
+            type:
+              - string
+              - "null"
+          premodern:
+            type:
+              - string
+              - "null"
+          standard:
+            type:
+              - string
+              - "null"
+          standardbrawl:
+            type:
+              - string
+              - "null"
+          timeless:
+            type:
+              - string
+              - "null"
+          vintage:
+            type:
+              - string
+              - "null"
+      loyalty:
+        type:
+          - string
+          - "null"
+      mana_cost:
+        type:
+          - string
+          - "null"
+      mtgo_foil_id:
+        type:
+          - number
+          - "null"
+      mtgo_id:
+        type:
+          - number
+          - "null"
+      multiverse_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      nonfoil:
+        type:
+          - boolean
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      oracle_id:
+        type:
+          - string
+          - "null"
+      oracle_text:
+        type:
+          - string
+          - "null"
+      oversized:
+        type:
+          - boolean
+          - "null"
+      penny_rank:
+        type:
+          - number
+          - "null"
+      power:
+        type:
+          - string
+          - "null"
+      preview:
+        type:
+          - object
+          - "null"
+        properties:
+          previewed_at:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          source_uri:
+            type:
+              - string
+              - "null"
+      prices:
+        type:
+          - object
+          - "null"
+        properties:
+          eur:
+            type:
+              - string
+              - "null"
+          eur_foil:
+            type:
+              - string
+              - "null"
+          tix:
+            type:
+              - string
+              - "null"
+          usd:
+            type:
+              - string
+              - "null"
+          usd_etched:
+            type:
+              - string
+              - "null"
+          usd_foil:
+            type:
+              - string
+              - "null"
+      prints_search_uri:
+        type:
+          - string
+          - "null"
+      produced_mana:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      promo:
+        type:
+          - boolean
+          - "null"
+      promo_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      purchase_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          cardhoarder:
+            type:
+              - string
+              - "null"
+          cardmarket:
+            type:
+              - string
+              - "null"
+          tcgplayer:
+            type:
+              - string
+              - "null"
+      rarity:
+        type:
+          - string
+          - "null"
+      related_uris:
+        type:
+          - object
+          - "null"
+        properties:
+          edhrec:
+            type:
+              - string
+              - "null"
+          gatherer:
+            type:
+              - string
+              - "null"
+          tcgplayer_infinite_articles:
+            type:
+              - string
+              - "null"
+          tcgplayer_infinite_decks:
+            type:
+              - string
+              - "null"
+      released_at:
+        type:
+          - string
+          - "null"
+      reprint:
+        type:
+          - boolean
+          - "null"
+      reserved:
+        type:
+          - boolean
+          - "null"
+      rulings_uri:
+        type:
+          - string
+          - "null"
+      scryfall_set_uri:
+        type:
+          - string
+          - "null"
+      scryfall_uri:
+        type:
+          - string
+          - "null"
+      security_stamp:
+        type:
+          - string
+          - "null"
+      set:
+        type:
+          - string
+          - "null"
+      set_id:
+        type:
+          - string
+          - "null"
+      set_name:
+        type:
+          - string
+          - "null"
+      set_search_uri:
+        type:
+          - string
+          - "null"
+      set_type:
+        type:
+          - string
+          - "null"
+      set_uri:
+        type:
+          - string
+          - "null"
+      story_spotlight:
+        type:
+          - boolean
+          - "null"
+      tcgplayer_etched_id:
+        type:
+          - number
+          - "null"
+      tcgplayer_id:
+        type:
+          - number
+          - "null"
+      textless:
+        type:
+          - boolean
+          - "null"
+      toughness:
+        type:
+          - string
+          - "null"
+      type_line:
+        type:
+          - string
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+      variation:
+        type:
+          - boolean
+          - "null"
+      watermark:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      arena_code:
+        type:
+          - string
+          - "null"
+      block:
+        type:
+          - string
+          - "null"
+      block_code:
+        type:
+          - string
+          - "null"
+      card_count:
+        type:
+          - number
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      digital:
+        type:
+          - boolean
+          - "null"
+      foil_only:
+        type:
+          - boolean
+          - "null"
+      icon_svg_uri:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      mtgo_code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      nonfoil_only:
+        type:
+          - boolean
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      parent_set_code:
+        type:
+          - string
+          - "null"
+      printed_size:
+        type:
+          - number
+          - "null"
+      released_at:
+        type:
+          - string
+          - "null"
+      scryfall_uri:
+        type:
+          - string
+          - "null"
+      search_uri:
+        type:
+          - string
+          - "null"
+      set_type:
+        type:
+          - string
+          - "null"
+      tcgplayer_id:
+        type:
+          - number
+          - "null"
+      uri:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  symbols:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      appears_in_mana_costs:
+        type:
+          - boolean
+          - "null"
+      cmc:
+        type:
+          - number
+          - "null"
+      colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      english:
+        type:
+          - string
+          - "null"
+      funny:
+        type:
+          - boolean
+          - "null"
+      gatherer_alternates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      hybrid:
+        type:
+          - boolean
+          - "null"
+      loose_variant:
+        type:
+          - string
+          - "null"
+      mana_value:
+        type:
+          - number
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      phyrexian:
+        type:
+          - boolean
+          - "null"
+      represents_mana:
+        type:
+          - boolean
+          - "null"
+      svg_uri:
+        type:
+          - string
+          - "null"
+      symbol:
+        type: string
+      transposable:
+        type:
+          - boolean
+          - "null"
+    required:
+      - symbol
+    additionalProperties: true

@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "AccountName": {
+      "description": "The name of the account.",
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "description": "The account number associated with the account.",
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "description": "The unique identifier for the account.",
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "description": "The time period associated with the data.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "CampaignName": {
+      "description": "The name of the campaign.",
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "description": "The unique identifier for the campaign.",
+      "type": ["null", "integer"]
+    },
+    "AdGroupName": {
+      "description": "The name of the ad group.",
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "description": "The unique identifier for the ad group.",
+      "type": ["null", "integer"]
+    },
+    "AudienceId": {
+      "description": "The unique identifier for the audience.",
+      "type": ["null", "integer"]
+    },
+    "AudienceName": {
+      "description": "The name of the audience.",
+      "type": ["null", "string"]
+    },
+    "AssociationStatus": {
+      "description": "The status of the association.",
+      "type": ["null", "string"]
+    },
+    "BidAdjustment": {
+      "description": "The bid adjustment value.",
+      "type": ["null", "number"]
+    },
+    "TargetingSetting": {
+      "description": "The targeting setting used for the data.",
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "description": "The total number of ad impressions.",
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "description": "The total number of clicks.",
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "description": "The click-through rate.",
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "description": "The average cost per click.",
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "description": "The total amount spent.",
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "description": "The average position of the ad.",
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "description": "The total number of specific conversions.",
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "description": "The conversion rate for specific conversions.",
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "description": "The cost per specific conversion.",
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "description": "The total revenue generated.",
+      "type": ["null", "number"]
+    },
+    "ReturnOnAdSpend": {
+      "description": "The return on ad spend.",
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "description": "The revenue per specific conversion.",
+      "type": ["null", "number"]
+    },
+    "AccountStatus": {
+      "description": "The status of the account.",
+      "type": ["null", "string"]
+    },
+    "CampaignStatus": {
+      "description": "The status of the campaign.",
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "description": "The status of the ad group.",
+      "type": ["null", "string"]
+    },
+    "AudienceType": {
+      "description": "The type of audience.",
+      "type": ["null", "string"]
+    },
+    "BaseCampaignId": {
+      "description": "The unique identifier for the base campaign.",
+      "type": ["null", "integer"]
+    },
+    "AllConversions": {
+      "description": "The total number of all conversions.",
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "description": "The total revenue generated from all conversions.",
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "description": "The conversion rate for all conversions.",
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "description": "The cost per conversion for all conversions.",
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "description": "The return on ad spend for all conversions.",
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "description": "The revenue per conversion for all conversions.",
+      "type": ["null", "number"]
+    },
+    "AssociationId": {
+      "description": "The unique identifier for the association.",
+      "type": ["null", "integer"]
+    },
+    "AssociationLevel": {
+      "description": "The level of association for the data.",
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversions": {
+      "description": "The total number of view-through conversions.",
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "description": "The goal associated with the data.",
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "description": "The type of goal.",
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "description": "The percentage of absolute top impressions out of the total eligible impressions.",
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "description": "The percentage of top impressions out of the total eligible impressions.",
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "description": "The average cost per thousand impressions.",
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "description": "The total number of qualified specific conversions.",
+      "type": ["null", "number"]
+    },
+    "AllConversionsQualified": {
+      "description": "The total number of all qualified conversions.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "description": "The total number of qualified view-through conversions.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughRevenue": {
+      "description": "The revenue generated from view-through conversions.",
+      "type": ["null", "number"]
+    }
+  }
+}

@@ -1,5 +1,0 @@
-*
-!Dockerfile
-!source_acceptance_test
-!setup.py
-!pytest.ini

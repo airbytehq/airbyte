@@ -1,0 +1,126 @@
+{
+  "title": "Inactive Listings Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "item-name": {
+      "description": "Name of the product item",
+      "type": ["null", "string"]
+    },
+    "item-description": {
+      "description": "Description of the product listing",
+      "type": ["null", "string"]
+    },
+    "listing-id": {
+      "description": "Unique identifier for the listing",
+      "type": ["null", "string"]
+    },
+    "seller-sku": {
+      "description": "Seller Stock Keeping Unit (SKU)",
+      "type": ["null", "string"]
+    },
+    "price": {
+      "description": "Price of the product listing",
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "description": "Available quantity of the product",
+      "type": ["null", "string"]
+    },
+    "open-date": {
+      "description": "Date and time when the listing was opened",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "image-url": {
+      "description": "URL of the product image",
+      "type": ["null", "string"]
+    },
+    "item-is-marketplace": {
+      "description": "Flag indicating if the item is listed on the marketplace",
+      "type": ["null", "string"]
+    },
+    "product-id-type": {
+      "description": "Type of product identifier",
+      "type": ["null", "string"]
+    },
+    "zshop-shipping-fee": {
+      "description": "Shipping fee on Zshop",
+      "type": ["null", "string"]
+    },
+    "item-note": {
+      "description": "Any additional notes related to the item",
+      "type": ["null", "string"]
+    },
+    "item-condition": {
+      "description": "Condition of the item (e.g., New, Used)",
+      "type": ["null", "string"]
+    },
+    "zshop-category1": {
+      "description": "Category of the product on Zshop",
+      "type": ["null", "string"]
+    },
+    "zshop-browse-path": {
+      "description": "Browse path on Zshop",
+      "type": ["null", "string"]
+    },
+    "zshop-storefront-feature": {
+      "description": "Storefront feature on Zshop",
+      "type": ["null", "string"]
+    },
+    "asin1": {
+      "description": "Amazon Standard Identification Number (ASIN) 1 of the product",
+      "type": ["null", "string"]
+    },
+    "asin2": {
+      "description": "Amazon Standard Identification Number (ASIN) 2 of the product",
+      "type": ["null", "string"]
+    },
+    "asin3": {
+      "description": "Amazon Standard Identification Number (ASIN) 3 of the product",
+      "type": ["null", "string"]
+    },
+    "will-ship-internationally": {
+      "description": "Flag indicating if the product will ship internationally",
+      "type": ["null", "string"]
+    },
+    "expedited-shipping": {
+      "description": "Flag indicating if expedited shipping is available for the product",
+      "type": ["null", "string"]
+    },
+    "zshop-boldface": {
+      "description": "Flag indicating if the listing is in boldface on Zshop",
+      "type": ["null", "string"]
+    },
+    "product-id": {
+      "description": "Unique identifier for the product",
+      "type": ["null", "string"]
+    },
+    "bid-for-featured-placement": {
+      "description": "Flag indicating if the product is eligible for featured placement bids",
+      "type": ["null", "string"]
+    },
+    "add-delete": {
+      "description": "Flag indicating if the listing is to be added or deleted",
+      "type": ["null", "string"]
+    },
+    "pending-quantity": {
+      "description": "Quantity of items pending for listing",
+      "type": ["null", "string"]
+    },
+    "fulfillment-channel": {
+      "description": "Channel through which fulfillment is done (e.g., FBA, MFN)",
+      "type": ["null", "string"]
+    },
+    "merchant-shipping-group": {
+      "description": "Grouping of items for merchant shipping purposes",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data in date format",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

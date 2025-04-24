@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.elasticsearch;
@@ -8,10 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -174,8 +181,8 @@ public class ElasticsearchDestinationTest {
           CatalogHelpers.createConfiguredAirbyteStream(
               this.getStreamName(),
               this.getNamespace(),
-              Field.of("id", JsonSchemaPrimitive.NUMBER),
-              Field.of("name", JsonSchemaPrimitive.STRING))
+              Field.of("id", JsonSchemaType.NUMBER),
+              Field.of("name", JsonSchemaType.STRING))
               .withDestinationSyncMode(this.getSyncMode())
               .withPrimaryKey(this.getPrimaryKey())));
     }

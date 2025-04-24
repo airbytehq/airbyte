@@ -1,0 +1,87 @@
+{
+  "title": "Subscribe and Save Forecast Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "offer-state": {
+      "description": "Current state of the offer for the product.",
+      "type": ["null", "string"]
+    },
+    "snapshot-date": {
+      "description": "Date and time when the snapshot of the data was taken.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "sku": {
+      "description": "Stock Keeping Unit (SKU) for the product.",
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "description": "Fulfillment Network SKU (FNSKU) for the product.",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "Unique identifier for the ASIN (Amazon Standard Identification Number).",
+      "type": ["null", "string"]
+    },
+    "estimated-avg-sns-discount-next-8-weeks": {
+      "description": "Estimated average discount on Subscribe & Save units for the next 8 weeks.",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "Name of the product associated with the ASIN.",
+      "type": ["null", "string"]
+    },
+    "country": {
+      "description": "Country for which the forecast data is applicable.",
+      "type": ["null", "string"]
+    },
+    "active-subscriptions": {
+      "description": "Number of active subscriptions for the ASIN in the specified country.",
+      "type": ["null", "string"]
+    },
+    "week-1-start-date": {
+      "description": "Start date and time for week 1 of the forecast period.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "scheduled-sns-units-week-1": {
+      "description": "Number of scheduled Subscribe & Save units for week 1.",
+      "type": ["null", "string"]
+    },
+    "scheduled-sns-units-week-2": {
+      "description": "Number of scheduled Subscribe & Save units for week 2.",
+      "type": ["null", "string"]
+    },
+    "scheduled-sns-units-week-3": {
+      "description": "Number of scheduled Subscribe & Save units for week 3.",
+      "type": ["null", "string"]
+    },
+    "scheduled-sns-units-week-4": {
+      "description": "Number of scheduled Subscribe & Save units for week 4.",
+      "type": ["null", "string"]
+    },
+    "scheduled-sns-units-week-5": {
+      "description": "Number of scheduled Subscribe & Save units for week 5.",
+      "type": ["null", "string"]
+    },
+    "scheduled-sns-units-week-6": {
+      "description": "Number of scheduled Subscribe & Save units for week 6.",
+      "type": ["null", "string"]
+    },
+    "scheduled-sns-units-week-7": {
+      "description": "Number of scheduled Subscribe & Save units for week 7.",
+      "type": ["null", "string"]
+    },
+    "scheduled-sns-units-week-8": {
+      "description": "Number of scheduled Subscribe & Save units for week 8.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time for the forecast data, indicated in date format.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bar",
+        "namespace": "foo"
+      },
+      "stream_state": {
+        "primary_key": {
+          "k1": 10,
+          "k2": 20
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "baz",
+        "namespace": "foo"
+      },
+      "stream_state": {
+        "cursors": {
+          "c": 30
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 0
+      },
+      "stream_descriptor": {
+        "name": "users"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "user_id": 0
+      },
+      "stream_descriptor": {
+        "name": "purchases"
+      }
+    }
+  }
+]

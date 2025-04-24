@@ -1,0 +1,117 @@
+{
+  "title": "Flat File All Orders Data Reports (by last update)",
+  "description": "Flat File All Orders Data by Last Update Date General Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "order-id": {
+      "description": "The unique identifier of the order.",
+      "type": "string"
+    },
+    "order-item-id": {
+      "description": "The unique identifier of the order item.",
+      "type": ["null", "string"]
+    },
+    "purchase-date": {
+      "description": "The date and time of the purchase.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "payments-date": {
+      "description": "The date and time of the payment.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "reporting-date": {
+      "description": "The date and time when the data is reported.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "promise-date": {
+      "description": "The promised delivery date and time.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "days-past-promise": {
+      "description": "Number of days past the promised delivery date.",
+      "type": ["null", "string"]
+    },
+    "buyer-email": {
+      "description": "The email address of the buyer.",
+      "type": ["null", "string"]
+    },
+    "buyer-phone-number": {
+      "description": "The phone number of the buyer.",
+      "type": ["null", "string"]
+    },
+    "is-business-order": {
+      "description": "Flag indicating if the order is a business order (true/false).",
+      "type": ["null", "string"]
+    },
+    "quantity-purchased": {
+      "description": "The quantity of the product purchased.",
+      "type": ["null", "string"]
+    },
+    "quantity-shipped": {
+      "description": "The quantity of the product that has been shipped.",
+      "type": ["null", "string"]
+    },
+    "quantity-to-ship": {
+      "description": "The remaining quantity of the product to be shipped.",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "The name of the product in the order.",
+      "type": ["null", "string"]
+    },
+    "purchase-order-number": {
+      "description": "The purchase order number associated with the order.",
+      "type": ["null", "string"]
+    },
+    "recipient-name": {
+      "description": "The name of the recipient of the order.",
+      "type": ["null", "string"]
+    },
+    "ship-city": {
+      "description": "The city where the order is being shipped.",
+      "type": ["null", "string"]
+    },
+    "ship-country": {
+      "description": "The country where the order is being shipped.",
+      "type": ["null", "string"]
+    },
+    "ship-postal-code": {
+      "description": "The postal code of the shipping address.",
+      "type": ["null", "string"]
+    },
+    "ship-promotion-discount": {
+      "description": "Discount applied to shipping.",
+      "type": ["null", "string"]
+    },
+    "ship-service-level": {
+      "description": "The service level of the shipping method.",
+      "type": ["null", "string"]
+    },
+    "ship-state": {
+      "description": "The state where the order is being shipped.",
+      "type": ["null", "string"]
+    },
+    "shipping-price": {
+      "description": "The price of shipping.",
+      "type": ["null", "string"]
+    },
+    "shipping-tax": {
+      "description": "The tax applied to shipping.",
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "description": "The Stock Keeping Unit (SKU) of the product.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data in the specified format (date).",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

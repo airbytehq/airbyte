@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -7,6 +7,7 @@ from pprint import pprint
 
 # %%
 import requests
+
 
 logging.basicConfig(level=logging.DEBUG)
 

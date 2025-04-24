@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -13,13 +13,11 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -30,7 +28,6 @@ import org.slf4j.LoggerFactory;
 public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbDestinationAcceptanceTest.class);
-  protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   protected final String secretFilePath = "secrets/config.json";
   protected JsonNode configJson;
@@ -69,7 +66,6 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
     final var tableName = DynamodbOutputTableHelper.getOutputTableName(this.config.getTableNamePrefix(), streamName, namespace);
     final var table = dynamodb.getTable(tableName);
     final List<Item> items = new ArrayList<Item>();
-    final List<Item> resultItems = new ArrayList<Item>();
     Long maxSyncTime = 0L;
 
     try {
@@ -83,10 +79,9 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
         maxSyncTime = Math.max(maxSyncTime, ((BigDecimal) item.get("sync_time")).longValue());
       }
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.getMessage(), e);
     }
 
-    final Long finalMaxSyncTime = maxSyncTime;
     items.sort(Comparator.comparingLong(o -> ((BigDecimal) o.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)).longValue()));
 
     return items;
@@ -110,7 +105,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);
@@ -160,7 +155,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
         LOGGER.info(String.format("Delete table %s", tableName));
       }
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.getMessage(), e);
     }
   }
 

@@ -1,0 +1,59 @@
+{
+  "title": "FBA Fulfillment Customer Shipment Replacement Data",
+  "description": "FBA Fulfillment Customer Shipment Replacement Data Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "shipment-date": {
+      "description": "Date and time of the free replacement shipment in DD-MON-YYYY format",
+      "title": "Date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "sku": {
+      "description": "Unique identifier of the item used by the seller",
+      "title": "Merchant SKU",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "Amazon Standard Inventory Number",
+      "title": "ASIN",
+      "type": ["null", "string"]
+    },
+    "fulfillment-center-id": {
+      "description": "ID of the fulfillment center shipping this unit",
+      "title": "Warehouse ID",
+      "type": ["null", "string"]
+    },
+    "original-fulfillment-center-id": {
+      "description": "ID of the original fulfillment center shipping the free replaced item",
+      "title": "Original Warehouse ID",
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "description": "Number of units shipped in the replacement shipment",
+      "title": "Quantity",
+      "type": ["null", "string"]
+    },
+    "replacement-reason-code": {
+      "description": "Code indicating the reason for the replacement",
+      "title": "Replacement Reason Code",
+      "type": ["null", "string"]
+    },
+    "replacement-customer-order-id": {
+      "description": "Order ID of the replacement order for the original item",
+      "title": "Replacement Customer Order Id",
+      "type": ["null", "string"]
+    },
+    "original-amazon-order-id": {
+      "description": "Order ID of the original shipment for the replacement item",
+      "title": "Original Customer Order ID",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data collection period",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

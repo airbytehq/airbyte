@@ -1,49 +1,105 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from enum import Enum
-from typing import Any, List, Mapping
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
-import pendulum
+import backoff
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
+from google.auth import exceptions
+from google.protobuf import json_format
+from google.protobuf.message import Message
 from proto.marshal.collections import Repeated, RepeatedComposite
 
-REPORT_MAPPING = {
-    "accounts": "customer",
-    "ad_group_ads": "ad_group_ad",
-    "ad_groups": "ad_group",
-    "campaigns": "campaign",
-    "account_performance_report": "customer",
-    "ad_group_ad_report": "ad_group_ad",
-    "display_keyword_performance_report": "display_keyword_view",
-    "display_topics_performance_report": "topic_view",
-    "shopping_performance_report": "shopping_performance_view",
-    "user_location_report": "user_location_view",
-    "click_view": "click_view",
-    "geographic_report": "geographic_view",
-    "keyword_report": "keyword_view",
-}
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
+
+from .utils import logger
+
+
+API_VERSION = "v17"
+
+
+def on_give_up(details):
+    error = details["exception"]
+    if isinstance(error, InternalServerError):
+        raise AirbyteTracedException(
+            failure_type=FailureType.transient_error,
+            message=f"{error.message} {error.details}",
+            internal_message=f"{error.message} Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later. ",
+        )
 
 
 class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
 
-    def __init__(self, credentials: Mapping[str, Any], customer_id: str):
-        self.client = GoogleAdsClient.load_from_dict(credentials)
-        self.customer_id = customer_id
-        self.ga_service = self.client.get_service("GoogleAdsService")
+    def __init__(self, credentials: MutableMapping[str, Any]):
+        # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
+        # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
+        credentials["use_proto_plus"] = True
+        self.clients = {}
+        self.ga_services = {}
+        self.credentials = credentials
 
-    def send_request(self, query: str) -> SearchGoogleAdsResponse:
-        client = self.client
+        self.clients["default"] = self.get_google_ads_client(credentials)
+        self.ga_services["default"] = self.clients["default"].get_service("GoogleAdsService")
+
+        self.customer_service = self.clients["default"].get_service("CustomerService")
+
+    def get_client(self, login_customer_id="default"):
+        if login_customer_id in self.clients:
+            return self.clients[login_customer_id]
+        new_creds = self.credentials.copy()
+        new_creds["login_customer_id"] = login_customer_id
+        self.clients[login_customer_id] = self.get_google_ads_client(new_creds)
+        return self.clients[login_customer_id]
+
+    def ga_service(self, login_customer_id="default"):
+        if login_customer_id in self.ga_services:
+            return self.ga_services[login_customer_id]
+        self.ga_services[login_customer_id] = self.clients[login_customer_id].get_service("GoogleAdsService")
+        return self.ga_services[login_customer_id]
+
+    @staticmethod
+    def get_google_ads_client(credentials) -> GoogleAdsClient:
+        try:
+            return GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+        except exceptions.RefreshError as e:
+            message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
+
+    def get_accessible_accounts(self):
+        customer_resource_names = self.customer_service.list_accessible_customers().resource_names
+        logger.info(f"Found {len(customer_resource_names)} accessible accounts: {customer_resource_names}")
+
+        for customer_resource_name in customer_resource_names:
+            customer_id = self.ga_service().parse_customer_path(customer_resource_name)["customer_id"]
+            yield customer_id
+
+    @backoff.on_exception(
+        backoff.expo,
+        (InternalServerError, ServerError, TooManyRequests),
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        on_giveup=on_give_up,
+        max_tries=5,
+    )
+    def send_request(
+        self,
+        query: str,
+        customer_id: str,
+        login_customer_id: str = "default",
+    ) -> Iterator[SearchGoogleAdsResponse]:
+        client = self.get_client(login_customer_id)
         search_request = client.get_type("SearchGoogleAdsRequest")
-        search_request.customer_id = self.customer_id
         search_request.query = query
-        search_request.page_size = self.DEFAULT_PAGE_SIZE
-
-        return self.ga_service.search(search_request)
+        search_request.customer_id = customer_id
+        return [self.ga_service(login_customer_id).search(search_request)]
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
@@ -52,8 +108,8 @@ class GoogleAds:
         :return dict of fields type info.
         """
 
-        ga_field_service = self.client.get_service("GoogleAdsFieldService")
-        request = self.client.get_type("SearchGoogleAdsFieldsRequest")
+        ga_field_service = self.get_client().get_service("GoogleAdsFieldService")
+        request = self.get_client().get_type("SearchGoogleAdsFieldsRequest")
         request.page_size = len(fields)
         fields_sql = ",".join([f"'{field}'" for field in fields])
         request.query = f"""
@@ -74,24 +130,58 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None
+        fields: Iterable[str],
+        table_name: str,
+        conditions: List[str] = None,
+        order_field: str = None,
+        limit: int = None,
     ) -> str:
-        from_category = REPORT_MAPPING[report_name]
-        fields = GoogleAds.get_fields_from_schema(schema)
-        fields = ",\n".join(fields)
+        """
+        Constructs a Google Ads query based on the provided parameters.
 
-        query_template = f"SELECT {fields} FROM {from_category} "
+        Args:
+        - fields (Iterable[str]): List of fields to be selected in the query.
+        - table_name (str): Name of the table from which data will be selected.
+        - conditions (List[str], optional): List of conditions to be applied in the WHERE clause. Defaults to None.
+        - order_field (str, optional): Field by which the results should be ordered. Defaults to None.
+        - limit (int, optional): Maximum number of results to be returned. Defaults to None.
 
-        if cursor_field:
-            end_date_inclusive = "<=" if (pendulum.parse(to_date) - pendulum.parse(from_date)).days > 1 else "<"
-            query_template += (
-                f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
-            )
+        Returns:
+        - str: Constructed Google Ads query.
+        """
+
+        query_template = f"SELECT {', '.join(fields)} FROM {table_name}"
+
+        if conditions:
+            query_template += " WHERE " + " AND ".join(conditions)
+
+        if order_field:
+            query_template += f" ORDER BY {order_field} ASC"
+
+        if limit:
+            query_template += f" LIMIT {limit}"
 
         return query_template
 
     @staticmethod
-    def get_field_value(field_value: GoogleAdsRow, field: str, schema_type: Mapping[str, Any]) -> str:
+    def serialize_protobuf_message(message: Message) -> str:
+        """
+        This method tryies to serialize a given object into JSON if the given object is a protocol bugger message.
+        If not, the normal str() is applied. That helps keep the complex objects written as parsable structures.
+        """
+        try:
+            # The code is accessing "private" _pb value, because the message itself does not
+            # contain public PB attribute and for google ads message-based classes, like AdTextAd,
+            # that's apparently the only way to get the actual protobuf message that can be serialzied
+            # into json.
+            # type: ignore[union-attr]
+            return json_format.MessageToJson(message._pb, indent=0).replace("\n", "")
+        except AttributeError:
+            # This is a fallback for the cases when '_pb' attribute is not available.
+            return str(message)
+
+    @staticmethod
+    def get_field_value(field_value: GoogleAdsRow, field: str, schema_type: Mapping[str, Any]) -> str | list[str]:
         field_name = field.split(".")
         for level_attr in field_name:
             """
@@ -142,27 +232,20 @@ class GoogleAds:
             if isinstance(field_value, Enum):
                 field_value = field_value.name
             elif isinstance(field_value, (Repeated, RepeatedComposite)):
-                field_value = [str(value) for value in field_value]
+                field_value = [GoogleAds.serialize_protobuf_message(value) for value in field_value]
 
-        # Google Ads has a lot of entities inside itself and we cannot process them all separately, because:
+        # Google Ads has a lot of entities inside itself, and we cannot process them all separately, because:
         # 1. It will take a long time
         # 2. We have no way to get data on absolutely all entities to test.
         #
         # To prevent JSON from throwing an error during deserialization, we made such a hack.
         # For example:
-        # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
-        # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
-        #
-        if not (isinstance(field_value, (list, int, float, str, bool, dict)) or field_value is None):
+        # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset
+        # (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
+        # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo
+        # (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
+        if not isinstance(field_value, (list, int, float, str, bool, dict)) and field_value is not None:
             field_value = str(field_value)
-        # In case of custom query field has MESSAGE type it represents protobuf
-        # message and could be anything, convert it to a string or array of
-        # string if it has "repeated" flag on metadata
-        if schema_type.get("protobuf_message"):
-            if "array" in schema_type.get("type"):
-                field_value = [str(field) for field in field_value]
-            else:
-                field_value = str(field_value)
 
         return field_value
 

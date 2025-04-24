@@ -1,0 +1,51 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the category.",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "Name of the category.",
+      "type": ["null", "string"]
+    },
+    "position": {
+      "description": "The position of this category relative to other categories.",
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "description": "The description of the category.",
+      "type": ["null", "string"]
+    },
+    "locale": {
+      "description": "The locale where the category is displayed.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The API url of this category.",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "The url of this category in Help Center.",
+      "type": ["null", "string"]
+    },
+    "source_locale": {
+      "description": "The source (default) locale of the category.",
+      "type": ["null", "string"]
+    },
+    "outdated": {
+      "description": "Whether the category is out of date.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "Timestamp of when the category was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Timestamp of when the category was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

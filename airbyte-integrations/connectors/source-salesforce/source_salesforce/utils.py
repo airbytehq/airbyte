@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
-def filter_streams(streams_list: list, search_word: str, search_criteria: str):
+def filter_streams_by_criteria(streams_list: list, search_word: str, search_criteria: str):
     search_word = search_word.lower()
     criteria_mapping = {
         "starts with": lambda stream_name: stream_name.startswith(search_word),

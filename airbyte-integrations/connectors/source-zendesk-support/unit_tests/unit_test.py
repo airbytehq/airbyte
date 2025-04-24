@@ -1,149 +1,108 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
+import copy
 import json
-from unittest.mock import MagicMock, Mock
+import logging
+from datetime import datetime
 
 import pytest
-import requests
-import requests_mock
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from requests.exceptions import HTTPError
-from source_zendesk_support import SourceZendeskSupport
-from source_zendesk_support.streams import Tags, TicketComments
+from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 
-CONFIG_FILE = "secrets/config.json"
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
-@pytest.fixture(scope="module")
-def prepare_stream_args():
-    """Generates streams settings from a file"""
-    with open(CONFIG_FILE, "r") as f:
-        return SourceZendeskSupport.convert_config2stream_args(json.loads(f.read()))
+DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+
+# raw config
+TEST_CONFIG = {
+    "subdomain": "sandbox",
+    "start_date": "2021-06-01T00:00:00Z",
+    "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
+}
+
+TEST_CONFIG_WITHOUT_START_DATE = {
+    "subdomain": "sandbox",
+    "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
+}
 
 
-@pytest.fixture(scope="module")
-def config():
-    """Generates fake config"""
-    return {
-        "subdomain": "fake_domain",
-        "start_date": "2020-01-01T00:00:00Z",
-        "auth_method": {"auth_method": "api_token", "email": "email@email.com", "api_token": "fake_api_token"},
-    }
+# raw config oauth
+TEST_CONFIG_OAUTH = {
+    "subdomain": "sandbox",
+    "start_date": "2021-06-01T00:00:00Z",
+    "credentials": {"credentials": "oauth2.0", "access_token": "test_access_token"},
+}
 
 
-@pytest.mark.parametrize(
-    "header_name,header_value,expected",
-    [
-        # Retry-After > 0
-        ("Retry-After", "123", 123),
-        # Retry-After < 0
-        ("Retry-After", "-123", None),
-        # X-Rate-Limit > 0
-        ("X-Rate-Limit", "100", 1.2),
-        # X-Rate-Limit header < 0
-        ("X-Rate-Limit", "-100", None),
-        # Random header
-        ("Fake-Header", "-100", None),
-    ],
-)
-def test_backoff_cases(prepare_stream_args, header_name, header_value, expected):
-    """Zendesk sends the header different value for backoff logic"""
-
-    stream = Tags(**prepare_stream_args)
-    with requests_mock.Mocker() as m:
-        url = stream.url_base + stream.path()
-
-        m.get(url, headers={header_name: header_value}, status_code=429)
-        result = stream.backoff_time(requests.get(url))
-        if expected:
-            assert (result - expected) < 0.005
-        else:
-            assert result is None
+def test_token_authenticator():
+    # we expect base64 from creds input
+    expected = "dGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="
+    result = BasicApiTokenAuthenticator("test@airbyte.io", "api_token")
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
-    "status_code,expected_comment_count,expected_exception",
+    "config, expected",
     [
-        # success
-        (200, 1, None),
-        # not found ticket
-        (404, 0, None),
-        # some another code error.
-        (403, 0, HTTPError),
+        (TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
+        (TEST_CONFIG_OAUTH, "test_access_token"),
     ],
+    ids=["api_token", "oauth"],
 )
-def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_comment_count, expected_exception):
-    """Checks the case when some ticket is removed while sync of comments"""
-    fake_id = 12345
-    stream = TicketComments(**prepare_stream_args)
-    with requests_mock.Mocker() as comment_mock:
-        path = f"tickets/{fake_id}/comments.json"
-        stream.path = Mock(return_value=path)
-        url = stream.url_base + path
-        comment_mock.get(
-            url,
-            status_code=status_code,
-            json={
-                "comments": [
-                    {
-                        "id": fake_id,
-                        TicketComments.cursor_field: "2121-07-22T06:55:55Z",
-                    }
-                ]
-            },
-        )
-        comments = stream.read_records(
-            sync_mode=None,
-            stream_slice={
-                "id": fake_id,
-            },
-        )
-        if expected_exception:
-            with pytest.raises(expected_exception):
-                next(comments)
-        else:
-            assert len(list(comments)) == expected_comment_count
+def test_get_authenticator(config, expected):
+    # we expect base64 from creds input
+    result = SourceZendeskSupport(config=config, catalog=None, state=None).get_authenticator(config=config)
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
-    "input_data,expected_data",
+    "response, start_date, check_passed",
+    [({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True), ({}, "2020-01-01T00:00:00Z", False)],
+    ids=["check_successful", "invalid_start_date"],
+)
+def test_check(response, start_date, check_passed):
+    config = copy.deepcopy(TEST_CONFIG)
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            HttpRequest("https://sandbox.zendesk.com/api/v2/account/settings.json"),
+            HttpResponse(json.dumps({"settings": response})),
+        )
+        ok, _ = SourceZendeskSupport(config=config, catalog=None, state=None).check_connection(logger=logging.Logger, config=config)
+        assert check_passed == ok
+
+
+@pytest.mark.parametrize(
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 40, [], None),
         (
-            {"id": 123, "custom_fields": [{"id": 3213212, "value": ["fake_3000", "fake_5555"]}]},
-            {"id": 123, "custom_fields": [{"id": 3213212, "value": "['fake_3000', 'fake_5555']"}]},
+            '{"error": "Not sufficient permissions"}',
+            403,
+            37,
+            [
+                "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
+            ],
+            None,
         ),
         (
-            {"id": 234, "custom_fields": [{"id": 2345234, "value": "fake_123"}]},
-            {"id": 234, "custom_fields": [{"id": 2345234, "value": "fake_123"}]},
-        ),
-        (
-            {"id": 345, "custom_fields": [{"id": 5432123, "value": 55432.321}]},
-            {"id": 345, "custom_fields": [{"id": 5432123, "value": "55432.321"}]},
+            "",
+            404,
+            37,
+            [
+                "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
+            ],
+            "Not Found",
         ),
     ],
+    ids=["forms_accessible", "forms_inaccessible", "forms_not_exists"],
 )
-def test_transform_for_tickets_stream(config, input_data, expected_data):
-    """Checks Transform in case when records come with invalid fields data types"""
-    test_catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="tickets", json_schema={}),
-                sync_mode=SyncMode.full_refresh,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-        ]
-    )
-
-    with requests_mock.Mocker() as ticket_mock:
-        ticket_mock.get(
-            f"https://{config['subdomain']}.zendesk.com/api/v2/incremental/tickets.json",
-            status_code=200,
-            json={"tickets": [input_data], "end_time": "2021-07-22T06:55:55Z", "end_of_stream": True},
-        )
-
-        source = SourceZendeskSupport()
-        records = source.read(MagicMock(), config, test_catalog, None)
-        for record in records:
-            assert record.record.data == expected_data
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
+    result = SourceZendeskSupport(config=TEST_CONFIG, catalog=None, state=None).streams(config=TEST_CONFIG)
+    assert len(result) == expected_n_streams
+    logged_warnings = (record for record in caplog.records if record.levelname == "WARNING")
+    for msg in expected_warnings:
+        assert msg in next(logged_warnings).message

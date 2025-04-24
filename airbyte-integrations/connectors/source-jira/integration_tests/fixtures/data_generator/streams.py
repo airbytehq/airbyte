@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -8,7 +8,6 @@ import string
 from typing import Any, Mapping, Optional
 
 import requests
-from airbyte_cdk.models import SyncMode
 from source_jira.streams import (
     Dashboards,
     Filters,
@@ -31,10 +30,12 @@ from source_jira.streams import (
     WorkflowSchemes,
 )
 
+from airbyte_cdk.models import SyncMode
+
 
 class GeneratorMixin:
     def get_generate_headers(self):
-        headers = {"Accept": "application/json", "Content-Type": "application/json", **self.authenticator.get_auth_header()}
+        headers = {"Accept": "application/json", "Content-Type": "application/json", **self._session.auth.get_auth_header()}
         return headers
 
     def generate_record(
@@ -84,7 +85,7 @@ class FilterSharingGenerator(FilterSharing, GeneratorMixin):
     """
 
     def generate(self):
-        filters_stream = Filters(authenticator=self.authenticator, domain=self._domain)
+        filters_stream = Filters(authenticator=self._session.auth, domain=self._domain)
         for filters in filters_stream.read_records(sync_mode=SyncMode.full_refresh):
             for index in range(random.randrange(4)):
                 group_name = random.choice(["Test group 0", "Test group 1", "Test group 2"])
@@ -142,7 +143,7 @@ class IssueCommentsGenerator(IssueComments, GeneratorMixin):
     """
 
     def generate(self):
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self._session.auth, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             for index in range(20):
                 payload = json.dumps(
@@ -195,7 +196,7 @@ class IssueRemoteLinksGenerator(IssueRemoteLinks, GeneratorMixin):
     """
 
     def generate(self):
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self._session.auth, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             payload = json.dumps(
                 {
@@ -227,7 +228,7 @@ class IssueVotesGenerator(IssueVotes, GeneratorMixin):
     """
 
     def generate(self):
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self._session.auth, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             payload = None
             self.generate_record(payload, stream_slice={"key": issue["key"]})
@@ -239,7 +240,7 @@ class IssueWatchersGenerator(IssueWatchers, GeneratorMixin):
     """
 
     def generate(self):
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self._session.auth, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             payload = None
             self.generate_record(payload, stream_slice={"key": issue["key"]})
@@ -251,7 +252,7 @@ class IssueWorklogsGenerator(IssueWorklogs, GeneratorMixin):
     """
 
     def generate(self):
-        issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
+        issues_stream = Issues(authenticator=self._session.auth, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             for index in range(random.randrange(1, 6)):
                 payload = json.dumps(
@@ -312,7 +313,7 @@ class ProjectComponentsGenerator(ProjectComponents, GeneratorMixin):
         return "component"
 
     def generate(self):
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self._session.auth, domain=self._domain)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             for index in range(random.randrange(6)):
                 payload = json.dumps(
@@ -337,7 +338,7 @@ class ProjectVersionsGenerator(ProjectVersions, GeneratorMixin):
         return "version"
 
     def generate(self):
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain)
+        projects_stream = Projects(authenticator=self._session.auth, domain=self._domain)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             for index in range(random.randrange(6)):
                 payload = json.dumps(

@@ -1,0 +1,526 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  Marketstack provides data from 72 global stock exchanges.
+
+  Using this connector we can extract Historical Data , Splits and Dividends
+  data !
+
+check:
+  type: CheckStream
+  stream_names:
+    - exchanges
+
+definitions:
+  streams:
+    exchanges:
+      type: DeclarativeStream
+      name: exchanges
+      primary_key:
+        - mic
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: exchanges
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/exchanges"
+    tickers:
+      type: DeclarativeStream
+      name: tickers
+      primary_key:
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /exchanges/{{ stream_partition.mic }}/tickers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - tickers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: mic
+              partition_field: mic
+              stream:
+                $ref: "#/definitions/streams/exchanges"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickers"
+    historical_data:
+      type: DeclarativeStream
+      name: historical_data
+      primary_key:
+        - date
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: eod
+          http_method: GET
+          request_parameters:
+            symbols: "{{ stream_partition.symbol }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/tickers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/historical_data"
+    splits:
+      type: DeclarativeStream
+      name: splits
+      primary_key:
+        - date
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: splits
+          http_method: GET
+          request_parameters:
+            symbols: "{{ stream_partition.symbol }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/tickers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/splits"
+    dividends:
+      type: DeclarativeStream
+      name: dividends
+      primary_key:
+        - date
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: dividends
+          http_method: GET
+          request_parameters:
+            symbols: "{{ stream_partition.symbol }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: symbol
+              partition_field: symbol
+              stream:
+                $ref: "#/definitions/streams/tickers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dividends"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.marketstack.com/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: access_key
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/exchanges"
+  - $ref: "#/definitions/streams/tickers"
+  - $ref: "#/definitions/streams/historical_data"
+  - $ref: "#/definitions/streams/splits"
+  - $ref: "#/definitions/streams/dividends"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    exchanges: true
+    tickers: true
+    historical_data: true
+    splits: true
+    dividends: true
+  testedStreams:
+    exchanges:
+      streamHash: 0a78905be0177b4bee681650529804dc3d8d18cf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tickers:
+      streamHash: fe40727a29551cbeb14d3f48eda18e244858ba51
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    historical_data:
+      streamHash: ca758d5c0e7bc4f30266c541b4ee5a5cbbf84bec
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    splits:
+      streamHash: a3749240755d1fc249172a5325e09ff82bdac97e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    dividends:
+      streamHash: 4cec9379a7dfedea697008e2b42b499006639a82
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  exchanges:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acronym:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          symbol:
+            type:
+              - string
+              - "null"
+      mic:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - object
+          - "null"
+        properties:
+          abbr:
+            type:
+              - string
+              - "null"
+          abbr_dst:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - mic
+  tickers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      has_eod:
+        type:
+          - boolean
+          - "null"
+      has_intraday:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      symbol:
+        type: string
+    required:
+      - symbol
+  historical_data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adj_close:
+        type:
+          - number
+          - "null"
+      adj_high:
+        type:
+          - number
+          - "null"
+      adj_low:
+        type:
+          - number
+          - "null"
+      adj_open:
+        type:
+          - number
+          - "null"
+      adj_volume:
+        type:
+          - number
+          - "null"
+      close:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+      dividend:
+        type:
+          - number
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - number
+          - "null"
+      low:
+        type:
+          - number
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      split_factor:
+        type:
+          - number
+          - "null"
+      symbol:
+        type: string
+      volume:
+        type:
+          - number
+          - "null"
+    required:
+      - date
+      - symbol
+  splits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: string
+      split_factor:
+        type:
+          - number
+          - "null"
+      symbol:
+        type: string
+    required:
+      - date
+      - symbol
+  dividends:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: string
+      dividend:
+        type:
+          - number
+          - "null"
+      symbol:
+        type: string
+    required:
+      - date
+      - symbol

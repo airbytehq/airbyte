@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 # type: ignore
@@ -8,6 +8,7 @@ import logging
 from typing import Iterator, Optional
 
 import requests
+
 
 logging.basicConfig(level=logging.INFO)
 

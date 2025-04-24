@@ -3,7 +3,7 @@
   "properties": {
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "has_rating": {
       "type": ["boolean", "null"]

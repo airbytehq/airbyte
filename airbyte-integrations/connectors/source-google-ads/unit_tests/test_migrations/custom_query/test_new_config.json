@@ -1,0 +1,12 @@
+{
+  "credentials": {
+    "developer_token": "developer_token",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "customer_id": "1234567890",
+  "start_date": "2023-09-04",
+  "conversion_window_days": 14,
+  "custom_queries_array": []
+}

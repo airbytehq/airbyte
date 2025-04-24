@@ -1,39 +1,77 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
-  private static final String STREAM_NAME = "public.id_and_name";
-  private static final String STREAM_NAME2 = "public.starships";
-  private PostgreSQLContainer<?> db;
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME2 = "starships";
+  private static final String SCHEMA_NAME = "public";
+
   private final SshBastionContainer bastion = new SshBastionContainer();
-  private static JsonNode config;
+  private PostgresTestDatabase testdb;
+
+  private void populateDatabaseTestData() throws Exception {
+    final var outerConfig = testdb.integrationTestConfigBuilder()
+        .withSchemas("public")
+        .withoutSsl()
+        .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), false))
+        .build();
+    SshTunnel.sshWrap(
+        outerConfig,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
+        (CheckedConsumer<JsonNode, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
+            .query(ctx -> {
+              ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+              ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+              ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+              ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+              return null;
+            }));
+  }
+
+  private static Database getDatabaseFromConfig(final JsonNode config) {
+    return new Database(
+        DSLContextFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
+            SQLDialect.POSTGRES));
+  }
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -41,62 +79,29 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")));
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
+    bastion.initAndStartBastion(testdb.getContainer().getNetwork());
     populateDatabaseTestData();
-
-  }
-
-  private void startTestContainers() {
-    bastion.initAndStartBastion();
-    initAndStartJdbcContainer();
-  }
-
-  private void initAndStartJdbcContainer() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(bastion.getNetWork());
-    db.start();
-  }
-
-  private static void populateDatabaseTestData() throws Exception {
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
-
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
-
-    database.close();
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    bastion.stopAndCloseContainers(db);
-  }
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/source-postgres:dev";
-  }
-
-  @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
+    bastion.stopAndClose();
   }
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    try {
+      return testdb.integrationTestConfigBuilder()
+          .withSchemas("public")
+          .withoutSsl()
+          .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), true))
+          .build();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -107,19 +112,21 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                STREAM_NAME, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                STREAM_NAME2, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }
 
   @Override

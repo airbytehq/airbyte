@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the owner.",
+      "type": ["null", "string"]
+    },
+    "email": {
+      "description": "The email address of the owner.",
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "description": "The first name of the owner.",
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "description": "The last name of the owner.",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The user ID associated with the owner.",
+      "type": ["null", "integer"]
+    },
+    "userIdIncludingInactive": {
+      "description": "The unique identifier of the user associated with the owner, including inactive users.",
+      "type": ["null", "integer"]
+    },
+    "createdAt": {
+      "description": "The date and time the owner was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "The date and time the owner was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "description": "Indicates if the owner is archived or not.",
+      "type": ["null", "boolean"]
+    },
+    "teams": {
+      "description": "A list of teams the owner belongs to.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The unique identifier of the team.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "The name of the team.",
+            "type": ["null", "string"]
+          },
+          "membership": {
+            "description": "The membership status of the owner within the team.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

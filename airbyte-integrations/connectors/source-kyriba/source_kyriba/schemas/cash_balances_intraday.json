@@ -1,0 +1,73 @@
+{
+  "type": "object",
+  "properties": {
+    "account": {
+      "description": "Details about the account associated with the cash balance data.",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "The identifier code for the account.",
+          "type": ["string", "null"]
+        },
+        "statementIdentifier": {
+          "description": "The identifier for the cash flow statement.",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "The universally unique identifier for the account.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "cashBalance": {
+      "type": ["array", "null"],
+      "description": "Cash balance.",
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "amount": {
+            "type": ["number", "null"]
+          },
+          "balanceDate": {
+            "type": ["object", "null"],
+            "properties": {
+              "date": {
+                "type": ["string", "null"]
+              },
+              "dateType": {
+                "type": ["string", "null"]
+              }
+            }
+          },
+          "currencyCode": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "cashFlowStatus": {
+      "description": "The current status of cash flow.",
+      "type": ["object", "null"],
+      "properties": {
+        "actual": {
+          "description": "The actual cash flow status.",
+          "type": ["boolean", "null"]
+        },
+        "confirmedForecasts": {
+          "description": "The confirmed cash flow forecasts.",
+          "type": ["boolean", "null"]
+        },
+        "estimatedForecasts": {
+          "description": "The estimated cash flow forecasts.",
+          "type": ["boolean", "null"]
+        },
+        "intraday": {
+          "description": "The intraday cash balance status.",
+          "type": ["boolean", "null"]
+        }
+      }
+    }
+  },
+  "title": "BK-AccountCashBalanceModel",
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,36 @@
+name: "Send PagerDuty event"
+description: "Use Event API V2 to send a PagerDuty event."
+inputs:
+  integration_key:
+    description: "The integration key for the PagerDuty service."
+    required: true
+  summary:
+    description: "A brief text summary of the event."
+    required: true
+  severity:
+    description: "The severity of the event. (info, warning, error, critical)"
+    required: true
+  source:
+    description: "Specific human-readable unique identifier, such as a hostname, for the system having the problem."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send PagerDuty event
+      id: send-pager-duty-event
+      shell: bash
+      run: |
+        curl --request 'POST' \
+          --fail \
+          --url "https://events.pagerduty.com/v2/enqueue" \
+          --header 'Content-Type: application/json' \
+          --data '{
+            "payload": {
+              "summary": "${{ inputs.summary }}",
+              "severity": "${{ inputs.severity }}",
+              "source": "${{ inputs.source }}"
+            },
+            "event_action": "trigger",
+            "routing_key": "${{ inputs.integration_key }}"
+          }'

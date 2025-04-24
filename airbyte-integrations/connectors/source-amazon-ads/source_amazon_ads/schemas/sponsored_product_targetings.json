@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "expression": {
+      "type": ["null", "array"],
+      "items": { "type": ["null", "object"], "additionalProperties": true }
+    },
+    "targetId": { "type": ["null", "string"] },
+    "resolvedExpression": {
+      "type": "array",
+      "items": { "type": ["null", "object"], "additionalProperties": true }
+    },
+    "campaignId": { "type": ["null", "string"] },
+    "expressionType": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "bid": { "type": ["null", "number"] },
+    "adGroupId": { "type": ["null", "string"] },
+    "extendedData": { "type": ["null", "object"] }
+  },
+  "title": "sponsored_product_targetings",
+  "type": ["null", "object"]
+}

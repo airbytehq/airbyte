@@ -4,29 +4,39 @@ on:
     types: [created]
 jobs:
   slashCommandDispatch:
-    runs-on: ubuntu-latest
+    # Only allow slash commands on pull request (not on issues)
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-24.04
     steps:
-      - name: Get PR Ref
+      - name: Get PR repo and ref
         id: getref
         run: |
-          echo "::set-output name=ref::$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')"
-      - name: Slash Command Dispatch
+          pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
+          echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
+          echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
+
+      - name: Slash Command Dispatch (Workflow)
         id: scd
-        uses: peter-evans/slash-command-dispatch@v2
+        uses: peter-evans/slash-command-dispatch@v3
         with:
-          token: ${{ secrets.SLASH_COMMAND_PAT }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          permission: write
           commands: |
+            bump-version
+            bump-cdk-version-and-merge
+            format-fix
             test
             test-performance
-            publish
-            publish-external
-            publish-cdk
-            gke-kube-test
-            run-specific-test
+            publish-java-cdk
+            connector-performance
+            approve-regression-tests
           static-args: |
-            ref=${{ steps.getref.outputs.ref }}
+            repo=${{ steps.getref.outputs.repo }}
+            gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
+            pr=${{ github.event.issue.number }}
           dispatch-type: workflow
+
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
         uses: peter-evans/create-or-update-comment@v1

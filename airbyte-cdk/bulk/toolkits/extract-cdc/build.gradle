@@ -1,0 +1,29 @@
+dependencies {
+    api platform('io.debezium:debezium-bom:3.0.0.Final')
+    api 'io.debezium:debezium-api'
+    api 'io.debezium:debezium-embedded'
+
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
+    implementation 'io.debezium:debezium-storage-file'
+    implementation 'commons-io:commons-io:2.17.0'
+
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
+    testFixturesImplementation platform('org.testcontainers:testcontainers-bom:1.20.2')
+    testFixturesImplementation 'com.alibaba:dns-cache-manipulator:1.8.3' // required for testing with mongo
+    testImplementation 'io.debezium:debezium-connector-mysql'
+    testImplementation 'io.debezium:debezium-connector-postgres'
+    testImplementation 'io.debezium:debezium-connector-mongodb'
+    testImplementation 'io.debezium:debezium-connector-sqlserver'
+    testFixturesImplementation 'io.debezium:debezium-testing-testcontainers' // required for testing with mongo
+    testFixturesImplementation 'io.mockk:mockk:1.13.12'
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation 'org.testcontainers:postgresql'
+}
+
+test {
+    // these dirty hacks are required for testing with mongo
+    jvmArgs '--add-opens', 'java.base/java.net=ALL-UNNAMED'
+    systemProperty 'container.vm.log.skip', 'true'
+}

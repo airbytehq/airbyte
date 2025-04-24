@@ -1,0 +1,16 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/GeneratedFields.yaml
+title: GeneratedFields
+description: Optional schema for fields generated at metadata upload time
+type: object
+properties:
+  git:
+    "$ref": GitInfo.yaml
+  source_file_info:
+    "$ref": SourceFileInfo.yaml
+  metrics:
+    "$ref": ConnectorMetrics.yaml
+  sbomUrl:
+    type: string
+    description: URL to the SBOM file

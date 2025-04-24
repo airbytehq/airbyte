@@ -1,0 +1,8 @@
+{
+  "api_key": "INVALID_KEY",
+  "symbol": "FAKE_SYMBOL",
+  "interval": "60min",
+  "outputsize": "compact",
+  "slice": "incorrect_slice",
+  "adjusted": false
+}

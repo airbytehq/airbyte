@@ -1,0 +1,42 @@
+[
+  {
+    "version": "2.0.1",
+    "changelog_entry": "Bump Amazon Coretto image version for compatibility with Apple M4 architecture.",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:c90f38f8a5c4494cb773a984dc9fa9a727b3e6c2f2ee2cba27c834a6e101af0d\nRUN sh -c set -o xtrace && yum install -y shadow-utils tar openssl findutils && yum update -y --security && yum clean all && rm -rf /var/cache/yum && groupadd --gid 1000 airbyte && useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && mkdir /secrets && mkdir /config && mkdir --mode 755 /airbyte && mkdir --mode 755 /custom_cache && chown -R airbyte:airbyte /airbyte && chown -R airbyte:airbyte /custom_cache && chown -R airbyte:airbyte /secrets && chown -R airbyte:airbyte /config && chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && chown -R airbyte:airbyte /etc/pki/ca-trust && chown -R airbyte:airbyte /tmp\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "2.0.0",
+    "changelog_entry": "~Release non root base image~",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN sh -c set -o xtrace && yum install -y shadow-utils tar openssl findutils && yum update -y --security && yum clean all && rm -rf /var/cache/yum && groupadd --gid 1000 airbyte && useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && mkdir /secrets && mkdir /config && mkdir --mode 755 /airbyte && mkdir --mode 755 /custom_cache && chown -R airbyte:airbyte /airbyte && chown -R airbyte:airbyte /custom_cache && chown -R airbyte:airbyte /secrets && chown -R airbyte:airbyte /config && chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && chown -R airbyte:airbyte /etc/pki/ca-trust && chown -R airbyte:airbyte /tmp\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "2.0.0-rc.2",
+    "changelog_entry": "Fine tune permissions and reproduce platform java base implementation",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN sh -c set -o xtrace && yum install -y shadow-utils tar openssl findutils && yum update -y --security && yum clean all && rm -rf /var/cache/yum && groupadd --gid 1000 airbyte && useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && mkdir /secrets && mkdir /config && mkdir --mode 755 /airbyte && mkdir --mode 755 /custom_cache && chown -R airbyte:airbyte /airbyte && chown -R airbyte:airbyte /custom_cache && chown -R airbyte:airbyte /secrets && chown -R airbyte:airbyte /config && chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && chown -R airbyte:airbyte /etc/pki/ca-trust && chown -R airbyte:airbyte /tmp\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "2.0.0-rc.1",
+    "changelog_entry": " Make the java base image non root",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN sh -c set -o xtrace && yum update -y --security && yum install -y /usr/sbin/adduser tar openssl findutils && yum clean all && adduser --base-dir /airbyte --uid 1000 --user-group --system airbyte && mkdir --mode 755 /airbyte && mkdir --mode 755 /custom_cache && chown -R airbyte:airbyte /airbyte\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "1.0.0",
+    "changelog_entry": "Create a base image for our java connectors based on Amazon Corretto.",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN sh -c set -o xtrace && yum update -y --security && yum install -y tar openssl findutils && yum clean all\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "1.0.0-rc.4",
+    "changelog_entry": "Bundle yum calls in a single RUN",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN sh -c set -o xtrace && yum update -y --security && yum install -y tar openssl findutils && yum clean all\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "1.0.0-rc.2",
+    "changelog_entry": "Set entrypoint to base.sh",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN yum update -y --security\nRUN yum install -y tar openssl findutils\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "1.0.0-rc.1",
+    "changelog_entry": "Create a base image for our java connectors.",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN yum update -y --security\nRUN yum install -y tar openssl findutils\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  }
+]

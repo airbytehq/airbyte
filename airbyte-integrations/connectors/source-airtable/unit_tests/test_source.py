@@ -1,40 +1,65 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
-from source_airtable.helpers import Helpers
-from source_airtable.source import SourceAirtable
+from unittest.mock import MagicMock
 
-
-def test_spec(config):
-    source = SourceAirtable()
-    logger_mock = MagicMock()
-    spec = source.spec(logger_mock)
-    assert isinstance(spec, ConnectorSpecification)
+from source_airtable import SourceAirtable
 
 
-def test_discover(config, mocker):
-    source = SourceAirtable()
-    logger_mock, Helpers.get_first_row = MagicMock(), MagicMock()
-    airbyte_catalog = source.discover(logger_mock, config)
-    assert [stream.name for stream in airbyte_catalog.streams] == config["tables"]
-    assert isinstance(airbyte_catalog, AirbyteCatalog)
-    assert Helpers.get_first_row.call_count == 2
+class TestSourceAirtable:
+    config = {"credentials": {"auth_method": "api_key", "api_key": "api key value"}}
 
+    def test_streams(self, tables_requests_mock):
+        streams = SourceAirtable(catalog={}, config=self.config, state={}).streams(config=self.config)
+        assert len(streams) == 2
+        assert [stream.name for stream in streams] == ["base_1/table_1/table_id_1", "base_1/table_2/table_id_2"]
 
-@patch("requests.get")
-def test_check_connection(config):
-    source = SourceAirtable()
-    logger_mock = MagicMock()
-    assert source.check_connection(logger_mock, config) == (True, None)
+    def test_streams_schema(self, tables_requests_mock):
+        catalog = SourceAirtable(catalog={}, config=self.config, state={}).discover(logger=MagicMock(), config=self.config)
 
+        schema = catalog.streams[0].json_schema["properties"]
+        assert schema == {
+            "_airtable_created_time": {"type": ["null", "string"]},
+            "_airtable_id": {"type": ["null", "string"]},
+            "_airtable_table_name": {"type": ["null", "string"]},
+            "attachments": {"type": ["null", "string"]},
+            "clo_with_empty_strings": {"type": ["null", "string"]},
+            "name": {"type": ["null", "string"]},
+            "notes": {"type": ["null", "string"]},
+            "status": {"type": ["null", "string"]},
+        }
 
-def test_streams(config):
-    source = SourceAirtable()
-    Helpers.get_first_row = MagicMock()
-    streams = source.streams(config)
-    assert len(streams) == 2
-    assert [stream.name for stream in streams] == config["tables"]
+        schema = catalog.streams[1].json_schema["properties"]
+        assert schema == {
+            "_airtable_created_time": {"type": ["null", "string"]},
+            "_airtable_id": {"type": ["null", "string"]},
+            "_airtable_table_name": {"type": ["null", "string"]},
+            "assignee": {"type": ["null", "number"]},
+            "assignee_(from_table_6)": {"type": ["null", "array"], "items": {"type": ["null", "number"]}},
+            "barcode": {"type": ["null", "string"]},
+            "float": {"type": ["null", "number"]},
+            "integer": {"type": ["null", "number"]},
+            "name": {"type": ["null", "string"]},
+            "status": {"type": ["null", "string"]},
+            "table_6": {"type": ["null", "array"], "items": {"type": ["null", "string"]}},
+        }
+
+    def test_check_connection(self, tables_requests_mock, airtable_streams_requests_mock):
+        status = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert status == (True, None)
+
+    def test_check_connection_failed(self, tables_requests_mock, airtable_streams_403_status_code_requests_mock):
+        status = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert status == (False, "Permission denied or entity is unprocessable.")
+
+    def test_check_connection_no_streams_available(self, requests_mock):
+        requests_mock.get(
+            "https://api.airtable.com/v0/meta/bases",
+            status_code=200,
+            json={"bases": []},
+        )
+        status, reason = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert "No streams to connect to from source" in reason
+        assert status is False

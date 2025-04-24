@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "sha": {
+      "description": "SHA of the commit.",
+      "type": ["null", "string"]
+    },
+    "node_id": {
+      "description": "Node ID of the commit.",
+      "type": ["null", "string"]
+    },
+    "commit": {
+      "description": "Details about the commit related to the pull request.",
+      "type": "object",
+      "properties": {
+        "author": {
+          "description": "Details about the author of the commit.",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of the author.",
+              "type": ["null", "string"]
+            },
+            "email": {
+              "description": "Email address of the author.",
+              "type": ["null", "string"]
+            },
+            "date": {
+              "description": "Date and time the commit was authored.",
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "committer": {
+          "description": "Details about the committer of the commit.",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of the committer.",
+              "type": ["null", "string"]
+            },
+            "email": {
+              "description": "Email address of the committer.",
+              "type": ["null", "string"]
+            },
+            "date": {
+              "description": "Date and time the commit was committed.",
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "message": {
+          "description": "Commit message.",
+          "type": ["null", "string"]
+        },
+        "tree": {
+          "description": "Information about the tree associated with the commit.",
+          "type": "object",
+          "properties": {
+            "sha": {
+              "description": "SHA of the tree.",
+              "type": ["null", "string"]
+            },
+            "url": {
+              "description": "URL to retrieve more details about the tree.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "url": {
+          "description": "URL to access more details about the commit.",
+          "type": ["null", "string"]
+        },
+        "comment_count": {
+          "description": "Number of comments on the commit.",
+          "type": ["null", "integer"]
+        },
+        "verification": {
+          "description": "Verification status of the commit.",
+          "type": "object",
+          "properties": {
+            "verified": {
+              "description": "Indicates if the commit is verified.",
+              "type": ["null", "boolean"]
+            },
+            "reason": {
+              "description": "Reason for verification status.",
+              "type": ["null", "string"]
+            },
+            "signature": {
+              "description": "Signature of the commit for verification.",
+              "type": ["null", "string"]
+            },
+            "payload": {
+              "description": "Payload data used for verification.",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "url": {
+      "description": "URL to access more details about the commit.",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "URL to view the commit in a web browser.",
+      "type": ["null", "string"]
+    },
+    "comments_url": {
+      "description": "URL to retrieve comments related to the commit.",
+      "type": ["null", "string"]
+    },
+    "author": {
+      "description": "Details about the author of the commit.",
+      "$ref": "user.json"
+    },
+    "committer": {
+      "description": "Details about the committer of the commit.",
+      "$ref": "user.json"
+    },
+    "parents": {
+      "description": "List of parent commits associated with the commit.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sha": {
+            "description": "SHA of the parent commit.",
+            "type": ["null", "string"]
+          },
+          "url": {
+            "description": "URL to access more details about the parent commit.",
+            "type": ["null", "string"]
+          },
+          "html_url": {
+            "description": "URL to view the parent commit in a web browser.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "repository": {
+      "description": "Details about the repository where the commit was made.",
+      "type": "string"
+    },
+    "pull_number": {
+      "description": "Number associated with the pull request.",
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the custom conversion.",
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "description": "Unique identifier for the Facebook ad account.",
+      "type": ["null", "string"]
+    },
+    "business": {
+      "description": "Information about the business associated with the custom conversion.",
+      "type": ["null", "string"]
+    },
+    "creation_time": {
+      "description": "Date and time when the custom conversion was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "custom_event_type": {
+      "description": "Type of custom event triggering the conversion.",
+      "type": ["null", "string"]
+    },
+    "data_sources": {
+      "description": "Data sources related to the custom conversion.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Identifier of the data source.",
+            "type": "string"
+          },
+          "source_type": {
+            "description": "Type of data source.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the data source.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "default_conversion_value": {
+      "description": "Default value assigned to the conversion event if no specific value is provided.",
+      "type": ["null", "number"]
+    },
+    "description": {
+      "description": "Brief description of the custom conversion.",
+      "type": ["null", "string"]
+    },
+    "event_source_type": {
+      "description": "Type of event source triggering the custom conversion.",
+      "type": ["null", "string"]
+    },
+    "first_fired_time": {
+      "description": "Date and time when the custom conversion was first triggered.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_archived": {
+      "description": "Flag indicating if the custom conversion is archived.",
+      "type": ["null", "boolean"]
+    },
+    "is_unavailable": {
+      "description": "Flag indicating if the custom conversion is unavailable.",
+      "type": ["null", "boolean"]
+    },
+    "last_fired_time": {
+      "description": "Date and time when the custom conversion was last triggered.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "name": {
+      "description": "Name of the custom conversion.",
+      "type": ["null", "string"]
+    },
+    "offline_conversion_data_set": {
+      "description": "If applicable, the data set for offline conversions.",
+      "type": ["null", "string"]
+    },
+    "retention_days": {
+      "description": "Number of days for which the conversion data is retained.",
+      "type": ["null", "number"]
+    },
+    "rule": {
+      "description": "Rules or conditions triggering the custom conversion.",
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

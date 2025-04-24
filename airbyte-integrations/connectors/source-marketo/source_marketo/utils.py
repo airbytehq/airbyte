@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from datetime import datetime
+
 
 STRING_TYPES = [
     "string",
@@ -35,6 +36,7 @@ def clean_string(string: str) -> str:
     "updated_at" -> "updated_at"
     " updated_at " -> "updated_at"
     "updatedat" -> "updatedat"
+    "updated at" -> "updated_at"
     """
 
     fix = {

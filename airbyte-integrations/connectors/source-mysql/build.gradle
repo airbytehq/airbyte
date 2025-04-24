@@ -1,38 +1,21 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-performance-test-java'
+    id 'airbyte-bulk-connector'
 }
 
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc', 'extract-cdc']
+    cdk = '0.380'
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium')
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
+    implementation 'com.mysql:mysql-connector-j:9.1.0'
+    implementation 'io.debezium:debezium-connector-mysql'
 
-    implementation 'mysql:mysql-connector-java:8.0.22'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:mysql:1.15.3'
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
-
-    performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    performanceTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation 'io.mockk:mockk:1.12.0'
 }

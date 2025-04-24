@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "sequences": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["string", "null"]
+          },
+          "campaignId": {
+            "type": ["string", "null"]
+          },
+          "title": {
+            "type": ["string", "null"]
+          },
+          "enabled": {
+            "type": ["boolean", "null"]
+          },
+          "onAirStatus": {
+            "type": "object",
+            "properties": {
+              "onAir": {
+                "type": ["boolean", "null"]
+              },
+              "reason": {
+                "type": ["string", "null"]
+              }
+            }
+          },
+          "cachedLogoUrl": {
+            "type": ["string", "null"]
+          },
+          "sponsor": {
+            "type": ["string", "null"]
+          },
+          "promotedLinks": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": ["string", "null"]
+                },
+                "text": {
+                  "type": ["string", "null"]
+                },
+                "creationTime": {
+                  "type": ["string", "null"]
+                },
+                "lastModified": {
+                  "type": ["string", "null"]
+                },
+                "url": {
+                  "type": ["string", "null"]
+                },
+                "siteName": {
+                  "type": ["string", "null"]
+                },
+                "sectionName": {
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "type": ["string", "null"]
+                },
+                "enabled": {
+                  "type": ["boolean", "null"]
+                },
+                "cachedImageUrl": {
+                  "type": ["string", "null"]
+                },
+                "campaignId": {
+                  "type": ["string", "null"]
+                },
+                "archived": {
+                  "type": ["boolean", "null"]
+                },
+                "documentLanguage": {
+                  "type": ["string", "null"]
+                },
+                "onAirStatus": {
+                  "type": "object",
+                  "properties": {
+                    "onAir": {
+                      "type": ["boolean", "null"]
+                    },
+                    "reason": {
+                      "type": ["string", "null"]
+                    }
+                  }
+                },
+                "baseUrl": {
+                  "type": ["string", "null"]
+                },
+                "documentId": {
+                  "type": ["string", "null"]
+                },
+                "sequenceSettings": {
+                  "type": "object",
+                  "properties": {
+                    "sequenceId": {
+                      "type": ["string", "null"]
+                    },
+                    "sequenceOrder": {
+                      "type": ["integer", "null"]
+                    }
+                  }
+                },
+                "approvalStatus": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": ["string", "null"]
+                    },
+                    "isEditable": {
+                      "type": ["boolean", "null"]
+                    }
+                  }
+                },
+                "imageType": {
+                  "type": ["string", "null"]
+                },
+                "language": {
+                  "type": ["string", "null"]
+                }
+              }
+            }
+          },
+          "creationTime": {
+            "type": ["string", "null"]
+          },
+          "lastModified": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "totalCount": {
+      "type": ["integer", "null"]
+    },
+    "count": {
+      "type": ["integer", "null"]
+    }
+  }
+}

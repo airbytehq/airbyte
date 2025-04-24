@@ -1,0 +1,40 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
+  dockerImageTag: 0.1.15
+  dockerRepository: airbyte/source-netsuite
+  documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
+  githubIssueLabel: source-netsuite
+  icon: netsuite.svg
+  license: MIT
+  name: Netsuite
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-netsuite
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_NETSUITE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

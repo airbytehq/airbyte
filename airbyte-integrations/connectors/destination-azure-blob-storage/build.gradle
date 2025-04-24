@@ -1,26 +1,53 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-bulk-connector'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-object-storage', 'load-azure-blob-storage']
+    cdk = 'local'
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestination'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationKt'
+
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+//            Uncomment to run locally:
+//          '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+//            Uncomment to enable remote profiling:
+//            '-XX:NativeMemoryTracking=detail',
+//            '-Djava.rmi.server.hostname=localhost',
+//            '-Dcom.sun.management.jmxremote=true',
+//            '-Dcom.sun.management.jmxremote.port=6000',
+//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
+//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.authenticate=false',
+//            '-Dcom.sun.management.jmxremote.ssl=false'
+    ]
 }
 
+// Uncomment to run locally
+//run {
+//    standardInput = System.in
+//}
+
+// Exclude conflicting log4j-over-slf4j dependency
+configurations.all {
+        exclude group: "org.slf4j", module: "slf4j-reload4j"
+}
+
+// TODO figure out if we need these
+// dependencies {
+
+//     implementation 'com.azure:azure-storage-blob:12.20.2'
+//     implementation 'org.apache.commons:commons-csv:1.4'
+
+//     testImplementation 'org.apache.commons:commons-lang3:3.11'
+//     testImplementation "org.testcontainers:junit-jupiter:1.17.5"
+// }
+
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-
-    implementation 'com.azure:azure-storage-blob:12.12.0'
-    implementation 'org.apache.commons:commons-csv:1.4'
-
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-azure-blob-storage')
+    integrationTestImplementation 'org.testcontainers:azure:1.20.6'
 }

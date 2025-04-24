@@ -1,0 +1,220 @@
+version: 0.83.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - AdjustReport
+
+definitions:
+  streams:
+    AdjustReport:
+      type: DeclarativeStream
+      name: AdjustReport
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /report
+          http_method: GET
+          request_parameters:
+            metrics: >-
+              {{ config['metrics'] + config['additional_metrics'] |
+              join(',') }}
+            dimensions: '{{ config["dimensions"] + ["day"] | join(",") }}'
+            date_period: "{{ stream_interval['start_time'] }}:{{ stream_interval['end_time'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rows
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: day
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['ingest_start'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if config['until_today'] else (day_delta(1)).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      schema_loader:
+        type: CustomSchemaLoader
+        class_name: source_adjust.components.AdjustSchemaLoader
+  base_requester:
+    type: HttpRequester
+    url_base: https://dash.adjust.com/control-center/reports-service
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/AdjustReport"
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    description: Adjust reporting API connector.
+    additionalProperties: true
+    required:
+      - api_token
+      - ingest_start
+      - metrics
+      - dimensions
+    properties:
+      api_token:
+        airbyte_secret: true
+        description: >-
+          Adjust API key, see
+          https://help.adjust.com/en/article/report-service-api-authentication
+        order: 1
+        title: API Token
+        type: string
+      ingest_start:
+        description: Data ingest start date.
+        format: date
+        order: 2
+        title: Ingest Start Date
+        type: string
+      metrics:
+        description: Select at least one metric to query.
+        items:
+          enum:
+            - network_cost
+            - network_cost_diff
+            - network_clicks
+            - network_impressions
+            - network_installs
+            - network_installs_diff
+            - network_ecpc
+            - network_ecpi
+            - network_ecpm
+            - arpdau_ad
+            - arpdau
+            - arpdau_iap
+            - ad_impressions
+            - ad_rpm
+            - ad_revenue
+            - cohort_ad_revenue
+            - cost
+            - adjust_cost
+            - all_revenue
+            - cohort_all_revenue
+            - daus
+            - maus
+            - waus
+            - base_sessions
+            - ctr
+            - click_conversion_rate
+            - click_cost
+            - clicks
+            - paid_clicks
+            - deattributions
+            - ecpc
+            - gdpr_forgets
+            - gross_profit
+            - cohort_gross_profit
+            - impression_conversion_rate
+            - impression_cost
+            - impressions
+            - paid_impressions
+            - install_cost
+            - installs
+            - paid_installs
+            - installs_per_mile
+            - limit_ad_tracking_installs
+            - limit_ad_tracking_install_rate
+            - limit_ad_tracking_reattribution_rate
+            - limit_ad_tracking_reattributions
+            - non_organic_installs
+            - organic_installs
+            - roas_ad
+            - roas
+            - roas_iap
+            - reattributions
+            - return_on_investment
+            - revenue
+            - cohort_revenue
+            - revenue_events
+            - revenue_to_cost
+            - sessions
+            - events
+            - ecpi_all
+            - ecpi
+            - ecpm
+          type: string
+        minItems: 1
+        order: 3
+        title: Metrics to ingest
+        type: array
+        uniqueItems: true
+      additional_metrics:
+        description: >-
+          Metrics names that are not pre-defined, such as cohort metrics or app
+          specific metrics.
+        items:
+          type: string
+        order: 4
+        title: Additional metrics for ingestion
+        type: array
+      dimensions:
+        description: >-
+          Dimensions allow a user to break down metrics into groups using one or
+          several parameters. For example, the number of installs by date,
+          country and network. See
+          https://help.adjust.com/en/article/reports-endpoint#dimensions for
+          more information about the dimensions.
+        items:
+          enum:
+            - os_name
+            - device_type
+            - app
+            - app_token
+            - store_id
+            - store_type
+            - app_network
+            - currency
+            - currency_code
+            - network
+            - campaign
+            - campaign_network
+            - campaign_id_network
+            - adgroup
+            - adgroup_network
+            - adgroup_id_network
+            - source_network
+            - source_id_network
+            - creative
+            - creative_network
+            - creative_id_network
+            - country
+            - country_code
+            - region
+            - partner_name
+            - partner_id
+          type: string
+        minItems: 1
+        order: 5
+        title: Dimensions
+        type: array
+        uniqueItems: true
+      until_today:
+        default: false
+        description: >-
+          Syncs data up until today. Useful when running daily incremental
+          syncs, and duplicates are not desired.
+        order: 6
+        title: Until Today
+        type: boolean

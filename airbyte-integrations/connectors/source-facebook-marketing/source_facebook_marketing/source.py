@@ -1,257 +1,323 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
-from datetime import datetime
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type
 
+import facebook_business
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
+
 from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    AuthSpecification,
+    AdvancedAuth,
+    AuthFlowType,
     ConnectorSpecification,
     DestinationSyncMode,
-    OAuth2Specification,
-    Status,
+    FailureType,
+    OAuthConfigSpecification,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from jsonschema import RefResolver
-from pydantic import BaseModel, Field
+from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.api import API
+from source_facebook_marketing.spec import ConnectorConfig, ValidAdStatuses
 from source_facebook_marketing.streams import (
+    Activities,
+    AdAccount,
     AdCreatives,
     Ads,
     AdSets,
     AdsInsights,
+    AdsInsightsActionCarouselCard,
+    AdsInsightsActionConversionDevice,
+    AdsInsightsActionProductID,
+    AdsInsightsActionReaction,
     AdsInsightsActionType,
+    AdsInsightsActionVideoSound,
+    AdsInsightsActionVideoType,
     AdsInsightsAgeAndGender,
     AdsInsightsCountry,
+    AdsInsightsDeliveryDevice,
+    AdsInsightsDeliveryPlatform,
+    AdsInsightsDeliveryPlatformAndDevicePlatform,
+    AdsInsightsDemographicsAge,
+    AdsInsightsDemographicsCountry,
+    AdsInsightsDemographicsDMARegion,
+    AdsInsightsDemographicsGender,
     AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomAudiences,
+    CustomConversions,
+    Images,
     Videos,
 )
 
+from .utils import validate_end_date, validate_start_date
+
+
 logger = logging.getLogger("airbyte")
-
-
-class InsightConfig(BaseModel):
-
-    name: str = Field(description="The name value of insight")
-
-    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
-
-    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
-
-    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
-
-
-class ConnectorConfig(BaseModel):
-    class Config:
-        title = "Source Facebook Marketing"
-
-    account_id: str = Field(description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.")
-
-    access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
-        airbyte_secret=True,
-    )
-
-    start_date: datetime = Field(
-        description="The date from which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-25T00:00:00Z"],
-    )
-
-    end_date: Optional[datetime] = Field(
-        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
-    )
-
-    fetch_thumbnail_images: bool = Field(
-        default=False, description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url"
-    )
-
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets")
-
-    insights_lookback_window: int = Field(
-        default=28,
-        description="The attribution window for the actions",
-        minimum=0,
-        maximum=28,
-    )
-
-    insights_days_per_job: int = Field(
-        default=7,
-        description="Number of days to sync in one job (the more data you have, the smaller this parameter should be)",
-        minimum=1,
-        maximum=30,
-    )
-    custom_insights: Optional[List[InsightConfig]] = Field(
-        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
-    )
+UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    # Skip exceptions on missing streams
+    raise_exception_on_missing_stream = True
+
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        config.setdefault("action_breakdowns_allow_empty", False)
+        if config.get("end_date") == "":
+            config.pop("end_date")
+
+        config = ConnectorConfig.parse_obj(config)
+
+        if config.start_date:
+            config.start_date = pendulum.instance(config.start_date)
+
+        if config.end_date:
+            config.end_date = pendulum.instance(config.end_date)
+
+        config.account_ids = list(config.account_ids)
+
+        return config
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
+        :param logger: source logger
         :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        ok = False
-        error_msg = None
-
         try:
-            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-            api = API(account_id=config.account_id, access_token=config.access_token)
-            logger.info(f"Select account {api.account}")
-            ok = True
-        except Exception as exc:
-            error_msg = repr(exc)
+            config = self._validate_and_transform(config)
 
-        return ok, error_msg
+            if config.end_date > pendulum.now():
+                return False, "Date range can not be in the future."
+            if config.start_date and config.end_date < config.start_date:
+                return False, "End date must be equal or after start date."
+
+            if config.credentials is not None:
+                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+            else:
+                api = API(access_token=config.access_token, page_size=config.page_size)
+
+            for account_id in config.account_ids:
+                # Get Ad Account to check creds
+                logger.info(f"Attempting to retrieve information for account with ID: {account_id}")
+                ad_account = api.get_account(account_id=account_id)
+                logger.info(f"Successfully retrieved account information for account: {ad_account}")
+
+                # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
+                for stream in self.get_custom_insights_streams(api, config):
+                    stream.check_breakdowns(account_id=account_id)
+
+        except facebook_business.exceptions.FacebookRequestError as e:
+            return False, e._api_error_message
+
+        except AirbyteTracedException as e:
+            return False, f"{e.message}. Full error: {e.internal_message}"
+
+        except Exception as e:
+            return False, f"Unexpected error: {repr(e)}"
+
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
         """Discovery method, returns available streams
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
+        :return: list of the stream instances
         """
-        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        config = self._validate_and_transform(config)
+        if config.start_date:
+            config.start_date = validate_start_date(config.start_date)
+            config.end_date = validate_end_date(config.start_date, config.end_date)
+
+        if config.credentials is not None:
+            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+        else:
+            api = API(access_token=config.access_token, page_size=config.page_size)
+
+        # if start_date not specified then set default start_date for report streams to 2 years ago
+        report_start_date = config.start_date or pendulum.now().add(years=-2)
 
         insights_args = dict(
             api=api,
-            start_date=config.start_date,
+            account_ids=config.account_ids,
+            start_date=report_start_date,
             end_date=config.end_date,
-            buffer_days=config.insights_lookback_window,
-            days_per_job=config.insights_days_per_job,
+            insights_lookback_window=config.insights_lookback_window,
+            insights_job_timeout=config.insights_job_timeout,
+            filter_statuses=[status.value for status in [*ValidAdStatuses]],
         )
-
         streams = [
-            Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-            AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images),
-            AdsInsights(**insights_args),
-            AdsInsightsAgeAndGender(**insights_args),
-            AdsInsightsCountry(**insights_args),
-            AdsInsightsRegion(**insights_args),
-            AdsInsightsDma(**insights_args),
-            AdsInsightsPlatformAndDevice(**insights_args),
-            AdsInsightsActionType(**insights_args),
-            Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            AdAccount(api=api, account_ids=config.account_ids),
+            AdSets(
+                api=api,
+                account_ids=config.account_ids,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                filter_statuses=config.adset_statuses,
+                page_size=config.page_size,
+            ),
+            Ads(
+                api=api,
+                account_ids=config.account_ids,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                filter_statuses=config.ad_statuses,
+                page_size=config.page_size,
+            ),
+            AdCreatives(
+                api=api,
+                account_ids=config.account_ids,
+                fetch_thumbnail_images=config.fetch_thumbnail_images,
+                page_size=config.page_size,
+            ),
+            AdsInsights(page_size=config.page_size, **insights_args),
+            AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
+            AdsInsightsCountry(page_size=config.page_size, **insights_args),
+            AdsInsightsRegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDma(page_size=config.page_size, **insights_args),
+            AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsActionType(page_size=config.page_size, **insights_args),
+            AdsInsightsActionCarouselCard(page_size=config.page_size, **insights_args),
+            AdsInsightsActionConversionDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsActionProductID(page_size=config.page_size, **insights_args),
+            AdsInsightsActionReaction(page_size=config.page_size, **insights_args),
+            AdsInsightsActionVideoSound(page_size=config.page_size, **insights_args),
+            AdsInsightsActionVideoType(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryPlatform(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsAge(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
+            Campaigns(
+                api=api,
+                account_ids=config.account_ids,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                filter_statuses=config.campaign_statuses,
+                page_size=config.page_size,
+            ),
+            CustomConversions(
+                api=api,
+                account_ids=config.account_ids,
+                page_size=config.page_size,
+            ),
+            CustomAudiences(
+                api=api,
+                account_ids=config.account_ids,
+                page_size=config.page_size,
+            ),
+            Images(
+                api=api,
+                account_ids=config.account_ids,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                page_size=config.page_size,
+            ),
+            Videos(
+                api=api,
+                account_ids=config.account_ids,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                page_size=config.page_size,
+            ),
+            Activities(
+                api=api,
+                account_ids=config.account_ids,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                page_size=config.page_size,
+            ),
         ]
 
-        return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
-
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
-        try:
-            check_succeeded, error = self.check_connection(logger, config)
-            if not check_succeeded:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
-
-        self._check_custom_insights_entries(config.get("custom_insights", []))
-
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        return streams + self.get_custom_insights_streams(api, config)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration.
+        """Returns the spec for this integration.
+        The spec is a JSON-Schema object describing the required configurations
+        (e.g: username and password) required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
+            documentationUrl="https://docs.airbyte.com/integrations/sources/facebook-marketing",
+            changelogUrl="https://docs.airbyte.com/integrations/sources/facebook-marketing",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
-            connectionSpecification=expand_local_ref(ConnectorConfig.schema()),
-            authSpecification=AuthSpecification(
-                auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(
-                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+            connectionSpecification=ConnectorConfig.schema(),
+            advanced_auth=AdvancedAuth(
+                auth_flow_type=AuthFlowType.oauth2_0,
+                predicate_key=["credentials", "auth_type"],
+                predicate_value="Client",
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "type": "string",
+                                "path_in_connector_config": ["credentials", "access_token"],
+                            },
+                        },
+                    },
+                    complete_oauth_server_input_specification={
+                        "type": "object",
+                        "properties": {
+                            "client_id": {"type": "string"},
+                            "client_secret": {"type": "string"},
+                        },
+                    },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "client_id": {
+                                "type": "string",
+                                "path_in_connector_config": ["credentials", "client_id"],
+                            },
+                            "client_secret": {
+                                "type": "string",
+                                "path_in_connector_config": ["credentials", "client_secret"],
+                            },
+                        },
+                    },
                 ),
             ),
         )
 
-    def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
-        """Update method, if insights have values returns streams replacing the
-        default insights streams else returns streams
-
-        """
-        if not insights:
-            return streams
-
-        insights_custom_streams = list()
-
-        for insight in insights:
-            args["name"] = f"Custom{insight.name}"
-            args["fields"] = list(set(insight.fields))
-            args["breakdowns"] = list(set(insight.breakdowns))
-            args["action_breakdowns"] = list(set(insight.action_breakdowns))
-            insight_stream = AdsInsights(**args)
-            insights_custom_streams.append(insight_stream)
-
-        return streams + insights_custom_streams
-
-    def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
-
-        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
-        default_fields = list(loader.get_schema("ads_insights").get("properties", {}).keys())
-        default_breakdowns = list(loader.get_schema("ads_insights_breakdowns").get("properties", {}).keys())
-        default_action_breakdowns = list(loader.get_schema("ads_insights_action_breakdowns").get("properties", {}).keys())
-
-        for insight in insights:
-            if insight.get("fields"):
-                value_checked, value = self._check_values(default_fields, insight.get("fields"))
-                if not value_checked:
-                    message = f"{value} is not a valid field name"
-                    raise Exception("Config validation error: " + message) from None
-            if insight.get("breakdowns"):
-                value_checked, value = self._check_values(default_breakdowns, insight.get("breakdowns"))
-                if not value_checked:
-                    message = f"{value} is not a valid breakdown name"
-                    raise Exception("Config validation error: " + message) from None
-            if insight.get("action_breakdowns"):
-                value_checked, value = self._check_values(default_action_breakdowns, insight.get("action_breakdowns"))
-                if not value_checked:
-                    message = f"{value} is not a valid action_breakdown name"
-                    raise Exception("Config validation error: " + message) from None
-
-        return True
-
-    def _check_values(self, default_value: List[str], custom_value: List[str]) -> Tuple[bool, Any]:
-        for e in custom_value:
-            if e not in default_value:
-                logger.error(f"{e} does not appear in {default_value}")
-                return False, e
-
-        return True, None
-
-
-def expand_local_ref(schema, resolver=None, **kwargs):
-    resolver = resolver or RefResolver("", schema)
-    if isinstance(schema, MutableMapping):
-        if "$ref" in schema:
-            ref_url = schema.pop("$ref")
-            url, resolved_schema = resolver.resolve(ref_url)
-            schema.update(resolved_schema)
-        for key, value in schema.items():
-            schema[key] = expand_local_ref(value, resolver=resolver)
-        return schema
-    elif isinstance(schema, List):
-        return [expand_local_ref(item, resolver=resolver) for item in schema]
-
-    return schema
+    def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
+        """return custom insights streams"""
+        streams = []
+        for insight in config.custom_insights or []:
+            insight_fields = set(insight.fields)
+            if insight_fields.intersection(UNSUPPORTED_FIELDS):
+                # https://github.com/airbytehq/oncall/issues/1137
+                message = (
+                    f"The custom fields `{insight_fields.intersection(UNSUPPORTED_FIELDS)}` are not a valid configuration for"
+                    f" `{insight.name}'. Review Facebook Marketing's docs https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/ for valid breakdowns."
+                )
+                raise AirbyteTracedException(
+                    message=message,
+                    failure_type=FailureType.config_error,
+                )
+            stream = AdsInsights(
+                api=api,
+                account_ids=config.account_ids,
+                name=f"Custom{insight.name}",
+                fields=list(insight_fields),
+                breakdowns=list(set(insight.breakdowns)),
+                action_breakdowns=list(set(insight.action_breakdowns)),
+                action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
+                action_report_time=insight.action_report_time,
+                time_increment=insight.time_increment,
+                start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
+                end_date=insight.end_date or config.end_date,
+                insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
+                insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
+                level=insight.level,
+            )
+            streams.append(stream)
+        return streams

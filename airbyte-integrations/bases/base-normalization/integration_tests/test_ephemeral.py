@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -7,14 +7,13 @@ import os
 import pathlib
 import re
 import shutil
-import tempfile
-from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
+from integration_tests.utils import setup_test_dir
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.catalog_processor import CatalogProcessor
+from normalization.transform_catalog import TransformCatalog
 
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
@@ -23,13 +22,19 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
-    if DestinationType.POSTGRES.value not in destinations_to_test:
-        destinations_to_test.append(DestinationType.POSTGRES.value)
+    # set clean-up args to clean target destination after the test
+    clean_up_args = {
+        "destination_type": [d for d in DestinationType if d.value in destinations_to_test],
+        "test_type": "ephemeral",
+        "tmp_folders": temporary_folders,
+    }
+
     dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
+    dbt_test_utils.clean_tmp_tables(**clean_up_args)
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
@@ -46,12 +51,12 @@ def setup_test_path(request):
 
 
 @pytest.mark.parametrize("column_count", [1000])
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
-    if destination_type.value not in dbt_test_utils.get_test_targets() or destination_type.value == DestinationType.MYSQL.value:
+    if destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1000.
-        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable (MYSQL is also skipped)")
+        pytest.skip("Skipping test for column limit, because in MySQL, the max number of columns is limited by row size (8KB)")
     if destination_type.value == DestinationType.ORACLE.value:
         # Airbyte uses a few columns for metadata and Oracle limits are right at 1000
         column_count = 993
@@ -79,24 +84,34 @@ def test_destination_failure_over_limits(integration_type: str, column_count: in
     run_test(destination_type, column_count, expected_exception_message)
 
 
-def test_empty_streams(setup_test_path):
-    run_test(DestinationType.POSTGRES, 0)
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
+def test_empty_streams(destination_type: DestinationType, setup_test_path):
+    run_test(destination_type, 0)
 
 
-def test_stream_with_1_airbyte_column(setup_test_path):
-    run_test(DestinationType.POSTGRES, 1)
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
+def test_stream_with_1_airbyte_column(destination_type: DestinationType, setup_test_path):
+    run_test(destination_type, 1)
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+
+    if destination_type.value == DestinationType.CLICKHOUSE.value:
+        pytest.skip("ephemeral materialization isn't supported in ClickHouse yet")
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        # set unique schema for Redshift test
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_ephemeral_"))
     else:
         dbt_test_utils.set_target_schema("test_ephemeral")
-    print("Testing ephemeral")
+    print(f"Testing ephemeral for destination {destination_type.value} with column count {column_count}")
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
-    test_root_dir = setup_test_dir(integration_type)
+    test_root_dir = setup_test_dir(integration_type, temporary_folders)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
@@ -117,28 +132,6 @@ def search_logs_for_pattern(log_file: str, pattern: str):
             if re.search(pattern, line):
                 return True
     return False
-
-
-def setup_test_dir(integration_type: str) -> str:
-    """
-    We prepare a clean folder to run the tests from.
-    """
-    test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
-    os.makedirs(test_root_dir, exist_ok=True)
-    test_root_dir = tempfile.mkdtemp(dir=test_root_dir)
-    temporary_folders.add(test_root_dir)
-    shutil.rmtree(test_root_dir, ignore_errors=True)
-    print(f"Setting up test folder {test_root_dir}")
-    copy_tree("../dbt-project-template", test_root_dir)
-    if integration_type == DestinationType.MSSQL.value:
-        copy_tree("../dbt-project-template-mssql", test_root_dir)
-    elif integration_type == DestinationType.MYSQL.value:
-        copy_tree("../dbt-project-template-mysql", test_root_dir)
-    elif integration_type == DestinationType.ORACLE.value:
-        copy_tree("../dbt-project-template-oracle", test_root_dir)
-    elif integration_type == DestinationType.SNOWFLAKE.value:
-        copy_tree("../dbt-project-template-snowflake", test_root_dir)
-    return test_root_dir
 
 
 def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_config: Dict[str, Any]) -> bool:
@@ -175,7 +168,6 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     """
     output_directory = os.path.join(test_root_dir, "models", "generated")
     shutil.rmtree(output_directory, ignore_errors=True)
-    catalog_processor = CatalogProcessor(output_directory, destination_type)
     catalog_config = {
         "streams": [
             {
@@ -203,4 +195,14 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     catalog = os.path.join(test_root_dir, "catalog.json")
     with open(catalog, "w") as fh:
         fh.write(json.dumps(catalog_config))
-    catalog_processor.process(catalog, "_airbyte_data", dbt_test_utils.target_schema)
+
+    transform_catalog = TransformCatalog()
+    transform_catalog.config = {
+        "integration_type": destination_type.value,
+        "schema": dbt_test_utils.target_schema,
+        "catalog": [catalog],
+        "output_path": output_directory,
+        "json_column": "_airbyte_data",
+        "profile_config_dir": test_root_dir,
+    }
+    transform_catalog.process_catalog()

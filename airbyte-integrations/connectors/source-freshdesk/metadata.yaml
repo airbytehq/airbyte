@@ -1,0 +1,51 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 200
+  allowedHosts:
+    hosts:
+      - "*.freshdesk.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.2@sha256:fda118585769dba6abccd6dc72c05a993ecd53790cbbe8cf6253b79ce7079db2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
+  dockerImageTag: 3.2.0-rc.1
+  dockerRepository: airbyte/source-freshdesk
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
+  githubIssueLabel: source-freshdesk
+  icon: freshdesk.svg
+  license: MIT
+  maxSecondsBetweenMessages: 60
+  name: Freshdesk
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-freshdesk
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+  releaseStage: generally_available
+  supportLevel: certified
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshdesk_config_dev_null
+          id: 5232fac1-675b-4138-abd7-f0ff04a40a8c
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FRESHDESK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

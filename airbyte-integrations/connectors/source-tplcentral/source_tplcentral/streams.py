@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, urlparse
 
 import arrow
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_tplcentral.util import deep_get, normalize
 

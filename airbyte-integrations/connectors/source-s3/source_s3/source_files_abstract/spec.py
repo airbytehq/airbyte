@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,10 +8,13 @@ import re
 from typing import Any, Dict, Union
 
 from jsonschema import RefResolver
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
+from .formats.avro_spec import AvroFormat
 from .formats.csv_spec import CsvFormat
+from .formats.jsonl_spec import JsonlFormat
 from .formats.parquet_spec import ParquetFormat
+
 
 # To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
 
@@ -42,25 +45,38 @@ from .formats.parquet_spec import ParquetFormat
 
 
 class SourceFilesAbstractSpec(BaseModel):
-
     dataset: str = Field(
         pattern=r"^([A-Za-z0-9-_]+)$",
-        description="This source creates one table per connection, this field is the name of that table. This should include only letters, numbers, dash and underscores. Note that this may be altered according to destination.",
+        description="The name of the stream you would like this source to output. Can contain letters, numbers, or underscores.",
+        order=0,
+        title="Output Stream Name",
     )
 
     path_pattern: str = Field(
-        description='Add at least 1 pattern here to match filepaths against. Use | to separate multiple patterns. Airbyte uses these patterns to determine which files to pick up from the provider storage. See <a href="https://facelessuser.github.io/wcmatch/glob/" target="_blank">wcmatch.glob</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). Use pattern <strong>**</strong> to pick up all files.',
+        title="Pattern of files to replicate",
+        description="A regular expression which tells the connector which files to replicate. All files which match this pattern will be "
+        'replicated. Use | to separate multiple patterns. See <a href="https://facelessuser.github.io/wcmatch/glob/" target="_'
+        'blank">this page</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). '
+        "Use pattern <strong>**</strong> to pick up all files.",
         examples=["**", "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"],
+        order=10,
+    )
+
+    format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
+        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
     )
 
     user_schema: str = Field(
+        title="Manually enforced data schema",
         alias="schema",
         default="{}",
-        description='Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ "column" : "type" }</strong>, where types are valid <a href="https://json-schema.org/understanding-json-schema/reference/type.html" target="_blank">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.',
+        description="Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of "
+        '<strong>{ "column" : "type" }</strong>, where types are valid '
+        '<a href="https://json-schema.org/understanding-json-schema/reference/type.html" target="_blank">JSON Schema '
+        "datatypes</a>. Leave as {} to auto-infer the schema.",
         examples=['{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
+        order=30,
     )
-
-    format: Union[CsvFormat, ParquetFormat] = Field(default=CsvFormat.Config.title)
 
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:
@@ -70,6 +86,21 @@ class SourceFilesAbstractSpec(BaseModel):
             if "oneOf" in schema["properties"][prop]:
                 continue
             schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop("anyOf")
+        return schema
+
+    @staticmethod
+    def remove_enum_allOf(schema: dict) -> dict:
+        """
+        allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
+        Unpack them into the root
+        """
+        objects_to_check = schema["properties"]["format"]["oneOf"]
+        for object in objects_to_check:
+            for key in object["properties"]:
+                property = object["properties"][key]
+                if "allOf" in property and "enum" in property["allOf"][0]:
+                    property["enum"] = property["allOf"][0]["enum"]
+                    property.pop("allOf")
         return schema
 
     @staticmethod
@@ -95,4 +126,5 @@ class SourceFilesAbstractSpec(BaseModel):
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
         schema = cls.resolve_refs(schema)
+        schema = cls.remove_enum_allOf(schema)
         return schema

@@ -1,0 +1,8 @@
+version: 0.78.5
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - pokemon

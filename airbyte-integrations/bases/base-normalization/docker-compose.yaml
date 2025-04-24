@@ -14,3 +14,9 @@ services:
     image: airbyte/normalization-clickhouse:${VERSION}
   normalization-snowflake:
     image: airbyte/normalization-snowflake:${VERSION}
+  normalization-redshift:
+    image: airbyte/normalization-redshift:${VERSION}
+  normalization-tidb:
+    image: airbyte/normalization-tidb:${VERSION}
+  normalization-duckdb:
+    image: airbyte/normalization-duckdb:${VERSION}

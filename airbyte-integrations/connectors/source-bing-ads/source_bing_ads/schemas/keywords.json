@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Account Id": {
+      "description": "The unique identifier for the Bing Ads account.",
+      "type": ["null", "integer"]
+    },
+    "Id": {
+      "description": "The unique identifier for the keyword.",
+      "type": ["null", "integer"]
+    },
+    "Ad Group": {
+      "description": "The name of the ad group where the keyword belongs.",
+      "type": ["null", "string"]
+    },
+    "Bid": {
+      "description": "The bid amount set for the keyword.",
+      "type": ["null", "string"]
+    },
+    "Bid Strategy Type": {
+      "description": "The type of bid strategy used for the keyword.",
+      "type": ["null", "string"]
+    },
+    "Campaign": {
+      "description": "The campaign name where the keyword is associated.",
+      "type": ["null", "string"]
+    },
+    "Client Id": {
+      "description": "The client identifier linked to the keyword.",
+      "type": ["null", "integer"]
+    },
+    "Custom Parameter": {
+      "description": "A custom parameter associated with the keyword.",
+      "type": ["null", "string"]
+    },
+    "Destination Url": {
+      "description": "The destination URL for the keyword.",
+      "type": ["null", "string"]
+    },
+    "Modified Time": {
+      "description": "The timestamp when the keyword was last modified.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "Editorial Appeal Status": {
+      "description": "The appeal status of the keyword during the editorial review process.",
+      "type": ["null", "string"]
+    },
+    "Editorial Location": {
+      "description": "The location of the editorial review for the keyword.",
+      "type": ["null", "string"]
+    },
+    "Editorial Reason Code": {
+      "description": "The reason code provided during the editorial review process.",
+      "type": ["null", "string"]
+    },
+    "Editorial Status": {
+      "description": "The editorial status of the keyword.",
+      "type": ["null", "string"]
+    },
+    "Editorial Term": {
+      "description": "The term that was reviewed editorially.",
+      "type": ["null", "string"]
+    },
+    "Final Url": {
+      "description": "The final URL that the keyword points to.",
+      "type": ["null", "string"]
+    },
+    "Final Url Suffix": {
+      "description": "The URL suffix added to the final URL.",
+      "type": ["null", "string"]
+    },
+    "Inherited Bid Strategy Type": {
+      "description": "The bid strategy type inherited for the keyword.",
+      "type": ["null", "string"]
+    },
+    "Keyword": {
+      "description": "The keyword used for advertising.",
+      "type": ["null", "string"]
+    },
+    "Keyword Relevance": {
+      "description": "The relevance of the keyword to its ad group or campaign.",
+      "type": ["null", "string"]
+    },
+    "Landing Page Relevance": {
+      "description": "The relevance of the landing page to the keyword.",
+      "type": ["null", "string"]
+    },
+    "Landing Page User Experience": {
+      "description": "The user experience on the landing page related to the keyword.",
+      "type": ["null", "string"]
+    },
+    "Match Type": {
+      "description": "The match type of the keyword (e.g., exact, phrase, broad).",
+      "type": ["null", "string"]
+    },
+    "Mobile Final Url": {
+      "description": "The final URL for mobile devices.",
+      "type": ["null", "string"]
+    },
+    "Param1": {
+      "description": "Parameter 1 associated with the keyword.",
+      "type": ["null", "string"]
+    },
+    "Param2": {
+      "description": "Parameter 2 associated with the keyword.",
+      "type": ["null", "string"]
+    },
+    "Param3": {
+      "description": "Parameter 3 associated with the keyword.",
+      "type": ["null", "string"]
+    },
+    "Parent Id": {
+      "description": "The parent identifier to which the keyword belongs.",
+      "type": ["null", "string"]
+    },
+    "Publisher Countries": {
+      "description": "The countries targeted for publishing the keyword.",
+      "type": ["null", "string"]
+    },
+    "Quality Score": {
+      "description": "The quality score assigned to the keyword.",
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "description": "The current status of the keyword.",
+      "type": ["null", "string"]
+    },
+    "Tracking Template": {
+      "description": "The template used for tracking the performance of the keyword.",
+      "type": ["null", "string"]
+    }
+  }
+}

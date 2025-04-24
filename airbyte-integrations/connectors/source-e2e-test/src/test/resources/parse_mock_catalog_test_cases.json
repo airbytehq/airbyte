@@ -1,6 +1,6 @@
 [
   {
-    "testCase": "single stream",
+    "testCase": "single schema without duplication",
     "mockCatalog": {
       "type": "SINGLE_STREAM",
       "stream_name": "my_stream",
@@ -20,13 +20,57 @@
                 "type": "number"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         }
       ]
     }
   },
   {
-    "testCase": "single stream with malformed schema",
+    "testCase": "single schema with duplication",
+    "mockCatalog": {
+      "type": "SINGLE_STREAM",
+      "stream_name": "my_stream",
+      "stream_schema": "{ \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": { \"type\": \"number\" } } }",
+      "stream_duplication": 2
+    },
+    "expectedCatalog": {
+      "streams": [
+        {
+          "name": "my_stream_0",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "field1": {
+                "type": "string"
+              },
+              "field2": {
+                "type": "number"
+              }
+            }
+          },
+          "supported_sync_modes": ["full_refresh"]
+        },
+        {
+          "name": "my_stream_1",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "field1": {
+                "type": "string"
+              },
+              "field2": {
+                "type": "number"
+              }
+            }
+          },
+          "supported_sync_modes": ["full_refresh"]
+        }
+      ]
+    }
+  },
+  {
+    "testCase": "single schema with malformed schema",
     "mockCatalog": {
       "type": "SINGLE_STREAM",
       "stream_name": "my_stream",
@@ -35,7 +79,7 @@
     "expectedCatalog": null
   },
   {
-    "testCase": "single stream with invalid schema",
+    "testCase": "single schema with invalid schema",
     "mockCatalog": {
       "type": "SINGLE_STREAM",
       "stream_name": "my_stream",
@@ -44,7 +88,7 @@
     "expectedCatalog": null
   },
   {
-    "testCase": "multi stream",
+    "testCase": "multi schema",
     "mockCatalog": {
       "type": "MULTI_STREAM",
       "stream_schemas": "{ \"stream1\": { \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": { \"type\": \"number\" } } }, \"stream2\": { \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } } }"
@@ -63,7 +107,8 @@
                 "type": "number"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         },
         {
           "name": "stream2",
@@ -74,13 +119,14 @@
                 "type": "string"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         }
       ]
     }
   },
   {
-    "testCase": "multi stream with malformed schema",
+    "testCase": "multi schema with malformed schema",
     "mockCatalog": {
       "type": "MULTI_STREAM",
       "stream_schemas": "{ \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": { \"type\": \"number\" } } }"
@@ -88,7 +134,7 @@
     "expectedCatalog": null
   },
   {
-    "testCase": "multi stream with invalid schema",
+    "testCase": "multi schema with invalid schema",
     "mockCatalog": {
       "type": "MULTI_STREAM",
       "stream_schemas": "{ \"stream1\": { \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": [\"invalid field spec\"] } }, \"stream2\": { \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } } }"

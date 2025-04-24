@@ -1,33 +1,49 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-facebook-marketing:dev
-tests:
+test_strictness_level: "high"
+acceptance_tests:
   spec:
-    - spec_path: "integration_tests/spec.json"
+    tests:
+      - spec_path: "integration_tests/spec.json"
+        backward_compatibility_tests_config:
+          # adding new breakdowns, action breakdowns and fields
+          disable_for_version: "3.3.27"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/config_no_date.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 600
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: "ads_insights_action_product_id"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: "videos"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+        timeout_seconds: 4800
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_without_insights.json"
-      future_state_path: "integration_tests/future_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 6000
+        future_state:
+          future_state_path: "integration_tests/future_state.json"
+        # ads_insights is currently failing because there is a lookback window and the minimum value is one day
+        skip_comprehensive_incremental_tests: true
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      # Ad Insights API has estimated metrics in response, which is calculated based on another metrics.
-      # Sometimes API doesn't return estimated metrics. E.g, cost_per_estimated_ad_recallers is calculated
-      # as total amount spent divided by estimated ad recall lift rate. When second metric is equal to zero
-      # API may or may not return value. Such behavior causes sequential reads test failing.
-      # Because one read response contains this metric, and other doesn't.
-      # Therefore, it's needed to ignore fields like this in API responses.
-      ignored_fields:
-        "ads_insights_age_and_gender": ["cost_per_estimated_ad_recallers"]
-        "ad_creatives": ["thumbnail_url"]
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 4800
+        ignored_fields:
+          activities:
+            - name: extra_data
+              bypass_reason: "image_url in extra_data is changing frequently"

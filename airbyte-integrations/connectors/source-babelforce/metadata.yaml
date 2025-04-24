@@ -1,0 +1,35 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.babelforce.com"
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-babelforce
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
+  dockerImageTag: 0.3.21
+  dockerRepository: airbyte/source-babelforce
+  githubIssueLabel: source-babelforce
+  icon: babelforce.svg
+  license: MIT
+  name: Babelforce
+  releaseDate: 2022-05-09
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/babelforce
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.7@sha256:dc01ec948ba69f93615cbe4f421bf99f4236107dea44feb6cb244f3d9dc09366
+metadataSpecVersion: "1.0"

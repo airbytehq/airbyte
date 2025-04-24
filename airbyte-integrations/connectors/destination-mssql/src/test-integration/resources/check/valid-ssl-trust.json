@@ -1,0 +1,13 @@
+{
+  "host": "localhost",
+  "port": 1433,
+  "database": "master",
+  "schema": "mssql_default_schema_placeholder",
+  "raw_data_schema": "guest",
+  "ssl_method": { "name": "encrypted_trust_server_certificate" },
+  "user": "replace_me_username",
+  "password": "replace_me_password",
+  "load_type": {
+    "load_type": "INSERT"
+  }
+}

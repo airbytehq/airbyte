@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 """
@@ -107,6 +107,7 @@ FACEBOOK schema:                            VS                  AIRBYTE schema:
 import json
 import os
 
+
 spec_path = "facebook-business-sdk-codegen/api_specs/specs"
 fb_node_files = os.listdir(spec_path)
 fb_node_files.sort()
@@ -124,7 +125,7 @@ FB_TYPES = {
     "float": {"type": ["number", "null"]},
     "string": {"type": ["string", "null"]},
     "numeric string": {"type": ["string", "null"]},
-    "datetime": {"type": ["string", "null"], "format": "datetime"},
+    "datetime": {"type": ["string", "null"], "format": "date-time"},
     "id": {"type": ["string", "null"]},
     "enum": {"type": ["string", "null"]},
     "bool": {"type": ["boolean", "null"]},
@@ -230,7 +231,6 @@ def is_node(name):
 
 
 def get_fields(fields, with_refs=False):
-
     # process Node's fields
     schema_fields = {}
     for attr in fields:
@@ -282,7 +282,6 @@ def get_fields(fields, with_refs=False):
 
 
 def get_edges(edges):
-
     schema_edges = {}
     attrs = {}
     for attr in edges:
@@ -329,7 +328,6 @@ def get_edges(edges):
 
 
 def build_schema(node_name, with_refs=False):
-
     file_path = f"{spec_path}/{node_name}.json"
     print(f"Fetching schema from file: {file_path}")
 
@@ -353,7 +351,6 @@ MAIN_NODES = ["Page", "Post"]
 print(f"Process main nodes: {MAIN_NODES}")
 
 for node_name in MAIN_NODES:
-
     page_schema = build_schema(node_name=node_name, with_refs=True)
 
     SCHEMA = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": page_schema}

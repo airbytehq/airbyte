@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the tender transaction.",
+      "type": ["null", "integer"]
+    },
+    "order_id": {
+      "description": "The identifier of the order associated with the transaction.",
+      "type": ["null", "integer"]
+    },
+    "amount": {
+      "description": "The transaction amount in the specified currency.",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "The currency in which the transaction amount is stated.",
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "description": "Unique identifier of the user associated with the transaction.",
+      "type": ["null", "integer"]
+    },
+    "test": {
+      "description": "Flag indicating whether the transaction was done in a testing environment.",
+      "type": ["null", "boolean"]
+    },
+    "processed_at": {
+      "description": "The date and time when the transaction was processed.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "remote_reference": {
+      "description": "Reference to an external system for the transaction.",
+      "type": ["null", "string"]
+    },
+    "payment_details": {
+      "description": "Details about the payment made for the transaction.",
+      "type": ["null", "object"],
+      "properties": {
+        "credit_card_number": {
+          "description": "The masked credit card number used for payment.",
+          "type": ["null", "string"]
+        },
+        "credit_card_company": {
+          "description": "The company associated with the credit card used for payment.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "payment_method": {
+      "description": "The method used for payment, e.g., credit card, PayPal, etc.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the transaction took place.",
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,935 @@
+version: 5.11.1
+
+type: DeclarativeSource
+
+description: >-
+  Integrate seamlessly with Drip using this Airbyte connector, enabling smooth
+  data sync for all your email marketing needs. Effortlessly connect and
+  automate data flows to optimize your marketing strategies with ease
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    broadcasts:
+      type: DeclarativeStream
+      name: broadcasts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/broadcasts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - broadcasts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/broadcasts"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    workflows:
+      type: DeclarativeStream
+      name: workflows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/workflows
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workflows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
+    subscribers:
+      type: DeclarativeStream
+      name: subscribers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/subscribers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscribers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscribers"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - custom_field_identifiers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/custom_field_identifiers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    conversions:
+      type: DeclarativeStream
+      name: conversions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/goals
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - goals
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversions"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - account_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/event_actions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - account_id
+              value: "{{ stream_slice.account_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - meta
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - tags
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - account_id
+              value: "{{ stream_slice.account_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ stream_partition.account_id }}/webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.getdrip.com/v2
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/broadcasts"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/subscribers"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/conversions"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/webhooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: API key to use. Find it at https://www.getdrip.com/user/edit
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: false
+    broadcasts: false
+    campaigns: false
+    users: false
+    workflows: false
+    subscribers: false
+    custom_fields: false
+    conversions: false
+    events: false
+    tags: false
+    webhooks: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    accounts:
+      hasRecords: true
+      streamHash: 31e323386d49b7311d0445018802b3bbaff1d75b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    broadcasts:
+      hasRecords: true
+      streamHash: c21c1c1b71cdd85fe2b78b0eaed3c32871b152e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns:
+      hasRecords: true
+      streamHash: 9d67212ec26d71be44a21dfd1fe433f0925ceb28
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 1e6206d62ca19c85896cb79dc46035be2fc8f33c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workflows:
+      hasRecords: true
+      streamHash: 17e6df91cfc12298122f4735e62bd0c8f7c76dac
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subscribers:
+      hasRecords: true
+      streamHash: ba4fc74e783d68e2d3e27a257ba1905c332f5b38
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      hasRecords: true
+      streamHash: cfa9942ec5b2802ca447461d6430e62722ba35bc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversions:
+      hasRecords: true
+      streamHash: 9de569a49cbd05d60bf640bd37d13d0316736117
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events:
+      hasRecords: true
+      streamHash: 049a819d615c2db64d7b84beb801fd2d97f3e1fb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tags:
+      hasRecords: true
+      streamHash: 9718bc8ca4cd905bbb039d96bb61a51dc6201cd0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhooks:
+      hasRecords: true
+      streamHash: 1e105f32d6df6e01820f26d33ca696fea02a2ce8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developer.drip.com/
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      default_from_email:
+        type:
+          - string
+          - "null"
+      default_from_name:
+        type:
+          - string
+          - "null"
+      default_postal_address:
+        type:
+          - string
+          - "null"
+      enable_third_party_cookies:
+        type:
+          - boolean
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      primary_email:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  broadcasts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_subscriber_count:
+        type:
+          - number
+          - "null"
+      bcc:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      days_of_the_week_mask:
+        type:
+          - string
+          - "null"
+      double_optin:
+        type:
+          - boolean
+          - "null"
+      email_count:
+        type:
+          - number
+          - "null"
+      from_email:
+        type:
+          - string
+          - "null"
+      from_name:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - string
+              - "null"
+          forms:
+            type:
+              - array
+              - "null"
+      localize_sending_time:
+        type:
+          - boolean
+          - "null"
+      minutes_from_midnight:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notify_subscribe_email:
+        type:
+          - string
+          - "null"
+      notify_unsubscribe_email:
+        type:
+          - string
+          - "null"
+      postal_address:
+        type:
+          - string
+          - "null"
+      send_to_confirmation_page:
+        type:
+          - boolean
+          - "null"
+      start_immediately:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unsubscribed_subscriber_count:
+        type:
+          - number
+          - "null"
+      use_custom_confirmation_page:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+    required:
+      - email
+  workflows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  subscribers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      eu_consent:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - string
+              - "null"
+      prospect:
+        type:
+          - boolean
+          - "null"
+      sms_consent:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      utc_offset:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  conversions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - number
+          - "null"
+      event_actions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - number
+          - "null"
+      tags:
+        type: array
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - tags
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      events:
+        type:
+          - array
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      include_received_email:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - string
+              - "null"
+      post_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id

@@ -1,0 +1,322 @@
+{
+  "title": "FBA Manage Inventory Health Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "snapshot-date": {
+      "description": "Date and time when the inventory snapshot was taken",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "sku": {
+      "description": "Stock Keeping Unit (SKU) for the product",
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "description": "Fulfillment Network SKU for the product",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "Unique identifier for the product in Amazon's catalog",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "Name of the product",
+      "type": ["null", "string"]
+    },
+    "condition": {
+      "description": "Condition of the product (e.g., New, Used, Refurbished)",
+      "type": ["null", "string"]
+    },
+    "available": {
+      "description": "Quantity of the product currently available for sale",
+      "type": ["null", "string"]
+    },
+    "pending-removal-quantity": {
+      "description": "Quantity of the product pending removal from inventory",
+      "type": ["null", "string"]
+    },
+    "inv-age-0-to-90-days": {
+      "description": "Quantity of product inventory aged between 0 to 90 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-91-to-180-days": {
+      "description": "Quantity of product inventory aged between 91 to 180 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-181-to-270-days": {
+      "description": "Quantity of product inventory aged between 181 to 270 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-271-to-365-days": {
+      "description": "Quantity of product inventory aged between 271 to 365 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-365-plus-days": {
+      "description": "Quantity of product inventory aged 365+ days",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "Currency in which the monetary values are represented",
+      "type": ["null", "string"]
+    },
+    "qty-to-be-charged-ltsf-9-mo": {
+      "description": "Quantity to be charged long-term storage fee for the next 9 months",
+      "type": ["null", "string"]
+    },
+    "projected-ltsf-9-mo": {
+      "description": "Projected long-term storage fee for the next 9 months",
+      "type": ["null", "string"]
+    },
+    "qty-to-be-charged-ltsf-12-mo": {
+      "description": "Quantity to be charged long-term storage fee for the next 12 months",
+      "type": ["null", "string"]
+    },
+    "estimated-ltsf-next-charge": {
+      "description": "Estimated long-term storage fee for the next charge",
+      "type": ["null", "string"]
+    },
+    "units-shipped-t7": {
+      "description": "Units of the product shipped in the last 7 days",
+      "type": ["null", "string"]
+    },
+    "units-shipped-t30": {
+      "description": "Units of the product shipped in the last 30 days",
+      "type": ["null", "string"]
+    },
+    "units-shipped-t60": {
+      "description": "Units of the product shipped in the last 60 days",
+      "type": ["null", "string"]
+    },
+    "units-shipped-t90": {
+      "description": "Units of the product shipped in the last 90 days",
+      "type": ["null", "string"]
+    },
+    "alert": {
+      "description": "Flag indicating if there is any alert related to the inventory planning data",
+      "type": ["null", "string"]
+    },
+    "your-price": {
+      "description": "Your set price for the product",
+      "type": ["null", "string"]
+    },
+    "sales-price": {
+      "description": "Current sales price of the product",
+      "type": ["null", "string"]
+    },
+    "lowest-price-new-plus-shipping": {
+      "description": "Lowest price including shipping for a new product",
+      "type": ["null", "string"]
+    },
+    "lowest-price-used": {
+      "description": "Lowest price for a used product",
+      "type": ["null", "string"]
+    },
+    "recommended-action": {
+      "description": "Recommended action to manage the inventory",
+      "type": ["null", "string"]
+    },
+    "healthy-inventory-level": {
+      "description": "Recommended healthy level of inventory for the product",
+      "type": ["null", "string"]
+    },
+    "recommended-sales-price": {
+      "description": "Recommended sales price for the product",
+      "type": ["null", "string"]
+    },
+    "recommended-sale-duration-days": {
+      "description": "Recommended duration for the product to be on sale",
+      "type": ["null", "string"]
+    },
+    "recommended-removal-quantity": {
+      "description": "Recommended quantity of product to be removed from inventory",
+      "type": ["null", "string"]
+    },
+    "estimated-cost-savings-of-recommended-actions": {
+      "description": "Estimated cost savings by taking recommended actions",
+      "type": ["null", "string"]
+    },
+    "sell-through": {
+      "description": "Rate at which the product is selling",
+      "type": ["null", "string"]
+    },
+    "item-volume": {
+      "description": "Volume of the item in storage units",
+      "type": ["null", "string"]
+    },
+    "volume-unit-measurement": {
+      "description": "Unit of measurement for the volume of the product",
+      "type": ["null", "string"]
+    },
+    "storage-type": {
+      "description": "Type of storage used for the product (e.g., Standard, Oversized)",
+      "type": ["null", "string"]
+    },
+    "storage-volume": {
+      "description": "Volume occupied by the product in storage",
+      "type": ["null", "string"]
+    },
+    "marketplace": {
+      "description": "Marketplace identifier where the product is listed",
+      "type": ["null", "string"]
+    },
+    "product-group": {
+      "description": "Product grouping identifier",
+      "type": ["null", "string"]
+    },
+    "sales-rank": {
+      "description": "Sales rank of the product in the marketplace",
+      "type": ["null", "string"]
+    },
+    "days-of-supply": {
+      "description": "Number of days for which the inventory is expected to last",
+      "type": ["null", "string"]
+    },
+    "estimated-excess-quantity": {
+      "description": "Estimated excess quantity of the product in inventory",
+      "type": ["null", "string"]
+    },
+    "weeks-of-cover-t30": {
+      "description": "Number of weeks the current inventory will cover at the sales rate over the last 30 days",
+      "type": ["null", "string"]
+    },
+    "weeks-of-cover-t90": {
+      "description": "Number of weeks the current inventory will cover at the sales rate over the last 90 days",
+      "type": ["null", "string"]
+    },
+    "featuredoffer-price": {
+      "description": "Featured offer price of the product",
+      "type": ["null", "string"]
+    },
+    "sales-shipped-last-7-days": {
+      "description": "Quantity of the product shipped in the last 7 days",
+      "type": ["null", "string"]
+    },
+    "sales-shipped-last-30-days": {
+      "description": "Quantity of the product shipped in the last 30 days",
+      "type": ["null", "string"]
+    },
+    "sales-shipped-last-60-days": {
+      "description": "Quantity of the product shipped in the last 60 days",
+      "type": ["null", "string"]
+    },
+    "sales-shipped-last-90-days": {
+      "description": "Quantity of the product shipped in the last 90 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-0-to-30-days": {
+      "description": "Quantity of product inventory aged between 0 to 30 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-31-to-60-days": {
+      "description": "Quantity of product inventory aged between 31 to 60 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-61-to-90-days": {
+      "description": "Quantity of product inventory aged between 61 to 90 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-181-to-330-days": {
+      "description": "Quantity of product inventory aged between 181 to 330 days",
+      "type": ["null", "string"]
+    },
+    "inv-age-331-to-365-days": {
+      "description": "Quantity of product inventory aged between 331 to 365 days",
+      "type": ["null", "string"]
+    },
+    "estimated-storage-cost-next-month": {
+      "description": "Estimated storage cost for the next month",
+      "type": ["null", "string"]
+    },
+    "inbound-quantity": {
+      "description": "Quantity of the product currently in transit to Amazon's fulfillment center",
+      "type": ["null", "string"]
+    },
+    "inbound-working": {
+      "description": "Quantity of the product in the fulfillment center being processed",
+      "type": ["null", "string"]
+    },
+    "inbound-shipped": {
+      "description": "Quantity of the product shipped to the fulfillment center but not yet received",
+      "type": ["null", "string"]
+    },
+    "inbound-received": {
+      "description": "Quantity of the product received in the fulfillment center but not yet available for sale",
+      "type": ["null", "string"]
+    },
+    "no-sale-last-6-months": {
+      "description": "Indicator if there were no sales in the last 6 months",
+      "type": ["null", "string"]
+    },
+    "reserved-quantity": {
+      "description": "Quantity of the product reserved for future sales",
+      "type": ["null", "string"]
+    },
+    "unfulfillable-quantity": {
+      "description": "Quantity of the product that is unfulfillable",
+      "type": ["null", "string"]
+    },
+    "estimated-ais-181-210-days": {
+      "description": "Estimated quantity of units to be charged in days 181-210",
+      "type": ["null", "number"]
+    },
+    "estimated-ais-211-240-days": {
+      "description": "Estimated quantity of units to be charged in days 211-240",
+      "type": ["null", "number"]
+    },
+    "estimated-ais-241-270-days": {
+      "description": "Estimated quantity of units to be charged in days 241-270",
+      "type": ["null", "number"]
+    },
+    "estimated-ais-271-300-days": {
+      "description": "Estimated quantity of units to be charged in days 271-300",
+      "type": ["null", "number"]
+    },
+    "estimated-ais-301-330-days": {
+      "description": "Estimated quantity of units to be charged in days 301-330",
+      "type": ["null", "number"]
+    },
+    "estimated-ais-331-365-days": {
+      "description": "Estimated quantity of units to be charged in days 331-365",
+      "type": ["null", "number"]
+    },
+    "estimated-ais-365-plus-days": {
+      "description": "Estimated quantity of units to be charged in days 365+",
+      "type": ["null", "number"]
+    },
+    "quantity-to-be-charged-ais-181-210-days": {
+      "description": "Quantity to be charged in days 181-210 based on inventory health",
+      "type": ["null", "integer"]
+    },
+    "quantity-to-be-charged-ais-211-240-days": {
+      "description": "Quantity to be charged in days 211-240 based on inventory health",
+      "type": ["null", "integer"]
+    },
+    "quantity-to-be-charged-ais-241-270-days": {
+      "description": "Quantity to be charged in days 241-270 based on inventory health",
+      "type": ["null", "integer"]
+    },
+    "quantity-to-be-charged-ais-271-300-days": {
+      "description": "Quantity to be charged in days 271-300 based on inventory health",
+      "type": ["null", "integer"]
+    },
+    "quantity-to-be-charged-ais-301-330-days": {
+      "description": "Quantity to be charged in days 301-330 based on inventory health",
+      "type": ["null", "integer"]
+    },
+    "quantity-to-be-charged-ais-331-365-days": {
+      "description": "Quantity to be charged in days 331-365 based on inventory health",
+      "type": ["null", "integer"]
+    },
+    "quantity-to-be-charged-ais-365-plus-days": {
+      "description": "Quantity to be charged in days 365+ based on inventory health",
+      "type": ["null", "integer"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data snapshot in date format",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

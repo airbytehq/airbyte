@@ -1,0 +1,183 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://www.buzzsprout.com/
+
+  API Docs: https://github.com/buzzsprout/buzzsprout-api/tree/master/sections
+
+  Auth Docs:
+  https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-file#authentication
+
+  API Keys page: https://www.buzzsprout.com/my/profile/api
+
+check:
+  type: CheckStream
+  stream_names:
+    - episodes
+
+definitions:
+  streams:
+    episodes:
+      type: DeclarativeStream
+      name: episodes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['podcast_id'] }}/episodes.json"
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api_key"] }}
+            Content-Type: application/json; charset=utf-8
+            User-Agent: >-
+              Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+              (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: published_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/episodes"
+    podcasts:
+      type: DeclarativeStream
+      name: podcasts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: podcasts.json
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api_key"] }}
+            Content-Type: application/json; charset=utf-8
+            User-Agent: >-
+              Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+              (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/podcasts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.buzzsprout.com/api/
+
+streams:
+  - $ref: "#/definitions/streams/episodes"
+  - $ref: "#/definitions/streams/podcasts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - podcast_id
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      podcast_id:
+        type: string
+        description: Podcast ID found in `https://www.buzzsprout.com/my/profile/api`
+        title: Podcast ID
+        order: 1
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    episodes: false
+    podcasts: false
+  testedStreams:
+    episodes:
+      streamHash: 2cbf7e4baa763d48b3afec49b302f097e82fa6b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    podcasts:
+      streamHash: 220c9469645385daaeea05a4d1821c1b003c4ca4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  episodes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  podcasts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

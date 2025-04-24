@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -11,10 +11,11 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import requests
 import vcr
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from requests.auth import AuthBase
 from vcr.cassette import Cassette
+
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 
 class LinnworksStream(HttpStream, ABC):
@@ -28,7 +29,7 @@ class LinnworksStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return self.authenticator.get_server()
+        return self._session.auth.get_server()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None

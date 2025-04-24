@@ -2,52 +2,37 @@
   "type": "object",
   "properties": {
     "page_id": {
+      "description": "The unique identifier for the user's Instagram page.",
       "type": ["null", "string"]
     },
     "business_account_id": {
+      "description": "The unique identifier for the user's business account.",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date and time the insights data was fetched.",
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "follower_count": {
-      "type": ["null", "integer"]
-    },
-    "get_directions_clicks": {
-      "type": ["null", "integer"]
-    },
-    "impressions": {
-      "type": ["null", "integer"]
-    },
-    "phone_call_clicks": {
-      "type": ["null", "integer"]
-    },
-    "profile_views": {
+      "description": "The total number of followers for the user's account.",
       "type": ["null", "integer"]
     },
     "reach": {
-      "type": ["null", "integer"]
-    },
-    "text_message_clicks": {
-      "type": ["null", "integer"]
-    },
-    "website_clicks": {
-      "type": ["null", "integer"]
-    },
-    "impressions_week": {
+      "description": "The total number of unique accounts that have seen the user's content.",
       "type": ["null", "integer"]
     },
     "reach_week": {
-      "type": ["null", "integer"]
-    },
-    "impressions_days_28": {
+      "description": "The total reach in the last week.",
       "type": ["null", "integer"]
     },
     "reach_days_28": {
+      "description": "The total reach in the last 28 days.",
       "type": ["null", "integer"]
     },
     "online_followers": {
+      "description": "The number of followers who are currently online.",
       "type": ["null", "object"]
     }
   }

@@ -1,0 +1,33 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-mongodb-v2:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "integration_tests/expected_spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.5"
+        config_path: "secrets/credentials.json"
+        timeout_seconds: 60
+  connection:
+    tests:
+      - config_path: "secrets/credentials.json"
+        status: "succeed"
+        timeout_seconds: 60
+  discovery:
+    tests:
+      - config_path: "secrets/credentials.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.5"
+        timeout_seconds: 60
+  basic_read:
+    bypass_reason: "Full refresh syncs are not supported on this connector."
+  full_refresh:
+    bypass_reason: "Full refresh syncs are not supported on this connector."
+  incremental:
+    #    bypass_reason: "Incremental syncs are not yet supported by this connector."
+    #    #TODO: remove bypass_reason once a version that supports incremental syncs is released + uncomment the lines below
+    tests:
+      - config_path: "secrets/credentials.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 180

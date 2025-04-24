@@ -1,0 +1,16 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ResourceRequirements.yaml
+title: ResourceRequirements
+description: generic configuration for pod source requirements
+type: object
+additionalProperties: false
+properties:
+  cpu_request:
+    type: string
+  cpu_limit:
+    type: string
+  memory_request:
+    type: string
+  memory_limit:
+    type: string

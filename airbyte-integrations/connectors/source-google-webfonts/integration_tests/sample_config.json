@@ -1,0 +1,6 @@
+{
+  "api_key": "<APIKEY_FROM_GOOGLE_CONSOLE>",
+  "sort": "SORT_UNDEFINED",
+  "prettyPrint": "true",
+  "alt": "json"
+}

@@ -1,0 +1,2240 @@
+version: 5.16.0
+
+type: DeclarativeSource
+
+description: >-
+  Zoho Expense connector enables seamless data synchronization between Zoho
+  Expense and various destinations. This connector automates expense tracking
+  workflows by extracting financial data efficiently, ensuring accurate
+  reporting and streamlined operations.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    trips:
+      type: DeclarativeStream
+      name: trips
+      primary_key:
+        - trip_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /trips
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - trips
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trips"
+    expense_reports:
+      type: DeclarativeStream
+      name: expense_reports
+      primary_key:
+        - report_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /expensereports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - expense_reports
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expense_reports"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - contact_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - organization_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - organizations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    expense_categories:
+      type: DeclarativeStream
+      name: expense_categories
+      primary_key:
+        - category_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /expensecategories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - expense_accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expense_categories"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      primary_key:
+        - currency_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/currencies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - currencies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    taxes:
+      type: DeclarativeStream
+      name: taxes
+      primary_key:
+        - tax_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/taxes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - taxes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.zohoapis.{{ config['data_center'] }}/expense/v1
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: https://accounts.zoho.{{ config["data_center"] }}/oauth/v2/token
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/trips"
+  - $ref: "#/definitions/streams/expense_reports"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/expense_categories"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/taxes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+    properties:
+      data_center:
+        type: string
+        description: >-
+          The domain suffix for the Zoho Expense API based on your data center
+          location (e.g., 'com', 'eu', 'in', etc.)
+        enum:
+          - com
+          - in
+          - jp
+          - ca
+          - com.cn
+          - sa
+          - com.au
+          - eu
+        name: domain
+        order: 0
+        title: Data Center
+        default: com
+      client_id:
+        type: string
+        name: client_id
+        order: 1
+        title: OAuth Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        name: client_secret
+        order: 2
+        title: OAuth Client Secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        name: refresh_token
+        order: 3
+        title: OAuth Refresh Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    trips: true
+    expense_reports: true
+    projects: true
+    customers: true
+    organizations: true
+    expense_categories: true
+    currencies: true
+    taxes: true
+  testedStreams:
+    users:
+      streamHash: 7ebe190ed5cf36fc0eb352e4256418f7e9d82062
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    trips:
+      streamHash: 3006b5339f6cc116109cbe2fb8aa7029f2933813
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    expense_reports:
+      streamHash: 44dac027120534cf64c0f9ac9ea701178b7cd86c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
+      streamHash: 5d1a97e0aead1cee724fc6686b5796628c41abd5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers:
+      streamHash: 58c100803c4f10d6389885509b2f532d2c81e529
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: ced9ef3dbf607306d9c45f8f70d05a757e52ae33
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    expense_categories:
+      streamHash: 94fa40a0885845e1586ebe063c16e460b8d8336d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      streamHash: 97bcca96af464e0f54335cab614c20a0336d1d4b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    taxes:
+      streamHash: 9c86b3cad1cd8a0b8d065a8508387e16756ea44a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.zoho.com/expense/api/v1/introduction/#overview
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accounting_app_name:
+        type:
+          - string
+          - "null"
+      accounting_reference_id:
+        type:
+          - string
+          - "null"
+      accounting_vendor_reference_id:
+        type:
+          - string
+          - "null"
+      approval_amount_limit:
+        type:
+          - number
+          - "null"
+      approver_photo_url:
+        type:
+          - string
+          - "null"
+      approves_to_email:
+        type:
+          - string
+          - "null"
+      approves_to_id:
+        type:
+          - string
+          - "null"
+      approves_to_name:
+        type:
+          - string
+          - "null"
+      bank_name:
+        type:
+          - string
+          - "null"
+      can_approve:
+        type:
+          - boolean
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      default_approver_email:
+        type:
+          - string
+          - "null"
+      default_approver_id:
+        type:
+          - string
+          - "null"
+      default_approver_name:
+        type:
+          - string
+          - "null"
+      department_id:
+        type:
+          - string
+          - "null"
+      department_name:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      employee_number:
+        type:
+          - string
+          - "null"
+      getthere_access:
+        type:
+          - string
+          - "null"
+      getthere_profile_created:
+        type:
+          - boolean
+          - "null"
+      hr_url:
+        type:
+          - string
+          - "null"
+      invitation_type:
+        type:
+          - string
+          - "null"
+      is_current_user:
+        type:
+          - boolean
+          - "null"
+      is_from_crm:
+        type:
+          - boolean
+          - "null"
+      is_from_zoho_people:
+        type:
+          - boolean
+          - "null"
+      is_super_admin:
+        type:
+          - boolean
+          - "null"
+      last_four_digits:
+        type:
+          - string
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      policy_id:
+        type:
+          - string
+          - "null"
+      policy_name:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      submission_amount_limit:
+        type:
+          - number
+          - "null"
+      travel_policy_display_name:
+        type:
+          - string
+          - "null"
+      travel_policy_id:
+        type:
+          - string
+          - "null"
+      travel_policy_name:
+        type:
+          - string
+          - "null"
+      user_id:
+        type: string
+      user_mail_in_id:
+        type:
+          - string
+          - "null"
+      user_role:
+        type:
+          - string
+          - "null"
+      user_type:
+        type:
+          - string
+          - "null"
+    required:
+      - user_id
+  trips:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      approved_date:
+        type:
+          - string
+          - "null"
+      approver_email:
+        type:
+          - string
+          - "null"
+      approver_employee_no:
+        type:
+          - string
+          - "null"
+      approver_id:
+        type:
+          - string
+          - "null"
+      approver_name:
+        type:
+          - string
+          - "null"
+      approver_photo_url:
+        type:
+          - string
+          - "null"
+      approver_zuid:
+        type:
+          - string
+          - "null"
+      bcy_budget_amount:
+        type:
+          - number
+          - "null"
+      booking_summary:
+        type:
+          - array
+          - "null"
+      budget_amount:
+        type:
+          - number
+          - "null"
+      business_purpose:
+        type:
+          - string
+          - "null"
+      can_other_travelers_associate_report:
+        type:
+          - boolean
+          - "null"
+      created_by_email:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      created_by_name:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      creator_employee_no:
+        type:
+          - string
+          - "null"
+      creator_photo_url:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      department_id:
+        type:
+          - string
+          - "null"
+      department_name:
+        type:
+          - string
+          - "null"
+      departure:
+        type:
+          - string
+          - "null"
+      destination_city:
+        type:
+          - string
+          - "null"
+      destination_country:
+        type:
+          - string
+          - "null"
+      destination_state:
+        type:
+          - string
+          - "null"
+      employee_number:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      from_source:
+        type:
+          - string
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      is_billable:
+        type:
+          - boolean
+          - "null"
+      is_international:
+        type:
+          - boolean
+          - "null"
+      is_round_trip:
+        type:
+          - boolean
+          - "null"
+      is_visa_required:
+        type:
+          - boolean
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      last_submitted_date:
+        type:
+          - string
+          - "null"
+      meal_preference:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      policy_display_name:
+        type:
+          - string
+          - "null"
+      policy_id:
+        type:
+          - string
+          - "null"
+      policy_name:
+        type:
+          - string
+          - "null"
+      price_precision:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      project_name:
+        type:
+          - string
+          - "null"
+      reports_count:
+        type:
+          - number
+          - "null"
+      seat_preference:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      sub_status:
+        type:
+          - string
+          - "null"
+      submitted_by:
+        type:
+          - number
+          - "null"
+      submitted_date:
+        type:
+          - string
+          - "null"
+      submitted_to_department_name:
+        type:
+          - string
+          - "null"
+      submitted_to_email:
+        type:
+          - string
+          - "null"
+      submitted_to_employee_no:
+        type:
+          - string
+          - "null"
+      submitted_to_id:
+        type:
+          - string
+          - "null"
+      submitted_to_name:
+        type:
+          - string
+          - "null"
+      submitter_department_name:
+        type:
+          - string
+          - "null"
+      submitter_email:
+        type:
+          - string
+          - "null"
+      submitter_employee_no:
+        type:
+          - string
+          - "null"
+      submitter_name:
+        type:
+          - string
+          - "null"
+      submitter_photo_url:
+        type:
+          - string
+          - "null"
+      submitter_zuid:
+        type:
+          - string
+          - "null"
+      trip_id:
+        type: string
+      trip_name:
+        type:
+          - string
+          - "null"
+      trip_number:
+        type:
+          - string
+          - "null"
+      user_custom_fields:
+        type:
+          - array
+          - "null"
+      user_email:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      user_name:
+        type:
+          - string
+          - "null"
+    required:
+      - trip_id
+  expense_reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      accounting_app_name:
+        type:
+          - string
+          - "null"
+      accounting_reference_id:
+        type:
+          - string
+          - "null"
+      accounting_sync_time:
+        type:
+          - string
+          - "null"
+      amount_policy_violation_count:
+        type:
+          - number
+          - "null"
+      amount_to_be_reimbursed:
+        type:
+          - number
+          - "null"
+      approved_date:
+        type:
+          - string
+          - "null"
+      approver_email:
+        type:
+          - string
+          - "null"
+      approver_employee_no:
+        type:
+          - string
+          - "null"
+      approver_id:
+        type:
+          - string
+          - "null"
+      approver_name:
+        type:
+          - string
+          - "null"
+      approver_photo_url:
+        type:
+          - string
+          - "null"
+      approver_zuid:
+        type:
+          - string
+          - "null"
+      audit_status:
+        type:
+          - string
+          - "null"
+      can_push_to_accounting_app:
+        type:
+          - boolean
+          - "null"
+      claim_type_id:
+        type:
+          - string
+          - "null"
+      claim_type_name:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      created_by_name:
+        type:
+          - string
+          - "null"
+      created_by_zuid:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      creator_employee_no:
+        type:
+          - string
+          - "null"
+      creator_photo_url:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      custom_policy_violation_count:
+        type:
+          - number
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      department_id:
+        type:
+          - string
+          - "null"
+      department_name:
+        type:
+          - string
+          - "null"
+      description_policy_violation_count:
+        type:
+          - number
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      due_days:
+        type:
+          - string
+          - "null"
+      employee_number:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      expense_count:
+        type:
+          - number
+          - "null"
+      imprest_account_id:
+        type:
+          - string
+          - "null"
+      imprest_account_name:
+        type:
+          - string
+          - "null"
+      is_ach_reimbursement:
+        type:
+          - boolean
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      is_international_trip:
+        type:
+          - string
+          - "null"
+      is_shared_report:
+        type:
+          - boolean
+          - "null"
+      last_modified_date:
+        type:
+          - string
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      last_submitted_date:
+        type:
+          - string
+          - "null"
+      non_reimbursable_total:
+        type:
+          - number
+          - "null"
+      payrun_name:
+        type:
+          - string
+          - "null"
+      policy_display_name:
+        type:
+          - string
+          - "null"
+      policy_id:
+        type:
+          - string
+          - "null"
+      policy_name:
+        type:
+          - string
+          - "null"
+      policy_violated:
+        type:
+          - boolean
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      project_name:
+        type:
+          - string
+          - "null"
+      rcy_currency_code:
+        type:
+          - string
+          - "null"
+      rcy_currency_id:
+        type:
+          - string
+          - "null"
+      rcy_currency_symbol:
+        type:
+          - string
+          - "null"
+      rcy_exchange_rate:
+        type:
+          - number
+          - "null"
+      rcy_non_reimbursable_total:
+        type:
+          - number
+          - "null"
+      rcy_price_precision:
+        type:
+          - number
+          - "null"
+      rcy_reimbursable_total:
+        type:
+          - number
+          - "null"
+      rcy_total:
+        type:
+          - number
+          - "null"
+      receipt_policy_violation_count:
+        type:
+          - number
+          - "null"
+      reimbursable_total:
+        type:
+          - number
+          - "null"
+      reimbursement_date:
+        type:
+          - string
+          - "null"
+      report_id:
+        type: string
+      report_name:
+        type:
+          - string
+          - "null"
+      report_number:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      sub_status:
+        type:
+          - string
+          - "null"
+      submitted_by:
+        type:
+          - string
+          - "null"
+      submitted_date:
+        type:
+          - string
+          - "null"
+      submitted_to_email:
+        type:
+          - string
+          - "null"
+      submitted_to_employee_no:
+        type:
+          - string
+          - "null"
+      submitted_to_id:
+        type:
+          - string
+          - "null"
+      submitted_to_name:
+        type:
+          - string
+          - "null"
+      submitted_to_zuid:
+        type:
+          - string
+          - "null"
+      submitter_email:
+        type:
+          - string
+          - "null"
+      submitter_employee_no:
+        type:
+          - string
+          - "null"
+      submitter_name:
+        type:
+          - string
+          - "null"
+      submitter_photo_url:
+        type:
+          - string
+          - "null"
+      submitter_zuid:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      total_policy_violation_count:
+        type:
+          - number
+          - "null"
+      trip_budget_amount:
+        type:
+          - number
+          - "null"
+      trip_budget_amount_currency_code:
+        type:
+          - string
+          - "null"
+      trip_budget_amount_currency_id:
+        type:
+          - string
+          - "null"
+      trip_departure:
+        type:
+          - string
+          - "null"
+      trip_destination_city:
+        type:
+          - string
+          - "null"
+      trip_destination_country:
+        type:
+          - string
+          - "null"
+      trip_end_date:
+        type:
+          - string
+          - "null"
+      trip_id:
+        type:
+          - string
+          - "null"
+      trip_name:
+        type:
+          - string
+          - "null"
+      trip_number:
+        type:
+          - string
+          - "null"
+      trip_start_date:
+        type:
+          - string
+          - "null"
+      trip_status:
+        type:
+          - string
+          - "null"
+      uncategorized_expense_count:
+        type:
+          - number
+          - "null"
+      user_custom_fields:
+        type:
+          - array
+          - "null"
+      user_email:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      user_name:
+        type:
+          - string
+          - "null"
+      user_photo_url:
+        type:
+          - string
+          - "null"
+      zcrm_potential_id:
+        type:
+          - string
+          - "null"
+      zcrm_potential_name:
+        type:
+          - string
+          - "null"
+    required:
+      - report_id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      code:
+        type:
+          - number
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      page_context:
+        type:
+          - object
+          - "null"
+        properties:
+          applied_filter:
+            type:
+              - string
+              - "null"
+          custom_fields:
+            type:
+              - array
+              - "null"
+          has_more_page:
+            type:
+              - boolean
+              - "null"
+          page:
+            type:
+              - number
+              - "null"
+          per_page:
+            type:
+              - number
+              - "null"
+          report_name:
+            type:
+              - string
+              - "null"
+          sort_column:
+            type:
+              - string
+              - "null"
+          sort_order:
+            type:
+              - string
+              - "null"
+      projects:
+        type:
+          - array
+          - "null"
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ach_supported:
+        type:
+          - boolean
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type: string
+      contact_name:
+        type:
+          - string
+          - "null"
+      contact_type:
+        type:
+          - string
+          - "null"
+      contact_type_formatted:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_formatted:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      custom_field_hash:
+        type:
+          - object
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      customer_sub_type:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      facebook:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      has_attachment:
+        type:
+          - boolean
+          - "null"
+      is_linked_with_zohocrm:
+        type:
+          - boolean
+          - "null"
+      language_code:
+        type:
+          - string
+          - "null"
+      language_code_formatted:
+        type:
+          - string
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      last_modified_time_formatted:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      outstanding_payable_amount:
+        type:
+          - number
+          - "null"
+      outstanding_payable_amount_bcy:
+        type:
+          - number
+          - "null"
+      outstanding_receivable_amount:
+        type:
+          - number
+          - "null"
+      outstanding_receivable_amount_bcy:
+        type:
+          - number
+          - "null"
+      payment_terms:
+        type:
+          - number
+          - "null"
+      payment_terms_label:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      portal_status:
+        type:
+          - string
+          - "null"
+      primary_contact_id:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      twitter:
+        type:
+          - string
+          - "null"
+      unused_credits_payable_amount:
+        type:
+          - number
+          - "null"
+      unused_credits_payable_amount_bcy:
+        type:
+          - number
+          - "null"
+      unused_credits_receivable_amount:
+        type:
+          - number
+          - "null"
+      unused_credits_receivable_amount_bcy:
+        type:
+          - number
+          - "null"
+      vendor_name:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - contact_id
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      AppList:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      account_created_date:
+        type:
+          - string
+          - "null"
+      account_created_date_formatted:
+        type:
+          - string
+          - "null"
+      can_change_timezone:
+        type:
+          - boolean
+          - "null"
+      can_sign_invoice:
+        type:
+          - boolean
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_format:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      currency_symbol:
+        type:
+          - string
+          - "null"
+      custom_field_type:
+        type:
+          - number
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            index:
+              type:
+                - number
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      digital_signature_mode:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      field_separator:
+        type:
+          - string
+          - "null"
+      fiscal_year_start_month:
+        type:
+          - number
+          - "null"
+      isOrgActive:
+        type:
+          - boolean
+          - "null"
+      isOrgNotSupported:
+        type:
+          - boolean
+          - "null"
+      is_advance_approval_enabled:
+        type:
+          - boolean
+          - "null"
+      is_auto_scan_allowed:
+        type:
+          - boolean
+          - "null"
+      is_default_org:
+        type:
+          - boolean
+          - "null"
+      is_designated_zone:
+        type:
+          - boolean
+          - "null"
+      is_dsign_required:
+        type:
+          - boolean
+          - "null"
+      is_export_with_payment_enabled:
+        type:
+          - boolean
+          - "null"
+      is_free_zone:
+        type:
+          - boolean
+          - "null"
+      is_gst_india_version:
+        type:
+          - boolean
+          - "null"
+      is_hsn_or_sac_enabled:
+        type:
+          - boolean
+          - "null"
+      is_international_trade_enabled:
+        type:
+          - boolean
+          - "null"
+      is_invoice_pmt_tds_allowed:
+        type:
+          - boolean
+          - "null"
+      is_org_active:
+        type:
+          - boolean
+          - "null"
+      is_quick_setup_completed:
+        type:
+          - boolean
+          - "null"
+      is_registered_for_composite_scheme:
+        type:
+          - boolean
+          - "null"
+      is_registered_for_gst:
+        type:
+          - boolean
+          - "null"
+      is_registered_for_tax:
+        type:
+          - boolean
+          - "null"
+      is_sales_inclusive_tax_enabled:
+        type:
+          - boolean
+          - "null"
+      is_sales_reverse_charge_enabled:
+        type:
+          - boolean
+          - "null"
+      is_search360_enabled:
+        type:
+          - string
+          - "null"
+      is_sku_enabled:
+        type:
+          - boolean
+          - "null"
+      is_solo_org:
+        type:
+          - boolean
+          - "null"
+      is_tax_registered:
+        type:
+          - boolean
+          - "null"
+      is_trial_expired:
+        type:
+          - boolean
+          - "null"
+      is_trial_period_extended:
+        type:
+          - boolean
+          - "null"
+      is_trip_enabled:
+        type:
+          - boolean
+          - "null"
+      is_user_dsign_mandatory:
+        type:
+          - boolean
+          - "null"
+      is_ziedition:
+        type:
+          - boolean
+          - "null"
+      is_zpayroll_grid:
+        type:
+          - boolean
+          - "null"
+      language_code:
+        type:
+          - string
+          - "null"
+      mode:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      org_action:
+        type:
+          - string
+          - "null"
+      org_created_app_source:
+        type:
+          - number
+          - "null"
+      org_joined_app_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      org_settings:
+        type:
+          - boolean
+          - "null"
+      org_type:
+        type:
+          - string
+          - "null"
+      organization_id:
+        type: string
+      partners_domain:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      plan_name:
+        type:
+          - string
+          - "null"
+      plan_period:
+        type:
+          - string
+          - "null"
+      plan_type:
+        type:
+          - number
+          - "null"
+      price_precision:
+        type:
+          - number
+          - "null"
+      sales_tax_type:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      state_code:
+        type:
+          - string
+          - "null"
+      tax_group_enabled:
+        type:
+          - boolean
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      time_zone_formatted:
+        type:
+          - string
+          - "null"
+      user_status:
+        type:
+          - number
+          - "null"
+      user_status_formatted:
+        type:
+          - string
+          - "null"
+      version_formatted:
+        type:
+          - string
+          - "null"
+      zi_zb_client:
+        type:
+          - number
+          - "null"
+      zi_zb_edition:
+        type:
+          - number
+          - "null"
+      zoho_one_org:
+        type:
+          - string
+          - "null"
+    required:
+      - organization_id
+  expense_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      attachment_file_name:
+        type:
+          - string
+          - "null"
+      can_delete:
+        type:
+          - boolean
+          - "null"
+      can_override_settings:
+        type:
+          - boolean
+          - "null"
+      can_show:
+        type:
+          - boolean
+          - "null"
+      category_hint:
+        type:
+          - string
+          - "null"
+      category_icon:
+        type:
+          - string
+          - "null"
+      category_id:
+        type: string
+      category_name:
+        type:
+          - string
+          - "null"
+      category_name_with_gl_code:
+        type:
+          - string
+          - "null"
+      category_type:
+        type:
+          - string
+          - "null"
+      child_count:
+        type:
+          - string
+          - "null"
+      depth:
+        type:
+          - number
+          - "null"
+      expense_type_id:
+        type:
+          - string
+          - "null"
+      expense_type_name:
+        type:
+          - string
+          - "null"
+      flat_amount:
+        type:
+          - number
+          - "null"
+      gl_code:
+        type:
+          - string
+          - "null"
+      is_child_present:
+        type:
+          - boolean
+          - "null"
+      is_custom:
+        type:
+          - boolean
+          - "null"
+      is_description_required:
+        type:
+          - boolean
+          - "null"
+      is_disabled_master:
+        type:
+          - boolean
+          - "null"
+      is_enabled:
+        type:
+          - boolean
+          - "null"
+      is_maximum_amount_required:
+        type:
+          - boolean
+          - "null"
+      is_mileage:
+        type:
+          - boolean
+          - "null"
+      is_perdiem_account:
+        type:
+          - boolean
+          - "null"
+      is_receipt_required:
+        type:
+          - boolean
+          - "null"
+      is_super_parent:
+        type:
+          - boolean
+          - "null"
+      maximum_allowed_amount:
+        type:
+          - number
+          - "null"
+      page_layout_id:
+        type:
+          - string
+          - "null"
+      page_layout_name:
+        type:
+          - string
+          - "null"
+      parent_account_id:
+        type:
+          - string
+          - "null"
+      parent_account_name:
+        type:
+          - string
+          - "null"
+      receipt_required_amount:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - category_id
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_format:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type: string
+      currency_name:
+        type:
+          - string
+          - "null"
+      currency_name_formatted:
+        type:
+          - string
+          - "null"
+      currency_symbol:
+        type:
+          - string
+          - "null"
+      effective_date:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      is_base_currency:
+        type:
+          - boolean
+          - "null"
+      price_precision:
+        type:
+          - number
+          - "null"
+      rcy_configured_count:
+        type:
+          - number
+          - "null"
+    required:
+      - currency_id
+  taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accounting_app_name:
+        type:
+          - string
+          - "null"
+      accounting_reference_id:
+        type:
+          - string
+          - "null"
+      diff_rate_reason:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      is_inactive:
+        type:
+          - boolean
+          - "null"
+      is_value_added:
+        type:
+          - number
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      output_tax_account_name:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tax_account_id:
+        type:
+          - string
+          - "null"
+      tax_id:
+        type: string
+      tax_name:
+        type:
+          - string
+          - "null"
+      tax_percentage:
+        type:
+          - number
+          - "null"
+      tax_type:
+        type:
+          - string
+          - "null"
+    required:
+      - tax_id

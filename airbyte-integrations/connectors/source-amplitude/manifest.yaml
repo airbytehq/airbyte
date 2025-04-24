@@ -1,0 +1,1042 @@
+version: "5.15.0"
+streams:
+- retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
+        Server' else '' }}amplitude.com/api"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['api_key'] }}"
+        password: "{{ config['secret_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: The file size of the exported data is too large. Shorten
+            the time ranges and try again. The limit size is 4GB. Provide a shorter
+            'request_time_range' interval.
+          type: HttpResponseFilter
+        - http_codes:
+          - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: Access denied due to lack of permission or invalid API/Secret
+            key or wrong data region.
+          type: HttpResponseFilter
+        - http_codes:
+          - 404
+          action: IGNORE
+          error_message: No data available for the time range requested.
+          type: HttpResponseFilter
+        - http_codes:
+          - 504
+          action: FAIL
+          failure_type: config_error
+          error_message: "The amount of data is large and may be causing a timeout.
+            For large amounts of data, the Amazon S3 destination is recommended. Refer
+            to Amplitude documentation for information on setting up the S3 destination:
+            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          type: HttpResponseFilter
+      path: "/2/annotations"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: https://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        date:
+          description: The date when the annotation was made
+          type:
+          - "null"
+          - string
+          format: date
+        details:
+          description: Additional details or information related to the annotation
+          type:
+          - "null"
+          - string
+        id:
+          description: The unique identifier for the annotation
+          type:
+          - "null"
+          - integer
+        label:
+          description: The label assigned to the annotation
+          type:
+          - "null"
+          - string
+  type: DeclarativeStream
+  name: "annotations"
+  primary_key: "id"
+- retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
+        Server' else '' }}amplitude.com/api"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['api_key'] }}"
+        password: "{{ config['secret_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: The file size of the exported data is too large. Shorten
+            the time ranges and try again. The limit size is 4GB. Provide a shorter
+            'request_time_range' interval.
+          type: HttpResponseFilter
+        - http_codes:
+          - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: Access denied due to lack of permission or invalid API/Secret
+            key or wrong data region.
+          type: HttpResponseFilter
+        - http_codes:
+          - 404
+          action: IGNORE
+          error_message: No data available for the time range requested.
+          type: HttpResponseFilter
+        - http_codes:
+          - 504
+          action: FAIL
+          failure_type: config_error
+          error_message: "The amount of data is large and may be causing a timeout.
+            For large amounts of data, the Amazon S3 destination is recommended. Refer
+            to Amplitude documentation for information on setting up the S3 destination:
+            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          type: HttpResponseFilter
+      path: "/3/cohorts"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: https://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        appId:
+          description: The unique identifier of the application.
+          type:
+          - "null"
+          - integer
+        archived:
+          description: Indicates if the cohort data is archived or not.
+          type:
+          - "null"
+          - boolean
+        definition:
+          description: The specific definition or criteria for the cohort.
+          type:
+          - "null"
+          - object
+        description:
+          description: A brief explanation or summary of the cohort data.
+          type:
+          - "null"
+          - string
+        finished:
+          description: Indicates if the cohort data has been finalized.
+          type:
+          - "null"
+          - boolean
+        id:
+          description: The unique identifier for the cohort.
+          type:
+          - "null"
+          - string
+        name:
+          description: The name or title of the cohort.
+          type:
+          - "null"
+          - string
+        owners:
+          description: The owners or administrators of the cohort.
+          type:
+          - "null"
+          - array
+          items:
+            type: string
+        published:
+          description: Status indicating if the cohort data is published or not.
+          type:
+          - "null"
+          - boolean
+        size:
+          description: Size or scale of the cohort data.
+          type:
+          - "null"
+          - integer
+        type:
+          description: The type or category of the cohort.
+          type:
+          - "null"
+          - string
+        lastMod:
+          description: Timestamp of the last modification made to the cohort.
+          type:
+          - "null"
+          - integer
+        lastComputed:
+          description: Timestamp of the last computation of cohort data.
+          type:
+          - "null"
+          - integer
+        hidden:
+          description: Flag to determine if the cohort is hidden from view.
+          type:
+          - "null"
+          - boolean
+        is_predictive:
+          description: Flag to indicate if the cohort is predictive in nature.
+          type:
+          - "null"
+          - boolean
+        is_official_content:
+          description: Indicates if the cohort data is official content.
+          type:
+          - "null"
+          - boolean
+        chart_id:
+          description: The identifier of the chart associated with the cohort.
+          type:
+          - "null"
+          - string
+        createdAt:
+          description: The timestamp when the cohort was created.
+          type:
+          - "null"
+          - integer
+        edit_id:
+          description: The ID for editing purposes or version control.
+          type:
+          - "null"
+          - string
+        last_viewed:
+          description: Timestamp when the cohort was last viewed.
+          type:
+          - "null"
+          - integer
+        location_id:
+          description: Identifier of the location associated with the cohort.
+          type:
+          - "null"
+          - string
+        metadata:
+          description: Additional information or data related to the cohort.
+          type:
+          - "null"
+          - array
+          items:
+            type: string
+        popularity:
+          description: Popularity rank or score of the cohort.
+          type:
+          - "null"
+          - integer
+        shortcut_ids:
+          description: Identifiers of any shortcuts associated with the cohort.
+          type:
+          - "null"
+          - array
+          items:
+            type: string
+        view_count:
+          description: The total count of views on the cohort data.
+          type:
+          - "null"
+          - integer
+        viewers:
+          description: Users or viewers who have access to the cohort data.
+          type:
+          - "null"
+          - array
+          items:
+            type: string
+  type: DeclarativeStream
+  name: "cohorts"
+  data_field: "data"
+  primary_key: "id"
+- retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.AverageSessionLengthRecordExtractor
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
+        Server' else '' }}amplitude.com/api"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['api_key'] }}"
+        password: "{{ config['secret_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: The file size of the exported data is too large. Shorten
+            the time ranges and try again. The limit size is 4GB. Provide a shorter
+            'request_time_range' interval.
+          type: HttpResponseFilter
+        - http_codes:
+          - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: Access denied due to lack of permission or invalid API/Secret
+            key or wrong data region.
+          type: HttpResponseFilter
+        - http_codes:
+          - 404
+          action: IGNORE
+          error_message: No data available for the time range requested.
+          type: HttpResponseFilter
+        - http_codes:
+          - 504
+          action: FAIL
+          failure_type: config_error
+          error_message: "The amount of data is large and may be causing a timeout.
+            For large amounts of data, the Amazon S3 destination is recommended. Refer
+            to Amplitude documentation for information on setting up the S3 destination:
+            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          type: HttpResponseFilter
+      request_parameters:
+        start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
+        end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
+      path: "/2/sessions/average"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      type: MinMaxDatetime
+    datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+    - "%Y-%m-%d"
+    - "%Y-%m-%dT%H:%M:%S"
+    cursor_granularity: P1D
+    step: P15D
+    cursor_field: date
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: https://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        date:
+          description: The date on which the session occurred
+          type:
+          - "null"
+          - string
+          format: date-time
+        length:
+          description: The duration of the session in seconds
+          type:
+          - "null"
+          - number
+  type: DeclarativeStream
+  name: average_session_length
+  primary_key: "date"
+- retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.ActiveUsersRecordExtractor
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
+        Server' else '' }}amplitude.com/api"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['api_key'] }}"
+        password: "{{ config['secret_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: The file size of the exported data is too large. Shorten
+            the time ranges and try again. The limit size is 4GB. Provide a shorter
+            'request_time_range' interval.
+          type: HttpResponseFilter
+        - http_codes:
+          - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: Access denied due to lack of permission or invalid API/Secret
+            key or wrong data region.
+          type: HttpResponseFilter
+        - http_codes:
+          - 404
+          action: IGNORE
+          error_message: No data available for the time range requested.
+          type: HttpResponseFilter
+        - http_codes:
+          - 504
+          action: FAIL
+          failure_type: config_error
+          error_message: "The amount of data is large and may be causing a timeout.
+            For large amounts of data, the Amazon S3 destination is recommended. Refer
+            to Amplitude documentation for information on setting up the S3 destination:
+            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          type: HttpResponseFilter
+      request_parameters:
+        start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
+        end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
+        m: "active"
+        i: "1"
+        g: "{{ 'country' if config['active_users_group_by_country'] else '' }}"
+      path: "/2/users"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+      type: MinMaxDatetime
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      type: MinMaxDatetime
+    datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+    - "%Y-%m-%d"
+    - "%Y-%m-%dT%H:%M:%S"
+    cursor_granularity: P1D
+    step: P1M
+    cursor_field: "date"
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: https://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        date:
+          description: The date for which the active user data is reported
+          type:
+          - "null"
+          - string
+          format: date
+        statistics:
+          description: The statistics related to the active users for the given date
+          type:
+          - "null"
+          - object
+  type: DeclarativeStream
+  name: "active_users"
+  primary_key: "date"
+- type: DeclarativeStream
+  name: events_list
+  primary_key:
+  - id
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
+        Server' else '' }}amplitude.com/api"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['api_key'] }}"
+        password: "{{ config['secret_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: The file size of the exported data is too large. Shorten
+            the time ranges and try again. The limit size is 4GB. Provide a shorter
+            'request_time_range' interval.
+          type: HttpResponseFilter
+        - http_codes:
+          - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: Access denied due to lack of permission or invalid API/Secret
+            key or wrong data region.
+          type: HttpResponseFilter
+        - http_codes:
+          - 404
+          action: IGNORE
+          error_message: No data available for the time range requested.
+          type: HttpResponseFilter
+        - http_codes:
+          - 504
+          action: FAIL
+          failure_type: config_error
+          error_message: "The amount of data is large and may be causing a timeout.
+            For large amounts of data, the Amazon S3 destination is recommended. Refer
+            to Amplitude documentation for information on setting up the S3 destination:
+            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          type: HttpResponseFilter
+      path: /2/events/list
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - data
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/schema#
+      properties:
+        autohidden:
+          type:
+          - boolean
+          - "null"
+        clusters_hidden:
+          type:
+          - boolean
+          - "null"
+        deleted:
+          type:
+          - boolean
+          - "null"
+        display:
+          type:
+          - string
+          - "null"
+        flow_hidden:
+          type:
+          - boolean
+          - "null"
+        hidden:
+          type:
+          - boolean
+          - "null"
+        id:
+          type: number
+        in_waitroom:
+          type:
+          - boolean
+          - "null"
+        name:
+          type:
+          - string
+          - "null"
+        non_active:
+          type:
+          - boolean
+          - "null"
+        timeline_hidden:
+          type:
+          - boolean
+          - number
+          - "null"
+        totals:
+          type:
+          - number
+          - "null"
+        totals_delta:
+          type:
+          - number
+          - "null"
+        value:
+          type:
+          - string
+          - "null"
+      required:
+      - id
+      additionalProperties: true
+- retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
+        Server' else '' }}amplitude.com/api"
+      http_method: "GET"
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['api_key'] }}"
+        password: "{{ config['secret_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - http_codes:
+          - 400
+          action: FAIL
+          failure_type: config_error
+          error_message: The file size of the exported data is too large. Shorten
+            the time ranges and try again. The limit size is 4GB. Provide a shorter
+            'request_time_range' interval.
+          type: HttpResponseFilter
+        - http_codes:
+          - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: Access denied due to lack of permission or invalid API/Secret
+            key or wrong data region.
+          type: HttpResponseFilter
+        - http_codes:
+          - 404
+          action: IGNORE
+          error_message: No data available for the time range requested.
+          type: HttpResponseFilter
+        - http_codes:
+          - 504
+          action: FAIL
+          failure_type: config_error
+          error_message: "The amount of data is large and may be causing a timeout.
+            For large amounts of data, the Amazon S3 destination is recommended. Refer
+            to Amplitude documentation for information on setting up the S3 destination:
+            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          type: HttpResponseFilter
+      path: /2/export
+    decoder:
+      type: ZipfileDecoder
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: JsonlDecoder
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: server_upload_time
+    cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%S.%f%z"
+    - "%Y-%m-%d %H:%M:%S.%f"
+    datetime_format: "%Y%m%dT%H"
+    cursor_granularity: PT1H
+    step: PT{{ config.get("request_time_range", 24)}}H
+    lookback_window: PT2H
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config["start_date"] }}'
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: start
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: end
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  transformations:
+  - type: CustomTransformation
+    class_name: source_declarative_manifest.components.TransformDatetimesToRFC3339
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: https://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        server_received_time:
+          description: The timestamp when the event data was received by the server
+          type:
+          - 'null'
+          - string
+          format: date-time
+        app:
+          description: Information related to the application where the event originated
+          type:
+          - 'null'
+          - integer
+        device_carrier:
+          description: The mobile carrier used by the device
+          type:
+          - 'null'
+          - string
+        $schema:
+          description: The schema version used for the event data
+          type:
+          - 'null'
+          - integer
+        city:
+          description: The city where the event occurred
+          type:
+          - 'null'
+          - string
+        user_id:
+          description: The unique identifier for the user
+          type:
+          - 'null'
+          - string
+        uuid:
+          description: The universally unique identifier for the event
+          type:
+          - 'null'
+          - string
+        event_time:
+          description: The timestamp when the event occurred
+          type:
+          - 'null'
+          - string
+          format: date-time
+        platform:
+          description: The platform where the event occurred (e.g., iOS, Android)
+          type:
+          - 'null'
+          - string
+        os_version:
+          description: The version of the operating system on the user's device
+          type:
+          - 'null'
+          - string
+        amplitude_id:
+          description: The unique identifier assigned by Amplitude for the event
+          type:
+          - 'null'
+          - integer
+        processed_time:
+          description: The timestamp when the event data was processed
+          type:
+          - 'null'
+          - string
+          format: date-time
+        user_creation_time:
+          description: The timestamp when the user account was created
+          type:
+          - 'null'
+          - string
+          format: date-time
+        version_name:
+          description: The name or label of the version associated with the event
+          type:
+          - 'null'
+          - string
+        ip_address:
+          description: The IP address from which the event was triggered
+          type:
+          - 'null'
+          - string
+        paying:
+          description: Flag indicating if the user is a paying customer
+          type:
+          - 'null'
+          - boolean
+        dma:
+          description: The Designated Market Area where the event occurred
+          type:
+          - 'null'
+          - string
+        group_properties:
+          description: Properties related to grouping events
+          type:
+          - 'null'
+          - object
+        user_properties:
+          description: Additional properties associated with the user
+          type:
+          - 'null'
+          - object
+        client_upload_time:
+          description: The timestamp when the event data was uploaded from the client
+            to the server
+          type:
+          - 'null'
+          - string
+          format: date-time
+        $insert_id:
+          description: The unique identifier assigned by Amplitude for each event
+            insertion
+          type:
+          - 'null'
+          - string
+        event_type:
+          description: The type/category of the event
+          type:
+          - 'null'
+          - string
+        library:
+          description: Information about the library/version used for event tracking
+          type:
+          - 'null'
+          - string
+        amplitude_attribution_ids:
+          description: IDs that Amplitude uses for attributing conversions to various
+            ad networks
+          type:
+          - 'null'
+          - string
+        device_type:
+          description: The type of device (e.g., smartphone, tablet)
+          type:
+          - 'null'
+          - string
+        device_manufacturer:
+          description: The manufacturer of the device
+          type:
+          - 'null'
+          - string
+        start_version:
+          description: The version at which the user started using the application
+          type:
+          - 'null'
+          - string
+        location_lng:
+          description: Longitude coordinate of the event location
+          type:
+          - 'null'
+          - number
+        server_upload_time:
+          description: The timestamp when the event data was uploaded to the server
+          type:
+          - 'null'
+          - string
+          format: date-time
+        event_id:
+          description: The unique identifier assigned to the event
+          type:
+          - 'null'
+          - integer
+        location_lat:
+          description: Latitude coordinate of the event location
+          type:
+          - 'null'
+          - number
+        os_name:
+          description: The name of the operating system on the user's device
+          type:
+          - 'null'
+          - string
+        amplitude_event_type:
+          description: The specific type of event tracked by Amplitude
+          type:
+          - 'null'
+          - string
+        device_brand:
+          description: The brand of the user's device
+          type:
+          - 'null'
+          - string
+        groups:
+          description: Groups to which the event belongs
+          type:
+          - 'null'
+          - object
+        event_properties:
+          description: Additional properties associated with the event
+          type:
+          - 'null'
+          - object
+        data:
+          description: Custom data associated with the event
+          type:
+          - 'null'
+          - object
+        device_id:
+          description: The unique identifier assigned to the device
+          type:
+          - 'null'
+          - string
+        language:
+          description: The language set on the user's device
+          type:
+          - 'null'
+          - string
+        device_model:
+          description: The model of the device
+          type:
+          - 'null'
+          - string
+        country:
+          description: The country where the event occurred
+          type:
+          - 'null'
+          - string
+        region:
+          description: The region where the event occurred
+          type:
+          - 'null'
+          - string
+        is_attribution_event:
+          description: Flag indicating if the event is an attribution event
+          type:
+          - 'null'
+          - boolean
+        adid:
+          description: The advertising identifier associated with the user's device
+          type:
+          - 'null'
+          - string
+        session_id:
+          description: The unique identifier for the user session
+          type:
+          - 'null'
+          - number
+        device_family:
+          description: The family of the device model
+          type:
+          - 'null'
+          - string
+        sample_rate:
+          description: The sampling rate used for the event data
+          type:
+          - 'null'
+          - string
+          - number
+        idfa:
+          description: The Identifier for Advertisers associated with the user's device
+          type:
+          - 'null'
+          - string
+        client_event_time:
+          description: The timestamp when the event occurred on the client side
+          type:
+          - 'null'
+          - string
+          format: date-time
+        $insert_key:
+          description: The key used for identifying the event insertion
+          type:
+          - 'null'
+          - string
+        data_type:
+          description: The type of data associated with the event
+          type:
+          - 'null'
+          - string
+        plan:
+          description: Information related to the user's plan
+          type:
+          - 'null'
+          - object
+          properties:
+            branch:
+              description: The branch of the user's plan
+              type:
+              - 'null'
+              - string
+            source:
+              description: The source of the user's plan
+              type:
+              - 'null'
+              - string
+            version:
+              description: The version of the user's plan
+              type:
+              - 'null'
+              - string
+        source_id:
+          description: The unique identifier for the event source
+          type:
+          - 'null'
+          - string
+        partner_id:
+          description: The unique identifier for a partner associated with the event
+          type:
+          - 'null'
+          - string
+        global_user_properties:
+          description: Global properties associated with the user
+          type:
+          - 'null'
+          - object
+  type: DeclarativeStream
+  name: events
+  primary_key: uuid
+check:
+  stream_names:
+  - "active_users"
+  type: CheckStream
+type: DeclarativeSource
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/amplitude
+  connection_specification:
+    "$schema": https://json-schema.org/draft-07/schema#
+    title: Amplitude Spec
+    type: object
+    required:
+    - api_key
+    - secret_key
+    - start_date
+    additionalProperties: true
+    properties:
+      data_region:
+        type: string
+        title: Data region
+        description: Amplitude data region server
+        enum:
+        - Standard Server
+        - EU Residency Server
+        default: Standard Server
+      api_key:
+        type: string
+        title: API Key
+        description: Amplitude API Key. See the <a href="https://docs.airbyte.com/integrations/sources/amplitude#setup-guide">setup
+          guide</a> for more information on how to obtain this key.
+        airbyte_secret: true
+      secret_key:
+        type: string
+        title: Secret Key
+        description: Amplitude Secret Key. See the <a href="https://docs.airbyte.com/integrations/sources/amplitude#setup-guide">setup
+          guide</a> for more information on how to obtain this key.
+        airbyte_secret: true
+      start_date:
+        type: string
+        format: date-time
+        title: Replication Start Date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        description: UTC date and time in the format 2021-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
+        examples:
+        - "2021-01-25T00:00:00Z"
+      request_time_range:
+        type: integer
+        title: Request time range
+        description: >
+          According to <a href="https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations">Considerations</a>
+          too large of a time range in te request can cause a timeout error. In this case, please provide a shorter time interval in hours.
+        default: 24
+        minimum: 1
+        maximum: 8760
+      active_users_group_by_country:
+        type: boolean
+        title: Active Users Group by Country
+        description: >
+          According to <a href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Amplitude documentation</a>, grouping by `Country` is optional. If you face issues fetching the stream or checking the connection please set this field to `False`.
+        default: true

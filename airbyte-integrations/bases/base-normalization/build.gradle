@@ -1,112 +1,57 @@
-import java.nio.file.Paths
-
 plugins {
-    id 'airbyte-docker'
+    id 'airbyte-docker-legacy'
     id 'airbyte-python'
 }
 
-airbytePython {
-    moduleDirectory 'normalization'
-}
-
 dependencies {
-    implementation project(':airbyte-workers')
-    implementation files(project(':airbyte-integrations:bases:airbyte-protocol').airbyteDocker.outputs)
+    testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
-task copySshScript(type: Copy, dependsOn: [project(':airbyte-workers').processResources]) {
-    from "${project(':airbyte-workers').buildDir}/resources/main"
+def copySshScript = tasks.register('copySshScript', Copy) {
+    from "${project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies').buildDir}/resources/testFixtures"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
+copySshScript.configure {
+    dependsOn project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies').tasks.named('processTestFixturesResources')
+}
 
 // make sure the copy task above worked (if it fails, it fails silently annoyingly)
-task checkSshScriptCopy(type: Task, dependsOn: copySshScript) {
+def checkSshScriptCopy = tasks.register('checkSshScriptCopy') {
     doFirst {
-        assert file("${buildDir}/sshtunneling.sh").exists() :
-                "Copy of sshtunneling.sh failed, check that it is present in airbyte-workers."
+        assert file("${buildDir}/sshtunneling.sh").exists() : "Copy of sshtunneling.sh failed."
     }
 }
-
-airbyteDocker.dependsOn(checkSshScriptCopy)
-assemble.dependsOn(checkSshScriptCopy)
-test.dependsOn(checkSshScriptCopy)
-
-installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
-integrationTest.dependsOn(build)
-
-
-static def getDockerfile(String customConnector) {
-    return "${customConnector}.Dockerfile"
+checkSshScriptCopy.configure {
+    dependsOn copySshScript
 }
 
-static def getDockerImageName(String customConnector) {
-    return "airbyte/normalization-${customConnector}"
+def generate = tasks.register('generate')
+generate.configure {
+    dependsOn checkSshScriptCopy
 }
 
-static def getImageNameWithTag(String customConnector) {
-    return "${getDockerImageName(customConnector)}:dev"
+tasks.named('check').configure {
+    dependsOn generate
 }
 
+tasks.named("jar").configure {
+    dependsOn copySshScript
+}
 
-def buildAirbyteDocker(String customConnector) {
-    def baseCommand = ['docker', 'build', '.', '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector)]
-    return {
-        commandLine baseCommand
+[
+        'bigquery',
+        'mysql',
+        'postgres',
+        'redshift',
+        'snowflake',
+        'oracle',
+        'mssql',
+        'clickhouse',
+        'tidb',
+].each {destinationName ->
+    tasks.matching { it.name == 'integrationTestPython' }.configureEach {
+        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
     }
 }
-
-task airbyteDockerMSSql(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('mssql')
-    dependsOn assemble
-}
-task airbyteDockerMySql(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('mysql')
-    dependsOn assemble
-}
-task airbyteDockerOracle(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('oracle')
-    dependsOn assemble
-}
-task airbyteDockerClickhouse(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('clickhouse')
-    dependsOn assemble
-}
-task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('snowflake')
-    dependsOn assemble
-}
-
-airbyteDocker.dependsOn(airbyteDockerMSSql)
-airbyteDocker.dependsOn(airbyteDockerMySql)
-airbyteDocker.dependsOn(airbyteDockerOracle)
-airbyteDocker.dependsOn(airbyteDockerClickhouse)
-airbyteDocker.dependsOn(airbyteDockerSnowflake)
-
-task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
-    module = "pytest"
-    command = "-s integration_tests"
-
-    dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
-}
-
-integrationTest.dependsOn("customIntegrationTestPython")
-customIntegrationTests.dependsOn("customIntegrationTestPython")
-
-// TODO fix and use https://github.com/airbytehq/airbyte/issues/3192 instead
-task('mypyCheck', type: PythonTask) {
-    module = "mypy"
-    command = "normalization --config-file ${project.rootProject.file('tools/python/.mypy.ini').absolutePath}"
-
-    dependsOn 'blackFormat'
-}
-check.dependsOn mypyCheck

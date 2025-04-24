@@ -1,120 +1,69 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
+from typing import Any, List, Mapping, Optional
 
-from typing import Any, List, Mapping, Tuple
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
 
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk import TState
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-from .spec import (
-    CompleteOauthOutputSpecification,
-    CompleteOauthServerInputSpecification,
-    CompleteOauthServerOutputSpecification,
-    SourceTiktokMarketingSpec,
-)
-from .streams import (
-    DEFAULT_START_DATE,
-    AdGroups,
-    AdGroupsReports,
-    Ads,
-    AdsReports,
-    Advertisers,
-    AdvertisersReports,
-    Campaigns,
-    CampaignsReports,
-    ReportGranularity,
-)
-
-DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 
 
-class TiktokTokenAuthenticator(TokenAuthenticator):
-    """
-    Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
-    """
+logger = logging.getLogger("airbyte")
+DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
+SANDBOX_STREAM_NAMES = [
+    "ad_group_audience_reports_by_country_daily",
+    "ad_group_audience_reports_by_platform_daily",
+    "ad_group_audience_reports_daily",
+    "ad_groups",
+    "ad_groups_reports_daily",
+    "ad_groups_reports_hourly",
+    "ad_groups_reports_lifetime",
+    "ads",
+    "ads_audience_reports_by_country_daily",
+    "ads_audience_reports_by_platform_daily",
+    "ads_audience_reports_by_province_daily",
+    "ads_audience_reports_daily",
+    "ads_reports_daily",
+    "ads_reports_hourly",
+    "ads_reports_lifetime",
+    "advertisers",
+    "audiences",
+    "campaigns",
+    "campaigns_audience_reports_by_country_daily",
+    "campaigns_audience_reports_by_platform_daily",
+    "campaigns_audience_reports_daily",
+    "campaigns_reports_daily",
+    "campaigns_reports_hourly",
+    "campaigns_reports_lifetime",
+    "creative_assets_images",
+    "creative_assets_music",
+    "creative_assets_portfolios",
+    "creative_assets_videos",
+]
 
-    def __init__(self, token: str, **kwargs):
-        super().__init__(token, **kwargs)
-        self.token = token
 
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Access-Token": self.token}
-
-
-class SourceTiktokMarketing(AbstractSource):
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """Returns the spec for this integration."""
-        return ConnectorSpecification(
-            documentationUrl=DOCUMENTATION_URL,
-            changelogUrl=DOCUMENTATION_URL,
-            supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-            connectionSpecification=SourceTiktokMarketingSpec.schema(),
-            additionalProperties=True,
-            advanced_auth=AdvancedAuth(
-                auth_flow_type=AuthFlowType.oauth2_0,
-                predicate_key=["credentials", "auth_type"],
-                predicate_value="oauth2.0",
-                oauth_config_specification=OAuthConfigSpecification(
-                    complete_oauth_output_specification=CompleteOauthOutputSpecification.schema(),
-                    complete_oauth_server_input_specification=CompleteOauthServerInputSpecification.schema(),
-                    complete_oauth_server_output_specification=CompleteOauthServerOutputSpecification.schema(),
-                ),
-            ),
-        )
+class SourceTiktokMarketing(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @staticmethod
-    def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Converts an input configure to stream arguments"""
+    def _is_sandbox(config: Mapping[str, Any]) -> bool:
         credentials = config.get("credentials")
         if credentials:
-            # used for new config format
-            access_token = credentials["access_token"]
-            secret = credentials.get("secret")
-            app_id = int(credentials.get("app_id", 0))
-            advertiser_id = int(credentials.get("advertiser_id", 0))
+            is_sandbox = credentials["auth_type"] == "sandbox_access_token"
         else:
-            access_token = config["access_token"]
             secret = config.get("environment", {}).get("secret")
-            app_id = int(config.get("environment", {}).get("app_id", 0))
-            advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
+            is_sandbox = secret is None
 
-        return {
-            "authenticator": TiktokTokenAuthenticator(access_token),
-            "start_date": config.get("start_date") or DEFAULT_START_DATE,
-            "advertiser_id": advertiser_id,
-            "app_id": app_id,
-            "secret": secret,
-        }
-
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Tests if the input configuration can be used to successfully connect to the integration
-        """
-        try:
-            next(Advertisers(**self._prepare_stream_args(config)).read_records(SyncMode.full_refresh))
-        except Exception as err:
-            return False, err
-        return True, None
+        return is_sandbox
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = self._prepare_stream_args(config)
-        report_granularity = config.get("report_granularity") or ReportGranularity.default()
-        report_args = dict(report_granularity=report_granularity, **args)
-        advertisers_reports = AdvertisersReports(**report_args)
-        streams = [
-            Ads(**args),
-            AdsReports(**report_args),
-            Advertisers(**args),
-            advertisers_reports if not advertisers_reports.is_sandbox else None,
-            AdGroups(**args),
-            AdGroupsReports(**report_args),
-            Campaigns(**args),
-            CampaignsReports(**report_args),
-        ]
-        return [stream for stream in streams if stream]
+        streams = super().streams(config)
+
+        if self._is_sandbox(config):
+            streams = [stream for stream in streams if stream.name in SANDBOX_STREAM_NAMES]
+
+        return streams

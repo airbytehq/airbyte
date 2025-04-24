@@ -1,0 +1,32 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/AirbyteInternal.yml
+title: AirbyteInternal
+description: Fields for internal use only
+type: object
+additionalProperties: true
+properties:
+  sl:
+    type: integer
+    enum:
+      - 0
+      - 100
+      - 200
+      - 300
+  ql:
+    type: integer
+    enum:
+      - 0
+      - 100
+      - 200
+      - 300
+      - 400
+      - 500
+      - 600
+  isEnterprise:
+    type: boolean
+    default: false
+  requireVersionIncrementsInPullRequests:
+    type: boolean
+    default: true
+    description: When false, version increment checks will be skipped for this connector

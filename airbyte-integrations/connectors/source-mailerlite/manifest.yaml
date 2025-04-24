@@ -1,0 +1,5252 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - timezones
+definitions:
+  streams:
+    subscribers:
+      type: DeclarativeStream
+      name: subscribers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /subscribers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            click_rate:
+              type: integer
+            clicks_count:
+              type: integer
+            created_at:
+              type: string
+            email:
+              type: string
+            fields:
+              type: object
+              properties:
+                city:
+                  type:
+                    - string
+                    - "null"
+                company:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                last_name:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type: string
+                phone:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                z_i_p:
+                  type:
+                    - string
+                    - "null"
+              required:
+                - name
+                - last_name
+                - company
+                - country
+                - city
+                - phone
+                - state
+                - z_i_p
+            id:
+              type: string
+            ip_address:
+              type:
+                - string
+                - "null"
+            open_rate:
+              type: integer
+            opens_count:
+              type: integer
+            opted_in_at:
+              type:
+                - string
+                - "null"
+            optin_ip:
+              type:
+                - string
+                - "null"
+            sent:
+              type: integer
+            source:
+              type: string
+            status:
+              type: string
+            subscribed_at:
+              type: string
+            unsubscribed_at:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type: string
+          required:
+            - id
+            - email
+            - status
+            - source
+            - sent
+            - opens_count
+            - clicks_count
+            - open_rate
+            - click_rate
+            - ip_address
+            - subscribed_at
+            - unsubscribed_at
+            - created_at
+            - updated_at
+            - fields
+            - opted_in_at
+            - optin_ip
+          additionalProperties: true
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            click_rate:
+              type: object
+              properties:
+                float:
+                  type: number
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            created_at:
+              type: string
+            id:
+              type: string
+            name:
+              type: string
+            open_rate:
+              type: object
+              properties:
+                float:
+                  type: number
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            total:
+              type: integer
+          required:
+            - id
+            - name
+            - total
+            - open_rate
+            - click_rate
+            - created_at
+          additionalProperties: true
+    automations:
+      type: DeclarativeStream
+      name: automations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /automations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            broken:
+              type: boolean
+            complete:
+              type: boolean
+            created_at:
+              type: string
+            emails_count:
+              type: integer
+            enabled:
+              type: boolean
+            first_email_screenshot_url:
+              type:
+                - string
+                - "null"
+            has_banned_content:
+              type: boolean
+            id:
+              type: string
+            name:
+              type: string
+            qualified_subscribers_count:
+              type: integer
+            stats:
+              type: object
+              properties:
+                bounce_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                click_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                click_to_open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                clicks_count:
+                  type: integer
+                completed_subscribers_count:
+                  type: integer
+                hard_bounce_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                hard_bounces_count:
+                  type: integer
+                open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                opens_count:
+                  type: integer
+                sent:
+                  type: integer
+                soft_bounce_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                soft_bounces_count:
+                  type: integer
+                spam_count:
+                  type: integer
+                spam_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                subscribers_in_queue_count:
+                  type: integer
+                unique_clicks_count:
+                  type:
+                    - integer
+                    - "null"
+                unique_opens_count:
+                  type:
+                    - integer
+                    - "null"
+                unsubscribe_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                unsubscribes_count:
+                  type: integer
+              required:
+                - completed_subscribers_count
+                - subscribers_in_queue_count
+                - bounce_rate
+                - click_to_open_rate
+                - sent
+                - opens_count
+                - unique_opens_count
+                - open_rate
+                - clicks_count
+                - unique_clicks_count
+                - click_rate
+                - unsubscribes_count
+                - unsubscribe_rate
+                - spam_count
+                - spam_rate
+                - hard_bounces_count
+                - hard_bounce_rate
+                - soft_bounces_count
+                - soft_bounce_rate
+            steps:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  complete:
+                    type: boolean
+                  created_at:
+                    type: string
+                  description:
+                    type: string
+                  email:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      account_id:
+                        type: string
+                      created_at:
+                        type: string
+                      emailable_id:
+                        type: string
+                      emailable_type:
+                        type: string
+                      from:
+                        type: string
+                      from_name:
+                        type: string
+                      id:
+                        type: string
+                      is_designed:
+                        type: boolean
+                      is_winner:
+                        type: boolean
+                      language_id:
+                        type: integer
+                      name:
+                        type: string
+                      plain_text:
+                        type:
+                          - string
+                          - "null"
+                      preview_url:
+                        type:
+                          - string
+                          - "null"
+                      screenshot_url:
+                        type:
+                          - string
+                          - "null"
+                      send_after:
+                        type:
+                          - string
+                          - "null"
+                      stats:
+                        type: object
+                        properties:
+                          click_rate:
+                            type: object
+                            properties:
+                              float:
+                                type: number
+                              string:
+                                type: string
+                            required:
+                              - float
+                              - string
+                          clicks_count:
+                            type: integer
+                          forwards_count:
+                            type: integer
+                          hard_bounce_rate:
+                            type: object
+                            properties:
+                              float:
+                                type: number
+                              string:
+                                type: string
+                            required:
+                              - float
+                              - string
+                          hard_bounces_count:
+                            type: integer
+                          open_rate:
+                            type: object
+                            properties:
+                              float:
+                                type: number
+                              string:
+                                type: string
+                            required:
+                              - float
+                              - string
+                          opens_count:
+                            type: integer
+                          sent:
+                            type: integer
+                          soft_bounce_rate:
+                            type: object
+                            properties:
+                              float:
+                                type: number
+                              string:
+                                type: string
+                            required:
+                              - float
+                              - string
+                          soft_bounces_count:
+                            type: integer
+                          spam_count:
+                            type: integer
+                          spam_rate:
+                            type: object
+                            properties:
+                              float:
+                                type: number
+                              string:
+                                type: string
+                            required:
+                              - float
+                              - string
+                          unique_clicks_count:
+                            type: integer
+                          unique_opens_count:
+                            type: integer
+                          unsubscribe_rate:
+                            type: object
+                            properties:
+                              float:
+                                type: number
+                              string:
+                                type: string
+                            required:
+                              - float
+                              - string
+                          unsubscribes_count:
+                            type: integer
+                        required:
+                          - sent
+                          - opens_count
+                          - unique_opens_count
+                          - open_rate
+                          - clicks_count
+                          - unique_clicks_count
+                          - click_rate
+                          - unsubscribes_count
+                          - unsubscribe_rate
+                          - spam_count
+                          - spam_rate
+                          - hard_bounces_count
+                          - hard_bounce_rate
+                          - soft_bounces_count
+                          - soft_bounce_rate
+                          - forwards_count
+                      subject:
+                        type: string
+                      track_opens:
+                        type: boolean
+                      updated_at:
+                        type: string
+                    required:
+                      - id
+                      - account_id
+                      - emailable_id
+                      - emailable_type
+                      - type
+                      - from
+                      - from_name
+                      - name
+                      - subject
+                      - plain_text
+                      - screenshot_url
+                      - preview_url
+                      - created_at
+                      - updated_at
+                      - is_designed
+                      - language_id
+                      - is_winner
+                      - stats
+                      - send_after
+                      - track_opens
+                  email_id:
+                    type: string
+                  from:
+                    type: string
+                  from_name:
+                    type: string
+                  google_analytics:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type: string
+                  language_id:
+                    type: integer
+                  name:
+                    type: string
+                  parent_id:
+                    type: string
+                  subject:
+                    type: string
+                  track_opens:
+                    type: boolean
+                  tracking_was_disabled:
+                    type: boolean
+                  updated_at:
+                    type: string
+                required:
+                  - id
+            trigger_data:
+              type: object
+              properties:
+                exclude_group_ids:
+                  type: array
+                  items:
+                    type: integer
+                group_id:
+                  type: integer
+                repeatable:
+                  type: boolean
+                track_ecommerce:
+                  type: boolean
+                valid:
+                  type: boolean
+              required:
+                - valid
+            triggers:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  broken:
+                    type: boolean
+                  exclude_group_ids:
+                    type: array
+                    items:
+                      type: string
+                  excluded_groups:
+                    type: array
+                    items:
+                      type: string
+                  group:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      url:
+                        type:
+                          - string
+                          - "null"
+                    required:
+                      - id
+                      - name
+                      - url
+                  group_id:
+                    type: string
+                  id:
+                    type: string
+            warnings:
+              type: array
+              items:
+                type: string
+          required:
+            - id
+            - name
+            - enabled
+            - trigger_data
+            - steps
+            - triggers
+            - complete
+            - broken
+            - warnings
+            - emails_count
+            - first_email_screenshot_url
+            - stats
+            - created_at
+            - has_banned_content
+            - qualified_subscribers_count
+          additionalProperties: true
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            type:
+              type: string
+            account_id:
+              type: string
+              format: integer
+            can_be_scheduled:
+              type: boolean
+            created_at:
+              type: string
+              format: date-time
+            default_email_id:
+              type: string
+            delivery_schedule:
+              type: string
+            emails:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  account_id:
+                    type: string
+                    format: integer
+                  created_at:
+                    type: string
+                    format: date-time
+                  emailable_id:
+                    type: string
+                    format: integer
+                  emailable_type:
+                    type: string
+                  from:
+                    type: string
+                  from_name:
+                    type: string
+                  id:
+                    type: string
+                    format: integer
+                  is_designed:
+                    type: boolean
+                  is_winner:
+                    type: boolean
+                  language_id:
+                    type:
+                      - integer
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  plain_text:
+                    type: string
+                  preview_url:
+                    type:
+                      - string
+                      - "null"
+                  screenshot_url:
+                    type:
+                      - string
+                      - "null"
+                  send_after:
+                    type:
+                      - string
+                      - "null"
+                  stats:
+                    type: object
+                    properties:
+                      click_rate:
+                        type: object
+                        properties:
+                          float:
+                            type: number
+                          string:
+                            type: string
+                        required:
+                          - float
+                          - string
+                      click_to_open_rate:
+                        type: object
+                        properties:
+                          float:
+                            type: number
+                          string:
+                            type: string
+                        required:
+                          - float
+                          - string
+                      clicks_count:
+                        type: integer
+                      forwards_count:
+                        type: integer
+                      hard_bounce_rate:
+                        type: object
+                        properties:
+                          float:
+                            type: number
+                          string:
+                            type: string
+                        required:
+                          - float
+                          - string
+                      hard_bounces_count:
+                        type: integer
+                      open_rate:
+                        type: object
+                        properties:
+                          float:
+                            type: number
+                          string:
+                            type: string
+                        required:
+                          - float
+                          - string
+                      opens_count:
+                        type: integer
+                      sent:
+                        type: integer
+                      soft_bounce_rate:
+                        type: object
+                        properties:
+                          float:
+                            type: number
+                          string:
+                            type: string
+                        required:
+                          - float
+                          - string
+                      soft_bounces_count:
+                        type: integer
+                      spam_count:
+                        type: integer
+                      spam_rate:
+                        type: object
+                        properties:
+                          float:
+                            type: number
+                          string:
+                            type: string
+                        required:
+                          - float
+                          - string
+                      unique_clicks_count:
+                        type: integer
+                      unique_opens_count:
+                        type: integer
+                      unsubscribe_rate:
+                        type: object
+                        properties:
+                          float:
+                            type: number
+                          string:
+                            type: string
+                        required:
+                          - float
+                          - string
+                      unsubscribes_count:
+                        type: integer
+                    required:
+                      - click_rate
+                      - clicks_count
+                      - forwards_count
+                      - hard_bounce_rate
+                      - hard_bounces_count
+                      - open_rate
+                      - opens_count
+                      - sent
+                      - soft_bounce_rate
+                      - soft_bounces_count
+                      - spam_count
+                      - spam_rate
+                      - unique_clicks_count
+                      - unique_opens_count
+                      - unsubscribe_rate
+                      - unsubscribes_count
+                  subject:
+                    type: string
+                  track_opens:
+                    type: boolean
+                  updated_at:
+                    type: string
+                    format: date-time
+                required:
+                  - account_id
+                  - created_at
+                  - emailable_id
+                  - emailable_type
+                  - from
+                  - from_name
+                  - id
+                  - is_designed
+                  - is_winner
+                  - language_id
+                  - name
+                  - plain_text
+                  - preview_url
+                  - screenshot_url
+                  - send_after
+                  - stats
+                  - subject
+                  - track_opens
+                  - type
+                  - updated_at
+            filter:
+              type: array
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    args:
+                      type: array
+                      items:
+                        anyOf:
+                          - type: array
+                            items:
+                              type: string
+                              format: integer
+                          - type: string
+                    operator:
+                      type: string
+                  required:
+                    - args
+                    - operator
+            filter_for_humans:
+              type: array
+              items:
+                type: array
+                items:
+                  type: string
+            finished_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+            has_winner:
+              type:
+                - string
+                - "null"
+            id:
+              type: string
+              format: integer
+            initial_created_at:
+              type:
+                - string
+                - "null"
+            is_currently_sending_out:
+              type: boolean
+            is_stopped:
+              type: boolean
+            language_id:
+              type: string
+              format: integer
+            missing_data:
+              type: array
+              items:
+                type: string
+            name:
+              type: string
+            queued_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+            scheduled_for:
+              type: string
+              format: date-time
+            settings:
+              type: object
+              properties:
+                ecommerce_tracking:
+                  type: string
+                  format: integer
+                track_opens:
+                  type: string
+                  format: integer
+                use_google_analytics:
+                  type: string
+                  format: integer
+              required:
+                - ecommerce_tracking
+                - track_opens
+                - use_google_analytics
+            started_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+            stats:
+              type: object
+              properties:
+                click_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                click_to_open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                clicks_count:
+                  type: integer
+                forwards_count:
+                  type: integer
+                hard_bounce_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                hard_bounces_count:
+                  type: integer
+                open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                opens_count:
+                  type: integer
+                sent:
+                  type: integer
+                soft_bounce_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                soft_bounces_count:
+                  type: integer
+                spam_count:
+                  type: integer
+                spam_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                unique_clicks_count:
+                  type: integer
+                unique_opens_count:
+                  type: integer
+                unsubscribe_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                unsubscribes_count:
+                  type: integer
+              required:
+                - click_rate
+                - clicks_count
+                - forwards_count
+                - hard_bounce_rate
+                - hard_bounces_count
+                - open_rate
+                - opens_count
+                - sent
+                - soft_bounce_rate
+                - soft_bounces_count
+                - spam_count
+                - spam_rate
+                - unique_clicks_count
+                - unique_opens_count
+                - unsubscribe_rate
+                - unsubscribes_count
+            status:
+              type: string
+            stopped_at:
+              type:
+                - string
+                - "null"
+            type_for_humans:
+              type: string
+            updated_at:
+              type: string
+              format: date-time
+            used_in_automations:
+              type: boolean
+            uses_ecommerce:
+              type: boolean
+            uses_survey:
+              type: boolean
+            warnings:
+              type: array
+              items:
+                type: string
+            winner_selected_manually_at:
+              type:
+                - string
+                - "null"
+            winner_sending_time_for_humans:
+              type:
+                - string
+                - "null"
+            winner_version_for_human:
+              type:
+                - string
+                - "null"
+          required:
+            - account_id
+            - can_be_scheduled
+            - created_at
+            - default_email_id
+            - delivery_schedule
+            - emails
+            - filter
+            - filter_for_humans
+            - finished_at
+            - has_winner
+            - id
+            - initial_created_at
+            - is_currently_sending_out
+            - is_stopped
+            - language_id
+            - missing_data
+            - name
+            - queued_at
+            - scheduled_for
+            - settings
+            - started_at
+            - status
+            - stopped_at
+            - type
+            - type_for_humans
+            - updated_at
+            - used_in_automations
+            - uses_ecommerce
+            - uses_survey
+            - warnings
+            - winner_selected_manually_at
+            - winner_sending_time_for_humans
+            - winner_version_for_human
+          additionalProperties: true
+    timezones:
+      type: DeclarativeStream
+      name: timezones
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /timezones
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            name_for_humans:
+              type: string
+            offset:
+              type: integer
+            offset_name:
+              type: string
+          required:
+            - id
+            - name
+            - name_for_humans
+            - offset_name
+            - offset
+          additionalProperties: true
+    forms_popup:
+      type: DeclarativeStream
+      name: forms_popup
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /forms/popup
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            type:
+              type: string
+            active:
+              type: boolean
+            can:
+              type: object
+              properties:
+                update:
+                  type: boolean
+              required:
+                - update
+            conversion_rate:
+              type: object
+              properties:
+                float:
+                  type: number
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            conversions_count:
+              type: integer
+            created_at:
+              type: string
+            double_optin:
+              type:
+                - boolean
+                - "null"
+            groups:
+              type: array
+              items:
+                type: object
+                properties:
+                  active_count:
+                    type: integer
+                  bounced_count:
+                    type: integer
+                  click_rate:
+                    type: object
+                    properties:
+                      float:
+                        type: integer
+                      string:
+                        type: string
+                    required:
+                      - float
+                      - string
+                  clicks_count:
+                    type: integer
+                  created_at:
+                    type: string
+                  id:
+                    type: string
+                  junk_count:
+                    type: integer
+                  name:
+                    type: string
+                  open_rate:
+                    type: object
+                    properties:
+                      float:
+                        type: integer
+                      string:
+                        type: string
+                    required:
+                      - float
+                      - string
+                  opens_count:
+                    type: integer
+                  sent_count:
+                    type: integer
+                  unconfirmed_count:
+                    type: integer
+                  unsubscribed_count:
+                    type: integer
+                required:
+                  - id
+                  - name
+                  - active_count
+                  - sent_count
+                  - opens_count
+                  - open_rate
+                  - clicks_count
+                  - click_rate
+                  - unsubscribed_count
+                  - unconfirmed_count
+                  - bounced_count
+                  - junk_count
+                  - created_at
+            has_content:
+              type: boolean
+            has_missing_groups:
+              type: boolean
+            id:
+              type: string
+            is_broken:
+              type: boolean
+            last_registration_at:
+              type:
+                - string
+                - "null"
+            name:
+              type: string
+            opens_count:
+              type: integer
+            screenshot_url:
+              type:
+                - string
+                - "null"
+            settings:
+              type: object
+              properties:
+                double_optin:
+                  type: boolean
+                form_type:
+                  type: string
+                frequency:
+                  type: integer
+                frequency_unit:
+                  type: string
+                groot_id:
+                  type: integer
+                hide_on:
+                  type: array
+                  items:
+                    type: string
+                schedule:
+                  type: boolean
+                scroll_percentage:
+                  type: integer
+                timeout_seconds:
+                  type: integer
+                triggers:
+                  type: array
+                  items:
+                    type: string
+                url_list:
+                  type: array
+                  items:
+                    type: string
+                url_list_strict:
+                  type:
+                    - "null"
+                    - string
+                visibility:
+                  type: string
+              required:
+                - double_optin
+                - groot_id
+                - form_type
+                - triggers
+                - timeout_seconds
+                - scroll_percentage
+                - frequency
+                - frequency_unit
+                - visibility
+                - url_list
+                - url_list_strict
+                - hide_on
+                - schedule
+            slug:
+              type: string
+            used_in_automations:
+              type: boolean
+            warnings:
+              type: array
+              items:
+                type: string
+          required:
+            - id
+            - type
+            - slug
+            - name
+            - created_at
+            - conversions_count
+            - opens_count
+            - conversion_rate
+            - settings
+            - last_registration_at
+            - active
+            - is_broken
+            - has_content
+            - can
+            - used_in_automations
+            - warnings
+            - double_optin
+            - screenshot_url
+          additionalProperties: true
+    forms_embedded:
+      type: DeclarativeStream
+      name: forms_embedded
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /forms/embedded
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            type:
+              type: string
+            active:
+              type: boolean
+            can:
+              type: object
+              properties:
+                update:
+                  type: boolean
+              required:
+                - update
+            conversion_rate:
+              type: object
+              properties:
+                float:
+                  type: integer
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            conversions_count:
+              type: integer
+            created_at:
+              type: string
+            double_optin:
+              type: boolean
+            groups:
+              type: array
+              items:
+                type: object
+                properties:
+                  active_count:
+                    type: integer
+                  bounced_count:
+                    type: integer
+                  click_rate:
+                    type: object
+                    properties:
+                      float:
+                        type: number
+                      string:
+                        type: string
+                    required:
+                      - float
+                      - string
+                  clicks_count:
+                    type: integer
+                  created_at:
+                    type: string
+                  id:
+                    type: string
+                  junk_count:
+                    type: integer
+                  name:
+                    type: string
+                  open_rate:
+                    type: object
+                    properties:
+                      float:
+                        type: number
+                      string:
+                        type: string
+                    required:
+                      - float
+                      - string
+                  opens_count:
+                    type: integer
+                  sent_count:
+                    type: integer
+                  unconfirmed_count:
+                    type: integer
+                  unsubscribed_count:
+                    type: integer
+                required:
+                  - id
+                  - name
+                  - active_count
+                  - sent_count
+                  - opens_count
+                  - open_rate
+                  - clicks_count
+                  - click_rate
+                  - unsubscribed_count
+                  - unconfirmed_count
+                  - bounced_count
+                  - junk_count
+                  - created_at
+            has_content:
+              type: boolean
+            has_missing_groups:
+              type: boolean
+            id:
+              type: string
+            is_broken:
+              type: boolean
+            last_registration_at:
+              type:
+                - "null"
+                - string
+            name:
+              type: string
+            opens_count:
+              type: integer
+            screenshot_url:
+              type: string
+            settings:
+              type: object
+              properties:
+                double_optin:
+                  type: boolean
+                groot_id:
+                  type: integer
+              required:
+                - double_optin
+                - groot_id
+            slug:
+              type: string
+            used_in_automations:
+              type: boolean
+            warnings:
+              type: array
+              items:
+                type: string
+          required:
+            - id
+            - type
+            - slug
+            - name
+            - created_at
+            - conversions_count
+            - opens_count
+            - conversion_rate
+            - settings
+            - last_registration_at
+            - active
+            - is_broken
+            - has_content
+            - can
+            - used_in_automations
+            - warnings
+            - double_optin
+            - screenshot_url
+            - has_missing_groups
+            - groups
+          additionalProperties: true
+    forms_promotion:
+      type: DeclarativeStream
+      name: forms_promotion
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://connect.mailerlite.com/api
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: /forms/promotion
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            type:
+              type: string
+            active:
+              type: boolean
+            can:
+              type: object
+              properties:
+                update:
+                  type: boolean
+              required:
+                - update
+            conversion_rate:
+              type: object
+              properties:
+                float:
+                  type: integer
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            conversions_count:
+              type: integer
+            created_at:
+              type: string
+            double_optin:
+              type:
+                - string
+                - "boolean"
+            groups:
+              type: array
+              items:
+                type: string
+            has_content:
+              type: boolean
+            has_missing_groups:
+              type: boolean
+            id:
+              type: string
+            is_broken:
+              type: boolean
+            last_registration_at:
+              type:
+                - string
+                - "null"
+            name:
+              type: string
+            opens_count:
+              type: integer
+            screenshot_url:
+              type: string
+            settings:
+              type: object
+              properties:
+                form_type:
+                  type: string
+                frequency:
+                  type: integer
+                frequency_unit:
+                  type: string
+                groot_id:
+                  type: integer
+                hide_on:
+                  type: array
+                  items:
+                    type: string
+                schedule:
+                  type: boolean
+                schedule_from:
+                  type: string
+                schedule_timezone_id:
+                  type: string
+                schedule_until:
+                  type: string
+                scroll_percentage:
+                  type: integer
+                timeout_seconds:
+                  type: integer
+                triggers:
+                  type: array
+                  items:
+                    type: string
+                url_list:
+                  type: array
+                  items:
+                    type: string
+                url_list_strict:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type: string
+                visibility:
+                  type: string
+              required:
+                - groot_id
+                - form_type
+                - triggers
+                - timeout_seconds
+                - scroll_percentage
+                - frequency
+                - frequency_unit
+                - visibility
+                - url_list
+                - url_list_strict
+                - hide_on
+                - schedule
+                - schedule_from
+                - schedule_until
+                - schedule_timezone_id
+            slug:
+              type: string
+            used_in_automations:
+              type: boolean
+            warnings:
+              type: array
+              items:
+                type: string
+          required:
+            - id
+            - type
+            - slug
+            - name
+            - created_at
+            - conversions_count
+            - opens_count
+            - conversion_rate
+            - settings
+            - last_registration_at
+            - active
+            - is_broken
+            - has_content
+            - can
+            - used_in_automations
+            - warnings
+            - double_optin
+            - screenshot_url
+            - has_missing_groups
+            - groups
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://connect.mailerlite.com/api
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_token'] }}"
+streams:
+  - type: DeclarativeStream
+    name: subscribers
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /subscribers
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 25
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          click_rate:
+            type: integer
+          clicks_count:
+            type: integer
+          created_at:
+            type: string
+          email:
+            type: string
+          fields:
+            type: object
+            properties:
+              city:
+                type:
+                  - string
+                  - "null"
+              company:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              name:
+                type: string
+              phone:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              z_i_p:
+                type:
+                  - string
+                  - "null"
+            required:
+              - name
+              - last_name
+              - company
+              - country
+              - city
+              - phone
+              - state
+              - z_i_p
+          id:
+            type: string
+          ip_address:
+            type:
+              - string
+              - "null"
+          open_rate:
+            type: integer
+          opens_count:
+            type: integer
+          opted_in_at:
+            type:
+              - string
+              - "null"
+          optin_ip:
+            type:
+              - string
+              - "null"
+          sent:
+            type: integer
+          source:
+            type: string
+          status:
+            type: string
+          subscribed_at:
+            type: string
+          unsubscribed_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+        required:
+          - id
+          - email
+          - status
+          - source
+          - sent
+          - opens_count
+          - clicks_count
+          - open_rate
+          - click_rate
+          - ip_address
+          - subscribed_at
+          - unsubscribed_at
+          - created_at
+          - updated_at
+          - fields
+          - opted_in_at
+          - optin_ip
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: segments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /segments
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 50
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          click_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          created_at:
+            type: string
+          id:
+            type: string
+          name:
+            type: string
+          open_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          total:
+            type: integer
+        required:
+          - id
+          - name
+          - total
+          - open_rate
+          - click_rate
+          - created_at
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: automations
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /automations
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 10
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          broken:
+            type: boolean
+          complete:
+            type: boolean
+          created_at:
+            type: string
+          emails_count:
+            type: integer
+          enabled:
+            type: boolean
+          first_email_screenshot_url:
+            type:
+              - string
+              - "null"
+          has_banned_content:
+            type: boolean
+          id:
+            type: string
+          name:
+            type: string
+          qualified_subscribers_count:
+            type: integer
+          stats:
+            type: object
+            properties:
+              bounce_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              click_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              click_to_open_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              clicks_count:
+                type: integer
+              completed_subscribers_count:
+                type: integer
+              hard_bounce_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              hard_bounces_count:
+                type: integer
+              open_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              opens_count:
+                type: integer
+              sent:
+                type: integer
+              soft_bounce_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              soft_bounces_count:
+                type: integer
+              spam_count:
+                type: integer
+              spam_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              subscribers_in_queue_count:
+                type: integer
+              unique_clicks_count:
+                type:
+                  - integer
+                  - "null"
+              unique_opens_count:
+                type:
+                  - integer
+                  - "null"
+              unsubscribe_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              unsubscribes_count:
+                type: integer
+            required:
+              - completed_subscribers_count
+              - subscribers_in_queue_count
+              - bounce_rate
+              - click_to_open_rate
+              - sent
+              - opens_count
+              - unique_opens_count
+              - open_rate
+              - clicks_count
+              - unique_clicks_count
+              - click_rate
+              - unsubscribes_count
+              - unsubscribe_rate
+              - spam_count
+              - spam_rate
+              - hard_bounces_count
+              - hard_bounce_rate
+              - soft_bounces_count
+              - soft_bounce_rate
+          steps:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                complete:
+                  type: boolean
+                created_at:
+                  type: string
+                description:
+                  type: string
+                email:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    account_id:
+                      type: string
+                    created_at:
+                      type: string
+                    emailable_id:
+                      type: string
+                    emailable_type:
+                      type: string
+                    from:
+                      type: string
+                    from_name:
+                      type: string
+                    id:
+                      type: string
+                    is_designed:
+                      type: boolean
+                    is_winner:
+                      type: boolean
+                    language_id:
+                      type: integer
+                    name:
+                      type: string
+                    plain_text:
+                      type:
+                        - string
+                        - "null"
+                    preview_url:
+                      type:
+                        - string
+                        - "null"
+                    screenshot_url:
+                      type:
+                        - string
+                        - "null"
+                    send_after:
+                      type:
+                        - string
+                        - "null"
+                    stats:
+                      type: object
+                      properties:
+                        click_rate:
+                          type: object
+                          properties:
+                            float:
+                              type: number
+                            string:
+                              type: string
+                          required:
+                            - float
+                            - string
+                        clicks_count:
+                          type: integer
+                        forwards_count:
+                          type: integer
+                        hard_bounce_rate:
+                          type: object
+                          properties:
+                            float:
+                              type: number
+                            string:
+                              type: string
+                          required:
+                            - float
+                            - string
+                        hard_bounces_count:
+                          type: integer
+                        open_rate:
+                          type: object
+                          properties:
+                            float:
+                              type: number
+                            string:
+                              type: string
+                          required:
+                            - float
+                            - string
+                        opens_count:
+                          type: integer
+                        sent:
+                          type: integer
+                        soft_bounce_rate:
+                          type: object
+                          properties:
+                            float:
+                              type: number
+                            string:
+                              type: string
+                          required:
+                            - float
+                            - string
+                        soft_bounces_count:
+                          type: integer
+                        spam_count:
+                          type: integer
+                        spam_rate:
+                          type: object
+                          properties:
+                            float:
+                              type: number
+                            string:
+                              type: string
+                          required:
+                            - float
+                            - string
+                        unique_clicks_count:
+                          type: integer
+                        unique_opens_count:
+                          type: integer
+                        unsubscribe_rate:
+                          type: object
+                          properties:
+                            float:
+                              type: number
+                            string:
+                              type: string
+                          required:
+                            - float
+                            - string
+                        unsubscribes_count:
+                          type: integer
+                      required:
+                        - sent
+                        - opens_count
+                        - unique_opens_count
+                        - open_rate
+                        - clicks_count
+                        - unique_clicks_count
+                        - click_rate
+                        - unsubscribes_count
+                        - unsubscribe_rate
+                        - spam_count
+                        - spam_rate
+                        - hard_bounces_count
+                        - hard_bounce_rate
+                        - soft_bounces_count
+                        - soft_bounce_rate
+                        - forwards_count
+                    subject:
+                      type: string
+                    track_opens:
+                      type: boolean
+                    updated_at:
+                      type: string
+                  required:
+                    - id
+                    - account_id
+                    - emailable_id
+                    - emailable_type
+                    - type
+                    - from
+                    - from_name
+                    - name
+                    - subject
+                    - plain_text
+                    - screenshot_url
+                    - preview_url
+                    - created_at
+                    - updated_at
+                    - is_designed
+                    - language_id
+                    - is_winner
+                    - stats
+                    - send_after
+                    - track_opens
+                email_id:
+                  type: string
+                from:
+                  type: string
+                from_name:
+                  type: string
+                google_analytics:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type: string
+                language_id:
+                  type: integer
+                name:
+                  type: string
+                parent_id:
+                  type: string
+                subject:
+                  type: string
+                track_opens:
+                  type: boolean
+                tracking_was_disabled:
+                  type: boolean
+                updated_at:
+                  type: string
+              required:
+                - id
+          trigger_data:
+            type: object
+            properties:
+              exclude_group_ids:
+                type: array
+                items:
+                  type: integer
+              group_id:
+                type: integer
+              repeatable:
+                type: boolean
+              track_ecommerce:
+                type: boolean
+              valid:
+                type: boolean
+            required:
+              - valid
+          triggers:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                broken:
+                  type: boolean
+                exclude_group_ids:
+                  type: array
+                  items:
+                    type: string
+                excluded_groups:
+                  type: array
+                  items:
+                    type: string
+                group:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    url:
+                      type:
+                        - string
+                        - "null"
+                  required:
+                    - id
+                    - name
+                    - url
+                group_id:
+                  type: string
+                id:
+                  type: string
+          warnings:
+            type: array
+            items:
+              type: string
+        required:
+          - id
+          - name
+          - enabled
+          - trigger_data
+          - steps
+          - triggers
+          - complete
+          - broken
+          - warnings
+          - emails_count
+          - first_email_screenshot_url
+          - stats
+          - created_at
+          - has_banned_content
+          - qualified_subscribers_count
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: campaigns
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /campaigns
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 25
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          type:
+            type: string
+          account_id:
+            type: string
+            format: integer
+          can_be_scheduled:
+            type: boolean
+          created_at:
+            type: string
+            format: date-time
+          default_email_id:
+            type: string
+          delivery_schedule:
+            type: string
+          emails:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                account_id:
+                  type: string
+                  format: integer
+                created_at:
+                  type: string
+                  format: date-time
+                emailable_id:
+                  type: string
+                  format: integer
+                emailable_type:
+                  type: string
+                from:
+                  type: string
+                from_name:
+                  type: string
+                id:
+                  type: string
+                  format: integer
+                is_designed:
+                  type: boolean
+                is_winner:
+                  type: boolean
+                language_id:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                plain_text:
+                  type: string
+                preview_url:
+                  type:
+                    - string
+                    - "null"
+                screenshot_url:
+                  type:
+                    - string
+                    - "null"
+                send_after:
+                  type:
+                    - string
+                    - "null"
+                stats:
+                  type: object
+                  properties:
+                    click_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    click_to_open_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    clicks_count:
+                      type: integer
+                    forwards_count:
+                      type: integer
+                    hard_bounce_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    hard_bounces_count:
+                      type: integer
+                    open_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    opens_count:
+                      type: integer
+                    sent:
+                      type: integer
+                    soft_bounce_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    soft_bounces_count:
+                      type: integer
+                    spam_count:
+                      type: integer
+                    spam_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    unique_clicks_count:
+                      type: integer
+                    unique_opens_count:
+                      type: integer
+                    unsubscribe_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    unsubscribes_count:
+                      type: integer
+                  required:
+                    - click_rate
+                    - clicks_count
+                    - forwards_count
+                    - hard_bounce_rate
+                    - hard_bounces_count
+                    - open_rate
+                    - opens_count
+                    - sent
+                    - soft_bounce_rate
+                    - soft_bounces_count
+                    - spam_count
+                    - spam_rate
+                    - unique_clicks_count
+                    - unique_opens_count
+                    - unsubscribe_rate
+                    - unsubscribes_count
+                subject:
+                  type: string
+                track_opens:
+                  type: boolean
+                updated_at:
+                  type: string
+                  format: date-time
+              required:
+                - account_id
+                - created_at
+                - emailable_id
+                - emailable_type
+                - from
+                - from_name
+                - id
+                - is_designed
+                - is_winner
+                - language_id
+                - name
+                - plain_text
+                - preview_url
+                - screenshot_url
+                - send_after
+                - stats
+                - subject
+                - track_opens
+                - type
+                - updated_at
+          filter:
+            type: array
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  args:
+                    type: array
+                    items:
+                      anyOf:
+                        - type: array
+                          items:
+                            type: string
+                            format: integer
+                        - type: string
+                  operator:
+                    type: string
+                required:
+                  - args
+                  - operator
+          filter_for_humans:
+            type: array
+            items:
+              type: array
+              items:
+                type: string
+          finished_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          has_winner:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+            format: integer
+          initial_created_at:
+            type:
+              - string
+              - "null"
+          is_currently_sending_out:
+            type: boolean
+          is_stopped:
+            type: boolean
+          language_id:
+            type: string
+            format: integer
+          missing_data:
+            type: array
+            items:
+              type: string
+          name:
+            type: string
+          queued_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          scheduled_for:
+            type: string
+            format: date-time
+          settings:
+            type: object
+            properties:
+              ecommerce_tracking:
+                type: string
+                format: integer
+              track_opens:
+                type: string
+                format: integer
+              use_google_analytics:
+                type: string
+                format: integer
+            required:
+              - ecommerce_tracking
+              - track_opens
+              - use_google_analytics
+          started_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          stats:
+            type: object
+            properties:
+              click_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              click_to_open_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              clicks_count:
+                type: integer
+              forwards_count:
+                type: integer
+              hard_bounce_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              hard_bounces_count:
+                type: integer
+              open_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              opens_count:
+                type: integer
+              sent:
+                type: integer
+              soft_bounce_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              soft_bounces_count:
+                type: integer
+              spam_count:
+                type: integer
+              spam_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              unique_clicks_count:
+                type: integer
+              unique_opens_count:
+                type: integer
+              unsubscribe_rate:
+                type: object
+                properties:
+                  float:
+                    type: number
+                  string:
+                    type: string
+                required:
+                  - float
+                  - string
+              unsubscribes_count:
+                type: integer
+            required:
+              - click_rate
+              - clicks_count
+              - forwards_count
+              - hard_bounce_rate
+              - hard_bounces_count
+              - open_rate
+              - opens_count
+              - sent
+              - soft_bounce_rate
+              - soft_bounces_count
+              - spam_count
+              - spam_rate
+              - unique_clicks_count
+              - unique_opens_count
+              - unsubscribe_rate
+              - unsubscribes_count
+          status:
+            type: string
+          stopped_at:
+            type:
+              - string
+              - "null"
+          type_for_humans:
+            type: string
+          updated_at:
+            type: string
+            format: date-time
+          used_in_automations:
+            type: boolean
+          uses_ecommerce:
+            type: boolean
+          uses_survey:
+            type: boolean
+          warnings:
+            type: array
+            items:
+              type: string
+          winner_selected_manually_at:
+            type:
+              - string
+              - "null"
+          winner_sending_time_for_humans:
+            type:
+              - string
+              - "null"
+          winner_version_for_human:
+            type:
+              - string
+              - "null"
+        required:
+          - account_id
+          - can_be_scheduled
+          - created_at
+          - default_email_id
+          - delivery_schedule
+          - emails
+          - filter
+          - filter_for_humans
+          - finished_at
+          - has_winner
+          - id
+          - initial_created_at
+          - is_currently_sending_out
+          - is_stopped
+          - language_id
+          - missing_data
+          - name
+          - queued_at
+          - scheduled_for
+          - settings
+          - started_at
+          - status
+          - stopped_at
+          - type
+          - type_for_humans
+          - updated_at
+          - used_in_automations
+          - uses_ecommerce
+          - uses_survey
+          - warnings
+          - winner_selected_manually_at
+          - winner_sending_time_for_humans
+          - winner_version_for_human
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: timezones
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /timezones
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          name_for_humans:
+            type: string
+          offset:
+            type: integer
+          offset_name:
+            type: string
+        required:
+          - id
+          - name
+          - name_for_humans
+          - offset_name
+          - offset
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: forms_popup
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /forms/popup
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 25
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          type:
+            type: string
+          active:
+            type: boolean
+          can:
+            type: object
+            properties:
+              update:
+                type: boolean
+            required:
+              - update
+          conversion_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          conversions_count:
+            type: integer
+          created_at:
+            type: string
+          double_optin:
+            type:
+              - boolean
+              - "null"
+          groups:
+            type: array
+            items:
+              type: object
+              properties:
+                active_count:
+                  type: integer
+                bounced_count:
+                  type: integer
+                click_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: integer
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                clicks_count:
+                  type: integer
+                created_at:
+                  type: string
+                id:
+                  type: string
+                junk_count:
+                  type: integer
+                name:
+                  type: string
+                open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: integer
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                opens_count:
+                  type: integer
+                sent_count:
+                  type: integer
+                unconfirmed_count:
+                  type: integer
+                unsubscribed_count:
+                  type: integer
+              required:
+                - id
+                - name
+                - active_count
+                - sent_count
+                - opens_count
+                - open_rate
+                - clicks_count
+                - click_rate
+                - unsubscribed_count
+                - unconfirmed_count
+                - bounced_count
+                - junk_count
+                - created_at
+          has_content:
+            type: boolean
+          has_missing_groups:
+            type: boolean
+          id:
+            type: string
+          is_broken:
+            type: boolean
+          last_registration_at:
+            type:
+              - string
+              - "null"
+          name:
+            type: string
+          opens_count:
+            type: integer
+          screenshot_url:
+            type:
+              - string
+              - "null"
+          settings:
+            type: object
+            properties:
+              double_optin:
+                type: boolean
+              form_type:
+                type: string
+              frequency:
+                type: integer
+              frequency_unit:
+                type: string
+              groot_id:
+                type: integer
+              hide_on:
+                type: array
+                items:
+                  type: string
+              schedule:
+                type: boolean
+              scroll_percentage:
+                type: integer
+              timeout_seconds:
+                type: integer
+              triggers:
+                type: array
+                items:
+                  type: string
+              url_list:
+                type: array
+                items:
+                  type: string
+              url_list_strict:
+                type:
+                  - "null"
+                  - string
+              visibility:
+                type: string
+            required:
+              - double_optin
+              - groot_id
+              - form_type
+              - triggers
+              - timeout_seconds
+              - scroll_percentage
+              - frequency
+              - frequency_unit
+              - visibility
+              - url_list
+              - url_list_strict
+              - hide_on
+              - schedule
+          slug:
+            type: string
+          used_in_automations:
+            type: boolean
+          warnings:
+            type: array
+            items:
+              type: string
+        required:
+          - id
+          - type
+          - slug
+          - name
+          - created_at
+          - conversions_count
+          - opens_count
+          - conversion_rate
+          - settings
+          - last_registration_at
+          - active
+          - is_broken
+          - has_content
+          - can
+          - used_in_automations
+          - warnings
+          - double_optin
+          - screenshot_url
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: forms_embedded
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /forms/embedded
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 25
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          type:
+            type: string
+          active:
+            type: boolean
+          can:
+            type: object
+            properties:
+              update:
+                type: boolean
+            required:
+              - update
+          conversion_rate:
+            type: object
+            properties:
+              float:
+                type: integer
+              string:
+                type: string
+            required:
+              - float
+              - string
+          conversions_count:
+            type: integer
+          created_at:
+            type: string
+          double_optin:
+            type: boolean
+          groups:
+            type: array
+            items:
+              type: object
+              properties:
+                active_count:
+                  type: integer
+                bounced_count:
+                  type: integer
+                click_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                clicks_count:
+                  type: integer
+                created_at:
+                  type: string
+                id:
+                  type: string
+                junk_count:
+                  type: integer
+                name:
+                  type: string
+                open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                opens_count:
+                  type: integer
+                sent_count:
+                  type: integer
+                unconfirmed_count:
+                  type: integer
+                unsubscribed_count:
+                  type: integer
+              required:
+                - id
+                - name
+                - active_count
+                - sent_count
+                - opens_count
+                - open_rate
+                - clicks_count
+                - click_rate
+                - unsubscribed_count
+                - unconfirmed_count
+                - bounced_count
+                - junk_count
+                - created_at
+          has_content:
+            type: boolean
+          has_missing_groups:
+            type: boolean
+          id:
+            type: string
+          is_broken:
+            type: boolean
+          last_registration_at:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          opens_count:
+            type: integer
+          screenshot_url:
+            type: string
+          settings:
+            type: object
+            properties:
+              double_optin:
+                type: boolean
+              groot_id:
+                type: integer
+            required:
+              - double_optin
+              - groot_id
+          slug:
+            type: string
+          used_in_automations:
+            type: boolean
+          warnings:
+            type: array
+            items:
+              type: string
+        required:
+          - id
+          - type
+          - slug
+          - name
+          - created_at
+          - conversions_count
+          - opens_count
+          - conversion_rate
+          - settings
+          - last_registration_at
+          - active
+          - is_broken
+          - has_content
+          - can
+          - used_in_automations
+          - warnings
+          - double_optin
+          - screenshot_url
+          - has_missing_groups
+          - groups
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: forms_promotion
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.mailerlite.com/api
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: /forms/promotion
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 25
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type: string
+          active:
+            type: boolean
+          can:
+            type: object
+            properties:
+              update:
+                type: boolean
+            required:
+              - update
+          conversion_rate:
+            type: object
+            properties:
+              float:
+                type: integer
+              string:
+                type: string
+            required:
+              - float
+              - string
+          conversions_count:
+            type: integer
+          created_at:
+            type: string
+          double_optin:
+            type:
+              - string
+              - "boolean"
+          groups:
+            type: array
+            items:
+              type: string
+          has_content:
+            type: boolean
+          has_missing_groups:
+            type: boolean
+          id:
+            type: string
+          is_broken:
+            type: boolean
+          last_registration_at:
+            type:
+              - string
+              - "null"
+          name:
+            type: string
+          opens_count:
+            type: integer
+          screenshot_url:
+            type: string
+          settings:
+            type: object
+            properties:
+              form_type:
+                type: string
+              frequency:
+                type: integer
+              frequency_unit:
+                type: string
+              groot_id:
+                type: integer
+              hide_on:
+                type: array
+                items:
+                  type: string
+              schedule:
+                type: boolean
+              schedule_from:
+                type: string
+              schedule_timezone_id:
+                type: string
+              schedule_until:
+                type: string
+              scroll_percentage:
+                type: integer
+              timeout_seconds:
+                type: integer
+              triggers:
+                type: array
+                items:
+                  type: string
+              url_list:
+                type: array
+                items:
+                  type: string
+              url_list_strict:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type: string
+              visibility:
+                type: string
+            required:
+              - groot_id
+              - form_type
+              - triggers
+              - timeout_seconds
+              - scroll_percentage
+              - frequency
+              - frequency_unit
+              - visibility
+              - url_list
+              - url_list_strict
+              - hide_on
+              - schedule
+              - schedule_from
+              - schedule_until
+              - schedule_timezone_id
+          slug:
+            type: string
+          used_in_automations:
+            type: boolean
+          warnings:
+            type: array
+            items:
+              type: string
+        required:
+          - id
+          - type
+          - slug
+          - name
+          - created_at
+          - conversions_count
+          - opens_count
+          - conversion_rate
+          - settings
+          - last_registration_at
+          - active
+          - is_broken
+          - has_content
+          - can
+          - used_in_automations
+          - warnings
+          - double_optin
+          - screenshot_url
+          - has_missing_groups
+          - groups
+        additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: >-
+          Your API Token. See <a
+          href="https://developers.mailerlite.com/docs/#authentication">here</a>.
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    subscribers: false
+    segments: false
+    automations: false
+    campaigns: false
+    timezones: false
+    forms_popup: false
+    forms_embedded: false
+    forms_promotion: false
+schemas:
+  subscribers:
+    type: object
+    properties:
+      click_rate:
+        type: integer
+      clicks_count:
+        type: integer
+      created_at:
+        type: string
+      email:
+        type: string
+      fields:
+        type: object
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          name:
+            type: string
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          z_i_p:
+            type:
+              - string
+              - "null"
+        required:
+          - name
+          - last_name
+          - company
+          - country
+          - city
+          - phone
+          - state
+          - z_i_p
+      id:
+        type: string
+      ip_address:
+        type:
+          - string
+          - "null"
+      open_rate:
+        type: integer
+      opens_count:
+        type: integer
+      opted_in_at:
+        type:
+          - string
+          - "null"
+      optin_ip:
+        type:
+          - string
+          - "null"
+      sent:
+        type: integer
+      source:
+        type: string
+      status:
+        type: string
+      subscribed_at:
+        type: string
+      unsubscribed_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - email
+      - status
+      - source
+      - sent
+      - opens_count
+      - clicks_count
+      - open_rate
+      - click_rate
+      - ip_address
+      - subscribed_at
+      - unsubscribed_at
+      - created_at
+      - updated_at
+      - fields
+      - opted_in_at
+      - optin_ip
+    additionalProperties: true
+  segments:
+    type: object
+    properties:
+      click_rate:
+        type: object
+        properties:
+          float:
+            type: number
+          string:
+            type: string
+        required:
+          - float
+          - string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      open_rate:
+        type: object
+        properties:
+          float:
+            type: number
+          string:
+            type: string
+        required:
+          - float
+          - string
+      total:
+        type: integer
+    required:
+      - id
+      - name
+      - total
+      - open_rate
+      - click_rate
+      - created_at
+    additionalProperties: true
+  automations:
+    type: object
+    properties:
+      broken:
+        type: boolean
+      complete:
+        type: boolean
+      created_at:
+        type: string
+      emails_count:
+        type: integer
+      enabled:
+        type: boolean
+      first_email_screenshot_url:
+        type:
+          - string
+          - "null"
+      has_banned_content:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      qualified_subscribers_count:
+        type: integer
+      stats:
+        type: object
+        properties:
+          bounce_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          click_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          click_to_open_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          clicks_count:
+            type: integer
+          completed_subscribers_count:
+            type: integer
+          hard_bounce_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          hard_bounces_count:
+            type: integer
+          open_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          opens_count:
+            type: integer
+          sent:
+            type: integer
+          soft_bounce_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          soft_bounces_count:
+            type: integer
+          spam_count:
+            type: integer
+          spam_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          subscribers_in_queue_count:
+            type: integer
+          unique_clicks_count:
+            type:
+              - integer
+              - "null"
+          unique_opens_count:
+            type:
+              - integer
+              - "null"
+          unsubscribe_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          unsubscribes_count:
+            type: integer
+        required:
+          - completed_subscribers_count
+          - subscribers_in_queue_count
+          - bounce_rate
+          - click_to_open_rate
+          - sent
+          - opens_count
+          - unique_opens_count
+          - open_rate
+          - clicks_count
+          - unique_clicks_count
+          - click_rate
+          - unsubscribes_count
+          - unsubscribe_rate
+          - spam_count
+          - spam_rate
+          - hard_bounces_count
+          - hard_bounce_rate
+          - soft_bounces_count
+          - soft_bounce_rate
+      steps:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+            complete:
+              type: boolean
+            created_at:
+              type: string
+            description:
+              type: string
+            email:
+              type: object
+              properties:
+                type:
+                  type: string
+                account_id:
+                  type: string
+                created_at:
+                  type: string
+                emailable_id:
+                  type: string
+                emailable_type:
+                  type: string
+                from:
+                  type: string
+                from_name:
+                  type: string
+                id:
+                  type: string
+                is_designed:
+                  type: boolean
+                is_winner:
+                  type: boolean
+                language_id:
+                  type: integer
+                name:
+                  type: string
+                plain_text:
+                  type:
+                    - string
+                    - "null"
+                preview_url:
+                  type:
+                    - string
+                    - "null"
+                screenshot_url:
+                  type:
+                    - string
+                    - "null"
+                send_after:
+                  type:
+                    - string
+                    - "null"
+                stats:
+                  type: object
+                  properties:
+                    click_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    clicks_count:
+                      type: integer
+                    forwards_count:
+                      type: integer
+                    hard_bounce_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    hard_bounces_count:
+                      type: integer
+                    open_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    opens_count:
+                      type: integer
+                    sent:
+                      type: integer
+                    soft_bounce_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    soft_bounces_count:
+                      type: integer
+                    spam_count:
+                      type: integer
+                    spam_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    unique_clicks_count:
+                      type: integer
+                    unique_opens_count:
+                      type: integer
+                    unsubscribe_rate:
+                      type: object
+                      properties:
+                        float:
+                          type: number
+                        string:
+                          type: string
+                      required:
+                        - float
+                        - string
+                    unsubscribes_count:
+                      type: integer
+                  required:
+                    - sent
+                    - opens_count
+                    - unique_opens_count
+                    - open_rate
+                    - clicks_count
+                    - unique_clicks_count
+                    - click_rate
+                    - unsubscribes_count
+                    - unsubscribe_rate
+                    - spam_count
+                    - spam_rate
+                    - hard_bounces_count
+                    - hard_bounce_rate
+                    - soft_bounces_count
+                    - soft_bounce_rate
+                    - forwards_count
+                subject:
+                  type: string
+                track_opens:
+                  type: boolean
+                updated_at:
+                  type: string
+              required:
+                - id
+                - account_id
+                - emailable_id
+                - emailable_type
+                - type
+                - from
+                - from_name
+                - name
+                - subject
+                - plain_text
+                - screenshot_url
+                - preview_url
+                - created_at
+                - updated_at
+                - is_designed
+                - language_id
+                - is_winner
+                - stats
+                - send_after
+                - track_opens
+            email_id:
+              type: string
+            from:
+              type: string
+            from_name:
+              type: string
+            google_analytics:
+              type:
+                - string
+                - "null"
+            id:
+              type: string
+            language_id:
+              type: integer
+            name:
+              type: string
+            parent_id:
+              type: string
+            subject:
+              type: string
+            track_opens:
+              type: boolean
+            tracking_was_disabled:
+              type: boolean
+            updated_at:
+              type: string
+          required:
+            - id
+      trigger_data:
+        type: object
+        properties:
+          exclude_group_ids:
+            type: array
+            items:
+              type: integer
+          group_id:
+            type: integer
+          repeatable:
+            type: boolean
+          track_ecommerce:
+            type: boolean
+          valid:
+            type: boolean
+        required:
+          - valid
+      triggers:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+            broken:
+              type: boolean
+            exclude_group_ids:
+              type: array
+              items:
+                type: string
+            excluded_groups:
+              type: array
+              items:
+                type: string
+            group:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                url:
+                  type:
+                    - string
+                    - "null"
+              required:
+                - id
+                - name
+                - url
+            group_id:
+              type: string
+            id:
+              type: string
+      warnings:
+        type: array
+        items:
+          type: string
+    required:
+      - id
+      - name
+      - enabled
+      - trigger_data
+      - steps
+      - triggers
+      - complete
+      - broken
+      - warnings
+      - emails_count
+      - first_email_screenshot_url
+      - stats
+      - created_at
+      - has_banned_content
+      - qualified_subscribers_count
+    additionalProperties: true
+  campaigns:
+    type: object
+    properties:
+      type:
+        type: string
+      account_id:
+        type: string
+        format: integer
+      can_be_scheduled:
+        type: boolean
+      created_at:
+        type: string
+        format: date-time
+      default_email_id:
+        type: string
+      delivery_schedule:
+        type: string
+      emails:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+            account_id:
+              type: string
+              format: integer
+            created_at:
+              type: string
+              format: date-time
+            emailable_id:
+              type: string
+              format: integer
+            emailable_type:
+              type: string
+            from:
+              type: string
+            from_name:
+              type: string
+            id:
+              type: string
+              format: integer
+            is_designed:
+              type: boolean
+            is_winner:
+              type: boolean
+            language_id:
+              type:
+                - integer
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            plain_text:
+              type: string
+            preview_url:
+              type:
+                - string
+                - "null"
+            screenshot_url:
+              type:
+                - string
+                - "null"
+            send_after:
+              type:
+                - string
+                - "null"
+            stats:
+              type: object
+              properties:
+                click_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                click_to_open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                clicks_count:
+                  type: integer
+                forwards_count:
+                  type: integer
+                hard_bounce_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                hard_bounces_count:
+                  type: integer
+                open_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                opens_count:
+                  type: integer
+                sent:
+                  type: integer
+                soft_bounce_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                soft_bounces_count:
+                  type: integer
+                spam_count:
+                  type: integer
+                spam_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                unique_clicks_count:
+                  type: integer
+                unique_opens_count:
+                  type: integer
+                unsubscribe_rate:
+                  type: object
+                  properties:
+                    float:
+                      type: number
+                    string:
+                      type: string
+                  required:
+                    - float
+                    - string
+                unsubscribes_count:
+                  type: integer
+              required:
+                - click_rate
+                - clicks_count
+                - forwards_count
+                - hard_bounce_rate
+                - hard_bounces_count
+                - open_rate
+                - opens_count
+                - sent
+                - soft_bounce_rate
+                - soft_bounces_count
+                - spam_count
+                - spam_rate
+                - unique_clicks_count
+                - unique_opens_count
+                - unsubscribe_rate
+                - unsubscribes_count
+            subject:
+              type: string
+            track_opens:
+              type: boolean
+            updated_at:
+              type: string
+              format: date-time
+          required:
+            - account_id
+            - created_at
+            - emailable_id
+            - emailable_type
+            - from
+            - from_name
+            - id
+            - is_designed
+            - is_winner
+            - language_id
+            - name
+            - plain_text
+            - preview_url
+            - screenshot_url
+            - send_after
+            - stats
+            - subject
+            - track_opens
+            - type
+            - updated_at
+      filter:
+        type: array
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              args:
+                type: array
+                items:
+                  anyOf:
+                    - type: array
+                      items:
+                        type: string
+                        format: integer
+                    - type: string
+              operator:
+                type: string
+            required:
+              - args
+              - operator
+      filter_for_humans:
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+      finished_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      has_winner:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+        format: integer
+      initial_created_at:
+        type:
+          - string
+          - "null"
+      is_currently_sending_out:
+        type: boolean
+      is_stopped:
+        type: boolean
+      language_id:
+        type: string
+        format: integer
+      missing_data:
+        type: array
+        items:
+          type: string
+      name:
+        type: string
+      queued_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      scheduled_for:
+        type: string
+        format: date-time
+      settings:
+        type: object
+        properties:
+          ecommerce_tracking:
+            type: string
+            format: integer
+          track_opens:
+            type: string
+            format: integer
+          use_google_analytics:
+            type: string
+            format: integer
+        required:
+          - ecommerce_tracking
+          - track_opens
+          - use_google_analytics
+      started_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      stats:
+        type: object
+        properties:
+          click_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          click_to_open_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          clicks_count:
+            type: integer
+          forwards_count:
+            type: integer
+          hard_bounce_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          hard_bounces_count:
+            type: integer
+          open_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          opens_count:
+            type: integer
+          sent:
+            type: integer
+          soft_bounce_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          soft_bounces_count:
+            type: integer
+          spam_count:
+            type: integer
+          spam_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          unique_clicks_count:
+            type: integer
+          unique_opens_count:
+            type: integer
+          unsubscribe_rate:
+            type: object
+            properties:
+              float:
+                type: number
+              string:
+                type: string
+            required:
+              - float
+              - string
+          unsubscribes_count:
+            type: integer
+        required:
+          - click_rate
+          - clicks_count
+          - forwards_count
+          - hard_bounce_rate
+          - hard_bounces_count
+          - open_rate
+          - opens_count
+          - sent
+          - soft_bounce_rate
+          - soft_bounces_count
+          - spam_count
+          - spam_rate
+          - unique_clicks_count
+          - unique_opens_count
+          - unsubscribe_rate
+          - unsubscribes_count
+      status:
+        type: string
+      stopped_at:
+        type:
+          - string
+          - "null"
+      type_for_humans:
+        type: string
+      updated_at:
+        type: string
+        format: date-time
+      used_in_automations:
+        type: boolean
+      uses_ecommerce:
+        type: boolean
+      uses_survey:
+        type: boolean
+      warnings:
+        type: array
+        items:
+          type: string
+      winner_selected_manually_at:
+        type:
+          - string
+          - "null"
+      winner_sending_time_for_humans:
+        type:
+          - string
+          - "null"
+      winner_version_for_human:
+        type:
+          - string
+          - "null"
+    required:
+      - account_id
+      - can_be_scheduled
+      - created_at
+      - default_email_id
+      - delivery_schedule
+      - emails
+      - filter
+      - filter_for_humans
+      - finished_at
+      - has_winner
+      - id
+      - initial_created_at
+      - is_currently_sending_out
+      - is_stopped
+      - language_id
+      - missing_data
+      - name
+      - queued_at
+      - scheduled_for
+      - settings
+      - started_at
+      - status
+      - stopped_at
+      - type
+      - type_for_humans
+      - updated_at
+      - used_in_automations
+      - uses_ecommerce
+      - uses_survey
+      - warnings
+      - winner_selected_manually_at
+      - winner_sending_time_for_humans
+      - winner_version_for_human
+    additionalProperties: true
+  timezones:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      name_for_humans:
+        type: string
+      offset:
+        type: integer
+      offset_name:
+        type: string
+    required:
+      - id
+      - name
+      - name_for_humans
+      - offset_name
+      - offset
+    additionalProperties: true
+  forms_popup:
+    type: object
+    properties:
+      type:
+        type: string
+      active:
+        type: boolean
+      can:
+        type: object
+        properties:
+          update:
+            type: boolean
+        required:
+          - update
+      conversion_rate:
+        type: object
+        properties:
+          float:
+            type: number
+          string:
+            type: string
+        required:
+          - float
+          - string
+      conversions_count:
+        type: integer
+      created_at:
+        type: string
+      double_optin:
+        type:
+          - boolean
+          - "null"
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            active_count:
+              type: integer
+            bounced_count:
+              type: integer
+            click_rate:
+              type: object
+              properties:
+                float:
+                  type: integer
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            clicks_count:
+              type: integer
+            created_at:
+              type: string
+            id:
+              type: string
+            junk_count:
+              type: integer
+            name:
+              type: string
+            open_rate:
+              type: object
+              properties:
+                float:
+                  type: integer
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            opens_count:
+              type: integer
+            sent_count:
+              type: integer
+            unconfirmed_count:
+              type: integer
+            unsubscribed_count:
+              type: integer
+          required:
+            - id
+            - name
+            - active_count
+            - sent_count
+            - opens_count
+            - open_rate
+            - clicks_count
+            - click_rate
+            - unsubscribed_count
+            - unconfirmed_count
+            - bounced_count
+            - junk_count
+            - created_at
+      has_content:
+        type: boolean
+      has_missing_groups:
+        type: boolean
+      id:
+        type: string
+      is_broken:
+        type: boolean
+      last_registration_at:
+        type:
+          - string
+          - "null"
+      name:
+        type: string
+      opens_count:
+        type: integer
+      screenshot_url:
+        type:
+          - string
+          - "null"
+      settings:
+        type: object
+        properties:
+          double_optin:
+            type: boolean
+          form_type:
+            type: string
+          frequency:
+            type: integer
+          frequency_unit:
+            type: string
+          groot_id:
+            type: integer
+          hide_on:
+            type: array
+            items:
+              type: string
+          schedule:
+            type: boolean
+          scroll_percentage:
+            type: integer
+          timeout_seconds:
+            type: integer
+          triggers:
+            type: array
+            items:
+              type: string
+          url_list:
+            type: array
+            items:
+              type: string
+          url_list_strict:
+            type:
+              - "null"
+              - string
+          visibility:
+            type: string
+        required:
+          - double_optin
+          - groot_id
+          - form_type
+          - triggers
+          - timeout_seconds
+          - scroll_percentage
+          - frequency
+          - frequency_unit
+          - visibility
+          - url_list
+          - url_list_strict
+          - hide_on
+          - schedule
+      slug:
+        type: string
+      used_in_automations:
+        type: boolean
+      warnings:
+        type: array
+        items:
+          type: string
+    required:
+      - id
+      - type
+      - slug
+      - name
+      - created_at
+      - conversions_count
+      - opens_count
+      - conversion_rate
+      - settings
+      - last_registration_at
+      - active
+      - is_broken
+      - has_content
+      - can
+      - used_in_automations
+      - warnings
+      - double_optin
+      - screenshot_url
+    additionalProperties: true
+  forms_embedded:
+    type: object
+    properties:
+      type:
+        type: string
+      active:
+        type: boolean
+      can:
+        type: object
+        properties:
+          update:
+            type: boolean
+        required:
+          - update
+      conversion_rate:
+        type: object
+        properties:
+          float:
+            type: integer
+          string:
+            type: string
+        required:
+          - float
+          - string
+      conversions_count:
+        type: integer
+      created_at:
+        type: string
+      double_optin:
+        type: boolean
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            active_count:
+              type: integer
+            bounced_count:
+              type: integer
+            click_rate:
+              type: object
+              properties:
+                float:
+                  type: number
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            clicks_count:
+              type: integer
+            created_at:
+              type: string
+            id:
+              type: string
+            junk_count:
+              type: integer
+            name:
+              type: string
+            open_rate:
+              type: object
+              properties:
+                float:
+                  type: number
+                string:
+                  type: string
+              required:
+                - float
+                - string
+            opens_count:
+              type: integer
+            sent_count:
+              type: integer
+            unconfirmed_count:
+              type: integer
+            unsubscribed_count:
+              type: integer
+          required:
+            - id
+            - name
+            - active_count
+            - sent_count
+            - opens_count
+            - open_rate
+            - clicks_count
+            - click_rate
+            - unsubscribed_count
+            - unconfirmed_count
+            - bounced_count
+            - junk_count
+            - created_at
+      has_content:
+        type: boolean
+      has_missing_groups:
+        type: boolean
+      id:
+        type: string
+      is_broken:
+        type: boolean
+      last_registration_at:
+        type:
+          - "null"
+          - string
+      name:
+        type: string
+      opens_count:
+        type: integer
+      screenshot_url:
+        type: string
+      settings:
+        type: object
+        properties:
+          double_optin:
+            type: boolean
+          groot_id:
+            type: integer
+        required:
+          - double_optin
+          - groot_id
+      slug:
+        type: string
+      used_in_automations:
+        type: boolean
+      warnings:
+        type: array
+        items:
+          type: string
+    required:
+      - id
+      - type
+      - slug
+      - name
+      - created_at
+      - conversions_count
+      - opens_count
+      - conversion_rate
+      - settings
+      - last_registration_at
+      - active
+      - is_broken
+      - has_content
+      - can
+      - used_in_automations
+      - warnings
+      - double_optin
+      - screenshot_url
+      - has_missing_groups
+      - groups
+    additionalProperties: true
+  forms_promotion:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type: string
+      active:
+        type: boolean
+      can:
+        type: object
+        properties:
+          update:
+            type: boolean
+        required:
+          - update
+      conversion_rate:
+        type: object
+        properties:
+          float:
+            type: integer
+          string:
+            type: string
+        required:
+          - float
+          - string
+      conversions_count:
+        type: integer
+      created_at:
+        type: string
+      double_optin:
+        type:
+          - string
+          - "boolean"
+      groups:
+        type: array
+        items:
+          type: string
+      has_content:
+        type: boolean
+      has_missing_groups:
+        type: boolean
+      id:
+        type: string
+      is_broken:
+        type: boolean
+      last_registration_at:
+        type:
+          - string
+          - "null"
+      name:
+        type: string
+      opens_count:
+        type: integer
+      screenshot_url:
+        type: string
+      settings:
+        type: object
+        properties:
+          form_type:
+            type: string
+          frequency:
+            type: integer
+          frequency_unit:
+            type: string
+          groot_id:
+            type: integer
+          hide_on:
+            type: array
+            items:
+              type: string
+          schedule:
+            type: boolean
+          schedule_from:
+            type: string
+          schedule_timezone_id:
+            type: string
+          schedule_until:
+            type: string
+          scroll_percentage:
+            type: integer
+          timeout_seconds:
+            type: integer
+          triggers:
+            type: array
+            items:
+              type: string
+          url_list:
+            type: array
+            items:
+              type: string
+          url_list_strict:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          visibility:
+            type: string
+        required:
+          - groot_id
+          - form_type
+          - triggers
+          - timeout_seconds
+          - scroll_percentage
+          - frequency
+          - frequency_unit
+          - visibility
+          - url_list
+          - url_list_strict
+          - hide_on
+          - schedule
+          - schedule_from
+          - schedule_until
+          - schedule_timezone_id
+      slug:
+        type: string
+      used_in_automations:
+        type: boolean
+      warnings:
+        type: array
+        items:
+          type: string
+    required:
+      - id
+      - type
+      - slug
+      - name
+      - created_at
+      - conversions_count
+      - opens_count
+      - conversion_rate
+      - settings
+      - last_registration_at
+      - active
+      - is_broken
+      - has_content
+      - can
+      - used_in_automations
+      - warnings
+      - double_optin
+      - screenshot_url
+      - has_missing_groups
+      - groups
+    additionalProperties: true

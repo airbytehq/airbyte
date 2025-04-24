@@ -1,0 +1,4 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+}

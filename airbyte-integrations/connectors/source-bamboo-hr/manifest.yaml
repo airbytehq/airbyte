@@ -1,0 +1,592 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  The BambooHR source connector for Airbyte allows seamless extraction of HR
+  data through multiple configurable streams, including custom_reports_stream,
+  employees_directory_stream, meta_fields_stream, time_off_requests_stream,
+  timesheet_entries, and employees.
+
+check:
+  type: CheckStream
+  stream_names:
+    - meta_fields_stream
+
+definitions:
+  streams:
+    custom_reports_stream:
+      type: DeclarativeStream
+      name: custom_reports_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reports/custom
+          http_method: POST
+          request_headers:
+            Accept: application/json
+          request_body_json:
+            title: Airbyte
+            fields: "{{ config['custom_reports_fields'].split(\",\") }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_reports_stream"
+    employees_directory_stream:
+      type: DeclarativeStream
+      name: employees_directory_stream
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: employees/directory
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employees_directory_stream"
+    meta_fields_stream:
+      type: DeclarativeStream
+      name: meta_fields_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/fields
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meta_fields_stream"
+    time_off_requests_stream:
+      type: DeclarativeStream
+      name: time_off_requests_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: time_off/requests/
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        lookback_window: P60D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_off_requests_stream"
+    timesheet_entries:
+      type: DeclarativeStream
+      name: timesheet_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /time_tracking/timesheet_entries
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1M
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timesheet_entries"
+    employees:
+      type: DeclarativeStream
+      name: employees
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employees/{{ stream_partition.id }}
+          http_method: GET
+          request_parameters:
+            fields: "{{ config.employee_fields }}"
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/employees_directory_stream"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: _cursor
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "0"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        cursor_datetime_formats:
+          - "%s"
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - _cursor
+              value: "0"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employees"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: x
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/custom_reports_stream"
+  - $ref: "#/definitions/streams/employees_directory_stream"
+  - $ref: "#/definitions/streams/meta_fields_stream"
+  - $ref: "#/definitions/streams/time_off_requests_stream"
+  - $ref: "#/definitions/streams/timesheet_entries"
+  - $ref: "#/definitions/streams/employees"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - subdomain
+    properties:
+      api_key:
+        type: string
+        description: Api key of bamboo hr
+        order: 0
+        title: api_key
+        airbyte_secret: true
+      subdomain:
+        type: string
+        description: Sub Domain of bamboo hr
+        order: 1
+        title: subdomain
+      custom_reports_fields:
+        type: string
+        description: Comma-separated list of fields to include in custom reports.
+        order: 2
+        title: custom_reports_fields
+      custom_reports_include_default_fields:
+        type: boolean
+        description: >-
+          If true, the custom reports endpoint will include the default fields
+          defined here:
+          https://documentation.bamboohr.com/docs/list-of-field-names.
+        order: 3
+        title: custom_reports_include_default_fields
+        default: true
+      employee_fields:
+        type: string
+        description: Comma-separated list of fields to include for employees.
+        order: 4
+        title: employee_fields
+        default: firstName,lastName
+      start_date:
+        type: string
+        order: 5
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    custom_reports_stream: false
+    employees_directory_stream: false
+    meta_fields_stream: false
+    time_off_requests_stream: false
+    timesheet_entries: false
+    employees: false
+  testedStreams:
+    custom_reports_stream:
+      hasRecords: true
+      streamHash: 8b222d5f1e588051fb0ce253647b2413f6144460
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    employees_directory_stream:
+      hasRecords: true
+      streamHash: f3f79feb9b746f21efeee900c2c5cb23d8d34d1a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    meta_fields_stream:
+      hasRecords: true
+      streamHash: 0936ffc28869d835e25b46d2d6bf685789a66238
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    time_off_requests_stream:
+      hasRecords: true
+      streamHash: 89cd0105b9b0ad08f2c451eb9bb23c62123955b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    timesheet_entries:
+      hasRecords: true
+      streamHash: 52a9be48ba2d461ffdc35fcfb0f4f13f639f258f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    employees:
+      hasRecords: true
+      streamHash: e3fbdb97b578abe9ce024e67fa62e2564d6ac28b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  custom_reports_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  employees_directory_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      canUploadPhoto:
+        type:
+          - "null"
+          - integer
+      department:
+        type:
+          - "null"
+          - string
+      displayName:
+        type:
+          - "null"
+          - string
+      division:
+        type:
+          - "null"
+          - string
+      firstName:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      jobTitle:
+        type:
+          - "null"
+          - string
+      lastName:
+        type:
+          - "null"
+          - string
+      linkedIn:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      mobilePhone:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      photoUploaded:
+        type:
+          - "null"
+          - boolean
+      photoUrl:
+        type:
+          - "null"
+          - string
+      preferredName:
+        type:
+          - "null"
+          - string
+      pronouns:
+        type:
+          - "null"
+          - string
+      supervisor:
+        type:
+          - "null"
+          - string
+      workEmail:
+        type:
+          - "null"
+          - string
+      workPhone:
+        type:
+          - "null"
+          - string
+      workPhoneExtension:
+        type:
+          - "null"
+          - string
+  meta_fields_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      alias:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+  time_off_requests_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      actions:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      amount:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      created:
+        type:
+          - "null"
+          - string
+      dates:
+        type:
+          - "null"
+          - string
+      employeeId:
+        type:
+          - "null"
+          - string
+      end:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      start:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+  timesheet_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      approved:
+        type:
+          - boolean
+          - "null"
+      approvedAt:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      employeeId:
+        type:
+          - number
+          - "null"
+      end:
+        type: string
+      hours:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      note:
+        type:
+          - string
+          - "null"
+      start:
+        type: string
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - start
+      - end
+  employees:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      _cursor:
+        type: integer

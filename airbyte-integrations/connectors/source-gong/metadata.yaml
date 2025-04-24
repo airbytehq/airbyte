@@ -1,0 +1,39 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.0@sha256:0508eca3b3193ba7883a80f0f739073f5bd99a8f565720c2f95286d5b4f48cb6
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
+  dockerImageTag: 0.4.2
+  dockerRepository: airbyte/source-gong
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gong
+  githubIssueLabel: source-gong
+  icon: gong.svg
+  license: MIT
+  name: Gong
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-gong
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_GONG_CREDS_OAUTH
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

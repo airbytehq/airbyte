@@ -6,10 +6,10 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["lastModified"]
+        "default_cursor_field": []
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModified"],
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
       "destination_sync_mode": "append"
     },
     {
@@ -54,6 +54,18 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
+        "default_cursor_field": ["lastModifiedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["lastModifiedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": ["lastModified"]
       },
       "sync_mode": "incremental",
@@ -62,14 +74,20 @@
     },
     {
       "stream": {
-        "name": "ad_direct_sponsored_contents",
+        "name": "lead_forms",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["lastModified"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModified"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "lead_form_responses",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
     {
@@ -87,6 +105,114 @@
     {
       "stream": {
         "name": "ad_creative_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_impression_device_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_company_size_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_country_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_job_function_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_job_title_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_industry_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_seniority_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_region_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_member_company_analytics",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,

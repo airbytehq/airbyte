@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "id": {
+      "description": "The unique ID of the metafield.",
+      "type": ["null", "integer"]
+    },
+    "namespace": {
+      "description": "The namespace of the metafield.",
+      "type": ["null", "string"]
+    },
+    "key": {
+      "description": "The key that identifies the metafield.",
+      "type": ["null", "string"]
+    },
+    "value": {
+      "description": "The actual value stored in the metafield.",
+      "type": ["null", "string"]
+    },
+    "value_type": {
+      "description": "The type of the value stored in the metafield.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The description of the metafield.",
+      "type": ["null", "string"]
+    },
+    "owner_id": {
+      "description": "The ID of the owner of the metafield.",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time when the metafield was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the metafield was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "owner_resource": {
+      "description": "The type of resource that owns the metafield.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The data type of the value stored in the metafield.",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The admin GraphQL API ID of the metafield.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the metafield belongs.",
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "type": ["null", "object"]
+}

@@ -1,0 +1,6 @@
+{
+  "endpoint": "fake-endpoint",
+  "iban": "fake_iban",
+  "api_key": "my-orgs:123456",
+  "start_date": "9999-99-99"
+}

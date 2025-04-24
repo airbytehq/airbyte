@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 # type: ignore
@@ -7,6 +7,7 @@
 import sys
 
 from github import GitHubFiller
+
 
 if __name__ == "__main__":
     api_token = sys.argv[1]

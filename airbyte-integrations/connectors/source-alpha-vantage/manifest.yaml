@@ -1,0 +1,548 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - time_series_weekly
+    - time_series_weekly_adjusted
+
+definitions:
+  streams:
+    time_series_intraday:
+      type: DeclarativeStream
+      name: time_series_intraday
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: TIME_SERIES_INTRADAY
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            field_path:
+              - Time Series ({{ config['interval'] }})
+            inject_key_as_field: timestamp
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_series_intraday"
+    time_series_daily:
+      type: DeclarativeStream
+      name: time_series_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: TIME_SERIES_DAILY
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            field_path:
+              - Time Series (Daily)
+            inject_key_as_field: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_series_daily"
+    time_series_daily_adjusted:
+      type: DeclarativeStream
+      name: time_series_daily_adjusted
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: TIME_SERIES_DAILY_ADJUSTED
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            field_path:
+              - Time Series (Daily)
+            inject_key_as_field: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_series_daily_adjusted"
+    time_series_weekly:
+      type: DeclarativeStream
+      name: time_series_weekly
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: TIME_SERIES_WEEKLY
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            field_path:
+              - Weekly Time Series
+            inject_key_as_field: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_series_weekly"
+    time_series_weekly_adjusted:
+      type: DeclarativeStream
+      name: time_series_weekly_adjusted
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: TIME_SERIES_WEEKLY_ADJUSTED
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            field_path:
+              - Weekly Adjusted Time Series
+            inject_key_as_field: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_series_weekly_adjusted"
+    time_series_monthly:
+      type: DeclarativeStream
+      name: time_series_monthly
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: TIME_SERIES_MONTHLY
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            field_path:
+              - Monthly Time Series
+            inject_key_as_field: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_series_monthly"
+    time_series_monthly_adjusted:
+      type: DeclarativeStream
+      name: time_series_monthly_adjusted
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: TIME_SERIES_MONTHLY_ADJUSTED
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            field_path:
+              - Monthly Adjusted Time Series
+            inject_key_as_field: date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_series_monthly_adjusted"
+    quote:
+      type: DeclarativeStream
+      name: quote
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /query
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config['api_key'] }}"
+            symbol: "{{ config['symbol'] }}"
+            function: GLOBAL_QUOTE
+            datatype: json
+            outputsize: "{{ config['outputsize'] }}"
+            interval: "{{ config['interval'] }}"
+            adjusted: "{{ config['adjusted'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/quote"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.alphavantage.co
+
+streams:
+  - $ref: "#/definitions/streams/time_series_intraday"
+  - $ref: "#/definitions/streams/time_series_daily"
+  - $ref: "#/definitions/streams/time_series_daily_adjusted"
+  - $ref: "#/definitions/streams/time_series_weekly"
+  - $ref: "#/definitions/streams/time_series_weekly_adjusted"
+  - $ref: "#/definitions/streams/time_series_monthly"
+  - $ref: "#/definitions/streams/time_series_monthly_adjusted"
+  - $ref: "#/definitions/streams/quote"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - symbol
+    properties:
+      api_key:
+        type: string
+        description: API Key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      symbol:
+        type: string
+        description: Stock symbol (with exchange code)
+        title: Symbol
+        examples:
+          - AAPL
+          - TSCO.LON
+        order: 1
+      interval:
+        type: string
+        description: |
+          Time-series data point interval. Required for intraday endpoints.
+        title: Interval
+        enum:
+          - 1min
+          - 5min
+          - 15min
+          - 30min
+          - 60min
+        default: 1min
+        order: 2
+      adjusted:
+        type: boolean
+        description: >
+          Whether to return adjusted data. Only applicable to intraday
+          endpoints.
+        title: Adjusted?
+        default: false
+        order: 3
+      outputsize:
+        type: string
+        description: |
+          Whether to return full or compact data (the last 100 data points).
+        title: Output Size
+        enum:
+          - compact
+          - full
+        default: compact
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    time_series_intraday: false
+    time_series_daily: false
+    time_series_daily_adjusted: false
+    time_series_weekly: false
+    time_series_weekly_adjusted: false
+    time_series_monthly: false
+    time_series_monthly_adjusted: false
+    quote: false
+  yamlComponents:
+    streams:
+      time_series_intraday:
+        - recordSelector
+      time_series_daily:
+        - recordSelector
+      time_series_daily_adjusted:
+        - recordSelector
+      time_series_weekly:
+        - recordSelector
+      time_series_weekly_adjusted:
+        - recordSelector
+      time_series_monthly:
+        - recordSelector
+      time_series_monthly_adjusted:
+        - recordSelector
+      quote:
+        - recordSelector
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  time_series_intraday:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      1. open:
+        type:
+          - string
+          - "null"
+      2. high:
+        type:
+          - string
+          - "null"
+      3. low:
+        type:
+          - string
+          - "null"
+      4. close:
+        type:
+          - string
+          - "null"
+      5. volume:
+        type:
+          - string
+          - "null"
+  time_series_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      1. open:
+        type:
+          - string
+          - "null"
+      2. high:
+        type:
+          - string
+          - "null"
+      3. low:
+        type:
+          - string
+          - "null"
+      4. close:
+        type:
+          - string
+          - "null"
+      5. volume:
+        type:
+          - string
+          - "null"
+  time_series_daily_adjusted:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      1. open:
+        type: string
+      2. high:
+        type: string
+      3. low:
+        type: string
+      4. close:
+        type: string
+      5. adjusted close:
+        type: string
+      6. volume:
+        type: string
+      7. dividend amount:
+        type: string
+      8. split coefficient:
+        type: string
+  time_series_weekly:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      1. open:
+        type:
+          - string
+          - "null"
+      2. high:
+        type:
+          - string
+          - "null"
+      3. low:
+        type:
+          - string
+          - "null"
+      4. close:
+        type:
+          - string
+          - "null"
+      5. volume:
+        type:
+          - string
+          - "null"
+  time_series_weekly_adjusted:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      1. open:
+        type: string
+      2. high:
+        type: string
+      3. low:
+        type: string
+      4. close:
+        type: string
+      5. adjusted close:
+        type: string
+      6. volume:
+        type: string
+      7. dividend amount:
+        type: string
+  time_series_monthly:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      1. open:
+        type:
+          - string
+          - "null"
+      2. high:
+        type:
+          - string
+          - "null"
+      3. low:
+        type:
+          - string
+          - "null"
+      4. close:
+        type:
+          - string
+          - "null"
+      5. volume:
+        type:
+          - string
+          - "null"
+  time_series_monthly_adjusted:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      1. open:
+        type: string
+      2. high:
+        type: string
+      3. low:
+        type: string
+      4. close:
+        type: string
+      5. adjusted close:
+        type: string
+      6. volume:
+        type: string
+      7. dividend amount:
+        type: string
+  quote:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      Global Quote:
+        01. symbol:
+          type:
+            - string
+            - "null"
+        02. open:
+          type:
+            - string
+            - "null"
+        03. high:
+          type:
+            - string
+            - "null"
+        04. low:
+          type:
+            - string
+            - "null"
+        05. price:
+          type:
+            - string
+            - "null"
+        06. volume:
+          type:
+            - string
+            - "null"
+        07. latest trading day:
+          type:
+            - string
+            - "null"
+        08. previous close:
+          type:
+            - string
+            - "null"
+        09. change:
+          type:
+            - string
+            - "null"
+        10. change percent:
+          type:
+            - string
+            - "null"

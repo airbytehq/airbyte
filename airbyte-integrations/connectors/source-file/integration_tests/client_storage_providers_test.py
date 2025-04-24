@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 from source_file.client import Client
+
 
 HERE = Path(__file__).parent.absolute()
 
@@ -25,6 +26,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
         ("ssh", "files/test.csv", "csv"),
         ("scp", "files/test.csv", "csv"),
         ("sftp", "files/test.csv", "csv"),
+        ("ssh", "files/test.csv.zip", "csv"),
         ("ssh", "files/test.csv.gz", "csv"),  # text in binary
         ("ssh", "files/test.pkl", "pickle"),  # binary
         ("sftp", "files/test.pkl.gz", "pickle"),  # binary in binary
@@ -59,7 +61,7 @@ def test__read_file_not_found(provider_config, provider_name, file_path, file_fo
 )
 def test__streams_from_ssh_providers(provider_config, provider_name, file_path, file_format):
     client = Client(dataset_name="output", format=file_format, url=file_path, provider=provider_config(provider_name))
-    streams = list(client.streams)
+    streams = list(client.streams())
     assert len(streams) == 1
     assert streams[0].json_schema["properties"] == {
         "header1": {"type": ["string", "null"]},
@@ -90,8 +92,8 @@ def test__read_from_public_provider(download_gcs_public_data, storage_provider, 
     config = {
         "format": "csv",
         "dataset_name": "output",
-        "reader_options": json.dumps({"sep": separator, "nrows": 42}),
-        "provider": {"storage": storage_provider},
+        "reader_options": {"sep": separator, "nrows": 42},
+        "provider": {"storage": storage_provider, "user_agent": False},
         "url": url,
     }
 
@@ -103,7 +105,7 @@ def test__read_from_private_gcs(google_cloud_service_credentials, private_google
         "dataset_name": "output",
         "format": "csv",
         "url": private_google_cloud_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "GCS",
             "service_account_json": json.dumps(google_cloud_service_credentials),
@@ -117,7 +119,7 @@ def test__read_from_private_aws(aws_credentials, private_aws_file):
         "dataset_name": "output",
         "format": "csv",
         "url": private_aws_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "S3",
             "aws_access_key_id": aws_credentials["aws_access_key_id"],
@@ -132,7 +134,7 @@ def test__read_from_public_azblob(azblob_credentials, public_azblob_file):
         "dataset_name": "output",
         "format": "csv",
         "url": public_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {"storage": "AzBlob", "storage_account": azblob_credentials["storage_account"]},
     }
     check_read(config)
@@ -143,7 +145,7 @@ def test__read_from_private_azblob_shared_key(azblob_credentials, private_azblob
         "dataset_name": "output",
         "format": "csv",
         "url": private_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "AzBlob",
             "storage_account": azblob_credentials["storage_account"],
@@ -158,7 +160,7 @@ def test__read_from_private_azblob_sas_token(azblob_credentials, private_azblob_
         "dataset_name": "output",
         "format": "csv",
         "url": private_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "AzBlob",
             "storage_account": azblob_credentials["storage_account"],

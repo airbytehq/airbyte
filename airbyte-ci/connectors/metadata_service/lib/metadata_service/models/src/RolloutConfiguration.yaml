@@ -1,0 +1,29 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/RolloutConfiguration.yaml
+title: RolloutConfiguration
+description: configuration for the rollout of a connector
+type: object
+additionalProperties: false
+properties:
+  enableProgressiveRollout:
+    type: boolean
+    default: false
+    description: Whether to enable progressive rollout for the connector.
+  initialPercentage:
+    type: integer
+    minimum: 0
+    maximum: 100
+    default: 0
+    description: The percentage of users that should receive the new version initially.
+  maxPercentage:
+    type: integer
+    minimum: 0
+    maximum: 100
+    default: 50
+    description: The percentage of users who should receive the release candidate during the test phase before full rollout.
+  advanceDelayMinutes:
+    type: integer
+    minimum: 10
+    default: 10
+    description: The number of minutes to wait before advancing the rollout percentage.

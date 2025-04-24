@@ -1,0 +1,1078 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ record['id'] in config['survey_ids'] if config['survey_ids']
+              else true}}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - companies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: nps/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - subscribers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    feedback:
+      type: DeclarativeStream
+      name: feedback
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: feedback
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - responses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/feedback"
+    outbox:
+      type: DeclarativeStream
+      name: outbox
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: nps/outbox
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - surveys
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/outbox"
+    reports:
+      type: DeclarativeStream
+      name: reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports"
+    nps:
+      type: DeclarativeStream
+      name: nps
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: nps/score
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/nps"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.retently.com/api/v2/
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_declarative_manifest.components.AuthenticatorRetently
+      api_auth:
+        type: ApiKeyAuthenticator
+        header: Authorization
+        api_token: api_key={{ config['credentials']['api_key']  }}
+      oauth:
+        type: OAuthAuthenticator
+        token_refresh_endpoint: https://app.retently.com/api/oauth/token
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        refresh_token: "{{ config['credentials']['refresh_token'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/feedback"
+  - $ref: "#/definitions/streams/outbox"
+  - $ref: "#/definitions/streams/reports"
+  - $ref: "#/definitions/streams/nps"
+  - $ref: "#/definitions/streams/templates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties:
+      credentials:
+        type: object
+        description: Choose how to authenticate to Retently
+        title: Authentication Mechanism
+        oneOf:
+          - type: object
+            title: Authenticate via Retently (OAuth)
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            additionalProperties: true
+            properties:
+              auth_type:
+                type: string
+                const: Client
+                order: 0
+              client_id:
+                type: string
+                description: The Client ID of your Retently developer application.
+                title: Client ID
+              client_secret:
+                type: string
+                description: The Client Secret of your Retently developer application.
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: >-
+                  Retently Refresh Token which can be used to fetch new Bearer
+                  Tokens when the current one expires.
+                title: Refresh Token
+                airbyte_secret: true
+          - type: object
+            title: Authenticate with API Token
+            required:
+              - api_key
+            additionalProperties: true
+            properties:
+              auth_type:
+                type: string
+                const: Token
+                order: 0
+              api_key:
+                type: string
+                description: >-
+                  Retently API Token. See the <a
+                  href="https://app.retently.com/settings/api/tokens">docs</a>
+                  for more information on how to obtain this key.
+                title: API Token
+                airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+        description: The type of the campaign (e.g., feedback request, promotional offer).
+      channel:
+        type:
+          - "null"
+          - string
+        description: >-
+          The communication channel used for the campaign (e.g., email, SMS,
+          in-app push notification).
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the campaign.
+      isActive:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the campaign is currently active or not.
+      metric:
+        type:
+          - "null"
+          - string
+        description: The metric associated with the campaign (e.g., NPS score, CSAT score).
+      name:
+        type:
+          - "null"
+          - string
+        description: The name or title of the campaign.
+      templateId:
+        type:
+          - "null"
+          - string
+        description: The ID of the template used for the campaign.
+  companies:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      companyName:
+        type:
+          - "null"
+          - string
+        description: The name of the company.
+      contactsCount:
+        type:
+          - "null"
+          - number
+        description: The number of contacts associated with the company.
+      createdDate:
+        type:
+          - "null"
+          - string
+        description: The date and time when the company was created.
+        format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+      cxMetrics:
+        type:
+          - "null"
+          - object
+        description: Various customer experience metrics associated with the company.
+        additionalProperties: true
+        properties:
+          CES:
+            type:
+              - "null"
+              - number
+            description: Customer Effort Score for the company.
+          CSAT:
+            type:
+              - "null"
+              - number
+            description: Customer Satisfaction Score for the company.
+          NPS:
+            type:
+              - "null"
+              - number
+            description: Net Promoter Score for the company.
+          STAR:
+            type:
+              - "null"
+              - number
+            description: STAR rating for the company.
+      domain:
+        type:
+          - "null"
+          - string
+        description: The domain of the company.
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the company.
+      industryName:
+        type:
+          - "null"
+          - string
+        description: The industry to which the company belongs.
+      tags:
+        type: array
+        description: Tags associated with the company.
+        items:
+          type:
+            - "null"
+            - string
+          description: Individual tag related to the company.
+  customers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      companyId:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the company the customer belongs to.
+      companyName:
+        type:
+          - "null"
+          - string
+        description: The name of the company the customer belongs to.
+      createdDate:
+        type:
+          - "null"
+          - string
+        description: The date and time when the customer record was created.
+        format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+      email:
+        type:
+          - "null"
+          - string
+        description: The email address of the customer.
+      firstName:
+        type:
+          - "null"
+          - string
+        description: The first name of the customer.
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the customer.
+      lastName:
+        type:
+          - "null"
+          - string
+        description: The last name of the customer.
+      properties:
+        type: array
+        description: Custom properties associated with the customer.
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+              description: The data type of the custom property.
+            label:
+              type:
+                - "null"
+                - string
+              description: The label for the custom property.
+            name:
+              type:
+                - "null"
+                - string
+              description: The name of the custom property.
+            value:
+              type:
+                - "null"
+                - string
+              description: The value of the custom property.
+      tags:
+        type: array
+        description: Tags associated with the customer.
+        items:
+          type:
+            - "null"
+            - string
+  feedback:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      additionalQuestions:
+        type: array
+        description: Additional questions included in the feedback form
+        items:
+          type: object
+      assigned:
+        type:
+          - "null"
+          - string
+        description: User or team assigned to handle the feedback
+      campaignId:
+        type:
+          - "null"
+          - string
+        description: ID of the campaign associated with the feedback
+      campaignName:
+        type:
+          - "null"
+          - string
+        description: Name of the campaign associated with the feedback
+      channel:
+        type:
+          - "null"
+          - string
+        description: Communication channel used to collect the feedback
+      checkbox:
+        type:
+          - "null"
+          - boolean
+        description: Checkbox responses provided in the feedback
+      city:
+        type:
+          - "null"
+          - string
+        description: City of the feedback provider
+      comment:
+        type:
+          - "null"
+          - string
+        description: Open text comment provided as feedback
+      companyId:
+        type:
+          - "null"
+          - string
+        description: ID of the company receiving the feedback
+      companyName:
+        type:
+          - "null"
+          - string
+        description: Name of the company receiving the feedback
+      country:
+        type:
+          - "null"
+          - string
+        description: Country of the feedback provider
+      createdDate:
+        type:
+          - "null"
+          - string
+        description: Date and time when the feedback was created
+        format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+      customProps:
+        type: array
+        description: Custom properties associated with the feedback
+        items:
+          type: object
+      customerId:
+        type:
+          - "null"
+          - string
+        description: ID of the customer providing the feedback
+      email:
+        type:
+          - "null"
+          - string
+        description: Email address of the feedback provider
+      feedbackTags:
+        type: array
+        description: Tags associated with the feedback
+        items:
+          type: string
+      feedbackTagsNew:
+        type: array
+        description: Additional tags for categorizing the feedback
+        items:
+          type: string
+      feedbackTopics:
+        type: array
+        description: Topics covered in the feedback
+        items:
+          type: object
+      firstName:
+        type:
+          - "null"
+          - string
+        description: First name of the feedback provider
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the feedback entry
+      isBogus:
+        type:
+          - "null"
+          - boolean
+        description: Flag indicating if the feedback is deemed bogus
+      jobTitle:
+        type:
+          - "null"
+          - string
+        description: Job title of the feedback provider
+      lastName:
+        type:
+          - "null"
+          - string
+        description: Last name of the feedback provider
+      metricsType:
+        type:
+          - "null"
+          - string
+        description: Type of metrics used in evaluating the feedback
+      notes:
+        type: array
+        description: Additional notes or comments on the feedback
+        items:
+          type: object
+      ratingCategory:
+        type:
+          - "null"
+          - string
+        description: Category under which the feedback is rated
+      resolved:
+        type:
+          - "null"
+          - boolean
+        description: Indicator of whether the feedback has been resolved or not
+      score:
+        type:
+          - "null"
+          - number
+        description: Numeric score assigned to the feedback
+      state:
+        type:
+          - "null"
+          - string
+        description: State or region of the feedback provider
+      status:
+        type:
+          - string
+          - "null"
+        description: Current status of the feedback entry
+      tags:
+        type: array
+        description: Various tags associated with the feedback entry
+        items:
+          type: string
+  outbox:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      additionalRecipients:
+        type:
+          - "null"
+          - array
+        description: List of additional email recipients for the outbox message.
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+        mandrillMessageId:
+          type:
+            - "null"
+            - string
+      attributes:
+        type:
+          - "null"
+          - object
+        description: Additional attributes associated with the outbox data.
+        additionalProperties: true
+        properties:
+          customProps:
+            type:
+              - "null"
+              - array
+            description: >-
+              Custom properties with label, name, type, and value for
+              customization.
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                  description: Type of the custom property data.
+                label:
+                  type:
+                    - "null"
+                    - string
+                  description: Label for the custom property.
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: Name of the custom property.
+                value:
+                  type:
+                    - "null"
+                    - string
+                  description: Value of the custom property data.
+          customerTags:
+            type:
+              - "null"
+              - array
+            description: Tags associated with the customer for segmentation.
+            items:
+              type: string
+      campaign:
+        type:
+          - "null"
+          - string
+        description: Name or identifier of the campaign associated with the outbox data.
+      campaignId:
+        type:
+          - "null"
+          - string
+        description: Unique ID of the campaign associated with the outbox data.
+      channel:
+        type:
+          - "null"
+          - string
+        description: Communication channel used for sending the outbox message.
+      companyId:
+        type:
+          - "null"
+          - string
+        description: Unique ID of the company sending the outbox message.
+      companyName:
+        type:
+          - "null"
+          - string
+        description: Name of the company sending the outbox message.
+      customerId:
+        type:
+          - "null"
+          - string
+        description: Unique ID of the customer who received the outbox message.
+      detailedStatus:
+        type:
+          - "null"
+          - object
+        description: >-
+          Detailed status information about the outbox message delivery and
+          interaction.
+        additionalProperties: true
+        properties:
+          hasFeedback:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if there is feedback for the outbox message.
+          isBounced:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the message bounced.
+          isOpened:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the message was opened.
+          isOptedOut:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the recipient opted out of receiving messages.
+          isResponded:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the recipient responded to the message.
+          openedDate:
+            type:
+              - "null"
+              - string
+            description: Date and time when the message was opened.
+            format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+          respondedDate:
+            type:
+              - "null"
+              - string
+            description: Date and time when the recipient responded to the message.
+            format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+      email:
+        type:
+          - "null"
+          - string
+        description: Email address of the recipient who received the outbox message.
+      firstName:
+        type:
+          - "null"
+          - string
+        description: First name of the recipient who received the outbox message.
+      lastName:
+        type:
+          - "null"
+          - string
+        description: Last name of the recipient who received the outbox message.
+      mandrillMessageId:
+        type:
+          - "null"
+          - string
+        description: Unique ID assigned by Mandrill for the outbox message.
+      personTags:
+        type:
+          - array
+          - "null"
+        description: Tags associated with the individual recipient for segmentation.
+        items:
+          type: string
+      sentBy:
+        type:
+          - "null"
+          - string
+        description: Identifier of the user or system that sent the outbox message.
+      sentDate:
+        type:
+          - "null"
+          - string
+        description: Date and time when the outbox message was sent.
+        format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+      status:
+        type:
+          - "null"
+          - string
+        description: Overall status of the outbox message delivery.
+      subject:
+        type:
+          - "null"
+          - string
+        description: Subject of the outbox message.
+      surveyTemplateId:
+        type:
+          - "null"
+          - string
+        description: Unique ID of the survey template associated with the outbox message.
+  reports:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      campaignId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the campaign.
+      deliveryStats:
+        type:
+          - "null"
+          - object
+        description: Statistics related to the delivery of the campaign emails.
+        additionalProperties: true
+        properties:
+          isBounced:
+            type:
+              - "null"
+              - number
+            description: Number of emails that bounced.
+          opened:
+            type:
+              - "null"
+              - number
+            description: Number of emails that were opened.
+          optedOut:
+            type:
+              - "null"
+              - number
+            description: Number of recipients who opted out of receiving further emails.
+          responded:
+            type:
+              - "null"
+              - number
+            description: Number of recipients who responded to the campaign.
+          totalCount:
+            type:
+              - "null"
+              - number
+            description: Total count of delivered emails.
+      last:
+        type:
+          - "null"
+          - object
+        description: Snapshot of the last feedback received from recipients.
+        additionalProperties: true
+        properties:
+          detractors:
+            type:
+              - "null"
+              - number
+            description: Number of detractors in the feedback.
+          passives:
+            type:
+              - "null"
+              - number
+            description: Number of passives in the feedback.
+          promoters:
+            type:
+              - "null"
+              - number
+            description: Number of promoters in the feedback.
+          score:
+            type:
+              - "null"
+              - number
+            description: >-
+              Overall feedback score calculated based on detractors, passives,
+              and promoters.
+          total:
+            type:
+              - "null"
+              - number
+            description: Total count of feedback received.
+      questionsStats:
+        type:
+          - "null"
+          - array
+        description: >-
+          Statistics related to specific questions asked in the campaign
+          feedback.
+        items:
+          type: object
+          description: Details of each question's statistics.
+          additionalProperties: true
+      trend:
+        type:
+          - "null"
+          - array
+        description: Trend analysis data over a specific period.
+        items:
+          type:
+            - "null"
+            - object
+          description: Details of the trend data for each day.
+          additionalProperties: true
+          properties:
+            day:
+              type:
+                - "null"
+                - string
+              description: Day for which the trend data is recorded.
+            detractors:
+              type:
+                - "null"
+                - number
+              description: Number of detractors on the specific day.
+            passives:
+              type:
+                - "null"
+                - number
+              description: Number of passives on the specific day.
+            promoters:
+              type:
+                - "null"
+                - number
+              description: Number of promoters on the specific day.
+            score:
+              type:
+                - "null"
+                - number
+              description: Overall feedback score calculated for the specific day.
+            total:
+              type:
+                - "null"
+                - number
+              description: Total feedback count on the specific day.
+  nps:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      detractors:
+        type:
+          - "null"
+          - integer
+        description: Array of responses falling under the detractor category.
+      detractorsCount:
+        type:
+          - "null"
+          - integer
+        description: Total count of detractor responses.
+      metricsType:
+        type:
+          - "null"
+          - string
+        description: Type of metrics being used (e.g., Net Promoter Score).
+      passives:
+        type:
+          - "null"
+          - integer
+        description: Array of responses falling under the passive category.
+      passivesCount:
+        type:
+          - "null"
+          - integer
+        description: Total count of passive responses.
+      promoters:
+        type:
+          - "null"
+          - integer
+        description: Array of responses falling under the promoter category.
+      promotersCount:
+        type:
+          - "null"
+          - integer
+        description: Total count of promoter responses.
+      score:
+        type:
+          - "null"
+          - integer
+        description: Calculated Net Promoter Score based on the responses.
+      scoreSum:
+        type:
+          - "null"
+          - integer
+        description: Sum of scores received from all responses.
+      totalResponses:
+        type:
+          - "null"
+          - integer
+        description: Total count of responses received for NPS calculation.
+  templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      channel:
+        type:
+          - "null"
+          - string
+        description: >-
+          The communication channel for the template (e.g., email, SMS, in-app
+          notification)
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the template
+      metric:
+        type:
+          - "null"
+          - string
+        description: >-
+          The key metric that this template is associated with (e.g., NPS score,
+          CSAT rating)
+      name:
+        type:
+          - "null"
+          - string
+        description: The name or title of the template

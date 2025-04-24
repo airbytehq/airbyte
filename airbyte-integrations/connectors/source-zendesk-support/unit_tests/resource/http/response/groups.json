@@ -1,0 +1,15 @@
+{
+  "groups": [
+    {
+      "created_at": "2024-11-20T00:00:00Z",
+      "default": true,
+      "deleted": false,
+      "description": "Employed",
+      "id": 3432,
+      "is_public": true,
+      "name": "Remote Employees",
+      "updated_at": "2024-11-20T00:00:00Z",
+      "url": "https://company.zendesk.com/api/v2/groups/3432.json"
+    }
+  ]
+}

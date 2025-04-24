@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "profileId": {
+      "type": ["null", "integer"]
+    },
+    "reportDate": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "integer"]
+    },
+    "addToCart": {
+      "type": ["null", "integer"]
+    },
+    "addToCartClicks": {
+      "type": ["null", "integer"]
+    },
+    "addToCartRate": {
+      "type": ["null", "number"]
+    },
+    "addToCartViews": {
+      "type": ["null", "integer"]
+    },
+    "addToList": {
+      "type": ["null", "integer"]
+    },
+    "addToListFromClicks": {
+      "type": ["null", "integer"]
+    },
+    "addToListFromViews": {
+      "type": ["null", "integer"]
+    },
+    "qualifiedBorrows": {
+      "type": ["null", "integer"]
+    },
+    "qualifiedBorrowsFromClicks": {
+      "type": ["null", "integer"]
+    },
+    "qualifiedBorrowsFromViews": {
+      "type": ["null", "integer"]
+    },
+    "royaltyQualifiedBorrows": {
+      "type": ["null", "integer"]
+    },
+    "royaltyQualifiedBorrowsFromClicks": {
+      "type": ["null", "integer"]
+    },
+    "royaltyQualifiedBorrowsFromViews": {
+      "type": ["null", "integer"]
+    },
+    "brandedSearches": {
+      "type": ["null", "integer"]
+    },
+    "brandedSearchesClicks": {
+      "type": ["null", "integer"]
+    },
+    "brandedSearchesViews": {
+      "type": ["null", "integer"]
+    },
+    "brandedSearchRate": {
+      "type": ["null", "number"]
+    },
+    "campaignBudgetCurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "campaignName": {
+      "type": ["null", "string"]
+    },
+    "clicks": {
+      "type": ["null", "integer"]
+    },
+    "cost": {
+      "type": ["null", "number"]
+    },
+    "detailPageViews": {
+      "type": ["null", "integer"]
+    },
+    "detailPageViewsClicks": {
+      "type": ["null", "integer"]
+    },
+    "eCPAddToCart": {
+      "type": ["null", "number"]
+    },
+    "eCPBrandSearch": {
+      "type": ["null", "number"]
+    },
+    "endDate": {
+      "type": ["null", "string"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "impressionsViews": {
+      "type": ["null", "integer"]
+    },
+    "leadFormOpens": {
+      "type": ["null", "integer"]
+    },
+    "leads": {
+      "type": ["null", "integer"]
+    },
+    "linkOuts": {
+      "type": ["null", "integer"]
+    },
+    "newToBrandPurchases": {
+      "type": ["null", "integer"]
+    },
+    "newToBrandPurchasesClicks": {
+      "type": ["null", "integer"]
+    },
+    "newToBrandSalesClicks": {
+      "type": ["null", "number"]
+    },
+    "newToBrandUnitsSold": {
+      "type": ["null", "integer"]
+    },
+    "newToBrandUnitsSoldClicks": {
+      "type": ["null", "integer"]
+    },
+    "purchases": {
+      "type": ["null", "integer"]
+    },
+    "purchasesClicks": {
+      "type": ["null", "integer"]
+    },
+    "purchasesPromotedClicks": {
+      "type": ["null", "integer"]
+    },
+    "sales": {
+      "type": ["null", "number"]
+    },
+    "salesClicks": {
+      "type": ["null", "number"]
+    },
+    "salesPromotedClicks": {
+      "type": ["null", "number"]
+    },
+    "startDate": {
+      "type": ["null", "string"]
+    },
+    "unitsSold": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks": {
+      "type": ["null", "integer"]
+    },
+    "videoCompleteViews": {
+      "type": ["null", "integer"]
+    },
+    "videoFirstQuartileViews": {
+      "type": ["null", "integer"]
+    },
+    "videoMidpointViews": {
+      "type": ["null", "integer"]
+    },
+    "videoThirdQuartileViews": {
+      "type": ["null", "integer"]
+    },
+    "videoUnmutes": {
+      "type": ["null", "integer"]
+    },
+    "viewabilityRate": {
+      "type": ["null", "number"]
+    },
+    "viewClickThroughRate": {
+      "type": ["null", "number"]
+    },
+    "campaignBudgetAmount": {
+      "type": ["null", "number"]
+    },
+    "campaignStatus": {
+      "type": ["null", "string"]
+    },
+    "costType": {
+      "type": ["null", "string"]
+    },
+    "cumulativeReach": {
+      "type": ["null", "string"]
+    },
+    "impressionsFrequencyAverage": {
+      "type": ["null", "number"]
+    },
+    "newToBrandDetailPageViewClicks": {
+      "type": ["null", "integer"]
+    },
+    "newToBrandDetailPageViewRate": {
+      "type": ["null", "number"]
+    },
+    "newToBrandDetailPageViews": {
+      "type": ["null", "integer"]
+    },
+    "newToBrandDetailPageViewViews": {
+      "type": ["null", "integer"]
+    },
+    "newToBrandECPDetailPageView": {
+      "type": ["null", "number"]
+    },
+    "newToBrandSales": {
+      "type": ["null", "number"]
+    }
+  },
+  "title": "sponsored_display_campaigns_report_stream",
+  "type": ["null", "object"]
+}

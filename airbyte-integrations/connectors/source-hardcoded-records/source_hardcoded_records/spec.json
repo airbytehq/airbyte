@@ -1,0 +1,20 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/hardcoded-records",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Hardcoded Records Source Spec",
+    "type": "object",
+    "required": [],
+    "additionalProperties": true,
+    "properties": {
+      "count": {
+        "title": "Count",
+        "description": "How many records per stream should be generated",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1000,
+        "order": 0
+      }
+    }
+  }
+}

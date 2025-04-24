@@ -1,0 +1,117 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - api.amazon.com
+      - advertising-api.amazon.com
+      - advertising-api-eu.amazon.com
+      - advertising-api-fe.amazon.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
+  dockerImageTag: 7.2.0-rc.1
+  dockerRepository: airbyte/source-amazon-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
+  githubIssueLabel: source-amazon-ads
+  icon: amazonads.svg
+  license: MIT
+  # Based on https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#checking-report-status, report generation can take up to 3 hours
+  # We've added one minute on top of the three hours because of the waiting time before we poll the report status
+  maxSecondsBetweenMessages: 10860
+  name: Amazon Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amazon-ads
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+    breakingChanges:
+      7.0.0:
+        message:
+          "This version introduces new report streams, replacing SponsoredDisplayReportStream and SponsoredProductsReportStream with detailed breakdowns.
+          Primary keys have changed, and metrics are now correctly typed at the root level. We recommend using new detailed streams with the same dataset."
+        upgradeDeadline: "2025-02-24"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_display_report_stream"
+              - "sponsored_brands_v3_report_stream"
+              - "sponsored_products_report_stream"
+      6.0.0:
+        message:
+          "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
+          and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. We recommend using `SponsoredBrandsV3ReportStream` as an alternative stream with the same dataset."
+        upgradeDeadline: "2024-11-01"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_display_report_stream"
+              - "sponsored_brands_report_stream"
+              - "sponsored_brands_video_report_stream"
+      5.0.0:
+        message: "`SponsoredBrandCampaigns`, `SponsoredBrandsAdGroups`, `SponsoredProductCampaigns`, and `SponsoredProductAdGroupBidRecommendations` streams have updated schemas and must be reset."
+        upgradeDeadline: "2024-03-27"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "sponsored_brands_campaigns",
+                "sponsored_brands_ad_groups",
+                "sponsored_product_campaigns",
+                "sponsored_product_ad_group_bid_recommendations",
+              ]
+      4.0.0:
+        message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
+        upgradeDeadline: "2024-01-17"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["sponsored_brands_ad_groups", "sponsored_brands_keywords"]
+      3.0.0:
+        message: Attribution report stream schemas fix.
+        upgradeDeadline: "2023-07-24"
+  suggestedStreams:
+    streams:
+      - profiles
+      - sponsored_brands_video_report_stream
+      - sponsored_display_report_stream
+      - sponsored_brands_report_stream
+      - sponsored_products_report_stream
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: amazon-ads_config_report_dev_null
+          id: 60df103e-5b3a-4a2c-928b-d8b3889cf014
+        - name: amazon-ads_config_dev_null
+          id: 671a9aab-eb0f-48c2-a8bb-98d925aaa069
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMAZON-ADS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AMAZON-ADS__TEST_ACCOUNT_CREDS
+          fileName: config_report.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

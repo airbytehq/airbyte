@@ -2,7 +2,103 @@
   "streams": [
     {
       "stream": {
+        "name": "articles",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "order_agreements",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "disputes",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "customer_journey_summary",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_articles",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "blogs",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_blogs",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "customers",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_customers",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -26,7 +122,31 @@
     },
     {
       "stream": {
+        "name": "metafield_orders",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "draft_orders",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_draft_orders",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -50,7 +170,7 @@
     },
     {
       "stream": {
-        "name": "abandoned_checkouts",
+        "name": "metafield_products",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -62,7 +182,55 @@
     },
     {
       "stream": {
-        "name": "metafields",
+        "name": "product_images",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_product_images",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_variants",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_product_variants",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "abandoned_checkouts",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -86,7 +254,55 @@
     },
     {
       "stream": {
+        "name": "collections",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_collections",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "custom_collections",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "smart_collections",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_smart_collections",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
@@ -114,10 +330,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["id"]
+        "default_cursor_field": ["updated_at"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["id"],
+      "cursor_field": ["updated_at"],
       "destination_sync_mode": "append"
     },
     {
@@ -134,9 +350,33 @@
     },
     {
       "stream": {
+        "name": "tender_transactions",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["processed_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["processed_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "pages",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "metafield_pages",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
       },
@@ -168,6 +408,18 @@
     },
     {
       "stream": {
+        "name": "metafield_shops",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "discount_codes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -189,6 +441,18 @@
       "sync_mode": "full_refresh",
       "cursor_field": ["id"],
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "metafield_locations",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -220,10 +484,10 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["id"]
+        "default_cursor_field": ["updated_at"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["id"],
+      "cursor_field": ["updated_at"],
       "destination_sync_mode": "append"
     },
     {
@@ -237,6 +501,42 @@
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "balance_transactions",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "customer_address",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "countries",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

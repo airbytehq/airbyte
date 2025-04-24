@@ -1,30 +1,36 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import os
 import re
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode  # type: ignore
 from jinja2 import Template
 from normalization.destination_type import DestinationType
+from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
     is_array,
+    is_big_integer,
     is_boolean,
     is_combining_node,
     is_date,
-    is_integer,
+    is_datetime,
+    is_datetime_with_timezone,
+    is_datetime_without_timezone,
+    is_long,
     is_number,
     is_object,
     is_simple_property,
     is_string,
-    is_timestamp_with_time_zone,
+    is_time,
+    is_time_with_timezone,
     jinja_call,
     remove_jinja,
 )
@@ -92,7 +98,7 @@ class StreamProcessor(object):
         json_column_name: str,
         properties: Dict,
         tables_registry: TableNameRegistry,
-        from_table: str,
+        from_table: Union[str, dbt_macro.Macro],
     ):
         """
         See StreamProcessor.create()
@@ -108,7 +114,7 @@ class StreamProcessor(object):
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
         self.tables_registry: TableNameRegistry = tables_registry
-        self.from_table: str = from_table
+        self.from_table: Union[str, dbt_macro.Macro] = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
@@ -121,6 +127,7 @@ class StreamProcessor(object):
         self.airbyte_emitted_at = "_airbyte_emitted_at"
         self.airbyte_normalized_at = "_airbyte_normalized_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
+        self.models_to_source: Dict[str, str] = {}
 
     @staticmethod
     def create_from_parent(
@@ -177,7 +184,7 @@ class StreamProcessor(object):
         json_column_name: str,
         properties: Dict,
         tables_registry: TableNameRegistry,
-        from_table: str,
+        from_table: Union[str, dbt_macro.Macro],
     ) -> "StreamProcessor":
         """
         @param stream_name of the stream being processed
@@ -219,6 +226,14 @@ class StreamProcessor(object):
         for child in self.find_children_streams(self.from_table, column_names):
             child.collect_table_names()
 
+    def get_stream_source(self):
+        if not self.parent:
+            return self.from_table.source_name + "." + self.from_table.table_name
+        cur = self.parent
+        while cur.parent:
+            cur = cur.parent
+        return cur.from_table.source_name + "." + cur.from_table.table_name
+
     def process(self) -> List["StreamProcessor"]:
         """
         See description of StreamProcessor class.
@@ -236,7 +251,7 @@ class StreamProcessor(object):
             print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because no columns were identified")
             return []
 
-        from_table = self.from_table
+        from_table = str(self.from_table)
         # Transformation Pipeline for this stream
         from_table = self.add_to_outputs(
             self.generate_json_parsing_model(from_table, column_names),
@@ -278,6 +293,7 @@ class StreamProcessor(object):
                 is_intermediate=True,
                 suffix="stg",
             )
+
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names),
                 self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
@@ -290,7 +306,7 @@ class StreamProcessor(object):
             where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
             # from_table should not use the de-duplicated final table or tables downstream (nested streams) will miss non active rows
             self.add_to_outputs(
-                self.generate_final_model(from_table, column_names, self.get_unique_key()) + where_clause,
+                self.generate_final_model(from_table, column_names, unique_key=self.get_unique_key()) + where_clause,
                 self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
                 is_intermediate=False,
                 unique_key=self.get_unique_key(),
@@ -367,7 +383,7 @@ class StreamProcessor(object):
                     children.append(stream_processor)
         return children
 
-    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         if self.destination_type == DestinationType.ORACLE:
             table_alias = ""
         else:
@@ -443,14 +459,16 @@ where 1 = 1
         if "type" in definition:
             if is_array(definition["type"]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
+                if is_simple_property(definition.get("items", {"type": "object"})):
+                    json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
-            elif is_simple_property(definition["type"]):
+            elif is_simple_property(definition):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
 
         return f"{json_extract} as {column_name}"
 
-    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         template = Template(
             """
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
@@ -484,7 +502,7 @@ where 1 = 1
     def cast_property_types(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [self.cast_property_type(field, column_names[field][0], column_names[field][1]) for field in column_names]
 
-    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> str:
+    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
         definition = self.properties[property_name]
         if "type" not in definition:
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
@@ -494,31 +512,47 @@ where 1 = 1
         elif is_object(definition["type"]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif is_boolean(definition["type"]):
+        elif is_boolean(definition["type"], definition):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
-        elif is_integer(definition["type"]):
+        elif is_big_integer(definition):
+            sql_type = jinja_call("type_very_large_integer()")
+        elif is_long(definition["type"], definition):
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
-        elif is_timestamp_with_time_zone(definition):
+        elif is_datetime(definition):
             if self.destination_type == DestinationType.SNOWFLAKE:
                 # snowflake uses case when statement to parse timestamp field
                 # in this case [cast] operator is not needed as data already converted to timestamp type
-                return self.generate_snowflake_timestamp_statement(column_name)
+                if is_datetime_without_timezone(definition):
+                    return self.generate_snowflake_timestamp_statement(column_name)
+                return self.generate_snowflake_timestamp_tz_statement(column_name)
+            if self.destination_type == DestinationType.MYSQL and is_datetime_without_timezone(definition):
+                # MySQL does not support [cast] and [nullif] functions together
+                return self.generate_mysql_datetime_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
-                sql_type = jinja_call("type_timestamp_with_timezone()")
+                if is_datetime_with_timezone(definition):
+                    sql_type = jinja_call("type_timestamp_with_timezone()")
+                else:
+                    sql_type = jinja_call("type_timestamp_without_timezone()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
-                sql_type = jinja_call("type_timestamp_with_timezone()")
                 return f"parseDateTime64BestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
-            sql_type = jinja_call("type_timestamp_with_timezone()")
+            if is_datetime_without_timezone(definition):
+                sql_type = jinja_call("type_timestamp_without_timezone()")
+            else:
+                sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
-            if self.destination_type.value == DestinationType.MYSQL.value:
+            if (
+                self.destination_type.value == DestinationType.MYSQL.value
+                or self.destination_type.value == DestinationType.TIDB.value
+                or self.destination_type.value == DestinationType.DUCKDB.value
+            ):
                 # MySQL does not support [cast] and [nullif] functions together
                 return self.generate_mysql_date_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
@@ -527,10 +561,26 @@ where 1 = 1
                 sql_type = jinja_call("type_date()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
-                sql_type = jinja_call("type_date()")
-                return f"parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
+                return f"toDate(parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation}))) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_date()")
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
+        elif is_time(definition):
+            if is_time_with_timezone(definition):
+                sql_type = jinja_call("type_time_with_timezone()")
+            else:
+                sql_type = jinja_call("type_time_without_timezone()")
+            if self.destination_type == DestinationType.CLICKHOUSE:
+                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
+                sql_type = f"'{sql_type}'"
+                return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
+            if (
+                self.destination_type == DestinationType.MYSQL
+                or self.destination_type == DestinationType.TIDB
+                or self.destination_type == DestinationType.DUCKDB
+            ):
+                return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
@@ -538,6 +588,9 @@ where 1 = 1
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
                 sql_type = f"'{sql_type}'"
                 return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
+            elif self.destination_type == DestinationType.MYSQL:
+                # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
+                sql_type = f"{sql_type}(1024)"
         else:
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
@@ -548,7 +601,7 @@ where 1 = 1
             return f"cast({column_name} as {sql_type}) as {column_name}"
 
     @staticmethod
-    def generate_mysql_date_format_statement(column_name: str) -> str:
+    def generate_mysql_date_format_statement(column_name: str) -> Any:
         template = Template(
             """
         case when {{column_name}} = '' then NULL
@@ -559,7 +612,19 @@ where 1 = 1
         return template.render(column_name=column_name)
 
     @staticmethod
-    def generate_snowflake_timestamp_statement(column_name: str) -> str:
+    def generate_mysql_datetime_format_statement(column_name: str) -> Any:
+        regexp = r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*"
+        template = Template(
+            """
+        case when {{column_name}} regexp '{{regexp}}' THEN STR_TO_DATE(SUBSTR({{column_name}}, 1, 19), '%Y-%m-%dT%H:%i:%S')
+        else cast(if({{column_name}} = '', NULL, {{column_name}}) as datetime)
+        end as {{column_name}}
+        """
+        )
+        return template.render(column_name=column_name, regexp=regexp)
+
+    @staticmethod
+    def generate_snowflake_timestamp_tz_statement(column_name: str) -> Any:
         """
         Generates snowflake DB specific timestamp case when statement
         """
@@ -585,7 +650,29 @@ where 1 = 1
         )
         return template.render(formats=formats, column_name=column_name)
 
-    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    @staticmethod
+    def generate_snowflake_timestamp_statement(column_name: str) -> Any:
+        """
+        Generates snowflake DB specific timestamp case when statement
+        """
+        formats = [
+            {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}", "format": "YYYY-MM-DDTHH24:MI:SS"},
+            {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}", "format": "YYYY-MM-DDTHH24:MI:SS.FF"},
+        ]
+        template = Template(
+            """
+    case
+{% for format_item in formats %}
+        when {{column_name}} regexp '{{format_item['regex']}}' then to_timestamp({{column_name}}, '{{format_item['format']}}')
+{% endfor %}
+        when {{column_name}} = '' then NULL
+    else to_timestamp({{column_name}})
+    end as {{column_name}}
+    """
+        )
+        return template.render(formats=formats, column_name=column_name)
+
+    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
 
         template = Template(
             """
@@ -637,10 +724,12 @@ where 1 = 1
 
         if "type" not in definition:
             col = column_name
-        elif is_boolean(definition["type"]):
+        elif is_boolean(definition["type"], definition):
             col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
             col = f"array_to_string({column_name})"
+        elif is_object(definition["type"]):
+            col = f"object_to_string({column_name})"
         else:
             col = column_name
 
@@ -650,7 +739,14 @@ where 1 = 1
 
         return col
 
-    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+        """
+        This model pulls data from the ID-hashing model and appends it to a log of record updates. When inserting an update to a record, it also
+        checks whether that record had a previously-existing row in the SCD model; if it does, then that previous row's end_at column is set to
+        the new update's start_at.
+
+        See the docs for more details: https://docs.airbyte.com/understanding-airbyte/basic-normalization#normalization-metadata-columns
+        """
         cursor_field = self.get_cursor_field(column_names)
         order_null = f"is null asc,\n            {cursor_field} desc"
         if self.destination_type.value == DestinationType.ORACLE.value:
@@ -705,8 +801,15 @@ where 1 = 1
             col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos")
             quoted_col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos", in_jinja=True)
             cdc_updated_order_pattern += f"\n            {col_cdc_log_pos} desc,"
-            cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
+            cdc_cols += "".join([", ", cast_begin, col_cdc_log_pos, cast_as, "{{ dbt_utils.type_string() }}", cast_end])
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
+
+        if "_ab_cdc_lsn" in column_names.keys():
+            col_cdc_lsn = self.name_transformer.normalize_column_name("_ab_cdc_lsn")
+            quoted_col_cdc_lsn = self.name_transformer.normalize_column_name("_ab_cdc_lsn", in_jinja=True)
+            cdc_updated_order_pattern += f"\n            {col_cdc_lsn} desc,"
+            cdc_cols += "".join([", ", cast_begin, col_cdc_lsn, cast_as, "{{ dbt_utils.type_string() }}", cast_end])
+            quoted_cdc_cols += f", {quoted_col_cdc_lsn}"
 
         if (
             self.destination_type == DestinationType.BIGQUERY
@@ -742,6 +845,7 @@ where 1 = 1
             "fields": self.list_fields(column_names),
             "from_table": from_table,
             "hash_id": self.hash_id(),
+            "incremental_clause": self.get_incremental_clause("this"),
             "input_data_table": input_data_table,
             "lag_begin": lag_begin,
             "lag_end": lag_end,
@@ -812,7 +916,7 @@ new_data as (
     from {{'{{'}} {{ from_table }}  {{'}}'}}
     {{ sql_table_comment }}
     where 1 = 1
-    {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}) {{'}}'}}
+    {{ incremental_clause }}
 ),
 new_data_ids as (
     -- build a subset of {{ unique_key }} from rows that are new
@@ -919,6 +1023,8 @@ from dedup_data where {{ airbyte_row_num }} = 1
                 return "_ab_cdc_updated_at"
             elif "_ab_cdc_log_pos" in column_names.keys():
                 return "_ab_cdc_log_pos"
+            elif "_ab_cdc_lsn" in column_names.keys():
+                return "_ab_cdc_lsn"
             else:
                 return self.airbyte_emitted_at
         elif len(self.cursor_field) == 1:
@@ -976,7 +1082,11 @@ from dedup_data where {{ airbyte_row_num }} = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> str:
+    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
+        """
+        This is the table that the user actually wants. In addition to the columns that the source outputs, it has some additional metadata columns;
+        see the basic normalization docs for an explanation: https://docs.airbyte.com/understanding-airbyte/basic-normalization#normalization-metadata-columns
+        """
         template = Template(
             """
 -- Final base SQL model
@@ -1017,18 +1127,21 @@ where 1 = 1
     def is_incremental_mode(destination_sync_mode: DestinationSyncMode) -> bool:
         return destination_sync_mode.value in [DestinationSyncMode.append.value, DestinationSyncMode.append_dedup.value]
 
-    def add_incremental_clause(self, sql_query: str) -> str:
+    def add_incremental_clause(self, sql_query: str) -> Any:
         template = Template(
             """
 {{ sql_query }}
-{{'{{'}} incremental_clause({{ col_emitted_at }}) {{'}}'}}
+{{ incremental_clause }}
     """
         )
-        sql = template.render(
-            sql_query=sql_query,
-            col_emitted_at=self.get_emitted_at(in_jinja=True),
-        )
+        sql = template.render(sql_query=sql_query, incremental_clause=self.get_incremental_clause("this"))
         return sql
+
+    def get_incremental_clause(self, tablename: str) -> Any:
+        return self.get_incremental_clause_for_column(tablename, self.get_emitted_at(in_jinja=True))
+
+    def get_incremental_clause_for_column(self, tablename: str, column: str) -> Any:
+        return "{{ incremental_clause(" + column + ", " + tablename + ") }}"
 
     @staticmethod
     def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
@@ -1044,9 +1157,17 @@ where 1 = 1
         subdir: str = "",
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
     ) -> str:
+        # Explicit function so that we can have type hints to satisfy the linter
+        def wrap_in_quotes(s: str) -> str:
+            return '"' + s + '"'
+
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
-        truncate_name = self.destination_type == DestinationType.MYSQL
+        truncate_name = (
+            self.destination_type == DestinationType.MYSQL
+            or self.destination_type == DestinationType.TIDB
+            or self.destination_type == DestinationType.DUCKDB
+        )
         table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file = f"{file_name}.sql"
@@ -1061,23 +1182,140 @@ where 1 = 1
         else:
             config["schema"] = f'"{schema}"'
         if self.is_incremental_mode(self.destination_sync_mode):
+            stg_schema = self.get_schema(True)
+            stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+            if self.name_transformer.needs_quotes(stg_table):
+                stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
             if suffix == "scd":
-                stg_schema = self.get_schema(True)
-                stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
-                if self.name_transformer.needs_quotes(stg_table):
-                    stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
+                hooks = []
+
+                final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
+                active_row_column_name = self.name_transformer.normalize_column_name("_airbyte_active_row")
+                clickhouse_nullable_join_setting = ""
+                if self.destination_type == DestinationType.CLICKHOUSE:
+                    # Clickhouse has special delete syntax
+                    delete_statement = "alter table {{ final_table_relation }} delete"
+                    unique_key_reference = self.get_unique_key(in_jinja=False)
+                    noop_delete_statement = "alter table {{ this }} delete where 1=0"
+                    # Without this, our LEFT JOIN would return empty string for non-matching rows, so our COUNT would include those rows.
+                    # We want to exclude them (this is the default behavior in other DBs) so we have to set join_use_nulls=1
+                    clickhouse_nullable_join_setting = "SETTINGS join_use_nulls=1"
+                elif self.destination_type == DestinationType.BIGQUERY:
+                    # Bigquery doesn't like the "delete from project.schema.table where project.schema.table.column in" syntax;
+                    # it requires "delete from project.schema.table table_alias where table_alias.column in"
+                    delete_statement = "delete from {{ final_table_relation }} final_table"
+                    unique_key_reference = "final_table." + self.get_unique_key(in_jinja=False)
+                    noop_delete_statement = "delete from {{ this }} where 1=0"
+                else:
+                    delete_statement = "delete from {{ final_table_relation }}"
+                    unique_key_reference = "{{ final_table_relation }}." + self.get_unique_key(in_jinja=False)
+                    noop_delete_statement = "delete from {{ this }} where 1=0"
+                deletion_hook = Template(
+                    """
+                    {{ '{%' }}
+                    set final_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='{{ final_table_name }}'
+                        )
+                    {{ '%}' }}
+                    {{ '{#' }}
+                    If the final table doesn't exist, then obviously we can't delete anything from it.
+                    Also, after a reset, the final table is created without the _airbyte_unique_key column (this column is created during the first sync)
+                    So skip this deletion if the column doesn't exist. (in this case, the table is guaranteed to be empty anyway)
+                    {{ '#}' }}
+                    {{ '{%' }}
+                    if final_table_relation is not none and {{ quoted_unique_key }} in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
+                    {{ '%}' }}
+
+                    -- Delete records which are no longer active:
+                    -- This query is equivalent, but the left join version is more performant:
+                    -- delete from final_table where unique_key in (
+                    --     select unique_key from scd_table where 1 = 1 <incremental_clause(normalized_at, final_table)>
+                    -- ) and unique_key not in (
+                    --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
+                    -- )
+                    -- We're incremental against normalized_at rather than emitted_at because we need to fetch the SCD
+                    -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
+                    -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
+                    {{ delete_statement }} where {{ unique_key_reference }} in (
+                        select recent_records.unique_key
+                        from (
+                                select distinct {{ unique_key }} as unique_key
+                                from {{ '{{ this }}' }}
+                                where 1=1 {{ normalized_at_incremental_clause }}
+                            ) recent_records
+                            left join (
+                                select {{ unique_key }} as unique_key, count({{ unique_key }}) as active_count
+                                from {{ '{{ this }}' }}
+                                where {{ active_row_column_name }} = 1 {{ normalized_at_incremental_clause }}
+                                group by {{ unique_key }}
+                            ) active_counts
+                            on recent_records.unique_key = active_counts.unique_key
+                        where active_count is null or active_count = 0
+                    )
+                    {{ '{% else %}' }}
+                    -- We have to have a non-empty query, so just do a noop delete
+                    {{ noop_delete_statement }}
+                    {{ '{% endif %}' }}
+                    """
+                ).render(
+                    delete_statement=delete_statement,
+                    noop_delete_statement=noop_delete_statement,
+                    final_table_name=final_table_name,
+                    unique_key=self.get_unique_key(in_jinja=False),
+                    quoted_unique_key=self.get_unique_key(in_jinja=True),
+                    active_row_column_name=active_row_column_name,
+                    normalized_at_incremental_clause=self.get_incremental_clause_for_column(
+                        "{} + '.' + {}".format(
+                            self.name_transformer.apply_quote("this.schema", literal=False),
+                            self.name_transformer.apply_quote(final_table_name),
+                        ),
+                        self.get_normalized_at(in_jinja=True),
+                    ),
+                    unique_key_reference=unique_key_reference,
+                    clickhouse_nullable_join_setting=clickhouse_nullable_join_setting,
+                )
+                hooks.append(deletion_hook)
+
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
-                    config["post_hook"] = (
-                        f'["delete from {stg_schema}.{stg_table} '
-                        + f"where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) "
-                        + f'from {stg_schema}.{stg_table})"]'
+                    hooks.append(
+                        f"delete from {stg_schema}.{stg_table} where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) from {stg_schema}.{stg_table})",
                     )
                 else:
-                    config["post_hook"] = f'["drop view {stg_schema}.{stg_table}"]'
+                    hooks.append(f"drop view {stg_schema}.{stg_table}")
+
+                config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
+        elif self.destination_sync_mode == DestinationSyncMode.overwrite:
+            if suffix == "" and not is_intermediate:
+                # drop SCD table after creating the destination table
+                scd_table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, "scd", truncate_name)
+                print(f"  Adding drop table hook for {scd_table_name} to {file_name}")
+                hooks = [
+                    Template(
+                        """
+                    {{ '{%' }}
+                        set scd_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='{{ scd_table_name }}'
+                        )
+                    {{ '%}' }}
+                    {{ '{%' }}
+                        if scd_table_relation is not none
+                    {{ '%}' }}
+                    {{ '{%' }}
+                            do adapter.drop_relation(scd_table_relation)
+                    {{ '%}' }}
+                    {{ '{% endif %}' }}
+                        """
+                    ).render(scd_table_name=scd_table_name)
+                ]
+                config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
         template = Template(
             """
 {{ '{{' }} config(
@@ -1089,10 +1327,12 @@ where 1 = 1
 {{ sql }}
     """
         )
+
         self.sql_outputs[output] = template.render(config=config, sql=sql, tags=self.get_model_tags(is_intermediate))
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
-        return ref_table(file_name)
+        self.models_to_source[file_name] = self.get_stream_source()
+        return str(dbt_macro.Ref(file_name))
 
     def get_model_materialization_mode(self, is_intermediate: bool, column_count: int = 0) -> TableMaterializationType:
         if is_intermediate:
@@ -1254,10 +1494,6 @@ where 1 = 1
 # Static Functions
 
 
-def ref_table(file_name: str) -> str:
-    return f"ref('{file_name}')"
-
-
 def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:
     """
     This function is trying to look for a nested "properties" node under the current JSON node to
@@ -1278,7 +1514,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
         elif "properties" in properties:
             # we found a properties object
             return {current: properties["properties"]}
-        elif "type" in properties and is_simple_property(properties["type"]):
+        elif "type" in properties and is_simple_property(properties):
             # we found a basic type
             return {current: {}}
         elif isinstance(properties, dict):

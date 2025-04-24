@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
 import pytest
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_surveymonkey.streams import Surveys
+
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class TestSurveymonkeySource:
@@ -14,7 +15,7 @@ class TestSurveymonkeySource:
         config = {"start_date": "2021-01-01T00:00:00", "access_token": "something"}
         authenticator = TokenAuthenticator(token=config["access_token"])
         start_date = pendulum.parse(config["start_date"])
-        stream = Surveys(authenticator=authenticator, start_date=start_date)
+        stream = Surveys(authenticator=authenticator, start_date=start_date, survey_ids=[])
         return stream
 
     @pytest.mark.parametrize(
@@ -41,7 +42,7 @@ class TestSurveymonkeySource:
         stream = self.get_stream()
         # test lesser current state
         assert (
-            stream.get_updated_state(current_state, lesser_date_record) == expected_state
+            stream._get_updated_state(current_state, lesser_date_record) == expected_state
         ), "the current state should not change if record cursor value is lesser than current"
 
     @pytest.mark.parametrize(
@@ -68,7 +69,7 @@ class TestSurveymonkeySource:
         # test bigger current state
         stream = self.get_stream()
         assert (
-            stream.get_updated_state(current_state, bigger_date_record) == expected_state
+            stream._get_updated_state(current_state, bigger_date_record) == expected_state
         ), "state should be updated when parsing newestly modified record"
 
     def test_get_updated_state_from_null_state(self):
@@ -76,4 +77,4 @@ class TestSurveymonkeySource:
         stream = self.get_stream()
         record_with_some_date = {"title": "test", "date_modified": "2000-06-15T18:09:00", "id": 1}
         expected_state = {stream.cursor_field: record_with_some_date[stream.cursor_field]}
-        assert stream.get_updated_state({}, record_with_some_date) == expected_state
+        assert stream._get_updated_state({}, record_with_some_date) == expected_state

@@ -1,0 +1,992 @@
+version: 5.16.0
+
+type: DeclarativeSource
+
+description: >-
+  Finnhub is a financial data platform that provides real-time stock market,
+  forex, and cryptocurrency data, along with extensive fundamental data,
+  economic indicators, and alternative data for global markets. With its
+  powerful API, Finnhub delivers actionable insights, enabling developers,
+  financial institutions, and traders to integrate market intelligence into
+  their applications, build trading algorithms, and track investment
+  performance. It supports a wide range of financial metrics, including earnings
+  reports, company profiles, and news, making it a comprehensive solution for
+  financial analysis and market research
+check:
+  type: CheckStream
+  stream_names:
+    - marketnews
+
+definitions:
+  streams:
+    marketnews:
+      type: DeclarativeStream
+      name: marketnews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /news?category={{config['market_new_category']}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/marketnews"
+    stock_symbols:
+      type: DeclarativeStream
+      name: stock_symbols
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/symbol?exchange={{ config['exchange'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock_symbols"
+    basic_financial_report:
+      type: DeclarativeStream
+      name: basic_financial_report
+      primary_key:
+        - accessNumber
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/financials-reported
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: startDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/basic_financial_report"
+    company_profile:
+      type: DeclarativeStream
+      name: company_profile
+      primary_key:
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/profile2
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_profile"
+    sec_filings:
+      type: DeclarativeStream
+      name: sec_filings
+      primary_key:
+        - accessNumber
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/filings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: filedDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sec_filings"
+    insider_transactions:
+      type: DeclarativeStream
+      name: insider_transactions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/insider-transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: transactionDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/insider_transactions"
+    insider_sentiment:
+      type: DeclarativeStream
+      name: insider_sentiment
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/insider-sentiment
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/insider_sentiment"
+    company_news:
+      type: DeclarativeStream
+      name: company_news
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /company-news
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_news"
+    stock_recommendations:
+      type: DeclarativeStream
+      name: stock_recommendations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/recommendation
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock_recommendations"
+    earnings_surprises:
+      type: DeclarativeStream
+      name: earnings_surprises
+      primary_key:
+        - symbol
+        - period
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stock/earnings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/earnings_surprises"
+    stock_quote:
+      type: DeclarativeStream
+      name: stock_quote
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /quote
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.symbols }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbol
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - symbol
+              value: "{{ stream_partition.symbol }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock_quote"
+  base_requester:
+    type: HttpRequester
+    url_base: https://finnhub.io/api/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: token
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/marketnews"
+  - $ref: "#/definitions/streams/stock_symbols"
+  - $ref: "#/definitions/streams/basic_financial_report"
+  - $ref: "#/definitions/streams/company_profile"
+  - $ref: "#/definitions/streams/sec_filings"
+  - $ref: "#/definitions/streams/insider_transactions"
+  - $ref: "#/definitions/streams/insider_sentiment"
+  - $ref: "#/definitions/streams/company_news"
+  - $ref: "#/definitions/streams/stock_recommendations"
+  - $ref: "#/definitions/streams/earnings_surprises"
+  - $ref: "#/definitions/streams/stock_quote"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - symbols
+      - market_news_category
+      - exchange
+      - start_date_2
+    properties:
+      api_key:
+        type: string
+        description: The API key to use for authentication
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      symbols:
+        type: array
+        name: company_symbol
+        order: 1
+        title: Companies
+      market_news_category:
+        type: string
+        description: >-
+          This parameter can be 1 of the following values general, forex,
+          crypto, merger.
+        title: Market News Category
+        default: general
+        enum:
+          - general
+          - forex
+          - crypto
+          - merger
+        order: 2
+      exchange:
+        type: string
+        description: "More info: https://finnhub.io/docs/api/stock-symbols"
+        title: Exchange
+        default: US
+        order: 3
+      start_date_2:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    marketnews: true
+    stock_symbols: true
+    basic_financial_report: false
+    company_profile: true
+    sec_filings: true
+    insider_transactions: false
+    insider_sentiment: false
+    company_news: true
+    stock_recommendations: false
+    earnings_surprises: false
+    stock_quote: true
+  testedStreams:
+    marketnews:
+      streamHash: f1c6821d2ad17da19c15be9a29b964c95fc72b3d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stock_symbols:
+      streamHash: a481b061b2ebb223a5e94e71275cf121b53ae457
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    basic_financial_report:
+      streamHash: 7fb2565f8171add436ff06128d2bddc65f39948f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    company_profile:
+      streamHash: 093d488e2794fae4274cc8beed808b021cdd30b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sec_filings:
+      streamHash: 5ccfc67778f56038004767e0c879fe9699ba8909
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    insider_transactions:
+      streamHash: d3e80f2b01eb399e15aaa95c0a645aa795eb4737
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    insider_sentiment:
+      streamHash: 68f53090b913d3c23afe895d102f2009a19d45a5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    company_news:
+      streamHash: 28d15b6953fe6b944ec6bef610f6c69a6aac2c84
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stock_recommendations:
+      streamHash: 190cf9650126e66328ec0ebac0f9a324c91fd346
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    earnings_surprises:
+      streamHash: b89237a3ccb7a1991700822a1cb3c784e6b525bf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stock_quote:
+      streamHash: 59936a915d2fdab55efa6613756c64504578ccf1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://finnhub.io/docs/api/
+
+schemas:
+  marketnews:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - string
+          - "null"
+      datetime:
+        type:
+          - number
+          - "null"
+      headline:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      image:
+        type:
+          - string
+          - "null"
+      related:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  stock_symbols:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      displaySymbol:
+        type:
+          - string
+          - "null"
+      figi:
+        type:
+          - string
+          - "null"
+      mic:
+        type:
+          - string
+          - "null"
+      shareClassFIGI:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      symbol2:
+        type:
+          - string
+          - "null"
+  basic_financial_report:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  company_profile:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      estimateCurrency:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      finnhubIndustry:
+        type:
+          - string
+          - "null"
+      ipo:
+        type:
+          - string
+          - "null"
+      logo:
+        type:
+          - string
+          - "null"
+      marketCapitalization:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      shareOutstanding:
+        type:
+          - number
+          - "null"
+      ticker:
+        type: string
+      weburl:
+        type:
+          - string
+          - "null"
+    required:
+      - ticker
+  sec_filings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acceptedDate:
+        type:
+          - string
+          - "null"
+      accessNumber:
+        type: string
+      cik:
+        type:
+          - string
+          - "null"
+      filedDate:
+        type: string
+      filingUrl:
+        type:
+          - string
+          - "null"
+      form:
+        type:
+          - string
+          - "null"
+      reportUrl:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+    required:
+      - accessNumber
+      - filedDate
+  insider_transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      change:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      filingDate:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isDerivative:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      share:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      transactionCode:
+        type:
+          - string
+          - "null"
+      transactionDate:
+        type:
+          - string
+          - "null"
+      transactionPrice:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  insider_sentiment:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            change:
+              type:
+                - number
+                - "null"
+            month:
+              type:
+                - number
+                - "null"
+            mspr:
+              type:
+                - number
+                - "null"
+            symbol:
+              type:
+                - string
+                - "null"
+            year:
+              type:
+                - number
+                - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  company_news:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - string
+          - "null"
+      datetime:
+        type: number
+      headline:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      image:
+        type:
+          - string
+          - "null"
+      related:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - datetime
+  stock_recommendations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      buy:
+        type:
+          - number
+          - "null"
+      hold:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      sell:
+        type:
+          - number
+          - "null"
+      strongBuy:
+        type:
+          - number
+          - "null"
+      strongSell:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  earnings_surprises:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actual:
+        type:
+          - number
+          - "null"
+      estimate:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      quarter:
+        type:
+          - number
+          - "null"
+      surprise:
+        type:
+          - number
+          - "null"
+      surprisePercent:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+  stock_quote:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      c:
+        type:
+          - number
+          - "null"
+      d:
+        type:
+          - number
+          - "null"
+      dp:
+        type:
+          - number
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      l:
+        type:
+          - number
+          - "null"
+      o:
+        type:
+          - number
+          - "null"
+      pc:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      t:
+        type:
+          - number
+          - "null"

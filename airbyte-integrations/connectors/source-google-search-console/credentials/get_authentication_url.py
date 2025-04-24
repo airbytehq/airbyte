@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
+
 
 # Check https://developers.google.com/webmaster-tools/search-console-api-original/v3/ for all available scopes
 OAUTH_SCOPE = "https://www.googleapis.com/auth/webmasters.readonly"

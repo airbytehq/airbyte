@@ -1,25 +1,33 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.Network;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -30,8 +38,9 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private static final String DB_NAME = "default";
+  private static final Network network = Network.newNetwork();
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private ClickHouseContainer db;
   private final SshBastionContainer bastion = new SshBastionContainer();
@@ -42,32 +51,42 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
   protected JsonNode getConfig() throws Exception {
     return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, DB_NAME)
-        .put("schema", DB_NAME));
+        .put("schema", DB_NAME), true);
   }
 
   @Override
@@ -86,12 +105,12 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(StreamId.concatenateRawTableName(namespace, streamName), "airbyte_internal")
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -100,12 +119,14 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
     return SshTunnel.sshWrap(
         getConfig(),
-        ClickhouseDestination.HOST_KEY,
-        ClickhouseDestination.PORT_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabase(mangledConfig)
-            .query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .collect(Collectors.toList()));
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
+        mangledConfig -> {
+          final JdbcDatabase database = getDatabase(mangledConfig);
+          final String query = String.format("SELECT * FROM `%s`.`%s` ORDER BY %s ASC", schemaName, namingResolver.convertStreamName(tableName),
+              JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
+          return database.queryJsons(query);
+        });
   }
 
   @Override
@@ -122,66 +143,45 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
-        String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        ClickhouseDestination.DRIVER_CLASS);
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            ClickhouseDestination.DRIVER_CLASS,
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                ClickhouseDestination.HTTP_PROTOCOL,
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())),
+        new ClickhouseTestSourceOperations());
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    bastion.initAndStartBastion();
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(bastion.getNetWork());
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
+    bastion.initAndStartBastion(network);
+    db = (ClickHouseContainer) new ClickHouseContainer("clickhouse/clickhouse-server:22.5").withNetwork(network);
     db.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
 
-  /**
-   * The SQL script generated by old version of dbt in 'test' step isn't compatible with ClickHouse,
-   * so we skip this test for now.
-   *
-   * Ref: https://github.com/dbt-labs/dbt-core/issues/3905
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testCustomDbtTransformations() throws Exception {
-    super.testCustomDbtTransformations();
-  }
+  @ParameterizedTest
+  @ArgumentsSource(DataTypeTestArgumentProvider.class)
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
 
-  @Disabled
-  public void testCustomDbtTransformationsFailure() throws Exception {}
+    // arrays are not fully supported yet in jdbc driver
+    // https://github.com/ClickHouse/clickhouse-jdbc/blob/master/clickhouse-jdbc/src/main/java/ru/yandex/clickhouse/ClickHouseArray.java
+    if (messagesFilename.contains("array")) {
+      return;
+    }
 
-  /**
-   * The normalization container needs native port, while destination container needs HTTP port, we
-   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
-   * test, so we skip it.
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testIncrementalDedupeSync() throws Exception {
-    super.testIncrementalDedupeSync();
-  }
-
-  /**
-   * The normalization container needs native port, while destination container needs HTTP port, we
-   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
-   * test, so we skip it.
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
-    super.testSyncWithNormalization(messagesFilename, catalogFilename);
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
 }

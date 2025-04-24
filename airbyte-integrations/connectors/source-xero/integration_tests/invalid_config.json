@@ -1,0 +1,8 @@
+{
+  "credentials": {
+    "auth_type": "oauth2_access_token",
+    "access_token": "Invalid-token"
+  },
+  "start_date": "2099-08-05T00:43:59.244Z",
+  "tenant_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}

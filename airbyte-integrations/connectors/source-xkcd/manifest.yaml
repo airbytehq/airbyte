@@ -1,0 +1,134 @@
+version: 3.0.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - xkcd
+
+definitions:
+  streams:
+    xkcd:
+      type: DeclarativeStream
+      name: xkcd
+      primary_key:
+        - num
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: '{{ config["comic_number"] or 1 }}/info.0.json'
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response["num"]+1 or 0 }}/info.0.json'
+            stop_condition: '{{ not response.get("num", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/xkcd"
+  base_requester:
+    type: HttpRequester
+    url_base: https://xkcd.com
+    authenticator:
+      type: NoAuth
+
+streams:
+  - $ref: "#/definitions/streams/xkcd"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      comic_number:
+        type: string
+        title: comic_number
+        description: >-
+          Specifies the comic number in which details are to be extracted,
+          pagination will begin with that number to end of available comics
+        default: "2960"
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    xkcd: false
+  yamlComponents:
+    global:
+      - authenticator
+
+schemas:
+  xkcd:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      alt:
+        type:
+          - "null"
+          - string
+      day:
+        type:
+          - "null"
+          - string
+      img:
+        type:
+          - "null"
+          - string
+      link:
+        type:
+          - "null"
+          - string
+      month:
+        type:
+          - "null"
+          - string
+      news:
+        type:
+          - "null"
+          - string
+      num:
+        type:
+          - "null"
+          - integer
+      safe_title:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      transcript:
+        type:
+          - "null"
+          - string
+      year:
+        type:
+          - "null"
+          - string

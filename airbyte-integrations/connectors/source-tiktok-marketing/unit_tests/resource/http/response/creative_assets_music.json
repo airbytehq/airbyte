@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "musics": [
+      {
+        "music_id": "111111111111111111",
+        "material_id": "111111111111111111",
+        "sources": [{ "type": "main page" }],
+        "author": "test author",
+        "liked": true,
+        "cover_url": "https://cover.com",
+        "url": "https://url.com",
+        "duration": 4.34,
+        "style": "rock",
+        "signature": "signature",
+        "name": "test name",
+        "file_name": "test file_name",
+        "copyright": "copyright",
+        "create_time": "2024-01-01 12:12:23",
+        "modify_time": "2024-01-03 12:12:23"
+      },
+      {
+        "music_id": "22222222222",
+        "material_id": "22222222222222222",
+        "sources": [{ "type": "main page" }],
+        "author": "test author",
+        "liked": true,
+        "cover_url": "https://cover.com",
+        "url": "https://url.com",
+        "duration": 4.34,
+        "style": "rock",
+        "signature": "signature",
+        "name": "test name",
+        "file_name": "test file_name",
+        "copyright": "copyright",
+        "create_time": "2024-02-01 12:12:23",
+        "modify_time": "2024-02-03 12:12:23"
+      }
+    ]
+  }
+}

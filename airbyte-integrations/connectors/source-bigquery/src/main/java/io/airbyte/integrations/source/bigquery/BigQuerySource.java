@@ -1,50 +1,64 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
 
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.SqlDatabase;
+import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
+import io.airbyte.cdk.db.bigquery.BigQuerySourceOperations;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.Databases;
-import io.airbyte.db.SqlDatabase;
-import io.airbyte.db.bigquery.BigQueryDatabase;
-import io.airbyte.db.bigquery.BigQuerySourceOperations;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeName, BigQueryDatabase> implements Source {
+public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQueryDatabase> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
+  private static final String QUOTE = "`";
 
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
   public static final String CONFIG_CREDS = "credentials_json";
 
-  private final String quote = "";
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
+
+  protected BigQuerySource() {
+    super(null);
+  }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
@@ -58,9 +72,12 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected BigQueryDatabase createDatabase(final JsonNode config) {
-    dbConfig = Jsons.clone(config);
-    return Databases.createBigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
+  protected BigQueryDatabase createDatabase(final JsonNode sourceConfig) {
+    dbConfig = Jsons.clone(sourceConfig);
+    final BigQueryDatabase database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_ID).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
   }
 
   @Override
@@ -76,7 +93,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
     checkList.add(database -> {
       if (isDatasetConfigured(database)) {
         database.query(String.format("select 1 from %s where 1=0",
-            getFullTableName(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES")));
+            getFullyQualifiedTableNameWithQuoting(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES", getQuoteString())));
         LOGGER.info("The source passed the Dataset query test!");
       } else {
         LOGGER.info("The Dataset query test is skipped due to not configured datasetId!");
@@ -87,8 +104,8 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(final StandardSQLTypeName columnType) {
-    return sourceOperations.getJsonType(columnType);
+  protected JsonSchemaType getAirbyteType(final StandardSQLTypeName columnType) {
+    return sourceOperations.getAirbyteType(columnType);
   }
 
   @Override
@@ -112,7 +129,12 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
-              final StandardSQLTypeName standardType = f.getType().getStandardType();
+              final StandardSQLTypeName standardType;
+              if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
+                standardType = StandardSQLTypeName.ARRAY;
+              } else
+                standardType = f.getType().getStandardType();
+
               return new CommonField<>(f.getName(), standardType);
             })
             .collect(Collectors.toList()))
@@ -129,7 +151,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   protected String getQuoteString() {
-    return quote;
+    return QUOTE;
   }
 
   @Override
@@ -137,27 +159,50 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
-                                                               final String cursorField,
-                                                               final StandardSQLTypeName cursorFieldType,
-                                                               final String cursor) {
+                                                               final CursorInfo cursorInfo,
+                                                               final StandardSQLTypeName cursorFieldType) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
-        enquoteIdentifierList(columnNames),
-        getFullTableName(schemaName, tableName),
-        cursorField),
-        sourceOperations.getQueryParameter(cursorFieldType, cursor));
+        RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
+        cursorInfo.getCursorField()),
+        schemaName,
+        tableName,
+        sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
+  }
+
+  @Override
+  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final BigQueryDatabase database,
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName,
+                                                                  final SyncMode syncMode,
+                                                                  final Optional<String> cursorField) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+    return queryTable(database, String.format("SELECT %s FROM %s",
+        enquoteIdentifierList(columnNames, getQuoteString()),
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
+        tableName, schemaName);
+  }
+
+  @Override
+  public boolean isCursorType(final StandardSQLTypeName standardSQLTypeName) {
+    return true;
   }
 
   private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database,
                                                                final String sqlQuery,
+                                                               final String schemaName,
+                                                               final String tableName,
                                                                final QueryParameterValue... params) {
+    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.query(sqlQuery, params);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   private boolean isDatasetConfigured(final SqlDatabase database) {
@@ -175,5 +220,8 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", BigQuerySource.class);
   }
+
+  @Override
+  public void close() throws Exception {}
 
 }

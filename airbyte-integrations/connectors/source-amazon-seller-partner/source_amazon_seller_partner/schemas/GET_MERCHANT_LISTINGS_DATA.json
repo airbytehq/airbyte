@@ -1,0 +1,202 @@
+{
+  "title": "Active Listings Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "item-name": {
+      "description": "The name or title of the item",
+      "type": ["null", "string"]
+    },
+    "item-description": {
+      "description": "Description of the item",
+      "type": ["null", "string"]
+    },
+    "listing-id": {
+      "description": "Identifier for the listing",
+      "type": ["null", "string"]
+    },
+    "seller-sku": {
+      "description": "Seller-specific SKU (Stock Keeping Unit)",
+      "type": ["null", "string"]
+    },
+    "price": {
+      "description": "Price of the item",
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "description": "Available quantity of the item",
+      "type": ["null", "string"]
+    },
+    "open-date": {
+      "description": "Date and time when the listing was opened",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "image-url": {
+      "description": "URL of the main image of the item",
+      "type": ["null", "string"]
+    },
+    "item-is-marketplace": {
+      "description": "Indicates if the item belongs to the marketplace",
+      "type": ["null", "string"]
+    },
+    "product-id-type": {
+      "description": "Type of identifier used for the product",
+      "type": ["null", "string"]
+    },
+    "zshop-shipping-fee": {
+      "description": "Shipping fee on ZShop",
+      "type": ["null", "string"]
+    },
+    "item-note": {
+      "description": "Any additional notes related to the item",
+      "type": ["null", "string"]
+    },
+    "item-condition": {
+      "description": "The condition of the item",
+      "type": ["null", "string"]
+    },
+    "zshop-category1": {
+      "description": "Category on ZShop",
+      "type": ["null", "string"]
+    },
+    "zshop-browse-path": {
+      "description": "Browse path on the ZShop",
+      "type": ["null", "string"]
+    },
+    "zshop-storefront-feature": {
+      "description": "Storefront feature on ZShop",
+      "type": ["null", "string"]
+    },
+    "asin1": {
+      "description": "ASIN (Amazon Standard Identification Number) value 1",
+      "type": ["null", "string"]
+    },
+    "asin2": {
+      "description": "ASIN (Amazon Standard Identification Number) value 2",
+      "type": ["null", "string"]
+    },
+    "asin3": {
+      "description": "ASIN (Amazon Standard Identification Number) value 3",
+      "type": ["null", "string"]
+    },
+    "will-ship-internationally": {
+      "description": "Indicates whether international shipping is supported",
+      "type": ["null", "string"]
+    },
+    "expedited-shipping": {
+      "description": "Indicates whether expedited shipping is available",
+      "type": ["null", "string"]
+    },
+    "zshop-boldface": {
+      "description": "Indicates if the listing is in boldface",
+      "type": ["null", "string"]
+    },
+    "product-id": {
+      "description": "Unique identifier for the product",
+      "type": ["null", "string"]
+    },
+    "bid-for-featured-placement": {
+      "description": "Bid amount for featured placement",
+      "type": ["null", "string"]
+    },
+    "add-delete": {
+      "description": "Indicates whether to add or delete the listing",
+      "type": ["null", "string"]
+    },
+    "pending-quantity": {
+      "description": "Quantity of items pending fulfillment",
+      "type": ["null", "string"]
+    },
+    "fulfillment-channel": {
+      "description": "The channel through which fulfillment will be handled",
+      "type": ["null", "string"]
+    },
+    "Business Price": {
+      "description": "The price of the item for business customers",
+      "type": ["null", "string"]
+    },
+    "Quantity Price Type": {
+      "description": "The type of pricing for quantity pricing tiers",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 1": {
+      "description": "The lower bound value for quantity pricing tier 1",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 1": {
+      "description": "The price for quantity pricing tier 1",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 2": {
+      "description": "The lower bound value for quantity pricing tier 2",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 2": {
+      "description": "The price for quantity pricing tier 2",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 3": {
+      "description": "The lower bound value for quantity pricing tier 3",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 3": {
+      "description": "The price for quantity pricing tier 3",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 4": {
+      "description": "The lower bound value for quantity pricing tier 4",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 4": {
+      "description": "The price for quantity pricing tier 4",
+      "type": ["null", "string"]
+    },
+    "Quantity Lower Bound 5": {
+      "description": "The lower bound value for quantity pricing tier 5",
+      "type": ["null", "string"]
+    },
+    "Quantity Price 5": {
+      "description": "The price for quantity pricing tier 5",
+      "type": ["null", "string"]
+    },
+    "merchant-shipping-group": {
+      "description": "Shipping group associated with the merchant",
+      "type": ["null", "string"]
+    },
+    "Progressive Price Type": {
+      "description": "The type of pricing for progressive pricing tiers",
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 1": {
+      "description": "The lower bound value for progressive pricing tier 1",
+      "type": ["null", "string"]
+    },
+    "Progressive Price 1": {
+      "description": "The price for progressive pricing tier 1",
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 2": {
+      "description": "The lower bound value for progressive pricing tier 2",
+      "type": ["null", "string"]
+    },
+    "Progressive Price 2": {
+      "description": "The price for progressive pricing tier 2",
+      "type": ["null", "string"]
+    },
+    "Progressive Lower Bound 3": {
+      "description": "The lower bound value for progressive pricing tier 3",
+      "type": ["null", "string"]
+    },
+    "Progressive Price 3": {
+      "description": "The price for progressive pricing tier 3",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time for the listing data",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

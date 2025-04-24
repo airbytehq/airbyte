@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "url": {
+      "description": "The URL to access the project card.",
+      "type": ["null", "string"]
+    },
+    "project_url": {
+      "description": "The URL to access the project that includes the project card.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the project card.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "The unique Node ID of the project card.",
+      "type": ["null", "string"]
+    },
+    "note": {
+      "description": "Any notes associated with the project card.",
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "description": "Indicates whether the project card is archived or not.",
+      "type": ["null", "boolean"]
+    },
+    "creator": {
+      "description": "The user who created the project card.",
+      "$ref": "user.json"
+    },
+    "created_at": {
+      "description": "The date and time when the project card was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the project card was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "column_url": {
+      "description": "The URL to access the project column associated with the project card.",
+      "type": ["null", "string"]
+    },
+    "content_url": {
+      "description": "The URL that provides direct access to the project card's content.",
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "description": "The repository to which the project card is linked.",
+      "type": "string"
+    },
+    "project_id": {
+      "description": "The unique identifier of the project to which the project card belongs.",
+      "type": "integer"
+    },
+    "column_id": {
+      "description": "The unique identifier of the project column that the project card belongs to.",
+      "type": "integer"
+    }
+  }
+}

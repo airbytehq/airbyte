@@ -1,17 +1,21 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
+import logging
 import multiprocessing as mp
 import traceback
 from multiprocessing import Queue
-from typing import Any, Callable, List, Mapping
+from typing import Any, Callable, List, Mapping, cast
 
 import dill
-from airbyte_cdk.logger import AirbyteLogger
+import orjson
+
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer
 
 
-def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger: AirbyteLogger, args: List[Any]) -> Mapping[str, Any]:
+def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger: logging.Logger, args: List[Any]) -> Mapping[str, Any]:
     """
     fn passed in must return a tuple of (desired return value, Exception OR None)
     This allows propagating any errors from the process up and raising accordingly
@@ -48,3 +52,28 @@ def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger
 def multiprocess_queuer(func: Callable, queue: mp.Queue, *args: Any, **kwargs: Any) -> None:
     """this is our multiprocesser helper function, lives at top-level to be Windows-compatible"""
     queue.put(dill.loads(func)(*args, **kwargs))
+
+
+def get_value_or_json_if_empty_string(options: str = None) -> str:
+    return options.strip() if options else "{}"
+
+
+def airbyte_message_to_json(
+    message: AirbyteMessage,
+    *,
+    newline: bool = False,
+) -> str:
+    """Dump the provided AirbyteMessage to a JSON string.
+
+    Optionally append a newline character to the end of the string.
+    """
+    result = orjson.dumps(cast(dict, AirbyteMessageSerializer.dump(message))).decode()
+    if newline:
+        result += "\n"
+
+    return result
+
+
+def airbyte_message_from_json(message_json: str) -> AirbyteMessage:
+    """Create an AirbyteMessage object from the provided JSON string."""
+    return AirbyteMessageSerializer.load(orjson.loads(message_json))

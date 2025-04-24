@@ -1,0 +1,3 @@
+[run]
+omit =
+    source_azure_blob_storage/run.py

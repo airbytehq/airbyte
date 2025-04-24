@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -8,31 +8,40 @@ from typing import Any, Dict, Iterable, List, Mapping
 import pendulum as pdm
 
 
-def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
-    """
-    Outputs the Dict with key:value slices for the stream.
-    :: EXAMPLE:
-        Input:
-            records = [{dict}, {dict}, ...],
-            key_value_map = {<slice_key_name>: <key inside record>}
+# replace `pivot` with `_pivot`, to allow redshift normalization,
+# since `pivot` is a reserved keyword for Destination Redshift,
+# on behalf of https://github.com/airbytehq/airbyte/issues/13018,
+# expand this list, if required.
+DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
 
-        Output:
-            {
-                <slice_key_name> : records.<key inside record>.value,
-            }
-    """
-    result = {}
-    for key in key_value_map:
-        value = record.get(key_value_map[key])
-        if value:
-            result[key] = value
-    return result
+
+def update_specific_key(target_dict, target_key, target_value, condition_func=None, excluded_keys=None):
+    if excluded_keys is None:
+        excluded_keys = []
+
+    for key, value in target_dict.items():
+        # Skip any keys that are in excluded_keys
+        if key in excluded_keys:
+            continue
+        # Apply the condition function if provided, and only update if the condition is true
+        if key == target_key and (condition_func is None or condition_func(target_dict)):
+            target_dict[key] = target_value
+        elif isinstance(value, dict):
+            # Recursively update nested dictionaries
+            target_dict[key] = update_specific_key(value, target_key, target_value, condition_func, excluded_keys)
+        elif isinstance(value, list):
+            # Recursively update lists
+            target_dict[key] = [
+                update_specific_key(item, target_key, target_value, condition_func, excluded_keys) if isinstance(item, dict) else item
+                for item in value
+            ]
+
+    return target_dict
 
 
 def transform_change_audit_stamps(
     record: Dict, dict_key: str = "changeAuditStamps", props: List = ["created", "lastModified"], fields: List = ["time"]
 ) -> Mapping[str, Any]:
-
     """
     :: EXAMPLE `changeAuditStamps` input structure:
         {
@@ -41,7 +50,6 @@ def transform_change_audit_stamps(
                 "lastModified": {"time": 1629664544760}
             }
         }
-
     :: EXAMPLE output:
         {
             "created": "2021-08-21 21:27:55",
@@ -62,18 +70,15 @@ def transform_change_audit_stamps(
 def date_str_from_date_range(record: Dict, prefix: str) -> str:
     """
     Makes the ISO8601 format date string from the input <prefix>.<part of the date>
-
     EXAMPLE:
         Input: record
         {
             "start.year": 2021, "start.month": 8, "start.day": 1,
             "end.year": 2021, "end.month": 9, "end.day": 31
         }
-
     EXAMPLE output:
         With `prefix` = "start"
             str:  "2021-08-13",
-
         With `prefix` = "end"
             str: "2021-09-31",
     """
@@ -90,7 +95,6 @@ def transform_date_range(
     props: List = ["start", "end"],
     fields: List = ["year", "month", "day"],
 ) -> Mapping[str, Any]:
-
     """
     :: EXAMPLE `dateRange` input structure in Analytics streams:
         {
@@ -122,20 +126,51 @@ def transform_date_range(
     return record
 
 
-def transform_targeting_criteria(
-    record: Dict,
-    dict_key: str = "targetingCriteria",
-) -> Mapping[str, Any]:
-
+def transform_targeting_criteria(record: Dict, dict_key: str = "targetingCriteria") -> Mapping[str, Any]:
     """
-    :: EXAMPLE `targetingCriteria` input structure:
-        {
-            "targetingCriteria": {
-                "include": {
-                    "and": [
-                        {
-                            "or": {
-                                "urn:li:adTargetingFacet:titles": [
+        :: EXAMPLE `targetingCriteria` input structure:
+            {
+                "targetingCriteria": {
+                    "include": {
+                        "and": [
+                            {
+                                "or": {
+                                    "urn:li:adTargetingFacet:titles": [
+                                        "urn:li:title:100",
+                                        "urn:li:title:10326",
+                                        "urn:li:title:10457",
+                                        "urn:li:title:10738",
+                                        "urn:li:title:10966",
+                                        "urn:li:title:11349",
+                                        "urn:li:title:1159",
+    ]
+                                }
+                            },
+                            {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
+                            {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                        ]
+                    },
+                    "exclude": {
+                        "or": {
+                            "urn:li:adTargetingFacet:facet_Key1": [
+                                "facet_test1",
+                                "facet_test2",
+                            ],
+                            "urn:li:adTargetingFacet:facet_Key2": [
+                                "facet_test3",
+                                "facet_test4",
+                            ],
+                    }
+                }
+            }
+        :: EXAMPLE output:
+            {
+                "targetingCriteria": {
+                    "include": {
+                        "and": [
+                            {
+                                "type": "urn:li:adTargetingFacet:titles",
+                                "values": [
                                     "urn:li:title:100",
                                     "urn:li:title:10326",
                                     "urn:li:title:10457",
@@ -143,74 +178,36 @@ def transform_targeting_criteria(
                                     "urn:li:title:10966",
                                     "urn:li:title:11349",
                                     "urn:li:title:1159",
-                                ]
-                            }
-                        },
-                        {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
-                        {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
-                    ]
-                },
-                "exclude": {
-                    "or": {
-                        "urn:li:adTargetingFacet:facet_Key1": [
-                            "facet_test1",
-                            "facet_test2",
-                        ],
-                        "urn:li:adTargetingFacet:facet_Key2": [
-                            "facet_test3",
-                            "facet_test4",
-                        ],
+                                ],
+                            },
+                            {
+                                "type": "urn:li:adTargetingFacet:locations",
+                                "values": ["urn:li:geo:103644278"],
+                            },
+                            {
+                                "type": "urn:li:adTargetingFacet:interfaceLocales",
+                                "values": ["urn:li:locale:en_US"],
+                            },
+                        ]
+                    },
+                    "exclude": {
+                        "or": [
+                            {
+                                "type": "urn:li:adTargetingFacet:facet_Key1",
+                                "values": ["facet_test1", "facet_test2"],
+                            },
+                            {
+                                "type": "urn:li:adTargetingFacet:facet_Key2",
+                                "values": ["facet_test3", "facet_test4"],
+                            },
+                        ]
+                    },
                 }
-            }
-        }
-
-    :: EXAMPLE output:
-        {
-            "targetingCriteria": {
-                "include": {
-                    "and": [
-                        {
-                            "type": "urn:li:adTargetingFacet:titles",
-                            "values": [
-                                "urn:li:title:100",
-                                "urn:li:title:10326",
-                                "urn:li:title:10457",
-                                "urn:li:title:10738",
-                                "urn:li:title:10966",
-                                "urn:li:title:11349",
-                                "urn:li:title:1159",
-                            ],
-                        },
-                        {
-                            "type": "urn:li:adTargetingFacet:locations",
-                            "values": ["urn:li:geo:103644278"],
-                        },
-                        {
-                            "type": "urn:li:adTargetingFacet:interfaceLocales",
-                            "values": ["urn:li:locale:en_US"],
-                        },
-                    ]
-                },
-                "exclude": {
-                    "or": [
-                        {
-                            "type": "urn:li:adTargetingFacet:facet_Key1",
-                            "values": ["facet_test1", "facet_test2"],
-                        },
-                        {
-                            "type": "urn:li:adTargetingFacet:facet_Key2",
-                            "values": ["facet_test3", "facet_test4"],
-                        },
-                    ]
-                },
-            }
-
     """
 
     def unnest_dict(nested_dict: Dict) -> Iterable[Dict]:
         """
         Unnest the nested dict to simplify the normalization
-
         EXAMPLE OUTPUT:
             [
                 {"type": "some_key", "values": "some_values"},
@@ -258,11 +255,7 @@ def transform_targeting_criteria(
     return record
 
 
-def transform_variables(
-    record: Dict,
-    dict_key: str = "variables",
-) -> Mapping[str, Any]:
-
+def transform_variables(record: Dict, dict_key: str = "variables") -> Mapping[str, Any]:
     """
     :: EXAMPLE `variables` input:
     {
@@ -276,7 +269,6 @@ def transform_variables(
             }
         }
     }
-
     :: EXAMPLE output:
     {
         "variables": {
@@ -302,13 +294,32 @@ def transform_variables(
     return record
 
 
+def transform_col_names(record: Dict, dict_keys: list = []) -> Mapping[str, Any]:
+    """
+    Rename records keys (columns) indicated in `dict_keys` to avoid normalization issues for certain destinations.
+    Example:
+        The `pivot` or `PIVOT` is the reserved keyword for DESTINATION REDSHIFT, we should avoid using it in this case.
+        https://github.com/airbytehq/airbyte/issues/13018
+    """
+    for key in dict_keys:
+        if key in record:
+            record[f"_{key}"] = record[key]  # create new key from original
+            record.pop(key)  # remove the original key
+    return record
+
+
+def transform_pivot_values(record: Dict) -> Mapping[str, Any]:
+    pivot_values = record.get("pivotValues", [])
+    record["string_of_pivot_values"] = ",".join(pivot_values)
+    return record
+
+
 def transform_data(records: List) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
     to be properly normalised in the destination.
     """
     for record in records:
-
         if "changeAuditStamps" in record:
             record = transform_change_audit_stamps(record)
 
@@ -320,5 +331,10 @@ def transform_data(records: List) -> Iterable[Mapping]:
 
         if "variables" in record:
             record = transform_variables(record)
+
+        if "pivotValues" in record:
+            record = transform_pivot_values(record)
+
+        record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
 
         yield record

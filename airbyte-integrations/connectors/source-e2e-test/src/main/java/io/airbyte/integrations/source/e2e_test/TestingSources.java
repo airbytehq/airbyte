@@ -1,34 +1,31 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestingSources extends BaseConnector implements Source {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestingSources.class);
 
   private final Map<TestingSourceType, Source> sourceMap;
 
   public enum TestingSourceType {
     CONTINUOUS_FEED,
-    // the following are legacy types
     EXCEPTION_AFTER_N,
-    INFINITE_FEED
+    INFINITE_FEED,
+
+    BENCHMARK
   }
 
   public TestingSources() {
@@ -36,6 +33,7 @@ public class TestingSources extends BaseConnector implements Source {
         .put(TestingSourceType.CONTINUOUS_FEED, new ContinuousFeedSource())
         .put(TestingSourceType.EXCEPTION_AFTER_N, new LegacyExceptionAfterNSource())
         .put(TestingSourceType.INFINITE_FEED, new LegacyInfiniteFeedSource())
+        .put(TestingSourceType.BENCHMARK, new SpeedBenchmarkSource())
         .build());
   }
 

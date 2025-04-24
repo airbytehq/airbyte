@@ -1,0 +1,95 @@
+documentationUrl: "https://docs.airbyte.com/integrations/sources/outbrain-amplify"
+connectionSpecification:
+  $schema: "http://json-schema.org/draft-07/schema#"
+  title: Outbrain Amplify Spec
+  type: object
+  required: ["credentials", "start_date"]
+  properties:
+    credentials:
+      title: Authentication Method
+      description: >-
+        Credentials for making authenticated requests requires either
+        username/password or access_token.
+      default: {}
+      order: 0
+      type: object
+      oneOf:
+        - title: Access token
+          type: object
+          properties:
+            type:
+              title: Access token is required for authentication requests.
+              const: access_token
+              type: string
+            access_token:
+              type: string
+              description: Access Token for making authenticated requests.
+              airbyte_secret: true
+          required:
+            - type
+            - access_token
+        - title: Username Password
+          type: object
+          properties:
+            type:
+              title: Both username and password is required for authentication request.
+              const: username_password
+              type: string
+            username:
+              type: string
+              description: >-
+                Add Username for authentication.
+            password:
+              type: string
+              description: >-
+                Add Password for authentication.
+              airbyte_secret: true
+          required:
+            - type
+            - username
+            - password
+    report_granularity:
+      title: Granularity for periodic reports.
+      description: >-
+        The granularity used for periodic data in reports. See <a
+        href="https://amplifyv01.docs.apiary.io/#reference/performance-reporting/periodic/retrieve-performance-statistics-for-all-marketer-campaigns-by-periodic-breakdown">the
+        docs</a>.
+      enum:
+        - daily
+        - weekly
+        - monthly
+      order: 1
+      type: string
+    geo_location_breakdown:
+      title: Granularity for geo-location region.
+      description: >-
+        The granularity used for geo location data in reports.
+      enum:
+        - country
+        - region
+        - subregion
+      order: 2
+      type: string
+    start_date:
+      type: string
+      order: 3
+      description: >-
+        Date in the format YYYY-MM-DD eg. 2017-01-25. Any data before this date will not be replicated.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    end_date:
+      type: string
+      order: 4
+      description: >-
+        Date in the format YYYY-MM-DD.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    conversion_count:
+      title: Definition of conversion count in reports.
+      description: >-
+        The definition of conversion count in reports. See <a
+        href="https://amplifyv01.docs.apiary.io/#reference/performance-reporting/periodic/retrieve-performance-statistics-for-all-marketer-campaigns-by-periodic-breakdown">the
+        docs</a>.
+      enum:
+        - click/view_time
+        - conversion_time
+      order: 5
+      type: string

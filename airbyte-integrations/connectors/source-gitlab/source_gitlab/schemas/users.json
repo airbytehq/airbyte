@@ -1,24 +1,34 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identification number for the user",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Full name of the user",
       "type": ["null", "string"]
     },
     "username": {
+      "description": "Unique username chosen by the user",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "Current state of the user's account (e.g., active, blocked)",
       "type": ["null", "string"]
     },
     "avatar_url": {
+      "description": "URL of the user's avatar image",
       "type": ["null", "string"]
     },
     "web_url": {
+      "description": "URL of the user's profile page on the Gitlab platform",
       "type": ["null", "string"]
+    },
+    "locked": {
+      "description": "Boolean flag indicating if the user's account is locked",
+      "type": ["null", "boolean"]
     }
   }
 }

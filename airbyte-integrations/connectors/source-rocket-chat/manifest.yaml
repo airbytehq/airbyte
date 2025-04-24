@@ -1,0 +1,1501 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - teams
+definitions:
+  streams:
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['endpoint'] }}/api/v1"
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Auth-Token
+              inject_into: header
+          path: /teams.list
+          http_method: GET
+          request_headers:
+            X-User-Id: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teams
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: count
+            page_size: 1
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - integer
+            _id:
+              type:
+                - "null"
+                - string
+            _updatedAt:
+              type:
+                - "null"
+                - string
+            createdAt:
+              type:
+                - "null"
+                - string
+            createdBy:
+              type:
+                - "null"
+                - object
+            name:
+              type:
+                - "null"
+                - string
+            numberOfUsers:
+              type:
+                - "null"
+                - integer
+            roomId:
+              type:
+                - "null"
+                - string
+            rooms:
+              type:
+                - "null"
+                - integer
+    rooms:
+      type: DeclarativeStream
+      name: rooms
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['endpoint'] }}/api/v1"
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Auth-Token
+              inject_into: header
+          path: /rooms.get
+          http_method: GET
+          request_headers:
+            X-User-Id: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - update
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _id:
+              type:
+                - "null"
+                - string
+            _updatedAt:
+              type:
+                - "null"
+                - string
+            broadcast:
+              type:
+                - "null"
+                - boolean
+            customFields:
+              type:
+                - "null"
+                - object
+            default:
+              type:
+                - "null"
+                - boolean
+            description:
+              type:
+                - "null"
+                - string
+            encrypted:
+              type:
+                - "null"
+                - boolean
+            federated:
+              type:
+                - "null"
+                - boolean
+            fname:
+              type:
+                - "null"
+                - string
+            lastMessage:
+              type:
+                - "null"
+                - object
+            lm:
+              type:
+                - "null"
+                - string
+            msgs:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            ro:
+              type:
+                - "null"
+                - boolean
+            sysMes:
+              type:
+                - "null"
+                - boolean
+            t:
+              type:
+                - "null"
+                - string
+            ts:
+              type:
+                - "null"
+                - string
+            u:
+              type:
+                - "null"
+                - object
+            usersCount:
+              type:
+                - "null"
+                - integer
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['endpoint'] }}/api/v1"
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Auth-Token
+              inject_into: header
+          path: /channels.list
+          http_method: GET
+          request_headers:
+            X-User-Id: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - channels
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: count
+            page_size: 1
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _id:
+              type:
+                - "null"
+                - string
+            _updatedAt:
+              type:
+                - "null"
+                - string
+            broadcast:
+              type:
+                - "null"
+                - boolean
+            default:
+              type:
+                - "null"
+                - boolean
+            description:
+              type:
+                - "null"
+                - string
+            encrypted:
+              type:
+                - "null"
+                - boolean
+            fname:
+              type:
+                - "null"
+                - string
+            msgs:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            ro:
+              type:
+                - "null"
+                - boolean
+            sysMes:
+              type:
+                - "null"
+                - boolean
+            t:
+              type:
+                - "null"
+                - string
+            teamId:
+              type:
+                - "null"
+                - string
+            teamMain:
+              type:
+                - "null"
+                - boolean
+            ts:
+              type:
+                - "null"
+                - string
+            u:
+              type:
+                - "null"
+                - object
+            usersCount:
+              type:
+                - "null"
+                - integer
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['endpoint'] }}/api/v1"
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Auth-Token
+              inject_into: header
+          path: /roles.list
+          http_method: GET
+          request_headers:
+            X-User-Id: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _id:
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            mandatory2fa:
+              type:
+                - "null"
+                - boolean
+            name:
+              type:
+                - "null"
+                - string
+            protected:
+              type:
+                - "null"
+                - boolean
+            scope:
+              type:
+                - "null"
+                - string
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['endpoint'] }}/api/v1"
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Auth-Token
+              inject_into: header
+          path: /subscriptions.get
+          http_method: GET
+          request_headers:
+            X-User-Id: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - update
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _id:
+              type:
+                - "null"
+                - string
+            _updatedAt:
+              type:
+                - "null"
+                - string
+            alert:
+              type:
+                - "null"
+                - boolean
+            fname:
+              type:
+                - "null"
+                - string
+            groupMentions:
+              type:
+                - "null"
+                - integer
+            ls:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            open:
+              type:
+                - "null"
+                - boolean
+            rid:
+              type:
+                - "null"
+                - string
+            roles:
+              type:
+                - "null"
+                - array
+            t:
+              type:
+                - "null"
+                - string
+            ts:
+              type:
+                - "null"
+                - string
+            u:
+              type:
+                - "null"
+                - object
+            unread:
+              type:
+                - "null"
+                - integer
+            userMentions:
+              type:
+                - "null"
+                - integer
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['endpoint'] }}/api/v1"
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Auth-Token
+              inject_into: header
+          path: /users.list
+          http_method: GET
+          request_headers:
+            X-User-Id: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: count
+            page_size: 1
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            _id:
+              type:
+                - "null"
+                - string
+            active:
+              type:
+                - "null"
+                - boolean
+            emails:
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+            lastLogin:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            nameInsensitive:
+              type:
+                - "null"
+                - string
+            roles:
+              type:
+                - "null"
+                - array
+              items:
+                type: string
+            status:
+              type:
+                - "null"
+                - string
+            username:
+              type:
+                - "null"
+                - string
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['endpoint'] }}/api/v1"
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['token'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Auth-Token
+        inject_into: header
+streams:
+  - type: DeclarativeStream
+    name: teams
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['endpoint'] }}/api/v1"
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        path: /teams.list
+        http_method: GET
+        request_headers:
+          X-User-Id: "{{ config['user_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - teams
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: count
+          page_size: 1
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - integer
+          _id:
+            type:
+              - "null"
+              - string
+          _updatedAt:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+          createdBy:
+            type:
+              - "null"
+              - object
+          name:
+            type:
+              - "null"
+              - string
+          numberOfUsers:
+            type:
+              - "null"
+              - integer
+          roomId:
+            type:
+              - "null"
+              - string
+          rooms:
+            type:
+              - "null"
+              - integer
+  - type: DeclarativeStream
+    name: rooms
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['endpoint'] }}/api/v1"
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        path: /rooms.get
+        http_method: GET
+        request_headers:
+          X-User-Id: "{{ config['user_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - update
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          _updatedAt:
+            type:
+              - "null"
+              - string
+          broadcast:
+            type:
+              - "null"
+              - boolean
+          customFields:
+            type:
+              - "null"
+              - object
+          default:
+            type:
+              - "null"
+              - boolean
+          description:
+            type:
+              - "null"
+              - string
+          encrypted:
+            type:
+              - "null"
+              - boolean
+          federated:
+            type:
+              - "null"
+              - boolean
+          fname:
+            type:
+              - "null"
+              - string
+          lastMessage:
+            type:
+              - "null"
+              - object
+          lm:
+            type:
+              - "null"
+              - string
+          msgs:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          ro:
+            type:
+              - "null"
+              - boolean
+          sysMes:
+            type:
+              - "null"
+              - boolean
+          t:
+            type:
+              - "null"
+              - string
+          ts:
+            type:
+              - "null"
+              - string
+          u:
+            type:
+              - "null"
+              - object
+          usersCount:
+            type:
+              - "null"
+              - integer
+  - type: DeclarativeStream
+    name: channels
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['endpoint'] }}/api/v1"
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        path: /channels.list
+        http_method: GET
+        request_headers:
+          X-User-Id: "{{ config['user_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - channels
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: count
+          page_size: 1
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          _updatedAt:
+            type:
+              - "null"
+              - string
+          broadcast:
+            type:
+              - "null"
+              - boolean
+          default:
+            type:
+              - "null"
+              - boolean
+          description:
+            type:
+              - "null"
+              - string
+          encrypted:
+            type:
+              - "null"
+              - boolean
+          fname:
+            type:
+              - "null"
+              - string
+          msgs:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          ro:
+            type:
+              - "null"
+              - boolean
+          sysMes:
+            type:
+              - "null"
+              - boolean
+          t:
+            type:
+              - "null"
+              - string
+          teamId:
+            type:
+              - "null"
+              - string
+          teamMain:
+            type:
+              - "null"
+              - boolean
+          ts:
+            type:
+              - "null"
+              - string
+          u:
+            type:
+              - "null"
+              - object
+          usersCount:
+            type:
+              - "null"
+              - integer
+  - type: DeclarativeStream
+    name: roles
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['endpoint'] }}/api/v1"
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        path: /roles.list
+        http_method: GET
+        request_headers:
+          X-User-Id: "{{ config['user_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - roles
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          mandatory2fa:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+          protected:
+            type:
+              - "null"
+              - boolean
+          scope:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: subscriptions
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['endpoint'] }}/api/v1"
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        path: /subscriptions.get
+        http_method: GET
+        request_headers:
+          X-User-Id: "{{ config['user_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - update
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          _updatedAt:
+            type:
+              - "null"
+              - string
+          alert:
+            type:
+              - "null"
+              - boolean
+          fname:
+            type:
+              - "null"
+              - string
+          groupMentions:
+            type:
+              - "null"
+              - integer
+          ls:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          open:
+            type:
+              - "null"
+              - boolean
+          rid:
+            type:
+              - "null"
+              - string
+          roles:
+            type:
+              - "null"
+              - array
+          t:
+            type:
+              - "null"
+              - string
+          ts:
+            type:
+              - "null"
+              - string
+          u:
+            type:
+              - "null"
+              - object
+          unread:
+            type:
+              - "null"
+              - integer
+          userMentions:
+            type:
+              - "null"
+              - integer
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['endpoint'] }}/api/v1"
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        path: /users.list
+        http_method: GET
+        request_headers:
+          X-User-Id: "{{ config['user_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - users
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: count
+          page_size: 1
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          _id:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          emails:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          lastLogin:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          nameInsensitive:
+            type:
+              - "null"
+              - string
+          roles:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          status:
+            type:
+              - "null"
+              - string
+          username:
+            type:
+              - "null"
+              - string
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - endpoint
+      - token
+      - user_id
+    properties:
+      endpoint:
+        type: string
+        title: Endpoint
+        description: Your rocket.chat instance URL.
+        examples:
+          - https://airbyte-connector-poc.rocket.chat
+          - https://hey.yoursite.com
+        order: 0
+      token:
+        type: string
+        title: Token
+        description: >-
+          Your API Token. See <a
+          href="https://developer.rocket.chat/reference/api/rest-api/endpoints/other-important-endpoints/access-tokens-endpoints">here</a>.
+          The token is case sensitive.
+        airbyte_secret: true
+        order: 1
+      user_id:
+        type: string
+        title: User ID.
+        description: Your User Id.
+        order: 2
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    teams: false
+    rooms: false
+    channels: false
+    roles: false
+    subscriptions: false
+    users: false
+schemas:
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - integer
+      _id:
+        type:
+          - "null"
+          - string
+      _updatedAt:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+      createdBy:
+        type:
+          - "null"
+          - object
+      name:
+        type:
+          - "null"
+          - string
+      numberOfUsers:
+        type:
+          - "null"
+          - integer
+      roomId:
+        type:
+          - "null"
+          - string
+      rooms:
+        type:
+          - "null"
+          - integer
+  rooms:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - "null"
+          - string
+      _updatedAt:
+        type:
+          - "null"
+          - string
+      broadcast:
+        type:
+          - "null"
+          - boolean
+      customFields:
+        type:
+          - "null"
+          - object
+      default:
+        type:
+          - "null"
+          - boolean
+      description:
+        type:
+          - "null"
+          - string
+      encrypted:
+        type:
+          - "null"
+          - boolean
+      federated:
+        type:
+          - "null"
+          - boolean
+      fname:
+        type:
+          - "null"
+          - string
+      lastMessage:
+        type:
+          - "null"
+          - object
+      lm:
+        type:
+          - "null"
+          - string
+      msgs:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      ro:
+        type:
+          - "null"
+          - boolean
+      sysMes:
+        type:
+          - "null"
+          - boolean
+      t:
+        type:
+          - "null"
+          - string
+      ts:
+        type:
+          - "null"
+          - string
+      u:
+        type:
+          - "null"
+          - object
+      usersCount:
+        type:
+          - "null"
+          - integer
+  channels:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - "null"
+          - string
+      _updatedAt:
+        type:
+          - "null"
+          - string
+      broadcast:
+        type:
+          - "null"
+          - boolean
+      default:
+        type:
+          - "null"
+          - boolean
+      description:
+        type:
+          - "null"
+          - string
+      encrypted:
+        type:
+          - "null"
+          - boolean
+      fname:
+        type:
+          - "null"
+          - string
+      msgs:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      ro:
+        type:
+          - "null"
+          - boolean
+      sysMes:
+        type:
+          - "null"
+          - boolean
+      t:
+        type:
+          - "null"
+          - string
+      teamId:
+        type:
+          - "null"
+          - string
+      teamMain:
+        type:
+          - "null"
+          - boolean
+      ts:
+        type:
+          - "null"
+          - string
+      u:
+        type:
+          - "null"
+          - object
+      usersCount:
+        type:
+          - "null"
+          - integer
+  roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      mandatory2fa:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      protected:
+        type:
+          - "null"
+          - boolean
+      scope:
+        type:
+          - "null"
+          - string
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - "null"
+          - string
+      _updatedAt:
+        type:
+          - "null"
+          - string
+      alert:
+        type:
+          - "null"
+          - boolean
+      fname:
+        type:
+          - "null"
+          - string
+      groupMentions:
+        type:
+          - "null"
+          - integer
+      ls:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      open:
+        type:
+          - "null"
+          - boolean
+      rid:
+        type:
+          - "null"
+          - string
+      roles:
+        type:
+          - "null"
+          - array
+      t:
+        type:
+          - "null"
+          - string
+      ts:
+        type:
+          - "null"
+          - string
+      u:
+        type:
+          - "null"
+          - object
+      unread:
+        type:
+          - "null"
+          - integer
+      userMentions:
+        type:
+          - "null"
+          - integer
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      _id:
+        type:
+          - "null"
+          - string
+      active:
+        type:
+          - "null"
+          - boolean
+      emails:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+      lastLogin:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      nameInsensitive:
+        type:
+          - "null"
+          - string
+      roles:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      status:
+        type:
+          - "null"
+          - string
+      username:
+        type:
+          - "null"
+          - string

@@ -1,0 +1,60 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - ${base_url}
+      - app.posthog.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
+  dockerImageTag: 1.1.25
+  dockerRepository: airbyte/source-posthog
+  documentationUrl: https://docs.airbyte.com/integrations/sources/posthog
+  githubIssueLabel: source-posthog
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+  icon: posthog.svg
+  license: MIT
+  name: PostHog
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-posthog
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: The `event` field in the `events` stream has been corrected to the proper data type. To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
+        upgradeDeadline: "2024-01-15"
+  tags:
+    - cdk:low-code
+    - language:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: posthog_config_dev_null
+          id: 6982b1ce-2255-4ea2-a2f6-38fd56a6f5f1
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-POSTHOG__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POSTHOG__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

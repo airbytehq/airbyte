@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_tplcentral.streams import IncrementalTplcentralStream
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture

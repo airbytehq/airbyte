@@ -1,0 +1,15 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background-color: var(--color-grey-100);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 0.8rem;
+  font-weight: var(--ifm-font-weight-semibold);
+}
+a .chip:hover {
+  text-decoration: none;
+  color: var(--ifm-link-color);
+}

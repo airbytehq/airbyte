@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Identifier of the job",
+      "type": "integer"
+    },
+    "run_id": {
+      "description": "Identifier of the run associated with the job",
+      "type": "integer"
+    },
+    "workflow_name": {
+      "description": "Name of the workflow associated with the job",
+      "type": ["null", "string"]
+    },
+    "head_branch": {
+      "description": "Name of the branch where the job was triggered",
+      "type": ["null", "string"]
+    },
+    "run_url": {
+      "description": "URL to view the run details associated with the job",
+      "type": "string"
+    },
+    "run_attempt": {
+      "description": "Number of the run attempt for the job",
+      "type": "integer"
+    },
+    "node_id": {
+      "description": "Node ID of the job",
+      "type": "string"
+    },
+    "head_sha": {
+      "description": "Commit SHA associated with the job",
+      "type": "string"
+    },
+    "url": {
+      "description": "URL to fetch the details of the job",
+      "type": "string"
+    },
+    "html_url": {
+      "description": "URL to view the job details in a web browser",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "Status of the job (e.g., in_progress, completed)",
+      "type": "string"
+    },
+    "conclusion": {
+      "description": "Conclusion of the job execution (e.g., success, failure)",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "Timestamp when the job was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "started_at": {
+      "description": "Timestamp when the job was started",
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "description": "Timestamp when the job was completed",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "description": "Name of the job",
+      "type": "string"
+    },
+    "steps": {
+      "description": "List of steps within the job",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "Status of the step (e.g., in_progress, completed)",
+            "type": "string"
+          },
+          "conclusion": {
+            "description": "Conclusion of the step execution (e.g., success, failure)",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "Name of the step",
+            "type": "string"
+          },
+          "number": {
+            "description": "Number of the step",
+            "type": "integer"
+          },
+          "started_at": {
+            "description": "Timestamp when the step was started",
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "completed_at": {
+            "description": "Timestamp when the step was completed",
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "check_run_url": {
+      "description": "URL to view the check run associated with the job",
+      "type": "string"
+    },
+    "labels": {
+      "description": "Labels associated with the job",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runner_id": {
+      "description": "Identifier of the runner",
+      "type": ["integer", "null"]
+    },
+    "runner_name": {
+      "description": "Name of the runner",
+      "type": ["null", "string"]
+    },
+    "runner_group_id": {
+      "description": "Identifier of the runner group",
+      "type": ["integer", "null"]
+    },
+    "runner_group_name": {
+      "description": "Name of the runner group",
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "description": "Repository information associated with the job",
+      "type": "string"
+    }
+  }
+}

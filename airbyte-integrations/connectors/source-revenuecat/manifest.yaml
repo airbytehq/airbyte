@@ -1,0 +1,1951 @@
+version: 6.36.3
+
+type: DeclarativeSource
+
+description: >-
+  RevenueCat is a powerful and reliable in-app purchase server that makes it
+  easy to build, analyze, and grow your subscriber base whether you're just
+  starting out or already have millions of customers.
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    apps:
+      type: DeclarativeStream
+      name: apps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/apps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/apps"
+    metrics_overview:
+      type: DeclarativeStream
+      name: metrics_overview
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/metrics/overview
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - metrics
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/metrics_overview"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_seen_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    customers_subscriptions:
+      type: DeclarativeStream
+      name: customers_subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: starts_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_subscriptions"
+    customers_purchases:
+      type: DeclarativeStream
+      name: customers_purchases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/purchases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: purchased_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_purchases"
+    customers_active_entitlements:
+      type: DeclarativeStream
+      name: customers_active_entitlements
+      primary_key:
+        - entitlement_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/active_entitlements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: expires_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_active_entitlements"
+    customers_aliases:
+      type: DeclarativeStream
+      name: customers_aliases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/aliases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_aliases"
+    customers_invoices:
+      type: DeclarativeStream
+      name: customers_invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: issued_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_invoices"
+    entitlements:
+      type: DeclarativeStream
+      name: entitlements
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/entitlements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/entitlements"
+    entitlements_products:
+      type: DeclarativeStream
+      name: entitlements_products
+      primary_key:
+        - id
+        - entitlement_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/entitlements/{{
+            stream_partition['entitlement_id'] }}/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: entitlement_id
+                stream:
+                  $ref: "#/definitions/streams/entitlements"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - entitlement_id
+              value: "{{ stream_partition['entitlement_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/entitlements_products"
+    offerings:
+      type: DeclarativeStream
+      name: offerings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/offerings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offerings"
+    offerings_packages:
+      type: DeclarativeStream
+      name: offerings_packages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/offerings/{{
+            stream_partition['offering_id'] }}/packages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: offering_id
+                stream:
+                  $ref: "#/definitions/streams/offerings"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - offering_id
+              value: "{{ stream_partition['offering_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offerings_packages"
+    offerings_packages_products:
+      type: DeclarativeStream
+      name: offerings_packages_products
+      primary_key:
+        - id
+        - package_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/packages/{{
+            stream_partition['package_id'] }}/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: package_id
+                stream:
+                  $ref: "#/definitions/streams/offerings_packages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['product']['id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - package_id
+              value: "{{ stream_partition['package_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - created_at
+              value: "{{ record['product']['created_at'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offerings_packages_products"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("next_page",
+              "").split("starting_after=")[-1].split("&")[0] if
+              "starting_after=" in response.get("next_page", "") else "" }}
+            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.revenuecat.com/v2
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/apps"
+  - $ref: "#/definitions/streams/metrics_overview"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/customers_subscriptions"
+  - $ref: "#/definitions/streams/customers_purchases"
+  - $ref: "#/definitions/streams/customers_active_entitlements"
+  - $ref: "#/definitions/streams/customers_aliases"
+  - $ref: "#/definitions/streams/customers_invoices"
+  - $ref: "#/definitions/streams/entitlements"
+  - $ref: "#/definitions/streams/entitlements_products"
+  - $ref: "#/definitions/streams/offerings"
+  - $ref: "#/definitions/streams/offerings_packages"
+  - $ref: "#/definitions/streams/offerings_packages_products"
+  - $ref: "#/definitions/streams/products"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: API key or access token
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    projects: true
+    apps: true
+    metrics_overview: true
+    customers: true
+    customers_subscriptions: false
+    customers_purchases: false
+    customers_active_entitlements: false
+    customers_aliases: false
+    customers_invoices: false
+    entitlements: true
+    entitlements_products: true
+    offerings: true
+    offerings_packages: true
+    offerings_packages_products: true
+    products: true
+  testedStreams:
+    projects:
+      streamHash: 0526347c0167d57440cd535c603d683e0e3e51a0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    apps:
+      streamHash: 4e9f4140250878ec6a228fc17ba158d95c801691
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    metrics_overview:
+      streamHash: 170062b2cb8999f969355ecfc28febdef64855f1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers:
+      streamHash: fcb20bbb123c2daf9f29df4a49c7730635991662
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers_subscriptions:
+      streamHash: fe4e9ba8a704064c64576f1ffa01e0f7242fc1f7
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    customers_purchases:
+      streamHash: 261296976a8a39b189b95a264674bd348c6fa99f
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    customers_active_entitlements:
+      streamHash: 163159346f74a3902abf0757f2fae2e47329e2aa
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    customers_aliases:
+      streamHash: c47444bde1daca717df172b30d431287321adec6
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    customers_invoices:
+      streamHash: 57dcc0a609ee3b75d90d11a56a2de319c0ddeac7
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    entitlements:
+      streamHash: 2a1355dca25e864db5d1ad11f1a8f7497287577f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    entitlements_products:
+      streamHash: d5903a0fa8c18afc6b2f6cc94d0b3204fb432166
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    offerings:
+      streamHash: e362a32b29fce74e4ea5a4c49f561fb149ad9026
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    offerings_packages:
+      streamHash: 9a43cb5c732edd28cd4b8cd885476588c809fb3c
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    offerings_packages_products:
+      streamHash: 7836130a87c6cde911e8f8cf94db00853c55915d
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    products:
+      streamHash: b3711b65afb0fbf6b9738e4045ed3920d5e5230d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.revenuecat.com/docs/api-v2
+    openapiSpecUrl: https://www.revenuecat.com/docs/redocusaurus/plugin-redoc-0.yaml
+
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  apps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      amazon:
+        type:
+          - object
+          - "null"
+        properties: {}
+      created_at:
+        type: number
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      play_store:
+        type:
+          - object
+          - "null"
+        properties: {}
+      project_id:
+        type:
+          - string
+          - "null"
+      roku:
+        type:
+          - object
+          - "null"
+        properties: {}
+    required:
+      - id
+      - created_at
+  metrics_overview:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      first_seen_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      last_seen_at:
+        type: number
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - last_seen_at
+  customers_subscriptions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      object:
+        type: string
+        enum:
+          - purchase
+          - subscription
+      id:
+        type: string
+      customer_id:
+        type: string
+      original_customer_id:
+        type: string
+      product_id:
+        type: string
+      purchased_at:
+        type: integer
+      starts_at:
+        type: integer
+      current_period_starts_at:
+        type: integer
+      current_period_ends_at:
+        type: integer
+      gives_access:
+        type: boolean
+      pending_payment:
+        type: boolean
+      auto_renewal_status:
+        type: string
+      status:
+        type: string
+      total_revenue_in_usd:
+        type: object
+        properties:
+          currency:
+            type: string
+          gross:
+            type: number
+          commission:
+            type: number
+          tax:
+            type: number
+          proceeds:
+            type: number
+      presented_offering_id:
+        type: string
+      store_subscription_identifier:
+        type: integer
+      pending_changes:
+        type: object
+      management_url:
+        type: string
+      entitlements:
+        type: object
+        properties:
+          object:
+            type: string
+            enum:
+              - list
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                object:
+                  type: string
+                  enum:
+                    - entitlement
+                project_id:
+                  type: string
+                id:
+                  type: string
+                lookup_key:
+                  type: string
+                display_name:
+                  type: string
+                created_at:
+                  type: integer
+                products:
+                  type: object
+                  properties:
+                    object:
+                      type: string
+                      enum:
+                        - list
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          object:
+                            type: string
+                            enum:
+                              - product
+                          id:
+                            type: string
+                          store_identifier:
+                            type: string
+                          subscription:
+                            type: object
+                            properties:
+                              duration:
+                                type:
+                                  - string
+                                  - "null"
+                              grace_period_duration:
+                                type:
+                                  - string
+                                  - "null"
+                              trial_duration:
+                                type:
+                                  - string
+                                  - "null"
+                          one_time:
+                            type: object
+                            properties:
+                              is_consumable:
+                                type:
+                                  - boolean
+                                  - "null"
+                          created_at:
+                            type: integer
+                          app_id:
+                            type: string
+                          app:
+                            type: object
+                          display_name:
+                            type: string
+                    next_page:
+                      type: string
+                    url:
+                      type: string
+          next_page:
+            type: string
+          url:
+            type: string
+      environment:
+        type: string
+      store:
+        type: string
+      store_purchase_identifier:
+        type: integer
+      ownership:
+        type: string
+      country:
+        type: string
+    additionalProperties: true
+  customers_purchases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      object:
+        type: string
+        enum:
+          - purchase
+      id:
+        type: string
+      customer_id:
+        type: string
+      original_customer_id:
+        type: string
+      product_id:
+        type: string
+      purchased_at:
+        type: integer
+      revenue_in_usd:
+        type: object
+        properties:
+          currency:
+            type: string
+          gross:
+            type: number
+          commission:
+            type: number
+          tax:
+            type: number
+          proceeds:
+            type: number
+      quantity:
+        type: integer
+      status:
+        type: string
+      presented_offering_id:
+        type: string
+      entitlements:
+        type: object
+        properties:
+          object:
+            type: string
+            enum:
+              - list
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                object:
+                  type: string
+                  enum:
+                    - entitlement
+                project_id:
+                  type: string
+                id:
+                  type: string
+                lookup_key:
+                  type: string
+                display_name:
+                  type: string
+                created_at:
+                  type: integer
+                products:
+                  type: object
+                  properties:
+                    object:
+                      type: string
+                      enum:
+                        - list
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          object:
+                            type: string
+                            enum:
+                              - product
+                          id:
+                            type: string
+                          store_identifier:
+                            type: string
+                          subscription:
+                            type: object
+                            properties:
+                              duration:
+                                type:
+                                  - string
+                                  - "null"
+                              grace_period_duration:
+                                type:
+                                  - string
+                                  - "null"
+                              trial_duration:
+                                type:
+                                  - string
+                                  - "null"
+                          one_time:
+                            type: object
+                            properties:
+                              is_consumable:
+                                type:
+                                  - boolean
+                                  - "null"
+                          created_at:
+                            type: integer
+                          app_id:
+                            type: string
+                          app:
+                            type: object
+                          display_name:
+                            type: string
+                    next_page:
+                      type: string
+                    url:
+                      type: string
+          next_page:
+            type: string
+          url:
+            type: string
+      environment:
+        type: string
+      store:
+        type: string
+      store_purchase_identifier:
+        type: integer
+      ownership:
+        type: string
+      country:
+        type: string
+    additionalProperties: true
+  customers_active_entitlements:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      object:
+        type: string
+        enum:
+          - customer.active_entitlement
+      entitlement_id:
+        type: string
+      expires_at:
+        type: integer
+    additionalProperties: true
+  customers_aliases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      object:
+        type: string
+        enum:
+          - customer.alias
+      id:
+        type: string
+      created_at:
+        type: integer
+    additionalProperties: true
+  customers_invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      object:
+        type: string
+        enum:
+          - invoice
+      id:
+        type: string
+      total_amount:
+        type: object
+        properties:
+          currency:
+            type: string
+          gross:
+            type: number
+          commission:
+            type: number
+          tax:
+            type: number
+          proceeds:
+            type: number
+      line_items:
+        type: array
+        items:
+          type: object
+          properties:
+            object:
+              type: string
+              enum:
+                - invoice.line_item
+            product_identifier:
+              type: string
+            product_display_name:
+              type: string
+            product_duration:
+              type: string
+            quantity:
+              type: integer
+            unit_amount:
+              type: object
+              properties:
+                currency:
+                  type: string
+                gross:
+                  type: number
+                commission:
+                  type: number
+                tax:
+                  type: number
+                proceeds:
+                  type: number
+      issued_at:
+        type: integer
+      paid_at:
+        type: integer
+      invoice_url:
+        type: string
+        format: uri
+    additionalProperties: true
+  entitlements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lookup_key:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  entitlements_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      entitlement_id:
+        type: string
+      id:
+        type: string
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      store_identifier:
+        type:
+          - string
+          - "null"
+      subscription:
+        type:
+          - object
+          - "null"
+        properties: {}
+    required:
+      - id
+      - entitlement_id
+      - created_at
+  offerings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_current:
+        type:
+          - boolean
+          - "null"
+      lookup_key:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  offerings_packages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lookup_key:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      offering_id:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  offerings_packages_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      eligibility_criteria:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      package_id:
+        type: string
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          store_identifier:
+            type:
+              - string
+              - "null"
+          subscription:
+            type:
+              - object
+              - "null"
+            properties: {}
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - package_id
+      - created_at
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      store_identifier:
+        type:
+          - string
+          - "null"
+      subscription:
+        type:
+          - object
+          - "null"
+        properties: {}
+    required:
+      - id
+      - created_at

@@ -1,0 +1,500 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - space
+
+definitions:
+  streams:
+    audit:
+      type: DeclarativeStream
+      name: audit
+      primary_key:
+        - creationDate
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wiki/rest/api/audit
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audit"
+    blog_posts:
+      type: DeclarativeStream
+      name: blog_posts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wiki/api/v2/blogposts
+          http_method: GET
+          request_parameters:
+            expand: >-
+              history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/blog_posts"
+    group:
+      type: DeclarativeStream
+      name: group
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wiki/rest/api/group
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/group"
+    pages:
+      type: DeclarativeStream
+      name: pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wiki/api/v2/pages
+          http_method: GET
+          request_parameters:
+            expand: >-
+              history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pages"
+    space:
+      type: DeclarativeStream
+      name: space
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wiki/api/v2/spaces
+          http_method: GET
+          request_parameters:
+            expand: permissions,icon,description.plain,description.view
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/space"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['domain_name'] }}/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"api_token\"] }}"
+      username: "{{ config[\"email\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/audit"
+  - $ref: "#/definitions/streams/blog_posts"
+  - $ref: "#/definitions/streams/group"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/space"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - email
+      - api_token
+      - domain_name
+    properties:
+      email:
+        type: string
+        description: Your Confluence login email
+        order: 0
+        title: Email
+        examples:
+          - abc@example.com
+      api_token:
+        type: string
+        description: >-
+          Please follow the Jira confluence for generating an API token: <a
+          href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/">generating
+          an API token</a>.
+        order: 1
+        title: API Token
+        airbyte_secret: true
+      domain_name:
+        type: string
+        description: Your Confluence domain name
+        order: 2
+        title: Domain name
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    audit: false
+    blog_posts: false
+    group: false
+    pages: false
+    space: false
+  testedStreams:
+    audit:
+      streamHash: b5a00bf9721bfb59848a3e1532c90b46545a570a
+    blog_posts:
+      streamHash: c83752bf5a255bdb8cc99fa8e7b83c478b3f968b
+    group:
+      streamHash: 4e948474189a24fbfbf8d501c313fd11ca76af5b
+    pages:
+      streamHash: 040df0f11ccf4ade7031617951b809adf5b969fb
+    space:
+      streamHash: fabb0603908ac064a4717ad62454968d184e83f8
+  assist: {}
+
+schemas:
+  audit:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+        description: A detailed description of the audit event.
+      affectedObject:
+        type:
+          - "null"
+          - object
+        description: The object that was affected by the audit event.
+      associatedObjects:
+        type:
+          - "null"
+          - array
+        description: Any associated objects related to the audit event.
+      author:
+        type:
+          - "null"
+          - object
+        description: The user who triggered the audit event.
+      category:
+        type:
+          - "null"
+          - string
+        description: The category under which the audit event falls.
+      changedValues:
+        type:
+          - "null"
+          - array
+        description: Details of the values that were changed during the audit event.
+      creationDate:
+        type:
+          - "null"
+          - integer
+        description: The date and time when the audit event was created.
+      remoteAddress:
+        type:
+          - "null"
+          - string
+        description: The IP address from which the audit event originated.
+      summary:
+        type:
+          - "null"
+          - string
+        description: A brief summary or title describing the audit event.
+      superAdmin:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user triggering the audit event is a super admin.
+      sysAdmin:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user triggering the audit event is a system admin.
+  blog_posts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      version:
+        type: object
+        properties:
+          createdAt:
+            type: string
+            format: date-time
+          message:
+            type: string
+          number:
+            type: integer
+          minorEdit:
+            type: boolean
+          authorId:
+            type: string
+      id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      spaceId:
+        type: string
+      authorId:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      body:
+        type: object
+        properties:
+          storage:
+            type: object
+          atlas_doc_format:
+            type: object
+      _links:
+        type: object
+        properties:
+          webui:
+            type: string
+          editui:
+            type: string
+          tinyui:
+            type: string
+    additionalProperties: true
+  group:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+        description: The type of group, indicating its category or classification.
+      _links:
+        type:
+          - "null"
+          - object
+        description: A collection of links related to the group entity.
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the group.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the group.
+  pages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      version:
+        type: object
+        properties:
+          createdAt:
+            type: string
+            format: date-time
+          message:
+            type: string
+          number:
+            type: integer
+          minorEdit:
+            type: boolean
+          authorId:
+            type: string
+      id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      spaceId:
+        type: string
+      parentId:
+        type: string
+      parentType:
+        type: string
+      position:
+        type: integer
+      authorId:
+        type: string
+      ownerId:
+        type: string
+      lastOwnerId:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      body:
+        type: object
+        properties:
+          storage:
+            type: object
+          atlas_doc_format:
+            type: object
+      _links:
+        type: object
+        properties:
+          webui:
+            type: string
+          editui:
+            type: string
+          tinyui:
+            type: string
+    additionalProperties: true
+  space:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type: string
+      description:
+        type: object
+        properties:
+          plain:
+            type: object
+          view:
+            type: object
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      authorId:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      homepageId:
+        type: string
+      icon:
+        type: object
+        properties:
+          path:
+            type: string
+          apiDownloadLink:
+            type: string
+      _links:
+        type: object
+        properties:
+          webui:
+            type: string
+    additionalProperties: true

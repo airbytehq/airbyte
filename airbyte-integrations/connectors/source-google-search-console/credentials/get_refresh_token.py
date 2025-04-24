@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -7,6 +7,7 @@ import sys
 from urllib.parse import unquote
 
 import requests
+
 
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 

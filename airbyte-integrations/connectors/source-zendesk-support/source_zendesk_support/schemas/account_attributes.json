@@ -1,0 +1,27 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the account attribute.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name or label of the account attribute.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp indicating when the account attribute was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The timestamp indicating when the account attribute was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "The URL that can be used to access the account attribute.",
+      "type": ["null", "string"]
+    }
+  }
+}

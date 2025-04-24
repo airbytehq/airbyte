@@ -1,0 +1,35 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.0.37"
+name = "source-hardcoded-records"
+description = "Source implementation for hardcoded recprds."
+authors = [ "Airbyte <evan@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/hardcoded-records"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_hardcoded_records"
+
+[tool.poetry.dependencies]
+python = "^3.11,<3.13"
+airbyte-cdk = "^6.37"
+
+[tool.poetry.scripts]
+source-hardcoded-records = "source_hardcoded_records.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+pytest = "^8.0.0"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

@@ -1,0 +1,21 @@
+{
+  "type": "LOG",
+  "log": {
+    "level": {
+      "$resolver": "level",
+      "field": "name"
+    },
+    "message": {
+      "$resolver": "pattern",
+      "pattern": "%level %thread %C{1.}(%M):%L %m",
+      "stringified": true
+    },
+    "stack_trace": {
+      "$resolver": "exception",
+      "field": "stackTrace",
+      "stackTrace": {
+        "stringified": true
+      }
+    }
+  }
+}

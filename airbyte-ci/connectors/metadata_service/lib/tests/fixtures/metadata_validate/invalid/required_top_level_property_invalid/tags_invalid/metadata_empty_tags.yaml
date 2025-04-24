@@ -1,0 +1,13 @@
+metadataSpecVersion: 1.0
+data:
+  name: AlloyDB for PostgreSQL
+  definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
+  connectorType: source
+  dockerRepository: airbyte/source-alloydb-strict-encrypt
+  githubIssueLabel: source-alloydb-strict-encrypt
+  dockerImageTag: 2.0.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
+  connectorSubtype: database
+  releaseStage: generally_available
+  license: MIT
+  tags: []

@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-""" This is the example of input record for the test_tranform_data. """
+"""This is the example of input record for the test_tranform_data."""
+
 input_test_data = [
     {
         "targetingCriteria": {
@@ -23,6 +24,8 @@ input_test_data = [
                     },
                     {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
                     {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                    {"or": {"empty_dict_with_empty_list_of_dicts": [{"empty_dict_value": "the value"}]}},
+                    {"or": {"empty_dict_with_empty_dict": {"empty_dict_value": "the value"}}},
                     {"or": {"empty_dict_with_empty_list": []}},  # dict is present, but list is empty
                     {"or": {}},  # empty dict
                 ]
@@ -62,6 +65,8 @@ input_test_data = [
                 }
             }
         },
+        "pivot": "TEST_PIVOT_VALUE",
+        "pivotValues": ["TEST_PIVOT_VALUE_1", "TEST_PIVOT_VALUE_2"],
     }
 ]
 
@@ -90,6 +95,14 @@ output_test_data = [
                     {
                         "type": "urn:li:adTargetingFacet:interfaceLocales",
                         "values": ["urn:li:locale:en_US"],
+                    },
+                    {
+                        "type": "empty_dict_with_empty_list_of_dicts",
+                        "values": [{"empty_dict_value": "the value"}],
+                    },
+                    {
+                        "type": "empty_dict_with_empty_dict",
+                        "values": [{"empty_dict_value": "the value"}],
                     },
                     {
                         "type": "empty_dict_with_empty_list",
@@ -130,5 +143,8 @@ output_test_data = [
         "lastModified": "2021-08-22 20:35:44",
         "start_date": "2021-08-13",
         "end_date": "2021-08-13",
+        "_pivot": "TEST_PIVOT_VALUE",
+        "string_of_pivot_values": "TEST_PIVOT_VALUE_1,TEST_PIVOT_VALUE_2",
+        "pivotValues": ["TEST_PIVOT_VALUE_1", "TEST_PIVOT_VALUE_2"],
     }
 ]

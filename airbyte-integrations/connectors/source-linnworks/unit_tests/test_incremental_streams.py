@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,9 +11,10 @@ import pendulum
 import pytest
 import requests
 import vcr
+from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrderDetails, ProcessedOrders
+
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams.http.http import HttpSubStream
-from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrderDetails, ProcessedOrders
 
 
 @pytest.fixture

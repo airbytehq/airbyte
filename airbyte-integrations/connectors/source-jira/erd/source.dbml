@@ -1,0 +1,694 @@
+Table "application_roles" {
+    "key" string [pk]
+    "groups" array
+    "name" string
+    "defaultGroups" array
+    "selectedByDefault" boolean
+    "defined" boolean
+    "numberOfSeats" integer
+    "remainingSeats" integer
+    "userCount" integer
+    "userCountDescription" string
+    "hasUnlimitedSeats" boolean
+    "platform" boolean
+    "groupDetails" array
+    "defaultGroupsDetails" array
+}
+
+Table "avatars" {
+    "id" string [pk]
+    "owner" string
+    "isSystemAvatar" boolean
+    "isSelected" boolean
+    "isDeletable" boolean
+    "fileName" string
+    "urls" object
+}
+
+Table "boards" {
+    "id" integer [pk]
+    "self" string
+    "name" string
+    "type" string
+    "projectId" string
+    "projectKey" string
+    "location" object
+}
+
+Table "dashboards" {
+    "description" string
+    "id" string [pk]
+    "isFavourite" boolean
+    "name" string
+    "owner" object
+    "popularity" integer
+    "rank" integer
+    "self" string
+    "sharePermissions" array
+    "view" string
+    "editpermission" array
+    "isWritable" boolean
+    "systemDashboard" boolean
+    "editPermissions" array
+}
+
+Table "filters" {
+    "expand" string
+    "self" string
+    "id" string [pk]
+    "name" string
+    "description" string
+    "owner" object
+    "jql" string
+    "viewUrl" string
+    "searchUrl" string
+    "favourite" boolean
+    "favouritedCount" integer
+    "sharePermissions" array
+    "isWritable" boolean
+    "approximateLastUsed" string
+    "subscriptions" array
+}
+
+Table "groups" {
+    "name" string
+    "groupId" string [pk]
+}
+
+Table "issue_fields" {
+    "id" string [pk]
+    "key" string
+    "name" string
+    "custom" boolean
+    "orderable" boolean
+    "navigable" boolean
+    "searchable" boolean
+    "clauseNames" array
+    "scope" object
+    "schema" object
+    "untranslatedName" string
+}
+
+Table "issue_field_configurations" {
+    "id" integer [pk]
+    "name" string
+    "description" string
+    "isDefault" boolean
+}
+
+Table "issue_link_types" {
+    "id" string [pk]
+    "name" string
+    "inward" string
+    "outward" string
+    "self" string
+}
+
+Table "issue_navigator_settings" {
+    "label" string
+    "value" string
+}
+
+Table "issue_notification_schemes" {
+    "expand" string
+    "id" integer [pk]
+    "self" string
+    "name" string
+    "description" string
+    "notificationSchemeEvents" array
+    "scope" object
+}
+
+Table "issue_priorities" {
+    "self" string
+    "statusColor" string
+    "description" string
+    "iconUrl" string
+    "name" string
+    "id" string [pk]
+    "isDefault" boolean
+}
+
+Table "issue_resolutions" {
+    "self" string
+    "id" string [pk]
+    "description" string
+    "name" string
+    "isDefault" boolean
+}
+
+Table "issue_security_schemes" {
+    "self" string
+    "id" integer [pk]
+    "name" string
+    "description" string
+    "defaultSecurityLevelId" integer
+    "levels" array
+}
+
+Table "issue_types" {
+    "avatarId" integer
+    "description" string
+    "entityId" string
+    "hierarchyLevel" integer
+    "iconUrl" string
+    "id" string [pk]
+    "name" string
+    "self" string
+    "subtask" boolean
+    "scope" object
+    "untranslatedName" string
+}
+
+Table "issue_type_schemes" {
+    "id" string [pk]
+    "name" string
+    "description" string
+    "defaultIssueTypeId" string
+    "isDefault" boolean
+}
+
+Table "issue_type_screen_schemes" {
+    "id" string [pk]
+    "name" string
+    "description" string
+}
+
+Table "jira_settings" {
+    "id" string [pk]
+    "key" string
+    "value" string
+    "name" string
+    "desc" string
+    "type" string
+    "defaultValue" string
+    "example" string
+    "allowedValues" array
+}
+
+Table "labels" {
+    "label" string [pk]
+}
+
+Table "permissions" {
+    "key" string [pk]
+    "name" string
+    "type" string
+    "description" string
+}
+
+Table "permission_schemes" {
+    "expand" string
+    "id" integer [pk]
+    "self" string
+    "name" string
+    "description" string
+    "scope" object
+    "permissions" array
+}
+
+Table "projects" {
+    "expand" string
+    "self" string
+    "id" string [pk]
+    "key" string
+    "description" string
+    "components" array
+    "issueTypes" array
+    "url" string
+    "email" string
+    "assigneeType" string
+    "versions" array
+    "name" string
+    "roles" object
+    "projectTypeKey" string
+    "simplified" boolean
+    "style" string
+    "favourite" boolean
+    "isPrivate" boolean
+    "properties" object
+    "uuid" string
+    "deleted" boolean
+    "retentionTillDate" string
+    "deletedDate" string
+    "archived" boolean
+    "archivedDate" string
+    "entityId" string
+}
+
+Table "project_categories" {
+    "self" string
+    "id" string [pk]
+    "name" string
+    "description" string
+}
+
+Table "project_roles" {
+    "actors" array
+    "admin" boolean
+    "currentUserRole" boolean
+    "default" boolean
+    "description" string
+    "id" integer [pk]
+    "name" string
+    "roleConfigurable" boolean
+    "scope" object
+    "self" string
+    "translatedName" string
+}
+
+Table "project_types" {
+    "key" string
+    "formattedKey" string
+    "descriptionI18nKey" string
+    "icon" string
+    "color" string
+}
+
+Table "screens" {
+    "id" integer [pk]
+    "name" string
+    "description" string
+    "scope" object
+}
+
+Table "screen_schemes" {
+    "id" integer [pk]
+    "name" string
+    "description" string
+    "screens" object
+    "issueTypeScreenSchemes" object
+}
+
+Table "time_tracking" {
+    "key" string [pk]
+    "name" string
+    "url" string
+}
+
+Table "users" {
+    "self" string
+    "key" string
+    "accountId" string [pk]
+    "accountType" string
+    "name" string
+    "emailAddress" string
+    "avatarUrls" object
+    "displayName" string
+    "active" boolean
+    "timeZone" string
+    "locale" string
+    "groups" object
+    "applicationRoles" object
+    "expand" string
+}
+
+Table "workflows" {
+    "id" object
+    "entityId" string
+    "name" string
+    "description" string
+    "transitions" array
+    "statuses" array
+    "created" string
+    "updated" string
+
+    indexes {
+        (entityId, name) [pk]
+    }
+}
+
+Table "workflow_schemes" {
+    "id" integer [pk]
+    "name" string
+    "description" string
+    "defaultWorkflow" string
+    "issueTypeMappings" object
+    "originalDefaultWorkflow" string
+    "originalIssueTypeMappings" object
+    "draft" boolean
+    "lastModifiedUser" object
+    "lastModified" string
+    "self" string
+    "updateDraftIfNeeded" boolean
+    "issueTypes" object
+}
+
+Table "workflow_statuses" {
+    "self" string
+    "description" string
+    "iconUrl" string
+    "name" string
+    "id" string [pk]
+    "statusCategory" object
+    "scope" object
+    "untranslatedName" string
+}
+
+Table "workflow_status_categories" {
+    "self" string
+    "id" integer [pk]
+    "key" string
+    "colorName" string
+    "name" string
+}
+
+Table "filter_sharing" {
+    "id" integer [pk]
+    "filterId" string
+    "type" string
+    "project" object
+    "role" object
+    "group" object
+}
+
+Table "issue_custom_field_contexts" {
+    "id" string [pk]
+    "fieldId" string
+    "name" string
+    "description" string
+    "isGlobalContext" boolean
+    "isAnyIssueType" boolean
+    "fieldType" string
+}
+
+Table "issue_custom_field_options" {
+    "id" string [pk]
+    "value" string
+    "optionId" string
+    "disabled" boolean
+    "fieldId" string
+    "contextId" string
+}
+
+Table "issue_properties" {
+    "key" string [pk]
+    "issueId" string
+    "isdefault" boolean
+}
+
+Table "issue_remote_links" {
+    "id" integer [pk]
+    "issueId" string
+    "self" string
+    "globalId" string
+    "application" object
+    "relationship" string
+    "object" object
+}
+
+Table "issue_transitions" {
+    "fields" string
+    "hasScreen" boolean
+    "id" string
+    "issueId" string
+    "isAvailable" boolean
+    "isConditional" boolean
+    "isGlobal" boolean
+    "isInitial" boolean
+    "isLooped" boolean
+    "name" string
+    "to" object
+
+    indexes {
+        (issueId, id) [pk]
+    }
+}
+
+Table "issue_votes" {
+    "self" string
+    "issueId" string
+    "votes" integer
+    "hasVoted" boolean
+    "voters" array
+}
+
+Table "issue_watchers" {
+    "self" string
+    "issueId" string
+    "isWatching" boolean
+    "watchCount" integer
+    "watchers" array
+}
+
+Table "project_avatars" {
+    "id" string [pk]
+    "projectId" string
+    "owner" string
+    "isSystemAvatar" boolean
+    "isSelected" boolean
+    "isDeletable" boolean
+    "fileName" string
+    "urls" object
+}
+
+Table "project_components" {
+    "self" string
+    "id" string [pk]
+    "name" string
+    "description" string
+    "lead" object
+    "leadUserName" string
+    "leadAccountId" string
+    "assigneeType" string
+    "assignee" object
+    "realAssigneeType" string
+    "realAssignee" object
+    "isAssigneeTypeValid" boolean
+    "project" string
+    "projectId" integer
+    "componentBean" object
+    "issueCount" integer
+}
+
+Table "project_email" {
+    "projectId" string [pk]
+    "emailAddress" string
+}
+
+Table "project_permission_schemes" {
+    "self" string
+    "projectId" string
+    "id" string [pk]
+    "description" string
+    "name" string
+}
+
+Table "project_versions" {
+    "expand" string
+    "self" string
+    "id" string [pk]
+    "description" string
+    "name" string
+    "archived" boolean
+    "released" boolean
+    "startDate" string
+    "releaseDate" string
+    "overdue" boolean
+    "userStartDate" string
+    "userReleaseDate" string
+    "project" string
+    "projectId" integer
+    "moveUnfixedIssuesTo" string
+    "operations" array
+    "issuesStatusForFixVersion" object
+}
+
+Table "screen_tabs" {
+    "id" integer [pk]
+    "name" string
+    "screenId" integer
+}
+
+Table "screen_tab_fields" {
+    "id" string [pk]
+    "name" string
+    "screenId" integer
+    "tabId" integer
+}
+
+Table "sprints" {
+    "id" integer [pk]
+    "self" string
+    "state" string
+    "name" string
+    "startDate" string
+    "endDate" string
+    "completeDate" string
+    "originBoardId" integer
+    "boardId" integer
+    "goal" string
+    "createdDate" string
+}
+
+Table "users_groups_detailed" {
+    "self" string
+    "key" string
+    "accountId" string [pk]
+    "accountType" string
+    "name" string
+    "emailAddress" string
+    "avatarUrls" object
+    "displayName" string
+    "active" boolean
+    "timeZone" string
+    "locale" string
+    "groups" object
+    "applicationRoles" object
+    "expand" string
+}
+
+Table "board_issues" {
+    "expand" string
+    "id" string [pk]
+    "self" string
+    "key" string
+    "fields" object
+    "boardId" integer
+    "created" string
+    "updated" string
+}
+
+Table "issues" {
+    "expand" string
+    "id" string [pk]
+    "self" string
+    "key" string
+    "renderedFields" object
+    "properties" object
+    "names" object
+    "schema" object
+    "transitions" array
+    "operations" object
+    "editmeta" object
+    "changelog" object
+    "versionedRepresentations" object
+    "fieldsToInclude" object
+    "fields" object
+    "projectId" string
+    "projectKey" string
+    "created" string
+    "updated" string
+}
+
+Table "sprint_issues" {
+    "expand" string
+    "id" string [pk]
+    "self" string
+    "key" string
+    "fields" object
+    "issueId" string
+    "sprintId" integer
+    "created" string
+    "updated" string
+}
+
+Table "issue_comments" {
+    "self" string
+    "id" string [pk]
+    "issueId" string
+    "body" object
+    "renderedBody" string
+    "updateAuthor" object
+    "created" string
+    "updated" string
+    "visibility" object
+    "jsdPublic" boolean
+    "properties" array
+}
+
+Table "issue_worklogs" {
+    "self" string
+    "author" object
+    "updateAuthor" object
+    "comment" object
+    "created" string
+    "updated" string
+    "visibility" object
+    "started" string
+    "timeSpent" string
+    "timeSpentSeconds" integer
+    "id" string [pk]
+    "issueId" string
+    "properties" array
+}
+
+Ref {
+    "boards"."projectId" <> "projects"."id"
+}
+
+Ref {
+    "issue_transitions"."issueId" <> "issues"."id"
+}
+
+Ref {
+    "issue_votes"."issueId" <> "issues"."id"
+}
+
+Ref {
+    "issue_watchers"."issueId" <> "issues"."id"
+}
+
+Ref {
+    "project_avatars"."projectId" <> "projects"."id"
+}
+
+Ref {
+    "project_components"."projectId" <> "projects"."id"
+}
+
+Ref {
+    "project_components"."leadAccountId" <> "users"."accountId"
+}
+
+Ref {
+    "project_email"."projectId" <> "projects"."id"
+}
+
+Ref {
+    "project_permission_schemes"."projectId" <> "projects"."id"
+}
+
+Ref {
+    "project_versions"."projectId" <> "projects"."id"
+}
+
+Ref {
+    "screen_tabs"."screenId" <> "screens"."id"
+}
+
+Ref {
+    "screen_tab_fields"."screenId" <> "screens"."id"
+}
+
+Ref {
+    "screen_tab_fields"."tabId" <> "screen_tabs"."id"
+}
+
+Ref {
+    "sprints"."originBoardId" <> "boards"."id"
+}
+
+Ref {
+    "sprints"."boardId" <> "boards"."id"
+}
+
+Ref {
+    "board_issues"."boardId" <> "boards"."id"
+}
+
+Ref {
+    "issues"."projectId" <> "projects"."id"
+}
+
+Ref {
+    "sprint_issues"."sprintId" <> "sprints"."id"
+}
+
+Ref {
+    "issue_comments"."issueId" <> "issues"."id"
+}
+
+Ref {
+    "issue_worklogs"."issueId" <> "issues"."id"
+}

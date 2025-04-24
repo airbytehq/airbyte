@@ -9,11 +9,11 @@
     },
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "extended_updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "id": {
       "type": ["string", "null"]
@@ -44,7 +44,7 @@
     },
     "updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "verification_status": {
       "type": ["string", "null"]

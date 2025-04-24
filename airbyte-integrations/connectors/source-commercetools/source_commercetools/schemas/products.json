@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -30,6 +31,7 @@
     },
     "masterData": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "published": {
           "type": ["null", "boolean"]
@@ -53,6 +55,7 @@
     },
     "reviewRatingStatistics": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "averageRating": {
           "type": ["null", "number"]
@@ -67,9 +70,19 @@
           "type": ["null", "number"]
         },
         "ratingsDistribution": {
-          "type": ["null", "object"]
+          "type": ["null", "object"],
+          "additionalProperties": true
         }
       }
+    },
+    "lastMessageSequenceNumber": {
+      "type": ["null", "integer"]
+    },
+    "lastVariantId": {
+      "type": ["null", "integer"]
+    },
+    "versionModifiedAt": {
+      "type": ["null", "string"]
     }
   }
 }

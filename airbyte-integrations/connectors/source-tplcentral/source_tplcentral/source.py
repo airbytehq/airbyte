@@ -1,16 +1,17 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+import logging
 from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import requests
-from airbyte_cdk import AirbyteLogger
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from requests.auth import HTTPBasicAuth
 from source_tplcentral.streams import Customers, Inventory, Items, Orders, StockDetails, StockSummaries
 
 
@@ -22,6 +23,7 @@ class TplcentralAuthenticator(Oauth2Authenticator):
         client_secret: str,
         user_login_id: int = None,
         user_login: str = None,
+        scopes: List[str] = None,
     ):
         super().__init__(
             token_refresh_endpoint=token_refresh_endpoint,
@@ -30,6 +32,12 @@ class TplcentralAuthenticator(Oauth2Authenticator):
             refresh_token=None,
         )
 
+        self.token_refresh_endpoint = token_refresh_endpoint
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.scopes = scopes
+        self.access_token_name = "access_token"
+        self.expires_in_name = "expires_in"
         self.user_login_id = user_login_id
         self.user_login = user_login
 
@@ -71,7 +79,7 @@ class SourceTplcentral(AbstractSource):
             user_login=config.get("user_login"),
         )
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             self._auth(config).get_auth_header()
         except Exception as e:

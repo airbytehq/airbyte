@@ -1,13 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from source_linkedin_ads.run import run
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_linkedin_ads import SourceLinkedinAds
 
 if __name__ == "__main__":
-    source = SourceLinkedinAds()
-    launch(source, sys.argv[1:])
+    run()

@@ -1,81 +1,72 @@
-#
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
-#
-
-from typing import List
-
-from pydantic import BaseModel, Field
-from source_amazon_ads.constants import AmazonAdsRegion
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 
-class AmazonAdsConfig(BaseModel):
+from datetime import date
+from typing import List, Optional
+
+from pydantic.v1 import Field
+
+from airbyte_cdk.sources.config import BaseConfig
+
+
+class SourceAmazonAdsSpec(BaseConfig):
     class Config:
-        title = "Amazon Ads Spec"
+        title = "Source Amazon Ads"
+        use_enum_values = True
 
+    auth_type: str = Field("oauth2.0", const=True, title="Auth Type", order=0)
     client_id: str = Field(
-        name="Client ID",
-        description=(
-            'Oauth client id <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
-            "How to create your Login with Amazon</a>"
-        ),
+        ...,
+        description='The client ID of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.',
+        title="Client ID",
+        airbyte_secret=True,
+        order=1,
     )
     client_secret: str = Field(
-        name="Client secret",
-        description=(
-            'Oauth client secret <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
-            "How to create your Login with Amazon</a>"
-        ),
+        ...,
+        description='The client secret of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.',
+        title="Client Secret",
         airbyte_secret=True,
-    )
-
-    # Amazon docs don't describe which of the below scopes to use under what circumstances so
-    # we default to the first but allow the user to override it
-    scope: str = Field(
-        "advertising::campaign_management",
-        name="Client scope",
-        examples=[
-            "cpc_advertising:campaign_management",
-        ],
-        description=(
-            "By default its advertising::campaign_management,"
-            " but customers may need to set scope to cpc_advertising:campaign_management."
-        ),
+        order=2,
     )
     refresh_token: str = Field(
-        name="Oauth refresh token",
-        description=(
-            'Oauth 2.0 refresh_token, <a href="https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html">'
-            "read details here</a>"
-        ),
+        ...,
+        description='Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a> for more information on how to obtain this token.',
+        title="Refresh Token",
         airbyte_secret=True,
+        order=3,
     )
-
-    start_date: str = Field(
+    region: Optional[str] = Field(
+        "NA",
+        description='Region to pull data from (EU/NA/FE). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a> for more details.',
+        title="Region",
+        enum=["NA", "EU", "FE"],
+        order=4,
+    )
+    start_date: Optional[date] = Field(
         None,
-        name="Start date",
-        description="Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
+        description="The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         examples=["2022-10-10", "2022-10-22"],
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        title="Start Date",
+        order=5,
     )
-
-    region: AmazonAdsRegion = Field(name="Region", description="Region to pull data from (EU/NA/FE/SANDBOX)", default=AmazonAdsRegion.NA)
-
-    profiles: List[int] = Field(
+    profiles: Optional[List[int]] = Field(
         None,
-        name="Profile Ids",
-        description="profile Ids you want to fetch data for",
+        description='Profile IDs you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.',
+        title="Profile IDs",
+        order=6,
     )
-
-    @classmethod
-    def schema(cls, **kvargs):
-        schema = super().schema(**kvargs)
-        # We are using internal _host parameter to set API host to sandbox
-        # environment for SAT but dont want it to be visible for end users,
-        # filter out it from the jsonschema output
-        schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
-        # Transform pydantic generated enum for region
-        definitions = schema.pop("definitions", None)
-        if definitions:
-            schema["properties"]["region"].update(definitions["AmazonAdsRegion"])
-            schema["properties"]["region"].pop("allOf", None)
-            schema["properties"]["region"].pop("$ref", None)
-        return schema
+    marketplace_ids: Optional[List[str]] = Field(
+        None,
+        description="Marketplace IDs you want to fetch data for. Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
+        title="Marketplace IDs",
+        order=7,
+    )
+    look_back_window: Optional[int] = Field(
+        3,
+        description="The amount of days to go back in time to get the updated data from Amazon Ads",
+        examples=[3, 10],
+        title="Look Back Window",
+        order=8,
+    )

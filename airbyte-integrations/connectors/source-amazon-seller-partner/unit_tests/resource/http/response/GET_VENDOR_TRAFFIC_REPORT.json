@@ -1,0 +1,37 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+    "reportOptions": {
+      "reportPeriod": "WEEK"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-19",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "trafficAggregate": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "glanceViews": 100
+    },
+    {
+      "startDate": "2021-06-13",
+      "endDate": "2021-06-19",
+      "glanceViews": 250
+    }
+  ],
+  "trafficByAsin": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B123456789",
+      "glanceViews": 100
+    },
+    {
+      "startDate": "2021-06-13",
+      "endDate": "2021-06-19",
+      "asin": "B123456789",
+      "glanceViews": 250
+    }
+  ]
+}

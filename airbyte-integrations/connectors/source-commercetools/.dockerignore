@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!main.py
-!source_commercetools
-!setup.py
-!secrets

@@ -1,0 +1,23 @@
+{
+  "streams": [
+    {
+      "name": "ad_sets",
+      "relations": {
+        "account_id": "ad_account.id",
+        "campaign_id": "campaigns.id"
+      }
+    },
+    {
+      "name": "ads",
+      "relations": {
+        "adset_id": "ad_sets.id"
+      }
+    },
+    {
+      "name": "ads_insights",
+      "relations": {
+        "adset_id": "ad_sets.id"
+      }
+    }
+  ]
+}

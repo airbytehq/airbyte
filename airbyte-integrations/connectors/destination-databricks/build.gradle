@@ -14,53 +14,44 @@
 
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id "de.undercouch.download" version "5.0.1"
+    id 'airbyte-java-connector'
 }
 
+airbyteJavaConnector {
+    cdkVersionRequired = '0.46.0'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
 application {
-    mainClass = 'io.airbyte.integrations.destination.databricks.DatabricksDestination'
+    mainClass = 'io.airbyte.integrations.destination.databricks.DatabricksDestinationKt'
+    // Adding ZGC with Generational enabled from Java 21 hotspotVM. NativeMemory tracking if any
+    // memory leaks outside heap. Add string dedup which is supported now in ZGC from Java 18
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+                                 '-XX:NativeMemoryTracking=detail', '-XX:+UseZGC', '-XX:+ZGenerational',
+                                 '-XX:+UseStringDeduplication']
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
-    implementation project(':airbyte-integrations:connectors:destination-s3')
-    // Spark JDBC is not checked into the repo for legal reason
-    implementation files("lib/SparkJDBC42.jar")
-
-    // parquet
-    implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.0'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.0'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.0'
-    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
-    implementation('tech.allegro.schema.json2avro:converter') {
-        version {
-            branch = 'master'
-        }
-    }
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-databricks')
+    // Databricks JDBC driver
+    implementation 'com.databricks:databricks-jdbc:2.6.40'
+    implementation 'com.databricks:databricks-sdk-java:0.31.0'
 }
 
-task downloadJdbcDriverZip(type: Download) {
-    src 'https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.21/SimbaSparkJDBC42-2.6.21.1039.zip'
-    dest new File(buildDir, 'SimbaSparkJDBC42-2.6.21.1039.zip')
-    overwrite false
+test {
+    // Required for Databricks JDBC. There is a pending bug to fix Apache Arrow.
+    jvmArgs = ["-Dio.netty.tryReflectionSetAccessible=true",
+               "--add-opens=java.base/java.nio=ALL-UNNAMED",
+               "--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED",
+               "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
+               "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
 }
-
-task extractJdbcDriverFile(dependsOn: downloadJdbcDriverZip, type: Copy) {
-    from {
-        zipTree(downloadJdbcDriverZip.dest)
-    }
-    into 'lib/'
-    include 'SparkJDBC42.jar'
-}
-
-compileJava.dependsOn tasks.extractJdbcDriverFile

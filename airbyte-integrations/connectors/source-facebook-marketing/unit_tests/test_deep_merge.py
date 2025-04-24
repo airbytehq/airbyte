@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from copy import deepcopy
 
-from source_facebook_marketing.common import deep_merge
+from source_facebook_marketing.streams.common import deep_merge
 
 
 def test_return_new_object():
@@ -17,7 +17,10 @@ def test_return_new_object():
         "key_2": [1, 2],
     }
     right = {"key_1": {"two": "right_value", "three": [1, 2, 3]}, "key_2": [3]}
-    expected_result = {"key_1": {"one": {"a", "b"}, "two": "right_value", "three": [1, 2, 3]}, "key_2": [1, 2, 3]}
+    expected_result = {
+        "key_1": {"one": {"a", "b"}, "two": "right_value", "three": [1, 2, 3]},
+        "key_2": [1, 2, 3],
+    }
 
     result = deep_merge(deepcopy(left), deepcopy(right))
 

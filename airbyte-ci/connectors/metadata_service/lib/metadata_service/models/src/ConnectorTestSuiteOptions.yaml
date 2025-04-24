@@ -1,0 +1,28 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorTestOptions.yaml
+title: ConnectorTestSuiteOptions
+description: Options for a specific connector test suite.
+type: object
+required:
+  - suite
+additionalProperties: false
+properties:
+  suite:
+    description: "Name of the configured test suite"
+    type: string
+    enum:
+      - "unitTests"
+      - "integrationTests"
+      - "acceptanceTests"
+      - "liveTests"
+  testSecrets:
+    description: "List of secrets required to run the test suite"
+    type: array
+    items:
+      "$ref": "Secret.yaml"
+  testConnections:
+    description: "List of sandbox cloud connections that tests can be run against"
+    type: array
+    items:
+      "$ref": "TestConnections.yaml"

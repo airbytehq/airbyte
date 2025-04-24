@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Contributor Activity",
+  "properties": {
+    "name": {
+      "description": "Name of the contributor",
+      "type": ["null", "string"]
+    },
+    "email": {
+      "description": "Email address of the contributor",
+      "type": ["string", "null"]
+    },
+    "login": {
+      "description": "GitHub username of the contributor",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for the contributor",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Node ID of the contributor",
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "description": "URL of the contributor's avatar image",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "gravatar_id": {
+      "description": "ID associated with the contributor's Gravatar image",
+      "type": ["string", "null"]
+    },
+    "url": {
+      "description": "URL of the contributor's profile",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "html_url": {
+      "description": "URL of the contributor's profile page on GitHub",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "followers_url": {
+      "description": "URL of the contributor's followers",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "following_url": {
+      "description": "URL of the contributor's following",
+      "type": ["null", "string"]
+    },
+    "gists_url": {
+      "description": "URL of the contributor's gists",
+      "type": ["null", "string"]
+    },
+    "starred_url": {
+      "description": "URL of the starred repository",
+      "type": ["null", "string"]
+    },
+    "subscriptions_url": {
+      "description": "URL of the contributor's subscriptions",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "organizations_url": {
+      "description": "URL of the contributor's organizations",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "repos_url": {
+      "description": "URL of the contributor's repositories",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "events_url": {
+      "description": "URL of the contributor's events",
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "description": "Repository the contributor is associated with",
+      "type": ["null", "string"]
+    },
+    "received_events_url": {
+      "description": "URL of the events received by the contributor",
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "type": {
+      "description": "Type of the contributor (e.g., User, Organization)",
+      "type": ["null", "string"]
+    },
+    "site_admin": {
+      "description": "Boolean value indicating if the contributor is a site admin",
+      "type": ["null", "boolean"]
+    },
+    "starred_at": {
+      "description": "Date and time when the repository was starred by the contributor",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "total": {
+      "description": "Total activity count of the contributor",
+      "type": ["null", "integer"]
+    },
+    "weeks": {
+      "description": "Activity data of the contributor per week",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "w": {
+            "description": "Start of the week represented as a Unix timestamp",
+            "type": ["null", "integer"]
+          },
+          "a": {
+            "description": "Number of additions made by the contributor",
+            "type": ["null", "integer"]
+          },
+          "d": {
+            "description": "Number of deletions made by the contributor",
+            "type": ["null", "integer"]
+          },
+          "c": {
+            "description": "Number of commits made by the contributor",
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    }
+  }
+}

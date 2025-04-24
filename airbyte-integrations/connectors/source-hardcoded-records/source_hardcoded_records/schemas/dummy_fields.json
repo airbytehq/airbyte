@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "field1": { "type": "string" },
+    "field2": { "type": "string" },
+    "field3": { "type": "string" },
+    "field4": { "type": "string" },
+    "field5": { "type": "string" }
+  }
+}

@@ -1,0 +1,6849 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: "Documentation: https://apidoc.samanage.com/#section/General-Concepts"
+
+check:
+  type: CheckStream
+  stream_names:
+    - hardwares
+
+definitions:
+  streams:
+    hardwares:
+      type: DeclarativeStream
+      name: hardwares
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: hardwares.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/hardwares"
+    risks:
+      type: DeclarativeStream
+      name: risks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: risks.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/risks"
+    audits:
+      type: DeclarativeStream
+      name: audits
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: audits.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audits"
+    vendors:
+      type: DeclarativeStream
+      name: vendors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: vendors.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vendors"
+    purchase_orders:
+      type: DeclarativeStream
+      name: purchase_orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: purchase_orders.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchase_orders"
+    contracts:
+      type: DeclarativeStream
+      name: contracts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contracts.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contracts"
+    assets:
+      type: DeclarativeStream
+      name: assets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: other_assets.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/assets"
+    mobiles:
+      type: DeclarativeStream
+      name: mobiles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /mobiles.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mobiles"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: categories.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: roles.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    departments:
+      type: DeclarativeStream
+      name: departments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: departments.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/departments"
+    sites:
+      type: DeclarativeStream
+      name: sites
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sites.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sites"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    configuration_items:
+      type: DeclarativeStream
+      name: configuration_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: configuration_items.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/configuration_items"
+    solutions:
+      type: DeclarativeStream
+      name: solutions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: solutions.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/solutions"
+    releases:
+      type: DeclarativeStream
+      name: releases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: releases.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/releases"
+    change_catalogs:
+      type: DeclarativeStream
+      name: change_catalogs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: change_catalogs.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/change_catalogs"
+    changes:
+      type: DeclarativeStream
+      name: changes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: changes.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/changes"
+    incidents:
+      type: DeclarativeStream
+      name: incidents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incidents.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incidents"
+    catalog_items:
+      type: DeclarativeStream
+      name: catalog_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: catalog_items.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/catalog_items"
+    problems:
+      type: DeclarativeStream
+      name: problems
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: problems.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/problems"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.samanage.com/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: Bearer {{ config["api_key_2"] }}
+      inject_into:
+        type: RequestOption
+        field_name: X-Samanage-Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/hardwares"
+  - $ref: "#/definitions/streams/risks"
+  - $ref: "#/definitions/streams/audits"
+  - $ref: "#/definitions/streams/vendors"
+  - $ref: "#/definitions/streams/purchase_orders"
+  - $ref: "#/definitions/streams/contracts"
+  - $ref: "#/definitions/streams/assets"
+  - $ref: "#/definitions/streams/mobiles"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/sites"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/configuration_items"
+  - $ref: "#/definitions/streams/solutions"
+  - $ref: "#/definitions/streams/releases"
+  - $ref: "#/definitions/streams/change_catalogs"
+  - $ref: "#/definitions/streams/changes"
+  - $ref: "#/definitions/streams/incidents"
+  - $ref: "#/definitions/streams/catalog_items"
+  - $ref: "#/definitions/streams/problems"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key_2
+      - start_date
+    properties:
+      api_key_2:
+        type: string
+        description: >-
+          Refer to
+          `https://documentation.solarwinds.com/en/success_center/swsd/content/completeguidetoswsd/token-authentication-for-api-integration.htm#link4`
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    hardwares: true
+    risks: true
+    audits: true
+    vendors: true
+    purchase_orders: true
+    contracts: true
+    assets: true
+    mobiles: true
+    categories: true
+    groups: true
+    roles: true
+    departments: true
+    sites: true
+    users: true
+    configuration_items: true
+    solutions: true
+    releases: true
+    change_catalogs: true
+    changes: true
+    incidents: true
+    catalog_items: true
+    problems: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    hardwares:
+      hasRecords: true
+      streamHash: 51a12bee093c152b72fcde9094cc89f4fe82b319
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    risks:
+      hasRecords: true
+      streamHash: 893902f8adb3057affcf8c5cc262ff18f977e83f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audits:
+      hasRecords: true
+      streamHash: dc24cf217e66dc3cc73952df1b51bc2b3c4c392c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vendors:
+      hasRecords: true
+      streamHash: fb2b8648121d529245a79b964fd196de571e691d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchase_orders:
+      hasRecords: true
+      streamHash: 72d24888cdccda2bd7f53b3440dc17e7533b55bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contracts:
+      hasRecords: true
+      streamHash: 096420b41dc22b5a137dbd7b892abdacaafd4d77
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    assets:
+      hasRecords: true
+      streamHash: 179b01e15b71f4fb7e89636a42f24de202b36505
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    mobiles:
+      hasRecords: true
+      streamHash: 8b52f9713afbe5965f70b0f9759401aa787fded6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    categories:
+      hasRecords: true
+      streamHash: 7d8f6b11e32820229259d8ab0f8c51e389386854
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: 7605a27f38d9da7337d9452f44c463c359b9e0c7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    roles:
+      hasRecords: true
+      streamHash: c1a7df8492f546799487a7e92289858259495a22
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    departments:
+      hasRecords: true
+      streamHash: 8aab631a839f5c7ff56de335caa955a7d3d141bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sites:
+      hasRecords: true
+      streamHash: 336a2ddc0573a737b20628a030316c8e861d82b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: b3adb8c0af30034c272c9ffbd90e27cce673a99a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    configuration_items:
+      hasRecords: true
+      streamHash: c95dfaa163a71d3354e2e9f3306b39be3677f30a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    solutions:
+      hasRecords: true
+      streamHash: e909f3f299c4ac408ad311033bd7d8cfc77c9292
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    releases:
+      hasRecords: true
+      streamHash: da6e22e3371a171a2279d60463b81c3224a31295
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    change_catalogs:
+      hasRecords: true
+      streamHash: 5a9034fc36d4d91e2fa9d836dfbf283d596c63f4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    changes:
+      hasRecords: true
+      streamHash: 6cd7b8ab3d4fa6b9f1bfd99f7ab72ae37647d14c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incidents:
+      hasRecords: true
+      streamHash: 023a1fa78ac1b3002bec1178f0c9a9899a0d8e36
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    catalog_items:
+      streamHash: dd4dfd283125defb27846b67f2e9a68164d6c915
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    problems:
+      streamHash: 662550a681791f36af56bc42147a418eb178504a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  hardwares:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active_directory:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      audits_href:
+        type:
+          - string
+          - "null"
+      bioses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            version:
+              type:
+                - string
+                - "null"
+            bios_date:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            manufacturer:
+              type:
+                - string
+                - "null"
+            model:
+              type:
+                - string
+                - "null"
+            reported_at:
+              type:
+                - string
+                - "null"
+            ssn:
+              type:
+                - string
+                - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      controllers:
+        type:
+          - array
+          - "null"
+      cpu:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      department:
+        type:
+          - object
+          - "null"
+        properties:
+          default_assignee_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      displays:
+        type:
+          - array
+          - "null"
+      drives:
+        type:
+          - array
+          - "null"
+      external_ip:
+        type:
+          - string
+          - "null"
+      hardware_spec_href:
+        type:
+          - string
+          - "null"
+      hidden_softwares_href:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      incidents_href:
+        type:
+          - string
+          - "null"
+      inputs:
+        type:
+          - array
+          - "null"
+      ip:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      memories:
+        type:
+          - array
+          - "null"
+      monitors:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      networks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            dhcp:
+              type:
+                - string
+                - "null"
+            gateway:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            ip_address:
+              type:
+                - string
+                - "null"
+            mac_address:
+              type:
+                - string
+                - "null"
+            reported_at:
+              type:
+                - string
+                - "null"
+      operating_system:
+        type:
+          - string
+          - "null"
+      operating_system_version:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      ports:
+        type:
+          - array
+          - "null"
+      printers:
+        type:
+          - array
+          - "null"
+      processor_speed:
+        type:
+          - number
+          - "null"
+      purchase_orders_href:
+        type:
+          - string
+          - "null"
+      risks_href:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      site:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      softwares_href:
+        type:
+          - string
+          - "null"
+      sounds:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      storages:
+        type:
+          - array
+          - "null"
+      tag:
+        type:
+          - string
+          - "null"
+      technical_contact:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type: string
+      videos:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - updated_at
+  risks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      affected_assets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      category:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      discarded:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      resolved:
+        type:
+          - boolean
+          - "null"
+      severity:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  audits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      action:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      department:
+        type:
+          - object
+          - "null"
+        properties:
+          default_assignee_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      hardware_href:
+        type:
+          - string
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      site:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      source_id:
+        type:
+          - number
+          - "null"
+      source_type:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - number
+                    - "null"
+                custom_field_id:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                options:
+                  type:
+                    - string
+                    - "null"
+                type_name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          last_login:
+            type:
+              - string
+              - "null"
+          mobile_phone:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - created_at
+  vendors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      contact_email:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      contact_phone:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      telephone:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      vendor_type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  purchase_orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - array
+          - "null"
+      billing_address:
+        type:
+          - string
+          - "null"
+      buyer:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      number_of_attachments:
+        type:
+          - number
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      payment_terms:
+        type:
+          - string
+          - "null"
+      purchase_order_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            discount:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            part_number:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - string
+                - "null"
+            serial_number:
+              type:
+                - string
+                - "null"
+            tax:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      requester:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      shipping_address:
+        type:
+          - string
+          - "null"
+      shipping_handling:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      tax:
+        type:
+          - number
+          - "null"
+      terms_conditions:
+        type:
+          - string
+          - "null"
+      total_cost:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      vendor:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - updated_at
+  contracts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created_at:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            tag:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      manufacturer_name:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  assets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      asset_id:
+        type:
+          - string
+          - "null"
+      asset_type:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - number
+              - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      department:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      hardware_dates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            date:
+              type:
+                - string
+                - "null"
+            date_type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            notes:
+              type:
+                - string
+                - "null"
+            username:
+              type:
+                - string
+                - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      incidents:
+        type:
+          - array
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      purchase_orders:
+        type:
+          - array
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      site:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            href:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+      updated_at:
+        type: string
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+              klass:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          memberships:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                user:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          reports_to:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          send_notifications:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - updated_at
+  mobiles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      company_issued:
+        type:
+          - boolean
+          - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      department:
+        type:
+          - object
+          - "null"
+        properties:
+          default_assignee_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      device_type:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      last_report:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      site:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      children:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            default_tags:
+              type:
+                - string
+                - "null"
+            deleted:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            parent_id:
+              type:
+                - number
+                - "null"
+      default_tags:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      avatar:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          klass:
+            type:
+              - string
+              - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      disabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      is_user:
+        type:
+          - boolean
+          - "null"
+      memberships:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            user:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      reports_to:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      send_notifications:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      portal:
+        type:
+          - boolean
+          - "null"
+      show_my_tasks:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  departments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      default_assignee_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  sites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      location:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      available_for_assignment:
+        type:
+          - boolean
+          - "null"
+      avatar:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          initials:
+            type:
+              - string
+              - "null"
+      can_be_available_for_assignment:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      disabled:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      provider:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          portal:
+            type:
+              - boolean
+              - "null"
+          show_my_tasks:
+            type:
+              - boolean
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  configuration_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - object
+          - "null"
+        properties:
+          custom:
+            type:
+              - boolean
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          icon_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          original_name:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      description:
+        type:
+          - string
+          - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assets:
+        type:
+          - array
+          - "null"
+      changes:
+        type:
+          - array
+          - "null"
+      configuration_items:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - number
+                - "null"
+            custom_field_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - string
+                - "null"
+            type_name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      department_id:
+        type:
+          - object
+          - "null"
+        properties:
+          default_assignee_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      discovery_hardwares:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      incidents:
+        type:
+          - array
+          - "null"
+      manager_id:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      mobiles:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      other_assets:
+        type:
+          - array
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          active_directory:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          asset_id:
+            type:
+              - string
+              - "null"
+          asset_tag:
+            type:
+              - string
+              - "null"
+          asset_type:
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              parent_id:
+                type:
+                  - number
+                  - "null"
+          audits_href:
+            type:
+              - string
+              - "null"
+          bioses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                version:
+                  type:
+                    - string
+                    - "null"
+                bios_date:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                manufacturer:
+                  type:
+                    - string
+                    - "null"
+                model:
+                  type:
+                    - string
+                    - "null"
+                reported_at:
+                  type:
+                    - string
+                    - "null"
+                ssn:
+                  type:
+                    - string
+                    - "null"
+          category:
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              parent_id:
+                type:
+                  - number
+                  - "null"
+          city:
+            type:
+              - string
+              - "null"
+          company_issued:
+            type:
+              - boolean
+              - "null"
+          contact_email:
+            type:
+              - string
+              - "null"
+          contact_name:
+            type:
+              - string
+              - "null"
+          contact_phone:
+            type:
+              - string
+              - "null"
+          controllers:
+            type:
+              - array
+              - "null"
+          cpu:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          department:
+            type:
+              - object
+              - "null"
+            properties:
+              default_assignee_id:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          device_type:
+            type:
+              - string
+              - "null"
+          displays:
+            type:
+              - array
+              - "null"
+          drives:
+            type:
+              - array
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          external_ip:
+            type:
+              - string
+              - "null"
+          hardware_dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                date:
+                  type:
+                    - string
+                    - "null"
+                date_type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                notes:
+                  type:
+                    - string
+                    - "null"
+                username:
+                  type:
+                    - string
+                    - "null"
+          hardware_spec_href:
+            type:
+              - string
+              - "null"
+          hidden_softwares_href:
+            type:
+              - string
+              - "null"
+          href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          incidents:
+            type:
+              - array
+              - "null"
+          incidents_href:
+            type:
+              - string
+              - "null"
+          inputs:
+            type:
+              - array
+              - "null"
+          ip:
+            type:
+              - string
+              - "null"
+          ip_address:
+            type:
+              - string
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                quantity:
+                  type:
+                    - number
+                    - "null"
+                tag:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          last_report:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - string
+              - "null"
+          longitude:
+            type:
+              - string
+              - "null"
+          manufacturer:
+            type:
+              - string
+              - "null"
+          manufacturer_name:
+            type:
+              - string
+              - "null"
+          memories:
+            type:
+              - array
+              - "null"
+          model:
+            type:
+              - string
+              - "null"
+          monitors:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          networks:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                dhcp:
+                  type:
+                    - string
+                    - "null"
+                gateway:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                ip_address:
+                  type:
+                    - string
+                    - "null"
+                mac_address:
+                  type:
+                    - string
+                    - "null"
+                reported_at:
+                  type:
+                    - string
+                    - "null"
+          operating_system:
+            type:
+              - string
+              - "null"
+          operating_system_version:
+            type:
+              - string
+              - "null"
+          owner:
+            type:
+              - object
+              - "null"
+            properties:
+              available_for_assignment:
+                type:
+                  - boolean
+                  - "null"
+              avatar:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  color:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+              can_be_available_for_assignment:
+                type:
+                  - boolean
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              custom_fields_values:
+                type:
+                  - array
+                  - "null"
+              disabled:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              group_id:
+                type:
+                  - number
+                  - "null"
+              group_ids:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              is_user:
+                type:
+                  - boolean
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              provider:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  portal:
+                    type:
+                      - boolean
+                      - "null"
+                  show_my_tasks:
+                    type:
+                      - boolean
+                      - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+          ports:
+            type:
+              - array
+              - "null"
+          printers:
+            type:
+              - array
+              - "null"
+          processor_speed:
+            type:
+              - number
+              - "null"
+          purchase_orders:
+            type:
+              - array
+              - "null"
+          purchase_orders_href:
+            type:
+              - string
+              - "null"
+          risks_href:
+            type:
+              - string
+              - "null"
+          serial_number:
+            type:
+              - string
+              - "null"
+          site:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              location:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          softwares_href:
+            type:
+              - string
+              - "null"
+          sounds:
+            type:
+              - array
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          status:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+          storages:
+            type:
+              - array
+              - "null"
+          tag:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          tasks:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+          technical_contact:
+            type:
+              - object
+              - "null"
+            properties:
+              available_for_assignment:
+                type:
+                  - boolean
+                  - "null"
+              avatar:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  color:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+              can_be_available_for_assignment:
+                type:
+                  - boolean
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              custom_fields_values:
+                type:
+                  - array
+                  - "null"
+              disabled:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              group_id:
+                type:
+                  - number
+                  - "null"
+              group_ids:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              is_user:
+                type:
+                  - boolean
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              provider:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  portal:
+                    type:
+                      - boolean
+                      - "null"
+                  show_my_tasks:
+                    type:
+                      - boolean
+                      - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+          telephone:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              available_for_assignment:
+                type:
+                  - boolean
+                  - "null"
+              avatar:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  color:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+                  klass:
+                    type:
+                      - string
+                      - "null"
+              can_be_available_for_assignment:
+                type:
+                  - boolean
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              custom_fields_values:
+                type:
+                  - array
+                  - "null"
+              disabled:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              group_id:
+                type:
+                  - number
+                  - "null"
+              group_ids:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              is_user:
+                type:
+                  - boolean
+                  - "null"
+              memberships:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    user:
+                      type:
+                        - string
+                        - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              provider:
+                type:
+                  - string
+                  - "null"
+              reports_to:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+              role:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  portal:
+                    type:
+                      - boolean
+                      - "null"
+                  show_my_tasks:
+                    type:
+                      - boolean
+                      - "null"
+              send_notifications:
+                type:
+                  - boolean
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+          vendor_type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          videos:
+            type:
+              - array
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      parent_type:
+        type:
+          - string
+          - "null"
+      problems:
+        type:
+          - array
+          - "null"
+      purchase_orders:
+        type:
+          - array
+          - "null"
+      releases:
+        type:
+          - array
+          - "null"
+      site_id:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      solutions:
+        type:
+          - array
+          - "null"
+      state_id:
+        type:
+          - number
+          - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+      user_id:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+              klass:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          memberships:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                user:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          reports_to:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          send_notifications:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - updated_at
+  solutions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      created_at:
+        type: string
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      description_no_html:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isAllowToVote:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      number_of_attachments:
+        type:
+          - number
+          - "null"
+      number_of_shared_attachments:
+        type:
+          - number
+          - "null"
+      shared_attachments:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - created_at
+  releases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      approvers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            available_for_assignment:
+              type:
+                - boolean
+                - "null"
+            avatar:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                color:
+                  type:
+                    - string
+                    - "null"
+                initials:
+                  type:
+                    - string
+                    - "null"
+            can_be_available_for_assignment:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            custom_fields_values:
+              type:
+                - array
+                - "null"
+            disabled:
+              type:
+                - boolean
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            group_id:
+              type:
+                - number
+                - "null"
+            group_ids:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - number
+                  - "null"
+            id:
+              type:
+                - number
+                - "null"
+            is_user:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            phone:
+              type:
+                - string
+                - "null"
+            provider:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                portal:
+                  type:
+                    - boolean
+                    - "null"
+                show_my_tasks:
+                  type:
+                    - boolean
+                    - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      assets:
+        type:
+          - array
+          - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      build:
+        type:
+          - string
+          - "null"
+      changes:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      deploy:
+        type:
+          - string
+          - "null"
+      description_no_html:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      incidents:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      other_assets:
+        type:
+          - array
+          - "null"
+      plan:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      problems:
+        type:
+          - array
+          - "null"
+      purchase_orders:
+        type:
+          - array
+          - "null"
+      releases:
+        type:
+          - array
+          - "null"
+      requester:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      solutions:
+        type:
+          - array
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      time_tracks:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  change_catalogs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      change_plan:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      request_variables:
+        type:
+          - array
+          - "null"
+      requested_count:
+        type:
+          - number
+          - "null"
+      rollback_plan:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          fields:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  editable:
+                    type:
+                      - boolean
+                      - "null"
+              change_plan:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  editable:
+                    type:
+                      - boolean
+                      - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  editable:
+                    type:
+                      - boolean
+                      - "null"
+              process:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  editable:
+                    type:
+                      - boolean
+                      - "null"
+              rollback_plan:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  editable:
+                    type:
+                      - boolean
+                      - "null"
+              test_plan:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  editable:
+                    type:
+                      - boolean
+                      - "null"
+              variables:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  editable:
+                    type:
+                      - boolean
+                      - "null"
+      show_in_portal:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      test_plan:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      variables:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            kind:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - string
+                - "null"
+            required:
+              type:
+                - string
+                - "null"
+            side:
+              type:
+                - string
+                - "null"
+            sorted:
+              type:
+                - string
+                - "null"
+            uuid:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+      - updated_at
+  changes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      assets:
+        type:
+          - array
+          - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      cc:
+        type:
+          - array
+          - "null"
+      change_plan:
+        type:
+          - string
+          - "null"
+      changes:
+        type:
+          - array
+          - "null"
+      configuration_items:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      description_no_html:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      incidents:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      other_assets:
+        type:
+          - array
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      problems:
+        type:
+          - array
+          - "null"
+      purchase_orders:
+        type:
+          - array
+          - "null"
+      releases:
+        type:
+          - array
+          - "null"
+      request_variables:
+        type:
+          - array
+          - "null"
+      requester:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      rollback_plan:
+        type:
+          - string
+          - "null"
+      solutions:
+        type:
+          - array
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      test_plan:
+        type:
+          - string
+          - "null"
+      time_tracks:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+      workflow_tasks:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - updated_at
+  incidents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      assets:
+        type:
+          - array
+          - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+              klass:
+                type:
+                  - string
+                  - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          memberships:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                user:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - string
+              - "null"
+          reports_to:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+          send_notifications:
+            type:
+              - boolean
+              - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          default_tags:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      cc:
+        type:
+          - array
+          - "null"
+      changes:
+        type:
+          - array
+          - "null"
+      configuration_items:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - number
+                - "null"
+            custom_field_id:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - string
+                - "null"
+            raw_value:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            type_name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      description_no_html:
+        type:
+          - string
+          - "null"
+      discovery_hardwares:
+        type:
+          - array
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      href_account_domain:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      incidents:
+        type:
+          - array
+          - "null"
+      is_service_request:
+        type:
+          - boolean
+          - "null"
+      mobiles:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      number_of_comments:
+        type:
+          - number
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      other_assets:
+        type:
+          - array
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      problem:
+        type:
+          - array
+          - "null"
+      problems:
+        type:
+          - array
+          - "null"
+      purchase_orders:
+        type:
+          - array
+          - "null"
+      releases:
+        type:
+          - array
+          - "null"
+      requester:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      sla_violations:
+        type:
+          - array
+          - "null"
+      solutions:
+        type:
+          - array
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - object
+          - "null"
+        properties:
+          default_tags:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - number
+              - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            href:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+      time_tracks:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+      user_saw_all_comments:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - updated_at
+  catalog_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          children:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                default_tags:
+                  type:
+                    - string
+                    - "null"
+                deleted:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                parent_id:
+                  type:
+                    - number
+                    - "null"
+          default_tags:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      due_days:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      portal_homepage:
+        type:
+          - boolean
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      request_count:
+        type:
+          - number
+          - "null"
+      show_due_days:
+        type:
+          - boolean
+          - "null"
+      show_price:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - object
+          - "null"
+        properties:
+          default_tags:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - number
+              - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+      url_id:
+        type:
+          - string
+          - "null"
+      variables:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            field_type:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            kind:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - string
+                - "null"
+            required:
+              type:
+                - string
+                - "null"
+            sorted:
+              type:
+                - boolean
+                - "null"
+            uuid:
+              type:
+                - number
+                - "null"
+      variables_unparsed:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  problems:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      assets:
+        type:
+          - array
+          - "null"
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          can_be_available_for_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields_values:
+            type:
+              - array
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_user:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              show_my_tasks:
+                type:
+                  - boolean
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      changes:
+        type:
+          - array
+          - "null"
+      configuration_items:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      custom_fields_values:
+        type:
+          - array
+          - "null"
+      description_no_html:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      incidents:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      other_assets:
+        type:
+          - array
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      problems:
+        type:
+          - array
+          - "null"
+      purchase_orders:
+        type:
+          - array
+          - "null"
+      releases:
+        type:
+          - array
+          - "null"
+      requester:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              initials:
+                type:
+                  - string
+                  - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          has_gravatar:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      root_cause:
+        type:
+          - string
+          - "null"
+      solutions:
+        type:
+          - array
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      symptoms:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      time_tracks:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+      workaround:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at

@@ -1,0 +1,39 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "3.4.7"
+name = "source-facebook-marketing"
+description = "Source implementation for Facebook Marketing."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/facebook-marketing"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_facebook_marketing"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "^5"
+facebook-business = "21.0.5"
+cached-property = "==1.5.2"
+
+[tool.poetry.scripts]
+source-facebook-marketing = "source_facebook_marketing.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6"
+freezegun = "^1.4.0"
+pytest = "^8.0.0"
+requests-mock = "^1.9.3"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

@@ -1,0 +1,695 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - limits
+
+definitions:
+  streams:
+    limits:
+      type: DeclarativeStream
+      name: limits
+      primary_key:
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: limits
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/limits"
+    object_types:
+      type: DeclarativeStream
+      name: object_types
+      primary_key:
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: objects/types
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/object_types"
+    object_records:
+      type: DeclarativeStream
+      name: object_records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: objects/query
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query:
+              _type:
+                $eq: "{{ stream_partition.type }}"
+            sort_by: _updated_at asc
+            _updated_at:
+              start: >-
+                {{ stream_interval.start_time.strftime('%Y-%m-%d
+                %H:%M:%s.%f')[:-3] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: type
+              stream:
+                $ref: "#/definitions/streams/object_types"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/object_records"
+    object_type_policies:
+      type: DeclarativeStream
+      name: object_type_policies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: objects/types/{{ stream_partition.type }}/permissions
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: type
+              stream:
+                $ref: "#/definitions/streams/object_types"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - object_type
+              value: "{{ stream_partition.type }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/object_type_policies"
+    relationship_types:
+      type: DeclarativeStream
+      name: relationship_types
+      primary_key:
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: relationships/types
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/relationship_types"
+    relationship_records:
+      type: DeclarativeStream
+      name: relationship_records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: relationships/records
+          http_method: GET
+          request_parameters:
+            type: "{{ stream_partition.type }}"
+          request_headers:
+            Content-Type: application/json
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: type
+              stream:
+                $ref: "#/definitions/streams/relationship_types"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/relationship_records"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.zendesk.com/api/sunshine/
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_declarative_manifest.components.AuthenticatorZendeskSunshine
+      basic_auth:
+        type: BasicHttpAuthenticator
+        password: "{{ config['credentials']['api_token']  }}"
+        username: "{{ config['credentials']['email']  }}/token"
+      oauth2:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['access_token']  }}"
+
+streams:
+  - $ref: "#/definitions/streams/limits"
+  - $ref: "#/definitions/streams/object_types"
+  - $ref: "#/definitions/streams/object_records"
+  - $ref: "#/definitions/streams/object_type_policies"
+  - $ref: "#/definitions/streams/relationship_types"
+  - $ref: "#/definitions/streams/relationship_records"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - subdomain
+      - start_date
+    properties:
+      subdomain:
+        type: string
+        description: The subdomain for your Zendesk Account.
+        order: 0
+        title: Subdomain
+      start_date:
+        type: string
+        description: >-
+          The date from which you'd like to replicate data for Zendesk Sunshine
+          API, in the format YYYY-MM-DDT00:00:00Z.
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2021-01-01T00:00:00Z"
+        order: 1
+      credentials:
+        type: object
+        title: Authorization Method
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_method
+              - client_id
+              - client_secret
+              - access_token
+            properties:
+              auth_method:
+                type: string
+                const: oauth2.0
+                enum:
+                  - oauth2.0
+                default: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                description: The Client ID of your OAuth application.
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: The Client Secret of your OAuth application.
+                title: Client Secret
+                airbyte_secret: true
+              access_token:
+                type: string
+                description: Long-term access Token for making authenticated requests.
+                title: Access Token
+                airbyte_secret: true
+          - type: object
+            title: API Token
+            required:
+              - auth_method
+              - api_token
+              - email
+            properties:
+              auth_method:
+                type: string
+                const: api_token
+                enum:
+                  - api_token
+                default: api_token
+                order: 1
+              api_token:
+                type: string
+                description: >-
+                  API Token. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk_sunshine">docs</a>
+                  for information on how to generate this key.
+                title: API Token
+                airbyte_secret: true
+              email:
+                type: string
+                description: The user email for your Zendesk account
+                title: Email
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    limits: false
+    object_types: false
+    object_records: false
+    object_type_policies: false
+    relationship_types: false
+    relationship_records: false
+
+schemas:
+  limits:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - "null"
+          - integer
+        description: The total count of the data records fetched
+      key:
+        type:
+          - "null"
+          - string
+        description: The identifier key for the fetched data records
+      limit:
+        type:
+          - "null"
+          - integer
+        description: >-
+          The maximum limit allowed for fetching data records in a single
+          request
+  object_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the object type was created.
+      key:
+        type:
+          - "null"
+          - string
+        description: The unique identifier for the object type.
+      schema:
+        type:
+          - "null"
+          - object
+        description: The schema definition for the object type properties and requirements.
+        additionalProperties: true
+        properties:
+          properties:
+            type:
+              - "null"
+              - object
+            description: The defined properties for the object type.
+            additionalProperties: true
+          required:
+            type:
+              - "null"
+              - array
+            description: An array specifying the required properties for the object type.
+            items:
+              type:
+                - "null"
+                - string
+              description: The name of a required property.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the object type was last updated.
+  object_records:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+        description: The type or category of the object record.
+      attributes:
+        type:
+          - "null"
+          - object
+        description: Custom data attributes associated with the object record.
+        additionalProperties: true
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp indicating when the object record was created.
+      external_id:
+        type:
+          - string
+          - "null"
+        description: The unique identifier for the object record in an external system.
+      id:
+        type:
+          - "null"
+          - string
+        description: >-
+          The unique identifier for the object record in the Zendesk Sunshine
+          platform.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp indicating when the object record was last updated.
+  object_type_policies:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      object_type:
+        type:
+          - "null"
+          - string
+        description: The type of object for which the permissions are being defined.
+      rbac:
+        type:
+          - "null"
+          - object
+        description: Access control policies related to role-based access control.
+        additionalProperties: true
+        properties:
+          admin:
+            type:
+              - "null"
+              - object
+            description: Permissions for administrators.
+            additionalProperties: true
+            properties:
+              create:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to create new objects of this type.
+              delete:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to delete objects of this type.
+              read:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to read/view objects of this type.
+              update:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to update/edit objects of this type.
+          agent:
+            type:
+              - "null"
+              - object
+            description: Permissions for agents.
+            additionalProperties: true
+            properties:
+              create:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to create new objects of this type.
+              delete:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to delete objects of this type.
+              read:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to read/view objects of this type.
+              update:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to update/edit objects of this type.
+          end_user:
+            type:
+              - "null"
+              - object
+            description: Permissions for end users.
+            additionalProperties: true
+            properties:
+              create:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to create new objects of this type.
+              delete:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to delete objects of this type.
+              read:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to read/view objects of this type.
+              update:
+                type:
+                  - "null"
+                  - boolean
+                description: Permission to update/edit objects of this type.
+  relationship_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp representing when the relationship type was created.
+      key:
+        type:
+          - "null"
+          - string
+        description: A unique identifier for the relationship type.
+      source:
+        type:
+          - "null"
+          - string
+        description: The entity that is the source of the relationship.
+      target:
+        type:
+          - "null"
+          - string
+        description: The entity that is the target of the relationship.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: >-
+          The timestamp representing when the relationship type was last
+          updated.
+  relationship_records:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+        description: The timestamp indicating when the relationship record was created.
+      id:
+        type: string
+        description: The unique identifier for the relationship record.
+      relationship_type:
+        type: string
+        description: The type of relationship between the source and target entities.
+      source:
+        type: string
+        description: The entity that initiated the relationship.
+      target:
+        type: string
+        description: The entity that is the target of the relationship.

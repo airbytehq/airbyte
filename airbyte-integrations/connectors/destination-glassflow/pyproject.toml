@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.4"
+name = "destination-glassflow"
+description = "Destination implementation for GlassFlow."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/glassflow"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_glassflow"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "^4.6.2"
+glassflow = ">=2.1.0"
+
+[tool.poetry.scripts]
+destination-glassflow = "destination_glassflow.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+

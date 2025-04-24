@@ -1,170 +1,95 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-
-from base64 import b64encode
-from json.decoder import JSONDecodeError
+from datetime import timedelta
+from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from pydantic import ValidationError
+from requests.exceptions import InvalidURL
 
-from .streams import (
-    ApplicationRoles,
-    Avatars,
-    BoardIssues,
-    Boards,
-    Dashboards,
-    Epics,
-    Filters,
-    FilterSharing,
-    Groups,
-    IssueComments,
-    IssueCustomFieldContexts,
-    IssueFieldConfigurations,
-    IssueFields,
-    IssueLinkTypes,
-    IssueNavigatorSettings,
-    IssueNotificationSchemes,
-    IssuePriorities,
-    IssueProperties,
-    IssueRemoteLinks,
-    IssueResolutions,
-    Issues,
-    IssueSecuritySchemes,
-    IssueTypeSchemes,
-    IssueTypeScreenSchemes,
-    IssueVotes,
-    IssueWatchers,
-    IssueWorklogs,
-    JiraSettings,
-    Labels,
-    Permissions,
-    PermissionSchemes,
-    ProjectAvatars,
-    ProjectCategories,
-    ProjectComponents,
-    ProjectEmail,
-    ProjectPermissionSchemes,
-    Projects,
-    ProjectTypes,
-    ProjectVersions,
-    PullRequests,
-    Screens,
-    ScreenSchemes,
-    ScreenTabFields,
-    ScreenTabs,
-    SprintIssues,
-    Sprints,
-    TimeTracking,
-    Users,
-    Workflows,
-    WorkflowSchemes,
-    WorkflowStatusCategories,
-    WorkflowStatuses,
-)
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
+from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
+from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .streams import IssueFields, Issues, PullRequests
+from .utils import read_full_refresh
 
 
-class SourceJira(AbstractSource):
-    @staticmethod
-    def get_authenticator(config: Mapping[str, Any]):
-        token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
-        authenticator = TokenAuthenticator(token, auth_method="Basic")
-        return authenticator
+class SourceJira(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        alive = True
-        error_msg = None
-
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-            issue_resolutions = IssueResolutions(**args)
-            for item in issue_resolutions.read_records(sync_mode=SyncMode.full_refresh):
-                continue
-        except ConnectionError as error:
-            alive, error_msg = False, repr(error)
-        # If the input domain is incorrect or doesn't exist, then the response would be empty, resulting in a
-        # JSONDecodeError
-        except JSONDecodeError:
-            alive, error_msg = (
-                False,
-                "Unable to connect to the Jira API with the provided credentials. Please make sure the input "
-                "credentials and environment are correct.",
-            )
+            streams = self.streams(config)
+            stream_name_to_stream = {s.name: s for s in streams}
 
-        return alive, error_msg
+            # check projects
+            if config.get("projects"):
+                projects_stream = stream_name_to_stream["projects"]
+                actual_projects = {project["key"] for project in read_full_refresh(projects_stream)}
+                unknown_projects = set(config["projects"]) - actual_projects
+                if unknown_projects:
+                    return False, "unknown project(s): " + ", ".join(unknown_projects)
+
+            # Get streams to check access to any of them
+            for stream_name in self._source_config["check"]["stream_names"]:
+                try:
+                    next(read_full_refresh(stream_name_to_stream[stream_name]), None)
+                except:
+                    logger.warning(f"No access to stream: {stream_name}")
+                else:
+                    logger.info(f"API Token have access to stream: {stream_name}, so check is successful.")
+                    return True, None
+            return False, "This API Token does not have permission to read any of the resources."
+        except ValidationError as e:
+            return False, e
+        except (AirbyteTracedException, ReadException, InvalidURL) as e:
+            if isinstance(e, InvalidURL) or "404" in str(e) or (isinstance(e, AirbyteTracedException) and "Not found" in e.message):
+                raise AirbyteTracedException(
+                    message="Config validation error: please check that your domain is valid and does not include protocol (e.g: https://).",
+                    internal_message=str(e),
+                    failure_type=FailureType.config_error,
+                ) from None
+            raise e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        streams = super().streams(config)
+        return streams + self.get_non_portable_streams(config=config)
+
+    def _validate_and_transform_config(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = ab_datetime_parse(start_date).to_datetime()
+        config["lookback_window_minutes"] = timedelta(minutes=config.get("lookback_window_minutes", 0))
+        config["projects"] = config.get("projects", [])
+        return config
+
+    @staticmethod
+    def get_authenticator(config: Mapping[str, Any]):
+        return BasicHttpAuthenticator(config.get("email"), config["api_token"])
+
+    def get_non_portable_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self._validate_and_transform_config(config.copy())
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
-        incremental_args = {**args, "start_date": config.get("start_date", "")}
-        render_fields = config.get("render_fields", False)
-        issues_stream = Issues(
-            **incremental_args,
-            additional_fields=config.get("additional_fields", []),
-            expand_changelog=config.get("expand_issue_changelog", False),
-            render_fields=render_fields,
-        )
+        args = {"authenticator": authenticator, "domain": config.get("domain"), "projects": config["projects"]}
+        incremental_args = {
+            **args,
+            "start_date": config.get("start_date"),
+            "lookback_window_minutes": config.get("lookback_window_minutes"),
+        }
+        issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
+
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
                 PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
             )
-        return [
-            ApplicationRoles(**args),
-            Avatars(**args),
-            Boards(**args),
-            BoardIssues(**incremental_args),
-            Dashboards(**args),
-            Epics(render_fields=render_fields, **incremental_args),
-            Filters(**args),
-            FilterSharing(**args),
-            Groups(**args),
-            issues_stream,
-            IssueComments(**incremental_args),
-            issue_fields_stream,
-            IssueFieldConfigurations(**args),
-            IssueCustomFieldContexts(**args),
-            IssueLinkTypes(**args),
-            IssueNavigatorSettings(**args),
-            IssueNotificationSchemes(**args),
-            IssuePriorities(**args),
-            IssueProperties(**incremental_args),
-            IssueRemoteLinks(**incremental_args),
-            IssueResolutions(**args),
-            IssueSecuritySchemes(**args),
-            IssueTypeSchemes(**args),
-            IssueTypeScreenSchemes(**args),
-            IssueVotes(**incremental_args),
-            IssueWatchers(**incremental_args),
-            IssueWorklogs(**incremental_args),
-            JiraSettings(**args),
-            Labels(**args),
-            Permissions(**args),
-            PermissionSchemes(**args),
-            Projects(**args),
-            ProjectAvatars(**args),
-            ProjectCategories(**args),
-            ProjectComponents(**args),
-            ProjectEmail(**args),
-            ProjectPermissionSchemes(**args),
-            ProjectTypes(**args),
-            ProjectVersions(**args),
-            Screens(**args),
-            ScreenTabs(**args),
-            ScreenTabFields(**args),
-            ScreenSchemes(**args),
-            Sprints(**args),
-            SprintIssues(**incremental_args),
-            TimeTracking(**args),
-            Users(**args),
-            Workflows(**args),
-            WorkflowSchemes(**args),
-            WorkflowStatuses(**args),
-            WorkflowStatusCategories(**args),
-        ] + experimental_streams
+        return experimental_streams

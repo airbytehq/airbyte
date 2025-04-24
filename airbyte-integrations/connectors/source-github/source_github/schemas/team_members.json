@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "login": {
+      "description": "Username of the user",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier of the user",
+      "type": "integer"
+    },
+    "node_id": {
+      "description": "Node ID associated with the user",
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "description": "URL of the user's avatar image",
+      "type": ["null", "string"]
+    },
+    "gravatar_id": {
+      "description": "Unique identifier of the user's Gravatar image",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL of the user's GitHub API endpoint",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "URL of the user's GitHub profile",
+      "type": ["null", "string"]
+    },
+    "followers_url": {
+      "description": "URL of the user's followers",
+      "type": ["null", "string"]
+    },
+    "following_url": {
+      "description": "URL of the users that the user is following",
+      "type": ["null", "string"]
+    },
+    "gists_url": {
+      "description": "URL of the user's gists",
+      "type": ["null", "string"]
+    },
+    "starred_url": {
+      "description": "URL of the repositories starred by the user",
+      "type": ["null", "string"]
+    },
+    "subscriptions_url": {
+      "description": "URL of the repositories the user is subscribed to",
+      "type": ["null", "string"]
+    },
+    "organizations_url": {
+      "description": "URL of the organizations the user belongs to",
+      "type": ["null", "string"]
+    },
+    "repos_url": {
+      "description": "URL of the user's repositories",
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "description": "URL of the events performed by the user",
+      "type": ["null", "string"]
+    },
+    "received_events_url": {
+      "description": "URL of the received events by the user",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "Type of user account (e.g., User or Organization)",
+      "type": ["null", "string"]
+    },
+    "site_admin": {
+      "description": "Boolean indicating if the user is a site administrator",
+      "type": ["null", "boolean"]
+    },
+    "organization": {
+      "description": "Name of the organization the user is a part of",
+      "type": "string"
+    },
+    "team_slug": {
+      "description": "Slug identifier of the user's team",
+      "type": "string"
+    }
+  }
+}

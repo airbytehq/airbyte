@@ -1,0 +1,121 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Google Sheets Source Spec
+  type: object
+  required:
+    - spreadsheet_id
+    - credentials
+  additionalProperties: true
+  properties:
+    batch_size:
+      type: integer
+      title: Row Batch Size
+      description: >-
+        Default value is 1000000.
+        An integer representing row batch size for each sent request to Google Sheets API.
+        Row batch size means how many rows are processed from the google sheet, for example default value 1000000
+        would process rows 2-1000002, then 1000003-2000003 and so on.
+        Based on <a href='https://developers.google.com/sheets/api/limits'>Google Sheets API limits documentation</a>,
+        it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
+        otherwise the request returns a timeout error. In regards to this information, consider network speed and
+        number of columns of the google sheet when deciding a batch_size value.
+      default: 1000000
+    spreadsheet_id:
+      type: string
+      title: Spreadsheet Link
+      description: >-
+        Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
+      examples:
+        - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+    names_conversion:
+      type: boolean
+      title: Convert Column Names to SQL-Compliant Format
+      description: Enables the conversion of column names to a standardized, SQL-compliant format. For example, 'My Name' -> 'my_name'. Enable this option if your destination is SQL-based.
+      default: false
+    credentials:
+      type: object
+      title: Authentication
+      description: >-
+        Credentials for connecting to the Google Sheets API
+      oneOf:
+        - title: Authenticate via Google (OAuth)
+          type: object
+          required:
+            - auth_type
+            - client_id
+            - client_secret
+            - refresh_token
+          properties:
+            auth_type:
+              type: string
+              const: Client
+            client_id:
+              title: Client ID
+              type: string
+              description: "Enter your Google application's Client ID. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+              airbyte_secret: true
+            client_secret:
+              title: Client Secret
+              type: string
+              description: "Enter your Google application's Client Secret. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+              airbyte_secret: true
+            refresh_token:
+              title: Refresh Token
+              type: string
+              description: "Enter your Google application's refresh token. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+              airbyte_secret: true
+        - title: Service Account Key Authentication
+          type: object
+          required:
+            - auth_type
+            - service_account_info
+          properties:
+            auth_type:
+              type: string
+              const: Service
+            service_account_info:
+              type: string
+              title: Service Account Information.
+              description: 'The JSON key of the service account to use for authorization. Read more <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">here</a>.'
+              airbyte_secret: true
+              examples:
+                - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
+advanced_auth:
+  auth_flow_type: oauth2.0
+  predicate_key:
+    - credentials
+    - auth_type
+  predicate_value: Client
+  oauth_config_specification:
+    complete_oauth_output_specification:
+      type: object
+      additionalProperties: false
+      properties:
+        refresh_token:
+          type: string
+          path_in_connector_config:
+            - credentials
+            - refresh_token
+    complete_oauth_server_input_specification:
+      type: object
+      additionalProperties: false
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    complete_oauth_server_output_specification:
+      type: object
+      additionalProperties: false
+      properties:
+        client_id:
+          type: string
+          path_in_connector_config:
+            - credentials
+            - client_id
+        client_secret:
+          type: string
+          path_in_connector_config:
+            - credentials
+            - client_secret

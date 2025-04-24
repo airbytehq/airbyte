@@ -1,0 +1,5 @@
+{
+  "endpoint": "api.opsgenie.com",
+  "api_token": "private_token-fake",
+  "start_date": "2021-01-01T00:00:00Z"
+}

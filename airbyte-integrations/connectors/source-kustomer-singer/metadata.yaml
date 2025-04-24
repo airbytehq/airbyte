@@ -1,0 +1,30 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cd06e646-31bf-4dc8-af48-cbc6530fcad3
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-kustomer-singer
+  githubIssueLabel: source-kustomer-singer
+  icon: kustomer.svg
+  license: MIT
+  name: Kustomer
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `pyab validate` is passing.
+      packageName: airbyte-source-kustomer-singer
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kustomer-singer
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
+metadataSpecVersion: "1.0"

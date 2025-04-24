@@ -1,9 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
 from unittest.mock import Mock
+
+from destination_rabbitmq.destination import DestinationRabbitmq, create_connection
 
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import (
@@ -15,7 +17,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from destination_rabbitmq.destination import DestinationRabbitmq, create_connection
+
 
 TEST_STREAM = "animals"
 TEST_NAMESPACE = "test_namespace"
@@ -25,7 +27,7 @@ TEST_MESSAGE = {"name": "cat"}
 def _configured_catalog() -> ConfiguredAirbyteCatalog:
     stream_schema = {"type": "object", "properties": {"name": {"type": "string"}}}
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name=TEST_STREAM, json_schema=stream_schema),
+        stream=AirbyteStream(name=TEST_STREAM, json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )

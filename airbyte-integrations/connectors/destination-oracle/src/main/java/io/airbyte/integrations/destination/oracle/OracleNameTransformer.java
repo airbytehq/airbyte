@@ -1,22 +1,23 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import java.util.UUID;
 
 @VisibleForTesting
-public class OracleNameTransformer extends ExtendedNameTransformer {
+public class OracleNameTransformer extends StandardNameTransformer {
 
   @Override
-  protected String applyDefaultCase(final String input) {
+  public String applyDefaultCase(final String input) {
     return input.toUpperCase();
   }
 
   @Override
+  @Deprecated
   public String getRawTableName(final String streamName) {
     return convertStreamName("airbyte_raw_" + streamName);
   }

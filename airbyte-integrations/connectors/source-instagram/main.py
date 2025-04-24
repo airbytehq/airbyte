@@ -1,13 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from source_instagram.run import run
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_instagram import SourceInstagram
 
 if __name__ == "__main__":
-    source = SourceInstagram()
-    launch(source, sys.argv[1:])
+    run()

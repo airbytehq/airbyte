@@ -1,0 +1,11 @@
+{
+  "domain": "myorg",
+  "start_date": "2024-08-02T00:00:00Z",
+  "credentials": {
+    "auth_type": "oauth2.0_private_key",
+    "client_id": "0odiji39hrrlrggPb7d7",
+    "key_id": "IvLuOYbri0fMcIhdnaOhcjD5S_WXzkk7Cxdo0_M28r0",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9b0BAQEFAASCBKcwggSjAgEAAoIBARC1Zzwf3mpAJBJ7\nbnSZr+wqgUlh10I/5hhLSYWlB0Ak+GlnhHFFJcSE8SByrAPlorggtBAuTdoVMGc8\nlDSodtQM+WiurwltCbbSA8VqmeftIA53Axi7ZwCqm9MVpiNIB6uUFzjFh1ewKRdM\nQYzIWmIL+onDl0P4vzQylsEO0dy6Z3SCoodpw1mgcViGRL3MH73hymauEn9n5n0s\n3CI6g9+tzk1f2gYHWB+o1XHBb78ZR7vkCBuOCY58P3Bps2hG0gTTDaBOrAtSd8Df\n4PVAoVAnh70WtUyzIGBu6pmSbIZ05G32xz+wANFgCZ+G4e5+k9GYz+2/2bwDh3Ra\nrL16CY4bAgMBAAECggEAHZt+YlJg5BwfGh9Cj6z7bkqQuBPin7xF3c/frLo8uWwD\n/2ITfLY313zlj2HM9wdyZwAMngod3JR8XRJRb+eJH577e3tdHftWZ/uuloINLRIs\n2jbarAeZP79UGfX2TzTVR8Psg6zd3oYuY8dVG4RI+WyIXLCNKwXGFrWtR+Zv0Mp4\nOnqc5aCq0qbSYmj/WEJFL3yW0VQznt/olpuV9Ek45FlahCTpojLxhcS9+LG+L+pm\nt0a5cAu98lkthrn0UIkkirl2Q5iDnn56bHydhBnjj5X4XCXmX4SMLOfnF0u3q3wz\nTkYWdfaVkMLoOfOYMTy+HOuo52KiPXrsknPR8TLneQKBgQDtHe2BzbY++KnUabDN\nvxGTrj89uUaDM53FRlsSWm8ATRCueNcXbFAfKXlnOZzPr0/GEZ2a6o6cRJh5iT4s\nDGLeWtCNSg59pHHfq1SNDqdrxESbZTVScxYpnTa2yVc6tAw3cYAUo4PSgks/ErYu\nkSjHXhb9RnuDSS+AWpwoYMnqcwKBgQDD2Xr2mQi5vic/WK03hV00gqXTezRVo+g7\nrOrCyj0HKjcewLtzBkkSFU5JLUeyC7fUFYOIBwaJMmt7UxwYePXX/AB//u/IRIkh\nbjPIZqSjgX0rq62Ou5uy12WZ1S+ZYyZV4rD4ehzR4z+5KkIHJ/7wGkAtZQYoKdsR\ntEJmz8cbuQKBgExdzid3DFH9nhy2KWYqOkv4249Sg34v+okVnrErhQJwz4WRj5yQ\nmsFehyYSrQlKagPdmofRMTrs8Lp71BU1rAX286H9jusyMiaaNHH1nUAdBweRMfoq\n7KFca8m00K4sXJ7ipCCBhSwgIIHg0eHviFWlXPwXXiIrSOwqwo5SldU3AoGAdUdt\nn/ACTqA1BnUGvUGqj8BQpvSXYVVWwy2II39RzlGUUmEdnwK7jQ2fJKjtzwu/WExN\nyI5UdqHvxRj+sRT2OxFYB03VrvqDl7ZTYgU9QABRwW3774Ye9ZiQ6e7EozjBgxrN\n2O3fBjzsMujAQ2LLAmLl3Ykqh7CQ0+g6/zAbTlkCgYEAjR/nNSCf7qClRKB88aWg\nFUmJsK4DW2we0fHufPyuUUG3dxbPT66SS7chvivLHhmZdOoZg6LX+v3vjfH08qv4\nARRKKgoyaEZR+Dna4fxYPUWzpv95egdea9q63Rw2xXc5pBvp7wDXkd3Sr4yhZYzk\nGg8CnyEMRaPgTor51VNN1gU=\n-----END PRIVATE KEY-----\n",
+    "scope": "okta.users.read"
+  }
+}

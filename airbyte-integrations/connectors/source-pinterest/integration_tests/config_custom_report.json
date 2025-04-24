@@ -1,0 +1,26 @@
+{
+  "client_id": "1111111",
+  "client_secret": "XXXX",
+  "refresh_token": "XXXXX",
+  "start_date": "2023-01-08",
+  "custom_reports": [
+    {
+      "name": "vadim_report",
+      "level": "AD_GROUP",
+      "granularity": "MONTH",
+      "click_window_days": 30,
+      "engagement_window_days": 30,
+      "view_window_days": 30,
+      "conversion_report_time": "TIME_OF_CONVERSION",
+      "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+      "columns": [
+        "ADVERTISER_ID",
+        "AD_ACCOUNT_ID",
+        "AD_GROUP_ID",
+        "CTR",
+        "IMPRESSION_2"
+      ],
+      "start_date": "2023-01-08"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "users": [
+    {
+      "id": 6128164851599,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/users/6128164851599.json",
+      "name": "AmberBlanchard",
+      "email": "integration-test+amberblanchard@airbyte.io",
+      "created_at": "2022-12-29T08:56:24Z",
+      "updated_at": "2023-02-01T07:41:46Z",
+      "time_zone": "Pacific/Noumea",
+      "iana_time_zone": "Pacific/Noumea",
+      "phone": null,
+      "shared_phone_number": null,
+      "photo": null,
+      "locale_id": 1,
+      "locale": "en-US",
+      "organization_id": null,
+      "role": "end-user",
+      "verified": false,
+      "external_id": null,
+      "tags": ["tag", "test"],
+      "alias": "",
+      "active": true,
+      "shared": false,
+      "shared_agent": false,
+      "last_login_at": null,
+      "two_factor_auth_enabled": null,
+      "signature": null,
+      "details": "",
+      "notes": "",
+      "role_type": null,
+      "custom_role_id": null,
+      "moderator": false,
+      "ticket_restriction": "requested",
+      "only_private_comments": false,
+      "restricted_agent": true,
+      "suspended": false,
+      "default_group_id": null,
+      "report_csv": false,
+      "user_fields": {
+        "test_display_name_checkbox_field": false,
+        "test_display_name_decimal_field": null,
+        "test_display_name_text_field": null
+      }
+    }
+  ],
+  "identities": [
+    {
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/users/6128164851599/identities/6128164851983.json",
+      "id": 6128164851983,
+      "user_id": 6128164851599,
+      "type": "email",
+      "value": "integration-test+amberblanchard@airbyte.io",
+      "verified": false,
+      "primary": true,
+      "created_at": "2022-12-29T08:56:24Z",
+      "updated_at": "2022-12-29T08:56:24Z",
+      "undeliverable_count": 0,
+      "deliverable_state": "deliverable"
+    }
+  ],
+  "after_url": null,
+  "before_url": null,
+  "after_cursor": null,
+  "before_cursor": null,
+  "end_of_stream": true
+}
