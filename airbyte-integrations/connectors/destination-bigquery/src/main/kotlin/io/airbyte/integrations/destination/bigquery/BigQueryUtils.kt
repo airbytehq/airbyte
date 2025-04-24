@@ -131,9 +131,9 @@ object BigQueryUtils {
                     BigQueryConsts.FORMAT,
                     Jsons.readTree(
                         """{
-                      "format_type": "CSV",
-                      "flattening": "No flattening"
-                    }"""
+                          "format_type": "CSV",
+                          "flattening": "No flattening"
+                        }""".trimIndent()
                     )
                 )
                 .build()
