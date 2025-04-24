@@ -101,7 +101,7 @@ jobs:
       - name: Commit changes
         run: |
           git add .
-          git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
+          git commit -m "Bump the cdk version to ${{ steps.fetch-version.outputs.latest_version }}"
           git push
 
   publish-connectors:
