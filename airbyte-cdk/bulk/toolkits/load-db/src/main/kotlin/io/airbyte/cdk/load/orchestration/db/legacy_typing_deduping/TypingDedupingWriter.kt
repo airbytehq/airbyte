@@ -28,7 +28,7 @@ class TypingDedupingWriter(
         Map<DestinationStream, TypingDedupingDatabaseInitialStatus>
 
     override suspend fun setup() {
-        Executors.newFixedThreadPool(4).asCoroutineDispatcher().use { dispatcher ->
+        Executors.newFixedThreadPool(10).asCoroutineDispatcher().use { dispatcher ->
             val namespaces =
                 names.values.map { (tableNames, _) -> tableNames.rawTableName!!.namespace } +
                     names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
