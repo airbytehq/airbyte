@@ -723,7 +723,7 @@ definitions:
       cursor_field: time
       step: "P{{ config.get('date_window_size', 30) }}D"
       cursor_granularity: PT1S
-      lookback_window:  "PT{{ config.get('export_lookback_window', 0) }}S"
+      lookback_window: "PT{{ config.get('export_lookback_window', 0) }}S"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S%z"
