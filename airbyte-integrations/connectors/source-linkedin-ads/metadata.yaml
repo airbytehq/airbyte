@@ -21,7 +21,7 @@ data:
   name: LinkedIn Ads
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-linkedin-ads
   registryOverrides:
     cloud:

@@ -212,7 +212,7 @@ class TestAllStreams:
             (200, True, None),
         ),
     )
-    def test_check_connection(self, requests_mock, linkedin_source, status_code, is_connection_successful, error_msg, mocker):
+    def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg, mocker):
         mocker.patch.object(
             ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
         )
@@ -224,7 +224,7 @@ class TestAllStreams:
             status_code=status_code,
             json=json,
         )
-        success, error = linkedin_source.check_connection(logger=logger, config=TEST_CONFIG)
+        success, error = get_source(config=TEST_CONFIG).check_connection(logger=logger, config=TEST_CONFIG)
         assert success is is_connection_successful
         assert error == error_msg
 
