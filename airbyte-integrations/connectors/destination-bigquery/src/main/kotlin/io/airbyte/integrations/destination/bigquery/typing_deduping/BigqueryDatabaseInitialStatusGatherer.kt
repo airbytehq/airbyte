@@ -61,14 +61,13 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
         val unloadedRecordTimestamp =
             bq.query(
-                    QueryJobConfiguration.newBuilder(
-                            """
-                    SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
-                    FROM $rawTableIdQuoted
-                    WHERE _airbyte_loaded_at IS NULL
-                    """.trimIndent()
-                        )
-                        .build()
+                    QueryJobConfiguration.of(
+                        """
+                            SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
+                            FROM $rawTableIdQuoted
+                            WHERE _airbyte_loaded_at IS NULL
+                            """.trimIndent()
+                    )
                 )
                 .iterateAll()
                 .iterator()
@@ -86,13 +85,12 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
 
         val loadedRecordTimestamp =
             bq.query(
-                    QueryJobConfiguration.newBuilder(
-                            """
-                    SELECT MAX(_airbyte_extracted_at)
-                    FROM $rawTableIdQuoted
-                    """.trimIndent()
-                        )
-                        .build()
+                    QueryJobConfiguration.of(
+                        """
+                            SELECT MAX(_airbyte_extracted_at)
+                            FROM $rawTableIdQuoted
+                            """.trimIndent()
+                    )
                 )
                 .iterateAll()
                 .iterator()

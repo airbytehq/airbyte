@@ -45,7 +45,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
             bq.create(
                 JobInfo.of(
                     JobId.newBuilder().setLocation(datasetLocation).build(),
-                    QueryJobConfiguration.newBuilder(statement).build()
+                    QueryJobConfiguration.of(statement)
                 )
             )
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
