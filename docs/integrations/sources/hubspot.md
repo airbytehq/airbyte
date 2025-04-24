@@ -338,9 +338,11 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.7.0      | 2025-04-22 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code
-| 4.6.3 | 2025-04-19 | [58226](https://github.com/airbytehq/airbyte/pull/58226) | Update dependencies |
-| 4.6.2 | 2025-04-18 | [58137](https://github.com/airbytehq/airbyte/pull/58137) | Promoting release candidate 4.6.2-rc.1 to a main version. |
+| 4.8.0      | 2025-04-24 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code
+| 4.7.0-rc.1 | 2025-04-23 | [58083](https://github.com/airbytehq/airbyte/pull/58083) | Migrate ticket_pipelines to low code |
+| 4.6.4      | 2025-04-22 | [58138](https://github.com/airbytehq/airbyte/pull/58138) | Use short-hand custom object type name path for custom object streams.                                                                                                                                                       |
+| 4.6.3      | 2025-04-19 | [58226](https://github.com/airbytehq/airbyte/pull/58226) | Update dependencies |
+| 4.6.2      | 2025-04-18 | [58137](https://github.com/airbytehq/airbyte/pull/58137) | Promoting release candidate 4.6.2-rc.1 to a main version. |
 | 4.6.2-rc.1 | 2025-04-13 | [57534](https://github.com/airbytehq/airbyte/pull/57534) | Migrate marketing_emails and email_subscriptions to low code |
 | 4.6.1      | 2025-04-12 | [57694](https://github.com/airbytehq/airbyte/pull/57694) | Update dependencies |
 | 4.6.0      | 2025-04-11 | [57572](https://github.com/airbytehq/airbyte/pull/57572) | Promoting release candidate 4.6.0-rc.1 to a main version. |

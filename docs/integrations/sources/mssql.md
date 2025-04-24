@@ -69,7 +69,7 @@ CDC-enabled tables.
 Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync
 from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
-Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte
+Please read the [CDC docs](../../platform/understanding-airbyte/cdc) for an overview of how Airbyte
 approaches CDC.
 
 ### Should I use CDC for MSSQL?
@@ -86,7 +86,7 @@ approaches CDC.
 
 #### CDC Limitations
 
-- Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that
+- Make sure to read our [CDC docs](../../platform/understanding-airbyte/cdc) to see limitations that
   impact all databases using CDC replication.
 - `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by
   Debezium). For more details please check
