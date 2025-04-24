@@ -92,7 +92,7 @@
       "statusCode": 301
     },
     {
-      "source": "/enterprise-setup/self-managed/",
+      "source": "/enterprise-setup/self-managed",
       "destination": "/platform/enterprise-setup",
       "statusCode": 301
     },
