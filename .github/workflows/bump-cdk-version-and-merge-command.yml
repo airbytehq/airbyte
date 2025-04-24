@@ -345,6 +345,9 @@ jobs:
             PR_NUM=$(gh pr list --state open --head "${{ github.ref_name }}" --json number --jq '.[0].number')
             echo "The PR number is: $PR_NUM"
             changelog_update "$PR_NUM" "$folder" "Update CDK version"
+            git add .
+            git commit -m "Update changelog for $folder"
+            git push
           done
     
           # poetry run auto-merge
