@@ -271,8 +271,28 @@
       "statusCode": 301
     },
     {
+      "source": "/project-overview/licenses",
+      "destination": "/platform/developer-guides/licenses/",
+      "statusCode": 301
+    },
+    {
+      "source": "/project-overview/licenses/",
+      "destination": "/platform/developer-guides/licenses/",
+      "statusCode": 301
+    },
+    {
       "source": "/project-overview/licenses/:path*",
       "destination": "/platform/developer-guides/licenses/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/tutorials/cdk-tutorial-python-http",
+      "destination": "/platform/connector-development/tutorials/custom-python-connector/getting-started",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/tutorials/cdk-tutorial-python-http/",
+      "destination": "/platform/connector-development/tutorials/custom-python-connector/getting-started",
       "statusCode": 301
     },
     {
@@ -281,8 +301,28 @@
       "statusCode": 301
     },
     {
+      "source": "/access-management",
+      "destination": "/platform/access-management/",
+      "statusCode": 301
+    },
+    {
+      "source": "/access-management/",
+      "destination": "/platform/access-management/",
+      "statusCode": 301
+    },
+    {
       "source": "/access-management/:path*",
       "destination": "/platform/access-management/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud",
+      "destination": "/platform/cloud/",
+      "statusCode": 301
+    },
+    {
+      "source": "/cloud/",
+      "destination": "/platform/cloud/",
       "statusCode": 301
     },
     {
@@ -291,8 +331,28 @@
       "statusCode": 301
     },
     {
+      "source": "/community",
+      "destination": "/platform/community/",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/",
+      "destination": "/platform/community/",
+      "statusCode": 301
+    },
+    {
       "source": "/community/:path*",
       "destination": "/platform/community/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development",
+      "destination": "/platform/connector-development/",
+      "statusCode": 301
+    },
+    {
+      "source": "/connector-development/",
+      "destination": "/platform/connector-development/",
       "statusCode": 301
     },
     {
@@ -301,8 +361,28 @@
       "statusCode": 301
     },
     {
+      "source": "/contributing-to-airbyte",
+      "destination": "/platform/contributing-to-airbyte/",
+      "statusCode": 301
+    },
+    {
+      "source": "/contributing-to-airbyte/",
+      "destination": "/platform/contributing-to-airbyte/",
+      "statusCode": 301
+    },
+    {
       "source": "/contributing-to-airbyte/:path*",
       "destination": "/platform/contributing-to-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/deploying-airbyte",
+      "destination": "/platform/deploying-airbyte/",
+      "statusCode": 301
+    },
+    {
+      "source": "/deploying-airbyte/",
+      "destination": "/platform/deploying-airbyte/",
       "statusCode": 301
     },
     {
@@ -311,8 +391,28 @@
       "statusCode": 301
     },
     {
+      "source": "/developer-guides",
+      "destination": "/platform/developer-guides/",
+      "statusCode": 301
+    },
+    {
+      "source": "/developer-guides/",
+      "destination": "/platform/developer-guides/",
+      "statusCode": 301
+    },
+    {
       "source": "/developer-guides/:path*",
       "destination": "/platform/developer-guides/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-setup",
+      "destination": "/platform/embedded-setup/",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-setup/",
+      "destination": "/platform/embedded-setup/",
       "statusCode": 301
     },
     {
@@ -321,8 +421,28 @@
       "statusCode": 301
     },
     {
+      "source": "/enterprise-setup",
+      "destination": "/platform/enterprise-setup/",
+      "statusCode": 301
+    },
+    {
+      "source": "/enterprise-setup/",
+      "destination": "/platform/enterprise-setup/",
+      "statusCode": 301
+    },
+    {
       "source": "/enterprise-setup/:path*",
       "destination": "/platform/enterprise-setup/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/managing-airbyte",
+      "destination": "/platform/managing-airbyte/",
+      "statusCode": 301
+    },
+    {
+      "source": "/managing-airbyte/",
+      "destination": "/platform/managing-airbyte/",
       "statusCode": 301
     },
     {
@@ -331,8 +451,28 @@
       "statusCode": 301
     },
     {
+      "source": "/operating-airbyte",
+      "destination": "/platform/operating-airbyte/",
+      "statusCode": 301
+    },
+    {
+      "source": "/operating-airbyte/",
+      "destination": "/platform/operating-airbyte/",
+      "statusCode": 301
+    },
+    {
       "source": "/operating-airbyte/:path*",
       "destination": "/platform/operating-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides",
+      "destination": "/platform/operator-guides/",
+      "statusCode": 301
+    },
+    {
+      "source": "/operator-guides/",
+      "destination": "/platform/operator-guides/",
       "statusCode": 301
     },
     {
@@ -341,8 +481,28 @@
       "statusCode": 301
     },
     {
+      "source": "/understanding-airbyte",
+      "destination": "/platform/understanding-airbyte/",
+      "statusCode": 301
+    },
+    {
+      "source": "/understanding-airbyte/",
+      "destination": "/platform/understanding-airbyte/",
+      "statusCode": 301
+    },
+    {
       "source": "/understanding-airbyte/:path*",
       "destination": "/platform/understanding-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/using-airbyte",
+      "destination": "/platform/using-airbyte/",
+      "statusCode": 301
+    },
+    {
+      "source": "/using-airbyte/",
+      "destination": "/platform/using-airbyte/",
       "statusCode": 301
     },
     {
