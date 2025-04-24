@@ -1,3 +1,9 @@
+# Slash Command Dispatch
+# 
+# Note:
+# - Slash commands can be invoked from both issues and comments.
+# - If the slash command is invoked from an issue, we intentionally pass 'null' as the PR number.
+
 name: Slash Command Dispatch
 on:
   issue_comment:
@@ -21,7 +27,9 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           permission: write
+          dispatch-type: workflow
           issue-type: both
+
           commands: |
             bump-version
             bump-cdk-version-and-merge
@@ -32,12 +40,16 @@ jobs:
             connector-performance
             approve-regression-tests
             poe
+
+          # Notes regarding static-args:
+          # - Slash commands can be invoked from both issues and comments.
+          # - If the slash command is invoked from an issue, we intentionally pass 'null' as the PR number.
+          # - Comment ID will always be sent, and this is sufficient to post back status updates to the originating comment.
           static-args: |
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
             pr=${{ github.event.issue.pull_request != null && github.event.issue.number || '' }}
-          dispatch-type: workflow
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
