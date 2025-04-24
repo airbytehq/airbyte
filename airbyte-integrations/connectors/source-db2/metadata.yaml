@@ -10,7 +10,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: d2542966-8cc8-4899-9b74-413a7d9bb28e
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-db2-enterprise
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-db2
   githubIssueLabel: source-db2-enterprise
