@@ -21,7 +21,7 @@ Airbyte is available as a Self-Managed or Cloud product, depending on your needs
 
 <CardWithIcon title="Self-Managed Enterprise" description="Highly available, secure data movement for your entire organization. To start with Self-Managed Enterprise, you need a license key. For more details, read the enterprise setup guide." ctaText="Enterprise Setup" ctaLink="../../enterprise-setup" icon="fa-lock" />
 
-<CardWithIcon title="Self-Managed Community" description="Our open-source version of Airbyte. Deploy locally or in your own infrastructure. Get started immediately and keep your data on your premises." ctaText="Quickstart" ctaLink="oss-quickstart" icon="fa-download" />
+<CardWithIcon title="Self-Managed Community" description="Our open-source version of Airbyte. Deploy locally or in your own infrastructure. Get started immediately and keep your data on your premises." ctaText="Quickstart" ctaLink="using-airbyte/getting-started/oss-quickstart" icon="fa-download" />
 
 </Grid>
 
