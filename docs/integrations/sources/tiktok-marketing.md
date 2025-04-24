@@ -70,7 +70,7 @@ To access the Sandbox environment:
 
 ## Supported sync modes
 
-The TikTok Marketing source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The TikTok Marketing source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/#connection):
 
 - Full Refresh
 - Incremental
