@@ -93,7 +93,7 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["Accounts"]
-        schema_normalization: Default # FIXME this does not work because the return types are different in REST (for example, `Id` is returned as string and therefore needs normalization) but the schema is improperly defined (number instead of integer)
+        schema_normalization: Default
 
 streams:
   - $ref: "#/definitions/users_stream"
