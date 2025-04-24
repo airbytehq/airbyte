@@ -160,6 +160,7 @@ jobs:
           echo "$connector_folders" | while read -r folder; do
             CONNECTOR_NAME=$(echo "$folder" | cut -d'-' -f2-)
             PR_NUM=$(gh pr list --state open --head "${{ github.ref_name }}" --json number --jq '.[0].number')
+            echo "$PR_NUM"
             poetry run airbyte-ci connectors --modified bump-version \
               patch \
               "Update the CDK version to ${{ github.event.inputs.version }}" \
