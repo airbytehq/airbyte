@@ -363,12 +363,12 @@
     },
     {
       "source": "/developer-guides",
-      "destination": "/platform/licenses",
+      "destination": "/platform/developer-guides/licenses",
       "statusCode": 301
     },
     {
       "source": "/developer-guides/",
-      "destination": "/platform/licenses",
+      "destination": "/platform/developer-guides/licenses",
       "statusCode": 301
     },
     {
