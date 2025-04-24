@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.factory.object_storage
 
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.ResourceReservingPartitionedQueue
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
-import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
@@ -26,13 +25,6 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
-
-data class ObjectKey(
-    override val stream: DestinationStream.Descriptor,
-    val objectKey: String,
-    // optional string id to differentiate between uploads with the same key
-    val uploadId: String? = null,
-) : WithStream
 
 @Factory
 class ObjectLoaderPartQueueFactory(

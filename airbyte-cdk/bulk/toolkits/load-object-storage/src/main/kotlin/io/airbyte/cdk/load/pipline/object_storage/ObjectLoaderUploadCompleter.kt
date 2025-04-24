@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
-import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartBookkeeper
 import io.airbyte.cdk.load.file.object_storage.RemoteObject

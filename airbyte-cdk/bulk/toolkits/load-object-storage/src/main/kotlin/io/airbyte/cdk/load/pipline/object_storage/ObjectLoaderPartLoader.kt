@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload

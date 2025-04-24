@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.pipeline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.factory.object_storage.ObjectKey
+import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithStream

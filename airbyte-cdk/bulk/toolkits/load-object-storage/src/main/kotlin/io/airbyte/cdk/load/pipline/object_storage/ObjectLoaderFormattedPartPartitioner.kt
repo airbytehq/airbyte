@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
-import io.airbyte.cdk.load.factory.object_storage.ObjectKey
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import kotlin.random.Random
