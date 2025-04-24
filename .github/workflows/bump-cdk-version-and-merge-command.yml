@@ -126,7 +126,7 @@ jobs:
     uses: ./.github/workflows/publish-java-cdk-command.yml
     with:
       gitref: ${{ github.ref_name }}
-      dry-run: true
+      dry-run: false
       force: false
     secrets: inherit
 
