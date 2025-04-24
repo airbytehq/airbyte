@@ -3,21 +3,58 @@
 #
 
 import logging
+import sys
+from pathlib import Path
 from typing import Any, Dict, List
 
 import pytest
 import requests
-from conftest import find_stream, get_source, load_json_file
-from source_linkedin_ads.source import SourceLinkedinAds
+from conftest import load_json_file
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 logger = logging.getLogger("airbyte")
+
+
+def get_source(config) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build()
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+def find_stream(stream_name, config):
+    streams = get_source(config).streams(config=config)
+
+    # cache should be disabled once this issue is fixed https://github.com/airbytehq/airbyte-internal-issues/issues/6513
+    for stream in streams:
+        stream.retriever.requester.use_cache = True
+
+    # find by name
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 LINKEDIN_VERSION_API = 202404
 
@@ -60,10 +97,6 @@ TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
 
 
 class TestAllStreams:
-    @pytest.fixture
-    def linkedin_source(self) -> SourceLinkedinAds:
-        return get_source(TEST_CONFIG)
-
     @staticmethod
     def _mock_initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         parent_streams = set()
