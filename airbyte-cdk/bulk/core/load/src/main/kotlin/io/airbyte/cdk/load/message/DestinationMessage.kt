@@ -321,6 +321,10 @@ data class DestinationRecordRaw(
         return rawData.record.data
     }
 
+    fun dangerousMutateData(f: (AirbyteMessage) -> Unit) {
+        f(rawData)
+    }
+
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
