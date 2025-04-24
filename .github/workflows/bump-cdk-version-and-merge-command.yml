@@ -138,7 +138,6 @@ jobs:
         with:
           version: 1.8.5
       - name: Merge the changelog of the connectors
-        working-directory: airbyte-ci/connectors/pipelines/
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
           AUTO_MERGE_PRODUCTION: false
@@ -338,16 +337,14 @@ jobs:
           sort | \
           uniq)
 
-          poetry install
+          # poetry install
 
           # Read each line from the connector_folders variable
           echo "$connector_folders" | while read -r folder; do
             CONNECTOR_NAME=$(echo "$folder" | cut -d'-' -f2-)
             PR_NUM=$(gh pr list --state open --head "${{ github.ref_name }}" --json number --jq '.[0].number')
-            echo "$PR_NUM"
+            echo "The PR number is: $PR_NUM"
             changelog_update "$PR_NUM" "$folder" "Update CDK version"
-            # poetry run airbyte-ci --name="$folder" add-changelog --message="Update CDK version" --type=patch
-            # isDocPresent = modified_files | grep docs/integrations | grep "$folder"
           done
     
           # poetry run auto-merge
