@@ -8,11 +8,13 @@ import com.google.cloud.bigquery.*
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
-import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
@@ -20,7 +22,6 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
-import io.airbyte.integrations.destination.bigquery.write.TempUtils
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -30,10 +31,11 @@ class BigQueryBulkLoader(
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
-    private val stream: DestinationStream,
+    private val rawTableName: TableName,
+    private val rawTableSuffix: String,
 ) : BulkLoader<GcsBlob> {
     override suspend fun load(remoteObject: GcsBlob) {
-        val rawTableId = TempUtils.rawTableId(bigQueryConfiguration, stream.descriptor)
+        val rawTableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
         val gcsUri = "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}"
 
         val csvOptions =
@@ -84,10 +86,11 @@ class BigqueryConfiguredForBulkLoad : Condition {
 @Singleton
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigQueryBulkLoaderFactory(
-    private val catalog: DestinationCatalog,
+    private val names: TableCatalogByDescriptor,
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
-    private val bigQueryConfiguration: BigqueryConfiguration
+    private val bigQueryConfiguration: BigqueryConfiguration,
+    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
@@ -98,7 +101,12 @@ class BigQueryBulkLoaderFactory(
     override val maxMemoryRatioReservedForParts: Double = 0.6
 
     override fun create(key: StreamKey, partition: Int): BulkLoader<GcsBlob> {
-        val stream = catalog.getStream(key.stream)
-        return BigQueryBulkLoader(storageClient, bigQueryClient, bigQueryConfiguration, stream)
+        return BigQueryBulkLoader(
+            storageClient,
+            bigQueryClient,
+            bigQueryConfiguration,
+            names[key.stream]!!.tableNames.rawTableName!!,
+            streamStateStore.get(key.stream)!!.rawTableSuffix,
+        )
     }
 }
