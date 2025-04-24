@@ -23,101 +23,124 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-#      - name: Validate provided version
-#        run: |
-#          # Extract the provided version
-#          provided_version="${{ github.event.inputs.version }}"
-#
-#          # Extract the current version from version.properties
-#          current_version=$(grep '^version=' airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties | cut -d'=' -f2)
-#
-#          # Check if the provided version follows SemVer
-#          if ! [[ "$provided_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-#            echo "Error: Provided version '$provided_version' is not a valid SemVer version."
-#            exit 1
-#          fi
-#
-#          # Compare the provided version with the current version
-#          if [ "$(printf '%s\n' "$current_version" "$provided_version" | sort -V | head -n1)" = "$provided_version" ] && [ "$current_version" != "$provided_version" ]; then
-#            echo "Error: Provided version '$provided_version' is not greater than the current version '$current_version'."
-#            exit 1
-#          fi
-#
-#          echo "Provided version '$provided_version' is valid and greater than the current version '$current_version'."
+      - name: Validate provided version
+        run: |
+          # Extract the provided version
+          provided_version="${{ github.event.inputs.version }}"
 
-#      - name: Update version.properties
-#        run: |
-#          # Extract the provided version
-#          provided_version="${{ github.event.inputs.version }}"
-#
-#          # Update the version in version.properties
-#          sed -i "s/^version=.*/version=$provided_version/" airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties
-#
-#          echo "Updated version.properties with version '$provided_version'."
+          # Extract the current version from version.properties
+          current_version=$(grep '^version=' airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties | cut -d'=' -f2)
 
-#      - name: Configure Git
-#        run: |
-#          git config user.name "github-actions[bot]"
-#          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Check if the provided version follows SemVer
+          if ! [[ "$provided_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Provided version '$provided_version' is not a valid SemVer version."
+            exit 1
+          fi
 
-#      - name: Update cdkVersionRequired in build.gradle files
-#        id: export-connection-modified
-#        run: |
-#          # Ensure the branch has the most recent updates from the master branch
-#          git fetch origin master
+          # Compare the provided version with the current version
+          if [ "$(printf '%s\n' "$current_version" "$provided_version" | sort -V | head -n1)" = "$provided_version" ] && [ "$current_version" != "$provided_version" ]; then
+            echo "Error: Provided version '$provided_version' is not greater than the current version '$current_version'."
+            exit 1
+          fi
 
-#          # Get the list of modified files between the default branch and the current branch
-#          modified_files=$(git diff --name-only origin/master)
+          echo "Provided version '$provided_version' is valid and greater than the current version '$current_version'."
 
-#          connector_folders=$(echo "$modified_files" | \
-#            grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
-#            sort | \
-#            uniq)
-#
-#          echo "Modified connector folders: $connector_folders"
-#
-#          MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -c -s .)
-#
-#          echo "modified_connectors=${MODIFIED_LIST_JSON}" >> $GITHUB_OUTPUT
+      - name: Update version.properties
+        run: |
+          # Extract the provided version
+          provided_version="${{ github.event.inputs.version }}"
 
-#          echo "$connector_folders" | while read -r folder; do
-#            gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
-#            if [ -f "$gradle_file" ]; then
-#              sed -i "s/cdkVersionRequired = '.*'/cdkVersionRequired = '${{ github.event.inputs.version }}'/" "$gradle_file"
-#              sed -i "/useLocalCdk/d" "$gradle_file"
-#            fi
-#          done
+          # Update the version in version.properties
+          sed -i "s/^version=.*/version=$provided_version/" airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties
 
-#      - name: Commit changes
-#        run: |
-#          git add .
-#          git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
-#          git push
+          echo "Updated version.properties with version '$provided_version'."
 
-  # publish-java-cdk:
-  #   needs: [bump-cdk-version]
-  #   uses: ./.github/workflows/publish-java-cdk-command.yml
-  #   with:
-  #     gitref: ${{ github.ref_name }}
-  #     dry-run: true
-  #     force: false
-  #   secrets: inherit
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-  # publish-connectors:
-  #   needs: [bump-cdk-version]
-  #   # needs: [publish-java-cdk]
-  #   uses: ./.github/workflows/publish_connectors.yml
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
-  #   with:
-  #     connectors-options: "--name=${{ matrix.connector_name }}"
-  #   secrets: inherit
+      - name: Update cdkVersionRequired in build.gradle files
+        id: export-connection-modified
+        run: |
+          # Ensure the local repository knows about the latest state of origin/master
+          # This brings the commit history from the remote 'origin' for the 'master' branch
+          # It doesn't change your local working files or your current branch
+          git fetch origin master
+          
+          # Find the common ancestor commit between the current branch (HEAD) and origin/master
+          # This identifies the point where your current branch diverged from master
+          merge_base=$(git merge-base HEAD origin/master)
+          
+          # Check if merge_base could be found (e.g., if branches are unrelated)
+          if [ -z "$merge_base" ]; then
+            echo "Error: Could not find a common ancestor between HEAD and origin/master."
+            exit 1
+          fi
+          
+          # Get the list of files *modified* (status 'M') on the current branch
+          # since it diverged from the master branch (at the merge-base).
+          # We compare HEAD against the merge_base commit.
+          # --diff-filter=M ensures we only list files that were modified,
+          # excluding added (A), deleted (D), renamed (R), etc.
+          modified_files=$(git diff --name-only --diff-filter=M $merge_base HEAD)
+          
+          # Check if any files were modified
+          if [ -z "$modified_files" ]; then
+            echo "No files were modified on the current branch compared to its merge-base with origin/master."
+            connector_folders=""
+          else
+            # Extract unique connector folder names from the list of modified files
+            connector_folders=$(echo "$modified_files" | \
+              grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
+              sort | \
+              uniq)
+          fi
+          
+          echo "Modified connector folders (files modified on this branch only): $connector_folders"
+
+
+          MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -c -s .)
+
+          echo "modified_connectors=${MODIFIED_LIST_JSON}" >> $GITHUB_OUTPUT
+
+          echo "$connector_folders" | while read -r folder; do
+            gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
+            if [ -f "$gradle_file" ]; then
+              sed -i "s/cdkVersionRequired = '.*'/cdkVersionRequired = '${{ github.event.inputs.version }}'/" "$gradle_file"
+              sed -i "/useLocalCdk/d" "$gradle_file"
+            fi
+          done
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
+          git push
+
+  publish-java-cdk:
+    needs: [bump-cdk-version]
+    uses: ./.github/workflows/publish-java-cdk-command.yml
+    with:
+      gitref: ${{ github.ref_name }}
+      dry-run: true
+      force: false
+    secrets: inherit
+
+  publish-connectors:
+    needs: [publish-java-cdk]
+    uses: ./.github/workflows/publish_connectors.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
+    with:
+      connectors-options: "--name=${{ matrix.connector_name }}"
+    secrets: inherit
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
-    # needs: [bump-cdk-version]
+    needs: [bump-cdk-version]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
