@@ -67,6 +67,6 @@ GitHub.
 
 If you wish to take over the maintenance of an archived connector, please open a Github Discussion.
 For API Sources (python), updating the connector to the latest version of the
-[CDK](/connector-development/cdk-python/) and ensuring that the connector successfully passes the
-[Connector Acceptance Tests](/connector-development/testing-connectors/connector-acceptance-tests-reference)
+[CDK](/platform/connector-development/cdk-python/) and ensuring that the connector successfully passes the
+[Connector Acceptance Tests](/platform/connector-development/testing-connectors/connector-acceptance-tests-reference)
 is the start to the un-archiving process.

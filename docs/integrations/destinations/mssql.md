@@ -18,7 +18,7 @@ Each stream will be output into its own table in SQL Server. Each table will con
 - `_airbyte_meta`: Additional information about the record. The column type in SQL Server is `TEXT`.
 - `_airbyte_generation_id`: Incremented each time a [refresh](https://docs.airbyte.com/operator-guides/refreshes) is executed.  The column type in SQL Server is `TEXT`.
 
-See [here](../../understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+See [here](../../platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 ## Getting Started
 

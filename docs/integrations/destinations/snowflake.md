@@ -205,7 +205,7 @@ The raw table contains these fields:
 - `_airbyte_meta`
 - `_airbyte_data`
 
-`_airbyte_data` is a JSON blob with the event data. See [here](/understanding-airbyte/airbyte-metadata-fields)
+`_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
 for more information about the other fields.
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
@@ -219,7 +219,7 @@ The final table contains these fields, in addition to the columns declared in yo
 - `airbyte_extracted_at`
 - `_airbyte_meta`
 
-Again, see [here](/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 ## Data type map
 
@@ -301,7 +301,7 @@ desired namespace.
 | 3.11.3          | 2024-07-15 | [\#41968](https://github.com/airbytehq/airbyte/pull/41968) | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                       |
 | 3.11.2          | 2024-07-12 | [\#41674](https://github.com/airbytehq/airbyte/pull/41674) | Upgrade to latest CDK                                                                                                                                                            |
 | 3.11.1          | 2024-07-08 | [\#41041](https://github.com/airbytehq/airbyte/pull/41041) | Fix resume logic in truncate refreshes to prevent data loss                                                                                                                      |
-| 3.11.0          | 2024-06-25 | [\#39473](https://github.com/airbytehq/airbyte/pull/39473) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
+| 3.11.0          | 2024-06-25 | [\#39473](https://github.com/airbytehq/airbyte/pull/39473) | Support for [refreshes](../../platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
 | 3.10.1          | 2024-06-11 | [\#39399](https://github.com/airbytehq/airbyte/pull/39399) | Bug fix for \_airbyte_meta not migrated in OVERWRITE mode                                                                                                                        |
 | 3.10.0          | 2024-06-10 | [\#39107](https://github.com/airbytehq/airbyte/pull/39107) | \_airbyte_meta and \_airbyte_generation_id in Raw tables and final tables                                                                                                        |
 | 3.9.1           | 2024-06-05 | [\#39135](https://github.com/airbytehq/airbyte/pull/39135) | Improved error handling for Staging files                                                                                                                                        |
