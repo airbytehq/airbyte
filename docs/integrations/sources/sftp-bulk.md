@@ -66,7 +66,7 @@ For more information on SSH key pair authentication, please refer to the
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
-5. Choose a [delivery method](../../using-airbyte/delivery-methods) for your data.
+5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
 8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
@@ -108,7 +108,7 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 <FieldAnchor field="delivery_method.delivery_type">
 
-Choose a [delivery method](../../using-airbyte/delivery-methods) for your data. 
+Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data. 
 
 </FieldAnchor>
 
