@@ -308,8 +308,6 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
-        cursor_field: updated
-        lookback_window_days: 1
 
     subscriptions:
       type: StateDelegatingStream
@@ -354,8 +352,6 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.overdue", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.updated", "invoice.voided", "invoice.will_be_due"]}}'
-        cursor_field: updated
-        lookback_window_days: 1
 
     transfers:
       type: StateDelegatingStream
@@ -864,7 +860,7 @@ definitions:
               types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
 
     customer_balance_transactions:
-      $ref: "#/definitions/entity_stream"
+      $ref: "#/definitions/base_stream"
       $parameters:
         name: customer_balance_transactions
       retriever:
@@ -887,10 +883,12 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/invoices"
               incremental_dependency: true
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_stripe.components.CustomerBalanceStateMigration
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
-        lookback_window_days: 2
         global_substream_cursor: true
       transformations:
         - type: RemoveFields
