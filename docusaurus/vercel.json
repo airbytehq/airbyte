@@ -38,7 +38,7 @@
     },
     {
       "source": "/project-overview/changelog",
-      "destination": "/release-notes",
+      "destination": "/release_notes",
       "statusCode": 301
     },
     {
@@ -128,22 +128,22 @@
     },
     {
       "source": "/cloud/getting-started-with-airbyte-cloud",
-      "destination": "/platform/using-airbyte/getting-started",
+      "destination": "/platform",
       "statusCode": 301
     },
     {
       "source": "/quickstart/deploy-airbyte",
-      "destination": "/platform/using-airbyte/getting-started",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
       "statusCode": 301
     },
     {
       "source": "/category/getting-started",
-      "destination": "/platform/using-airbyte/getting-started",
+      "destination": "/platform",
       "statusCode": 301
     },
     {
       "source": "/category/airbyte-open-source-quick-start",
-      "destination": "/platform/using-airbyte/getting-started",
+      "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
       "statusCode": 301
     },
     {
@@ -172,7 +172,7 @@
       "statusCode": 301
     },
     {
-      "source": "/understanding-airbyte/connections/",
+      "source": "/understanding-airbyte/connections",
       "destination": "/platform/using-airbyte/core-concepts/sync-modes",
       "statusCode": 301
     },
@@ -307,43 +307,13 @@
       "statusCode": 301
     },
     {
-      "source": "/access-management",
-      "destination": "/platform/access-management",
-      "statusCode": 301
-    },
-    {
-      "source": "/access-management/",
-      "destination": "/platform/access-management",
-      "statusCode": 301
-    },
-    {
       "source": "/access-management/:path*",
       "destination": "/platform/access-management/:path*",
       "statusCode": 301
     },
     {
-      "source": "/cloud",
-      "destination": "/platform/cloud",
-      "statusCode": 301
-    },
-    {
-      "source": "/cloud/",
-      "destination": "/platform/cloud",
-      "statusCode": 301
-    },
-    {
       "source": "/cloud/:path*",
       "destination": "/platform/cloud/:path*",
-      "statusCode": 301
-    },
-    {
-      "source": "/community",
-      "destination": "/platform/community",
-      "statusCode": 301
-    },
-    {
-      "source": "/community/",
-      "destination": "/platform/community",
       "statusCode": 301
     },
     {
@@ -379,16 +349,6 @@
     {
       "source": "/contributing-to-airbyte/:path*",
       "destination": "/platform/contributing-to-airbyte/:path*",
-      "statusCode": 301
-    },
-    {
-      "source": "/deploying-airbyte",
-      "destination": "/platform/deploying-airbyte",
-      "statusCode": 301
-    },
-    {
-      "source": "/deploying-airbyte/",
-      "destination": "/platform/deploying-airbyte",
       "statusCode": 301
     },
     {
@@ -442,28 +402,8 @@
       "statusCode": 301
     },
     {
-      "source": "/managing-airbyte",
-      "destination": "/platform/managing-airbyte",
-      "statusCode": 301
-    },
-    {
-      "source": "/managing-airbyte/",
-      "destination": "/platform/managing-airbyte",
-      "statusCode": 301
-    },
-    {
       "source": "/managing-airbyte/:path*",
       "destination": "/platform/managing-airbyte/:path*",
-      "statusCode": 301
-    },
-    {
-      "source": "/operating-airbyte",
-      "destination": "/platform/operating-airbyte",
-      "statusCode": 301
-    },
-    {
-      "source": "/operating-airbyte/",
-      "destination": "/platform/operating-airbyte",
       "statusCode": 301
     },
     {
@@ -472,43 +412,13 @@
       "statusCode": 301
     },
     {
-      "source": "/operator-guides",
-      "destination": "/platform/operator-guides",
-      "statusCode": 301
-    },
-    {
-      "source": "/operator-guides/",
-      "destination": "/platform/operator-guides",
-      "statusCode": 301
-    },
-    {
       "source": "/operator-guides/:path*",
       "destination": "/platform/operator-guides/:path*",
       "statusCode": 301
     },
     {
-      "source": "/understanding-airbyte",
-      "destination": "/platform/understanding-airbyte",
-      "statusCode": 301
-    },
-    {
-      "source": "/understanding-airbyte/",
-      "destination": "/platform/understanding-airbyte",
-      "statusCode": 301
-    },
-    {
       "source": "/understanding-airbyte/:path*",
       "destination": "/platform/understanding-airbyte/:path*",
-      "statusCode": 301
-    },
-    {
-      "source": "/using-airbyte",
-      "destination": "/platform/using-airbyte",
-      "statusCode": 301
-    },
-    {
-      "source": "/using-airbyte/",
-      "destination": "/platform/using-airbyte",
       "statusCode": 301
     },
     {
