@@ -102,7 +102,7 @@ jobs:
           git push
 
   publish-connectors:
-    needs: [bump-cdk-version, publish-java-cdk]
+    needs: [bump-cdk-version, publish-bulk-cdk]
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
