@@ -199,7 +199,6 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 1.5.18 | 2025-04-24 | [58126](https://github.com/airbytehq/airbyte/pull/58126) | Update CDK version |
 | 1.5.17 | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111) | Implement timeout for document discovery |
 | 1.5.16 | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973) | Update logging configuration. |
 | 1.5.15 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
