@@ -10,11 +10,11 @@ on:
         options:
           - airbytehq/airbyte
 jobs:
-  publish-bulk-cdk:
-    uses: ./.github/workflows/publish-bulk-cdk.yml
-    with:
-      dry-run: true
-    secrets: inherit
+#  publish-bulk-cdk:
+#    uses: ./.github/workflows/publish-bulk-cdk.yml
+#    with:
+#      dry-run: true
+#    secrets: inherit
 
   bump-cdk-version:
     runs-on: ubuntu-24.04
@@ -23,6 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Fetch version from repo
+        id: fetch-version
         run: |
           # 1. Define the target URL
           REPO_URL="https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/bulk-cdk-core-load/"
@@ -56,7 +57,6 @@ jobs:
 
           # 8. Set the output parameter for GitHub Actions
           # This makes "next_version" available to subsequent steps
-          echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
           echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
             - name: Configure Git
       - name: Configure Git
@@ -111,7 +111,7 @@ jobs:
           echo "$connector_folders" | while read -r folder; do
             gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
             if [ -f "$gradle_file" ]; then
-              sed -i "s/cdk = '.*'/cdk = '${{ github.event.inputs.version }}'/" "$gradle_file"
+              sed -i "s/cdk = '.*'/cdk = '${{ steps.fetch-version.outputs.next_version }}'/" "$gradle_file"
               sed -i "/useLocalCdk/d" "$gradle_file"
             fi
           done
