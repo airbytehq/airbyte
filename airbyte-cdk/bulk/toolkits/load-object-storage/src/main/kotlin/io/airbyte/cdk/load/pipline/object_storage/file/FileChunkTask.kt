@@ -52,10 +52,7 @@ class FileChunkTask<T>(
         fun DestinationRecordRaw.enrichRecordWithFilePath(filePath: String) {
             (stream.schema as? ObjectType)
                 ?.properties
-                ?.put(
-                    COLUMN_NAME_AIRBYTE_FILE_PATH,
-                    FieldType(StringType, nullable = true)
-                )
+                ?.put(COLUMN_NAME_AIRBYTE_FILE_PATH, FieldType(StringType, nullable = true))
             asRawJson().let { jsonNode ->
                 (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, filePath)
             }
