@@ -224,8 +224,7 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
                     existingTable.schema!!
                         .fields
                         .stream()
-                        .filter { field: Field -> pks.contains(field.name) }
-                        .filter { field: Field -> field.mode == Field.Mode.REQUIRED }
+                        .filter { pks.contains(it.name) && it.mode == Field.Mode.REQUIRED }
                         .map { obj: Field -> obj.name }
                 )
                 .collect(Collectors.toSet())
