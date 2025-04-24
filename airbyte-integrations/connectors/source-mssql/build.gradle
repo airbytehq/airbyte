@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.48.8'
+    cdkVersionRequired = '0.48.9'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -24,6 +24,7 @@ application {
 }
 
 dependencies {
+    api 'net.minidev:json-smart:2.5.2' // for fixing vulnerability of json-smart
     implementation 'com.microsoft.sqlserver:mssql-jdbc:12.10.0.jre11'
     implementation 'io.debezium:debezium-embedded:3.0.7.Final'
     implementation 'io.debezium:debezium-connector-sqlserver:3.0.7.Final'
