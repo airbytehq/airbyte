@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
   bump-cdk-version:
     runs-on: ubuntu-24.04
-    # needs: [ publish-bulk-cdk ]
+    needs: [ publish-bulk-cdk ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -106,21 +106,22 @@ jobs:
           git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
           git push
 
-  publish-connectors:
-    needs: [bump-cdk-version, publish-java-cdk]
-    uses: ./.github/workflows/publish_connectors.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
-    with:
-      connectors-options: "--name=${{ matrix.connector_name }}"
-      publish-options: --pre-release
-    secrets: inherit
+#  publish-connectors:
+#    needs: [bump-cdk-version, publish-java-cdk]
+#    uses: ./.github/workflows/publish_connectors.yml
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
+#    with:
+#      connectors-options: "--name=${{ matrix.connector_name }}"
+#      publish-options: --pre-release
+#    secrets: inherit
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
-    needs: [publish-connectors]
+    needs: [bump-cdk-version]
+    # needs: [publish-connectors]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
