@@ -71,7 +71,7 @@ jobs:
           # Find the common ancestor commit between the current branch (HEAD) and origin/master
           # This identifies the point where your current branch diverged from master
           merge_base=$(git merge-base HEAD origin/master)
-          
+          echo "Merge base commit: $merge_base"
           # Check if merge_base could be found (e.g., if branches are unrelated)
           if [ -z "$merge_base" ]; then
             echo "Error: Could not find a common ancestor between HEAD and origin/master."
@@ -84,7 +84,7 @@ jobs:
           # --diff-filter=M ensures we only list files that were modified,
           # excluding added (A), deleted (D), renamed (R), etc.
           modified_files=$(git diff --name-only --diff-filter=M $merge_base HEAD)
-          
+          echo "Modified files since merge base: $modified_files"
           # Check if any files were modified
           if [ -z "$modified_files" ]; then
             echo "No files were modified on the current branch compared to its merge-base with origin/master."
@@ -140,7 +140,7 @@ jobs:
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
-    needs: [bump-cdk-version]
+    needs: [publish-connectors]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
