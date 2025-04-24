@@ -41,6 +41,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericRecord
 
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecordRaw)
@@ -227,22 +228,27 @@ class AvroFormattingWriter(
         val avroRecord = GenericData.Record(avroSchema)
         avroRecord.put(0, uuidGenerator.insecureUUID().toString())
         avroRecord.put(1, record.emittedAtMs)
-        avroRecord.put(2, stream.generationId)
         val meta = GenericData.Record(avroSchema.getField(Meta.COLUMN_NAME_AB_META).schema())
-        avroRecord.put(3, meta)
+        val changes = GenericData.Array<GenericRecord>(0,
+            avroSchema.getField(Meta.COLUMN_NAME_AB_META).schema().getField("changes").schema()
+        )
+        meta.put("sync_id", stream.syncId)
+        meta.put("changes", changes)
+        avroRecord.put(2, meta)
+        avroRecord.put(3, stream.generationId)
         for (i in schema.indices) {
             when (schema[i].second) {
                 AirbyteValueViewType.STRING -> {
-                    avroRecord.put(i + 4, record.airbyteValueView.getString(i))
+                    avroRecord.put(schema[i].first, record.airbyteValueView.getString(i))
                 }
                 AirbyteValueViewType.BOOLEAN -> {
-                    avroRecord.put(i + 4, record.airbyteValueView.getBoolean(i))
+                    avroRecord.put(schema[i].first, record.airbyteValueView.getBoolean(i))
                 }
                 AirbyteValueViewType.INTEGER -> {
-                    avroRecord.put(i + 4, record.airbyteValueView.getInteger(i))
+                    avroRecord.put(schema[i].first, record.airbyteValueView.getInteger(i))
                 }
                 AirbyteValueViewType.NUMBER -> {
-                    avroRecord.put(i + 4, record.airbyteValueView.getNumber(i))
+                    avroRecord.put(schema[i].first, record.airbyteValueView.getNumber(i))
                 }
                 AirbyteValueViewType.BINARY -> {
                     // Do nothing, irrelevant to test
@@ -250,7 +256,7 @@ class AvroFormattingWriter(
                 AirbyteValueViewType.TIMESTAMP -> {
                     val timeMillis = record.airbyteValueView.getTimestamp(i)?.toInstant(ZoneOffset.UTC)
                         ?.toEpochMilli() ?: 0
-                    avroRecord.put(i + 4, timeMillis * 1_000)
+                    avroRecord.put(schema[i].first, timeMillis * 1_000)
                 }
             }
         }
