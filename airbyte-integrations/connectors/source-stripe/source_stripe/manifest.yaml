@@ -865,6 +865,7 @@ definitions:
         name: customer_balance_transactions
       retriever:
         $ref: "#/definitions/base_retriever"
+        use_cache: true
         $parameters:
           path: customers/{{ stream_partition.customer_id }}/balance_transactions
         partition_router:
@@ -878,8 +879,8 @@ definitions:
                 $ref: "#/definitions/streams/customers"
               incremental_dependency: true
             - type: ParentStreamConfig
-              parent_key: customer
-              partition_field: customer_id
+              parent_key: id
+              partition_field: invoice_id
               stream:
                 $ref: "#/definitions/streams/invoices"
               incremental_dependency: true
@@ -1077,6 +1078,7 @@ definitions:
         name: invoice_line_items
       retriever:
         $ref: "#/definitions/base_retriever"
+        use_cache: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
