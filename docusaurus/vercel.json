@@ -280,7 +280,7 @@
       "source": "/understanding-airbyte/connections",
       "destination": "/platform/using-airbyte/getting-started/set-up-a-connection",
       "statusCode": 301
-    }
+    },
     {
       "source": "/project-overview/licenses",
       "destination": "/platform/developer-guides/licenses",
