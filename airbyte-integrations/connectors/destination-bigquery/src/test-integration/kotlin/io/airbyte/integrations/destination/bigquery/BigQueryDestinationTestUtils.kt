@@ -8,18 +8,22 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.cloud.bigquery.BigQuery
-import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.Dataset
 import com.google.cloud.bigquery.DatasetInfo
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.integrations.destination.bigquery.BigQueryDestination.Companion.getServiceAccountCredentials
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getLoadingMethod
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
+import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
+import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+private val logger = KotlinLogging.logger {}
 
 object BigQueryDestinationTestUtils {
     private val LOGGER: Logger = LoggerFactory.getLogger(BigQueryDestinationTestUtils::class.java)
@@ -84,18 +88,14 @@ object BigQueryDestinationTestUtils {
      * for cleaning up BigQuery dataset after the test
      *
      * @param config
-     * @param projectId
      * @return
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun initBigQuery(config: JsonNode, projectId: String?): BigQuery {
-        val credentials = getServiceAccountCredentials(config)
-        return BigQueryOptions.newBuilder()
-            .setProjectId(projectId)
-            .setCredentials(credentials)
-            .build()
-            .service
+    fun initBigQuery(config: JsonNode): BigQuery {
+        val spec = Jsons.treeToValue(config, BigquerySpecification::class.java)
+        val parsedConfig = BigqueryConfigurationFactory().make(spec)
+        return BigqueryClientFactory(parsedConfig).make()
     }
 
     /**
