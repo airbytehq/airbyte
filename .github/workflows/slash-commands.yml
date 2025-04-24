@@ -1,9 +1,3 @@
-# Slash Command Dispatch
-# 
-# Note:
-# - Slash commands can be invoked from both issues and comments.
-# - If the slash command is invoked from an issue, we intentionally pass 'null' as the PR number.
-
 name: Slash Command Dispatch
 on:
   issue_comment:
