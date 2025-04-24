@@ -65,6 +65,7 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
+| 0.2.21 | 2025-04-19 | [58274](https://github.com/airbytehq/airbyte/pull/58274) | Update dependencies |
 | 0.2.20 | 2025-04-12 | [57657](https://github.com/airbytehq/airbyte/pull/57657) | Update dependencies |
 | 0.2.19 | 2025-04-05 | [57117](https://github.com/airbytehq/airbyte/pull/57117) | Update dependencies |
 | 0.2.18 | 2025-03-29 | [56572](https://github.com/airbytehq/airbyte/pull/56572) | Update dependencies |
