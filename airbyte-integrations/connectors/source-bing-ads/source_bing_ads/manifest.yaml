@@ -14,7 +14,7 @@ definitions:
       environment: "production"
       oauth_scope: "msads.manage"
       scope: "https://ads.microsoft.com/msads.manage offline_access"
-      tenant: "common"
+      tenant: "{{ config['tenant_id'] }}"
     token_refresh_endpoint: 'https://login.microsoftonline.com/{{ config["tenant_id"] }}/oauth2/v2.0/token'
     grant_type: refresh_token
     client_id: '{{ config["client_id"] }}'
@@ -79,6 +79,7 @@ definitions:
         pagination_strategy:
           type: PageIncrement
           inject_on_first_request: true
+          page_size: 1000
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
