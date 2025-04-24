@@ -64,7 +64,7 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
 
     title = "Manifest-only unit tests"
     test_directory_name = "unit_tests"
-    common_test_dependencies = ["freezegun", "pytest", "requests-mock"]
+    common_test_dependencies = ["freezegun", "pytest", "pytest-mock", "requests-mock"]
 
     async def install_testing_environment(
         self,
