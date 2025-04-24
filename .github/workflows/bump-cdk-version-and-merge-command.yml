@@ -117,7 +117,7 @@ jobs:
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
-    needs: [bump-cdk-version]
+    # needs: [bump-cdk-version]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -159,7 +159,7 @@ jobs:
           # Read each line from the connector_folders variable
           echo "$connector_folders" | while read -r folder; do
             connectorName = echo "$folder" | cut -d'-' -f2-
-            poetry run airbyte-ci connectors --help
+            poetry run airbyte-ci connectors bump-version --help
             poetry run airbyte-ci --name="$folder" add-changelog --message="Update CDK version" --type=patch
             # isDocPresent = modified_files | grep docs/integrations | grep "$folder"
           done
