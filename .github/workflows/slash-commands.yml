@@ -10,7 +10,6 @@ on:
     types: [created]
 jobs:
   slashCommandDispatch:
-    # Only allow slash commands on pull request (not on issues)
     runs-on: ubuntu-24.04
     steps:
       - name: Get PR repo and ref
