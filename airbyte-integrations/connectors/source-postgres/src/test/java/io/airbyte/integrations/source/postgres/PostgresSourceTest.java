@@ -293,9 +293,7 @@ class PostgresSourceTest {
       return null;
     });
     final JsonNode anotherUserConfig = getConfig("test_user_3", "132");
-    final Throwable thrown = assertThrows(Exception.class, () ->
-            MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null))
-    );
+    final Throwable thrown = assertThrows(Exception.class, () -> MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null)));
     assertNotNull(thrown.getMessage());
   }
 
