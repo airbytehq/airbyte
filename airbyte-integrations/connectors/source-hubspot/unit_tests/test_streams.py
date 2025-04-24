@@ -37,7 +37,6 @@ from source_hubspot.streams import (
     OwnersArchived,
     Products,
     RecordUnnester,
-    TicketPipelines,
     Tickets,
     Workflows,
 )
@@ -117,7 +116,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (OwnersArchived, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Workflows, "", {"updatedAt": 1675121674226}),
     ],

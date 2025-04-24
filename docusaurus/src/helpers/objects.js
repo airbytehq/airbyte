@@ -57,7 +57,7 @@ const mergePathTree = (pathTree) => {
           a
             .map((x) => b.map((y) => x.concat(y)))
             .reduce((a, b) => a.concat(b), []),
-        [[]]
+        [[]],
       )
       // then flatten to ['a.b.d', 'a.c.d']
       .map((x) => x.join("."))
