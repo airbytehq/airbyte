@@ -135,6 +135,7 @@ jobs:
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
+      publish-options: --main-release
       matrix:
         connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
     with:
