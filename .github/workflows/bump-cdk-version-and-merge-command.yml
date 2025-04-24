@@ -158,7 +158,7 @@ jobs:
 
           # Read each line from the connector_folders variable
           echo "$connector_folders" | while read -r folder; do
-            CONNECTOR_NAME = echo "$folder" | cut -d'-' -f2-
+            CONNECTOR_NAME=$(echo "$folder" | cut -d'-' -f2-)
             PR_NUM=$(gh pr list --state open --head "${{ github.ref_name }}" --json number --jq '.[0].number')
             poetry run airbyte-ci connectors --modified bump-version \
               patch \
