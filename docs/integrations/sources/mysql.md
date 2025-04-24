@@ -226,7 +226,8 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.11.12 | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
+| 3.11.13     | 2025-04-24 | [58646](https://github.com/airbytehq/airbyte/pull/58646)   | Fix vulnerabilities in dependencies.                                                                                                            |
+| 3.11.12     | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                            |
 | 3.11.11     | 2025-04-23 | [58623](https://github.com/airbytehq/airbyte/pull/58623) | Bump CDK version to the latets published                                                                                                        |
 | 3.11.10     | 2025-04-22 | [58599](https://github.com/airbytehq/airbyte/pull/58599) | Extend debezium shutdown timeout to allow the engine to gracefully close                                                                        |
 | 3.11.9      | 2025-03-14 | [55731](https://github.com/airbytehq/airbyte/pull/55731) | More meaningful errors for variables used in extra checks for CDC                                                                               |
