@@ -5,10 +5,10 @@ on:
 jobs:
   slashCommandDispatch:
     # Only allow slash commands on pull request (not on issues)
-    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-24.04
     steps:
       - name: Get PR repo and ref
+        if: ${{ github.event.issue.pull_request }}
         id: getref
         run: |
           pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
@@ -21,6 +21,7 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           permission: write
+          issue-type: both
           commands: |
             bump-version
             bump-cdk-version-and-merge
@@ -35,7 +36,7 @@ jobs:
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
-            pr=${{ github.event.issue.number }}
+            pr=${{ github.event.issue.pull_request != null && github.event.issue.number || '' }}
           dispatch-type: workflow
 
       - name: Edit comment with error message
