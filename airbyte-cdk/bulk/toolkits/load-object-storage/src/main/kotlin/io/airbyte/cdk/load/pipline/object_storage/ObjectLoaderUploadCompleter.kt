@@ -18,6 +18,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
+// TODO: Add unit tests
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectLoader) :

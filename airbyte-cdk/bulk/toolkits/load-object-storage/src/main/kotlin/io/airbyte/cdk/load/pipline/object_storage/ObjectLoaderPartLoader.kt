@@ -36,6 +36,7 @@ class UploadsInProgress<T : RemoteObject<*>> {
     val byKey: ConcurrentHashMap<String, ObjectLoaderPartLoader.State<T>> = ConcurrentHashMap()
 }
 
+// TODO: Add unit tests
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderPartLoader<T : RemoteObject<*>>(
