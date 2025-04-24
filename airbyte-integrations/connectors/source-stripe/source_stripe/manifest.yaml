@@ -67,8 +67,8 @@ definitions:
               http_codes:
                 - 404
               error_message: >-
-                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
-                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting
+                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync,
                 you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
@@ -308,6 +308,8 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+        cursor_field: updated
+        lookback_window_days: 1
 
     subscriptions:
       type: StateDelegatingStream
@@ -352,6 +354,8 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.overdue", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.updated", "invoice.voided", "invoice.will_be_due"]}}'
+        cursor_field: updated
+        lookback_window_days: 1
 
     transfers:
       type: StateDelegatingStream
@@ -866,9 +870,10 @@ definitions:
       retriever:
         $ref: "#/definitions/base_retriever"
         $parameters:
-          path: customers/{{ stream_partition.customer_id }}/balance_transactions
+          path: customers/{{ stream_slice.customer_id }}/balance_transactions
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_stripe.components.CustomerIdPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -876,17 +881,21 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/customers"
               incremental_dependency: true
-      # This stream is not truly incremental on the child level.
-      # We're configuring it this way to support incremental syncs on the parent only,
-      # which helps reduce the size of the state.
+            - type: ParentStreamConfig
+              parent_key: customer
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/streams/invoices"
+              incremental_dependency: true
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
+        lookback_window_days: 2
         global_substream_cursor: true
       transformations:
         - type: RemoveFields
           field_pointers:
-            - - updated # Remove field that added in entity_stream
+            - - updated
 
     payout_balance_transactions:
       $ref: "#/definitions/entity_stream"
