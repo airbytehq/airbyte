@@ -226,6 +226,10 @@ class AvroFormattingWriter(
         val schema = record.airbyteValueView.finalSchema
         val avroRecord = GenericData.Record(avroSchema)
         avroRecord.put(0, uuidGenerator.insecureUUID().toString())
+        avroRecord.put(1, record.emittedAtMs)
+        avroRecord.put(2, stream.generationId)
+        val meta = GenericData.Record(avroSchema.getField(Meta.COLUMN_NAME_AB_META).schema())
+        avroRecord.put(3, meta)
         for (i in schema.indices) {
             when (schema[i].second) {
                 AirbyteValueViewType.STRING -> {

@@ -228,6 +228,7 @@ class SocketInputFlow(
                         }
                         DestinationConfiguration.InputSerializationFormat.FLATBUFFERS -> {
                             val din = DataInputStream(bufferedInputStream)
+                            var messageBuffer = ByteArray(1024)
                             while (true) {
                                 val size = ByteArray(4)
                                 val fbBytesRead = din.read(size, 0, 4)
@@ -235,12 +236,14 @@ class SocketInputFlow(
                                     val messageSize = java.nio.ByteBuffer.wrap(size).order(
                                         java.nio.ByteOrder.LITTLE_ENDIAN
                                     ).int
-                                    val dataBuffer = ByteArray(messageSize)
-                                    din.readFully(dataBuffer)
+                                    if (messageSize > messageBuffer.size) {
+                                        messageBuffer = ByteArray(messageSize * 2)
+                                    }
+                                    din.readFully(messageBuffer, 0, messageSize)
                                     bytesRead += messageSize + 4
                                     val message =
                                         AirbyteRecordMessage.getRootAsAirbyteRecordMessage(
-                                            java.nio.ByteBuffer.wrap(dataBuffer),
+                                            java.nio.ByteBuffer.wrap(messageBuffer),
                                         )
                                     val destinationMessage =
                                         factory.fromFlatbufferAirbyteMessage(message, *mappersToApply)
