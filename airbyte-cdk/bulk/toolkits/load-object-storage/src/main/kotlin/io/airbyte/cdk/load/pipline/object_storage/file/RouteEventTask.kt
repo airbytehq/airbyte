@@ -48,6 +48,7 @@ class RouteEventTask(
 
                 fileQueue.publish(event, partition)
             } else {
+                // all heartbeat events go straight to the record queue
                 recordQueue.publish(event, partition)
             }
         }
