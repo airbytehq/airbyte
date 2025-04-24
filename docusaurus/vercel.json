@@ -32,7 +32,7 @@
       "statusCode": 301
     },
     {
-      "source": "/connector-development/config-based/",
+      "source": "/connector-development/config-based",
       "destination": "/platform/connector-development/config-based/low-code-cdk-overview",
       "statusCode": 301
     },
@@ -42,7 +42,7 @@
       "statusCode": 301
     },
     {
-      "source": "/connector-development/config-based/understanding-the-yaml-file/stream-slicers/",
+      "source": "/connector-development/config-based/understanding-the-yaml-file/stream-slicers",
       "destination": "/platform/connector-development/config-based/understanding-the-yaml-file/partition-router",
       "statusCode": 301
     },
@@ -267,7 +267,7 @@
       "statusCode": 301
     },
     {
-      "source": "/getting-started/",
+      "source": "/getting-started",
       "destination": "/platform",
       "statusCode": 301
     },
