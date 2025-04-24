@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches
+          fetch-depth: 0
       - name: Validate provided version
         run: |
           # Extract the provided version
