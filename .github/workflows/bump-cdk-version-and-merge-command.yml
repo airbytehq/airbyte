@@ -353,7 +353,7 @@ jobs:
 
           # Ensure the branch has the most recent updates from the master branch
           git fetch origin master
-    
+
           modified_files=$(git diff --name-only origin/master)
 
           # Process the list to get the unique connector folder names
