@@ -121,10 +121,17 @@ jobs:
           git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
           git push
 
-  
+  publish-java-cdk:
+    needs: [bump-cdk-version]
+    uses: ./.github/workflows/publish-java-cdk-command.yml
+    with:
+      gitref: ${{ github.ref_name }}
+      dry-run: true
+      force: false
+    secrets: inherit
 
   publish-connectors:
-    needs: [bump-cdk-version]
+    needs: [bump-cdk-version, publish-java-cdk]
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
