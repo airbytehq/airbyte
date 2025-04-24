@@ -105,7 +105,7 @@ jobs:
           MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -c -s .)
 
           echo "Modified connector folders: $MODIFIED_LIST_JSON"
-          echo "modified_connectors=${MODIFIED_LIST_JSON}" >> $GITHUB_OUTPUT
+          echo "modified_connectors=$MODIFIED_LIST_JSON" >> $GITHUB_OUTPUT
 
           echo "$connector_folders" | while read -r folder; do
             gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
@@ -121,14 +121,7 @@ jobs:
           git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
           git push
 
-  publish-java-cdk:
-    needs: [bump-cdk-version]
-    uses: ./.github/workflows/publish-java-cdk-command.yml
-    with:
-      gitref: ${{ github.ref_name }}
-      dry-run: true
-      force: false
-    secrets: inherit
+  
 
   publish-connectors:
     needs: [publish-java-cdk]
