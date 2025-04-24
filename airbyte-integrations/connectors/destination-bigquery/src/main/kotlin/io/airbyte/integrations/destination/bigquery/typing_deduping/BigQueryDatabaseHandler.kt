@@ -77,8 +77,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                             childJob.getStatistics<JobStatistics.QueryStatistics>()
                         var truncatedQuery: String =
                             configuration.query
-                                .replace("\n".toRegex(), " ")
-                                .replace(" +".toRegex(), " ")
+                                .replace("\\s+".toRegex(), " ")
                                 .substring(
                                     0,
                                     min(100.0, configuration.query.length.toDouble()).toInt()
