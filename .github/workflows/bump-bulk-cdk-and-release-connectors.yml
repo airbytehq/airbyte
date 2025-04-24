@@ -12,8 +12,6 @@ on:
 jobs:
   publish-bulk-cdk:
     uses: ./.github/workflows/publish-bulk-cdk.yml
-    env:
-      DRY_RUN: true
     secrets: inherit
 
   bump-cdk-version-and-merge:
