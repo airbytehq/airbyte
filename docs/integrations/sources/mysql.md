@@ -90,7 +90,7 @@ To fill out the required information:
 #### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
+our [Airbyte Security docs](../../platform/operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
 
@@ -226,8 +226,9 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.11.11 | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
-| 3.11.10      | 2025-04-22 | [58599](https://github.com/airbytehq/airbyte/pull/58599) | Extend debezium shutdown timeout to allow the engine to gracefully close                                                                           |
+| 3.11.12 | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
+| 3.11.11     | 2025-04-23 | [58623](https://github.com/airbytehq/airbyte/pull/58623) | Bump CDK version to the latets published                                                                                                        |
+| 3.11.10     | 2025-04-22 | [58599](https://github.com/airbytehq/airbyte/pull/58599) | Extend debezium shutdown timeout to allow the engine to gracefully close                                                                        |
 | 3.11.9      | 2025-03-14 | [55731](https://github.com/airbytehq/airbyte/pull/55731) | More meaningful errors for variables used in extra checks for CDC                                                                               |
 | 3.11.8      | 2025-03-14 | [55761](https://github.com/airbytehq/airbyte/pull/55761) | Do not perform complex sampling for source-mysql                                                                                                |
 | 3.11.7      | 2025-03-12 | [55734](https://github.com/airbytehq/airbyte/pull/55734) | Expose additional stream context for debezium properties at startup                                                                             |

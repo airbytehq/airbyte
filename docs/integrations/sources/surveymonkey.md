@@ -65,7 +65,7 @@ You may want to review SurveyMonkey's [API docs](https://developer.surveymonkey.
 
 ## Supported streams and sync modes
 
-You can stream the following data from SurveyMonkey using the [sync modes](/using-airbyte/core-concepts/sync-modes/) indicated.
+You can stream the following data from SurveyMonkey using the [sync modes](/platform/using-airbyte/core-concepts/sync-modes/) indicated.
 
 | Stream | Sync mode |
 | :------ | :--------- |
