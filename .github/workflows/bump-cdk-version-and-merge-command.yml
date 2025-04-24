@@ -124,7 +124,7 @@ jobs:
   
 
   publish-connectors:
-    needs: [publish-java-cdk]
+    needs: [bump-cdk-version]
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
