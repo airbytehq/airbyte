@@ -870,6 +870,8 @@ definitions:
         partition_router:
           type: CustomPartitionRouter
           class_name: source_stripe.components.CustomerIdPartitionRouter
+          parameters:
+            stream_state: "{{ stream_state }}"
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -877,12 +879,30 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/customers"
               incremental_dependency: true
+              record_selector:
+                extractor:
+                  field_pointer: []
+              parameters:
+                inject_into: extra_fields
+              extra_fields:
+                - ["object"]
+                - ["balance"]
+                - ["id"]
             - type: ParentStreamConfig
               parent_key: customer
               partition_field: customer_id
               stream:
                 $ref: "#/definitions/streams/invoices"
               incremental_dependency: true
+              record_selector:
+                extractor:
+                  field_pointer: ["data"]
+              parameters:
+                inject_into: extra_fields
+              extra_fields:
+                - ["object"]
+                - ["total"]
+                - ["customer"]
       state_migrations:
         - type: CustomStateMigration
           class_name: source_stripe.components.CustomerBalanceStateMigration
