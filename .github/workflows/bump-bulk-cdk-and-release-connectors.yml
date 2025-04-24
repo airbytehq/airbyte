@@ -10,10 +10,15 @@ on:
         options:
           - airbytehq/airbyte
 jobs:
+  publish-bulk-cdk:
+    uses: ./.github/workflows/publish-bulk-cdk.yml
+    with:
+      dry-run: true
+    secrets: inherit
 
-  bump-cdk-version-and-merge:
+  bump-cdk-version:
     runs-on: ubuntu-24.04
-    needs: [ bump-cdk-version ]
+    needs: [ publish-bulk-cdk ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -117,8 +122,3 @@ jobs:
           git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
           git push  
 
-  publish-bulk-cdk:
-    uses: ./.github/workflows/publish-bulk-cdk.yml
-    with:
-      dry-run: true
-    secrets: inherit
