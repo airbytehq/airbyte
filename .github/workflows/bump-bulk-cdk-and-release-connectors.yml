@@ -119,6 +119,6 @@ jobs:
 
   publish-bulk-cdk:
     uses: ./.github/workflows/publish-bulk-cdk.yml
-    env:
-      DRY_RUN: true
+    with:
+      dry-run: true
     secrets: inherit
