@@ -48,6 +48,7 @@ definitions:
           type: DpathExtractor
           field_path: ["User"]
         schema_normalization: Default
+
   accounts_stream:
     type: DeclarativeStream
     name: accounts
@@ -94,10 +95,66 @@ definitions:
           type: DpathExtractor
           field_path: ["Accounts"]
         schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _airbyte_parent_id # used for campaigns_stream
+            value: "{{ { 'account_id': record['Id'], 'customer_id': record['ParentCustomerId'] } }}"
+
+  campaigns_stream:
+    type: DeclarativeStream
+    name: campaigns
+    primary_key: Id
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/campaigns.json"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Campaigns/QueryByAccountId
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerId: "'{{ stream_partition['customer_id'] }}'"
+          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        request_body_json:
+          AccountId: "'{{ stream_partition['account_id'] }}'"
+          CampaignType: Audience,DynamicSearchAds,Search,Shopping,PerformanceMax
+          ReturnAdditionalFields: AdScheduleUseSearcherTimeZone,BidStrategyId,CpvCpmBiddingScheme,DynamicDescriptionSetting,DynamicFeedSetting,MaxConversionValueBiddingScheme,MultimediaAdsBidAdjustment,TargetImpressionShareBiddingScheme,TargetSetting,VerifiedTrackingSetting
+        authenticator: "#/definitions/authenticator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: Id
+            partition_field: account_id
+            stream:
+              $ref: "#/definitions/accounts_stream"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["Campaigns"]
+        schema_normalization: Default
+    transformations: # FIXME missing transformations for Settings and Languages
+      - type: AddFields
+        fields:
+          - path:
+              - AccountId
+            value: "{{ stream_slice.account_id }}"
+      - type: AddFields
+        fields:
+          - path:
+              - CustomerId
+            value: "{{ stream_slice.customer_id }}"
 
 streams:
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/campaigns_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
