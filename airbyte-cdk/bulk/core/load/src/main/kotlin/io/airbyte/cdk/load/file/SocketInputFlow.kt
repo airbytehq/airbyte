@@ -311,7 +311,7 @@ class SocketInputFlow(
         messageCount: Long,
         bytesRead: Long = 0
     ) {
-        if (messageCount % 10_000L == 0L) {
+        if (messageCount % 1_000_000L == 0L) {
             log.info { "Read $messageCount records (${bytesRead}b) from $socketName" }
         }
         when (destinationMessage) {
