@@ -12,7 +12,6 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobStatistics
 import com.google.cloud.bigquery.JobStatus
 import com.google.cloud.bigquery.QueryJobConfiguration
-import com.google.common.collect.Streams
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
@@ -20,7 +19,6 @@ import io.airbyte.cdk.util.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
-import java.util.stream.Stream
 import kotlin.math.min
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -55,11 +53,8 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
             Thread.sleep(1000L)
             job = job.reload()
         }
-        if (job.status.error != null) {
-            throw BigQueryException(
-                Streams.concat(Stream.of(job.status.error), job.status.executionErrors.stream())
-                    .toList()
-            )
+        job.status.error?.let {
+            throw BigQueryException(listOf(job.status.error) + job.status.executionErrors)
         }
 
         val statistics = job.getStatistics<JobStatistics.QueryStatistics>()
