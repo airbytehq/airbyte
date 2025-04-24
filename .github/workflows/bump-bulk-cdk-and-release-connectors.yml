@@ -1,4 +1,4 @@
-name: Bump Java CDK Version
+name: Bump Bulk CDK Version
 on:
   workflow_dispatch:
     inputs:
@@ -10,8 +10,114 @@ on:
         options:
           - airbytehq/airbyte
 jobs:
+  publish-bulk-cdk:
+    uses: ./.github/workflows/publish-bulk-cdk.yml
+    env:
+      DRY_RUN: true
+    secrets: inherit
+
   bump-cdk-version-and-merge:
     runs-on: ubuntu-24.04
+    needs: [ bump-cdk-version ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Fetch version from repo
+        run: |
+          # 1. Define the target URL
+          REPO_URL="https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/bulk-cdk-core-load/"
+          echo "Fetching versions from $REPO_URL" >&2 # Log output to standard error
+
+          # 2. Fetch HTML, extract versions (X.Y), sort, get the latest
+          latest_version=$(curl -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -s "$REPO_URL" | grep -o 'href="[0-9]\+\.[0-9]\+/"' | sed 's/^href="//; s/\/"$//' | sort -V | tail -n 1)
+          
+          # 3. Check if we found a version string
+          if [[ -z "$latest_version" ]]; then
+            echo "Error: Could not find any valid version strings (format X.Y) at $REPO_URL" >&2
+            exit 1 # Fail the step if no version is found
+          fi
+          echo "Latest version found: $latest_version" >&2
+
+          # 4. Split the latest version into major and minor parts
+          IFS='.' read -r major minor <<< "$latest_version"
+
+          # 5. Validate that the parts are numeric
+          if ! [[ "$major" =~ ^[0-9]+$ && "$minor" =~ ^[0-9]+$ ]]; then
+              echo "Error: Failed to parse version string '$latest_version' into numeric major.minor components." >&2
+              exit 1 # Fail the step if parsing fails
+          fi
+
+          # 6. Increment the minor version number
+          next_minor=$((minor + 1))
+
+          # 7. Construct the next version string
+          next_version="$major.$next_minor"
+          echo "Calculated next version: $next_version" >&2
+
+          # 8. Set the output parameter for GitHub Actions
+          # This makes "next_version" available to subsequent steps
+          echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
+          echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
+            - name: Configure Git
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update cdkVersionRequired in build.gradle files
+        id: export-connection-modified
+        run: |
+          # Ensure the local repository knows about the latest state of origin/master
+          # This brings the commit history from the remote 'origin' for the 'master' branch
+          # It doesn't change your local working files or your current branch
+          git fetch origin master
+          
+          # Find the common ancestor commit between the current branch (HEAD) and origin/master
+          # This identifies the point where your current branch diverged from master
+          merge_base=$(git merge-base HEAD origin/master)
+          echo "Merge base commit: $merge_base"
+          # Check if merge_base could be found (e.g., if branches are unrelated)
+          if [ -z "$merge_base" ]; then
+            echo "Error: Could not find a common ancestor between HEAD and origin/master."
+            exit 1
+          fi
+          
+          # Get the list of files *modified* (status 'M') on the current branch
+          # since it diverged from the master branch (at the merge-base).
+          # We compare HEAD against the merge_base commit.
+          # --diff-filter=M ensures we only list files that were modified,
+          # excluding added (A), deleted (D), renamed (R), etc.
+          modified_files=$(git diff --name-only --diff-filter=M $merge_base HEAD)
+          echo "Modified files since merge base: $modified_files"
+          # Check if any files were modified
+          if [ -z "$modified_files" ]; then
+            echo "No files were modified on the current branch compared to its merge-base with origin/master."
+            connector_folders=""
+          else
+            # Extract unique connector folder names from the list of modified files
+            connector_folders=$(echo "$modified_files" | \
+              grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
+              sort | \
+              uniq)
+          fi
+          
+          echo "Modified connector folders (files modified on this branch only): $connector_folders"
+
+          MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -c -s .)
+
+          echo "Modified connector folders: $MODIFIED_LIST_JSON"
+          echo "modified_connectors=$MODIFIED_LIST_JSON" >> $GITHUB_OUTPUT
+
+          echo "$connector_folders" | while read -r folder; do
+            gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
+            if [ -f "$gradle_file" ]; then
+              sed -i "s/cdk = '.*'/cdk = '${{ github.event.inputs.version }}'/" "$gradle_file"
+              sed -i "/useLocalCdk/d" "$gradle_file"
+            fi
+          done
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
+          git push  
