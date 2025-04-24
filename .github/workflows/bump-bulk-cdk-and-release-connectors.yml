@@ -340,6 +340,8 @@ jobs:
           sort | \
           uniq)
 
+          git pull
+          
           # Read each line from the connector_folders variable
           echo "$connector_folders" | while read -r folder; do
             CONNECTOR_NAME=$(echo "$folder" | cut -d'-' -f2-)
