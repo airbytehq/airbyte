@@ -338,7 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.0      | 2025-04-24 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code
+| 4.8.0-rc.1 | 2025-04-24 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code
 | 4.7.0-rc.1 | 2025-04-23 | [58083](https://github.com/airbytehq/airbyte/pull/58083) | Migrate ticket_pipelines to low code |
 | 4.6.4      | 2025-04-22 | [58138](https://github.com/airbytehq/airbyte/pull/58138) | Use short-hand custom object type name path for custom object streams.                                                                                                                                                       |
 | 4.6.3      | 2025-04-19 | [58226](https://github.com/airbytehq/airbyte/pull/58226) | Update dependencies |
