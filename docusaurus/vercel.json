@@ -440,6 +440,6 @@
       "source": "/connector-specification-reference",
       "destination": "/platform/connector-development/connector-specification-reference",
       "statusCode": 301
-    },
+    }
   ]
 }
