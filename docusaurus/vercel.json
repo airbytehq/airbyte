@@ -142,6 +142,11 @@
       "statusCode": 301
     },
     {
+      "source": "/category/release-notes",
+      "destination": "/release_notes",
+      "statusCode": 301
+    },
+    {
       "source": "/category/airbyte-open-source-quick-start",
       "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
       "statusCode": 301
