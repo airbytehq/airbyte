@@ -27,7 +27,7 @@ class BigQueryObjectStorageFormattingWriter(
     private val csvFormattingWriter = CSVFormattingWriter(stream, outputStream, rootLevelFlattening)
 
     override fun accept(record: DestinationRecordRaw) {
-        record.rawData.record.emittedAt *= 1000
+        record.dangerousMutateData { it.record.emittedAt *= 1000 }
         csvFormattingWriter.accept(record)
     }
 }

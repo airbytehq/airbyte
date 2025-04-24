@@ -293,12 +293,16 @@ data class EnrichedDestinationRecordAirbyteValue(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream,
-    val rawData: AirbyteMessage,
+    private val rawData: AirbyteMessage,
     private val serialized: String,
     private val schema: AirbyteType
 ) {
     fun asRawJson(): JsonNode {
         return rawData.record.data
+    }
+
+    fun dangerousMutateData(f: (AirbyteMessage) -> Unit) {
+        f(rawData)
     }
 
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
