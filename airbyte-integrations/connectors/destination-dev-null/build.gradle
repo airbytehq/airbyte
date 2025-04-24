@@ -24,8 +24,8 @@ dependencies {
     // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
 }
 
-//
 // Uncomment to run locally
+//
 //run {
 //    standardInput = System.in
 //}
