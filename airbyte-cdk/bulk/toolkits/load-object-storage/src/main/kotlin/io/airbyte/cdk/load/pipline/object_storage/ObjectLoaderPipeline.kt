@@ -18,7 +18,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 /**
- * Three steps:
+ * Three steps for default record flow:
  *
  * 1. format records into loadable parts (byte arrays destined for specific object keys)
  * 2. stage the parts in object storage
@@ -32,16 +32,20 @@ import jakarta.inject.Singleton
  * on the second queue
  * - a single completer worker reads the second queue and completes the uploads
  * - state is acked only when the completer finishes each upload
+ *
+ * There are 8 steps for the file and record flow.
+ *
+ * Composed of 5 new steps (File Pipe) that feed into the same 3 steps as above (Record Pipe).
+ *
+ * The new steps are as follows:
+ * 1. Routes the record message to either through file pipe or straight to the record pipe if it's
+ * not related to a file based stream.
+ * 2. Read file reference from the incoming record, open the file and read into chunks, emitting
+ * them as "Part"s downstream.
+ * 3. Uploads file parts
+ * 4. Completes multipart file uploads.
+ * 5. Passes the related record on to the record pipe (see above)
  */
-// @Singleton
-// @Requires(bean = ObjectLoader::class)
-@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
-class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
-    partStep: ObjectLoaderPartFormatterStep,
-    @Named("recordPartLoaderStep") uploadStep: ObjectLoaderPartLoaderStep<T>,
-    @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
-) : LoadPipeline(listOf(partStep, uploadStep, completerStep))
-
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
@@ -51,7 +55,8 @@ class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
     @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
     @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
     forwardFileRecordStep: ForwardFileRecordStep<T>,
-    @Named("fileRecordPartFormatterStep") recordPartStep: ObjectLoaderPartFormatterStep,
+    @Named("fileRecordPartFormatterStep") fileRecordFormatStep: ObjectLoaderPartFormatterStep,
+    @Named("recordPartFormatterStep") recordFormatStep: ObjectLoaderPartFormatterStep,
     @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
     @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>
 ) :
@@ -63,7 +68,8 @@ class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
             fileChunkUploader,
             fileCompleterStep,
             forwardFileRecordStep,
-            recordPartStep,
+            fileRecordFormatStep,
+            recordFormatStep,
             recordUploadStep,
             recordCompleterStep,
         )
@@ -79,6 +85,7 @@ class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
             fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
             fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
             forwardFileRecordStep: ForwardFileRecordStep<T>,
+            fileRecordFormatStep: ObjectLoaderPartFormatterStep,
             recordPartStep: ObjectLoaderPartFormatterStep,
             recordUploadStep: ObjectLoaderPartLoaderStep<T>,
             recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
@@ -90,12 +97,16 @@ class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
                     fileChunkUploader,
                     fileCompleterStep,
                     forwardFileRecordStep,
-                    recordPartStep,
+                    fileRecordFormatStep,
                     recordUploadStep,
                     recordCompleterStep,
                 )
             } else {
-                listOf(recordPartStep, recordUploadStep, recordCompleterStep)
+                listOf(
+                    recordPartStep,
+                    recordUploadStep,
+                    recordCompleterStep,
+                )
             }
         }
     }
