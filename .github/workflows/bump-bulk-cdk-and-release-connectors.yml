@@ -115,7 +115,7 @@ jobs:
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
-    needs: [bump-cdk-version, publish-connectors]
+    needs: [publish-connectors]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
