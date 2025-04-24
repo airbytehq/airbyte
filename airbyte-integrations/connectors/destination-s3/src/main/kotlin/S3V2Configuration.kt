@@ -82,9 +82,9 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            numSockets = pojo.numSockets ?: 1,
+            numSockets = pojo.numSockets ?: 2,
             numUploadWorkers = pojo.numPartLoaders ?: 10,
-            numPartWorkers = pojo.numPartFormatters ?: pojo.numSockets ?: 1,
+            numPartWorkers = pojo.numPartFormatters ?: pojo.numSockets ?: 2,
             inputSerializationFormat = pojo.inputSerializationFormat
                     ?: DestinationConfiguration.InputSerializationFormat.FLATBUFFERS,
             partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,

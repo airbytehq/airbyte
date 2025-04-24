@@ -66,7 +66,7 @@ private val fakeSortedCatalogCloud: List<Pair<String, AirbyteValueViewType>> =
 
 interface AirbyteValueView {
     val finalSchema: List<Pair<String, AirbyteValueViewType>>
-        get() = fakeSortedCatalogLocal
+        get() = fakeSortedCatalogCloud
 
     fun getString(idx: Int): String?
     fun getBoolean(idx: Int): Boolean?

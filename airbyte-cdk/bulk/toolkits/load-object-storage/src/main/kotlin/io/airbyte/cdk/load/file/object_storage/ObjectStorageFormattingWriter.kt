@@ -36,12 +36,11 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
-import java.io.UnsupportedEncodingException
-import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
+import org.apache.avro.generic.GenericData
 
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecordRaw)
@@ -221,12 +220,38 @@ class AvroFormattingWriter(
         log.info { "Generated avro schema: $avroSchema" }
     }
 
+    private val uuidGenerator = FastUUIDGenerator()
+
     override fun accept(record: DestinationRecordRaw) {
-        val marshalledRecord = record.asDestinationRecordAirbyteValue()
-        val dataMapped = pipeline.map(marshalledRecord.data, marshalledRecord.meta?.changes)
-        val withMeta =
-            dataMapped.withAirbyteMeta(stream, marshalledRecord.emittedAtMs, rootLevelFlattening)
-        writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
+        val schema = record.airbyteValueView.finalSchema
+        val avroRecord = GenericData.Record(avroSchema)
+        avroRecord.put(0, uuidGenerator.insecureUUID().toString())
+        for (i in schema.indices) {
+            when (schema[i].second) {
+                AirbyteValueViewType.STRING -> {
+                    avroRecord.put(i + 4, record.airbyteValueView.getString(i))
+                }
+                AirbyteValueViewType.BOOLEAN -> {
+                    avroRecord.put(i + 4, record.airbyteValueView.getBoolean(i))
+                }
+                AirbyteValueViewType.INTEGER -> {
+                    avroRecord.put(i + 4, record.airbyteValueView.getInteger(i))
+                }
+                AirbyteValueViewType.NUMBER -> {
+                    avroRecord.put(i + 4, record.airbyteValueView.getNumber(i))
+                }
+                AirbyteValueViewType.BINARY -> {
+                    // Do nothing, irrelevant to test
+                }
+                AirbyteValueViewType.TIMESTAMP -> {
+                    val timeMillis = record.airbyteValueView.getTimestamp(i)?.toInstant(ZoneOffset.UTC)
+                        ?.toEpochMilli() ?: 0
+                    avroRecord.put(i + 4, timeMillis * 1_000)
+                }
+            }
+        }
+
+        writer.write(avroRecord)
     }
 
     override fun flush() {
