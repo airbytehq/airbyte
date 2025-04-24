@@ -48,6 +48,18 @@ class FileChunkTask<T>(
 ) : Task {
     companion object {
         const val COLUMN_NAME_AIRBYTE_FILE_PATH = "_airbyte_file_path"
+
+        fun DestinationRecordRaw.enrichRecordWithFilePath(filePath: String) {
+            (stream.schema as? ObjectType)
+                ?.properties
+                ?.put(
+                    COLUMN_NAME_AIRBYTE_FILE_PATH,
+                    FieldType(StringType, nullable = true)
+                )
+            asRawJson().let { jsonNode ->
+                (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, filePath)
+            }
+        }
     }
 
     private val log = KotlinLogging.logger {}
@@ -73,17 +85,7 @@ class FileChunkTask<T>(
 
                     // We enrich the record with the file_path. Ideally the schema modification
                     // should be handled outside of this scope but the hook doesn't exist.
-                    event.context?.parentRecord?.let { destRecord ->
-                        (destRecord.stream.schema as? ObjectType)
-                            ?.properties
-                            ?.put(
-                                COLUMN_NAME_AIRBYTE_FILE_PATH,
-                                FieldType(StringType, nullable = true)
-                            )
-                        destRecord.asRawJson().let { jsonNode ->
-                            (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, filePath)
-                        }
-                    }
+                    event.context?.parentRecord?.enrichRecordWithFilePath(filePath)
 
                     val fileSize = file.fileSizeBytes
                     val localFileUrl = file.stagingFileUrl
