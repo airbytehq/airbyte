@@ -27,9 +27,6 @@
 
 [tasks]
 
-# Installation and package updates
-unitTest = "poetry lock"
-
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
 shell = '''
