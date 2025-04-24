@@ -68,12 +68,8 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
             // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for
             // them
             bq.listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
-                .streamAll()
-                .sorted(
-                    Comparator.comparing { childJob: Job ->
-                        childJob.getStatistics<JobStatistics>().endTime
-                    }
-                )
+                .iterateAll()
+                .sortedBy { it.getStatistics<JobStatistics>().endTime }
                 .forEach { childJob: Job ->
                     val configuration = childJob.getConfiguration<JobConfiguration>()
                     if (configuration is QueryJobConfiguration) {
