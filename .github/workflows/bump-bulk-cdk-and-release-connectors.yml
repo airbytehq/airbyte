@@ -35,6 +35,7 @@ jobs:
 
           # 2. Fetch HTML, extract versions (X.Y), sort, get the latest
           latest_version=$(curl -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -s "$REPO_URL" | grep -o 'href="[0-9]\+\.[0-9]\+/"' | sed 's/^href="//; s/\/"$//' | sort -V | tail -n 1)
+          echo "Latest version found: $latest_version"
 
           # 3. Set the output parameter for GitHub Actions
           # This makes "next_version" available to subsequent steps
