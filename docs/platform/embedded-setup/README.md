@@ -100,6 +100,10 @@ async function createDestination(body: Destination) {
 }
 ```
 
+<here be an example CURL for creating a workspace>
+
+<here be an example CURL for creating a destination>
+
 Furthermore, the creation of that common destination can also be templatized. In this example we use a [mustache](https://mustache.github.io/) config template for the configuration of a common S3 destination:
 
 ```json
@@ -132,13 +136,18 @@ Airbyte Embedded provides a JavaScript library that enables you to host a modal 
 
 Sources will be validated at configuration time.
 
-### Updating PartialUserConfigs
+### Creating Source Configuration Templates
 
-A “Teamplate” is how you configure the options that users are allowed to choose when setting up a source + connection pair. Any option can be `required`, `optional` or `hidden`, and you can pre-set values for any option.
+A “Template” is how you configure the options that users are allowed to choose when setting up a source. 
 
-TODO
+<TODO>
+
+### Updating Source Configuration Templates
+
+<TODO>
 
 ### Configuring the Widget
+<TODO>
 
 (⚠️ draft)
 
@@ -169,15 +178,17 @@ const modal = new AirbyteEmbeddedModal({
 await modal.open();
 ```
 
+<NOTE: the example should show a callback>
+
 ### Creating Connections with ConfigTemplate
 
 When creating a connection, it is the responsibility of the Operator to merge the information provided by the user in the partialConfig with the preferences of the operator. For example, a user may have chosen to skip the syncing of a certain stream - when creating the connection, the Operator should not include that stream.
 
-TODO
+<TODO>
 
 ### Updating Source Configurations with the Widget
 
-TODO
+<TODO>
 
 ## Deliveries and Webhooks
 
