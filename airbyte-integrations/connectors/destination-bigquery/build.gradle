@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.48.9'
+    cdkVersionRequired = '0.48.8'
     features = [
             'db-destinations',
             'datastore-bigquery',
@@ -11,6 +11,7 @@ airbyteJavaConnector {
             'gcs-destinations',
             'core',
     ]
+    useLocalCdk = false
 }
 
 java {
@@ -32,7 +33,7 @@ application {
 //            '-Dcom.sun.management.jmxremote.local.only=false',
 //            '-Dcom.sun.management.jmxremote.authenticate=false',
 //            '-Dcom.sun.management.jmxremote.ssl=false'
-    ]//
+    ]
 }
 
 dependencies {
