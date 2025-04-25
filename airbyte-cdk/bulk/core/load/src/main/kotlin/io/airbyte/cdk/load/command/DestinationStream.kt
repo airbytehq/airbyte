@@ -28,6 +28,7 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
+    val isFileBased: Boolean = false,
     val includeFiles: Boolean = false,
 ) {
     data class Descriptor(val namespace: String?, val name: String) {
@@ -60,7 +61,7 @@ data class DestinationStream(
                     .withNamespace(descriptor.namespace)
                     .withName(descriptor.name)
                     .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
-                    .withIsFileBased(includeFiles)
+                    .withIsFileBased(isFileBased)
             )
             .withGenerationId(generationId)
             .withMinimumGenerationId(minimumGenerationId)
@@ -114,6 +115,7 @@ class DestinationStreamFactory(
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
             schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
+            isFileBased = stream.stream.isFileBased ?: false,
             includeFiles = stream.includeFiles ?: false,
         )
     }
