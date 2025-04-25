@@ -6,13 +6,13 @@ on:
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo."
         type: choice
-        required: true
+        required: false
         default: airbytehq/airbyte
         options:
           - airbytehq/airbyte
       gitref:
         description: "The git ref to check out from the specified repository."
-        required: true
+        required: false
       comment-id:
         description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
