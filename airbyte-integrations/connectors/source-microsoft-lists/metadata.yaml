@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 18ea5fae-f0b1-4d82-9aef-832bb922a5b5
-  dockerImageTag: 0.0.23
+  dockerImageTag: 0.0.24
   dockerRepository: airbyte/source-microsoft-lists
   githubIssueLabel: source-microsoft-lists
   icon: icon.svg
@@ -26,6 +26,15 @@ data:
   releaseDate: 2024-10-18
   releaseStage: alpha
   supportLevel: community
+  connectorTestSuitesOptions:
+    # no-op for now but will get enabled when the capability is added to airbyte-ci
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-MICROSOFT-LISTS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-lists
   tags:
     - language:manifest-only
