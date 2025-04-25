@@ -28,6 +28,7 @@ abstract class BigqueryWriteTest(
     isStreamSchemaRetroactive: Boolean,
     preserveUndeclaredFields: Boolean,
     supportsDedup: Boolean,
+    nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
 ) :
     BasicFunctionalityIntegrationTest(
@@ -46,6 +47,7 @@ abstract class BigqueryWriteTest(
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = allTypesBehavior,
+        nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
         additionalMicronautEnvs = additionalMicronautEnvs,
     )
@@ -60,6 +62,7 @@ abstract class BigqueryRawTablesWriteTest(
         isStreamSchemaRetroactive = false,
         preserveUndeclaredFields = true,
         supportsDedup = false,
+        nullEqualsUnset = false,
         Untyped,
     )
 
@@ -73,6 +76,7 @@ abstract class BigqueryTDWriteTest(
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
         supportsDedup = true,
+        nullEqualsUnset = true,
         StronglyTyped(
             convertAllValuesToString = false,
             topLevelFloatLosesPrecision = true,
