@@ -91,6 +91,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.9.0 | 2025-04-14 | [57587](https://github.com/airbytehq/airbyte/pull/57587) | change how to collect custom fields for custom reports |
 | 0.8.3 | 2025-04-12 | [57604](https://github.com/airbytehq/airbyte/pull/57604) | Update dependencies |
 | 0.8.2 | 2025-04-05 | [57190](https://github.com/airbytehq/airbyte/pull/57190) | Update dependencies |
 | 0.8.1 | 2025-03-29 | [56627](https://github.com/airbytehq/airbyte/pull/56627) | Update dependencies |

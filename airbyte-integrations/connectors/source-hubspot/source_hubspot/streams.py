@@ -1171,8 +1171,7 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     @property
     def url(self):
-        object_type_id = self.fully_qualified_name or self.entity
-        return f"/crm/v3/objects/{object_type_id}/search" if self.state else f"/crm/v3/objects/{object_type_id}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -1632,38 +1631,6 @@ class DealSplits(CRMSearchStream):
     scopes = {"crm.objects.deals.read"}
 
 
-class TicketPipelines(ClientSideIncrementalStream):
-    """Ticket pipelines, API v1
-    This endpoint requires the tickets scope.
-    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
-    """
-
-    url = "/crm/v3/pipelines/tickets"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
-    primary_key = "id"
-    scopes = {
-        "media_bridge.read",
-        "tickets",
-        "crm.schemas.custom.read",
-        "e-commerce",
-        "timeline",
-        "contacts",
-        "crm.schemas.contacts.read",
-        "crm.objects.contacts.read",
-        "crm.objects.contacts.write",
-        "crm.objects.deals.read",
-        "crm.schemas.quotes.read",
-        "crm.objects.deals.write",
-        "crm.objects.companies.read",
-        "crm.schemas.companies.read",
-        "crm.schemas.deals.read",
-        "crm.schemas.line_items.read",
-        "crm.objects.companies.write",
-    }
-
-
 class EmailEvents(IncrementalStream):
     """Email events, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
@@ -1943,23 +1910,6 @@ class FormSubmissions(ClientSideIncrementalStream):
             if self.filter_by_state(stream_state=stream_state, record=record):
                 record["formId"] = stream_slice["form_id"]
                 yield record
-
-
-class MarketingEmails(BaseStream):
-    """Marketing Email, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-emails
-    """
-
-    url = "/marketing-emails/v1/emails/with-statistics"
-    data_field = "objects"
-    limit = 250
-    page_field = "limit"
-    updated_at_field = "updated"
-    created_at_field = "created"
-    primary_key = "id"
-    scopes = {"content"}
-    cast_fields = ["rootMicId"]
-    is_resumable = False
 
 
 class Owners(ClientSideIncrementalStream):
@@ -2388,6 +2338,11 @@ class CustomObject(CRMSearchStream, ABC):
         self.custom_properties = custom_properties
 
     @property
+    def url(self):
+        object_type_id = self.fully_qualified_name or f"p_{self.entity}"
+        return f"/crm/v3/objects/{object_type_id}/search" if self.state else f"/crm/v3/objects/{object_type_id}"
+
+    @property
     def name(self) -> str:
         return self.entity
 
@@ -2398,19 +2353,6 @@ class CustomObject(CRMSearchStream, ABC):
     def properties(self) -> Mapping[str, Any]:
         # do not make extra api calls
         return self.custom_properties
-
-
-class EmailSubscriptions(BaseStream):
-    """EMAIL SUBSCRIPTION, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions
-    """
-
-    url = "/email/public/v1/subscriptions"
-    data_field = "subscriptionDefinitions"
-    primary_key = "id"
-    scopes = {"content"}
-    is_resumable = False
-    filter_old_records = False
 
 
 class WebAnalyticsStream(HttpSubStream, BaseStream):

@@ -220,7 +220,7 @@ Expand to see details about Shopify connector limitations and troubleshooting
 
 #### Rate limiting
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
+Shopify has some [rate limit restrictions](https://shopify.dev/docs/api/usage/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries.
@@ -246,6 +246,9 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.5 | 2025-04-23 | [58598](https://github.com/airbytehq/airbyte/pull/58598) | Fix AttributeError with Null `measurement_weight` fields for `product_variants` streams |
+| 3.0.4 | 2025-04-19 | [58431](https://github.com/airbytehq/airbyte/pull/58431) | Update dependencies |
+| 3.0.3 | 2025-04-12 | [57984](https://github.com/airbytehq/airbyte/pull/57984) | Update dependencies |
 | 3.0.2 | 2025-04-05 | [57449](https://github.com/airbytehq/airbyte/pull/57449) | Update dependencies |
 | 3.0.1 | 2025-03-29 | [56861](https://github.com/airbytehq/airbyte/pull/56861) | Update dependencies |
 | 3.0.0 | 2025-03-27 | [55823](https://github.com/airbytehq/airbyte/pull/55823) | Update API version |
