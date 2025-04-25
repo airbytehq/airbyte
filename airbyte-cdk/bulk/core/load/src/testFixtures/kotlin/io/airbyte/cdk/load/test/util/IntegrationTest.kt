@@ -69,7 +69,7 @@ abstract class IntegrationTest(
 
     // we want to run the cleaner exactly once per test class.
     // technically this is a little inefficient - e.g. multiple test classes could reuse the same
-    // cleaner, so we'd prefer to only them once.
+    // cleaner, so we'd prefer to only call each of them once.
     // but this is simpler to implement than tracking hasRunCleaner across test classes,
     // and then also requiring cleaners to be able to recognize themselves as identical.
     // (you would think this is just an AfterAll method, but junit requires those to be static,
