@@ -25,6 +25,7 @@ abstract class BigqueryWriteTest(
     configContents: String,
     dataDumper: DestinationDataDumper,
     expectedRecordMapper: ExpectedRecordMapper,
+    isStreamSchemaRetroactive: Boolean,
     preserveUndeclaredFields: Boolean,
     supportsDedup: Boolean,
     allTypesBehavior: AllTypesBehavior,
@@ -35,7 +36,7 @@ abstract class BigqueryWriteTest(
         dataDumper,
         NoopDestinationCleaner,
         recordMangler = expectedRecordMapper,
-        isStreamSchemaRetroactive = true,
+        isStreamSchemaRetroactive = isStreamSchemaRetroactive,
         supportsDedup = supportsDedup,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -56,6 +57,7 @@ abstract class BigqueryRawTablesWriteTest(
         configContents = configContents,
         BigqueryRawTableDataDumper,
         UncoercedExpectedRecordMapper,
+        isStreamSchemaRetroactive = false,
         preserveUndeclaredFields = true,
         supportsDedup = false,
         Untyped,
@@ -68,6 +70,7 @@ abstract class BigqueryTDWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
         ColumnNameModifyingMapper(BigqueryColumnNameGenerator()),
+        isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
         supportsDedup = true,
         StronglyTyped(
@@ -95,8 +98,8 @@ class StandardInsertRawOverrideDisableTd :
         super.testBasicWrite()
     }
     @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
 
