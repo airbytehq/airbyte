@@ -3,26 +3,21 @@ sidebar_label: Microsoft Entra ID
 products: cloud-teams, oss-enterprise
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
+# Set up single sign on using Microsoft Entra ID
 
-# Setup Single Sign-On via Microsoft Entra ID
+This guide shows you how to set up Microsoft Entra ID (formerly Azure ActiveDirectory) and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) using OpenID Connect (OIDC). 
 
-This page guides you through setting up [Single Sign-On](../sso.md) with Airbyte using **Microsoft Entra ID** (formerly known as **Azure ActiveDirectory**).
+## Overview
 
-Airbyte will communicate with your Entra ID using OpenID Connect (OIDC).
+This guide is for administrators. It assumes you have:
 
-<Tabs groupId="cloud-hosted">
-<TabItem value="Cloud" label="Cloud">
+- Basic knowledge of Entra ID, OIDC, and Airbyte
+- The permissions to manage Entra ID in your organization
+- The permissions to manage Airbyte in your organization
 
-## Creating an Entra ID app for Airbyte
+The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
-:::info
-The following steps need to be executed by an administrator of your company's Microsoft Entra ID account.
-:::
-
-You'll require to know your **Company Identifier** to create your application. You receive this
-from your contact at Airbyte.
+## Cloud with Teams add-on
 
 ### Create application
 
@@ -65,50 +60,130 @@ Once we've received this information from you, We'll setup SSO for you and let y
 For security purposes, existing [Applications](https://reference.airbyte.com/reference/authentication) used to access the Airbyte API that were created before enabling SSO **will be disabled** once the user that owns the Application signs in via SSO for the first time. After enabling SSO, please make sure to replace any Application secrets that were previously in use.
 :::
 
-</TabItem>
-<TabItem value="Self-Managed" label="Self-Managed">
+## Self-Managed Enterprise
 
-## Creating an Entra ID app for Airbyte
+To set up single sign on for Airbyte Self-Managed Enterprise, complete the following steps.
 
-:::info
-The following steps need to be executed by an administrator of your company's Azure Entra ID account.
-:::
+- [Create an Entra ID application for Airbyte](#sme-entra-id-app)
+- [Create client credentials](#sme-credentials)
+- [Update Airbyte's values.yaml file](#sme-update-values)
+- [Redeploy Airbyte](#sme-deploy)
 
-### Create application
+### Create application {#sme-entra-id-app}
 
-You will need to create a new Entra ID application for Airbyte. Log into the [Azure Portal](https://portal.azure.com/) and search for the Entra ID service.
+To start, you create a new Entra ID application for Airbyte.
 
-From the overview page of Entra ID, press **Add** > **App registration** on the top of the screen. The name you select is your app integration name. Once chosen, **choose who can use the application, typically set to "Accounts in this organization directory only" for specific access,** and configure a **Redirect URI** of type **Web** with the following value:
+1. Log into the [Azure Portal](https://portal.azure.com/), search for the Entra ID service, and go to the Entra ID overview page.
 
+2. Click **Add** > **App registration**.
+
+3. Fill out the Register an application form.
+
+    - **Name**: Enter a descriptive integration name.
+
+    - **Supported account types**: Choose "Accounts in this organizational directory only" unless you have a reason to choose a different one.
+
+    - **Redirect URI**: Choose **Single-page application (SPA)** and enter the domain depends of your Airbyte installation location, but the URI should look similar to `https://airbyte.example.com?checkLicense=true`.
+
+4. Click **Register**. You are taken to your application's overview page.
+
+5. Click **Endpoints**.
+
+6. Copy the URL for **OpenID Connect metadata document** and open it in a new tab. You need some of these values later, so set it aside for a moment.
+
+### Create client credentials {#sme-credentials}
+
+You need to complete several steps to properly authenticate.
+
+#### Expose an API
+
+1. Click **Manage** > **Expose an API** > **Add a scope**.
+
+2. Click **Save and continue**.
+
+3. Fill out the form.
+
+    - **Who can consent?**: Set to **Admins and users**.
+
+    - **Admin content display name**: Provide a name like "Airbyte access".
+
+    - **Admin content description**: Provide a description like "Allow access to Airbyte".
+
+    - **State**: Enabled.
+
+    - Set other fields as you like.
+
+4. Click **Add scope**.
+
+5. Click **Add a client application**. Fill out the form to link your client application and your scope.
+
+#### Make yourself an owner
+
+1. Click **Manage** > **Owners** > **Add owners**.
+
+2. Add yourself as an owner and click **Select**.
+
+#### Grant API permissions
+
+1. Click **Manage** > **API permissions** > **Add a permission**
+
+2. Click **My APIs**.
+
+3. Click your Airbyte application.
+
+4. Grant your "Airbyte access" permission you created earlier.
+
+5. **Delete** any **Microsoft Graph** permissions.
+
+### Update Airbyte's values.yaml file {#sme-update-values}
+
+Once you have an app integration for Airbyte, update the values.yaml file you use when you deploy Airbyte. This section is where you need information from the well-known endpoint you opened earlier.
+
+Under `global`, add a new `auth` section and fill in the following data.
+
+```yaml title="values.yaml"
+global: 
+
+  edition: "enterprise"
+  airbyteUrl: "airbyte.example.com"
+
+  enterprise:
+    secretName: "airbyte-license"
+    licenseKeySecretKey: "LICENSE_KEY"
+
+  # Add this new auth section. See below for help populating these values.
+  auth:
+    identityProvider: 
+      type: generic-oidc
+      generic-oidc: 
+        clientId: YOUR_CLIENT_ID
+        audience: YOUR_AUDIENCE
+        issuer: YOUR_ISSUER
+        endpoints: 
+          authorizationServerEndpoint: YOUR_AUTH_ENDPOINT
+          jwksEndpoint: YOUR_JWKS_ENDPOINT
 ```
-<your-airbyte-domain>/auth/realms/airbyte/broker/<app-integration-name>/endpoint
+
+You collect these values from Microsoft in the locations shown below.
+
+- `clientId`: In Entra ID, on your application page, use the **Application (client) ID**.
+
+- `audience`: Same as `clientId`.
+
+- `issuer`: In your well-known endpoint, use `issuer`.
+
+- `authorizationServerEndpoint`: Same as `issuer`.
+
+- `jwksEndpoint`: In your well-known endpoint, use `jwks_uri`.
+
+### Redeploy Airbyte {#sme-deploy}
+
+In your command-line tool, deploy Airbyte using your updated values file. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
+
+```bash title="Example using the default namespace in your cluster"
+helm upgrade --install airbyte-enterprise airbyte/airbyte --version 1.6.0 --values values.yaml
 ```
 
-Hit **Register** to create the application.
-
-### Create client credentials
-
-To create client credentials for Airbyte to interface with your application, head to **Certificates & Secrets** on the detail screen of your application and select the **Client secrets** tab. Then:
-
-1. Click **New client secret**, and enter the expiry date of your choosing. You'll need to pass in the new client secret every time the old one expires to continue being able to log in via Entra ID.
-2. Copy the **Value** (the client secret itself) immediately after creation. You won't be able to view this later on.
-
-:::caution
-Depending on the default "Admin consent require' value for your organization you may need to manually provide Admin consent within the **API Permissions** menu. To do so click **API Permissions** and then click **Grant admin consent for Airbtyte** (see image below.)
-:::
-
-<img width="928" alt="Admin Consent Option" src="https://github.com/airbytehq/airbyte/assets/156025126/30818c10-de4f-4411-ba1d-8d82b74326fd" />
-
-### Setup information needed
-
-Once your Microsoft Entra ID app is set up, you're ready to deploy Airbyte Self-Managed Enterprise with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
-
-    * OpenID Connect metadata document: You'll find this in the list of endpoints found in the **Endpoints** panel, which you can open from the top bar of the **Overview** page. This will be used to populate the `Domain` field in your `airbyte.yml`.
-    * App Integration Name: The name of the Entra ID application created in the first step.
-    * Client ID: You'll find this in the **Essentials** section on the **Overview** page of the application you created.
-    * Client Secret: The client secret you copied in the previous step.
-
-Use this information to configure the auth details of your `airbyte.yml` for your Self-Managed Enterprise deployment. To learn more on deploying Self-Managed Enterprise, see our [implementation guide](/enterprise-setup/implementation-guide).
-
-</TabItem>
-</Tabs>
+```bash title="Example using or creating a namespace called 'airbyte'"
+helm upgrade --install airbyte-enterprise airbyte/airbyte --version 1.6.0 -n airbyte --create-namespace --values values.yaml
+```

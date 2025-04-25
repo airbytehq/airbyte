@@ -20,7 +20,7 @@ The exact process differs between the Cloud or Self-Managed versions of Airbyte.
 ## Cloud with Teams add-on
 
 :::warning
-For security purposes, Airbyte disables existing [applications](https://reference.airbyte.com/reference/authentication) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
+For security purposes, Airbyte disables existing [applications](/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
 :::
 
 Before you can proceed, you require your **Company Identifier** so you can properly fill in these values. Your contact at Airbyte gives this to you.
@@ -65,13 +65,13 @@ Before you can proceed, you require your **Company Identifier** so you can prope
 
 To set up single sign on for Airbyte Self-Managed Enterprise, complete the following steps.
 
-- [Create an Okta application for Airbyte](#)
-- [Add an authorization server (optional)](#)
-- [Add a policy for Airbyte](#)
-- [Update Airbyte's values.yaml file](#)
-- [Redeploy Airbyte](#)
+- [Create an Okta application for Airbyte](#sme-create-okta-app)
+- [Add an authorization server (optional)](#sme-auth-server)
+- [Add a policy for Airbyte](#sme-policy)
+- [Update Airbyte's values.yaml file](#sme-values)
+- [Redeploy Airbyte](#sme-deploy)
 
-### Create an Okta app for Airbyte
+### Create an Okta app for Airbyte {#sme-create-okta-app}
 
 Follow these steps to set up an Okta app integration for Airbyte. If you need more help setting up an app integration, see [Okta's documentation](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm).
 
@@ -93,7 +93,7 @@ Follow these steps to set up an Okta app integration for Airbyte. If you need mo
 
     - **Grant type**: Authorization Code, Refresh Token
 
-    - **Sign-in redirect URIs**: The domain depends on your Airbyte installation location, but the URI should look similar to `https://airbyte.example.com?checkLicense=true`.
+    - **Sign-in redirect URIs**: The domain depends of your Airbyte installation location, but the URI should look similar to `https://airbyte.example.com?checkLicense=true`.
 
     - **Sign-out redirect URIs**: Set it to your base Airbyte site. For example: `https://airbyte.example.com`.
 
@@ -105,7 +105,7 @@ Follow these steps to set up an Okta app integration for Airbyte. If you need mo
 
 7. On the app page, make sure you have **Require PKCE as additional verification** enabled. Leave other values as defaults.
 
-### Add an authorization server
+### Add an authorization server {#sme-auth-server}
 
 You need an authorization server, but you probably already have one. If you do, you can use it for Airbyte too. If you need to create a new one, follow these steps.
 
@@ -119,7 +119,7 @@ You need an authorization server, but you probably already have one. If you do, 
 Before continuing, go to your authorization server's page in Okta and open the **Issuer Metadata URL** link in a new tab. This is your well-known endpoint. You need some of these values later, so set it aside for a moment.
 :::
 
-### Add an access policy
+### Add an access policy {#sme-policy}
 
 Add an access policy to your authorization server.
 
@@ -145,7 +145,7 @@ Add an access policy to your authorization server.
 
     - Leave other values as defaults unless you have a reason to change them.
 
-### Update your values.yaml file
+### Update your values.yaml file {#sme-values}
 
 Once you have an app integration for Airbyte, update the values.yaml file you use when you deploy Airbyte. This section is where you need information from the well-known endpoint you opened earlier.
 
@@ -186,7 +186,7 @@ You collect these values from Okta in the locations shown below.
 
 - `jwksEndpoint`: In your well-known endpoint, use the `jwks_uri`.
 
-### Deploy Airbyte
+### Deploy Airbyte {#sme-deploy}
 
 In your command-line tool, deploy Airbyte using your updated values file. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
 
