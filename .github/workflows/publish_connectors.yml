@@ -63,7 +63,7 @@ jobs:
 
       - name: Publish connectors [manual]
         id: publish-connectors
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
