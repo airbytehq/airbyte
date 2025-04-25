@@ -48,7 +48,7 @@ import jakarta.inject.Singleton
  */
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class ObjectLoaderPipelineWithFileSupport<K : WithStream, T : RemoteObject<*>>(
+class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     catalog: DestinationCatalog,
     routeEventStep: RouteEventStep,
     fileChunkStep: FileChunkStep<T>,
