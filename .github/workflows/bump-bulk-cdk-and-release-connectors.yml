@@ -74,6 +74,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches
+          fetch-depth: 0
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
