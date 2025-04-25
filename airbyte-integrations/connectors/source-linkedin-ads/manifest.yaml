@@ -1663,13 +1663,17 @@ dynamic_streams:
 
 # LinkedIn Ads does not publish their standard API rate limits.
 # https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits
-# Using rough estimates from our developer account to set a baseline:
-# - 
-# But it is likely that certain customers may have a greater limit provisioned
+# I looked into our test account to establish some baselines, but it seems like each endpoint
+# has its own individually tracked rate limit that resets daily. There are also tiers, but
+# there is not a good way of ascertaining what value are for each. There are 19 streams so
+# as a standard default will be set to 19 so each stream can at least run in parallel. This
+# could require some tuning.
+#
+# It is likely that certain customers may have a greater limit provisioned so allow for a max of 50.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
-  max_concurrency: 5
+  default_concurrency: "19"
+  max_concurrency: 50
 
 spec:
   type: Spec
