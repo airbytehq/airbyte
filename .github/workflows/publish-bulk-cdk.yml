@@ -24,11 +24,6 @@ on:
         description: "Build Number"
         required: false
         type: number
-      dry-run: # <-- Declare the input name used in 'with:'
-        description: 'Whether to run in dry-run mode'
-        required: false # Or true, depending on your needs
-        type: boolean   # Use boolean type for true/false
-        default: false  # Set a default value if needed
 
 concurrency:
   group: publish-bulk-cdk
