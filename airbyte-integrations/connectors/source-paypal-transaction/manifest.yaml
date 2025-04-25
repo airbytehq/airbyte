@@ -2476,4 +2476,470 @@ schemas:
         type:
           - "null"
           - string
-        description: The date and time when
+        description: The date and time when the payment was created.
+        format: date-time
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the payment.
+      intent:
+        type:
+          - "null"
+          - string
+        description: The intention or purpose behind the payment.
+      links:
+        type: array
+        description: Collection of links related to the payment
+        items:
+          type: object
+          properties:
+            href:
+              type:
+                - "null"
+                - string
+              description: The URL link related to the item.
+            method:
+              type:
+                - "null"
+                - string
+              description: The HTTP method used for the link.
+            rel:
+              type:
+                - "null"
+                - string
+              description: >-
+                The relationship between the current resource and the linked
+                resource.
+      payer:
+        type:
+          - "null"
+          - object
+        description: Details of the payer who made the payment
+        additionalProperties: true
+        properties:
+          payer_info:
+            type:
+              - "null"
+              - object
+            description: Information about the payer.
+            additionalProperties: true
+            properties:
+              country_code:
+                type:
+                  - "null"
+                  - string
+                description: The country code of the payer.
+              email:
+                type:
+                  - "null"
+                  - string
+                description: The email address of the payer.
+              first_name:
+                type:
+                  - "null"
+                  - string
+                description: The first name of the payer.
+              last_name:
+                type:
+                  - "null"
+                  - string
+                description: The last name of the payer.
+              payer_id:
+                type:
+                  - "null"
+                  - string
+                description: The unique identifier for the payer.
+              phone:
+                type:
+                  - "null"
+                  - string
+                description: The phone number of the payer.
+              shipping_address:
+                type:
+                  - "null"
+                  - object
+                description: The shipping address of the payer.
+                additionalProperties: true
+                properties:
+                  city:
+                    type:
+                      - "null"
+                      - string
+                    description: The city in the shipping address.
+                  country_code:
+                    type:
+                      - "null"
+                      - string
+                    description: The country code in the shipping address.
+                  line1:
+                    type:
+                      - "null"
+                      - string
+                    description: The first line of the shipping address.
+                  postal_code:
+                    type:
+                      - "null"
+                      - string
+                    description: The postal code in the shipping address.
+                  recipient_name:
+                    type:
+                      - "null"
+                      - string
+                    description: The recipient's name at the shipping address.
+                  state:
+                    type:
+                      - "null"
+                      - string
+                    description: The state in the shipping address.
+          payment_method:
+            type:
+              - "null"
+              - string
+            description: The payment method used by the payer.
+          status:
+            type:
+              - "null"
+              - string
+            description: The status of the payment.
+      state:
+        type:
+          - "null"
+          - string
+        description: The state of the payment.
+      transactions:
+        type:
+          - "null"
+          - array
+        description: List of transactions associated with the payment
+        items:
+          type: object
+          properties:
+            description:
+              type:
+                - "null"
+                - string
+              description: Description of the transaction.
+            amount:
+              type:
+                - "null"
+                - object
+              description: The amount details of the transaction.
+              additionalProperties: true
+              properties:
+                currency:
+                  type:
+                    - "null"
+                    - string
+                  description: The currency used in the transaction.
+                details:
+                  type:
+                    - "null"
+                    - object
+                  description: Additional details of the transaction amount.
+                  properties:
+                    discount:
+                      type:
+                        - "null"
+                        - string
+                      description: Discount applied to the transaction.
+                    handling_fee:
+                      type:
+                        - "null"
+                        - string
+                      description: Handling fee charged for the transaction.
+                    insurance:
+                      type:
+                        - "null"
+                        - string
+                      description: Insurance fee for the transaction.
+                    shipping:
+                      type:
+                        - "null"
+                        - string
+                      description: Shipping cost for the transaction.
+                    shipping_discount:
+                      type:
+                        - "null"
+                        - string
+                      description: Discount applied to shipping cost.
+                    subtotal:
+                      type:
+                        - "null"
+                        - string
+                      description: Subtotal amount of the transaction.
+                total:
+                  type:
+                    - "null"
+                    - string
+                  description: Total amount of the transaction.
+            item_list:
+              type:
+                - "null"
+                - object
+              description: List of items included in the transaction.
+              additionalProperties: true
+              properties:
+                items:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: object
+                    description: Details of each item in the item list.
+                    properties:
+                      description:
+                        type:
+                          - "null"
+                          - string
+                        description: Description of the item.
+                      currency:
+                        type:
+                          - "null"
+                          - string
+                        description: The currency of the item.
+                      image_url:
+                        type:
+                          - "null"
+                          - string
+                        description: URL of the image of the item.
+                      name:
+                        type:
+                          - "null"
+                          - string
+                        description: Name of the item.
+                      price:
+                        type:
+                          - "null"
+                          - string
+                        description: Price of the item.
+                      quantity:
+                        type:
+                          - "null"
+                          - integer
+                        description: Quantity of the item.
+                      tax:
+                        type:
+                          - "null"
+                          - string
+                        description: Tax applicable to the item.
+                shipping_address:
+                  type:
+                    - "null"
+                    - object
+                  description: The shipping address for the item list.
+                  additionalProperties: true
+                  properties:
+                    city:
+                      type:
+                        - "null"
+                        - string
+                      description: City in the shipping address.
+                    country_code:
+                      type:
+                        - "null"
+                        - string
+                      description: Country code in the shipping address.
+                    line1:
+                      type:
+                        - "null"
+                        - string
+                      description: First line of the shipping address.
+                    postal_code:
+                      type:
+                        - "null"
+                        - string
+                      description: Postal code in the shipping address.
+                    recipient_name:
+                      type:
+                        - "null"
+                        - string
+                      description: Recipient's name in the shipping address.
+                    state:
+                      type:
+                        - "null"
+                        - string
+                      description: State in the shipping address.
+            payee:
+              type:
+                - "null"
+                - object
+              description: Information about the payee.
+              additionalProperties: true
+              properties:
+                email:
+                  type:
+                    - "null"
+                    - string
+                  description: Email address of the payee.
+                merchant_id:
+                  type:
+                    - "null"
+                    - string
+                  description: Merchant ID of the payee.
+            reference_id:
+              type:
+                - "null"
+                - string
+              description: Reference ID associated with the transaction.
+            related_resources:
+              type:
+                - "null"
+                - array
+              description: Related resources for the transaction.
+              items:
+                type: object
+                properties:
+                  sale:
+                    type:
+                      - "null"
+                      - object
+                    description: Details of the sale related to the transaction.
+                    additionalProperties: true
+                    properties:
+                      amount:
+                        type:
+                          - "null"
+                          - object
+                        description: The amount details of the sale.
+                        additionalProperties: true
+                        properties:
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                            description: Currency used in the sale.
+                          details:
+                            type:
+                              - "null"
+                              - object
+                            description: Additional details of the sale amount.
+                            additionalProperties: true
+                            properties:
+                              discount:
+                                type:
+                                  - "null"
+                                  - string
+                                description: Discount applied to the sale.
+                              handling_fee:
+                                type:
+                                  - "null"
+                                  - string
+                                description: Handling fee for the sale.
+                              insurance:
+                                type:
+                                  - "null"
+                                  - string
+                                description: Insurance fee for the sale.
+                              shipping:
+                                type:
+                                  - "null"
+                                  - string
+                                description: Shipping cost for the sale.
+                              shipping_discount:
+                                type:
+                                  - "null"
+                                  - string
+                                description: Discount applied to shipping cost in the sale.
+                              subtotal:
+                                type:
+                                  - "null"
+                                  - string
+                                description: Subtotal amount of the sale.
+                          total:
+                            type:
+                              - "null"
+                              - string
+                            description: Total amount of the sale.
+                      create_time:
+                        type:
+                          - "null"
+                          - string
+                        description: The date and time when the sale was created.
+                        format: date-time
+                      id:
+                        type:
+                          - "null"
+                          - string
+                        description: Unique identifier for the sale.
+                      links:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            href:
+                              type:
+                                - "null"
+                                - string
+                              description: The URL link related to the item.
+                            method:
+                              type:
+                                - "null"
+                                - string
+                              description: The HTTP method used for the link.
+                            rel:
+                              type:
+                                - "null"
+                                - string
+                              description: >-
+                                The relationship between the current resource
+                                and the linked resource.
+                      parent_payment:
+                        type:
+                          - "null"
+                          - string
+                        description: Parent payment associated with the sale.
+                      payment_mode:
+                        type:
+                          - "null"
+                          - string
+                        description: The payment mode used for the sale.
+                      protection_eligibility:
+                        type:
+                          - "null"
+                          - string
+                        description: Indicates if the sale is eligible for protection.
+                      protection_eligibility_type:
+                        type:
+                          - "null"
+                          - string
+                        description: Type of protection eligibility for the sale.
+                      purchase_unit_reference_id:
+                        type:
+                          - "null"
+                          - string
+                        description: Reference ID for the purchase unit.
+                      state:
+                        type:
+                          - "null"
+                          - string
+                        description: The state of the sale.
+                      transaction_fee:
+                        type:
+                          - "null"
+                          - object
+                        description: Details of the transaction fee for the sale.
+                        additionalProperties: true
+                        properties:
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                            description: Currency of the transaction fee.
+                          value:
+                            type:
+                              - "null"
+                              - string
+                            description: Value of the transaction fee.
+                      update_time:
+                        type:
+                          - "null"
+                          - string
+                        description: The date and time when the sale was last updated.
+                        format: date-time
+      update_time:
+        type:
+          - "null"
+          - string
+        description: The date and time when the payment was last updated.
+        format: date-time
