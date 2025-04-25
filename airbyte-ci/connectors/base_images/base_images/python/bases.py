@@ -107,7 +107,7 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             .with_env_variable("POETRY_VIRTUALENVS_CREATE", "false")
             .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
             .with_env_variable("POETRY_NO_INTERACTION", "1")
-            .with_exec(["pip", "install", "poetry==1.8.4"])
+            .with_exec(["pip", "install", "poetry==2.0.1"])
             .with_exec(["sh", "-c", "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean"])
             .with_exec(["sh", "-c", "apt-get install -y socat=1.7.4.4-2"])
             # Install CDK system dependencies

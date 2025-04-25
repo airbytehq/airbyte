@@ -12,7 +12,7 @@ RUN apt-get update \
 RUN curl -fsSL https://get.docker.com | sh
 
 
-RUN pip install poetry==1.8.4
+RUN pip install poetry==2.0.1
 RUN poetry config virtualenvs.create false
 RUN echo "Etc/UTC" > /etc/timezone
 
