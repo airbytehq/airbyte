@@ -95,5 +95,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
           AUTO_MERGE_PRODUCTION: false
         run: |
-          /tools/bin/cdk-auto-release/update-changelog.sh ${{ github.ref_name }}
+          ./tools/bin/cdk-auto-release/update-changelog.sh ${{ github.ref_name }}
 
