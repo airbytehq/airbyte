@@ -54,7 +54,7 @@ data:
         - name: klaviyo_config_dev_null
           id: 7d2eeae8-62d9-4694-8bfa-46b96375cd2d
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-KLAVIYO__CREDS
           fileName: config.json

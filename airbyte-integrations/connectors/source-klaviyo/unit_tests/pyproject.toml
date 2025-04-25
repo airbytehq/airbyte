@@ -7,14 +7,17 @@ name = "source-klaviyo-tests"
 version = "2.14.0"
 description = "Unit tests for source-klaviyo"
 authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^6"
+airbyte-cdk = "6.46.0"
 pytest = "^8"
+
+[tool.poetry.group.dev.dependencies]
+pytest-cov = "^6.1.1"
 
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:This class is experimental*"
 ]
-
