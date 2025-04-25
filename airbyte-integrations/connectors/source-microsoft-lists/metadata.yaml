@@ -27,7 +27,7 @@ data:
   releaseStage: alpha
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: integrationTests
+    - suite: unitTests
       testSecrets:
         - name: SECRET_SOURCE-MICROSOFT-LISTS_CREDS
           fileName: config.json
