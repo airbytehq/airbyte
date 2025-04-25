@@ -1631,38 +1631,6 @@ class DealSplits(CRMSearchStream):
     scopes = {"crm.objects.deals.read"}
 
 
-class TicketPipelines(ClientSideIncrementalStream):
-    """Ticket pipelines, API v1
-    This endpoint requires the tickets scope.
-    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
-    """
-
-    url = "/crm/v3/pipelines/tickets"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
-    primary_key = "id"
-    scopes = {
-        "media_bridge.read",
-        "tickets",
-        "crm.schemas.custom.read",
-        "e-commerce",
-        "timeline",
-        "contacts",
-        "crm.schemas.contacts.read",
-        "crm.objects.contacts.read",
-        "crm.objects.contacts.write",
-        "crm.objects.deals.read",
-        "crm.schemas.quotes.read",
-        "crm.objects.deals.write",
-        "crm.objects.companies.read",
-        "crm.schemas.companies.read",
-        "crm.schemas.deals.read",
-        "crm.schemas.line_items.read",
-        "crm.objects.companies.write",
-    }
-
-
 class EmailEvents(IncrementalStream):
     """Email events, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
