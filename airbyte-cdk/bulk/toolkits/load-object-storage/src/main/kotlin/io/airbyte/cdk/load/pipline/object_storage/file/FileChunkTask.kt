@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -21,6 +20,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.task.OnEndOfSync
@@ -29,7 +29,6 @@ import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
-import java.util.UUID
 
 /**
  * Given an input stream of file references, reads the files and chunks them into parts, emitting
@@ -42,7 +41,8 @@ class FileChunkTask<T>(
     private val fileHandleFactory: FileHandleFactory,
     private val uploadIdGenerator: UploadIdGenerator,
     private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    private val partQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+    private val partQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     private val partitioner: ObjectLoaderFormattedPartPartitioner<StreamKey, T>,
     private val partition: Int,
 ) : Task {
@@ -51,7 +51,6 @@ class FileChunkTask<T>(
     private val partSizeBytes = loader.partSizeBytes.toInt()
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
-
 
     override suspend fun execute() = inputQueue.consume(partition).collect(this::handleEvent)
 
@@ -70,9 +69,10 @@ class FileChunkTask<T>(
 
                 val filePath =
                     Path.of(
-                        pathFactory.getFinalDirectory(stream),
-                        file.sourceFileRelativePath,
-                    ).toString()
+                            pathFactory.getFinalDirectory(stream),
+                            file.sourceFileRelativePath,
+                        )
+                        .toString()
 
                 // We enrich the record with the file_path. Ideally the schema modification
                 // should be handled outside of this scope but the hook doesn't exist.
@@ -82,11 +82,12 @@ class FileChunkTask<T>(
                 val fileInputStream = localFile.inputStream()
 
                 // iterate over the file and emit a part for each partSizeBytes read
-                val parts = FilePartIterator(
-                    fileInputStream,
-                    partSizeBytes,
-                    filePath,
-                )
+                val parts =
+                    FilePartIterator(
+                        fileInputStream,
+                        partSizeBytes,
+                        filePath,
+                    )
 
                 val fileSize = file.fileSizeBytes
                 // Why +1? We expect a final marker even if size % partSize == 0.

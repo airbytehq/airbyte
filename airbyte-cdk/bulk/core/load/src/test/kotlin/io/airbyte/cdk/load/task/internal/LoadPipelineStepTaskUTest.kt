@@ -68,19 +68,15 @@ class LoadPipelineStepTaskUTest {
         WithStream
 
     class TestOutputPartitioner : OutputPartitioner<StreamKey, String, TestKey, Boolean> {
-                override fun getOutputKey(inputKey: StreamKey, output: Boolean): TestKey {
-                    return TestKey(output, inputKey.stream)
-                }
+        override fun getOutputKey(inputKey: StreamKey, output: Boolean): TestKey {
+            return TestKey(output, inputKey.stream)
+        }
 
-                override fun getPart(
-                    outputKey: TestKey,
-                    inputPart: Int,
-                    numParts: Int
-                ): Int {
-                    if (outputKey.output) return 1
-                    return 0
-                }
-            }
+        override fun getPart(outputKey: TestKey, inputPart: Int, numParts: Int): Int {
+            if (outputKey.output) return 1
+            return 0
+        }
+    }
 
     val taskId = "test-step"
 
@@ -616,25 +612,28 @@ class LoadPipelineStepTaskUTest {
         every { outputQueue.partitions } returns 1
         coEvery { outputQueue.publish(any(), any()) } returns Unit
 
-        val task = LoadPipelineStepTask(
-            batchAccumulatorNoUpdate,
-            inputFlow,
-            batchUpdateQueue,
-            TestOutputPartitioner(),
-            outputQueue,
-            flushStrategy,
-            1,
-            1,
-            taskId,
-            ConcurrentHashMap()
-        )
+        val task =
+            LoadPipelineStepTask(
+                batchAccumulatorNoUpdate,
+                inputFlow,
+                batchUpdateQueue,
+                TestOutputPartitioner(),
+                outputQueue,
+                flushStrategy,
+                1,
+                1,
+                taskId,
+                ConcurrentHashMap()
+            )
 
         val streamKey = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
 
-        val context = PipelineContext(
-            parentCheckpointCounts = mapOf(),
-            parentRecord = DestinationRecordRaw(mockk(), mockk(relaxed = true), "serialized", mockk()),
-        )
+        val context =
+            PipelineContext(
+                parentCheckpointCounts = mapOf(),
+                parentRecord =
+                    DestinationRecordRaw(mockk(), mockk(relaxed = true), "serialized", mockk()),
+            )
 
         task.handleOutput(
             streamKey,

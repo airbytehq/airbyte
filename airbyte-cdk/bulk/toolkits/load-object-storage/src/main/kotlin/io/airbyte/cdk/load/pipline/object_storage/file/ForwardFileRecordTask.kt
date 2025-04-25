@@ -20,7 +20,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ForwardFileRecordTask<T>(
     private val inputQueue:
-    PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
+        PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
     private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partition: Int,
 ) : Task {
@@ -31,7 +31,9 @@ class ForwardFileRecordTask<T>(
     override suspend fun execute() = inputQueue.consume(partition).collect(this::handleEvent)
 
     @VisibleForTesting
-    suspend fun handleEvent(event: PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>) {
+    suspend fun handleEvent(
+        event: PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>
+    ) {
         val toPublish: PipelineEvent<StreamKey, DestinationRecordRaw>? =
             when (event) {
                 is PipelineMessage -> {
@@ -45,7 +47,6 @@ class ForwardFileRecordTask<T>(
                         )
                     }
                 }
-
                 is PipelineEndOfStream<*, *> -> PipelineEndOfStream(event.stream)
                 is PipelineHeartbeat<*, *> -> null
             }

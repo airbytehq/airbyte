@@ -25,13 +25,13 @@ import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.mockk.mockk
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.api.Assertions.assertEquals
 
 class DestinationMessageTest {
     private fun factory(isFileTransferEnabled: Boolean) =
@@ -345,19 +345,18 @@ class DestinationMessageTest {
         fileRefProto.sourceFileRelativePath = sourceFileRelativePath
         fileRefProto.fileSizeBytes = fileSizeBytes
 
-        val msg = AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                AirbyteRecordMessage()
-                    .withFileReference(fileRefProto)
+        val msg =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(AirbyteRecordMessage().withFileReference(fileRefProto))
 
+        val internalRecord =
+            DestinationRecordRaw(
+                mockk(),
+                msg,
+                "serialized",
+                mockk(),
             )
-        val internalRecord = DestinationRecordRaw(
-            mockk(),
-            msg,
-            "serialized",
-            mockk(),
-        )
 
         assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
         assertEquals(sourceFileRelativePath, internalRecord.fileReference!!.sourceFileRelativePath)
@@ -366,18 +365,17 @@ class DestinationMessageTest {
 
     @Test
     fun `a destination record raw is initialized with a null reference if not present on protocol msg`() {
-        val msg = AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                AirbyteRecordMessage()
-                    .withFileReference(null)
+        val msg =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(AirbyteRecordMessage().withFileReference(null))
+        val internalRecord =
+            DestinationRecordRaw(
+                mockk(),
+                msg,
+                "serialized",
+                mockk(),
             )
-        val internalRecord = DestinationRecordRaw(
-            mockk(),
-            msg,
-            "serialized",
-            mockk(),
-        )
 
         assertNull(internalRecord.fileReference)
     }

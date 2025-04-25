@@ -4,9 +4,9 @@
 
 package io.airbyte.cdk.load.pipline.object_storage.file
 
-import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import jakarta.inject.Named

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipeline.object_storage.file
 
 import io.airbyte.cdk.load.command.Append
@@ -31,11 +35,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class RouteEventTaskTest {
-    @MockK(relaxed = true)
-    lateinit var fileLoader: ObjectLoader
+    @MockK(relaxed = true) lateinit var fileLoader: ObjectLoader
 
-    @MockK(relaxed = true)
-    lateinit var catalog: DestinationCatalog
+    @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
 
     @MockK(relaxed = true)
     lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
@@ -56,45 +58,50 @@ class RouteEventTaskTest {
     fun setup() {
         every { fileLoader.partSizeBytes } returns partSizeBytes.toLong()
 
-        task = RouteEventTask(
-            catalog,
-            inputQueue,
-            fileQueue,
-            recordQueue,
-            partition,
-        )
+        task =
+            RouteEventTask(
+                catalog,
+                inputQueue,
+                fileQueue,
+                recordQueue,
+                partition,
+            )
     }
 
     @Test
-    fun `routes messages for streams with includes files to file queue and populates context`() = runTest {
-        val stream = Fixtures.stream(includeFiles = true)
-        val key = StreamKey(stream.descriptor)
-        val record = Fixtures.record()
-        val checkpoints = mapOf(CheckpointId(1) to 2L)
+    fun `routes messages for streams with includes files to file queue and populates context`() =
+        runTest {
+            val stream = Fixtures.stream(includeFiles = true)
+            val key = StreamKey(stream.descriptor)
+            val record = Fixtures.record()
+            val checkpoints = mapOf(CheckpointId(1) to 2L)
 
-        val input = PipelineMessage(
-            checkpointCounts = checkpoints,
-            key = key,
-            value = record,
-        )
-        every { catalog.getStream(key.stream) } returns stream
+            val input =
+                PipelineMessage(
+                    checkpointCounts = checkpoints,
+                    key = key,
+                    value = record,
+                )
+            every { catalog.getStream(key.stream) } returns stream
 
-        task.handleEvent(input)
+            task.handleEvent(input)
 
-        val expectedContext = PipelineContext(
-            mapOf(CheckpointId(1) to 2),
-            record,
-        )
+            val expectedContext =
+                PipelineContext(
+                    mapOf(CheckpointId(1) to 2),
+                    record,
+                )
 
-        val expected = PipelineMessage(
-            checkpointCounts = checkpoints,
-            key = key,
-            value = Fixtures.record(),
-            context = expectedContext
-        )
+            val expected =
+                PipelineMessage(
+                    checkpointCounts = checkpoints,
+                    key = key,
+                    value = Fixtures.record(),
+                    context = expectedContext
+                )
 
-        coVerify { fileQueue.publish(expected, partition) }
-    }
+            coVerify { fileQueue.publish(expected, partition) }
+        }
 
     @Test
     fun `routes end of stream for streams with includes files to file queue`() = runTest {
@@ -116,11 +123,12 @@ class RouteEventTaskTest {
         val record = Fixtures.record()
         val checkpoints = mapOf(CheckpointId(1) to 2L)
 
-        val input = PipelineMessage(
-            checkpointCounts = checkpoints,
-            key = key,
-            value = record,
-        )
+        val input =
+            PipelineMessage(
+                checkpointCounts = checkpoints,
+                key = key,
+                value = record,
+            )
         every { catalog.getStream(key.stream) } returns stream
 
         task.handleEvent(input)

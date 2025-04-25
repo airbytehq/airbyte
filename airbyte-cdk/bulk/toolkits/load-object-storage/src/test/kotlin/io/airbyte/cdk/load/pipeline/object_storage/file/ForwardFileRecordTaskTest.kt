@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipeline.object_storage.file
 
 import io.airbyte.cdk.load.command.Append
@@ -33,14 +37,13 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class ForwardFileRecordTaskTest {
-   @MockK(relaxed = true)
-    lateinit var fileLoader: ObjectLoader
+    @MockK(relaxed = true) lateinit var fileLoader: ObjectLoader
+
+    @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
 
     @MockK(relaxed = true)
-    lateinit var catalog: DestinationCatalog
-
-    @MockK(relaxed = true)
-    lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>>
+    lateinit var inputQueue:
+        PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>>
 
     @MockK(relaxed = true)
     lateinit var outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
@@ -55,16 +58,20 @@ class ForwardFileRecordTaskTest {
     fun setup() {
         every { fileLoader.partSizeBytes } returns partSizeBytes.toLong()
 
-        task = ForwardFileRecordTask(
-            inputQueue,
-            outputQueue,
-            partition,
-        )
+        task =
+            ForwardFileRecordTask(
+                inputQueue,
+                outputQueue,
+                partition,
+            )
     }
 
     @Test
     fun `forwards end of stream`() = runTest {
-        val input = PipelineEndOfStream<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>(Fixtures.descriptor)
+        val input =
+            PipelineEndOfStream<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>(
+                Fixtures.descriptor
+            )
         task.handleEvent(input)
 
         coVerify { outputQueue.publish(PipelineEndOfStream(input.stream), 1) }
@@ -75,59 +82,67 @@ class ForwardFileRecordTaskTest {
         val input = PipelineHeartbeat<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>()
         task.handleEvent(input)
 
-        coVerify (exactly = 0) { outputQueue.publish(any(), any()) }
+        coVerify(exactly = 0) { outputQueue.publish(any(), any()) }
     }
 
     @Test
-    fun `does nothing if the remote object is null (this is an artifact of End of Stream)`() = runTest {
-        val stream = Fixtures.stream()
-        val key = StreamKey(stream.descriptor)
-        val context = PipelineContext(
-            mapOf(CheckpointId(123) to 14L),
-            Fixtures.record(),
-        )
-        val result = ObjectLoaderUploadCompleter.UploadResult<String>(
-            state = BatchState.LOADED,
-            remoteObject = null
-        )
-        val input = PipelineMessage(
-            checkpointCounts = mapOf(),
-            key = key,
-            value = result,
-            context = context
-        )
-        task.handleEvent(input)
+    fun `does nothing if the remote object is null (this is an artifact of End of Stream)`() =
+        runTest {
+            val stream = Fixtures.stream()
+            val key = StreamKey(stream.descriptor)
+            val context =
+                PipelineContext(
+                    mapOf(CheckpointId(123) to 14L),
+                    Fixtures.record(),
+                )
+            val result =
+                ObjectLoaderUploadCompleter.UploadResult<String>(
+                    state = BatchState.LOADED,
+                    remoteObject = null
+                )
+            val input =
+                PipelineMessage(
+                    checkpointCounts = mapOf(),
+                    key = key,
+                    value = result,
+                    context = context
+                )
+            task.handleEvent(input)
 
-        coVerify (exactly = 0) { outputQueue.publish(any(), any()) }
-    }
+            coVerify(exactly = 0) { outputQueue.publish(any(), any()) }
+        }
 
     @Test
     fun `extracts record and checkpoints and forwards them when present`() = runTest {
         val stream = Fixtures.stream()
         val key = StreamKey(stream.descriptor)
-        val context = PipelineContext(
-            mapOf(CheckpointId(123) to 14L),
-            Fixtures.record(),
-        )
-        val result = ObjectLoaderUploadCompleter.UploadResult(
-            state = BatchState.LOADED,
-            remoteObject = "uploaded thing"
-        )
-        val input = PipelineMessage(
-            checkpointCounts = mapOf(),
-            key = key,
-            value = result,
-            context = context
-        )
+        val context =
+            PipelineContext(
+                mapOf(CheckpointId(123) to 14L),
+                Fixtures.record(),
+            )
+        val result =
+            ObjectLoaderUploadCompleter.UploadResult(
+                state = BatchState.LOADED,
+                remoteObject = "uploaded thing"
+            )
+        val input =
+            PipelineMessage(
+                checkpointCounts = mapOf(),
+                key = key,
+                value = result,
+                context = context
+            )
         task.handleEvent(input)
 
-        val expectedOutput = PipelineMessage(
-            context.parentCheckpointCounts!!,
-            input.key,
-            context.parentRecord!!,
-        )
+        val expectedOutput =
+            PipelineMessage(
+                context.parentCheckpointCounts!!,
+                input.key,
+                context.parentRecord!!,
+            )
 
-        coVerify (exactly = 1) { outputQueue.publish(expectedOutput, 1) }
+        coVerify(exactly = 1) { outputQueue.publish(expectedOutput, 1) }
     }
 
     object Fixtures {

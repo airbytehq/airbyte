@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.mockk.verify
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
 import io.airbyte.cdk.load.message.PipelineEndOfStream
@@ -41,38 +40,34 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import io.mockk.verify
 import java.io.FileInputStream
+import java.nio.file.Path
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.nio.file.Path
-
 
 @ExtendWith(MockKExtension::class)
 class FileChunkTaskTest<T> {
-    @MockK(relaxed = true)
-    lateinit var fileLoader: ObjectLoader
+    @MockK(relaxed = true) lateinit var fileLoader: ObjectLoader
 
-    @MockK(relaxed = true)
-    lateinit var catalog: DestinationCatalog
+    @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
 
-    @MockK(relaxed = true)
-    lateinit var pathFactory: ObjectStoragePathFactory
+    @MockK(relaxed = true) lateinit var pathFactory: ObjectStoragePathFactory
 
-    @MockK(relaxed = true)
-    lateinit var fileHandleFactory: FileHandleFactory
+    @MockK(relaxed = true) lateinit var fileHandleFactory: FileHandleFactory
 
-    @MockK(relaxed = true)
-    lateinit var uploadIdGenerator: UploadIdGenerator
+    @MockK(relaxed = true) lateinit var uploadIdGenerator: UploadIdGenerator
 
     @MockK(relaxed = true)
     lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
 
     @MockK(relaxed = true)
-    lateinit var partQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>
+    lateinit var partQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>
 
     @MockK(relaxed = true)
     lateinit var partitioner: ObjectLoaderFormattedPartPartitioner<StreamKey, T>
@@ -87,29 +82,29 @@ class FileChunkTaskTest<T> {
     fun setup() {
         every { fileLoader.partSizeBytes } returns partSizeBytes.toLong()
 
-        task = FileChunkTask(
-            fileLoader,
-            catalog,
-            pathFactory,
-            fileHandleFactory,
-            uploadIdGenerator,
-            inputQueue,
-            partQueue,
-            partitioner,
-            partition,
-        )
+        task =
+            FileChunkTask(
+                fileLoader,
+                catalog,
+                pathFactory,
+                fileHandleFactory,
+                uploadIdGenerator,
+                inputQueue,
+                partQueue,
+                partitioner,
+                partition,
+            )
     }
 
     @Test
     fun `forwards end of stream on output queue`() = runTest {
-        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(
-            Fixtures.descriptor
-        )
+        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(Fixtures.descriptor)
         task.handleEvent(input)
 
-        val expected = PipelineEndOfStream<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>(
-            Fixtures.descriptor
-        )
+        val expected =
+            PipelineEndOfStream<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>(
+                Fixtures.descriptor
+            )
         coVerify { partQueue.broadcast(eq(expected)) }
     }
 
@@ -118,8 +113,8 @@ class FileChunkTaskTest<T> {
         val input = PipelineHeartbeat<StreamKey, DestinationRecordRaw>()
         task.handleEvent(input)
 
-        coVerify (exactly = 0) { partQueue.broadcast(any()) }
-        coVerify (exactly = 0) { partQueue.publish(any(), any()) }
+        coVerify(exactly = 0) { partQueue.broadcast(any()) }
+        coVerify(exactly = 0) { partQueue.publish(any(), any()) }
     }
 
     @Test
@@ -133,21 +128,24 @@ class FileChunkTaskTest<T> {
         val bytes2 = ByteArray(partSizeBytes)
         val bytes3 = ByteArray(partSizeBytes - 1)
 
-        // TODO: this leaks internals of FilePartIterator — factor out injectable factory as necessary
+        // TODO: this leaks internals of FilePartIterator — factor out injectable factory as
+        // necessary
         // mock the input stream so we emit 3 chunks
         val mockInputStream: FileInputStream = mockk {
-            every { readNBytes(partSizeBytes) } returnsMany listOf(
-                bytes1,
-                bytes2,
-                bytes3,
-            )
+            every { readNBytes(partSizeBytes) } returnsMany
+                listOf(
+                    bytes1,
+                    bytes2,
+                    bytes3,
+                )
             every { close() } returns Unit
         }
 
-        val mockFile = mockk<FileHandle> {
-            every { inputStream() } returns mockInputStream
-            every { delete() } returns true
-        }
+        val mockFile =
+            mockk<FileHandle> {
+                every { inputStream() } returns mockInputStream
+                every { delete() } returns true
+            }
         every { fileHandleFactory.make(any()) } returns mockFile
 
         every { pathFactory.getFinalDirectory(any()) } returns "/final/path"
@@ -155,44 +153,54 @@ class FileChunkTaskTest<T> {
         val uploadId = "upload-id"
         every { uploadIdGenerator.generate() } returns uploadId
 
-        val input = PipelineMessage(
-            checkpointCounts = mapOf(CheckpointId(1) to 2),
-            key = key,
-            value = record,
-            postProcessingCallback = {},
-            context = PipelineContext(
-                mapOf(CheckpointId(1) to 2),
-                record,
+        val input =
+            PipelineMessage(
+                checkpointCounts = mapOf(CheckpointId(1) to 2),
+                key = key,
+                value = record,
+                postProcessingCallback = {},
+                context =
+                    PipelineContext(
+                        mapOf(CheckpointId(1) to 2),
+                        record,
+                    )
             )
-        )
         task.handleEvent(input)
 
         val expectedFinalPath =
             Path.of(
-                "/final/path",
-                record.fileReference?.sourceFileRelativePath,
-            ).toString()
+                    "/final/path",
+                    record.fileReference?.sourceFileRelativePath,
+                )
+                .toString()
 
-        // TODO: this leaks internals of FilePartIterator — factor out injectable factory as necessary
-        val internalPartFactory = PartFactory(
-            key = expectedFinalPath,
-            fileNumber = 0,
-        )
+        // TODO: this leaks internals of FilePartIterator — factor out injectable factory as
+        // necessary
+        val internalPartFactory =
+            PartFactory(
+                key = expectedFinalPath,
+                fileNumber = 0,
+            )
 
-        val expectedPart1 = ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes1, false))
-        val expectedPart2 = ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes2, false))
-        val expectedPart3 = ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes3, true))
+        val expectedPart1 =
+            ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes1, false))
+        val expectedPart2 =
+            ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes2, false))
+        val expectedPart3 =
+            ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes3, true))
 
         val output = ObjectKey(Fixtures.descriptor, expectedFinalPath, uploadId)
 
-        val outputMessage1 =  PipelineMessage(emptyMap(), output, expectedPart1, context = input.context)
-        val outputMessage2 =  PipelineMessage(emptyMap(), output, expectedPart2, context = input.context)
-        val outputMessage3 =  PipelineMessage(emptyMap(), output, expectedPart3, context = input.context)
+        val outputMessage1 =
+            PipelineMessage(emptyMap(), output, expectedPart1, context = input.context)
+        val outputMessage2 =
+            PipelineMessage(emptyMap(), output, expectedPart2, context = input.context)
+        val outputMessage3 =
+            PipelineMessage(emptyMap(), output, expectedPart3, context = input.context)
 
-
-        coVerify (exactly = 1) { partQueue.publish(outputMessage1, 0) }
-        coVerify (exactly = 1) { partQueue.publish(outputMessage2, 0) }
-        coVerify (exactly = 1) { partQueue.publish(outputMessage3, 0) }
+        coVerify(exactly = 1) { partQueue.publish(outputMessage1, 0) }
+        coVerify(exactly = 1) { partQueue.publish(outputMessage2, 0) }
+        coVerify(exactly = 1) { partQueue.publish(outputMessage3, 0) }
 
         verify { mockInputStream.close() }
         verify { mockFile.delete() }
@@ -221,10 +229,11 @@ class FileChunkTaskTest<T> {
     object Fixtures {
         val descriptor = DestinationStream.Descriptor("namespace-1", "name-1")
 
-        val fileReference = AirbyteRecordMessageFileReference()
-            .withFileSizeBytes(10)
-            .withSourceFileRelativePath("/files/place")
-            .withStagingFileUrl("/local/path")
+        val fileReference =
+            AirbyteRecordMessageFileReference()
+                .withFileSizeBytes(10)
+                .withSourceFileRelativePath("/files/place")
+                .withStagingFileUrl("/local/path")
 
         fun message() =
             AirbyteMessage()
