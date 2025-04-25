@@ -26,13 +26,14 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryFinalTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryRawTableNameGenerator
 import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
@@ -51,10 +52,8 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryClientFactory(config).make()
 
-        // TODO handle special characters
-        val namespace = stream.descriptor.namespace ?: config.datasetId
-        val rawTableName =
-            TypingDedupingUtil.concatenateRawTableName(namespace, stream.descriptor.name)
+        val (namespace, rawTableName) =
+            BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
 
         if (bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName)) == null) {
             logger.warn {
@@ -101,9 +100,8 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryClientFactory(config).make()
 
-        // TODO handle special characters
-        val namespace = stream.descriptor.namespace ?: config.datasetId
-        val name = stream.descriptor.name
+        val (namespace, name) =
+            BigqueryFinalTableNameGenerator(config).getTableName(stream.descriptor)
 
         if (bigquery.getTable(TableId.of(namespace, name)) == null) {
             logger.warn { "Final table does not exist: $namespace.$name. Returning empty list." }

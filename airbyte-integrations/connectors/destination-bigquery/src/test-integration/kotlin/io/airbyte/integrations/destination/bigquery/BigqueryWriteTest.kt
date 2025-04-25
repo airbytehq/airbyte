@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.bigquery
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
+import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
 import java.nio.file.Path
 import org.junit.jupiter.api.Test
 
@@ -66,7 +67,7 @@ abstract class BigqueryTDWriteTest(
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
-        NoopExpectedRecordMapper,
+        ColumnNameModifyingMapper(BigqueryColumnNameGenerator()),
         preserveUndeclaredFields = false,
         supportsDedup = true,
         StronglyTyped(
@@ -94,8 +95,8 @@ class StandardInsertRawOverrideDisableTd :
         super.testBasicWrite()
     }
     @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 }
 
@@ -113,8 +114,8 @@ class StandardInsertRawOverride :
         super.testBasicWrite()
     }
     @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 }
 
