@@ -2,8 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.pipeline.object_storage
-
+package io.airbyte.cdk.load.pipeline.object_storage.file
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -42,8 +41,6 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.slot
 import java.io.FileInputStream
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -52,7 +49,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Path
-import java.util.UUID
+
 
 @ExtendWith(MockKExtension::class)
 class FileChunkTaskTest<T> {
@@ -105,10 +102,14 @@ class FileChunkTaskTest<T> {
 
     @Test
     fun `forwards end of stream on output queue`() = runTest {
-        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(Fixtures.descriptor)
+        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(
+            Fixtures.descriptor
+        )
         task.handleEvent(input)
 
-        val expected = PipelineEndOfStream<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>(Fixtures.descriptor)
+        val expected = PipelineEndOfStream<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>(
+            Fixtures.descriptor
+        )
         coVerify { partQueue.broadcast(eq(expected)) }
     }
 
@@ -189,23 +190,9 @@ class FileChunkTaskTest<T> {
         val outputMessage3 =  PipelineMessage(emptyMap(), output, expectedPart3, context = input.context)
 
 
-        val outputs = mutableListOf<PipelineMessage<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>()
-        coVerify (exactly = 3) { partQueue.publish(capture(outputs), 0) }
-
-        assertEquals(outputMessage1.checkpointCounts, outputs[0].checkpointCounts)
-        assertEquals(outputMessage1.key, outputs[0].key)
-        assertEquals(outputMessage1.value, outputs[0].value)
-        assertEquals(outputMessage1.context, outputs[0].context)
-
-        assertEquals(outputMessage2.checkpointCounts, outputs[1].checkpointCounts)
-        assertEquals(outputMessage2.key, outputs[1].key)
-        assertEquals(outputMessage2.value, outputs[1].value)
-        assertEquals(outputMessage2.context, outputs[1].context)
-
-        assertEquals(outputMessage3.checkpointCounts, outputs[2].checkpointCounts)
-        assertEquals(outputMessage3.key, outputs[2].key)
-        assertEquals(outputMessage3.value, outputs[2].value)
-        assertEquals(outputMessage3.context, outputs[2].context)
+        coVerify (exactly = 1) { partQueue.publish(outputMessage1, 0) }
+        coVerify (exactly = 1) { partQueue.publish(outputMessage2, 0) }
+        coVerify (exactly = 1) { partQueue.publish(outputMessage3, 0) }
 
         verify { mockInputStream.close() }
         verify { mockFile.delete() }
@@ -267,7 +254,7 @@ class FileChunkTaskTest<T> {
         fun record(
             message: AirbyteMessage = message(),
             schema: ObjectType = schema(),
-            stream: DestinationStream = stream()
+            stream: DestinationStream = stream(schema)
         ) =
             DestinationRecordRaw(
                 stream = stream,

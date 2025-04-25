@@ -16,11 +16,11 @@ sealed interface PipelineEvent<K : WithStream, T>
  * CDK to perform state message bookkeeping. [postProcessingCallback] is for releasing resources
  * associated with the message.
  */
-class PipelineMessage<K : WithStream, T>(
+data class PipelineMessage<K : WithStream, T>(
     val checkpointCounts: Map<CheckpointId, Long>,
     val key: K,
     val value: T,
-    val postProcessingCallback: suspend () -> Unit = {},
+    val postProcessingCallback: (suspend () -> Unit)? = null,
     var context: PipelineContext? = null,
 ) : PipelineEvent<K, T>
 

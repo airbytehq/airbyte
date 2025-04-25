@@ -112,8 +112,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             )
 
                         // Update bookkeeping metadata
-                        input
-                            .postProcessingCallback() // TODO: Accumulate and release when persisted
+                        input.postProcessingCallback?.let { it() } // TODO: Accumulate and release when persisted
                         input.checkpointCounts.forEach {
                             stateWithCounts.checkpointCounts.merge(it.key, it.value) { old, new ->
                                 old + new

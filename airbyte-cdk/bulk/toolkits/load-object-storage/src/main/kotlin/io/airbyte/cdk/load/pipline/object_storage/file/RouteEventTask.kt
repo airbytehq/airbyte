@@ -28,29 +28,31 @@ class RouteEventTask(
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {
-        inputQueue.consume(partition).collect { event ->
-            val streamDesc =
-                when (event) {
-                    is PipelineMessage -> event.key.stream
-                    is PipelineEndOfStream<*, *> -> event.stream
-                    is PipelineHeartbeat<*, *> -> null
-                }
-            val stream = streamDesc?.let { catalog.getStream(it) }
+        inputQueue.consume(partition).collect(this::handleEvent)
+    }
 
-            if (stream?.includeFiles == true) {
-                if (event is PipelineMessage) {
-                    event.context =
-                        PipelineContext(
-                            event.checkpointCounts,
-                            event.value,
-                        )
-                }
-
-                fileQueue.publish(event, partition)
-            } else {
-                // all heartbeat events go straight to the record queue
-                recordQueue.publish(event, partition)
+    suspend fun handleEvent(event: PipelineEvent<StreamKey, DestinationRecordRaw>) {
+        val streamDesc =
+            when (event) {
+                is PipelineMessage -> event.key.stream
+                is PipelineEndOfStream<*, *> -> event.stream
+                is PipelineHeartbeat<*, *> -> null
             }
+        val stream = streamDesc?.let { catalog.getStream(it) }
+
+        if (stream?.includeFiles == true) {
+            if (event is PipelineMessage) {
+                event.context =
+                    PipelineContext(
+                        event.checkpointCounts,
+                        event.value,
+                    )
+            }
+
+            fileQueue.publish(event, partition)
+        } else {
+            // all heartbeat events go straight to the record queue
+            recordQueue.publish(event, partition)
         }
     }
 }
