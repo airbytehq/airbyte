@@ -7,23 +7,13 @@ on:
       - master
     paths:
       - "airbyte-cdk/bulk/**"
-  workflow_call:
-    inputs:
-      build-number:
-        description: "Build Number"
-        required: false
-        type: number
-      dry-run: # <-- Declare the input name used in 'with:'
-        description: 'Whether to run in dry-run mode'
-        required: false # Or true, depending on your needs
-        type: boolean   # Use boolean type for true/false
-        default: false  # Set a default value if needed
   workflow_dispatch:
     inputs:
       build-number:
         description: "Build Number"
         required: false
         type: number
+  workflow_call:
 
 concurrency:
   group: publish-bulk-cdk
@@ -102,7 +92,7 @@ jobs:
           arguments: --scan :airbyte-cdk:bulk:bulkCdkPublish
 
       - name: Post failure to Slack channel
-        if: ${{ github.event.inputs.dry-run == 'false' && failure() }}
+        if: ${{ env.DRY_RUN == 'false' && failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
@@ -131,7 +121,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
       - name: Post success to Slack channel
-        if: ${{ github.event.inputs.dry-run == 'false' && !failure() }}
+        if: ${{ env.DRY_RUN == 'false' && !failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:

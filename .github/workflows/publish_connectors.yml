@@ -61,10 +61,6 @@ jobs:
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
 
-      - name: test
-        run: |
-          echo "${{ inputs.airbyte_ci_binary_url }}"
-
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
