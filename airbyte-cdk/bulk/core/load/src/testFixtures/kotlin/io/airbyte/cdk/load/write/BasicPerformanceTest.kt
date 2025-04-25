@@ -289,13 +289,32 @@ abstract class BasicPerformanceTest(
 
     @Test
     @Disabled("Opt-in")
-    open fun testFileTransfer() {
+    open fun testFileTransferOld() {
         val scenario =
             SingleStreamFileTransfer(
                 randomizedNamespace = randomizedNamespace,
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
-                fileSizeMb = fileSizeMbForFileTransfer,
+                fileSizeMb = 10,
+                stagingDirectory = Path.of("/tmp")
+            )
+        scenario.setup()
+        runSync(
+            testScenario = scenario,
+            useFileTransfer = true,
+            validation = null,
+        )
+    }
+
+    @Test
+    @Disabled("Opt-in")
+    open fun testFileTransferNew() {
+        val scenario =
+            SingleStreamFileAndMetadataTransfer(
+                randomizedNamespace = randomizedNamespace,
+                streamName = testInfo.testMethod.get().name,
+                numFiles = numFilesForFileTransfer,
+                fileSizeMb = 10,
                 stagingDirectory = Path.of("/tmp")
             )
         scenario.setup()
