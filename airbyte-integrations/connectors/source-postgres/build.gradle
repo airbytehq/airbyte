@@ -12,7 +12,7 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.48.4'
+    cdkVersionRequired = '0.48.9'
     features = ['db-sources', 'datastore-postgres']
     useLocalCdk = false
 }
@@ -23,6 +23,7 @@ application {
 }
 
 dependencies {
+    api "com.google.protobuf:protobuf-java:3.25.5" // for fixing vulnerability of protobuf-java used by Debezium
     implementation 'commons-codec:commons-codec:1.16.0'
     implementation 'io.debezium:debezium-embedded:3.0.1.Final'
     implementation 'io.debezium:debezium-connector-postgres:3.0.1.Final'

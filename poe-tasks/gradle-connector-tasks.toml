@@ -1,0 +1,39 @@
+# A shared set of tasks for Java and Kotlin Airbyte connectors using Gradle.
+#
+# This file should be included in connectors' `poe_tasks.toml` as follows:
+#
+# ```toml
+# `airbyte-integrations/connectors/<connector-name>/poe_tasks.toml`
+#
+# include = [
+#     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
+# ]
+#
+# Within any java connector directory, you can then run `poe gradle tasks` to
+# see the full set of available Gradle tasks.
+#
+# Example usage:
+
+# ```bash
+# # First, move to the connector directory:
+# cd airbyte-integrations/connectors/source-mysql
+#
+# # View available Gradle tasks:
+# poe gradle tasks
+#
+# # Run a Gradle task (e.g. `build`):
+# poe gradle build
+# ```
+
+[tasks]
+
+[tasks.gradle]
+help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
+shell = '''
+connector_name=$(basename "$PWD")
+echo "Running: gradle :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
+gradle :airbyte-integrations:connectors:${connector_name}:${task_and_args}
+'''
+args = [
+  { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }
+]

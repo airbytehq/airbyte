@@ -197,100 +197,101 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 1.5.17 | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111) | Implement timeout for document discovery |
-| 1.5.16 | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973) | Update logging configuration. |
-| 1.5.15 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
-| 1.5.14 | 2025-01-10 | [51491](https://github.com/airbytehq/airbyte/pull/51491) | Use a non root base image |
-| 1.5.13 | 2024-12-18 | [49868](https://github.com/airbytehq/airbyte/pull/49868) | Use a base image: airbyte/java-connector-base:1.0.0 |
-| 1.5.12 | 2024-11-01 | [48115](https://github.com/airbytehq/airbyte/pull/48115) | Remove database name check. |
-| 1.5.11 | 2024-09-24 | [45883](https://github.com/airbytehq/airbyte/pull/45883) | Lazy init mongocursor to prevent timeout. |
-| 1.5.10 | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639) | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests. |
-| 1.5.9 | 2024-08-28 | [42927](https://github.com/airbytehq/airbyte/pull/42927) | Support binary subtype. |
-| 1.5.8 | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841) | Adopt latest CDK. |
-| 1.5.7 | 2024-08-27 | [44846](https://github.com/airbytehq/airbyte/pull/44846) | DBZ filters in related streams only. |
-| 1.5.6 | 2024-08-27 | [44839](https://github.com/airbytehq/airbyte/pull/44839) | DBZ filters in related streams only. |
-| 1.5.5 | 2024-08-26 | [44779](https://github.com/airbytehq/airbyte/pull/44779) | Revert permission check on oplog.rs. |
-| 1.5.4 | 2024-08-20 | [44490](https://github.com/airbytehq/airbyte/pull/44490) | Add read permission check on oplog.rs collection used by CDC. |
-| 1.5.3 | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410) | Adopt latest CDK. |
-| 1.5.2 | 2024-08-06 | [42869](https://github.com/airbytehq/airbyte/pull/42869) | Adopt latest CDK. |
-| 1.5.1 | 2024-08-01 | [42549](https://github.com/airbytehq/airbyte/pull/42549) | Centered the connector icon. |
-| 1.5.0 | 2024-07-26 | [42561](https://github.com/airbytehq/airbyte/pull/42561) | Implement WASS algorithm. |
-| 1.4.3 | 2024-07-22 | [39145](https://github.com/airbytehq/airbyte/pull/39145) | Warn (vs fail) on different \_id types in collection. |
-| 1.4.2 | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat. |
-| 1.4.1 | 2024-06-11 | [39530](https://github.com/airbytehq/airbyte/pull/39530) | Adopt new CDK. |
-| 1.4.0 | 2024-06-11 | [38238](https://github.com/airbytehq/airbyte/pull/38238) | Update mongodbv2 to use dbz 2.6.2 |
-| 1.3.15 | 2024-05-30 | [38781](https://github.com/airbytehq/airbyte/pull/38781) | Sync sending trace status messages indicating progress. |
-| 1.3.14 | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover. |
-| 1.3.13 | 2024-05-09 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Support reading collection with a binary \_id type. |
-| 1.3.12 | 2024-05-07 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Upgrade debezium to version 2.5.1. |
-| 1.3.11 | 2024-05-02 | [37753](https://github.com/airbytehq/airbyte/pull/37753) | Chunk size(limit) should correspond to ~1GB of data. |
-| 1.3.10 | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781) | Adopt latest CDK. |
-| 1.3.9 | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742) | Adopt latest CDK. Remove Debezium retries. |
-| 1.3.8 | 2024-04-24 | [37559](https://github.com/airbytehq/airbyte/pull/37559) | Implement fixed-size chunking while performing initial load. |
-| 1.3.7 | 2024-04-24 | [37557](https://github.com/airbytehq/airbyte/pull/37557) | Change bug in resume token validity check. |
-| 1.3.6 | 2024-04-24 | [37525](https://github.com/airbytehq/airbyte/pull/37525) | Internal refactor. |
-| 1.3.5 | 2024-04-22 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Do not send estimate trace if we do not have data. |
-| 1.3.4 | 2024-04-16 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Populate null values in airbyte record messages. |
-| 1.3.3 | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872) | Update to connector's metadat definition. |
-| 1.3.2 | 2024-04-04 | [36845](https://github.com/airbytehq/airbyte/pull/36845) | Adopt Kotlin CDK. |
-| 1.3.1 | 2024-04-04 | [36837](https://github.com/airbytehq/airbyte/pull/36837) | Adopt CDK 0.28.0. |
-| 1.3.0 | 2024-03-15 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | Full refresh read of collections. |
-| 1.2.16 | 2024-03-06 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | State message will now include record count. |
-| 1.2.15 | 2024-02-27 | [35673](https://github.com/airbytehq/airbyte/pull/35673) | Consume user provided connection string. |
-| 1.2.14 | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message. |
-| 1.2.13 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
-| 1.2.12 | 2024-02-21 | [35526](https://github.com/airbytehq/airbyte/pull/35526) | Improve error handling. |
-| 1.2.11 | 2024-02-20 | [35375](https://github.com/airbytehq/airbyte/pull/35375) | Add config to throw an error on invalid CDC position and enable it by default. |
-| 1.2.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                            |
-| 1.2.9   | 2024-02-13 | [35114](https://github.com/airbytehq/airbyte/pull/35114) | Extend subsequent cdc record wait time to the duration of initial. Bug Fixes                              |
-| 1.2.8   | 2024-02-08 | [34748](https://github.com/airbytehq/airbyte/pull/34748) | Adopt CDK 0.19.0                                                                                          |
-| 1.2.7   | 2024-02-01 | [34759](https://github.com/airbytehq/airbyte/pull/34759) | Fail sync if initial snapshot for any stream fails.                                                       |
-| 1.2.6   | 2024-01-31 | [34594](https://github.com/airbytehq/airbyte/pull/34594) | Scope initial resume token to streams of interest.                                                        |
-| 1.2.5   | 2024-01-29 | [34641](https://github.com/airbytehq/airbyte/pull/34641) | Allow resuming an initial snapshot when Id type is not of default ObjectId .                              |
-| 1.2.4   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Adopt CDK v0.16.0.                                                                                        |
-| 1.2.3   | 2024-01-18 | [34364](https://github.com/airbytehq/airbyte/pull/34364) | Add additional logging for resume token + reduce discovery size to 10.                                    |
-| 1.2.2   | 2024-01-16 | [34314](https://github.com/airbytehq/airbyte/pull/34314) | Reduce minimum document discovery size to 100.                                                            |
-| 1.2.1   | 2023-12-18 | [33549](https://github.com/airbytehq/airbyte/pull/33549) | Add logging to understand op log size.                                                                    |
-| 1.2.0   | 2023-12-18 | [33438](https://github.com/airbytehq/airbyte/pull/33438) | Remove LEGACY state flag                                                                                  |
-| 1.1.0   | 2023-12-14 | [32328](https://github.com/airbytehq/airbyte/pull/32328) | Schema less mode in mongodb.                                                                              |
-| 1.0.12  | 2023-12-13 | [33430](https://github.com/airbytehq/airbyte/pull/33430) | Add more verbose logging.                                                                                 |
-| 1.0.11  | 2023-11-28 | [33356](https://github.com/airbytehq/airbyte/pull/33356) | Support for better debugging tools.                                                                       |
-| 1.0.10  | 2023-11-28 | [32886](https://github.com/airbytehq/airbyte/pull/32886) | Handle discover phase OOMs                                                                                |
-| 1.0.9   | 2023-11-08 | [32285](https://github.com/airbytehq/airbyte/pull/32285) | Additional support to read UUIDs                                                                          |
-| 1.0.8   | 2023-11-08 | [32125](https://github.com/airbytehq/airbyte/pull/32125) | Fix compilation warnings                                                                                  |
-| 1.0.7   | 2023-11-07 | [32250](https://github.com/airbytehq/airbyte/pull/32250) | Add support to read UUIDs.                                                                                |
-| 1.0.6   | 2023-11-06 | [32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                             |
-| 1.0.5   | 2023-10-31 | [32028](https://github.com/airbytehq/airbyte/pull/32028) | url encode username and password.<br/>Handle a case of document update and delete in a single sync.       |
-| 1.0.3   | 2023-10-19 | [31629](https://github.com/airbytehq/airbyte/pull/31629) | Allow discover operation use of disk file when an operation goes over max allowed mem                     |
-| 1.0.2   | 2023-10-19 | [31596](https://github.com/airbytehq/airbyte/pull/31596) | Allow use of temp disk file when an operation goes over max allowed mem                                   |
-| 1.0.1   | 2023-10-03 | [31034](https://github.com/airbytehq/airbyte/pull/31034) | Fix field filtering logic related to nested documents                                                     |
-| 1.0.0   | 2023-10-03 | [29969](https://github.com/airbytehq/airbyte/pull/29969) | General availability release using Change Data Capture (CDC)                                              |
-| 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815) | Revert back to version 0.2.0                                                                              |
-| 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760) | Fix bug preventing some syncs from succeeding when collecting stats                                       |
-| 0.2.3   | 2023-07-26 | [28733](https://github.com/airbytehq/airbyte/pull/28733) | Fix bug preventing syncs from discovering field types                                                     |
-| 0.2.2   | 2023-07-25 | [28692](https://github.com/airbytehq/airbyte/pull/28692) | Fix bug preventing statistics retrieval from views                                                        |
-| 0.2.1   | 2023-07-21 | [28527](https://github.com/airbytehq/airbyte/pull/28527) | Log server information                                                                                    |
-| 0.2.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                      |
-| 0.1.19  | 2022-10-07 | [17614](https://github.com/airbytehq/airbyte/pull/17614) | Increased discover performance                                                                            |
-| 0.1.18  | 2022-10-05 | [17590](https://github.com/airbytehq/airbyte/pull/17590) | Add ability to enforce SSL in MongoDB connector and check logic                                           |
-| 0.1.17  | 2022-09-08 | [16401](https://github.com/airbytehq/airbyte/pull/16401) | Fixed bug with empty strings in fields with _aibyte_transform_                                            |
-| 0.1.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
-| 0.1.15  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                                    |
-| 0.1.14  | 2022-05-05 | [12428](https://github.com/airbytehq/airbyte/pull/12428) | JsonSchema: Add properties to fields with type 'object'                                                   |
-| 0.1.13  | 2022-02-21 | [10276](https://github.com/airbytehq/airbyte/pull/10276) | Create a custom codec registry to handle DBRef MongoDB objects                                            |
-| 0.1.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
-| 0.1.11  | 2022-01-10 | [9238](https://github.com/airbytehq/airbyte/pull/9238)   | Return only those collections for which the user has privileges                                           |
-| 0.1.10  | 2021-12-30 | [9202](https://github.com/airbytehq/airbyte/pull/9202)   | Update connector fields title/description                                                                 |
-| 0.1.9   | 2021-12-07 | [8491](https://github.com/airbytehq/airbyte/pull/8491)   | Configure 10000 limit doc reading during Discovery step                                                   |
-| 0.1.8   | 2021-11-29 | [8306](https://github.com/airbytehq/airbyte/pull/8306)   | Added milliseconds for date format for cursor                                                             |
-| 0.1.7   | 2021-11-22 | [8161](https://github.com/airbytehq/airbyte/pull/8161)   | Updated Performance and updated cursor for timestamp type                                                 |
-| 0.1.5   | 2021-11-17 | [8046](https://github.com/airbytehq/airbyte/pull/8046)   | Added milliseconds to convert timestamp to datetime format                                                |
-| 0.1.4   | 2021-11-15 | [7982](https://github.com/airbytehq/airbyte/pull/7982)   | Updated Performance                                                                                       |
-| 0.1.3   | 2021-10-19 | [7160](https://github.com/airbytehq/airbyte/pull/7160)   | Fixed nested document parsing                                                                             |
-| 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860)   | Added filter to avoid MongoDb system collections                                                          |
-| 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364)   | Source MongoDb: added support via TLS/SSL                                                                 |
-| 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530)   | New source: MongoDb ported to java                                                                        |
+| Version | Date       | Pull Request                                               | Subject                                                                                                   |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.5.18 | 2025-04-24 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies. |
+| 1.5.17 | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111)   | Implement timeout for document discovery                                                                  |
+| 1.5.16 | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973)   | Update logging configuration.                                                                             |
+| 1.5.15 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234)   | Update base image version for certified DB source connectors                                              |
+| 1.5.14 | 2025-01-10 | [51491](https://github.com/airbytehq/airbyte/pull/51491)   | Use a non root base image                                                                                 |
+| 1.5.13 | 2024-12-18 | [49868](https://github.com/airbytehq/airbyte/pull/49868)   | Use a base image: airbyte/java-connector-base:1.0.0                                                       |
+| 1.5.12 | 2024-11-01 | [48115](https://github.com/airbytehq/airbyte/pull/48115)   | Remove database name check.                                                                               |
+| 1.5.11 | 2024-09-24 | [45883](https://github.com/airbytehq/airbyte/pull/45883)   | Lazy init mongocursor to prevent timeout.                                                                 |
+| 1.5.10 | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639)   | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests.                      |
+| 1.5.9 | 2024-08-28 | [42927](https://github.com/airbytehq/airbyte/pull/42927)   | Support binary subtype.                                                                                   |
+| 1.5.8 | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841)   | Adopt latest CDK.                                                                                         |
+| 1.5.7 | 2024-08-27 | [44846](https://github.com/airbytehq/airbyte/pull/44846)   | DBZ filters in related streams only.                                                                      |
+| 1.5.6 | 2024-08-27 | [44839](https://github.com/airbytehq/airbyte/pull/44839)   | DBZ filters in related streams only.                                                                      |
+| 1.5.5 | 2024-08-26 | [44779](https://github.com/airbytehq/airbyte/pull/44779)   | Revert permission check on oplog.rs.                                                                      |
+| 1.5.4 | 2024-08-20 | [44490](https://github.com/airbytehq/airbyte/pull/44490)   | Add read permission check on oplog.rs collection used by CDC.                                             |
+| 1.5.3 | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410)   | Adopt latest CDK.                                                                                         |
+| 1.5.2 | 2024-08-06 | [42869](https://github.com/airbytehq/airbyte/pull/42869)   | Adopt latest CDK.                                                                                         |
+| 1.5.1 | 2024-08-01 | [42549](https://github.com/airbytehq/airbyte/pull/42549)   | Centered the connector icon.                                                                              |
+| 1.5.0 | 2024-07-26 | [42561](https://github.com/airbytehq/airbyte/pull/42561)   | Implement WASS algorithm.                                                                                 |
+| 1.4.3 | 2024-07-22 | [39145](https://github.com/airbytehq/airbyte/pull/39145)   | Warn (vs fail) on different \_id types in collection.                                                     |
+| 1.4.2 | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516)   | Remove dbz hearbeat.                                                                                      |
+| 1.4.1 | 2024-06-11 | [39530](https://github.com/airbytehq/airbyte/pull/39530)   | Adopt new CDK.                                                                                            |
+| 1.4.0 | 2024-06-11 | [38238](https://github.com/airbytehq/airbyte/pull/38238)   | Update mongodbv2 to use dbz 2.6.2                                                                         |
+| 1.3.15 | 2024-05-30 | [38781](https://github.com/airbytehq/airbyte/pull/38781)   | Sync sending trace status messages indicating progress.                                                   |
+| 1.3.14 | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584)   | Set is_resumable flag in discover.                                                                        |
+| 1.3.13 | 2024-05-09 | [36851](https://github.com/airbytehq/airbyte/pull/36851)   | Support reading collection with a binary \_id type.                                                       |
+| 1.3.12 | 2024-05-07 | [36851](https://github.com/airbytehq/airbyte/pull/36851)   | Upgrade debezium to version 2.5.1.                                                                        |
+| 1.3.11 | 2024-05-02 | [37753](https://github.com/airbytehq/airbyte/pull/37753)   | Chunk size(limit) should correspond to ~1GB of data.                                                      |
+| 1.3.10 | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781)   | Adopt latest CDK.                                                                                         |
+| 1.3.9 | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742)   | Adopt latest CDK. Remove Debezium retries.                                                                |
+| 1.3.8 | 2024-04-24 | [37559](https://github.com/airbytehq/airbyte/pull/37559)   | Implement fixed-size chunking while performing initial load.                                              |
+| 1.3.7 | 2024-04-24 | [37557](https://github.com/airbytehq/airbyte/pull/37557)   | Change bug in resume token validity check.                                                                |
+| 1.3.6 | 2024-04-24 | [37525](https://github.com/airbytehq/airbyte/pull/37525)   | Internal refactor.                                                                                        |
+| 1.3.5 | 2024-04-22 | [37348](https://github.com/airbytehq/airbyte/pull/37348)   | Do not send estimate trace if we do not have data.                                                        |
+| 1.3.4 | 2024-04-16 | [37348](https://github.com/airbytehq/airbyte/pull/37348)   | Populate null values in airbyte record messages.                                                          |
+| 1.3.3 | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872)   | Update to connector's metadat definition.                                                                 |
+| 1.3.2 | 2024-04-04 | [36845](https://github.com/airbytehq/airbyte/pull/36845)   | Adopt Kotlin CDK.                                                                                         |
+| 1.3.1 | 2024-04-04 | [36837](https://github.com/airbytehq/airbyte/pull/36837)   | Adopt CDK 0.28.0.                                                                                         |
+| 1.3.0 | 2024-03-15 | [35669](https://github.com/airbytehq/airbyte/pull/35669)   | Full refresh read of collections.                                                                         |
+| 1.2.16 | 2024-03-06 | [35669](https://github.com/airbytehq/airbyte/pull/35669)   | State message will now include record count.                                                              |
+| 1.2.15 | 2024-02-27 | [35673](https://github.com/airbytehq/airbyte/pull/35673)   | Consume user provided connection string.                                                                  |
+| 1.2.14 | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675)   | Fix invalid cdc error message.                                                                            |
+| 1.2.13 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug.                                                                                          |
+| 1.2.12 | 2024-02-21 | [35526](https://github.com/airbytehq/airbyte/pull/35526)   | Improve error handling.                                                                                   |
+| 1.2.11 | 2024-02-20 | [35375](https://github.com/airbytehq/airbyte/pull/35375)   | Add config to throw an error on invalid CDC position and enable it by default.                            |
+| 1.2.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751)   | Emit analytics message for invalid CDC cursor.                                                            |
+| 1.2.9   | 2024-02-13 | [35114](https://github.com/airbytehq/airbyte/pull/35114)   | Extend subsequent cdc record wait time to the duration of initial. Bug Fixes                              |
+| 1.2.8   | 2024-02-08 | [34748](https://github.com/airbytehq/airbyte/pull/34748)   | Adopt CDK 0.19.0                                                                                          |
+| 1.2.7   | 2024-02-01 | [34759](https://github.com/airbytehq/airbyte/pull/34759)   | Fail sync if initial snapshot for any stream fails.                                                       |
+| 1.2.6   | 2024-01-31 | [34594](https://github.com/airbytehq/airbyte/pull/34594)   | Scope initial resume token to streams of interest.                                                        |
+| 1.2.5   | 2024-01-29 | [34641](https://github.com/airbytehq/airbyte/pull/34641)   | Allow resuming an initial snapshot when Id type is not of default ObjectId .                              |
+| 1.2.4   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573)   | Adopt CDK v0.16.0.                                                                                        |
+| 1.2.3   | 2024-01-18 | [34364](https://github.com/airbytehq/airbyte/pull/34364)   | Add additional logging for resume token + reduce discovery size to 10.                                    |
+| 1.2.2   | 2024-01-16 | [34314](https://github.com/airbytehq/airbyte/pull/34314)   | Reduce minimum document discovery size to 100.                                                            |
+| 1.2.1   | 2023-12-18 | [33549](https://github.com/airbytehq/airbyte/pull/33549)   | Add logging to understand op log size.                                                                    |
+| 1.2.0   | 2023-12-18 | [33438](https://github.com/airbytehq/airbyte/pull/33438)   | Remove LEGACY state flag                                                                                  |
+| 1.1.0   | 2023-12-14 | [32328](https://github.com/airbytehq/airbyte/pull/32328)   | Schema less mode in mongodb.                                                                              |
+| 1.0.12  | 2023-12-13 | [33430](https://github.com/airbytehq/airbyte/pull/33430)   | Add more verbose logging.                                                                                 |
+| 1.0.11  | 2023-11-28 | [33356](https://github.com/airbytehq/airbyte/pull/33356)   | Support for better debugging tools.                                                                       |
+| 1.0.10  | 2023-11-28 | [32886](https://github.com/airbytehq/airbyte/pull/32886)   | Handle discover phase OOMs                                                                                |
+| 1.0.9   | 2023-11-08 | [32285](https://github.com/airbytehq/airbyte/pull/32285)   | Additional support to read UUIDs                                                                          |
+| 1.0.8   | 2023-11-08 | [32125](https://github.com/airbytehq/airbyte/pull/32125)   | Fix compilation warnings                                                                                  |
+| 1.0.7   | 2023-11-07 | [32250](https://github.com/airbytehq/airbyte/pull/32250)   | Add support to read UUIDs.                                                                                |
+| 1.0.6   | 2023-11-06 | [32193](https://github.com/airbytehq/airbyte/pull/32193)   | Adopt java CDK version 0.4.1.                                                                             |
+| 1.0.5   | 2023-10-31 | [32028](https://github.com/airbytehq/airbyte/pull/32028)   | url encode username and password.<br/>Handle a case of document update and delete in a single sync.       |
+| 1.0.3   | 2023-10-19 | [31629](https://github.com/airbytehq/airbyte/pull/31629)   | Allow discover operation use of disk file when an operation goes over max allowed mem                     |
+| 1.0.2   | 2023-10-19 | [31596](https://github.com/airbytehq/airbyte/pull/31596)   | Allow use of temp disk file when an operation goes over max allowed mem                                   |
+| 1.0.1   | 2023-10-03 | [31034](https://github.com/airbytehq/airbyte/pull/31034)   | Fix field filtering logic related to nested documents                                                     |
+| 1.0.0   | 2023-10-03 | [29969](https://github.com/airbytehq/airbyte/pull/29969)   | General availability release using Change Data Capture (CDC)                                              |
+| 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815)   | Revert back to version 0.2.0                                                                              |
+| 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760)   | Fix bug preventing some syncs from succeeding when collecting stats                                       |
+| 0.2.3   | 2023-07-26 | [28733](https://github.com/airbytehq/airbyte/pull/28733)   | Fix bug preventing syncs from discovering field types                                                     |
+| 0.2.2   | 2023-07-25 | [28692](https://github.com/airbytehq/airbyte/pull/28692)   | Fix bug preventing statistics retrieval from views                                                        |
+| 0.2.1   | 2023-07-21 | [28527](https://github.com/airbytehq/airbyte/pull/28527)   | Log server information                                                                                    |
+| 0.2.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737)   | License Update: Elv2                                                                                      |
+| 0.1.19  | 2022-10-07 | [17614](https://github.com/airbytehq/airbyte/pull/17614)   | Increased discover performance                                                                            |
+| 0.1.18  | 2022-10-05 | [17590](https://github.com/airbytehq/airbyte/pull/17590)   | Add ability to enforce SSL in MongoDB connector and check logic                                           |
+| 0.1.17  | 2022-09-08 | [16401](https://github.com/airbytehq/airbyte/pull/16401)   | Fixed bug with empty strings in fields with _aibyte_transform_                                            |
+| 0.1.16  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356)   | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
+| 0.1.15  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)   | Updated stacktrace format for any trace message errors                                                    |
+| 0.1.14  | 2022-05-05 | [12428](https://github.com/airbytehq/airbyte/pull/12428)   | JsonSchema: Add properties to fields with type 'object'                                                   |
+| 0.1.13  | 2022-02-21 | [10276](https://github.com/airbytehq/airbyte/pull/10276)   | Create a custom codec registry to handle DBRef MongoDB objects                                            |
+| 0.1.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
+| 0.1.11  | 2022-01-10 | [9238](https://github.com/airbytehq/airbyte/pull/9238)     | Return only those collections for which the user has privileges                                           |
+| 0.1.10  | 2021-12-30 | [9202](https://github.com/airbytehq/airbyte/pull/9202)     | Update connector fields title/description                                                                 |
+| 0.1.9   | 2021-12-07 | [8491](https://github.com/airbytehq/airbyte/pull/8491)     | Configure 10000 limit doc reading during Discovery step                                                   |
+| 0.1.8   | 2021-11-29 | [8306](https://github.com/airbytehq/airbyte/pull/8306)     | Added milliseconds for date format for cursor                                                             |
+| 0.1.7   | 2021-11-22 | [8161](https://github.com/airbytehq/airbyte/pull/8161)     | Updated Performance and updated cursor for timestamp type                                                 |
+| 0.1.5   | 2021-11-17 | [8046](https://github.com/airbytehq/airbyte/pull/8046)     | Added milliseconds to convert timestamp to datetime format                                                |
+| 0.1.4   | 2021-11-15 | [7982](https://github.com/airbytehq/airbyte/pull/7982)     | Updated Performance                                                                                       |
+| 0.1.3   | 2021-10-19 | [7160](https://github.com/airbytehq/airbyte/pull/7160)     | Fixed nested document parsing                                                                             |
+| 0.1.2   | 2021-10-07 | [6860](https://github.com/airbytehq/airbyte/pull/6860)     | Added filter to avoid MongoDb system collections                                                          |
+| 0.1.1   | 2021-09-21 | [6364](https://github.com/airbytehq/airbyte/pull/6364)     | Source MongoDb: added support via TLS/SSL                                                                 |
+| 0.1.0   | 2021-08-30 | [5530](https://github.com/airbytehq/airbyte/pull/5530)     | New source: MongoDb ported to java                                                                        |
 
 </details>
