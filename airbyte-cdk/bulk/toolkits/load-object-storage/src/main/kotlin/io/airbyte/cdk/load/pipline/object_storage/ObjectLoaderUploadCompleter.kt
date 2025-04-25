@@ -52,11 +52,12 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
             is ObjectLoaderPartLoader.LoadedPart -> {
                 // by setting bytes to null, we tell the bookkeeper
                 // not to track this empty part
-                val bytes = if (input.empty) {
-                    null
-                } else {
-                    ByteArray(0)
-                }
+                val bytes =
+                    if (input.empty) {
+                        null
+                    } else {
+                        ByteArray(0)
+                    }
 
                 val part =
                     Part(
