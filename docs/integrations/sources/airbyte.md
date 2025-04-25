@@ -23,6 +23,7 @@ This source allows you to sync up data about your Airbyte Cloud workspaces. [Tak
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.2 | 2025-04-19 | [58276](https://github.com/airbytehq/airbyte/pull/58276) | Update dependencies |
 | 0.1.1 | 2025-04-12 | [57637](https://github.com/airbytehq/airbyte/pull/57637) | Update dependencies |
 | 0.1.0 | 2025-04-08 | [57518](https://github.com/airbytehq/airbyte/pull/57518) | Fixed jobs incremental syncing by filtering out null updatedAt records |
 | 0.0.9 | 2025-04-05 | [57155](https://github.com/airbytehq/airbyte/pull/57155) | Update dependencies |

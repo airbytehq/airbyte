@@ -31,10 +31,25 @@ TEST_CONFIG: dict = {
 
 @freeze_time("2021-03-01")
 def test_analytics_stream_slices(requests_mock):
+    expected_slices = [
+        {
+            "campaign_id": 123,
+            "start_time": "2021-01-01",
+            "end_time": "2021-01-31",
+            "parent_slice": {"account_id": 1, "parent_slice": {}},
+        },
+        {
+            "campaign_id": 123,
+            "start_time": "2021-01-31",
+            "end_time": "2021-03-01",
+            "parent_slice": {"account_id": 1, "parent_slice": {}},
+        },
+    ]
+
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123}]})
-    assert [dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())] == load_json_file("output_slices.json")
+    assert [dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())] == expected_slices
 
 
 def test_read_records(requests_mock):

@@ -28,10 +28,10 @@ definitions:
 
   default_error_handler:
     type: DefaultErrorHandler
-    max_retries: 10
+    max_retries: 5
     backoff_strategies:
-      - type: ConstantBackoffStrategy
-        backoff_time_in_seconds: 120
+      - type: ExponentialBackoffStrategy
+        factor: 30
     response_filters:
       - error_message_contains: "Unable to authenticate request"
         action: FAIL

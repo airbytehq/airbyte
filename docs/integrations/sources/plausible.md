@@ -48,6 +48,7 @@ The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
+| 0.2.10 | 2025-04-19 | [58482](https://github.com/airbytehq/airbyte/pull/58482) | Update dependencies |
 | 0.2.9 | 2025-04-12 | [57854](https://github.com/airbytehq/airbyte/pull/57854) | Update dependencies |
 | 0.2.8 | 2025-04-05 | [57358](https://github.com/airbytehq/airbyte/pull/57358) | Update dependencies |
 | 0.2.7 | 2025-03-29 | [56803](https://github.com/airbytehq/airbyte/pull/56803) | Update dependencies |
