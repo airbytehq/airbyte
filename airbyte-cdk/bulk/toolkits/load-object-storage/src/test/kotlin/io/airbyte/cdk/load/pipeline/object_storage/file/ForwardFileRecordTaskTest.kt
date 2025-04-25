@@ -6,6 +6,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -14,7 +15,8 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventTask
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
+import io.airbyte.cdk.load.pipline.object_storage.file.ForwardFileRecordTask
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons
@@ -30,124 +32,102 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-class RouteEventTaskTest {
-    @MockK(relaxed = true)
+class ForwardFileRecordTaskTest {
+   @MockK(relaxed = true)
     lateinit var fileLoader: ObjectLoader
 
     @MockK(relaxed = true)
     lateinit var catalog: DestinationCatalog
 
     @MockK(relaxed = true)
-    lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
+    lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>>
 
     @MockK(relaxed = true)
-    lateinit var fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
-
-    @MockK(relaxed = true)
-    lateinit var recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
+    lateinit var outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
 
     private val partition = 1
 
     private val partSizeBytes = 100
 
-    private lateinit var task: RouteEventTask
+    private lateinit var task: ForwardFileRecordTask<String>
 
     @BeforeEach
     fun setup() {
         every { fileLoader.partSizeBytes } returns partSizeBytes.toLong()
 
-        task = RouteEventTask(
-            catalog,
+        task = ForwardFileRecordTask(
             inputQueue,
-            fileQueue,
-            recordQueue,
+            outputQueue,
             partition,
         )
     }
 
     @Test
-    fun `routes messages for streams with includes files to file queue and populates context`() = runTest {
-        val stream = Fixtures.stream(includeFiles = true)
+    fun `forwards end of stream`() = runTest {
+        val input = PipelineEndOfStream<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>(Fixtures.descriptor)
+        task.handleEvent(input)
+
+        coVerify { outputQueue.publish(PipelineEndOfStream(input.stream), 1) }
+    }
+
+    @Test
+    fun `drops heartbeat messages`() = runTest {
+        val input = PipelineHeartbeat<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>()
+        task.handleEvent(input)
+
+        coVerify (exactly = 0) { outputQueue.publish(any(), any()) }
+    }
+
+    @Test
+    fun `does nothing if the remote object is null (this is an artifact of End of Stream)`() = runTest {
+        val stream = Fixtures.stream()
         val key = StreamKey(stream.descriptor)
-        val record = Fixtures.record()
-        val checkpoints = mapOf(CheckpointId(1) to 2L)
-
+        val context = PipelineContext(
+            mapOf(CheckpointId(123) to 14L),
+            Fixtures.record(),
+        )
+        val result = ObjectLoaderUploadCompleter.UploadResult<String>(
+            state = BatchState.LOADED,
+            remoteObject = null
+        )
         val input = PipelineMessage(
-            checkpointCounts = checkpoints,
+            checkpointCounts = mapOf(),
             key = key,
-            value = record,
+            value = result,
+            context = context
         )
-        every { catalog.getStream(key.stream) } returns stream
-
         task.handleEvent(input)
 
-        val expectedContext = PipelineContext(
-            mapOf(CheckpointId(1) to 2),
-            record,
-        )
-
-        val expected = PipelineMessage(
-            checkpointCounts = checkpoints,
-            key = key,
-            value = Fixtures.record(),
-            context = expectedContext
-        )
-
-        coVerify { fileQueue.publish(expected, partition) }
+        coVerify (exactly = 0) { outputQueue.publish(any(), any()) }
     }
 
     @Test
-    fun `routes end of stream for streams with includes files to file queue`() = runTest {
-        val stream = Fixtures.stream(includeFiles = true)
-        val key = StreamKey(Fixtures.descriptor)
-
-        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
-        every { catalog.getStream(key.stream) } returns stream
-
-        task.handleEvent(input)
-
-        coVerify { fileQueue.publish(input, partition) }
-    }
-
-    @Test
-    fun `routes messages for non-file streams to record queue`() = runTest {
-        val stream = Fixtures.stream(includeFiles = false)
+    fun `extracts record and checkpoints and forwards them when present`() = runTest {
+        val stream = Fixtures.stream()
         val key = StreamKey(stream.descriptor)
-        val record = Fixtures.record()
-        val checkpoints = mapOf(CheckpointId(1) to 2L)
-
-        val input = PipelineMessage(
-            checkpointCounts = checkpoints,
-            key = key,
-            value = record,
+        val context = PipelineContext(
+            mapOf(CheckpointId(123) to 14L),
+            Fixtures.record(),
         )
-        every { catalog.getStream(key.stream) } returns stream
-
+        val result = ObjectLoaderUploadCompleter.UploadResult(
+            state = BatchState.LOADED,
+            remoteObject = "uploaded thing"
+        )
+        val input = PipelineMessage(
+            checkpointCounts = mapOf(),
+            key = key,
+            value = result,
+            context = context
+        )
         task.handleEvent(input)
 
-        coVerify { recordQueue.publish(input, partition) }
-    }
+        val expectedOutput = PipelineMessage(
+            context.parentCheckpointCounts!!,
+            input.key,
+            context.parentRecord!!,
+        )
 
-    @Test
-    fun `routes end of stream for non-file streams to record queue`() = runTest {
-        val stream = Fixtures.stream(includeFiles = false)
-        val key = StreamKey(Fixtures.descriptor)
-
-        val input = PipelineEndOfStream<StreamKey, DestinationRecordRaw>(stream.descriptor)
-        every { catalog.getStream(key.stream) } returns stream
-
-        task.handleEvent(input)
-
-        coVerify { recordQueue.publish(input, partition) }
-    }
-
-    @Test
-    fun `routes heartbeats to record queue`() = runTest {
-        val input = PipelineHeartbeat<StreamKey, DestinationRecordRaw>()
-
-        task.handleEvent(input)
-
-        coVerify { recordQueue.publish(input, partition) }
+        coVerify (exactly = 1) { outputQueue.publish(expectedOutput, 1) }
     }
 
     object Fixtures {

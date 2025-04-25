@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage.file
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -27,10 +28,9 @@ class RouteEventTask(
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
-    override suspend fun execute() {
-        inputQueue.consume(partition).collect(this::handleEvent)
-    }
+    override suspend fun execute() = inputQueue.consume(partition).collect(this::handleEvent)
 
+    @VisibleForTesting
     suspend fun handleEvent(event: PipelineEvent<StreamKey, DestinationRecordRaw>) {
         val streamDesc =
             when (event) {

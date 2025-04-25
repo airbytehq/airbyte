@@ -53,9 +53,7 @@ class FileChunkTask<T>(
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
 
-    override suspend fun execute() {
-        inputQueue.consume(partition).collect(this::handleEvent)
-    }
+    override suspend fun execute() = inputQueue.consume(partition).collect(this::handleEvent)
 
     @VisibleForTesting
     suspend fun handleEvent(event: PipelineEvent<StreamKey, DestinationRecordRaw>) {

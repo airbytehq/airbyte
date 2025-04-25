@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage.file
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
@@ -19,7 +20,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ForwardFileRecordTask<T>(
     private val inputQueue:
-        PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
+    PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
     private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partition: Int,
 ) : Task {
@@ -27,26 +28,28 @@ class ForwardFileRecordTask<T>(
 
     val log = KotlinLogging.logger {}
 
-    override suspend fun execute() {
-        inputQueue.consume(partition).collect { event ->
-            val toPublish: PipelineEvent<StreamKey, DestinationRecordRaw>? =
-                when (event) {
-                    is PipelineMessage -> {
-                        if (event.value.remoteObject == null) {
-                            null
-                        } else {
-                            PipelineMessage(
-                                event.context!!.parentCheckpointCounts!!,
-                                event.key,
-                                event.context!!.parentRecord!!,
-                            )
-                        }
+    override suspend fun execute() = inputQueue.consume(partition).collect(this::handleEvent)
+
+    @VisibleForTesting
+    suspend fun handleEvent(event: PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>) {
+        val toPublish: PipelineEvent<StreamKey, DestinationRecordRaw>? =
+            when (event) {
+                is PipelineMessage -> {
+                    if (event.value.remoteObject == null) {
+                        null
+                    } else {
+                        PipelineMessage(
+                            event.context!!.parentCheckpointCounts!!,
+                            event.key,
+                            event.context!!.parentRecord!!,
+                        )
                     }
-                    is PipelineEndOfStream<*, *> -> PipelineEndOfStream(event.stream)
-                    is PipelineHeartbeat<*, *> -> null
                 }
 
-            toPublish?.let { outputQueue.publish(it, 1) }
-        }
+                is PipelineEndOfStream<*, *> -> PipelineEndOfStream(event.stream)
+                is PipelineHeartbeat<*, *> -> null
+            }
+
+        toPublish?.let { outputQueue.publish(it, 1) }
     }
 }
