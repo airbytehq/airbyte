@@ -10,17 +10,17 @@ on:
         options:
           - airbytehq/airbyte
 jobs:
-#  publish-bulk-cdk:
-#    uses: ./.github/workflows/publish-bulk-cdk.yml
-#    with:
-#      dry-run: true
-#    secrets: inherit
+  publish-bulk-cdk:
+    uses: ./.github/workflows/publish-bulk-cdk.yml
+    with:
+      dry-run: true
+    secrets: inherit
   bump-cdk-version:
     runs-on: ubuntu-24.04
     outputs:
       # Output the matrix config as a JSON string
       modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
-#    needs: [ publish-bulk-cdk ]
+    needs: [ publish-bulk-cdk ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
