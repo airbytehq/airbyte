@@ -10,7 +10,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, RecordBuilder, create_record_builder, find_template
-from airbyte_protocol.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from source_hubspot import SourceHubspot
 
 from .config_builder import ConfigBuilder
@@ -130,4 +130,4 @@ class HubspotTestCase:
     def read_from_stream(
         cls, cfg, stream: str, sync_mode: SyncMode, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
     ) -> EntrypointOutput:
-        return read(SourceHubspot(), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)
+        return read(SourceHubspot(cfg, None, None), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)

@@ -40,7 +40,7 @@ data class S3V2Configuration<T : OutputStream>(
     override val estimatedRecordMemoryOverheadRatio: Double = 5.0,
     override val processEmptyFiles: Boolean = true,
 
-    /** Below has no effect until [S3V2ObjectLoader] is enabled. */
+    // ObjectLoader-specific configuration
     val numPartWorkers: Int = 2,
     val numUploadWorkers: Int = 5,
     val maxMemoryRatioReservedForParts: Double = 0.4,

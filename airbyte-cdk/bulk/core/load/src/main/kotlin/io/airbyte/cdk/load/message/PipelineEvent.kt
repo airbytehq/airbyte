@@ -26,3 +26,6 @@ class PipelineMessage<K : WithStream, T>(
 /** Broadcast at end-of-stream to all partitions to signal that the stream has ended. */
 class PipelineEndOfStream<K : WithStream, T>(val stream: DestinationStream.Descriptor) :
     PipelineEvent<K, T>
+
+/** Timed recurring event to keep the pipeline alive if no data is coming. */
+class PipelineHeartbeat<K : WithStream, T> : PipelineEvent<K, T>

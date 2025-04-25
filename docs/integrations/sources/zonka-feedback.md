@@ -32,6 +32,9 @@ For more information about the API visit https://apidocs.zonkafeedback.com/#intr
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-04-19 | [58571](https://github.com/airbytehq/airbyte/pull/58571) | Update dependencies |
+| 0.0.17 | 2025-04-13 | [58048](https://github.com/airbytehq/airbyte/pull/58048) | Update dependencies |
+| 0.0.16 | 2025-04-05 | [57374](https://github.com/airbytehq/airbyte/pull/57374) | Update dependencies |
 | 0.0.15 | 2025-03-29 | [56834](https://github.com/airbytehq/airbyte/pull/56834) | Update dependencies |
 | 0.0.14 | 2025-03-22 | [56344](https://github.com/airbytehq/airbyte/pull/56344) | Update dependencies |
 | 0.0.13 | 2025-03-09 | [55656](https://github.com/airbytehq/airbyte/pull/55656) | Update dependencies |

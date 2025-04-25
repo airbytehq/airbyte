@@ -56,6 +56,9 @@ Use this to pull data from Pivotal Tracker.
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.3.19 | 2025-04-19 | [58456](https://github.com/airbytehq/airbyte/pull/58456) | Update dependencies |
+| 0.3.18 | 2025-04-12 | [57897](https://github.com/airbytehq/airbyte/pull/57897) | Update dependencies |
+| 0.3.17 | 2025-04-05 | [57345](https://github.com/airbytehq/airbyte/pull/57345) | Update dependencies |
 | 0.3.16 | 2025-03-29 | [56781](https://github.com/airbytehq/airbyte/pull/56781) | Update dependencies |
 | 0.3.15 | 2025-03-22 | [56210](https://github.com/airbytehq/airbyte/pull/56210) | Update dependencies |
 | 0.3.14 | 2025-03-08 | [55521](https://github.com/airbytehq/airbyte/pull/55521) | Update dependencies |

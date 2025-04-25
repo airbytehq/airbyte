@@ -22,7 +22,7 @@ class ObjectLoaderFormattedPartPartitioner<K : WithStream, T> :
         return ObjectKey(inputKey.stream, output.part.key)
     }
 
-    override fun getPart(outputKey: ObjectKey, numParts: Int): Int {
+    override fun getPart(outputKey: ObjectKey, inputPart: Int, numParts: Int): Int {
         return prng.nextInt(numParts)
     }
 }

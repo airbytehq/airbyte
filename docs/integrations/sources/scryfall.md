@@ -20,6 +20,9 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.21 | 2025-04-19 | [58414](https://github.com/airbytehq/airbyte/pull/58414) | Update dependencies |
+| 0.0.20 | 2025-04-12 | [57965](https://github.com/airbytehq/airbyte/pull/57965) | Update dependencies |
+| 0.0.19 | 2025-04-05 | [57487](https://github.com/airbytehq/airbyte/pull/57487) | Update dependencies |
 | 0.0.18 | 2025-03-29 | [56752](https://github.com/airbytehq/airbyte/pull/56752) | Update dependencies |
 | 0.0.17 | 2025-03-22 | [56185](https://github.com/airbytehq/airbyte/pull/56185) | Update dependencies |
 | 0.0.16 | 2025-03-08 | [55065](https://github.com/airbytehq/airbyte/pull/55065) | Update dependencies |

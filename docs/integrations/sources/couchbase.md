@@ -85,6 +85,8 @@ For Capella users, be aware of your cluster's performance limits and pricing tie
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.4 | 2025-04-19 | [57810](https://github.com/airbytehq/airbyte/pull/57810) | Update dependencies |
+| 0.1.3 | 2025-04-05 | [56552](https://github.com/airbytehq/airbyte/pull/56552) | Update dependencies |
 | 0.1.2 | 2025-03-22 | [55965](https://github.com/airbytehq/airbyte/pull/55965) | Update dependencies |
 | 0.1.1 | 2025-03-08 | [55324](https://github.com/airbytehq/airbyte/pull/55324) | Update dependencies |
 | 0.1.0   | 2023-10-12 | [#45876](https://github.com/airbytehq/airbyte/pull/45876) | Initial release of Couchbase Source Connector |

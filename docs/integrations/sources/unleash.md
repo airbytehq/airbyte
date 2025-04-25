@@ -58,6 +58,9 @@ The API key that you are assigned is rate-limited.
 
 | Version | Date       | Pull Request                                              | Subject                               |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------ |
+| 0.2.19 | 2025-04-20 | [58578](https://github.com/airbytehq/airbyte/pull/58578) | Update dependencies |
+| 0.2.18 | 2025-04-12 | [58013](https://github.com/airbytehq/airbyte/pull/58013) | Update dependencies |
+| 0.2.17 | 2025-04-05 | [57468](https://github.com/airbytehq/airbyte/pull/57468) | Update dependencies |
 | 0.2.16 | 2025-03-29 | [56828](https://github.com/airbytehq/airbyte/pull/56828) | Update dependencies |
 | 0.2.15 | 2025-03-22 | [56274](https://github.com/airbytehq/airbyte/pull/56274) | Update dependencies |
 | 0.2.14 | 2025-03-08 | [55587](https://github.com/airbytehq/airbyte/pull/55587) | Update dependencies |

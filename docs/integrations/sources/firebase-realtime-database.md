@@ -79,6 +79,9 @@ Once you've configured Firebase Realtime Database as a source, delete the Servic
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.44 | 2025-04-19 | [58347](https://github.com/airbytehq/airbyte/pull/58347) | Update dependencies |
+| 0.1.43 | 2025-04-12 | [57755](https://github.com/airbytehq/airbyte/pull/57755) | Update dependencies |
+| 0.1.42 | 2025-04-05 | [57229](https://github.com/airbytehq/airbyte/pull/57229) | Update dependencies |
 | 0.1.41 | 2025-03-29 | [56477](https://github.com/airbytehq/airbyte/pull/56477) | Update dependencies |
 | 0.1.40 | 2025-03-22 | [55992](https://github.com/airbytehq/airbyte/pull/55992) | Update dependencies |
 | 0.1.39 | 2025-03-08 | [55297](https://github.com/airbytehq/airbyte/pull/55297) | Update dependencies |

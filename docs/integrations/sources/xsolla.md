@@ -26,6 +26,9 @@ The Xsolla Airbyte Connector enables seamless integration between Xsolla and var
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2025-04-19 | [58546](https://github.com/airbytehq/airbyte/pull/58546) | Update dependencies |
+| 0.0.20 | 2025-04-12 | [58030](https://github.com/airbytehq/airbyte/pull/58030) | Update dependencies |
+| 0.0.19 | 2025-04-05 | [57403](https://github.com/airbytehq/airbyte/pull/57403) | Update dependencies |
 | 0.0.18 | 2025-03-29 | [56886](https://github.com/airbytehq/airbyte/pull/56886) | Update dependencies |
 | 0.0.17 | 2025-03-22 | [56304](https://github.com/airbytehq/airbyte/pull/56304) | Update dependencies |
 | 0.0.16 | 2025-03-08 | [55624](https://github.com/airbytehq/airbyte/pull/55624) | Update dependencies |

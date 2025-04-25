@@ -56,6 +56,8 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.11 | 2025-04-19 | [57869](https://github.com/airbytehq/airbyte/pull/57869) | Update dependencies |
+| 1.1.10 | 2025-04-05 | [57300](https://github.com/airbytehq/airbyte/pull/57300) | Update dependencies |
 | 1.1.9 | 2025-03-29 | [56743](https://github.com/airbytehq/airbyte/pull/56743) | Update dependencies |
 | 1.1.8 | 2025-03-22 | [56211](https://github.com/airbytehq/airbyte/pull/56211) | Update dependencies |
 | 1.1.7 | 2025-03-17 | [55888](https://github.com/airbytehq/airbyte/pull/55888) | Remove custom incremental class and use new filter syntax |
