@@ -68,7 +68,7 @@ class DevNullDirectLoaderFactory(private val config: DevNullConfiguration) :
             }
             is Failing -> {
                 log.info {
-                    "Creating FailingDirectLoader for FailingDestination. The File messages will be ignored. The connection will fail"
+                    "Creating FailingDirectLoader for FailingDestination. The File messages will be ignored"
                 }
                 FailingDirectLoader(config, streamDescriptor, config.type.numMessages)
             }

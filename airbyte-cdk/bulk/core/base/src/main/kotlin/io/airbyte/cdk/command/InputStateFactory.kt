@@ -90,18 +90,15 @@ class InputStateFactory {
         when (message.type) {
             AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
                 if (message.global == null) {
-                    log.error { "global state not set in $message." }
                     throw ConfigErrorException("global state not set in $message.")
                 }
             }
             AirbyteStateMessage.AirbyteStateType.STREAM -> {
                 if (message.stream == null) {
-                    log.error { "stream state not set in $message." }
                     throw ConfigErrorException("stream state not set in $message.")
                 }
             }
             else -> {
-                log.error { "Unsupported state type ${message.type} in $message." }
                 throw ConfigErrorException("Unsupported state type ${message.type} in $message.")
             }
         }
