@@ -5,8 +5,6 @@ The FAST Airbyte Standard Tests suite is designed to ensure that connectors meet
 protocol standards.
 """
 
-from source_hardcoded_records import SourceHardcodedRecords
-
 from airbyte_cdk.test import standard_tests
 
 
@@ -21,5 +19,3 @@ class TestAirbyteStandardTests(standard_tests.SourceTestSuiteBase):
     As long as the class name starts with "Test", pytest will automatically discover and run the
     tests in this class.
     """
-
-    connector = SourceHardcodedRecords
