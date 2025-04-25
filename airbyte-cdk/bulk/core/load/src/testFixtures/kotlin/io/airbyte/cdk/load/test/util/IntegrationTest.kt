@@ -72,6 +72,8 @@ abstract class IntegrationTest(
     // cleaner, so we'd prefer to only them once.
     // but this is simpler to implement than tracking hasRunCleaner across test classes,
     // and then also requiring cleaners to be able to recognize themselves as identical.
+    // (you would think this is just an AfterAll method, but junit requires those to be static,
+    // so we wouldn't have access to the cleaner instance >.>)
     private val hasRunCleaner = AtomicBoolean(false)
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
