@@ -10,11 +10,11 @@ on:
         options:
           - airbytehq/airbyte
 jobs:
-  publish-bulk-cdk:
-    uses: ./.github/workflows/publish-bulk-cdk.yml
-    with:
-      dry-run: true
-    secrets: inherit
+#  publish-bulk-cdk:
+#    uses: ./.github/workflows/publish-bulk-cdk.yml
+#    with:
+#      dry-run: true
+#    secrets: inherit
   bump-cdk-version:
     runs-on: ubuntu-24.04
     outputs:
