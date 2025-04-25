@@ -70,6 +70,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         override val objectKey: String,
         val partIndex: Int,
         val isFinal: Boolean,
+        // keep track of whether it's empty so the bookkeeper can ignore it
         val empty: Boolean = false,
     ) : PartResult<T> {
         override val state: BatchState = BatchState.STAGED

@@ -37,6 +37,8 @@ class ForwardFileRecordTask<T>(
         val toPublish: PipelineEvent<StreamKey, DestinationRecordRaw>? =
             when (event) {
                 is PipelineMessage -> {
+                    // the uploader emits a "dummy" empty object on `finish()`
+                    // we are safe to ignore as it serves no direct function
                     if (event.value.remoteObject == null) {
                         null
                     } else {

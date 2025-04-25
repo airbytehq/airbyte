@@ -50,16 +50,19 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
     ): BatchAccumulatorResult<State, UploadResult<T>> {
         return when (input) {
             is ObjectLoaderPartLoader.LoadedPart -> {
+                // by setting bytes to null, we tell the bookkeeper
+                // not to track this empty part
+                val bytes = if (input.empty) {
+                    null
+                } else {
+                    ByteArray(0)
+                }
+
                 val part =
                     Part(
                         key = state.objectKey,
                         fileNumber = 0L, // ignored
-                        bytes =
-                            if (input.empty) {
-                                null
-                            } else {
-                                ByteArray(0)
-                            },
+                        bytes = bytes,
                         isFinal = input.isFinal,
                         partIndex = input.partIndex
                     )
