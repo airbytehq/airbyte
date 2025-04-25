@@ -306,7 +306,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.10.0 | 2025-04-07 | [57507](https://github.com/airbytehq/airbyte/pull/57507) | Adapt file-trasnfer records to latest protocol |
+| 0.10.0 | 2025-04-07 | [57507](https://github.com/airbytehq/airbyte/pull/57507) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= X.X.X |
 | 0.9.3 | 2025-04-19 | [58471](https://github.com/airbytehq/airbyte/pull/58471) | Update dependencies |
 | 0.9.2 | 2025-04-12 | [57920](https://github.com/airbytehq/airbyte/pull/57920) | Update dependencies |
 | 0.9.1 | 2025-04-05 | [57065](https://github.com/airbytehq/airbyte/pull/57065) | Update dependencies |
