@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 18ea5fae-f0b1-4d82-9aef-832bb922a5b5
-  dockerImageTag: 0.0.23
+  dockerImageTag: 0.0.24
   dockerRepository: airbyte/source-microsoft-lists
   githubIssueLabel: source-microsoft-lists
   icon: icon.svg
