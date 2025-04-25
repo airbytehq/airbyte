@@ -159,8 +159,7 @@ class DestinationTaskLauncherTest {
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
             destinationTaskLauncher: DestinationTaskLauncher,
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-            pipelineInputQueue:
-                PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+            pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
             loadPipeline: LoadPipeline?,
             partitioner: InputPartitioner,
             openStreamQueue: QueueWriter<DestinationStream>,
