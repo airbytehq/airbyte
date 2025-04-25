@@ -186,6 +186,16 @@ ${new_row}
 # Ensure the branch has the most recent updates from the master branch
 git fetch origin master
 
+# Find the common ancestor commit between the current branch (HEAD) and origin/master
+# This identifies the point where your current branch diverged from master
+merge_base=$(git merge-base HEAD origin/master)
+echo "Merge base commit: $merge_base"
+# Check if merge_base could be found (e.g., if branches are unrelated)
+if [ -z "$merge_base" ]; then
+  echo "Error: Could not find a common ancestor between HEAD and origin/master."
+  exit 1
+fi
+
 # Get the list of files *modified* (status 'M') on the current branch
 # since it diverged from the master branch (at the merge-base).
 # We compare HEAD against the merge_base commit.
