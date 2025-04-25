@@ -76,8 +76,8 @@ class BigqueryBeansFactory {
                 BigQuerySqlGenerator(config.projectId, config.datasetLocation.region),
                 destinationHandler,
             ),
-            disableTypeDedupe = config.disableTypingDeduping,
-            streamStateStore,
+            disableTypeDedupe = true,
+            streamStateStore
         )
     }
 
