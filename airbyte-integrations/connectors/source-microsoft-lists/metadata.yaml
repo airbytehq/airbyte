@@ -27,6 +27,7 @@ data:
   releaseStage: alpha
   supportLevel: community
   connectorTestSuitesOptions:
+    # no-op for now but will get enabled when the capability is added to airbyte-ci
     - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-MICROSOFT-LISTS_CREDS
