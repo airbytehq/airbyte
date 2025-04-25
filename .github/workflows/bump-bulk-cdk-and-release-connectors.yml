@@ -330,7 +330,24 @@ jobs:
           # Ensure the branch has the most recent updates from the master branch
           git fetch origin master
           
-          modified_files=$(git diff --name-only origin/master)
+          # Get the list of files *modified* (status 'M') on the current branch
+          # since it diverged from the master branch (at the merge-base).
+          # We compare HEAD against the merge_base commit.
+          # --diff-filter=M ensures we only list files that were modified,
+          # excluding added (A), deleted (D), renamed (R), etc.
+          modified_files=$(git diff --name-only --diff-filter=M $merge_base HEAD)
+          echo "Modified files since merge base: $modified_files"
+          # Check if any files were modified
+          if [ -z "$modified_files" ]; then
+            echo "No files were modified on the current branch compared to its merge-base with origin/master."
+            connector_folders=""
+          else
+            # Extract unique connector folder names from the list of modified files
+            connector_folders=$(echo "$modified_files" | \
+            grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
+            sort | \
+            uniq)
+          fi
 
           # Process the list to get the unique connector folder names
           connector_folders=$(echo "$modified_files" | \

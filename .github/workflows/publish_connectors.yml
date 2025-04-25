@@ -83,7 +83,7 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors ${{ inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
+          subcommand: "connectors ${{ inputs.connectors-options }} publish ${{ inputs.publish-options }}"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
           max_attempts: 2
