@@ -164,7 +164,7 @@ class SourceBingAds(YamlDeclarativeSource):
             Budget(client, config),
             Campaigns(client, config),
             BudgetSummaryReport(client, config),
-            Labels(client, config),
+            # Labels(client, config),
             KeywordLabels(client, config),
             Keywords(client, config),
             CampaignLabels(client, config),

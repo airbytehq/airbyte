@@ -94,12 +94,102 @@ definitions:
           type: DpathExtractor
           field_path: ["Accounts"]
         schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _airbyte_parent_id # when used as a parent stream
+            value: "{{ { 'account_id': record['Id'], 'customer_id': record['ParentCustomerId'] } }}"
+  labels_stream:
+    type: DeclarativeStream
+    name: labels
+    primary_key: Id
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/labels.json"
+    retriever:
+      type: AsyncRetriever
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: Id
+            partition_field: account_id
+            stream:
+              $ref: "#/definitions/accounts_stream"
+      status_mapping:
+        failed:
+          - Failed
+          - FailedFullSyncRequired
+        running:
+          - InProgress
+        completed:
+          - Completed
+        timeout: []
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - ResultFileUrl
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - RequestStatus
+      polling_requester:
+        type: HttpRequester
+        url_base: https://bulk.api.bingads.microsoft.com/
+        path: Bulk/v13/BulkDownloadStatus/Query
+        http_method: POST
+        authenticator: "#/definitions/authenticator"
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerId: "'{{ stream_partition['customer_id'] }}'"
+          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        request_body_json:
+          RequestId: "'{{ stream_slice.extra_fields['creation_response']['DownloadRequestId'] }}'"
+      creation_requester:
+        type: HttpRequester
+        url_base: https://bulk.api.bingads.microsoft.com/
+        path: Bulk/v13/Campaigns/DownloadByAccountIds
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerId: "'{{ stream_partition['customer_id'] }}'"
+          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        request_body_json:
+          AccountIds: "['{{ stream_partition['account_id'] }}']"
+          DataScope: EntityData
+          DownloadEntities: ["Labels"]
+          DownloadFileType: Csv
+          FormatVersion: "'6.0'"
+          # LastSyncTimeInUTC:
+          CompressionType: GZip # FIXME comment for PR: this is different than the lib default behavior which is using ZipfileDecoder does not allow for streamed response so I prefer to try GZip even though it's one other change on top of the migration from SOAP to REST
+        authenticator: "#/definitions/authenticator"
+      download_requester:
+        type: HttpRequester
+        url_base: "{{download_target}}"
+        http_method: GET
+      download_decoder:
+        type: GzipDecoder
+        decoder:
+          type: CsvDecoder
+    # FIXME incremental_sync
+    # FIXME transformations/normalization
 
 streams:
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/labels_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 2
   max_concurrency: 10
+
+max_concurrent_async_job_count: 5
