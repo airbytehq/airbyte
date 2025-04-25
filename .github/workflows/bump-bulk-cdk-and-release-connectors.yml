@@ -18,7 +18,7 @@ jobs:
     outputs:
       # Output the matrix config as a JSON string
       modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
-    needs: [ publish-bulk-cdk ]
+    needs: [publish-bulk-cdk]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
