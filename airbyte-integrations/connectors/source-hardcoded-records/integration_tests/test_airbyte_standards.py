@@ -18,4 +18,7 @@ class TestAirbyteStandardTests(standard_tests.SourceTestSuiteBase):
 
     As long as the class name starts with "Test", pytest will automatically discover and run the
     tests in this class.
+
+    If no `connector` class or `create_connector()` method is declared, the
+    python module name and class name will be inferred from parent directories.
     """
