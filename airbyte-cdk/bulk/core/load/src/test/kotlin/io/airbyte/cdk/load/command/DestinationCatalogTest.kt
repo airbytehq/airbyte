@@ -61,7 +61,7 @@ class DestinationCatalogTest {
                                     .withName("name3")
                                     .withIsFileBased(false)
                             ),
-                       ConfiguredAirbyteStream()
+                        ConfiguredAirbyteStream()
                             .withSyncId(12)
                             .withMinimumGenerationId(34)
                             .withGenerationId(56)
