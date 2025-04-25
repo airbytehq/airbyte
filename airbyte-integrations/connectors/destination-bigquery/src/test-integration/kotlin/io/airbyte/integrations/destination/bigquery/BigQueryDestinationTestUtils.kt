@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.Dataset
 import com.google.cloud.bigquery.DatasetInfo
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getLoadingMethod
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
@@ -83,6 +84,11 @@ object BigQueryDestinationTestUtils {
         return null
     }
 
+    fun parseConfig(config: JsonNode): BigqueryConfiguration {
+        val spec = Jsons.treeToValue(config, BigquerySpecification::class.java)
+        return BigqueryConfigurationFactory().make(spec)
+    }
+
     /**
      * Initialized bigQuery instance that will be used for verifying results of test operations and
      * for cleaning up BigQuery dataset after the test
@@ -93,8 +99,7 @@ object BigQueryDestinationTestUtils {
      */
     @Throws(IOException::class)
     fun initBigQuery(config: JsonNode): BigQuery {
-        val spec = Jsons.treeToValue(config, BigquerySpecification::class.java)
-        val parsedConfig = BigqueryConfigurationFactory().make(spec)
+        val parsedConfig = parseConfig(config)
         return BigqueryClientFactory(parsedConfig).make()
     }
 
