@@ -68,7 +68,7 @@ You can also copy the output file to your host machine, the following command wi
 docker cp airbyte-server:/tmp/airbyte_local/{destination_path} .
 ```
 
-Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
+Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination) for an alternative approach.
 
 ## Changelog
 
@@ -77,6 +77,8 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.2.6 | 2025-04-19 | [58261](https://github.com/airbytehq/airbyte/pull/58261) | Update dependencies |
+| 0.2.5 | 2025-04-12 | [57615](https://github.com/airbytehq/airbyte/pull/57615) | Update dependencies |
 | 0.2.4 | 2025-04-05 | [57113](https://github.com/airbytehq/airbyte/pull/57113) | Update dependencies |
 | 0.2.3 | 2025-03-29 | [56577](https://github.com/airbytehq/airbyte/pull/56577) | Update dependencies |
 | 0.2.2 | 2025-03-22 | [56104](https://github.com/airbytehq/airbyte/pull/56104) | Update dependencies |

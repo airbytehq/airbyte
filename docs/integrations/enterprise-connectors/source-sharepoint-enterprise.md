@@ -1,4 +1,4 @@
-# Source Sharepoint Enterprise
+# SharePoint Enterprise
 
 :::info
 Airbyte Enterprise Connectors are a selection of premium connectors available exclusively for
@@ -9,7 +9,7 @@ To learn more about enterprise connectors, please [talk to our sales team](https
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Microsoft SharePoint](https://portal.azure.com) source connector.
+This page contains the setup guide and reference information for the [SharePoint Enterprise](https://portal.azure.com) source connector.
 
 </HideInUI>
 
@@ -23,11 +23,11 @@ This page contains the setup guide and reference information for the [Microsoft 
 
 ## Setup guide
 
-### Set up Microsoft SharePoint
+### Set up SharePoint Enterprise
 
 1. Click Sources and then click + New source.
-2. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
-3. Enter a name for the Microsoft SharePoint connector.
+2. On the Set up the source page, select SharePoint Enterprise from the Source type dropdown.
+3. Enter a name for the SharePoint Enterprise connector.
 4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
 5. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
@@ -260,6 +260,13 @@ Format options will not be taken into account. Instead, files will be transferre
 
 This mode allows to sync Sharepoint files permissions (ACLs) and Identities (users and groups) from your Sharepoint site. The Identities Stream is enabled by default.
 
+#### Authorization
+When setting up this permissions for this connector, ensure that the following permissions are authorized:  
+
+- User.Read.All
+- Group.Read.All
+- Application.Read.All
+- Device.Read.All
 
 #### Preserve Sub-Directories in File Paths
 
@@ -272,7 +279,7 @@ The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/
 
 ### Supported sync modes
 
-The Microsoft SharePoint source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The SharePoint Enterprise source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 | Feature           | Supported?\(Yes/No\) |
 |:------------------|:---------------------|
@@ -301,6 +308,10 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 <details>
   <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                           | Subject                                                                   |
+|:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.1.0 | 2025-04-10 | [134](https://github.com/airbytehq/airbyte-enterprise/pull/134) | New source |
 
 </details>
 

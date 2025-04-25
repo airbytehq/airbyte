@@ -42,6 +42,8 @@ These files can then be accessed by creating an SFTP connection to the server an
 
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.2.11 | 2025-04-19 | [58238](https://github.com/airbytehq/airbyte/pull/58238) | Update dependencies |
+| 0.2.10 | 2025-04-12 | [57592](https://github.com/airbytehq/airbyte/pull/57592) | Update dependencies |
 | 0.2.9 | 2025-04-05 | [57114](https://github.com/airbytehq/airbyte/pull/57114) | Update dependencies |
 | 0.2.8 | 2025-03-29 | [56615](https://github.com/airbytehq/airbyte/pull/56615) | Update dependencies |
 | 0.2.7 | 2025-03-22 | [56090](https://github.com/airbytehq/airbyte/pull/56090) | Update dependencies |
