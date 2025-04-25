@@ -17,7 +17,7 @@ include = "source_hardcoded_records"
 
 [tool.poetry.dependencies]
 python = "^3.11,<3.13"
-airbyte-cdk = "6.45.4.post72.dev14497997772"
+airbyte-cdk = "6.46.0"
 
 [tool.poetry.scripts]
 source-hardcoded-records = "source_hardcoded_records.run:run"
