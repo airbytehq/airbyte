@@ -903,9 +903,9 @@ definitions:
                 - ["object"]
                 - ["total"]
                 - ["customer"]
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_stripe.components.CustomerBalanceStateMigration
+      #state_migrations:
+      #  - type: CustomStateMigration
+      #    class_name: source_stripe.components.CustomerBalanceStateMigration
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
