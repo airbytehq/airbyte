@@ -204,7 +204,7 @@ const config = {
             ]
           },
           avatars: {
-            assistant: 'img/octavia-talking.png',
+            assistant: '/img/octavia-talking.png',
           }
         },
         // By setting `floating` to false, use the standard navbar search component.
