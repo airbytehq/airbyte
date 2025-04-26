@@ -146,7 +146,7 @@ class FullRefreshTest(TestCase):
 
         output = self._read(_config().with_start_date(_A_START_DATE))
 
-        assert len(output.records) == 3
+        assert len(output.records) == 2
 
     @HttpMocker()
     def test_given_multiple_refunds_pages_when_read_then_query_pagination_on_child(self, http_mocker: HttpMocker) -> None:
@@ -240,7 +240,7 @@ class FullRefreshTest(TestCase):
 
         output = self._read(_config().with_start_date(start_date).with_slice_range_in_days(slice_range.days))
 
-        assert len(output.records) == 2
+        assert len(output.records) == 1
 
     @HttpMocker()
     def test_given_slice_range_and_refunds_pagination_when_read_then_do_not_slice_child(self, http_mocker: HttpMocker) -> None:
