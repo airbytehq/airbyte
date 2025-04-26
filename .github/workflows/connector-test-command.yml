@@ -1,4 +1,4 @@
-name: Connector Tests
+name: Connector Tests (beta)
 
 on:
   # Triggered by all push events
