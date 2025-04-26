@@ -1,0 +1,126 @@
+name: Connector Tests
+
+on:
+  # Triggered by all push events
+  push:
+
+  # Available as a reusable workflow
+  workflow_call:
+    inputs:
+
+      connector_name:
+        description: >
+          The name of the connector(s) to test.
+          To test multiple connectors, use a newline-delimited
+          or comma-separated list of connector names.
+
+          If not provided, the workflow will try to infer the
+          connector name from the PR title.
+        required: false
+        type: string
+
+      repo:
+        description: "The repository name"
+        required: false
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+
+  # Available as a slash command and workflow dispatch
+  workflow_dispatch:
+    inputs:
+
+      # Custom inputs for the connector test command:
+      connector_name:
+        description: |
+          The name of the connector(s) to test.
+          To test multiple connectors, use a newline-delimited
+          or comma-separated list of connector names.
+
+          If not provided, the workflow will try to infer the
+          connector name from the PR title.
+        required: false
+
+      # Static args from the slash command dispatch:
+      repo:
+        description: "The repository name"
+        required: false
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+
+jobs:
+  generate-matrix:
+    name: Generate Connector Matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Generate Matrix From Input
+        id: input-matrix
+        if: inputs.connector_name
+        run: |
+          connectors=$(echo "${{ inputs.connector_name }}" | tr ',' '\n' | jq -R -s -c 'split("\n")[:-1] | map({connector: .})')
+          echo "matrix=$connectors" >> $GITHUB_OUTPUT
+      - name: Generate Matrix From Changes
+        id: generate-matrix
+        if: ! inputs.connector_name
+        run: |
+          # TODO: Implement logic to determine changed connectors
+          # For now, we will use an empty list of connectors
+          connectors=[]
+          echo "matrix=$connectors" >> $GITHUB_OUTPUT
+    outputs:
+      connector-matrix: >
+        steps.input-matrix.outputs.matrix
+        || steps.generate-matrix.outputs.matrix
+
+  test-connectors:
+    name: Test Connectors
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+    steps:
+      - name: Placeholder for Testing Connectors
+        run: echo "Testing connector ${{ matrix.connector }}"
+
+  lint-connectors:
+    name: Lint Connectors
+    needs: generate-matrix
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+    steps:
+      - name: Placeholder for Linting Connectors
+        run: echo "Linting connector ${{ matrix.connector }}"
+
+  test-summary:
+    name: Connector Test Summary Check
+    needs: [test-connectors]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All connectors completed successfully, or no connectors were updated."
+
+  lint-summary:
+    name: Connector Lint Summary Check
+    needs: [lint-connectors]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Lint Summary
+        run: echo "✅ All connectors completed successfully, or no connectors were updated."
