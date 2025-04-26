@@ -8,7 +8,6 @@ on:
   workflow_call:
     inputs:
 
-
       connector_name:
         type: string
         required: false
@@ -79,7 +78,7 @@ jobs:
           echo "matrix=$connectors" >> $GITHUB_OUTPUT
       - name: Generate Matrix From Changes
         id: generate-matrix
-        if: ! inputs.connector_name
+        if: '! inputs.connector_name'
         run: |
           # TODO: Implement logic to determine changed connectors
           # For now, we will use an empty list of connectors
