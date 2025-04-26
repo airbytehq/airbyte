@@ -9,6 +9,8 @@ on:
     inputs:
 
       connector_name:
+        type: string
+        required: false
         description: >
           The name of the connector(s) to test.
           To test multiple connectors, use a newline-delimited
@@ -16,25 +18,23 @@ on:
 
           If not provided, the workflow will try to infer the
           connector name from the PR title.
-        required: false
-        type: string
 
       repo:
+        type: string
+        required: false
         description: "The repository name"
-        required: false
-        type: string
       gitref:
-        description: "The git reference (branch or tag)"
-        required: false
         type: string
+        required: false
+        description: "The git reference (branch or tag)"
       comment-id:
+        type: number
+        required: false
         description: "The ID of the comment triggering the workflow"
-        required: false
-        type: number
       pr:
-        description: "The pull request number, if applicable"
-        required: false
         type: number
+        required: false
+        description: "The pull request number, if applicable"
 
   # Available as a slash command and workflow dispatch
   workflow_dispatch:
@@ -42,6 +42,7 @@ on:
 
       # Custom inputs for the connector test command:
       connector_name:
+        required: false
         description: |
           The name of the connector(s) to test.
           To test multiple connectors, use a newline-delimited
@@ -49,21 +50,20 @@ on:
 
           If not provided, the workflow will try to infer the
           connector name from the PR title.
-        required: false
 
       # Static args from the slash command dispatch:
       repo:
+        required: false
         description: "The repository name"
-        required: false
       gitref:
+        required: false
         description: "The git reference (branch or tag)"
-        required: false
       comment-id:
+        required: false
         description: "The ID of the comment triggering the workflow"
-        required: false
       pr:
-        description: "The pull request number, if applicable"
         required: false
+        description: "The pull request number, if applicable"
 
 jobs:
   generate-matrix:
