@@ -117,6 +117,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 1.1.43 | 2025-04-27 | [59014](https://github.com/airbytehq/airbyte/pull/59014) | Update dependencies |
 | 1.1.42 | 2025-04-19 | [58374](https://github.com/airbytehq/airbyte/pull/58374) | Update dependencies |
 | 1.1.41 | 2025-04-12 | [57999](https://github.com/airbytehq/airbyte/pull/57999) | Update dependencies |
 | 1.1.40 | 2025-04-05 | [57490](https://github.com/airbytehq/airbyte/pull/57490) | Update dependencies |
