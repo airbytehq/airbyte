@@ -52,6 +52,9 @@ Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harnes
 
 | Version | Date       | Pull Request                                                   | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------------- | :--------------------------------------------------- |
+| 0.2.8 | 2025-04-26 | [58803](https://github.com/airbytehq/airbyte/pull/58803) | Update dependencies |
+| 0.2.7 | 2025-04-19 | [58194](https://github.com/airbytehq/airbyte/pull/58194) | Update dependencies |
+| 0.2.6 | 2025-04-12 | [57723](https://github.com/airbytehq/airbyte/pull/57723) | Update dependencies |
 | 0.2.5 | 2025-04-05 | [57084](https://github.com/airbytehq/airbyte/pull/57084) | Update dependencies |
 | 0.2.4 | 2025-03-29 | [56676](https://github.com/airbytehq/airbyte/pull/56676) | Update dependencies |
 | 0.2.3 | 2025-03-22 | [56037](https://github.com/airbytehq/airbyte/pull/56037) | Update dependencies |

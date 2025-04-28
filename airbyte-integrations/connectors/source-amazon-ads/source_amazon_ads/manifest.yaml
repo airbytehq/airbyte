@@ -1,4 +1,4 @@
-version: 6.5.0
+version: 6.45.10
 
 type: DeclarativeSource
 
@@ -1237,7 +1237,6 @@ definitions:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1250,27 +1249,66 @@ definitions:
               adProduct: SPONSORED_BRANDS
               groupBy: ["purchasedAsin"]
               columns:
-                [
-                  "campaignBudgetCurrencyCode",
-                  "campaignName",
-                  "adGroupName",
-                  "attributionType",
-                  "purchasedAsin",
-                  "productName",
-                  "productCategory",
-                  "sales14d",
-                  "orders14d",
-                  "unitsSold14d",
-                  "newToBrandSales14d",
-                  "newToBrandPurchases14d",
-                  "newToBrandUnitsSold14d",
-                  "newToBrandSalesPercentage14d",
-                  "newToBrandPurchasesPercentage14d",
-                  "newToBrandUnitsSoldPercentage14d",
-                ]
+                - "campaignBudgetCurrencyCode"
+                - "campaignName"
+                - "adGroupName"
+                - "attributionType"
+                - "purchasedAsin"
+                - "productName"
+                - "productCategory"
+                - "sales14d"
+                - "orders14d"
+                - "unitsSold14d"
+                - "newToBrandSales14d"
+                - "newToBrandPurchases14d"
+                - "newToBrandUnitsSold14d"
+                - "newToBrandSalesPercentage14d"
+                - "newToBrandPurchasesPercentage14d"
+                - "newToBrandUnitsSoldPercentage14d"
               reportTypeId: sbPurchasedProduct
               filters: []
               timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_brands_v3_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_v3_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "purchasedAsin"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "purchasedAsin report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["purchasedAsin"]
+              columns:
+                - "date"
+                - "campaignBudgetCurrencyCode"
+                - "campaignName"
+                - "adGroupName"
+                - "attributionType"
+                - "purchasedAsin"
+                - "productName"
+                - "productCategory"
+                - "sales14d"
+                - "orders14d"
+                - "unitsSold14d"
+                - "newToBrandSales14d"
+                - "newToBrandPurchases14d"
+                - "newToBrandUnitsSold14d"
+                - "newToBrandSalesPercentage14d"
+                - "newToBrandPurchasesPercentage14d"
+                - "newToBrandUnitsSoldPercentage14d"
+              reportTypeId: sbPurchasedProduct
+              filters: []
+              timeUnit: DAILY
               format: GZIP_JSON
 
     sponsored_display_campaigns_report_stream:
@@ -1363,6 +1401,93 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
+    sponsored_display_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_campaigns_report_stream_daily
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "campaigns report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["campaign"]
+              columns:
+                - "date"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToCartViews"
+                - "addToList"
+                - "addToListFromClicks"
+                - "addToListFromViews"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "qualifiedBorrowsFromViews"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrowsFromViews"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "brandedSearchesViews"
+                - "brandedSearchRate"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "clicks"
+                - "cost"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "eCPBrandSearch"
+                - "impressions"
+                - "impressionsViews"
+                - "leadFormOpens"
+                - "leads"
+                - "linkOuts"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSold"
+                - "newToBrandUnitsSoldClicks"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesPromotedClicks"
+                - "sales"
+                - "salesClicks"
+                - "salesPromotedClicks"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+                - "viewClickThroughRate"
+                - "campaignBudgetAmount"
+                - "campaignStatus"
+                - "costType"
+                - "cumulativeReach"
+                - "impressionsFrequencyAverage"
+                - "newToBrandDetailPageViewClicks"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewViews"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandSales"
+              reportTypeId: sdCampaigns
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
     sponsored_display_adgroups_report_stream:
       type: DeclarativeStream
       name: sponsored_display_adgroups_report_stream
@@ -1452,6 +1577,93 @@ definitions:
               reportTypeId: sdAdGroup
               filters: []
               timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_display_adgroups_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_adgroups_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "adGroups report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["adGroup"]
+              columns:
+                - "date"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToCartViews"
+                - "adGroupId"
+                - "adGroupName"
+                - "addToList"
+                - "addToListFromClicks"
+                - "addToListFromViews"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "qualifiedBorrowsFromViews"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrowsFromViews"
+                - "bidOptimization"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "brandedSearchesViews"
+                - "brandedSearchRate"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "clicks"
+                - "cost"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "eCPBrandSearch"
+                - "impressions"
+                - "impressionsViews"
+                - "leadFormOpens"
+                - "leads"
+                - "linkOuts"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSold"
+                - "newToBrandUnitsSoldClicks"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesPromotedClicks"
+                - "sales"
+                - "salesClicks"
+                - "salesPromotedClicks"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+                - "viewClickThroughRate"
+                - "cumulativeReach"
+                - "impressionsFrequencyAverage"
+                - "newToBrandDetailPageViewClicks"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewViews"
+                - "newToBrandECPDetailPageView"
+              reportTypeId: sdAdGroup
+              filters: []
+              timeUnit: DAILY
               format: GZIP_JSON
     sponsored_display_productads_report_stream:
       type: DeclarativeStream
@@ -1546,6 +1758,96 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
+    sponsored_display_productads_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_productads_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "productAds report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["advertiser"]
+              columns:
+                - "date"
+                - "addToCart"
+                - "addToCartRate"
+                - "addToCartViews"
+                - "addToCartClicks"
+                - "adGroupId"
+                - "adGroupName"
+                - "adId"
+                - "addToList"
+                - "addToListFromClicks"
+                - "qualifiedBorrows"
+                - "royaltyQualifiedBorrows"
+                - "addToListFromViews"
+                - "qualifiedBorrowsFromClicks"
+                - "qualifiedBorrowsFromViews"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrowsFromViews"
+                - "bidOptimization"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "brandedSearchesViews"
+                - "brandedSearchRate"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "clicks"
+                - "cost"
+                - "cumulativeReach"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "eCPBrandSearch"
+                - "impressions"
+                - "impressionsFrequencyAverage"
+                - "impressionsViews"
+                - "leadFormOpens"
+                - "leads"
+                - "linkOuts"
+                - "newToBrandDetailPageViewClicks"
+                - "newToBrandDetailPageViewRate"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewViews"
+                - "newToBrandECPDetailPageView"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSold"
+                - "newToBrandUnitsSoldClicks"
+                - "promotedAsin"
+                - "promotedSku"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesPromotedClicks"
+                - "sales"
+                - "salesClicks"
+                - "salesPromotedClicks"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+                - "viewClickThroughRate"
+              reportTypeId: sdAdvertisedProduct
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
     sponsored_display_targets_report_stream:
       type: DeclarativeStream
       name: sponsored_display_targets_report_stream
@@ -1631,6 +1933,88 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
+    sponsored_display_targets_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_targets_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "targetingId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "targets report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["targeting"]
+              columns:
+                - "date"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartRate"
+                - "addToCartViews"
+                - "adGroupId"
+                - "adGroupName"
+                - "addToList"
+                - "addToListFromClicks"
+                - "addToListFromViews"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromClicks"
+                - "qualifiedBorrowsFromViews"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrowsFromViews"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "brandedSearchesViews"
+                - "brandedSearchRate"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "clicks"
+                - "cost"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "eCPAddToCart"
+                - "eCPBrandSearch"
+                - "impressions"
+                - "impressionsViews"
+                - "leadFormOpens"
+                - "leads"
+                - "linkOuts"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandUnitsSold"
+                - "newToBrandUnitsSoldClicks"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesPromotedClicks"
+                - "sales"
+                - "salesClicks"
+                - "salesPromotedClicks"
+                - "targetingExpression"
+                - "targetingId"
+                - "targetingText"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+                - "videoUnmutes"
+                - "viewabilityRate"
+                - "viewClickThroughRate"
+              reportTypeId: sdTargeting
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
     sponsored_display_asins_report_stream:
       type: DeclarativeStream
       name: sponsored_display_asins_report_stream
@@ -1681,6 +2065,54 @@ definitions:
               reportTypeId: sdPurchasedProduct
               filters: []
               timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_display_asins_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_asins_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "promotedAsin"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "asins report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["asin"]
+              columns:
+                - "date"
+                - "adGroupId"
+                - "adGroupName"
+                - "asinBrandHalo"
+                - "addToList"
+                - "addToListFromClicks"
+                - "qualifiedBorrowsFromClicks"
+                - "royaltyQualifiedBorrowsFromClicks"
+                - "addToListFromViews"
+                - "qualifiedBorrows"
+                - "qualifiedBorrowsFromViews"
+                - "royaltyQualifiedBorrows"
+                - "royaltyQualifiedBorrowsFromViews"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "conversionsBrandHalo"
+                - "conversionsBrandHaloClicks"
+                - "promotedAsin"
+                - "promotedSku"
+                - "salesBrandHalo"
+                - "salesBrandHaloClicks"
+                - "unitsSoldBrandHalo"
+                - "unitsSoldBrandHaloClicks"
+              reportTypeId: sdPurchasedProduct
+              filters: []
+              timeUnit: DAILY
               format: GZIP_JSON
 
     sponsored_products_campaigns_report_stream:
@@ -1743,6 +2175,65 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
+    sponsored_products_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_campaigns_report_stream_daily
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "campaigns report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["campaign"]
+              columns:
+                - "date"
+                - "campaignName"
+                - "campaignId"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignRuleBasedBudgetAmount"
+                - "campaignApplicableBudgetRuleId"
+                - "campaignApplicableBudgetRuleName"
+                - "impressions"
+                - "clicks"
+                - "cost"
+                - "purchases1d"
+                - "purchases7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
+                - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+              reportTypeId: spCampaigns
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
     sponsored_products_adgroups_report_stream:
       type: DeclarativeStream
       name: sponsored_products_adgroups_report_stream
@@ -1799,6 +2290,62 @@ definitions:
               reportTypeId: spCampaigns
               filters: []
               timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_adgroups_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_adgroups_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "adGroups report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["campaign", "adGroup"]
+              columns:
+                - "date"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "impressions"
+                - "clicks"
+                - "cost"
+                - "purchases1d"
+                - "purchases7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
+                - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+              reportTypeId: spCampaigns
+              filters: []
+              timeUnit: DAILY
               format: GZIP_JSON
     sponsored_products_keywords_report_stream:
       type: DeclarativeStream
@@ -1865,6 +2412,67 @@ definitions:
                   },
                 ]
               timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_keywords_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_keywords_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "keywords report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["targeting"]
+              columns:
+                - "date"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "keywordId"
+                - "keyword"
+                - "matchType"
+                - "impressions"
+                - "clicks"
+                - "cost"
+                - "purchases1d"
+                - "purchases7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
+                - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+              reportTypeId: spTargeting
+              filters:
+                - field: "keywordType"
+                  values: ["BROAD", "PHRASE", "EXACT"]
+              timeUnit: DAILY
               format: GZIP_JSON
     sponsored_products_targets_report_stream:
       type: DeclarativeStream
@@ -1937,6 +2545,70 @@ definitions:
                 ]
               timeUnit: SUMMARY
               format: GZIP_JSON
+    sponsored_products_targets_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_targets_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "targets report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["targeting"]
+              columns:
+                - "date"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "keywordId"
+                - "keyword"
+                - "targeting"
+                - "keywordType"
+                - "impressions"
+                - "clicks"
+                - "cost"
+                - "purchases1d"
+                - "purchases7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
+                - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+              reportTypeId: spTargeting
+              filters:
+                - field: "keywordType"
+                  values:
+                    - "TARGETING_EXPRESSION"
+                    - "TARGETING_EXPRESSION_PREDEFINED"
+              timeUnit: DAILY
+              format: GZIP_JSON
     sponsored_products_productads_report_stream:
       type: DeclarativeStream
       name: sponsored_products_productads_report_stream
@@ -1997,6 +2669,65 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
+    sponsored_products_productads_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_productads_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "productAds report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["advertiser"]
+              columns:
+                - "date"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "adId"
+                - "impressions"
+                - "clicks"
+                - "cost"
+                - "campaignBudgetCurrencyCode"
+                - "advertisedAsin"
+                - "purchases1d"
+                - "purchases7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
+                - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+              reportTypeId: spAdvertisedProduct
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
     sponsored_products_asins_keywords_report_stream:
       type: DeclarativeStream
       name: sponsored_products_asins_keywords_report_stream
@@ -2045,6 +2776,54 @@ definitions:
               reportTypeId: spPurchasedProduct
               filters: []
               timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_asins_keywords_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_asins_keywords_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "asins_keywords report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["asin"]
+              columns:
+                - "date"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "keywordId"
+                - "keyword"
+                - "advertisedAsin"
+                - "purchasedAsin"
+                - "advertisedSku"
+                - "campaignBudgetCurrencyCode"
+                - "matchType"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "unitsSoldOtherSku1d"
+                - "unitsSoldOtherSku7d"
+                - "unitsSoldOtherSku14d"
+                - "unitsSoldOtherSku30d"
+                - "salesOtherSku1d"
+                - "salesOtherSku7d"
+                - "salesOtherSku14d"
+                - "salesOtherSku30d"
+              reportTypeId: spPurchasedProduct
+              filters: []
+              timeUnit: DAILY
               format: GZIP_JSON
     sponsored_products_asins_targets_report_stream:
       type: DeclarativeStream
@@ -2096,6 +2875,55 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
+    sponsored_products_asins_targets_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_asins_targets_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "asins_targets report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["asin"]
+              columns:
+                - "date"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "advertisedAsin"
+                - "purchasedAsin"
+                - "advertisedSku"
+                - "campaignBudgetCurrencyCode"
+                - "matchType"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "unitsSoldOtherSku1d"
+                - "unitsSoldOtherSku7d"
+                - "unitsSoldOtherSku14d"
+                - "unitsSoldOtherSku30d"
+                - "salesOtherSku1d"
+                - "salesOtherSku7d"
+                - "salesOtherSku14d"
+                - "salesOtherSku30d"
+                - "keywordId"
+                - "targeting"
+                - "keywordType"
+              reportTypeId: spPurchasedProduct
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
 
   incremental_sync_report_datetime_cursor:
     type: DatetimeBasedCursor
@@ -2106,7 +2934,11 @@ definitions:
     lookback_window: P{{ config.get('look_back_window', 3) }}D
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+      datetime: >-
+        {%- set today = today_utc() - duration('P1D') -%}
+        {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
+        {%- set ninety_days_ago = today - duration('P90D') -%}
+        "{{ max(user_start_date, ninety_days_ago.strftime('%Y-%m-%d')) }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"
@@ -2180,7 +3012,12 @@ definitions:
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       request_body_json:
         name: "purchasedAsin report {{ stream_interval.start_time }}"
-        startDate: "{{ stream_interval.start_time }}"
+        startDate: >
+          {% if stream_interval.start_time < config['start_date'] %}
+            {{ config['start_date'] }}
+          {% else %}
+            {{ stream_interval.start_time }}
+          {% endif %}
         endDate: "{{ stream_interval.end_time }}"
         configuration:
           adProduct: OVERRIDDEN_REPORT_TYPE # Placeholder value. Each report stream overrides the adProduct value to the respective report name
@@ -2205,7 +3042,9 @@ definitions:
       authenticator: "#/definitions/oauth_authenticator"
       http_method: GET
       request_headers:
-        Amazon-Advertising-API-Scope: "{{ creation_response['headers']['Amazon-Advertising-API-Scope'] }}"
+        # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+        # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+        Amazon-Advertising-API-Scope: "{{ stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       error_handler:
         $ref: "#/definitions/report_polling_error_handler"
@@ -2218,10 +3057,14 @@ definitions:
       authenticator:
         type: NoAuth
     download_decoder:
+      # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+      # https://github.com/airbytehq/airbyte/issues/56988
       type: GzipDecoder
       decoder:
-        type: JsonDecoder
-        encoding: utf
+        type: GzipDecoder
+        decoder:
+          type: JsonDecoder
+          encoding: utf
     download_extractor:
       type: DpathExtractor
       field_path: []
@@ -2272,6 +3115,20 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_productads_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream"
+
+  - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_productads_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_targets_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_asins_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_campaigns_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_adgroups_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_keywords_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_targets_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_productads_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream_daily"
 
 concurrency_level:
   type: ConcurrencyLevel
