@@ -78,3 +78,4 @@ class CustomerIdPartitionRouter(SubstreamPartitionRouter):
 #        }
 #
 #        return migrated_state
+#
