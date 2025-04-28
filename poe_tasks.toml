@@ -14,8 +14,6 @@
 #   poe source hardcoded-records check-all
 #   poe destination motherduck check-all
 
-verbosity = 0 # Default to quiet mode. Override with -v or -vv
-
 [tasks.docs-build]
 help = "Build the docs.airbyte.com site documentation using Docusaurus."
 shell = '''
