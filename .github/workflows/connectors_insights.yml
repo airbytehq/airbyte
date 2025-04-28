@@ -34,7 +34,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          version: ${{ steps.tool-versions.outputs.poetry-1 }}
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true

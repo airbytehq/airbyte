@@ -49,7 +49,7 @@ jobs:
         id: install_poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          version: ${{ steps.tool-versions.outputs.poetry-1 }}
 
       - name: Install Dependencies
         id: install_dependencies

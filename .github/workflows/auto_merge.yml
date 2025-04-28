@@ -24,7 +24,7 @@ jobs:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          version: ${{ steps.tool-versions.outputs.poetry-1 }}
       - name: Run auto merge
         shell: bash
         working-directory: airbyte-ci/connectors/auto_merge
