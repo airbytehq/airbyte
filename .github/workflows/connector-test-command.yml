@@ -3,6 +3,8 @@ name: Connector Tests (beta)
 on:
   # Triggered by all push events
   push:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
   # Available as a reusable workflow
   workflow_call:
@@ -96,8 +98,10 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
     steps:
-      - name: Placeholder for Testing Connectors
-        run: echo "Testing connector ${{ matrix.connector }}"
+      - name: Run Poe Slash Command Processor
+        uses: aaronsteers/poe-command-processor@v1
+        with:
+          command: test-all
 
   lint-connectors:
     name: Lint Connectors
@@ -106,8 +110,14 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
     steps:
-      - name: Placeholder for Linting Connectors
-        run: echo "Linting connector ${{ matrix.connector }}"
+      - name: Run Poe Slash Command Processor
+        uses: aaronsteers/poe-command-processor@v1
+        with:
+          command: lint-check
+      - name: Run Poe Slash Command Processor
+        uses: aaronsteers/poe-command-processor@v1
+        with:
+          command: format-check
 
   test-summary:
     name: Connector Test Summary Check
