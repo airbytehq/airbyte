@@ -134,10 +134,22 @@ def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
 
 
 def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
+    # Create a mock session with an auth attribute
+    mock_session = MagicMock()
+    mock_session.auth = None
+    
+    # Create the stream with the mock session
     stream = SearchAnalyticsKeywordSiteReportBySite(None, ["https://example.com"], "2021-01-01", "2021-01-02")
+    
+    # Inject the mock session
+    stream._session = mock_session
+    
     requests_mock.post(
-        f"{stream.url_base}sites/{stream._site_urls[0]}/searchAnalytics/query", status_code=200, json={"rows": [{"keys": ["TPF_QA"]}]}
+        f"{stream.url_base}sites/{stream._site_urls[0]}/searchAnalytics/query", 
+        status_code=200, 
+        json={"rows": [{"keys": ["TPF_QA"]}]}
     )
+    
     slice = list(stream.stream_slices(None))[0]
     url = stream.url_base + stream.path(None, slice)
     requests_mock.get(url, status_code=400, json=bad_aggregation_type)
