@@ -29,7 +29,7 @@ The Facebook Pages souce connector is currently only compatible with v15 of the 
 
 After all the steps, it should look something like this
 
-![](../../.gitbook/assets/facebook-pages-1.png)
+![](/.gitbook/assets/facebook-pages-1.png)
 
 5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
 6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.

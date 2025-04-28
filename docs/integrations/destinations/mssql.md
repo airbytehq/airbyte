@@ -18,7 +18,7 @@ Each stream will be output into its own table in SQL Server. Each table will con
 - `_airbyte_meta`: Additional information about the record. The column type in SQL Server is `TEXT`.
 - `_airbyte_generation_id`: Incremented each time a [refresh](https://docs.airbyte.com/operator-guides/refreshes) is executed.  The column type in SQL Server is `TEXT`.
 
-See [here](../../understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+See [here](../../platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 ## Getting Started
 
@@ -158,6 +158,9 @@ See the [Getting Started: Configuration section](#configuration) of this guide f
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.2.6      | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Fix numeric bounds-handling                                                                         |
+| 2.2.5      | 2025-04-18 | [58140](https://github.com/airbytehq/airbyte/pull/58140)   | Upgrade to latest CDK                                                                               |
+| 2.2.4      | 2025-04-11 | [57563](https://github.com/airbytehq/airbyte/pull/57563)   | Improve BULK INSERT documentation.                                                                  |
 | 2.2.3      | 2025-04-16 | [58085](https://github.com/airbytehq/airbyte/pull/58085)   | Internal refactoring                                                                                |
 | 2.2.2      | 2025-04-07 | [56391](https://github.com/airbytehq/airbyte/pull/56391)   | Add support for Azure blob storage auth via storage account key.                                    |
 | 2.2.1      | 2025-03-27 | [56402](https://github.com/airbytehq/airbyte/pull/56402)   | Improve Azure blob storage load logic.                                                              |

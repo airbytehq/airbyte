@@ -108,6 +108,8 @@ It is unclear what populates this API and the sandbox environment does not provi
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2025-04-27 | [59025](https://github.com/airbytehq/airbyte/pull/59025) | Update dependencies |
+| 0.0.14 | 2025-04-19 | [58390](https://github.com/airbytehq/airbyte/pull/58390) | Update dependencies |
 | 0.0.13 | 2025-04-12 | [58007](https://github.com/airbytehq/airbyte/pull/58007) | Update dependencies |
 | 0.0.12 | 2025-04-05 | [57361](https://github.com/airbytehq/airbyte/pull/57361) | Update dependencies |
 | 0.0.11 | 2025-03-29 | [56737](https://github.com/airbytehq/airbyte/pull/56737) | Update dependencies |

@@ -49,6 +49,8 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.1.44 | 2025-04-27 | [59023](https://github.com/airbytehq/airbyte/pull/59023) | Update dependencies |
+| 0.1.43 | 2025-04-19 | [58375](https://github.com/airbytehq/airbyte/pull/58375) | Update dependencies |
 | 0.1.42 | 2025-04-12 | [57959](https://github.com/airbytehq/airbyte/pull/57959) | Update dependencies |
 | 0.1.41 | 2025-04-05 | [57465](https://github.com/airbytehq/airbyte/pull/57465) | Update dependencies |
 | 0.1.40 | 2025-03-29 | [56860](https://github.com/airbytehq/airbyte/pull/56860) | Update dependencies |

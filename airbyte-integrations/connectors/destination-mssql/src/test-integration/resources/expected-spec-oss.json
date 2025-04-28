@@ -160,7 +160,7 @@
               "type" : "string",
               "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview.Mutually exclusive with an account key",
               "title" : "Shared Access Signature",
-              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "examples" : [ "sv=2021-08-06&st=2025-04-11T00%3A00%3A00Z&se=2025-04-12T00%3A00%3A00Z&sr=b&sp=rw&sig=abcdefghijklmnopqrstuvwxyz1234567890%2Fabcdefg%3D" ],
               "airbyte_secret" : true,
               "always_show" : true
             },
