@@ -52,12 +52,12 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryClientFactory(config).make()
 
-        val (namespace, rawTableName) =
+        val (_, rawTableName) =
             BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
 
         if (bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName)) == null) {
             logger.warn {
-                "Raw table does not exist: $namespace.$rawTableName. Returning empty list."
+                "Raw table does not exist: ${config.rawTableDataset}.$rawTableName. Returning empty list."
             }
             return emptyList()
         }
@@ -100,16 +100,18 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryClientFactory(config).make()
 
-        val (namespace, name) =
+        val (datasetName, finalTableName) =
             BigqueryFinalTableNameGenerator(config).getTableName(stream.descriptor)
 
-        if (bigquery.getTable(TableId.of(namespace, name)) == null) {
-            logger.warn { "Final table does not exist: $namespace.$name. Returning empty list." }
+        if (bigquery.getTable(TableId.of(datasetName, finalTableName)) == null) {
+            logger.warn {
+                "Final table does not exist: $datasetName.$finalTableName. Returning empty list."
+            }
             return emptyList()
         }
 
         val result: TableResult =
-            bigquery.query(QueryJobConfiguration.of("SELECT * FROM $namespace.$name"))
+            bigquery.query(QueryJobConfiguration.of("SELECT * FROM $datasetName.$finalTableName"))
         return result.iterateAll().map { row: FieldValueList ->
             val valuesMap: LinkedHashMap<String, AirbyteValue> =
                 result.schema!!
