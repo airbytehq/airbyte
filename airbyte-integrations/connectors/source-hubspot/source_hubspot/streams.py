@@ -891,6 +891,7 @@ class BaseStream(HttpStream, ABC):
                 f"to be able to fetch all properties available."
             )
             return props
+        print("getting properties")
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
@@ -999,6 +1000,7 @@ class AssociationsStream(BaseStream):
     """
 
     http_method = "POST"
+    limit = 5
     filter_old_records = False
 
     def __init__(self, parent_stream: Stream, identifiers: Iterable[Union[int, str]], *args, **kwargs):
@@ -1225,7 +1227,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                 ],
                 "sorts": [{"propertyName": key, "direction": "ASCENDING"}],
                 "properties": properties_list,
-                "limit": 100,
+                "limit": 10,
             }
             if self.state
             else {}
@@ -1233,6 +1235,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         if next_page_token:
             payload.update(next_page_token["payload"])
 
+        print(self.url, payload)
         response, raw_response = self.search(url=self.url, data=payload)
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
             stream_records[record["id"]] = record

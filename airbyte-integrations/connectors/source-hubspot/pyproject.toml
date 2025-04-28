@@ -17,7 +17,7 @@ include = "source_hubspot"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^6"
+airbyte-cdk = "v6.46.0.post4.dev14712712756"
 pendulum = "<3.0.0"
 
 [tool.poetry.scripts]

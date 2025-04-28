@@ -79,6 +79,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
+    "deals": {"contacts", "crm.objects.deals.read"},
 }
 
 
@@ -180,7 +181,6 @@ class SourceHubspot(YamlDeclarativeSource):
             ContactsMergedAudit(**common_params),
             DealPipelines(**common_params),
             DealSplits(**common_params),
-            Deals(**common_params),
             DealsArchived(**common_params),
             EmailEvents(**common_params),
             Engagements(**common_params),
