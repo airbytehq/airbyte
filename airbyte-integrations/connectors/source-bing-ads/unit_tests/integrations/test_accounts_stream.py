@@ -25,7 +25,7 @@ class TestAccountsStream(BaseTest):
     ) -> Tuple[EntrypointOutput, MagicMock]:
         with patch.object(HttpAuthenticated, "send", mock_http_authenticated_send):
             catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-            return read(SourceBingAds(), config, catalog, state, expecting_exception)
+            return read(SourceBingAds, config, catalog, state, expecting_exception)
 
     def test_read_accounts_tax_certificate_data(self):
         # Our account doesn't have configured Tax certificate.

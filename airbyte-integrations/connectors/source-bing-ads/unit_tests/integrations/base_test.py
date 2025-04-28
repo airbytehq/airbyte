@@ -18,7 +18,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-
+from protocol_helpers import read_helper
 
 class BaseTest(TestCase):
     def setUp(self) -> None:
@@ -64,4 +64,5 @@ class BaseTest(TestCase):
                 self.service_manager, "download_file", return_value=self._download_file(stream_data_file)
             ) as service_call_mock:
                 catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-                return read(SourceBingAds(), config, catalog, state, expecting_exception), service_call_mock
+                # return read(SourceBingAds(), config, catalog, state, expecting_exception), service_call_mock
+                return read_helper(config, catalog, state, expecting_exception), service_call_mock
