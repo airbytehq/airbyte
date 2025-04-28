@@ -81,7 +81,7 @@ class GoogleSearchConsole(HttpStream, ABC):
                 self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
                 self.aggregation_type = QueryAggregationType.auto
                 setattr(self, "raise_on_http_errors", False)
-        return response.status_code >= 500
+        return response.status_code == 429 or response.status_code >= 500
 
 
 class Sites(GoogleSearchConsole):
