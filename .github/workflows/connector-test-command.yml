@@ -72,24 +72,31 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
-      - name: Generate Matrix From Input
-        id: input-matrix
+      - name: Get Connector List from Input
         if: inputs.connector_name
         run: |
-          connectors=$(echo "${{ inputs.connector_name }}" | tr ',' '\n' | jq -R -s -c 'split("\n")[:-1] | map({connector: .})')
-          echo "matrix=$connectors" >> $GITHUB_OUTPUT
-      - name: Generate Matrix From Changes
-        id: generate-matrix
+          # If input is comma-separated list, translate to a newline-delimited string
+          CONNECTORS=$(echo "${{ inputs.connector_name }}" | tr ',' '\n')
+          echo "Found connectors input:\n${CONNECTORS}"
+          echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
+      - name: Get Connector List from Changes
         if: ! inputs.connector_name
         run: |
-          # TODO: Implement logic to determine changed connectors
-          # For now, we will use an empty list of connectors
-          connectors=$(./poe-tasks/get-modified-connectors.sh)
-          echo "matrix=$connectors" >> $GITHUB_OUTPUT
+          # Get modified connectors
+          CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
+          echo "Detected connectors with changes:\n${CONNECTORS}"
+          echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
+      - name: Convert to JSON
+        id: convert-matrix
+        run: |
+          # Convert the matrix from newline-delimited string to a JSON string
+          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map({connector: .})')
+          echo "Matrix JSON:\n${matrix}"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
     outputs:
       connector-matrix: >
-        steps.input-matrix.outputs.matrix
-        || steps.generate-matrix.outputs.matrix
+        steps.convert-matrix.outputs.matrix
 
   test-connectors:
     name: Test Connectors
