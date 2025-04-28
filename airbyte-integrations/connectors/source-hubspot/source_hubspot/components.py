@@ -2,8 +2,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
@@ -49,3 +50,20 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
                     else:
                         if record_or_schema.get(transformed_field) is None:
                             record_or_schema[transformed_field] = value
+
+
+class MigrateEmptyStringState(StateMigration):
+    cursor_field: str
+    config: Config
+
+    def __init__(self, cursor_field, config: Config):
+        self.cursor_field = cursor_field
+        self.config = config
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        # if start date wasn't provided in the config default date will be used
+        start_date = self.config.get("start_date", "2006-06-01T00:00:00.000Z")
+        return {self.cursor_field: start_date}
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return stream_state.get(self.cursor_field) == ""
