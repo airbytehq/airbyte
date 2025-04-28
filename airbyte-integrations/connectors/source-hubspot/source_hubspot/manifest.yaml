@@ -235,6 +235,7 @@ definitions:
         path: /email/public/v1/campaigns
       record_selector:
         type: RecordSelector
+        transform_before_filtering: false
         extractor:
           type: DpathExtractor
           field_path:
@@ -248,7 +249,7 @@ definitions:
         page_size_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: count
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 500
