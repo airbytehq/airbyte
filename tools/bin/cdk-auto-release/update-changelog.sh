@@ -314,6 +314,8 @@ stage_commit_push() {
         error_exit "Failed to commit changes for ${folder_name}"
     fi
 
+    git pull
+
     log_info "Pushing changes to origin..."
     if ! git push; then
         # Consider adding retry logic or better error handling for push failures
