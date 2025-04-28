@@ -11,12 +11,10 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.nio.file.Path
 import java.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Test
 
 private val logger = KotlinLogging.logger {}
 
@@ -141,19 +139,5 @@ class BigqueryDestinationCleaner(private val configJson: JsonNode) : Destination
                 "tdtest_",
                 "test_deleteme_",
             )
-    }
-}
-
-class Foo {
-    @Test
-    fun foo() {
-        val config =
-            BigQueryDestinationTestUtils.createConfig(
-                configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
-                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-            )
-        val cleaner = BigqueryDestinationCleaner(config)
-        cleaner.cleanup()
     }
 }
