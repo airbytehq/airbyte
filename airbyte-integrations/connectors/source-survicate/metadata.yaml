@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5770c58b-3288-4fa0-a968-bb8a6607fae1
-  dockerImageTag: 0.0.22
+  dockerImageTag: 0.0.23
   dockerRepository: airbyte/source-survicate
   githubIssueLabel: source-survicate
   icon: icon.svg
