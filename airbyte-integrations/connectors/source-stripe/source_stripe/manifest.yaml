@@ -33,8 +33,8 @@ definitions:
       $ref: "#/definitions/base_paginator"
     concurrency_level:
       type: ConcurrencyLevel
-      default_concurrency: "{{ config.get('num_workers', 10) }}"
-      max_concurrency: "{{ config.get('num_workers', 10) }}"
+      default_concurrency: 10
+      max_concurrency: 10
 
   base_requester:
     type: HttpRequester
@@ -1603,6 +1603,11 @@ spec:
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
           API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
           calls per second for test and production tokens respectively.
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 10
 
 api_budget:
   type: HTTPAPIBudget
