@@ -124,7 +124,7 @@
         "type": "object"
       },
       "ssl_mode": {
-        "description": "The encryption method with is used when communicating with the database.",
+        "description": "The encryption method which is used when communicating with the database.",
         "oneOf": [
           {
             "additionalProperties": true,

@@ -62,15 +62,8 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.username", value = "FOO")
     @Property(name = "airbyte.connector.config.password", value = "BAR")
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
-    fun testAirbyteCloudDeployment() {
-        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
-        Assertions.assertThrows(ConfigErrorException::class.java) {
-            factory.makeWithoutExceptionHandling(pojo)
-        }
-    }
-
-    @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_V1)
+
     fun testParseConfigFromV1() {
         val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
 

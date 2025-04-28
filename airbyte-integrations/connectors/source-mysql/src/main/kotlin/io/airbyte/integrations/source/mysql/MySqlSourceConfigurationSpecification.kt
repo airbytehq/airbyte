@@ -41,6 +41,7 @@ import jakarta.inject.Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
+//class MySqlSourceConfigurationSpecification @Inject constructor(private val featureFlags: Set<FeatureFlag>) : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -98,10 +99,9 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("ssl_mode")
     @JsonSchemaTitle("Encryption")
     @JsonPropertyDescription(
-        "The encryption method with is used when communicating with the database.",
+        "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8}""")
-    @JsonSchemaDefault("required")
+    @JsonSchemaInject(json = """{"order":8,"default":"required"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
