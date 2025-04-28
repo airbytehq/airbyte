@@ -6,11 +6,9 @@ package io.airbyte.integrations.destination.bigquery
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.google.cloud.bigquery.FieldValue
-import com.google.cloud.bigquery.FieldValueList
 import com.google.cloud.bigquery.LegacySQLTypeName
-import com.google.cloud.bigquery.QueryJobConfiguration
+import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TableId
-import com.google.cloud.bigquery.TableResult
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -55,33 +53,33 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         val (_, rawTableName) =
             BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
 
-        if (bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName)) == null) {
-            logger.warn {
-                "Raw table does not exist: ${config.rawTableDataset}.$rawTableName. Returning empty list."
+        return bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName))?.let { table ->
+            table.list().iterateAll().map { row ->
+                OutputRecord(
+                    rawId = row.get(Meta.COLUMN_NAME_AB_RAW_ID).stringValue,
+                    extractedAt =
+                        row.get(Meta.COLUMN_NAME_AB_EXTRACTED_AT).timestampInstant.toEpochMilli(),
+                    // loadedAt is nullable (e.g. if we disabled T+D, then it will always be null)
+                    loadedAt =
+                        row.get(Meta.COLUMN_NAME_AB_LOADED_AT).mapNotNull {
+                            it.timestampInstant.toEpochMilli()
+                        },
+                    generationId = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID).longValue,
+                    data =
+                        row.get(Meta.COLUMN_NAME_DATA)
+                            .stringValue
+                            .deserializeToNode()
+                            .toAirbyteValue(),
+                    airbyteMeta = stringToMeta(row.get(Meta.COLUMN_NAME_AB_META).stringValue),
+                )
             }
-            return emptyList()
         }
-
-        val result: TableResult =
-            bigquery.query(
-                QueryJobConfiguration.of("SELECT * FROM ${config.rawTableDataset}.$rawTableName")
-            )
-        return result.iterateAll().map { row: FieldValueList ->
-            OutputRecord(
-                rawId = row.get(Meta.COLUMN_NAME_AB_RAW_ID).stringValue,
-                extractedAt =
-                    row.get(Meta.COLUMN_NAME_AB_EXTRACTED_AT).timestampInstant.toEpochMilli(),
-                // loadedAt is nullable (e.g. if we disabled T+D, then it will always be null)
-                loadedAt =
-                    row.get(Meta.COLUMN_NAME_AB_LOADED_AT).mapNotNull {
-                        it.timestampInstant.toEpochMilli()
-                    },
-                generationId = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID).longValue,
-                data =
-                    row.get(Meta.COLUMN_NAME_DATA).stringValue.deserializeToNode().toAirbyteValue(),
-                airbyteMeta = stringToMeta(row.get(Meta.COLUMN_NAME_AB_META).stringValue),
-            )
-        }
+            ?: run {
+                logger.warn {
+                    "Raw table does not exist: ${config.rawTableDataset}.$rawTableName. Returning empty list."
+                }
+                emptyList()
+            }
     }
 
     override fun dumpFile(
@@ -103,62 +101,61 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
         val (datasetName, finalTableName) =
             BigqueryFinalTableNameGenerator(config).getTableName(stream.descriptor)
 
-        if (bigquery.getTable(TableId.of(datasetName, finalTableName)) == null) {
-            logger.warn {
-                "Final table does not exist: $datasetName.$finalTableName. Returning empty list."
-            }
-            return emptyList()
-        }
-
-        val result: TableResult =
-            bigquery.query(QueryJobConfiguration.of("SELECT * FROM $datasetName.$finalTableName"))
-        return result.iterateAll().map { row: FieldValueList ->
-            val valuesMap: LinkedHashMap<String, AirbyteValue> =
-                result.schema!!
-                    .fields
-                    .filter { field -> !Meta.COLUMN_NAMES.contains(field.name) }
-                    .associateTo(linkedMapOf()) { field ->
-                        val value: FieldValue = row.get(field.name)
-                        val airbyteValue =
-                            value.mapNotNull {
-                                when (field.type) {
-                                    LegacySQLTypeName.BOOLEAN -> BooleanValue(it.booleanValue)
-                                    LegacySQLTypeName.BIGNUMERIC -> NumberValue(it.numericValue)
-                                    LegacySQLTypeName.FLOAT ->
-                                        NumberValue(BigDecimal(it.doubleValue))
-                                    LegacySQLTypeName.NUMERIC -> NumberValue(it.numericValue)
-                                    LegacySQLTypeName.INTEGER -> IntegerValue(it.longValue)
-                                    LegacySQLTypeName.STRING -> StringValue(it.stringValue)
-                                    // TODO check these
-                                    LegacySQLTypeName.DATE -> DateValue(it.stringValue)
-                                    LegacySQLTypeName.DATETIME ->
-                                        TimestampWithoutTimezoneValue(it.stringValue)
-                                    LegacySQLTypeName.TIME ->
-                                        TimeWithoutTimezoneValue(it.stringValue)
-                                    LegacySQLTypeName.TIMESTAMP ->
-                                        TimestampWithTimezoneValue(
-                                            it.timestampInstant.atOffset(ZoneOffset.UTC)
-                                        )
-                                    LegacySQLTypeName.JSON ->
-                                        it.stringValue.deserializeToNode().toAirbyteValue()
-                                    else ->
-                                        throw UnsupportedOperationException(
-                                            "Bigquery data dumper doesn't know how to dump type ${field.type} with value $it"
-                                        )
+        return bigquery.getTable(TableId.of(datasetName, finalTableName))?.let { table ->
+            val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!
+            table.list().iterateAll().map { row ->
+                val valuesMap: LinkedHashMap<String, AirbyteValue> =
+                    bigquerySchema.fields
+                        .filter { field -> !Meta.COLUMN_NAMES.contains(field.name) }
+                        .associateTo(linkedMapOf()) { field ->
+                            val value: FieldValue = row.get(field.name)
+                            val airbyteValue =
+                                value.mapNotNull {
+                                    when (field.type) {
+                                        LegacySQLTypeName.BOOLEAN -> BooleanValue(it.booleanValue)
+                                        LegacySQLTypeName.BIGNUMERIC -> NumberValue(it.numericValue)
+                                        LegacySQLTypeName.FLOAT ->
+                                            NumberValue(BigDecimal(it.doubleValue))
+                                        LegacySQLTypeName.NUMERIC -> NumberValue(it.numericValue)
+                                        LegacySQLTypeName.INTEGER -> IntegerValue(it.longValue)
+                                        LegacySQLTypeName.STRING -> StringValue(it.stringValue)
+                                        // TODO check these
+                                        LegacySQLTypeName.DATE -> DateValue(it.stringValue)
+                                        LegacySQLTypeName.DATETIME ->
+                                            TimestampWithoutTimezoneValue(it.stringValue)
+                                        LegacySQLTypeName.TIME ->
+                                            TimeWithoutTimezoneValue(it.stringValue)
+                                        LegacySQLTypeName.TIMESTAMP ->
+                                            TimestampWithTimezoneValue(
+                                                it.timestampInstant.atOffset(ZoneOffset.UTC)
+                                            )
+                                        LegacySQLTypeName.JSON ->
+                                            it.stringValue.deserializeToNode().toAirbyteValue()
+                                        else ->
+                                            throw UnsupportedOperationException(
+                                                "Bigquery data dumper doesn't know how to dump type ${field.type} with value $it"
+                                            )
+                                    }
                                 }
-                            }
-                        field.name to (airbyteValue ?: NullValue)
-                    }
-            OutputRecord(
-                rawId = row.get(Meta.COLUMN_NAME_AB_RAW_ID).stringValue,
-                extractedAt =
-                    row.get(Meta.COLUMN_NAME_AB_EXTRACTED_AT).timestampInstant.toEpochMilli(),
-                loadedAt = null,
-                generationId = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID).longValue,
-                data = ObjectValue(valuesMap),
-                airbyteMeta = stringToMeta(row.get(Meta.COLUMN_NAME_AB_META).stringValue),
-            )
+                            field.name to (airbyteValue ?: NullValue)
+                        }
+                OutputRecord(
+                    rawId = row.get(Meta.COLUMN_NAME_AB_RAW_ID).stringValue,
+                    extractedAt =
+                        row.get(Meta.COLUMN_NAME_AB_EXTRACTED_AT).timestampInstant.toEpochMilli(),
+                    loadedAt = null,
+                    generationId = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID).longValue,
+                    data = ObjectValue(valuesMap),
+                    airbyteMeta = stringToMeta(row.get(Meta.COLUMN_NAME_AB_META).stringValue),
+                )
+            }
         }
+            ?: run {
+                logger.warn {
+                    "Final table does not exist: $datasetName.$finalTableName. Returning empty list."
+                }
+                return emptyList()
+            }
     }
 
     override fun dumpFile(
