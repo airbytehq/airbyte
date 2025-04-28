@@ -2134,6 +2134,118 @@ schemas:
                       type: string
                     timestamp:
                       type: integer
+                    relationships:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        event:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        attributed-event:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        campaign:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        campaign-message:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        flow:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        flow-message:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        flow-message-variation:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                    links:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        self:
+                          type:
+                            - "null"
+                            - string
                   additionalProperties: true
               links:
                 type:
@@ -2144,7 +2256,7 @@ schemas:
                   related:
                     type: string
                   self:
-                    type: string 
+                    type: string
   email_templates:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
