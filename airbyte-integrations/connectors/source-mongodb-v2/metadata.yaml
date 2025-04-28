@@ -47,9 +47,11 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      # avoid 1.5.18 which introduced an issue while upgrading dependencies
       dockerImageTag: 1.5.17
     oss:
       enabled: true
+      # avoid 1.5.18 which introduced an issue while upgrading dependencies
       dockerImageTag: 1.5.17
   releaseStage: generally_available
   releases:
