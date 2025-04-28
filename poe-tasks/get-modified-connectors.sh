@@ -1,7 +1,12 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-# 1) update remote master quietly
-git fetch --quiet origin master
+# This script is used to find all modified connector directories in the Airbyte repository.
+# It compares the current branch with the default branch and filters out files that match certain ignore patterns.
+
+DEFAULT_BRANCH="master"
+
+# 1) update remote default branch quietly
+git fetch --quiet origin $DEFAULT_BRANCH
 
 # 2) set up ignore patterns
 ignore_patterns=(
@@ -11,7 +16,7 @@ ignore_patterns=(
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
 # 3) collect all file changes
-committed=$(git diff --name-only origin/master...HEAD)
+committed=$(git diff --name-only origin/$DEFAULT_BRANCH...HEAD)
 staged=$(git diff --cached --name-only)
 unstaged=$(git diff --name-only)
 untracked=$(git ls-files --others --exclude-standard)
@@ -27,7 +32,7 @@ connectors=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connecto
 
 # 7) extract just the connector directory name
 dirs=$(printf '%s\n' "$connectors" \
-  | sed -E 's|airbyte-integrations/connectors/([^/]+).*|\\1|'
+  | sed -E 's|airbyte-integrations/connectors/([^/]+).*|\1|'
 )
 
 # 8) output sorted, unique list
