@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.Dataset
 import com.google.cloud.bigquery.DatasetInfo
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getLoadingMethod
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
@@ -38,11 +39,17 @@ object BigQueryDestinationTestUtils {
      * standard inserts mode. Should be randomized per test case.
      */
     @Throws(IOException::class)
-    fun createConfig(configFile: Path?, datasetId: String?, stagingPath: String?): ObjectNode {
+    fun createConfig(
+        configFile: Path?,
+        datasetId: String?,
+        stagingPath: String?,
+        rawDatasetId: String? = null,
+    ): ObjectNode {
         LOGGER.info("Setting default dataset to {}", datasetId)
         val tmpConfigAsString = Files.readString(configFile)
         val config = Jsons.readTree(tmpConfigAsString) as ObjectNode
         config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        rawDatasetId?.let { config.put(BigQueryConsts.RAW_DATA_DATASET, rawDatasetId) }
 
         // This is sort of a hack. Ideally tests shouldn't interfere with each other even when using
         // the
@@ -83,6 +90,11 @@ object BigQueryDestinationTestUtils {
         return null
     }
 
+    fun parseConfig(config: JsonNode): BigqueryConfiguration {
+        val spec = Jsons.treeToValue(config, BigquerySpecification::class.java)
+        return BigqueryConfigurationFactory().make(spec)
+    }
+
     /**
      * Initialized bigQuery instance that will be used for verifying results of test operations and
      * for cleaning up BigQuery dataset after the test
@@ -93,8 +105,7 @@ object BigQueryDestinationTestUtils {
      */
     @Throws(IOException::class)
     fun initBigQuery(config: JsonNode): BigQuery {
-        val spec = Jsons.treeToValue(config, BigquerySpecification::class.java)
-        val parsedConfig = BigqueryConfigurationFactory().make(spec)
+        val parsedConfig = parseConfig(config)
         return BigqueryClientFactory(parsedConfig).make()
     }
 

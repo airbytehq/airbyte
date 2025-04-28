@@ -54,7 +54,12 @@ class BigqueryConfigurationFactory :
             loadingMethodConfig,
             credentialsJson = pojo.credentialsJson,
             pojo.transformationPriority ?: TransformationPriority.INTERACTIVE,
-            rawTableDataset = pojo.rawTableDataset ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
+            rawTableDataset =
+                if (pojo.rawTableDataset.isNullOrBlank()) {
+                    DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+                } else {
+                    pojo.rawTableDataset!!
+                },
             disableTypingDeduping = pojo.disableTypingDeduping ?: false,
         )
     }
