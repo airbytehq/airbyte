@@ -47,7 +47,7 @@ jobs:
       - name: Update cdk in build.gradle files
         id: export-connection-modified
         run: |
-          ./tools/bin/cdk-auto-release/bump_cdk_version.sh ${{ steps.fetch-version.outputs.latest_version }}
+          ./tools/bin/cdk-auto-release/update-bulk-cdk-version-in-connectors.sh ${{ steps.fetch-version.outputs.latest_version }}
 
       - name: Commit changes
         run: |
