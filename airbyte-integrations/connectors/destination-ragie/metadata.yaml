@@ -1,28 +1,27 @@
 data:
   allowedHosts:
     hosts:
-      - "api.ragie.ai"  # Updated to the actual API hostname of the source.
+      - "api.ragie.ai"
   registries:
     oss:
-      enabled: true  # Available in the Open Source version of Airbyte.
+      enabled: true
     cloud:
-      enabled: false  # Not yet available in Airbyte Cloud.
+      enabled: false
   connectorBuildOptions:
-    # Using the latest stable version of the Python connector base image with sha256 hash.
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
-  connectorSubtype: vectorstore  # Classified as a database-type destination.
-  connectorType: destination  # This is a destination connector.
-  definitionId: 08361b9d-8d84-40fc-bdbb-ee497691b3e8  # Unique ID for this connector.
-  dockerImageTag: 0.1.0  # Initial version.
-  dockerRepository: airbyte/destination-ragie  # Official Docker repository.
-  githubIssueLabel: destination-ragie  # GitHub label for issue tracking.
-  icon: icon.svg  # Icon file for UI representation.
-  license: MIT  # Open-source license.
-  name: Ragie  # Display name of the connector.
-  releaseDate: 2024-04-01  # Updated release date.
-  releaseStage: alpha  # Still in alpha (early development).
-  supportLevel: community  # Community-supported.
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/ragie  # Official documentation.
+  connectorSubtype: vectorstore
+  connectorType: destination
+  definitionId: 08361b9d-8d84-40fc-bdbb-ee497691b3e8
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-ragie
+  githubIssueLabel: destination-ragie
+  icon: icon.svg
+  license: MIT
+  name: Ragie
+  releaseDate: 2024-04-01
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/ragie
   tags:
-    - language:python  # Built with Python.
-metadataSpecVersion: "1.0"  # Metadata schema version.
+    - language:python
+metadataSpecVersion: "1.0"
