@@ -24,6 +24,7 @@ jobs:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
+          # Todo: Update to latest (2.x) Poetry version
           version: ${{ steps.tool-versions.outputs.poetry-1 }}
       - name: Run auto merge
         shell: bash
