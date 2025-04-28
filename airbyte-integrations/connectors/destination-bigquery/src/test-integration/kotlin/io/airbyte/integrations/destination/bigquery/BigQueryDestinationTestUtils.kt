@@ -39,11 +39,17 @@ object BigQueryDestinationTestUtils {
      * standard inserts mode. Should be randomized per test case.
      */
     @Throws(IOException::class)
-    fun createConfig(configFile: Path?, datasetId: String?, stagingPath: String?): ObjectNode {
+    fun createConfig(
+        configFile: Path?,
+        datasetId: String?,
+        stagingPath: String?,
+        rawDatasetId: String? = null,
+    ): ObjectNode {
         LOGGER.info("Setting default dataset to {}", datasetId)
         val tmpConfigAsString = Files.readString(configFile)
         val config = Jsons.readTree(tmpConfigAsString) as ObjectNode
         config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        rawDatasetId?.let { config.put(BigQueryConsts.RAW_DATA_DATASET, rawDatasetId) }
 
         // This is sort of a hack. Ideally tests shouldn't interfere with each other even when using
         // the

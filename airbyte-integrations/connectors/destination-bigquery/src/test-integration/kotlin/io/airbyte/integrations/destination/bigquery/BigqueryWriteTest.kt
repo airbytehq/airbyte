@@ -94,6 +94,7 @@ class StandardInsertRawOverrideDisableTd :
                     Path.of("secrets/credentials-1s1t-disabletd-standard-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
@@ -113,6 +114,7 @@ class StandardInsertRawOverride :
                 configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
@@ -126,12 +128,28 @@ class StandardInsertRawOverride :
     }
 }
 
+class StandardInsert :
+    BigqueryTDWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+                configFile = Path.of("secrets/credentials-1s1t-standard.json"),
+                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
+                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+            )
+            .serializeToString(),
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
 class GcsRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
                 configFile = Path.of("secrets/credentials-1s1t-disabletd-gcs-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
@@ -145,6 +163,22 @@ class GcsRawOverride :
     BigqueryTDWriteTest(
         BigQueryDestinationTestUtils.createConfig(
                 configFile = Path.of("secrets/credentials-1s1t-gcs-raw-override.json"),
+                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
+                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
+            )
+            .serializeToString(),
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+class Gcs :
+    BigqueryTDWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+                configFile = Path.of("secrets/credentials-1s1t-gcs.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
