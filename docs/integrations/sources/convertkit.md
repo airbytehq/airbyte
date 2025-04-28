@@ -36,6 +36,7 @@ The connector has a rate limit of no more than 120 requests over a rolling 60 se
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.3.0  | 2025-04-24 | [58617](https://github.com/airbytehq/airbyte/pull/58617) | Update to Kit API v4, add OAuth support, add 8 additional streams, update schemas |
 | 0.2.23 | 2025-04-26 | [58849](https://github.com/airbytehq/airbyte/pull/58849) | Update dependencies |
 | 0.2.22 | 2025-04-19 | [58341](https://github.com/airbytehq/airbyte/pull/58341) | Update dependencies |
 | 0.2.21 | 2025-04-12 | [57808](https://github.com/airbytehq/airbyte/pull/57808) | Update dependencies |
