@@ -55,7 +55,7 @@ interface StreamManager {
     fun endOfStreamRead(): Boolean
 
     /** Whether we received a stream complete message for the managed stream. */
-    fun isComplete(): Boolean
+    fun receivedStreamComplete(): Boolean
 
     /**
      * Mark a checkpoint in the stream and return the current index and the number of records since
@@ -200,7 +200,7 @@ class DefaultStreamManager(
         return markedEndOfStream.get()
     }
 
-    override fun isComplete(): Boolean {
+    override fun receivedStreamComplete(): Boolean {
         return receivedComplete.get()
     }
 
