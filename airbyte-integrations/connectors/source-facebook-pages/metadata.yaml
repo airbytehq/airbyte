@@ -46,13 +46,11 @@ data:
         - name: facebook-pages_config_dev_null
           id: 4446147a-669a-472b-bda8-6ee069eb3099
     - suite: unitTests
-    # Disable acceptance tests for now
-    # No/Low cloud usage
-    # - suite: acceptanceTests
-    #   testSecrets:
-    #     - name: SECRET_SOURCE-FACEBOOK-PAGES__CREDS
-    #       fileName: config.json
-    #       secretStore:
-    #         type: GSM
-    #         alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FACEBOOK-PAGES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
