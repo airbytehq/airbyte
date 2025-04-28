@@ -64,7 +64,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val flushStrategy: PipelineFlushStrategy?,
     private val part: Int,
     private val numWorkers: Int,
-    private val taskId: String,
+    private val stepId: String,
     private val streamCompletions:
         ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>
 ) : Task {
@@ -91,7 +91,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     is PipelineMessage -> {
                         if (stateStore.streamsEnded.contains(input.key.stream)) {
                             throw IllegalStateException(
-                                "$taskId[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
+                                "$stepId[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
                             )
                         }
                         // Get or create the accumulator state associated w/ the input key.
@@ -188,7 +188,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
                         val numWorkersSeenEos =
                             streamCompletions
-                                .getOrPut(Pair(taskId, input.stream)) { AtomicInteger(0) }
+                                .getOrPut(Pair(stepId, input.stream)) { AtomicInteger(0) }
                                 .incrementAndGet()
                         if (numWorkersSeenEos == numWorkers) {
                             log.info {
@@ -204,7 +204,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         // Track which tasks are complete
                         stateStore.streamsEnded.add(input.stream)
                         batchUpdateQueue.publish(
-                            BatchEndOfStream(input.stream, taskId, part, inputCountEos)
+                            BatchEndOfStream(input.stream, stepId, part, inputCountEos)
                         )
 
                         stateStore
@@ -279,7 +279,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     stream = inputKey.stream,
                     checkpointCounts = checkpointCounts.toMap(),
                     state = output.state,
-                    taskName = taskId,
+                    taskName = stepId,
                     part = part,
                     inputCount = inputCount
                 )

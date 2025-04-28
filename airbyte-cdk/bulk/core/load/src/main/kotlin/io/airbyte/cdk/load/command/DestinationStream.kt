@@ -28,7 +28,9 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
+    // whether the stream corresponds to a series of files and their metadata
     val isFileBased: Boolean = false,
+    // whether we will move the file (in addition to the metadata)
     val includeFiles: Boolean = false,
 ) {
     data class Descriptor(val namespace: String?, val name: String) {
