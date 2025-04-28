@@ -5329,3 +5329,18 @@ schemas:
           - "null"
     required:
       - ID
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3
+          interval: PT1S
+        - limit: 60
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: .*
+  status_codes_for_ratelimit_hit:
+    - 503
