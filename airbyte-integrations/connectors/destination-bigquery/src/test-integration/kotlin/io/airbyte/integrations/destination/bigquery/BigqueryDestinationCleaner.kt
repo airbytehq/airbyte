@@ -117,13 +117,6 @@ class BigqueryDestinationCleaner(private val configJson: JsonNode) : Destination
 
         // some older tests used these table/dataset name prefixes.
         // might as well clean them up while we're here.
-        private val tableNamePrefixesToDelete =
-            listOf(
-                "_99namespace",
-                "_airbyte_tmp",
-                "tdtest_",
-                "typing_deduping_test",
-            )
         private val datasetNamePrefixesToDelete =
             listOf(
                 "99namespace",
@@ -139,5 +132,11 @@ class BigqueryDestinationCleaner(private val configJson: JsonNode) : Destination
                 "tdtest_",
                 "test_deleteme_",
             )
+        private val tableNamePrefixesToDelete =
+            listOf(
+                "_99namespace",
+                "_airbyte_tmp",
+                "typing_deduping_test",
+            ) + datasetNamePrefixesToDelete
     }
 }
