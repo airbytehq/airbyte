@@ -83,7 +83,7 @@ To start, you create a new Entra ID application for Airbyte.
 
     - **Supported account types**: Choose "Accounts in this organizational directory only" unless you have a reason to choose a different one.
 
-    - **Redirect URI**: Choose **Single-page application (SPA)** and enter the domain depends of your Airbyte installation location, but the URI should look similar to `https://airbyte.example.com?checkLicense=true`.
+    - **Redirect URI**: Choose **Single-page application (SPA)** and enter the domain depends of your Airbyte installation location, but the URI should look similar to `https://airbyte.example.com`.
 
 4. Click **Register**. You are taken to your application's overview page.
 

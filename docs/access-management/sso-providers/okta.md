@@ -93,7 +93,7 @@ Follow these steps to set up an Okta app integration for Airbyte. If you need mo
 
     - **Grant type**: Authorization Code, Refresh Token
 
-    - **Sign-in redirect URIs**: The domain depends of your Airbyte installation location, but the URI should look similar to `https://airbyte.example.com?checkLicense=true`.
+    - **Sign-in redirect URIs**: The domain depends of your Airbyte installation location, but the URI should look similar to `https://airbyte.example.com`.
 
     - **Sign-out redirect URIs**: Set it to your base Airbyte site. For example: `https://airbyte.example.com`.
 
