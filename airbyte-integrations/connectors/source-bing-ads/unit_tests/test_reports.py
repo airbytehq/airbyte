@@ -53,7 +53,7 @@ from source_bing_ads.source import SourceBingAds
 from suds import WebFault
 
 from airbyte_cdk.models import SyncMode
-
+from helpers import source
 
 TEST_CONFIG = {
     "developer_token": "developer_token",
@@ -269,7 +269,7 @@ def test_report_parse_response_csv_error(caplog):
 
 @patch.object(source_bing_ads.source, "Client")
 def test_custom_report_clear_namespace(mocked_client, config_with_custom_reports, logger_mock):
-    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    custom_report = source(config_with_custom_reports).get_custom_reports(config_with_custom_reports, mocked_client)[0]
     assert custom_report._clear_namespace("tns:ReportAggregation") == "ReportAggregation"
 
 
@@ -280,7 +280,7 @@ def test_custom_report_get_object_columns(mocked_client, config_with_custom_repo
     mocked_client.get_service.return_value = reporting_service_mock
     mocked_client.environment = "production"
 
-    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    custom_report = source(config=config_with_custom_reports).get_custom_reports(config_with_custom_reports, mocked_client)[0]
 
     tree = ET.parse(urlparse(SERVICE_INFO_DICT_V13[("reporting", mocked_client.environment)]).path)
     request_object = tree.find(f".//{{*}}complexType[@name='{custom_report.report_name}Request']")
@@ -350,7 +350,7 @@ def test_custom_report_send_request(mocked_client, config_with_custom_reports, l
     class Fault:
         faultstring = "Invalid Client Data"
 
-    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    custom_report = source(config=config_with_custom_reports).get_custom_reports(config_with_custom_reports, mocked_client)[0]
     with patch.object(BingAdsReportingServiceStream, "send_request", side_effect=WebFault(fault=Fault(), document=None)):
         custom_report.send_request(params={}, customer_id="13131313", account_id="800800808")
         assert (
@@ -396,7 +396,7 @@ def test_custom_report_send_request(mocked_client, config_with_custom_reports, l
 )
 @patch.object(source_bing_ads.source, "Client")
 def test_custom_report_get_report_record_timestamp(mocked_client, config_with_custom_reports, aggregation, datastring, expected):
-    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    custom_report = source(config=config_with_custom_reports).get_custom_reports(config_with_custom_reports, mocked_client)[0]
     custom_report.report_aggregation = aggregation
     assert custom_report.get_report_record_timestamp(datastring) == expected
 
@@ -435,7 +435,7 @@ def test_account_performance_report_monthly_stream_slices_no_time_period(mocked_
 @patch.object(source_bing_ads.source, "Client")
 def test_custom_performance_report_no_last_year_stream_slices(mocked_client, config_with_custom_reports, aggregation):
     mocked_client.reports_start_date = None  # in case of start date time period won't be used in request params
-    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    custom_report = source(config=config_with_custom_reports).get_custom_reports(config_with_custom_reports, mocked_client)[0]
     custom_report.report_aggregation = aggregation
     accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
     with patch.object(Accounts, "read_records", return_value=accounts_read_records):

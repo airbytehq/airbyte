@@ -18,7 +18,7 @@ class TestAppInstallAdsStream(TestBulkStream):
     def test_return_logged_info_for_empty_csv_file(self):
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "app_install_ads_empty")
         assert len(output.records) == 0
-        assert len(output.logs) == 11
+        assert len(output.logs) == 12
 
     def test_transform_records(self):
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "app_install_ads")
