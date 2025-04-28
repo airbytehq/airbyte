@@ -11,6 +11,9 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.task.implementor.CloseStreamTask
+import io.airbyte.cdk.load.task.implementor.FailStreamTask
+import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -56,6 +59,15 @@ interface StreamManager {
 
     /** Whether we received a stream complete message for the managed stream. */
     fun receivedStreamComplete(): Boolean
+
+    /**
+     * Mark this stream manager as having initiated a terminal task (i.e. [CloseStreamTask] or
+     * [FailStreamTask]).
+     *
+     * @return `true` if this stream manager was not already terminating; `false` if another thread
+     * has already invoked `setClosed` on this stream manager
+     */
+    fun setClosed(): Boolean
 
     /**
      * Mark a checkpoint in the stream and return the current index and the number of records since
@@ -157,6 +169,8 @@ class DefaultStreamManager(
     private val markedEndOfStream = AtomicBoolean(false)
     private val receivedComplete = AtomicBoolean(false)
 
+    private val isClosed = AtomicBoolean(false)
+
     private val rangesState: ConcurrentHashMap<BatchState, RangeSet<Long>> = ConcurrentHashMap()
 
     private val nextCheckpointId = AtomicLong(0L)
@@ -202,6 +216,10 @@ class DefaultStreamManager(
 
     override fun receivedStreamComplete(): Boolean {
         return receivedComplete.get()
+    }
+
+    override fun setClosed(): Boolean {
+        return isClosed.setOnce()
     }
 
     override fun markCheckpoint(): Pair<Long, Long> {

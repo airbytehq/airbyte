@@ -27,6 +27,7 @@ class DefaultFailStreamTask(
     private val exception: Exception,
     private val syncManager: SyncManager,
     private val stream: DestinationStream.Descriptor,
+    private val shouldRunStreamLoaderClose: Boolean,
 ) : FailStreamTask {
     val log = KotlinLogging.logger {}
 
@@ -41,10 +42,16 @@ class DefaultFailStreamTask(
                 log.info { "Cannot fail stream $stream, which is already complete, doing nothing." }
             }
             is StreamProcessingFailed -> {
-                syncManager
-                    .getStreamLoaderOrNull(stream)
-                    ?.close(hadNonzeroRecords = streamManager.hadNonzeroRecords(), streamResult)
-                    ?: log.warn { "StreamLoader not found for stream $stream, cannot call close." }
+                if (shouldRunStreamLoaderClose) {
+                    syncManager
+                        .getStreamLoaderOrNull(stream)
+                        ?.close(hadNonzeroRecords = streamManager.hadNonzeroRecords(), streamResult)
+                        ?: log.warn {
+                            "StreamLoader not found for stream $stream, cannot call close."
+                        }
+                } else {
+                    log.info { "Skipping StreamLoader.close for stream $stream" }
+                }
             }
         }
         taskLauncher.handleFailStreamComplete(stream, exception)
@@ -56,6 +63,7 @@ interface FailStreamTaskFactory {
         taskLauncher: DestinationTaskLauncher,
         exception: Exception,
         stream: DestinationStream.Descriptor,
+        shouldRunStreamLoaderClose: Boolean,
     ): FailStreamTask
 }
 
@@ -66,7 +74,14 @@ class DefaultFailStreamTaskFactory(private val syncManager: SyncManager) : FailS
         taskLauncher: DestinationTaskLauncher,
         exception: Exception,
         stream: DestinationStream.Descriptor,
+        shouldRunStreamLoaderClose: Boolean,
     ): FailStreamTask {
-        return DefaultFailStreamTask(taskLauncher, exception, syncManager, stream)
+        return DefaultFailStreamTask(
+            taskLauncher,
+            exception,
+            syncManager,
+            stream,
+            shouldRunStreamLoaderClose = shouldRunStreamLoaderClose,
+        )
     }
 }
