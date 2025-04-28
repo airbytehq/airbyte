@@ -11,10 +11,13 @@ jobs:
       - name: checkout repo content
         uses: actions/checkout@v3 # checkout the repository content to github runner
 
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9.13" # install the python version needed
+          python-version: ${{ steps.tool-versions.outputs.python }} # install the python version needed
 
       - name: install python packages
         run: |

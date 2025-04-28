@@ -24,10 +24,13 @@ jobs:
         uses: ./.github/actions/get-dagger-engine-image
         with:
           dagger_engine_image: "registry.dagger.io/engine:v0.9.6"
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:

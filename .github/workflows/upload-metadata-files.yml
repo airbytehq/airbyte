@@ -15,11 +15,15 @@ jobs:
         uses: tj-actions/changed-files@v44
         with:
           files: "airbyte-integrations/connectors/**/metadata.yaml"
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
+        if: steps.changed-files.outputs.any_changed == 'true'
       - name: Setup Python 3.10
         if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
           check-latest: true
           update-environment: true
       - name: Install metadata_service

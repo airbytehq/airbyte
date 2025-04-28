@@ -34,11 +34,14 @@ jobs:
         id: get_short_sha
         uses: benjlevesque/short-sha@v2.2
 
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: Install Python
         id: install_python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
           check-latest: true
           update-environment: true
 

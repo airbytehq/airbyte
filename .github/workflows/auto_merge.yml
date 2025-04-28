@@ -12,10 +12,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
           check-latest: true
           update-environment: true
       - name: Install and configure Poetry

@@ -84,15 +84,18 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: Install Java
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "21"
+          java-version: ${{ steps.tool-versions.outputs.java }}
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
           check-latest: true
           update-environment: true
       - name: Install CI scripts
