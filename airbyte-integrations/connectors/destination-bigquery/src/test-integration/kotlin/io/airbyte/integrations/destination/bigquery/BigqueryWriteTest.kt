@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.bigquery
 
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -35,7 +35,7 @@ abstract class BigqueryWriteTest(
         configContents = configContents,
         BigquerySpecification::class.java,
         dataDumper,
-        NoopDestinationCleaner,
+        BigqueryDestinationCleaner(configContents.deserializeToNode()),
         recordMangler = expectedRecordMapper,
         isStreamSchemaRetroactive = isStreamSchemaRetroactive,
         supportsDedup = supportsDedup,
