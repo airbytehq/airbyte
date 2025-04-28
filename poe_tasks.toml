@@ -53,3 +53,25 @@ args = [
   { name = "destination", positional = true, help = "Name of the destination (e.g., 'motherduck')" },
   { name = "task_and_args", positional = true, multiple = true, help = "Task name and its arguments" }
 ]
+
+[tasks.get-modified-connectors]
+help = "List Airbyte connectors modified in this branch"
+shell = """
+# update origin/master quietly
+git fetch --quiet origin master
+
+# gather all changed files: committed, staged, unstaged, and untracked
+(
+  # committed-but-not-pushed
+  git diff --name-only origin/master...HEAD
+  # staged changes
+  git diff --cached --name-only
+  # unstaged changes
+  git diff --name-only
+  # new files
+  git ls-files --others --exclude-standard
+) \
+| grep -E '^airbyte-integrations/connectors/[^/]+' \
+| sed -E 's|airbyte-integrations/connectors/([^/]+).*|\\1|' \
+| sort -u
+"""
