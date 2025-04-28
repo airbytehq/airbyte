@@ -19,7 +19,7 @@ data:
   name: Facebook Pages
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: beta
