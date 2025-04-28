@@ -34,7 +34,7 @@ class BigQueryRecordFormatter {
                 Meta.COLUMN_NAME_AB_META -> {
                     // TODO this is a hack for T+D, we should remove it for direct-load tables
                     //   we're completely ignoring the enrichedRecord's meta value, because that
-                    //   includes changes ein-connector type coercion
+                    //   includes changes in-connector type coercion
                     //   and for raw tables, we only want changes that originated from the source
                     if (record.rawData.record.meta == null) {
                         record.rawData.record.meta = AirbyteRecordMessageMeta()
