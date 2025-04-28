@@ -157,6 +157,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.2.0-rc.2 | 2025-04-23 | [58610](https://github.com/airbytehq/airbyte/pull/58610) | Used latest version of Python cdk (6.45.10) |
 | 7.2.0-rc.1 | 2025-04-22 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams & Auto-update start_date if past lookback window|
 | 7.1.7 | 2025-04-12 | [57591](https://github.com/airbytehq/airbyte/pull/57591) | Update dependencies |
 | 7.1.6 | 2025-04-05 | [57138](https://github.com/airbytehq/airbyte/pull/57138) | Update dependencies |
