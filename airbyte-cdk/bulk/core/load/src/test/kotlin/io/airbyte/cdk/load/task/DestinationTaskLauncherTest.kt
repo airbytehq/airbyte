@@ -309,7 +309,8 @@ class DestinationTaskLauncherTest {
         override fun make(
             taskLauncher: DestinationTaskLauncher,
             exception: Exception,
-            stream: DestinationStream.Descriptor
+            stream: DestinationStream.Descriptor,
+            shouldRunStreamLoaderClose: Boolean,
         ): FailStreamTask {
             return object : FailStreamTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
