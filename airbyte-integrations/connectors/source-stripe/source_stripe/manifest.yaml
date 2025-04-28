@@ -31,6 +31,10 @@ definitions:
       schema_normalization: Default
     paginator:
       $ref: "#/definitions/base_paginator"
+    concurrency_level:
+      type: ConcurrencyLevel
+      default_concurrency: "{{ config.get('num_workers', 10) }}"
+      max_concurrency: "{{ config.get('num_workers', 10) }}"
 
   base_requester:
     type: HttpRequester
