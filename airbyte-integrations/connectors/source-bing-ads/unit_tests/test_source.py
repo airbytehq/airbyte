@@ -7,11 +7,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import source_bing_ads
 from bingads.service_info import SERVICE_INFO_DICT_V13
+from helpers import source
 from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
-from helpers import source
 
 
 @patch.object(source_bing_ads.source, "Client")

@@ -9,6 +9,7 @@ from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from client_builder import build_request, response_with_status
 from config_builder import ConfigBuilder
+from protocol_helpers import read_helper
 from source_bing_ads.source import SourceBingAds
 from suds.transport.https import HttpAuthenticated
 from suds_response_mock import mock_http_authenticated_send
@@ -18,7 +19,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-from protocol_helpers import read_helper
+
 
 class BaseTest(TestCase):
     def setUp(self) -> None:

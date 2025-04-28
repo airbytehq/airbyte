@@ -16,6 +16,7 @@ import source_bing_ads
 from bingads.service_info import SERVICE_INFO_DICT_V13
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
+from helpers import source
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.report_streams import (
     AccountImpressionPerformanceReportDaily,
@@ -53,7 +54,7 @@ from source_bing_ads.source import SourceBingAds
 from suds import WebFault
 
 from airbyte_cdk.models import SyncMode
-from helpers import source
+
 
 TEST_CONFIG = {
     "developer_token": "developer_token",
