@@ -407,7 +407,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                 .asColumns()
                 .map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName]!!
-                    val extractAndCast = extractAndCast(columnName, type.type, forceSafeCasting)
+                    val extractAndCast = extractAndCast(fieldName, type.type, forceSafeCasting)
                     "$extractAndCast as `$columnName`,"
                 }
                 .joinToString("\n")
@@ -417,9 +417,8 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                     stream.schema
                         .asColumns()
                         .map { (fieldName, type) ->
-                            val columnName = columnNameMapping[fieldName]!!
                             val rawColName = escapeColumnNameForJsonPath(fieldName)
-                            val jsonExtract = extractAndCast(columnName, type.type, true)
+                            val jsonExtract = extractAndCast(fieldName, type.type, true)
                             // Explicitly parse json here. This is safe because
                             // we're not using the actual value anywhere,
                             // and necessary because json_query
