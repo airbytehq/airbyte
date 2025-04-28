@@ -125,18 +125,25 @@ class SyncBeanFactory {
     @Named("checkpointById")
     fun isCheckpointById(loadStrategy: LoadStrategy? = null): Boolean = loadStrategy != null
 
+    /** True if the catalog has at least one stream that includeFiles. */
+    @Singleton
+    @Named("isFileTransfer")
+    fun isFileTransfer(catalog: DestinationCatalog): Boolean =
+        catalog.streams.any { it.includeFiles }
+
     /**
      * A single record queue for the whole sync, containing all streams, optionally partitioned by a
      * configurable number of partitions. Number of partitions is controlled by the specified
      * LoadStrategy, if any.
      */
     @Singleton
-    @Named("recordQueue")
-    fun recordQueue(
+    @Named("pipelineInputQueue")
+    fun pipelineInputQueue(
         loadStrategy: LoadStrategy? = null,
+        @Named("isFileTransfer") isFileTransfer: Boolean = false,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
+            Array(if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1) {
                 ChannelMessageQueue(Channel(Channel.UNLIMITED))
             }
         )
