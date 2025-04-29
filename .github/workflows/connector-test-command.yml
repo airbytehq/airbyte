@@ -112,11 +112,24 @@ jobs:
     outputs:
       connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
 
+  warm-tool-cache:
+    # We warm the tool cache to speed up subsequent jobs
+    name: Warm ASDF Tool Cache
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install tools from asdf config
+        uses: ai/asdf-cache-action@v1
+
   # Connector tests
 
   connectors-test-matrix:
     name: Test Connectors
-    needs: [generate-matrix]
+    needs: [generate-matrix, warm-tool-cache]
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -136,6 +149,10 @@ jobs:
       - name: Install Poe
         run: |
           uv tool install poethepoet
+
+      - name: Install connector dependencies
+        run: |
+          poe connector ${{ matrix.connector }} install
 
       - name: Fetch connector secrets
         run: |
@@ -166,7 +183,7 @@ jobs:
 
   connectors-lint-matrix:
     name: Lint Connectors
-    needs: generate-matrix
+    needs: [generate-matrix, warm-tool-cache]
     runs-on: ubuntu-24.04
     if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
@@ -184,6 +201,10 @@ jobs:
       - name: Install Poe
         run: |
           uv tool install poethepoet
+
+      - name: Install connector dependencies
+        run: |
+          poe connector ${{ matrix.connector }} install
 
       - name: Run lint check
         run: |
