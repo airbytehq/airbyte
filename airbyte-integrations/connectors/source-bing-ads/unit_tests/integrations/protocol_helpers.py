@@ -7,9 +7,8 @@ from typing import Any, Dict, Optional
 
 from source_bing_ads.source import SourceBingAds
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 
 def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[Dict[str, Any]]) -> SourceBingAds:

@@ -1,14 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import json
-from typing import Any, Dict, Optional, Tuple
-from unittest.mock import MagicMock, patch
+from typing import Any, Dict, Optional
 
 from base_test import BaseTest
 from protocol_helpers import read_helper
 from request_builder import RequestBuilder
-from source_bing_ads.source import SourceBingAds
-from suds.transport.https import HttpAuthenticated
-from suds_response_mock import mock_http_authenticated_send
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -29,14 +25,13 @@ class TestAccountsStream(BaseTest):
         state: Optional[Dict[str, Any]] = None,
         expecting_exception: bool = False,
     ) -> EntrypointOutput:
-        with patch.object(HttpAuthenticated, "send", mock_http_authenticated_send):
-            catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-            return read_helper(
-                config=config,
-                catalog=catalog,
-                state=state,
-                expecting_exception=expecting_exception,
-            )
+        catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
+        return read_helper(
+            config=config,
+            catalog=catalog,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
 
     def test_read_accounts_tax_certificate_data(self):
         http_mocker = self.http_mocker
