@@ -80,43 +80,81 @@ jobs:
           CONNECTORS=$(echo "${{ inputs.connector_name }}" | tr ',' '\n')
           echo "Found connectors input:\n${CONNECTORS}"
           echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
+
+      - name: Checkout Current Branch
+        if: ${{ ! inputs.connector_name }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Get Connector List from Changes
-        if: ! inputs.connector_name
+        if: ${{ ! inputs.connector_name }}
         run: |
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
-          echo "Detected connectors with changes:\n${CONNECTORS}"
+          echo -e "Detected connectors with changes:\n${CONNECTORS}"
           echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
+
       - name: Convert to JSON
         id: convert-matrix
         run: |
+          # Check if CONNECTORS is empty
+          if [ -z "$CONNECTORS" ]; then
+            echo "No connectors modified. Setting matrix to empty string."
+            echo "matrix=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           # Convert the matrix from newline-delimited string to a JSON string
-          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map({connector: .})')
-          echo "Matrix JSON:\n${matrix}"
+          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map(select(. != "") | {connector: .}')
+          echo -e "Matrix JSON:\n${matrix}"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
     outputs:
-      connector-matrix: >
-        steps.convert-matrix.outputs.matrix
+      connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
 
-  test-connectors:
+  # Connector tests
+
+  connectors-test-matrix:
     name: Test Connectors
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
+    if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      max-parallel: 5  # Limit number of parallel jobs
     steps:
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: test-all
 
-  lint-connectors:
+  test-summary:
+    name: Connector Test Summary Check
+    needs: [connectors-test-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All connector tests completed successfully."
+
+  test-summary-noop:
+    name: Connector Test Summary Check
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "🟦 No connectors updated. All good here."
+
+  # Lint and format checks
+
+  connectors-lint-matrix:
     name: Lint Connectors
     needs: generate-matrix
     runs-on: ubuntu-24.04
+    if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      max-parallel: 10  # Limit number of parallel jobs
     steps:
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
@@ -127,18 +165,19 @@ jobs:
         with:
           command: format-check
 
-  test-summary:
-    name: Connector Test Summary Check
-    needs: [test-connectors]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "✅ All connectors completed successfully, or no connectors were updated."
-
   lint-summary:
     name: Connector Lint Summary Check
-    needs: [lint-connectors]
+    needs: [connectors-lint-matrix]
     runs-on: ubuntu-24.04
     steps:
       - name: Report Lint Summary
-        run: echo "✅ All connectors completed successfully, or no connectors were updated."
+        run: echo "✅ All connectors lint checks completed successfully."
+
+  lint-summary-noop:
+    name: Connector Test Summary Check
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Lint Summary
+        run: echo "🟦 No connectors updated. All good here."
