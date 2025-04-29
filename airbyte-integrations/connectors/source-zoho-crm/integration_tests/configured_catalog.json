@@ -50,18 +50,6 @@
     },
     {
       "stream": {
-        "name": "incremental_activities_zoho_crm_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["Modified_Time"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "incremental_tasks_zoho_crm_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -75,18 +63,6 @@
     {
       "stream": {
         "name": "incremental_calls_zoho_crm_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["Modified_Time"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "incremental_deals_zoho_crm_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -134,42 +110,6 @@
     },
     {
       "stream": {
-        "name": "incremental_quotes_zoho_crm_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["Modified_Time"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "incremental_sales__orders_zoho_crm_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["Modified_Time"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "incremental_purchase__orders_zoho_crm_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["Modified_Time"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "incremental_price__books_zoho_crm_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -206,18 +146,6 @@
     },
     {
       "stream": {
-        "name": "incremental_invoices_zoho_crm_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["Modified_Time"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "incremental_attachments_zoho_crm_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -231,6 +159,30 @@
     {
       "stream": {
         "name": "incremental_campaigns_zoho_crm_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Modified_Time"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "incremental_projects_x__contractors_zoho_crm_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Modified_Time"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "incremental_projects_x__contacts_zoho_crm_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

@@ -9,6 +9,7 @@ from abc import ABC
 from dataclasses import asdict
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from urllib.parse import urlencode
 
 import requests
 
@@ -22,6 +23,150 @@ from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 # 204 and 304 status codes are valid successful responses,
 # but `.json()` will fail because the response body is empty
 EMPTY_BODY_STATUSES = (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED)
+
+
+# Zoho API request to include fields but limit the max fields to 50
+FIELDS_MAP = {
+    "Contacts": {
+        "Name",
+        "Owner",
+        "Email",
+        "Description",
+        "currency_symbol",
+        "Vendor_Name",
+        "Mailing_Zip",
+        "Other_Phone",
+        "Mailing_State",
+        "Twitter",
+        "Other_Zip",
+        "Mailing_Street",
+        "Other_State",
+        "Salutation",
+        "Other_Country",
+        "Last_Activity_Time",
+        "First_Name",
+        "Full_Name",
+        "Asst_Phone",
+        "Record_Image",
+        "Department",
+        "Modified_By",
+        "Skype_ID",
+        "process_flow",
+        "Assistant",
+        "Phone",
+        "Mailing_Country",
+        "Account_Name",
+        "id",
+        "Email_Opt_Out",
+        "approved",
+        "Reporting_To",
+        "approval",
+        "Modified_Time",
+        "Date_of_Birth",
+        "Mailing_City",
+        "Other_City",
+        "Created_Time",
+        "Title",
+        "editable",
+        "Other_Street",
+        "Mobile",
+        "Home_Phone",
+        "Last_Name",
+        "Lead_Source",
+        "Tag",
+        "Created_By",
+        "Fax",
+        "Secondary_Email"
+    },
+    "Leads": {
+        "Name",
+        "Owner",
+        "Company",
+        "Email",
+        "Description",
+        "currency_symbol",
+        "Rating",
+        "Website",
+        "Twitter",
+        "Salutation",
+        "Last_Activity_Time",
+        "First_Name",
+        "Full_Name",
+        "Lead_Status",
+        "Industry",
+        "Record_Image",
+        "Modified_By",
+        "Skype_ID",
+        "converted",
+        "process_flow",
+        "Phone",
+        "Street",
+        "Zip_Code",
+        "id",
+        "Email_Opt_Out",
+        "approved",
+        "Designation",
+        "approval",
+        "Modified_Time",
+        "Created_Time",
+        "editable",
+        "City",
+        "No_of_Employees",
+        "Mobile",
+        "Last_Name",
+        "State",
+        "Lead_Source",
+        "Country",
+        "Tag",
+        "Created_By",
+        "Fax",
+        "Annual_Revenue",
+        "Secondary_Email"
+    },
+    "Accounts": {
+        "Name",
+        "Owner",
+        "Ownership",
+        "Description",
+        "currency_symbol",
+        "Account_Type",
+        "Rating",
+        "SIC_Code",
+        "Shipping_State",
+        "Website",
+        "Employees",
+        "Last_Activity_Time",
+        "Industry",
+        "Record_Image",
+        "Modified_By",
+        "Account_Site",
+        "process_flow",
+        "Phone",
+        "Billing_Country",
+        "Account_Name",
+        "id",
+        "Account_Number",
+        "approved",
+        "Ticker_Symbol",
+        "approval",
+        "Modified_Time",
+        "Billing_Street",
+        "Created_Time",
+        "editable",
+        "Billing_Code",
+        "Parent_Account",
+        "Shipping_City",
+        "Shipping_Country",
+        "Shipping_Code",
+        "Billing_City",
+        "Billing_State",
+        "Tag",
+        "Created_By",
+        "Fax",
+        "Annual_Revenue",
+        "Shipping_Street"
+    },
+}
 
 
 class ZohoCrmStream(HttpStream, ABC):
@@ -46,7 +191,11 @@ class ZohoCrmStream(HttpStream, ABC):
         yield from data
 
     def path(self, *args, **kwargs) -> str:
-        return f"/crm/v2/{self.module.api_name}"
+        field_names = ([field.api_name for field in self.module.fields
+                        if self.module.api_name not in FIELDS_MAP or field.api_name in FIELDS_MAP[self.module.api_name]]
+            if self.module.fields else [])
+        query_string = urlencode({"fields": ",".join(field_names)})
+        return f"/crm/v8/{self.module.api_name}?{query_string}"
 
     def get_json_schema(self) -> Optional[Dict[Any, Any]]:
         try:
