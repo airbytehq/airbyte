@@ -85,7 +85,7 @@ jobs:
         if: ${{ ! inputs.connector_name }}
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1  # Shallow commit (below script will fetch `master` branch)
+          fetch-depth: 0
 
       - name: Get Connector List from Changes
         if: ${{ ! inputs.connector_name }}
