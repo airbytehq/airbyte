@@ -100,7 +100,7 @@ jobs:
         run: |
           # Check if CONNECTORS is empty
           if [ -z "$CONNECTORS" ]; then
-            echo "No connectors found. Exiting."
+            echo "No connectors modified. Setting matrix to empty."
             echo matrix="[]" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -110,8 +110,7 @@ jobs:
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
     outputs:
-      connector-matrix: >
-        steps.convert-matrix.outputs.matrix
+      connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
 
   test-connectors:
     name: Test Connectors
