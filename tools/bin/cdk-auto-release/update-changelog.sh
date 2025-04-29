@@ -314,8 +314,6 @@ stage_commit_push() {
         error_exit "Failed to commit changes for ${folder_name}"
     fi
 
-    git pull
-
     log_info "Pushing changes to origin..."
     if ! git push; then
         # Consider adding retry logic or better error handling for push failures
@@ -379,10 +377,10 @@ main() {
     merge_base=$(find_merge_base)
 
     # Pull potentially new changes fetched from master (optional, fetch might be enough)
-    # log_info "Pulling latest changes..."
-    # if ! git pull; then
-    #    log_info "Warning: git pull failed, continuing with fetched state."
-    # fi
+    log_info "Pulling latest changes..."
+    if ! git pull; then
+       log_info "Warning: git pull failed, continuing with fetched state."
+    fi
 
     local modified_connectors pr_num changelog_message updated_filepath
     modified_connectors=$(find_modified_connectors "$merge_base")
