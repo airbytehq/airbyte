@@ -92,7 +92,7 @@ jobs:
         run: |
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
-          echo "Detected connectors with changes:\n${CONNECTORS}"
+          echo -e "Detected connectors with changes:\n${CONNECTORS}"
           echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
 
       - name: Convert to JSON
@@ -106,7 +106,7 @@ jobs:
           fi
           # Convert the matrix from newline-delimited string to a JSON string
           matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map({connector: .})')
-          echo "Matrix JSON:\n${matrix}"
+          echo -e "Matrix JSON:\n${matrix}"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
     outputs:
