@@ -149,7 +149,8 @@ jobs:
           sudo apt-get install -y \
             build-essential \
             libssl-dev \
-            libffi-dev
+            libffi-dev \
+            python3-dev
 
       - name: Install Tools from ASDF Config
         uses: ai/asdf-cache-action@v1
