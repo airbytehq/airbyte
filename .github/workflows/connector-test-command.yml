@@ -105,7 +105,7 @@ jobs:
             exit 0
           fi
           # Convert the matrix from newline-delimited string to a JSON string
-          json_elements=$(IFS=,; echo "${json_array[*]}")
+          json_elements=$(IFS=,; echo "${CONNECTORS[*]}")
           json_output="{ \"connector\": [$json_elements] }"
           echo "matrix=$json_output" | tee -a "$GITHUB_OUTPUT"
 
