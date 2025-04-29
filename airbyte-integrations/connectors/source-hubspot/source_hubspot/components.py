@@ -8,6 +8,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 import dpath
 import requests
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk import (
     BearerAuthenticator,
     CursorPaginationStrategy,
@@ -24,6 +26,7 @@ from airbyte_cdk import (
     SimpleRetriever,
     StreamSlice,
 )
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
@@ -93,6 +96,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
 
     field_path: List[Union[InterpolatedString, str]]
     entity_primary_key: str
+    associations_list: List[str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
@@ -118,7 +122,101 @@ class HubspotAssociationsExtractor(RecordExtractor):
             elif extracted:
                 raise ValueError(f"field_path should always point towards a list field in the response body")
 
-            yield from records
+            records_by_pk = {record["id"]: record for record in records}
+            identifiers = list(map(lambda x: x["id"], records))
+
+            assoc_retriever = build_associations_retriever(
+                associations_list=self.associations_list,
+                ids=identifiers,
+                parent_entity=self.entity_primary_key,
+                config=self.config,
+            )
+
+            slices = assoc_retriever.stream_slices()
+
+            for _slice in slices:
+                logger.info(f"Reading {_slice} associations of {self.entity_primary_key}")
+                associations = assoc_retriever.read_records({}, stream_slice=_slice)
+                for group in associations:
+                    slice_value = _slice["association_name"]
+                    current_record = records_by_pk[group["from"]["id"]]
+                    associations_list = current_record.get(slice_value, [])
+                    associations_list.extend(association["toObjectId"] for association in group["to"])
+                    current_record[slice_value] = associations_list
+            yield from records_by_pk.values()
+
+
+def build_associations_retriever(
+    *,
+    associations_list: List[str],
+    ids: List[str],
+    parent_entity: str,
+    config: Config,
+) -> SimpleRetriever:
+    """
+    Returns a SimpleRetriever that hits
+      POST /crm/v4/associations/{self.parent_stream.entity}/{stream_slice.association}/batch/read
+    """
+
+    parameters: Mapping[str, Any] = {}
+
+    access_token = config["credentials"]["access_token"]
+    authenticator = BearerAuthenticator(
+        token_provider=InterpolatedStringTokenProvider(
+            api_token=access_token,
+            config=config,
+            parameters=parameters,
+        ),
+        config=config,
+        parameters=parameters,
+    )
+
+    # HTTP requester
+    requester = HttpRequester(
+        name="associations",
+        url_base="https://api.hubapi.com",
+        path=f"/crm/v4/associations/{parent_entity}/" + "{{ stream_slice['association_name'] }}/batch/read",
+        http_method="POST",
+        authenticator=authenticator,
+        request_options_provider=InterpolatedRequestOptionsProvider(
+            request_body_json={
+                "inputs": [{"id": id} for id in ids],
+            },
+            config=config,
+            parameters=parameters,
+        ),
+        config=config,
+        parameters=parameters,
+    )
+
+    # Slice over IDs emitted by the parent stream
+    slicer = ListPartitionRouter(
+        values=associations_list,
+        cursor_field="association_name",
+        config=config,
+        parameters=parameters
+    )
+
+    # Record selector
+    selector = RecordSelector(
+        extractor=DpathExtractor(field_path=["results"], config=config, parameters=parameters),
+        schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+        record_filter=None,
+        transformations=[],
+        config=config,
+        parameters=parameters,
+    )
+
+    # The retriever
+    return SimpleRetriever(
+        name="associations",
+        requester=requester,
+        record_selector=selector,
+        paginator=None,  # batch/read never paginates
+        stream_slicer=slicer,
+        config=config,
+        parameters=parameters,
+    )
 
 
 @dataclass

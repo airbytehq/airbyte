@@ -349,6 +349,10 @@ definitions:
           field_path:
             - results
           entity_primary_key: deal
+          associations_list:
+            - contacts
+            - companies
+            - line_items
     transformations:
       - type: CustomTransformation
         class_name: source_hubspot.components.NewtoLegacyFieldTransformation
