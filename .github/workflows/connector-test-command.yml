@@ -133,6 +133,10 @@ jobs:
       - name: Install tools from asdf config
         uses: ai/asdf-cache-action@v1
 
+      - name: Install Poe
+        run: |
+          uv tool install poethepoet
+
       - name: Fetch connector secrets
         run: |
           poe connector ${{ matrix.connector }} fetch-secrets
@@ -176,6 +180,10 @@ jobs:
 
       - name: Install tools from asdf config
         uses: ai/asdf-cache-action@v1
+
+      - name: Install Poe
+        run: |
+          uv tool install poethepoet
 
       - name: Run lint check
         run: |
