@@ -6,12 +6,11 @@ Documentation: https://developer.awin.com/apidocs/for-advertisers
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `advertiserId` | `string` | advertiserId.  |  |
-| `api_key` | `string` | API Key.  |  |
-| `step_increment` | `string` | Step Increment. ISO8601 duration format like &#39;P400D&#39; | P400D |
-| `lookback_days` | `integer` | Lookback Days. Number of days to re-fetch on each sync. |  |
-| `start_date_campaigns` | `string` | Start Date Campaigns. Accepts &#39;YYYY-MM-DD&#39; |  |
-| `start_date_transactions` | `string` | Start Date Transactions. Accepts &#39;YYYY-MM-DDTHH:MM:SS&#39; |  |
+| `advertiserId` | `string` | advertiserId. Your Awin Advertiser ID. You can find this in your Awin dashboard or account settings. |  |
+| `api_key` | `string` | API Key. Your Awin API key. Generate this from your Awin account under API Credentials. |  |
+| `step_increment` | `string` | Step Increment. The time window size for each API request in ISO8601 duration format. For the campaign performance stream, Awin API explicitly limits the period between startDate and endDate to 400 days maximum.  | P400D |
+| `lookback_days` | `integer` | Lookback Days. Number of days to look back on each sync to catch any updates to existing records. |  |
+| `start_date` | `string` | Start Date. Start date for data replication in YYYY-MM-DD format |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -26,6 +25,6 @@ Documentation: https://developer.awin.com/apidocs/for-advertisers
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-28 | | Initial release by [@ryanmcg2203](https://github.com/ryanmcg2203) via Connector Builder |
+| 0.0.1 | 2025-04-29 | | Initial release by [@ryanmcg2203](https://github.com/ryanmcg2203) via Connector Builder |
 
 </details>

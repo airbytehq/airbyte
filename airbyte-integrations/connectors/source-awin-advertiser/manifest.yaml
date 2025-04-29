@@ -45,7 +45,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date_campaigns\"] }}"
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -94,7 +94,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date_transactions\"] }}"
+          datetime: "{{ config[\"start_date\"] }}T00:00:00Z"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -135,44 +135,48 @@ spec:
       - api_key
       - step_increment
       - lookback_days
-      - start_date_campaigns
-      - start_date_transactions
+      - start_date
     properties:
       advertiserId:
         type: string
+        description: >-
+          Your Awin Advertiser ID. You can find this in your Awin dashboard or
+          account settings.
         name: advertiserId
         order: 0
         title: advertiserId
       api_key:
         type: string
+        description: >-
+          Your Awin API key. Generate this from your Awin account under API
+          Credentials.
         order: 1
         title: API Key
         airbyte_secret: true
       step_increment:
         type: string
-        description: ISO8601 duration format like 'P400D'
+        description: >
+          The time window size for each API request in ISO8601 duration format.
+
+          For the campaign performance stream, Awin API explicitly limits the
+          period between startDate and endDate to 400 days maximum.
         title: Step Increment
         default: P400D
         order: 2
       lookback_days:
         type: integer
-        description: Number of days to re-fetch on each sync.
+        description: >-
+          Number of days to look back on each sync to catch any updates to
+          existing records.
         title: Lookback Days
         order: 3
-      start_date_campaigns:
+      start_date:
         type: string
-        description: Accepts 'YYYY-MM-DD'
-        title: Start Date Campaigns
+        description: Start date for data replication in YYYY-MM-DD format
+        title: Start Date
         format: date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         order: 4
-      start_date_transactions:
-        type: string
-        description: Accepts 'YYYY-MM-DDTHH:MM:SS'
-        title: Start Date Transactions
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        format: date-time
-        order: 5
     additionalProperties: true
 
 metadata:
@@ -181,14 +185,14 @@ metadata:
     transactions: false
   testedStreams:
     campaign_performance:
-      streamHash: adb7e3dcc63c9536096ad2a0dcd0c8022f0f6ef0
+      streamHash: 5ce77ed7ebbff66c788adad09a8e642135d257a0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     transactions:
-      streamHash: 833dff97d6cf71ca3bab1296b02cafa21b60954f
+      streamHash: 2105c27e45c4c88d2555e2645382a42dd887ba71
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
