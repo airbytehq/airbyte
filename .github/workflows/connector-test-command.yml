@@ -189,4 +189,10 @@ jobs:
     steps:
       - name: Validate Connector Matrix
         run: |
-          echo "matrix=${{ needs.generate-matrix.outputs.connector-matrix }}"
+          echo 'matrix=${{ needs.generate-matrix.outputs.connector-matrix }}'
+
+      - name: Debug fromJson Parsing
+        run: |
+          echo "Raw matrix: '${{ needs.generate-matrix.outputs.connector-matrix }}'"
+          echo "Parsed matrix:"
+          echo '${{ toJson(fromJson(needs.generate-matrix.outputs.connector-matrix)) }}'
