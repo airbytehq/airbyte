@@ -128,7 +128,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Install tools from asdf config
         uses: ai/asdf-cache-action@v1
@@ -172,7 +172,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Install tools from asdf config
         uses: ai/asdf-cache-action@v1
