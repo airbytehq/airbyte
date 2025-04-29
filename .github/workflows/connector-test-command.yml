@@ -112,16 +112,6 @@ jobs:
     outputs:
       connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
 
-  validate-matrix:
-    name: Validate Connector Matrix
-    needs: [generate-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Validate Connector Matrix
-        run: |
-          # Check if the matrix is empty
-          echo "${{ needs.generate-matrix.outputs.connector-matrix }}"
-
   # Connector tests
 
   connectors-test-matrix:
