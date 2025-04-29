@@ -53,10 +53,10 @@ to use role [Storage Blob Data Reader](https://learn.microsoft.com/en-gb/azure/s
 Follow these steps to set up an IAM role:
 </summary>
 
-1. Go to Azure portal, select the Storage (or Container) you'd like to sync from and get to Access Control(IAM) -> Role Assignment ![Access Control (IAM)](../../.gitbook/assets/source/azure-blob-storage/access_control_iam.png)
-2. Click on `Add` and select `Add role assignment` from the dropdown list ![Add role assignment](../../.gitbook/assets/source/azure-blob-storage/add_role.png)
-3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click `Next` ![Search Role](../../.gitbook/assets/source/azure-blob-storage/search_role.png)
-4. Select `User, Group, or service principal`, click on `members` and select member(s) so they appear in table and click `Next` ![Add Members](../../.gitbook/assets/source/azure-blob-storage/add_members.png)
+1. Go to Azure portal, select the Storage (or Container) you'd like to sync from and get to Access Control(IAM) -> Role Assignment ![Access Control (IAM)](/.gitbook/assets/source/azure-blob-storage/access_control_iam.png)
+2. Click on `Add` and select `Add role assignment` from the dropdown list ![Add role assignment](/.gitbook/assets/source/azure-blob-storage/add_role.png)
+3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click `Next` ![Search Role](/.gitbook/assets/source/azure-blob-storage/search_role.png)
+4. Select `User, Group, or service principal`, click on `members` and select member(s) so they appear in table and click `Next` ![Add Members](/.gitbook/assets/source/azure-blob-storage/add_members.png)
 5. (Optional) Add Conditions to restrict the role assignments a user can create.
 6. Click `Review + Assign`
 </details>
@@ -301,6 +301,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.6.4 | 2025-04-26 | [58728](https://github.com/airbytehq/airbyte/pull/58728) | Update dependencies |
 | 0.6.3 | 2025-04-19 | [58295](https://github.com/airbytehq/airbyte/pull/58295) | Update dependencies |
 | 0.6.2 | 2025-04-12 | [57627](https://github.com/airbytehq/airbyte/pull/57627) | Update dependencies |
 | 0.6.1 | 2025-04-05 | [43869](https://github.com/airbytehq/airbyte/pull/43869) | Update dependencies |

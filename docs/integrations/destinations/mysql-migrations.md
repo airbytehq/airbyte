@@ -11,4 +11,4 @@ Worthy of specific mention, this version includes:
 - Removal of sub-tables for nested properties
 - Removal of SCD tables
 
-Learn more about what's new in Destinations V2 [here](/using-airbyte/core-concepts/typing-deduping).
+Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).
