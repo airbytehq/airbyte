@@ -166,14 +166,16 @@ jobs:
           uv tool install pytest
           uv tool install mypy
 
-
       - name: Install connector dependencies
         run: |
           poe connector ${{ matrix.connector }} install
 
       - name: Fetch connector secrets
         run: |
-          poe connector ${{ matrix.connector }} fetch-secrets
+          python -m pip install --upgrade pip
+          python -m pip install pipx
+          pipx run airbyte-cdk[dev] secrets fetch \
+            --connector-name=${{ matrix.connector }}
 
       - name: Run 'test-all' Poe Command
         run: |
