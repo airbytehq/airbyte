@@ -79,10 +79,11 @@ class BigqueryDestinationCleaner(private val configJson: JsonNode) : Destination
                                 BigQuery.DatasetOption.fields(BigQuery.DatasetField.CREATION_TIME)
                             )
                         if (
-                            IntegrationTest.isNamespaceOld(
-                                datasetName,
-                                retentionDays = RETENTION_DAYS
-                            ) ||
+                            dataset != null &&
+                                IntegrationTest.isNamespaceOld(
+                                    datasetName,
+                                    retentionDays = RETENTION_DAYS
+                                ) ||
                                 (datasetNamePrefixesToDelete.any { datasetName.startsWith(it) } &&
                                     dataset.creationTime < oldThreshold)
                         ) {
