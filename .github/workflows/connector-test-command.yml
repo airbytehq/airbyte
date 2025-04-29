@@ -105,9 +105,9 @@ jobs:
             exit 0
           fi
           # Convert the matrix from newline-delimited string to a JSON string
-          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map(select(. != "") | {connector: .})')
-          echo -e "Matrix JSON:\n${matrix}"
-          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          json_elements=$(IFS=,; echo "\"${CONNECTORS[*]}\"")
+          json_output="{ \"connector\": [$json_elements] }"
+          echo "matrix=$json_output" | tee -a "$GITHUB_OUTPUT"
 
     outputs:
       connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
@@ -118,7 +118,7 @@ jobs:
     name: Test Connectors
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
-    if: ${{ needs.generate-matrix.outputs.connector-matrix }}
+    if: ${{ needs.generate-matrix.outputs.connector-matrix != '' }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 5  # Limit number of parallel jobs
@@ -127,6 +127,8 @@ jobs:
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: test-all
+          no-commit: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   test-summary:
     name: Connector Test Summary Check
@@ -160,10 +162,14 @@ jobs:
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: lint-check
+          no-commit: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: format-check
+          no-commit: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   lint-summary:
     name: Connector Lint Summary Check
@@ -181,12 +187,3 @@ jobs:
     steps:
       - name: Report Lint Summary
         run: echo "🟦 No connectors updated. All good here."
-
-  validate-matrix:
-    name: Validate Connector Matrix
-    runs-on: ubuntu-24.04
-    needs: generate-matrix
-    steps:
-      - name: Validate Connector Matrix
-        run: |
-          echo "matrix=${{ needs.generate-matrix.outputs.connector-matrix }}"
