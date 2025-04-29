@@ -67,15 +67,6 @@ abstract class IntegrationTest(
     // multiple times.
     val destinationProcessFactory = DestinationProcessFactory.get(additionalMicronautEnvs)
 
-    // we want to run the cleaner exactly once per test class.
-    // technically this is a little inefficient - e.g. multiple test classes could reuse the same
-    // cleaner, so we'd prefer to only call each of them once.
-    // but this is simpler to implement than tracking hasRunCleaner across test classes,
-    // and then also requiring cleaners to be able to recognize themselves as identical.
-    // (you would think this is just an AfterAll method, but junit requires those to be static,
-    // so we wouldn't have access to the cleaner instance >.>)
-    private val hasRunCleaner = AtomicBoolean(false)
-
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
         LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
@@ -337,6 +328,8 @@ abstract class IntegrationTest(
                 LocalDate.parse(matchResult.groupValues[1], randomizedNamespaceDateFormatter)
             return namespaceCreationDate.isBefore(cleanupCutoffDate)
         }
+
+        private val hasRunCleaner = AtomicBoolean(false)
 
         // Connectors are calling System.getenv rather than using micronaut-y properties,
         // so we have to mock it out, instead of just setting more properties
