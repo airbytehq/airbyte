@@ -20,6 +20,7 @@ python = ">=3.10,<3.12"
 google-api-python-client = "==2.105.0"
 airbyte-cdk = "^6"
 google-auth = "==2.23.3"
+pendulum = "^3.1.0"
 
 [tool.poetry.scripts]
 source-google-search-console = "source_google_search_console.run:run"
