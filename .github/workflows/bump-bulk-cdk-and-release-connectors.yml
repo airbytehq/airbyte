@@ -87,4 +87,3 @@ jobs:
           AUTO_MERGE_PRODUCTION: false
         run: |
           ./tools/bin/cdk-auto-release/update-changelog.sh ${{ github.ref_name }}
-
