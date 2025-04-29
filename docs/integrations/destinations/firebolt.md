@@ -89,7 +89,7 @@ Firebolt. Each table will contain 3 columns:
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Firebolt is `TIMESTAMP`.
 - `_airbyte_data`: a json blob representing the event data. The column type in Firebolt is `VARCHAR`
-  but can be be parsed with JSON functions.
+  but can be parsed with JSON functions.
 
 ## Changelog
 
@@ -98,6 +98,13 @@ Firebolt. Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.2.38 | 2025-04-26 | [58725](https://github.com/airbytehq/airbyte/pull/58725) | Update dependencies |
+| 0.2.37 | 2025-04-19 | [57623](https://github.com/airbytehq/airbyte/pull/57623) | Update dependencies |
+| 0.2.36 | 2025-04-05 | [57115](https://github.com/airbytehq/airbyte/pull/57115) | Update dependencies |
+| 0.2.35 | 2025-03-29 | [56607](https://github.com/airbytehq/airbyte/pull/56607) | Update dependencies |
+| 0.2.34 | 2025-03-22 | [56156](https://github.com/airbytehq/airbyte/pull/56156) | Update dependencies |
+| 0.2.33 | 2025-03-08 | [55391](https://github.com/airbytehq/airbyte/pull/55391) | Update dependencies |
+| 0.2.32 | 2025-03-01 | [54853](https://github.com/airbytehq/airbyte/pull/54853) | Update dependencies |
 | 0.2.31 | 2025-02-22 | [54217](https://github.com/airbytehq/airbyte/pull/54217) | Update dependencies |
 | 0.2.30 | 2025-02-15 | [53940](https://github.com/airbytehq/airbyte/pull/53940) | Update dependencies |
 | 0.2.29 | 2025-02-08 | [53427](https://github.com/airbytehq/airbyte/pull/53427) | Update dependencies |

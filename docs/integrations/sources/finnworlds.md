@@ -33,6 +33,14 @@ Docs : https://finnworlds.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-04-26 | [58844](https://github.com/airbytehq/airbyte/pull/58844) | Update dependencies |
+| 0.0.19 | 2025-04-19 | [58331](https://github.com/airbytehq/airbyte/pull/58331) | Update dependencies |
+| 0.0.18 | 2025-04-12 | [57756](https://github.com/airbytehq/airbyte/pull/57756) | Update dependencies |
+| 0.0.17 | 2025-04-05 | [57245](https://github.com/airbytehq/airbyte/pull/57245) | Update dependencies |
+| 0.0.16 | 2025-03-29 | [56478](https://github.com/airbytehq/airbyte/pull/56478) | Update dependencies |
+| 0.0.15 | 2025-03-22 | [55980](https://github.com/airbytehq/airbyte/pull/55980) | Update dependencies |
+| 0.0.14 | 2025-03-08 | [55287](https://github.com/airbytehq/airbyte/pull/55287) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54923](https://github.com/airbytehq/airbyte/pull/54923) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54412](https://github.com/airbytehq/airbyte/pull/54412) | Update dependencies |
 | 0.0.11 | 2025-02-15 | [53773](https://github.com/airbytehq/airbyte/pull/53773) | Update dependencies |
 | 0.0.10 | 2025-02-08 | [53374](https://github.com/airbytehq/airbyte/pull/53374) | Update dependencies |

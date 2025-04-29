@@ -70,6 +70,14 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.44 | 2025-04-26 | [58715](https://github.com/airbytehq/airbyte/pull/58715) | Update dependencies |
+| 0.1.43 | 2025-04-19 | [58249](https://github.com/airbytehq/airbyte/pull/58249) | Update dependencies |
+| 0.1.42 | 2025-04-12 | [57650](https://github.com/airbytehq/airbyte/pull/57650) | Update dependencies |
+| 0.1.41 | 2025-04-05 | [57112](https://github.com/airbytehq/airbyte/pull/57112) | Update dependencies |
+| 0.1.40 | 2025-03-29 | [56621](https://github.com/airbytehq/airbyte/pull/56621) | Update dependencies |
+| 0.1.39 | 2025-03-22 | [56102](https://github.com/airbytehq/airbyte/pull/56102) | Update dependencies |
+| 0.1.38 | 2025-03-08 | [55385](https://github.com/airbytehq/airbyte/pull/55385) | Update dependencies |
+| 0.1.37 | 2025-03-01 | [54862](https://github.com/airbytehq/airbyte/pull/54862) | Update dependencies |
 | 0.1.36 | 2025-02-22 | [54229](https://github.com/airbytehq/airbyte/pull/54229) | Update dependencies |
 | 0.1.35 | 2025-02-15 | [53938](https://github.com/airbytehq/airbyte/pull/53938) | Update dependencies |
 | 0.1.34 | 2025-02-01 | [52877](https://github.com/airbytehq/airbyte/pull/52877) | Update dependencies |

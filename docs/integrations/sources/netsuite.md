@@ -144,6 +144,15 @@ The connector is restricted by Netsuite [Concurrency Limit per Integration](http
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------|
+| 0.1.16 | 2025-04-27 | [59091](https://github.com/airbytehq/airbyte/pull/59091) | Update dependencies |
+| 0.1.15 | 2025-04-19 | [58531](https://github.com/airbytehq/airbyte/pull/58531) | Update dependencies |
+| 0.1.14 | 2025-04-12 | [57860](https://github.com/airbytehq/airbyte/pull/57860) | Update dependencies |
+| 0.1.13 | 2025-04-05 | [57301](https://github.com/airbytehq/airbyte/pull/57301) | Update dependencies |
+| 0.1.12 | 2025-03-29 | [56692](https://github.com/airbytehq/airbyte/pull/56692) | Update dependencies |
+| 0.1.11 | 2025-03-22 | [56060](https://github.com/airbytehq/airbyte/pull/56060) | Update dependencies |
+| 0.1.10 | 2025-03-08 | [55455](https://github.com/airbytehq/airbyte/pull/55455) | Update dependencies |
+| 0.1.9 | 2025-03-05 | [55207](https://github.com/airbytehq/airbyte/pull/55207) | Add support for additional date format in Netsuite input |
+| 0.1.8 | 2025-03-01 | [54821](https://github.com/airbytehq/airbyte/pull/54821) | Update dependencies |
 | 0.1.7 | 2025-02-22 | [54363](https://github.com/airbytehq/airbyte/pull/54363) | Update dependencies |
 | 0.1.6 | 2025-02-15 | [53853](https://github.com/airbytehq/airbyte/pull/53853) | Update dependencies |
 | 0.1.5 | 2025-02-08 | [53243](https://github.com/airbytehq/airbyte/pull/53243) | Update dependencies |

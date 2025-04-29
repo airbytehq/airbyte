@@ -85,7 +85,7 @@ If you are developing on pipelines, we recommend installing airbyte-ci with poet
 ```bash
 cd airbyte-ci/connectors/pipelines/
 poetry install
-poetry shell
+poetry env activate
 cd ../../
 ```
 

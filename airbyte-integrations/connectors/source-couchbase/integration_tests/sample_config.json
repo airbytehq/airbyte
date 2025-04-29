@@ -1,0 +1,7 @@
+{
+  "connection_string": "couchbases://example.couchbase.com",
+  "username": "sample_user",
+  "password": "sample_password",
+  "bucket": "sample_bucket",
+  "start_date": "2023-01-01T00:00:00Z"
+}

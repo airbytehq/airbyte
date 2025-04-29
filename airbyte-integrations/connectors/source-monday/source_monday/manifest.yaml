@@ -31,6 +31,8 @@ definitions:
             - predicate: "{{ 'error_code' in response and response['error_code'] == 'complexityBudgetExhausted' }}"
               action: RETRY
           backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: retry-after
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
         - type: "DefaultErrorHandler"
@@ -67,6 +69,7 @@ definitions:
       $ref: "#/definitions/default_paginator"
 
   base_stream:
+    type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
     schema_loader:
@@ -118,11 +121,11 @@ definitions:
       type: "CustomPaginationStrategy"
 
   activity_logs_stream:
-    description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_monday.components.IncrementalSingleSlice
+      type: DatetimeBasedCursor
       cursor_field: "created_at_int"
+      start_datetime: "1"
+      datetime_format: "%s"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:
@@ -139,27 +142,48 @@ definitions:
       page_size: 50
       nested_items_per_page: 50
 
-  # semi-incremental substreams
-  substream_semi_incremental:
-    $ref: "#/definitions/base_stream"
-    incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_monday.components.IncrementalSubstreamSlicer
-      cursor_field: "updated_at_int"
-      parent_complete_fetch: true
-      parent_stream_configs:
-        - type: ParentStreamConfig
-          stream: "#/definitions/activity_logs_stream"
-          partition_field: "ids"
+  # Substream partition router for semi-incremental streams
+  substream_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream: "#/definitions/activity_logs_stream"
+        parent_key: "board_id" # For boards_stream
+        partition_field: "ids"
+
   incremental_extractor:
     class_name: "source_monday.extractor.MondayIncrementalItemsExtractor"
 
+  # Boards Stream: Split into full refresh and incremental, then combine with StateDelegatingStream
   boards_stream:
-    $ref: "#/definitions/substream_semi_incremental"
+    type: StateDelegatingStream
     $parameters:
       name: "boards"
+    full_refresh_stream: "#/definitions/boards_stream_full_refresh"
+    incremental_stream: "#/definitions/boards_stream_incremental"
+
+  state_delegating_stream:
+    $ref: "#/definitions/base_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated_at_int
+            value: "{{ timestamp(record.get('updated_at')) | int if record.get('updated_at') else 1 }}" # updated_at_int is cursor field so in cannot be None
+      - type: CustomTransformation
+        class_name: source_monday.transformation.MondayTransformation
+
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at_int"
+      start_datetime: "1" # default start time will be skipped to read in full refresh without cursor value
+      datetime_format: "%s"
+
+  boards_stream_full_refresh:
+    $ref: "#/definitions/state_delegating_stream"
+    $parameters:
       path: ""
-      parent_key: "board_id"
+      stream_sync_mode: "full_refresh"
       items_per_page: 10
       nested_items_per_page: 10
       field_path: ["data", "boards", "*"]
@@ -176,18 +200,59 @@ definitions:
         extractor:
           $ref: "#/definitions/incremental_extractor"
 
+  boards_stream_incremental:
+    $ref: "#/definitions/state_delegating_stream"
+    $parameters:
+      path: ""
+      stream_sync_mode: "incremental"
+      items_per_page: 10
+      nested_items_per_page: 10
+      field_path: ["data", "boards", "*"]
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "PageIncrement"
+          start_from_page: 1
+          page_size: 10
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          $ref: "#/definitions/incremental_extractor"
+      partition_router:
+        type: GroupingPartitionRouter
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/activity_logs_stream"
+              parent_key: "board_id"
+              partition_field: "ids"
+              incremental_dependency: true
+        group_size: 10
+        deduplicate: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_monday.state_migration.MondayStateMigration
+
   items_stream:
-    $ref: "#/definitions/substream_semi_incremental"
+    type: StateDelegatingStream
     $parameters:
       name: "items"
+    full_refresh_stream: "#/definitions/items_stream_full_refresh"
+    incremental_stream: "#/definitions/items_stream_incremental"
+
+  items_stream_full_refresh:
+    $ref: "#/definitions/state_delegating_stream"
+    $parameters:
       path: ""
+      stream_sync_mode: "full_refresh"
       items_per_page: 1
       page_size: 20
       nested_items_per_page: 20
-      parent_key: "pulse_id"
-      field_path: ["data", "boards", "*", "items_page", "items", "*"] # for first and further incremental pagination responses
-      field_path_pagination: ["data", "next_items_page", "items", "*"] # for cursor pagination responses
-      field_path_incremental: ["data", "items", "*"] # for incremental sync responses
+      field_path: ["data", "boards", "*", "items_page", "items", "*"]
+      field_path_pagination: ["data", "next_items_page", "items", "*"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -197,6 +262,37 @@ definitions:
         extractor:
           $ref: "#/definitions/incremental_extractor"
 
+  items_stream_incremental:
+    $ref: "#/definitions/state_delegating_stream"
+    $parameters:
+      path: ""
+      stream_sync_mode: "incremental"
+      page_size: 20
+      nested_items_per_page: 20
+      field_path: ["data", "items", "*"]
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          $ref: "#/definitions/incremental_extractor"
+      partition_router:
+        type: GroupingPartitionRouter
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/activity_logs_stream"
+              parent_key: "pulse_id"
+              partition_field: "ids"
+              incremental_dependency: true
+        group_size: 20
+        deduplicate: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_monday.state_migration.MondayStateMigration
 streams:
   - "#/definitions/items_stream"
   - "#/definitions/boards_stream"
@@ -210,3 +306,9 @@ streams:
 check:
   stream_names:
     - "users"
+
+# The smallest limit for 1 minute is 250 queries, so set the default number of workers to 4. https://developer.monday.com/api-reference/docs/rate-limits#minute-limit
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 40 # Monday concurrency limit for lowest tier is 40. https://developer.monday.com/api-reference/docs/rate-limits#concurrency-limit

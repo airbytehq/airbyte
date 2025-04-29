@@ -5,7 +5,7 @@ test_strictness_level: "low"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_quickbooks/spec.json"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: "1.0.0"
   connection:

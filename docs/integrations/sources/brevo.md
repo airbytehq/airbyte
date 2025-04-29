@@ -22,23 +22,23 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 | contacts_attributes |  | DefaultPaginator | ❌ |  ❌  |
 | contacts_folders_lists | id | DefaultPaginator | ✅ |  ❌  |
 | contacts_folders | id | DefaultPaginator | ✅ |  ❌  |
-| contacts_segments | id | DefaultPaginator | ✅ |  ✅  |
+| contacts_segments | id | DefaultPaginator | ✅ |  ❌  |
 | contacts_lists_contacts |  | DefaultPaginator | ✅ |  ✅  |
-| contacts_lists | id | DefaultPaginator | ❌ |  ❌  |
+| contacts_lists | id | DefaultPaginator | ✅ |  ❌  |
 | senders | id | DefaultPaginator | ✅ |  ❌  |
-| companies | id | DefaultPaginator | ✅ |  ❌ |
+| companies | id | DefaultPaginator | ✅ |  ✅ |
 | companies_attributes |  | DefaultPaginator | ✅ |  ❌  |
-| crm_pipeline_stages | id | DefaultPaginator | ❌ |  ❌  |
-| crm_pipeline_details_all | pipeline | DefaultPaginator | ❌ |  ❌  |
-| crm_attributes_deals |  | DefaultPaginator | ❌ |  ❌  |
-| crm_deals | id | DefaultPaginator | ✅ |  ❌  |
-| crm_tasktypes | id | DefaultPaginator | ❌ |  ❌  |
+| crm_pipeline_stages | id | DefaultPaginator | ✅ |  ❌  |
+| crm_pipeline_details_all | pipeline | DefaultPaginator | ✅ |  ❌  |
+| crm_attributes_deals |  | DefaultPaginator | ✅ |  ❌  |
+| crm_deals | id | DefaultPaginator | ✅ |  ✅  |
+| crm_tasktypes | id | DefaultPaginator | ✅ |  ❌  |
 | crm_tasks | id | DefaultPaginator | ✅ |  ✅  |
-| crm_notes | id | DefaultPaginator | ❌ |  ✅  |
-| domains | id | DefaultPaginator | ✅ |  ❌  |
-| webhooks | id | No pagination | ✅ |  ✅  |
-| account | organization_id | DefaultPaginator | ❌ |  ❌  |
-| organization_invited_users | email | DefaultPaginator | ❌ |  ❌  |
+| crm_notes | id | DefaultPaginator | ✅ |  ✅  |
+| domains | id | DefaultPaginator | ✅ |  ❌ |
+| webhooks | id | No pagination | ✅ |  ❌ |
+| account | organization_id | DefaultPaginator | ✅ |  ❌  |
+| organization_invited_users | email | DefaultPaginator | ✅ |  ❌  |
 | emailCampaigns | id | DefaultPaginator | ✅ |  ✅  |
 | smsCampaigns | id | DefaultPaginator | ✅ |  ✅  |
 
@@ -49,6 +49,14 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.2.5 | 2025-04-24 | [57576](https://github.com/airbytehq/airbyte/pull/57576) | Set ordering in ascending on incremental streams |
+| 0.2.4 | 2025-04-19 | [57595](https://github.com/airbytehq/airbyte/pull/57595) | Update dependencies |
+| 0.2.3 | 2025-04-05 | [57126](https://github.com/airbytehq/airbyte/pull/57126) | Update dependencies |
+| 0.2.2 | 2025-03-29 | [56622](https://github.com/airbytehq/airbyte/pull/56622) | Update dependencies |
+| 0.2.1 | 2025-03-27 | [56437](https://github.com/airbytehq/airbyte/pull/56437) | Update contacts pagination page size to 1000 |
+| 0.2.0 | 2025-03-24 | [56369](https://github.com/airbytehq/airbyte/pull/56369) | Fix/Add incremental on Contacts/Crm deals |
+| 0.1.8 | 2025-03-22 | [55367](https://github.com/airbytehq/airbyte/pull/55367) | Update dependencies |
+| 0.1.7 | 2025-03-01 | [54874](https://github.com/airbytehq/airbyte/pull/54874) | Update dependencies |
 | 0.1.6 | 2025-02-25 | [54674](https://github.com/airbytehq/airbyte/pull/54674) | Fix bug authenticator |
 | 0.1.5 | 2025-02-22 | [54223](https://github.com/airbytehq/airbyte/pull/54223) | Update dependencies |
 | 0.1.4 | 2025-02-15 | [48282](https://github.com/airbytehq/airbyte/pull/48282) | Update dependencies |

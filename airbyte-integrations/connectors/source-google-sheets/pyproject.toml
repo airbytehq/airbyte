@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.9.3"
+version = "0.9.4"
 name = "source-google-sheets"
 description = "Source implementation for Google Sheets."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -25,7 +25,7 @@ source-google-sheets = "source_google_sheets.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 [tool.poe]
 include = [

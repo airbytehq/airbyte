@@ -65,6 +65,14 @@ Specify credentials and a start date.
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.5 | 2025-04-27 | [59100](https://github.com/airbytehq/airbyte/pull/59100) | Update dependencies |
+| 0.2.4 | 2025-04-19 | [58502](https://github.com/airbytehq/airbyte/pull/58502) | Update dependencies |
+| 0.2.3 | 2025-04-12 | [57901](https://github.com/airbytehq/airbyte/pull/57901) | Update dependencies |
+| 0.2.2 | 2025-04-05 | [57318](https://github.com/airbytehq/airbyte/pull/57318) | Update dependencies |
+| 0.2.1 | 2025-03-29 | [56805](https://github.com/airbytehq/airbyte/pull/56805) | Update dependencies |
+| 0.2.0 | 2025-03-13 | [55746](https://github.com/airbytehq/airbyte/pull/55746) | Add optional parameter to set conversion_count metric by 'Time of Click/View' or 'Time of Conversion' |
+| 0.1.33 | 2025-03-22 | [56217](https://github.com/airbytehq/airbyte/pull/56217) | Update dependencies |
+| 0.1.32 | 2025-03-08 | [55067](https://github.com/airbytehq/airbyte/pull/55067) | Update dependencies |
 | 0.1.31 | 2025-02-23 | [54557](https://github.com/airbytehq/airbyte/pull/54557) | Update dependencies |
 | 0.1.30 | 2025-02-15 | [53963](https://github.com/airbytehq/airbyte/pull/53963) | Update dependencies |
 | 0.1.29 | 2025-02-01 | [53010](https://github.com/airbytehq/airbyte/pull/53010) | Update dependencies |

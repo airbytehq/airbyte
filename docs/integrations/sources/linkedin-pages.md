@@ -113,6 +113,13 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.1.22 | 2025-04-19 | [58174](https://github.com/airbytehq/airbyte/pull/58174) | Update dependencies |
+| 1.1.21 | 2025-04-12 | [57721](https://github.com/airbytehq/airbyte/pull/57721) | Update dependencies |
+| 1.1.20 | 2025-04-05 | [56679](https://github.com/airbytehq/airbyte/pull/56679) | Update dependencies |
+| 1.1.19 | 2025-03-22 | [56029](https://github.com/airbytehq/airbyte/pull/56029) | Update dependencies |
+| 1.1.18 | 2025-03-18 | [55816](https://github.com/airbytehq/airbyte/pull/55816) | Bump LinkedIn API to 202503 |
+| 1.1.17 | 2025-03-08 | [55441](https://github.com/airbytehq/airbyte/pull/55441) | Update dependencies |
+| 1.1.16 | 2025-03-01 | [54775](https://github.com/airbytehq/airbyte/pull/54775) | Update dependencies |
 | 1.1.15 | 2025-02-22 | [54339](https://github.com/airbytehq/airbyte/pull/54339) | Update dependencies |
 | 1.1.14 | 2025-02-15 | [53859](https://github.com/airbytehq/airbyte/pull/53859) | Update dependencies |
 | 1.1.13 | 2025-02-08 | [53256](https://github.com/airbytehq/airbyte/pull/53256) | Update dependencies |

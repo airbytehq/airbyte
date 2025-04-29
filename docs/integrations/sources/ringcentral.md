@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [RingCentra
 
 ## Prerequisites
 
-Auth Token (which acts as bearer token), account id and extension id are mandate for this connector to work, Account token could be recieved by following (Bearer ref - https://developers.ringcentral.com/api-reference/authentication), and account_id and extension id could be seen at response to basic api call to an endpoint with ~ operator. Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+Auth Token (which acts as bearer token), account id and extension id are mandate for this connector to work, Account token could be received by following (Bearer ref - https://developers.ringcentral.com/api-reference/authentication), and account_id and extension id could be seen at response to basic api call to an endpoint with ~ operator. Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
 
 ## Setup guide
 
@@ -80,6 +80,12 @@ RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.19 | 2025-04-27 | [58396](https://github.com/airbytehq/airbyte/pull/58396) | Update dependencies |
+| 0.2.18 | 2025-04-12 | [57968](https://github.com/airbytehq/airbyte/pull/57968) | Update dependencies |
+| 0.2.17 | 2025-04-05 | [57359](https://github.com/airbytehq/airbyte/pull/57359) | Update dependencies |
+| 0.2.16 | 2025-03-29 | [56772](https://github.com/airbytehq/airbyte/pull/56772) | Update dependencies |
+| 0.2.15 | 2025-03-22 | [56231](https://github.com/airbytehq/airbyte/pull/56231) | Update dependencies |
+| 0.2.14 | 2025-03-08 | [55050](https://github.com/airbytehq/airbyte/pull/55050) | Update dependencies |
 | 0.2.13 | 2025-02-23 | [54554](https://github.com/airbytehq/airbyte/pull/54554) | Update dependencies |
 | 0.2.12 | 2025-02-15 | [53968](https://github.com/airbytehq/airbyte/pull/53968) | Update dependencies |
 | 0.2.11 | 2025-02-08 | [53492](https://github.com/airbytehq/airbyte/pull/53492) | Update dependencies |

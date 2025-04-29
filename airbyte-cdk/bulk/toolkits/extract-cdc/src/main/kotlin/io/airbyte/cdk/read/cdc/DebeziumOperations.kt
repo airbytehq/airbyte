@@ -26,7 +26,7 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
     fun generateColdStartOffset(): DebeziumOffset
 
     /** Generates Debezium properties for use with a [DebeziumColdStartingState]. */
-    fun generateColdStartProperties(): Map<String, String>
+    fun generateColdStartProperties(streams: List<Stream>): Map<String, String>
 
     /** Maps an incumbent [OpaqueStateValue] into a [DebeziumWarmStartState]. */
     fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState

@@ -54,6 +54,14 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2025-04-26 | [58787](https://github.com/airbytehq/airbyte/pull/58787) | Update dependencies |
+| 0.0.20 | 2025-04-19 | [58204](https://github.com/airbytehq/airbyte/pull/58204) | Update dependencies |
+| 0.0.19 | 2025-04-12 | [57724](https://github.com/airbytehq/airbyte/pull/57724) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57094](https://github.com/airbytehq/airbyte/pull/57094) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56650](https://github.com/airbytehq/airbyte/pull/56650) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [56006](https://github.com/airbytehq/airbyte/pull/56006) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55475](https://github.com/airbytehq/airbyte/pull/55475) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54780](https://github.com/airbytehq/airbyte/pull/54780) | Update dependencies |
 | 0.0.13 | 2025-02-22 | [54316](https://github.com/airbytehq/airbyte/pull/54316) | Update dependencies |
 | 0.0.12 | 2025-02-15 | [53844](https://github.com/airbytehq/airbyte/pull/53844) | Update dependencies |
 | 0.0.11 | 2025-02-08 | [53299](https://github.com/airbytehq/airbyte/pull/53299) | Update dependencies |

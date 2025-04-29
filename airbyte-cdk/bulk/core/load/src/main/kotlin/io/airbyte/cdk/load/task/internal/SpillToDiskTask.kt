@@ -9,8 +9,8 @@ import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.SpillFileProvider
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.MultiProducerChannel
@@ -138,7 +138,7 @@ class DefaultSpillToDiskTask(
             // sync will hang forever. (Usually this happens because the entire stream was empty.)
             val empty =
                 BatchEnvelope(
-                    SimpleBatch(Batch.State.COMPLETE),
+                    SimpleBatch(BatchState.COMPLETE),
                     TreeRangeSet.create(),
                     streamDescriptor
                 )

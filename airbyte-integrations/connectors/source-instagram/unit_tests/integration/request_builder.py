@@ -13,7 +13,9 @@ from airbyte_cdk.test.mock_http.request import HttpRequest
 from .config import ACCOUNTS_FIELDS
 
 
-GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+GRAPH_URL = resolve_manifest(source=SourceInstagram(config={}, catalog=None, state=None)).record.data["manifest"]["definitions"][
+    "base_requester"
+]["url_base"]
 
 
 def get_account_request() -> RequestBuilder:

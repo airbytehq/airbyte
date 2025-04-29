@@ -1,0 +1,2007 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.perigon.io/
+  API Reference: https://docs.perigon.io/reference/all-news
+
+check:
+  type: CheckStream
+  stream_names:
+    - articles
+
+definitions:
+  streams:
+    articles:
+      type: DeclarativeStream
+      name: articles
+      primary_key:
+        - articleId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/articles/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - articles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: refreshDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/articles"
+    stories:
+      type: DeclarativeStream
+      name: stories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/stories/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stories"
+    journalists:
+      type: DeclarativeStream
+      name: journalists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/journalists
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/journalists"
+    sources:
+      type: DeclarativeStream
+      name: sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sources"
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - wikidataId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/people/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/companies/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    topics:
+      type: DeclarativeStream
+      name: topics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/topics/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/topics"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.perigon.io
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/articles"
+  - $ref: "#/definitions/streams/stories"
+  - $ref: "#/definitions/streams/journalists"
+  - $ref: "#/definitions/streams/sources"
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/topics"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API key for authenticating with the Perigon API. Obtain it by
+          creating an account at https://www.perigon.io/sign-up and verifying
+          your email. The API key will be visible on your account dashboard.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    articles: true
+    stories: true
+    journalists: true
+    sources: true
+    people: true
+    companies: true
+    topics: true
+  testedStreams:
+    articles:
+      streamHash: 5fe9c55ee7bf54f6a531b691db3bc7e6cf401d85
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stories:
+      streamHash: 872f12072ff4dff54a724f5a8a76f4f6a1a6d0f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    journalists:
+      streamHash: 459ce154b1911658eab5f726d7b6fe8f0e4b580c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sources:
+      streamHash: 0baaff58c5f49f446d394618db39996ee9172630
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    people:
+      streamHash: 6ba493fc2c536dc4ae83e68c2bc62e9548bc1a3a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    companies:
+      streamHash: 5a042c34485b11658574559b15c8d5155dbb3dad
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    topics:
+      streamHash: 4efd3bbf00da9fe78a55d11bc203e38befca1054
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.perigon.io/reference/all-news
+
+schemas:
+  articles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      addDate:
+        type:
+          - string
+          - "null"
+      articleId:
+        type: string
+      authorsByline:
+        type:
+          - string
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      claim:
+        type:
+          - string
+          - "null"
+      clusterId:
+        type:
+          - string
+          - "null"
+      companies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            domains:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            symbols:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+      content:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      entities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            data:
+              type:
+                - string
+                - "null"
+            mentions:
+              type:
+                - number
+                - "null"
+      imageUrl:
+        type:
+          - string
+          - "null"
+      keywords:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - number
+                - "null"
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      language:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      locations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            area:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            county:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+      matchedAuthors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      medium:
+        type:
+          - string
+          - "null"
+      people:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            wikidataId:
+              type:
+                - string
+                - "null"
+      places:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amenity:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            coordinates:
+              type:
+                - object
+                - "null"
+              properties:
+                lat:
+                  type:
+                    - number
+                    - "null"
+                lon:
+                  type:
+                    - number
+                    - "null"
+            country:
+              type:
+                - string
+                - "null"
+            countryCode:
+              type:
+                - string
+                - "null"
+            county:
+              type:
+                - string
+                - "null"
+            neighbourhood:
+              type:
+                - string
+                - "null"
+            osmId:
+              type:
+                - string
+                - "null"
+            postcode:
+              type:
+                - string
+                - "null"
+            quarter:
+              type:
+                - string
+                - "null"
+            road:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            stateDistrict:
+              type:
+                - string
+                - "null"
+            suburb:
+              type:
+                - string
+                - "null"
+            town:
+              type:
+                - string
+                - "null"
+      pubDate:
+        type:
+          - string
+          - "null"
+      refreshDate:
+        type: string
+      reprint:
+        type:
+          - boolean
+          - "null"
+      reprintGroupId:
+        type:
+          - string
+          - "null"
+      score:
+        type:
+          - number
+          - "null"
+      sentiment:
+        type:
+          - object
+          - "null"
+        properties:
+          negative:
+            type:
+              - number
+              - "null"
+          neutral:
+            type:
+              - number
+              - "null"
+          positive:
+            type:
+              - number
+              - "null"
+      shortSummary:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          domain:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              city:
+                type:
+                  - string
+                  - "null"
+              coordinates:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  lat:
+                    type:
+                      - number
+                      - "null"
+                  lon:
+                    type:
+                      - number
+                      - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              county:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+          paywall:
+            type:
+              - boolean
+              - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      taxonomies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            score:
+              type:
+                - number
+                - "null"
+      title:
+        type:
+          - string
+          - "null"
+      topics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      translatedDescription:
+        type:
+          - string
+          - "null"
+      translatedSummary:
+        type:
+          - string
+          - "null"
+      translatedTitle:
+        type:
+          - string
+          - "null"
+      translation:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      verdict:
+        type:
+          - string
+          - "null"
+    required:
+      - articleId
+      - refreshDate
+  stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      companies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            domains:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            symbols:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+      countries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      initializedAt:
+        type:
+          - string
+          - "null"
+      keyPoints:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            point:
+              type:
+                - string
+                - "null"
+            references:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+      locations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            area:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            count:
+              type:
+                - number
+                - "null"
+            county:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      people:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            wikidataId:
+              type:
+                - string
+                - "null"
+      reprintCount:
+        type:
+          - number
+          - "null"
+      sentiment:
+        type:
+          - object
+          - "null"
+        properties:
+          negative:
+            type:
+              - number
+              - "null"
+          neutral:
+            type:
+              - number
+              - "null"
+          positive:
+            type:
+              - number
+              - "null"
+      shortSummary:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      summaryReferences:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taxonomies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topCategories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      topCompanies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            domains:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            symbols:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+      topCountries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      topLocations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            area:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            county:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+      topPeople:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            wikidataId:
+              type:
+                - string
+                - "null"
+      topTaxonomies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      topTopics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      topics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      totalCount:
+        type:
+          - number
+          - "null"
+      uniqueCount:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  journalists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      avgMonthlyPosts:
+        type:
+          - number
+          - "null"
+      facebookUrl:
+        type:
+          - string
+          - "null"
+      fullName:
+        type:
+          - string
+          - "null"
+      headline:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      imageUrl:
+        type:
+          - string
+          - "null"
+      instagramUrl:
+        type:
+          - string
+          - "null"
+      linkedinConnections:
+        type:
+          - number
+          - "null"
+      linkedinFollowers:
+        type:
+          - number
+          - "null"
+      linkedinUrl:
+        type:
+          - string
+          - "null"
+      locations:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      topCategories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topCountries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topLabels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topSources:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topTopics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      tumblrUrl:
+        type:
+          - string
+          - "null"
+      twitterBio:
+        type:
+          - string
+          - "null"
+      twitterHandle:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+      websiteUrl:
+        type:
+          - string
+          - "null"
+      youtubeUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updatedAt
+  sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      adFontesBiasRating:
+        type:
+          - string
+          - "null"
+      allSidesBiasRating:
+        type:
+          - string
+          - "null"
+      altNames:
+        type:
+          - array
+          - "null"
+      avgBiasRating:
+        type:
+          - string
+          - "null"
+      avgMonthlyPosts:
+        type:
+          - number
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      globalRank:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          coordinates:
+            type:
+              - object
+              - "null"
+            properties:
+              lat:
+                type:
+                  - number
+                  - "null"
+              lon:
+                type:
+                  - number
+                  - "null"
+          country:
+            type:
+              - string
+              - "null"
+          county:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      logoFavIcon:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+      logoLarge:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+      logoSquare:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+      mbfcBiasRating:
+        type:
+          - string
+          - "null"
+      monthlyVisits:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      paywall:
+        type:
+          - boolean
+          - "null"
+      primaryRecordId:
+        type:
+          - string
+          - "null"
+      topCategories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topCountries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topLabels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      topTopics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  people:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      abstract:
+        type:
+          - string
+          - "null"
+      aliases:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dateOfBirth:
+        type:
+          - object
+          - "null"
+        properties:
+          precision:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+      dateOfDeath:
+        type:
+          - object
+          - "null"
+        properties:
+          precision:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+      gender:
+        type:
+          - object
+          - "null"
+        properties:
+          label:
+            type:
+              - string
+              - "null"
+          wikidataId:
+            type:
+              - string
+              - "null"
+      image:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      occupation:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            wikidataId:
+              type:
+                - string
+                - "null"
+      politicalParty:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            startTime:
+              type:
+                - object
+                - "null"
+              properties:
+                precision:
+                  type:
+                    - string
+                    - "null"
+                time:
+                  type:
+                    - string
+                    - "null"
+            wikidataId:
+              type:
+                - string
+                - "null"
+      position:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            employer:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                wikidataId:
+                  type:
+                    - string
+                    - "null"
+            endTime:
+              type:
+                - object
+                - "null"
+              properties:
+                precision:
+                  type:
+                    - string
+                    - "null"
+                time:
+                  type:
+                    - string
+                    - "null"
+            label:
+              type:
+                - string
+                - "null"
+            startTime:
+              type:
+                - object
+                - "null"
+              properties:
+                precision:
+                  type:
+                    - string
+                    - "null"
+                time:
+                  type:
+                    - string
+                    - "null"
+            wikidataId:
+              type:
+                - string
+                - "null"
+      updatedAt:
+        type: string
+      wikidataId:
+        type: string
+    required:
+      - wikidataId
+      - updatedAt
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      altNames:
+        type:
+          - array
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      fullTimeEmployees:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      industry:
+        type:
+          - string
+          - "null"
+      isEtf:
+        type:
+          - boolean
+          - "null"
+      logo:
+        type:
+          - string
+          - "null"
+      naics:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - string
+          - "null"
+      sic:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      symbols:
+        type:
+          - array
+          - "null"
+      updatedAt:
+        type: string
+      webResources:
+        type:
+          - object
+          - "null"
+        properties:
+          about:
+            type:
+              - string
+              - "null"
+          blog:
+            type:
+              - string
+              - "null"
+          careers:
+            type:
+              - string
+              - "null"
+          events:
+            type:
+              - string
+              - "null"
+          facebook:
+            type:
+              - string
+              - "null"
+          instagram:
+            type:
+              - string
+              - "null"
+          linkedin:
+            type:
+              - string
+              - "null"
+          sitemap:
+            type:
+              - string
+              - "null"
+          tiktok:
+            type:
+              - string
+              - "null"
+          updates:
+            type:
+              - string
+              - "null"
+          wellfound:
+            type:
+              - string
+              - "null"
+          x:
+            type:
+              - string
+              - "null"
+          youtube:
+            type:
+              - string
+              - "null"
+      yearFounded:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updatedAt
+  topics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          category:
+            type:
+              - string
+              - "null"
+          subcategory:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt

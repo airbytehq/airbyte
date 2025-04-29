@@ -4,11 +4,7 @@
 
 package io.airbyte.integrations.source.mssql.initialsync;
 
-import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
-import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_DATABASE_NAME;
-import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
-import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
-import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.*;
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.getFullyQualifiedTableName;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
@@ -35,9 +31,7 @@ import io.airbyte.integrations.source.mssql.MssqlSourceOperations;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import java.sql.DatabaseMetaData;
-import java.sql.JDBCType;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -88,7 +82,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
     try {
       // Get all clustered index names without specifying a table name
       clusteredIndexes = aggregateClusteredIndexes(database.bufferedResultSetQuery(
-          connection -> connection.getMetaData().getIndexInfo(getCatalog(database), stream.getNamespace(), stream.getName(), false, false),
+          connection -> connection.getMetaData().getIndexInfo(getCatalog(database), stream.getNamespace(), stream.getName(), true, false),
           r -> {
             if (r.getShort(JDBC_COLUMN_TYPE) == DatabaseMetaData.tableIndexClustered) {
               final String schemaName =

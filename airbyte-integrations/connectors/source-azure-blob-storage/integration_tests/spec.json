@@ -273,7 +273,7 @@
                   "required": ["filetype"]
                 },
                 {
-                  "title": "Document File Type Format (Experimental)",
+                  "title": "Unstructured Document Format",
                   "type": "object",
                   "properties": {
                     "filetype": {
@@ -332,6 +332,12 @@
               "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
               "default": false,
               "type": "boolean"
+            },
+            "recent_n_files_to_read_for_schema_discovery": {
+              "title": "Files To Read For Schema Discover",
+              "description": "The number of resent files which will be used to discover the schema for this stream.",
+              "exclusiveMinimum": 0,
+              "type": "integer"
             }
           },
           "required": ["name", "format"]

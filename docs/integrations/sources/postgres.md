@@ -69,7 +69,7 @@ To fill out the required information:
 ### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
+our [Airbyte Security docs](../../platform/operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
 
@@ -344,12 +344,14 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------| ---------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.6.29  | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649) | Fix issue that column default value did not get converted |
-| 3.6.28  | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870)   | Use airbyte/java-connector-base:2.0.0                                                                                                                                      |
-| 3.6.27  | 2024-12-23 | [50410](https://github.com/airbytehq/airbyte/pull/50410)   | Use a non root base image.                                                                                                                                                 |
-| 3.6.26  | 2024-12-20 | [48495](https://github.com/airbytehq/airbyte/pull/48495)   | Increase MAX_FIRST_RECORD_WAIT_TIME and use Debezium 3.0.1                                                                                                                 |
-| 3.6.25  | 2024-12-17 | [49838](https://github.com/airbytehq/airbyte/pull/49838)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                                        |
-| 3.6.24  | 2024-12-16 | [49469](https://github.com/airbytehq/airbyte/pull/49469)   | Simplify CTID_TABLE_BLOCK_SIZE query for Postgres integration                                                                                                              |
+| 3.6.31 | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
+| 3.6.30 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
+| 3.6.29 | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649) | Fix issue that column default value did not get converted |
+| 3.6.28 | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870) | Use airbyte/java-connector-base:2.0.0 |
+| 3.6.27 | 2024-12-23 | [50410](https://github.com/airbytehq/airbyte/pull/50410) | Use a non root base image. |
+| 3.6.26 | 2024-12-20 | [48495](https://github.com/airbytehq/airbyte/pull/48495) | Increase MAX_FIRST_RECORD_WAIT_TIME and use Debezium 3.0.1 |
+| 3.6.25 | 2024-12-17 | [49838](https://github.com/airbytehq/airbyte/pull/49838) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 3.6.24 | 2024-12-16 | [49469](https://github.com/airbytehq/airbyte/pull/49469) | Simplify CTID_TABLE_BLOCK_SIZE query for Postgres integration |
 | 3.6.23  | 2024-11-13 | [\#48482](https://github.com/airbytehq/airbyte/pull/48482) | Convert large integer typed using NUMERIC(X, 0) into a BigInteger.  l                                                                                                      |
 | 3.6.22  | 2024-10-02 | [46900](https://github.com/airbytehq/airbyte/pull/46900)   | Fixed a bug where source docs won't render on Airbyte 1.1                                                                                                                  |
 | 3.6.21  | 2024-10-02 | [46322](https://github.com/airbytehq/airbyte/pull/46322)   | Support CDC against a read-replica (continuation)                                                                                                                          |

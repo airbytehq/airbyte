@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ba15ac82-5c6a-4fb2-bf24-925c23a1180c
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.21
   dockerRepository: airbyte/source-gocardless
   githubIssueLabel: source-gocardless
   icon: gocardless.svg
@@ -27,5 +27,5 @@ data:
     ql: 100
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.46.1@sha256:5e56569cab810e31e367b0667d846b324988fabd3d3bdc0bfa4c4afa3276d059
 metadataSpecVersion: "1.0"

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.StreamReadConstraints
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.cfg.JsonNodeFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -28,6 +29,7 @@ object Jsons : ObjectMapper() {
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
         configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
+        configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
         factory.setStreamReadConstraints(
             StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
         )

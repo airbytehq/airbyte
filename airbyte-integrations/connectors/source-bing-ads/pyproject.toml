@@ -28,7 +28,7 @@ source-bing-ads = "source_bing_ads.run:run"
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 requests-mock = "^1.9.3"
 
 

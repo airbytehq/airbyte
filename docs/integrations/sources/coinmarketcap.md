@@ -39,6 +39,14 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 
 | Version | Date       | Pull Request                                              | Subject                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.16 | 2025-04-26 | [58863](https://github.com/airbytehq/airbyte/pull/58863) | Update dependencies |
+| 0.2.15 | 2025-04-19 | [58366](https://github.com/airbytehq/airbyte/pull/58366) | Update dependencies |
+| 0.2.14 | 2025-04-12 | [57758](https://github.com/airbytehq/airbyte/pull/57758) | Update dependencies |
+| 0.2.13 | 2025-04-05 | [57223](https://github.com/airbytehq/airbyte/pull/57223) | Update dependencies |
+| 0.2.12 | 2025-03-29 | [56507](https://github.com/airbytehq/airbyte/pull/56507) | Update dependencies |
+| 0.2.11 | 2025-03-22 | [55943](https://github.com/airbytehq/airbyte/pull/55943) | Update dependencies |
+| 0.2.10 | 2025-03-08 | [55268](https://github.com/airbytehq/airbyte/pull/55268) | Update dependencies |
+| 0.2.9 | 2025-03-01 | [54916](https://github.com/airbytehq/airbyte/pull/54916) | Update dependencies |
 | 0.2.8 | 2025-02-22 | [54414](https://github.com/airbytehq/airbyte/pull/54414) | Update dependencies |
 | 0.2.7 | 2025-02-15 | [53737](https://github.com/airbytehq/airbyte/pull/53737) | Update dependencies |
 | 0.2.6 | 2025-02-08 | [53378](https://github.com/airbytehq/airbyte/pull/53378) | Update dependencies |

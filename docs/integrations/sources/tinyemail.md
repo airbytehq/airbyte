@@ -24,6 +24,14 @@ We can extract data from campaigns and contacts streams using this connector.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-04-27 | [58989](https://github.com/airbytehq/airbyte/pull/58989) | Update dependencies |
+| 0.0.19 | 2025-04-19 | [58411](https://github.com/airbytehq/airbyte/pull/58411) | Update dependencies |
+| 0.0.18 | 2025-04-12 | [57943](https://github.com/airbytehq/airbyte/pull/57943) | Update dependencies |
+| 0.0.17 | 2025-04-05 | [57484](https://github.com/airbytehq/airbyte/pull/57484) | Update dependencies |
+| 0.0.16 | 2025-03-29 | [56858](https://github.com/airbytehq/airbyte/pull/56858) | Update dependencies |
+| 0.0.15 | 2025-03-22 | [56254](https://github.com/airbytehq/airbyte/pull/56254) | Update dependencies |
+| 0.0.14 | 2025-03-08 | [55617](https://github.com/airbytehq/airbyte/pull/55617) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [55101](https://github.com/airbytehq/airbyte/pull/55101) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54541](https://github.com/airbytehq/airbyte/pull/54541) | Update dependencies |
 | 0.0.11 | 2025-02-15 | [54102](https://github.com/airbytehq/airbyte/pull/54102) | Update dependencies |
 | 0.0.10 | 2025-02-08 | [53527](https://github.com/airbytehq/airbyte/pull/53527) | Update dependencies |

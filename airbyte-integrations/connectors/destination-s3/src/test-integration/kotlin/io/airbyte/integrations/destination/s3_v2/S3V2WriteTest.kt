@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assumptions
@@ -40,8 +41,8 @@ abstract class S3V2WriteTest(
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
-    nullUnknownTypes: Boolean = false,
-    private val mergesUnions: Boolean = false
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    private val mergesUnions: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -62,7 +63,7 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
-        nullUnknownTypes = nullUnknownTypes,
+        unknownTypesBehavior = unknownTypesBehavior,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -392,10 +393,14 @@ class S3V2WriteTestAvroUncompressed :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         preserveUndeclaredFields = false,
+        // this is technically false. Avro + parquet do have limits on numbers.
+        // But float64 is weird, in that the actual _limits_ are unreasonably large -
+        // but at that size, you have very little precision.
+        // This is actually covered by the nested/topLevelFloatLosesPrecision test cases.
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
     )
 
 class S3V2WriteTestAvroBzip2 :
@@ -409,8 +414,8 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
     )
 
 class S3V2WriteTestParquetUncompressed :
@@ -424,8 +429,8 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
     )
 
 class S3V2WriteTestParquetSnappy :
@@ -439,8 +444,8 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
     )
 
 class S3V2WriteTestEndpointURL :

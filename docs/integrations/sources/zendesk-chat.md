@@ -81,8 +81,15 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                          |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.4 | 2025-04-19 | [58028](https://github.com/airbytehq/airbyte/pull/58028) | Update dependencies |
+| 1.2.3 | 2025-04-05 | [57404](https://github.com/airbytehq/airbyte/pull/57404) | Update dependencies |
+| 1.2.2 | 2025-03-29 | [56850](https://github.com/airbytehq/airbyte/pull/56850) | Update dependencies |
+| 1.2.1 | 2025-03-22 | [56345](https://github.com/airbytehq/airbyte/pull/56345) | Update dependencies |
+| 1.2.0 | 2025-03-10 | [47319](https://github.com/airbytehq/airbyte/pull/47319) | Migrate to Manifest-only |
+| 1.1.1 | 2025-03-09 | [54110](https://github.com/airbytehq/airbyte/pull/54110) | Update dependencies |
+| 1.1.0 | 2025-03-03 | [54151](https://github.com/airbytehq/airbyte/pull/54151) | Migrate to incrementalcursors |
 | 1.0.4 | 2025-02-01 | [53081](https://github.com/airbytehq/airbyte/pull/53081) | Update dependencies |
 | 1.0.3 | 2025-01-25 | [51942](https://github.com/airbytehq/airbyte/pull/51942) | Update dependencies |
 | 1.0.2 | 2025-01-22 | [52065](https://github.com/airbytehq/airbyte/pull/52065) | Pinned `airbyte-cdk` version to `0.72.2` |

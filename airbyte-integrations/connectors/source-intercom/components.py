@@ -5,10 +5,11 @@
 from dataclasses import dataclass
 from functools import wraps
 from time import sleep
-from typing import Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 import requests
 
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 
@@ -152,3 +153,51 @@ class ErrorHandlerWithRateLimiter(DefaultErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         # Check for response.headers to define the backoff time before the next api call
         return super().interpret_response(response_or_exception)
+
+
+class SubstreamStateMigration(StateMigration):
+    """
+    We require a custom state migration to move from the custom substream state that was generated via the legacy
+    cursor custom components. State was not written back to the platform in a way that is compatible with concurrent cursors.
+
+    The old state roughly had the following shape:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+    }
+
+    However, this was incompatible when we removed the custom cursors with the concurrent substream partition cursor
+    components that were configured with use global_substream_cursor and incremental_dependency. They rely on passing the value
+    of parent_state when getting parent records for the conversations/companies parent stream. The migration results in state:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+            # There are a lot of nested elements here, but are not used or relevant to syncs
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+        "parent_state": {
+            "conversations": {
+                "updated_at": 1744153060
+            }
+        }
+    }
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return "parent_state" not in stream_state and ("conversations" in stream_state or "companies" in stream_state)
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_parent_state = {}
+        if stream_state.get("conversations"):
+            migrated_parent_state["conversations"] = stream_state.get("conversations")
+        if stream_state.get("companies"):
+            migrated_parent_state["companies"] = stream_state.get("companies")
+        return {**stream_state, "parent_state": migrated_parent_state}

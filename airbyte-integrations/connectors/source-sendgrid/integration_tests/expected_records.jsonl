@@ -184,12 +184,6 @@
 {"stream": "suppression_group_members", "data": {"email": "test-forsuppressiongroup number8@example.com", "group_id": 14772, "group_name": "Test Suggestions Group 12", "created_at": 1612363238}, "emitted_at": 1631093393000}
 {"stream": "suppression_group_members", "data": {"email": "test-forsuppressiongroup number9@example.com", "group_id": 14772, "group_name": "Test Suggestions Group 12", "created_at": 1612363238}, "emitted_at": 1631093393000}
 {"stream": "suppression_group_members", "data": {"email": "avida.d3@gmail.com", "group_id": 14780, "group_name": "Test Suggestions Group 20", "created_at": 1631093329}, "emitted_at": 1631093393000}
-{"stream": "bounces", "data": {"status": "", "reason": "Invalid Domain", "email": "vadym.hevlich@zazmic_com", "created": 1621439283}, "emitted_at": 1708535996116}
-{"stream": "bounces", "data": {"status": "", "reason": "Invalid Domain", "email": "vadym.hevlich@zazmicinvalid", "created": 1621439221}, "emitted_at": 1708535996116}
-{"stream": "bounces", "data": {"status": "", "reason": "Invalid Domain", "email": "vadym.hevlich@zazmicio", "created": 1621439211}, "emitted_at": 1708535996116}
-{"stream": "bounces", "data": {"status": "", "reason": "Invalid Domain", "email": "vadym.hevlich@zazmiccom2", "created": 1621437507}, "emitted_at": 1708535996117}
-{"stream": "bounces", "data": {"status": "", "reason": "Invalid Domain", "email": "vadym.hevlich@zazmiccom1", "created": 1621437504}, "emitted_at": 1708535996117}
-{"stream": "bounces", "data": {"status": "", "reason": "Invalid Domain", "email": "vadym.hevlich@zazmiccom", "created": 1621426437}, "emitted_at": 1708535996117}
 {"stream": "campaigns", "data": {"created_at": "2021-09-08T09:07:48Z", "id": "3c5a9fa6-1084-11ec-ac32-4228d699bad5", "name": "Untitled Single Send", "status": "triggered", "updated_at": "2021-09-08T09:11:08Z", "is_abtest": false, "channels": ["email"]}, "emitted_at": 1678791750589}
 {"stream": "campaigns", "data": {"created_at": "2021-09-08T09:04:36Z", "id": "c9f286fb-1083-11ec-ae03-ca0fc7f28419", "name": "Copy of Untitled Single Send", "status": "triggered", "updated_at": "2021-09-08T09:09:08Z", "is_abtest": false, "channels": ["email"]}, "emitted_at": 1678791750589}
 {"stream": "campaigns", "data": {"created_at": "2021-09-08T08:53:59Z", "id": "4e5be6a3-1082-11ec-8512-9afd40c324e6", "name": "Untitled Single Send", "status": "triggered", "updated_at": "2021-09-08T08:57:08Z", "is_abtest": false, "channels": ["email"]}, "emitted_at": 1678791750590}

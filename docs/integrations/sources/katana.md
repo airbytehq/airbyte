@@ -45,6 +45,13 @@ To generate a live API key: log in to your Katana account.  Go to Settings &gt; 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2025-04-26 | [58191](https://github.com/airbytehq/airbyte/pull/58191) | Update dependencies |
+| 0.0.20 | 2025-04-12 | [57749](https://github.com/airbytehq/airbyte/pull/57749) | Update dependencies |
+| 0.0.19 | 2025-04-05 | [57105](https://github.com/airbytehq/airbyte/pull/57105) | Update dependencies |
+| 0.0.18 | 2025-03-29 | [56680](https://github.com/airbytehq/airbyte/pull/56680) | Update dependencies |
+| 0.0.17 | 2025-03-22 | [56004](https://github.com/airbytehq/airbyte/pull/56004) | Update dependencies |
+| 0.0.16 | 2025-03-08 | [55431](https://github.com/airbytehq/airbyte/pull/55431) | Update dependencies |
+| 0.0.15 | 2025-03-01 | [54824](https://github.com/airbytehq/airbyte/pull/54824) | Update dependencies |
 | 0.0.14 | 2025-02-22 | [54291](https://github.com/airbytehq/airbyte/pull/54291) | Update dependencies |
 | 0.0.13 | 2025-02-15 | [53863](https://github.com/airbytehq/airbyte/pull/53863) | Update dependencies |
 | 0.0.12 | 2025-02-08 | [53267](https://github.com/airbytehq/airbyte/pull/53267) | Update dependencies |

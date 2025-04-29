@@ -28,6 +28,14 @@ Airbyte connector for [Persona](https://withpersona.com) that makes it easy to m
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2025-04-27 | [59094](https://github.com/airbytehq/airbyte/pull/59094) | Update dependencies |
+| 0.0.21 | 2025-04-19 | [58463](https://github.com/airbytehq/airbyte/pull/58463) | Update dependencies |
+| 0.0.20 | 2025-04-12 | [57857](https://github.com/airbytehq/airbyte/pull/57857) | Update dependencies |
+| 0.0.19 | 2025-04-05 | [57356](https://github.com/airbytehq/airbyte/pull/57356) | Update dependencies |
+| 0.0.18 | 2025-03-29 | [56789](https://github.com/airbytehq/airbyte/pull/56789) | Update dependencies |
+| 0.0.17 | 2025-03-22 | [56227](https://github.com/airbytehq/airbyte/pull/56227) | Update dependencies |
+| 0.0.16 | 2025-03-08 | [55529](https://github.com/airbytehq/airbyte/pull/55529) | Update dependencies |
+| 0.0.15 | 2025-03-01 | [55021](https://github.com/airbytehq/airbyte/pull/55021) | Update dependencies |
 | 0.0.14 | 2025-02-23 | [54566](https://github.com/airbytehq/airbyte/pull/54566) | Update dependencies |
 | 0.0.13 | 2025-02-15 | [53945](https://github.com/airbytehq/airbyte/pull/53945) | Update dependencies |
 | 0.0.12 | 2025-02-08 | [53503](https://github.com/airbytehq/airbyte/pull/53503) | Update dependencies |

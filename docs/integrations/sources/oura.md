@@ -56,6 +56,14 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.2.23 | 2025-04-27 | [59056](https://github.com/airbytehq/airbyte/pull/59056) | Update dependencies |
+| 0.2.22 | 2025-04-19 | [58491](https://github.com/airbytehq/airbyte/pull/58491) | Update dependencies |
+| 0.2.21 | 2025-04-12 | [57870](https://github.com/airbytehq/airbyte/pull/57870) | Update dependencies |
+| 0.2.20 | 2025-04-05 | [57311](https://github.com/airbytehq/airbyte/pull/57311) | Update dependencies |
+| 0.2.19 | 2025-03-29 | [56741](https://github.com/airbytehq/airbyte/pull/56741) | Update dependencies |
+| 0.2.18 | 2025-03-22 | [56168](https://github.com/airbytehq/airbyte/pull/56168) | Update dependencies |
+| 0.2.17 | 2025-03-08 | [55523](https://github.com/airbytehq/airbyte/pull/55523) | Update dependencies |
+| 0.2.16 | 2025-03-01 | [55018](https://github.com/airbytehq/airbyte/pull/55018) | Update dependencies |
 | 0.2.15 | 2025-02-23 | [54570](https://github.com/airbytehq/airbyte/pull/54570) | Update dependencies |
 | 0.2.14 | 2025-02-15 | [53984](https://github.com/airbytehq/airbyte/pull/53984) | Update dependencies |
 | 0.2.13 | 2025-02-08 | [53452](https://github.com/airbytehq/airbyte/pull/53452) | Update dependencies |

@@ -34,7 +34,7 @@ class MySqlSourceDatatypeIntegrationTest {
         @BeforeAll
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
-            dbContainer = MySqlContainerFactory.shared("mysql:8.0", MySqlContainerFactory.WithCdc)
+            dbContainer = MySqlContainerFactory.shared("mysql:9.2.0", MySqlContainerFactory.WithCdc)
         }
     }
 }
