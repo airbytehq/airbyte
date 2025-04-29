@@ -47,7 +47,7 @@ Before you begin, make sure you've completed the following.
 
 - Deploy your Self-Managed Enterprise version of Airbyte as described in the [implementation guide](implementation-guide).
 
-- You must be an Instance Administrator to manage regions and data planes.
+- You must be an Organization Administrator to manage regions and data planes.
 
 - You need a Kubernetes cluster on which your data plane can run. For example, if your Airbyte control plane already runs on an EKS cluster on `us-west-2`, and you want your data plane to run on `eu-west-1`, create an EKS cluster on `eu-west-1`.
 
@@ -111,16 +111,16 @@ Once you have a region, you create a data plane within it.
 <details>
   <summary>Request</summary>
 
-Send a POST request to /v1/regions/`<REGION_ID>`/dataplanes.
+Send a POST request to /v1/dataplanes.
 
 ```bash
-curl --request POST \
-  --url https://example.com/api/public/v1/regions/116a49ab-b04a-49d6-8f9e-4d9d6a4189cc/dataplanes \
-  --header 'authorization: Bearer $TOKEN' \
-  --header 'content-type: application/json' \
-  --data '{
-  "name": "aws-us-west-3-dp-8"
-}'
+curl -X POST https://api.airbyte.com/v1/dataplanes \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -d '{
+    "name": "My Data Plane"
+    "regionId": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319"
+  }'
 ```
 
 Include the following parameters in your request.
@@ -128,9 +128,9 @@ Include the following parameters in your request.
 | Body parameter | Required? | Description                                                                                                         |
 | -------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
 | `name`         | Required  | The name of your data plane. For simplicity, you might want to name it based on the region in which you created it. |
-| `enabled`      | Optional  | Defaults to true. Set this to `false` if you don't want this data plane enabled.                                        |
+| `regionId`     | Optional  | The region this data plane belongs to.                                                                              |
 
-For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/dataplanes#/).
 
 </details>
 
