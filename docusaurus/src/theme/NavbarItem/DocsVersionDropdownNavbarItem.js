@@ -14,5 +14,21 @@ export default function DocsVersionDropdownNavbarItemWrapper(props) {
   if (!doesPathnameContainDocsPluginId) {
     return null;
   }
-  return <DocsVersionDropdownNavbarItem {...props} />;
+
+  const WrappedComponent = (originalProps) => {
+    const modifiedProps = { ...originalProps };
+    
+    if (modifiedProps.items) {
+      modifiedProps.items = modifiedProps.items.map(item => {
+        if (item.label === 'Next') {
+          return { ...item, label: 'Cloud / Next version' };
+        }
+        return item;
+      });
+    }
+    
+    return React.createElement(DocsVersionDropdownNavbarItem.type, modifiedProps);
+  };
+
+  return <WrappedComponent {...props} />;
 }
