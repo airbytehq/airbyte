@@ -18,8 +18,8 @@ class TestAppInstallAdsStream(TestBulkStream):
     def test_return_logged_info_for_empty_csv_file(self):
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "app_install_ads_empty")
         assert len(output.records) == 0
-        empty_data_message = self.create_log_message('Empty data received. No columns to parse from file')
-        no_records_message = self.create_log_message(f'Read 0 records from {self.stream_name} stream')
+        empty_data_message = self.create_log_message("Empty data received. No columns to parse from file")
+        no_records_message = self.create_log_message(f"Read 0 records from {self.stream_name} stream")
         assert empty_data_message in output.logs
         assert no_records_message in output.logs
 

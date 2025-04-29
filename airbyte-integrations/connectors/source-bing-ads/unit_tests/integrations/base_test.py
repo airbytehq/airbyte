@@ -13,7 +13,7 @@ from protocol_helpers import read_helper
 from suds.transport.https import HttpAuthenticated
 from suds_response_mock import mock_http_authenticated_send
 
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode, AirbyteMessage, Type, AirbyteLogMessage, Level
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStateMessage, Level, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -72,11 +72,11 @@ class BaseTest(TestCase):
         return self._http_mocker
 
     @staticmethod
-    def create_log_message(log_message = ""):
+    def create_log_message(log_message: str):
         return AirbyteMessage(
             type=Type.LOG,
             log=AirbyteLogMessage(
                 level=Level.INFO,
                 message=log_message,
-            )
+            ),
         )
