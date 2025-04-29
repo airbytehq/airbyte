@@ -183,6 +183,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
+          check_name: "`${{ matrix.connector }}` Connector Test Results"
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/test-results/**/*.xml
 
