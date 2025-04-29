@@ -81,7 +81,7 @@ jobs:
           echo "Found connectors input:\n${CONNECTORS}"
           echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
       - name: Get Connector List from Changes
-        if: ! inputs.connector_name
+        if: ${{ ! inputs.connector_name }}
         run: |
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
