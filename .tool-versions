@@ -1,4 +1,4 @@
-python 3.11
-java 21
-poetry 2.0.1
-poetry-v1 1.8.5
+java    21
+poetry  2.0.1
+python  3.11
+uv      0.6.9
