@@ -81,18 +81,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Install Python
-        id: install_python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
-      - name: Install Poetry
-        id: install_poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.5
       - name: Merge the changelog of the connectors
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
