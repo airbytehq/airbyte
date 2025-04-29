@@ -54,6 +54,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 abstract class IntegrationTest(
     additionalMicronautEnvs: List<String>,
     val dataDumper: DestinationDataDumper,
+    /** This object MUST be a singleton. It will be invoked exactly once per gradle run. */
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
