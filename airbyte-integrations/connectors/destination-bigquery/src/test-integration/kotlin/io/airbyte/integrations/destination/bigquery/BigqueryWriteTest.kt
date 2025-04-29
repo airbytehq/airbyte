@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
-import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -35,7 +34,7 @@ abstract class BigqueryWriteTest(
         configContents = configContents,
         BigquerySpecification::class.java,
         dataDumper,
-        BigqueryDestinationCleaner(configContents.deserializeToNode()),
+        BigqueryDestinationCleaner,
         recordMangler = expectedRecordMapper,
         isStreamSchemaRetroactive = isStreamSchemaRetroactive,
         supportsDedup = supportsDedup,
@@ -110,13 +109,7 @@ class StandardInsertRawOverrideDisableTd :
 
 class StandardInsertRawOverride :
     BigqueryTDWriteTest(
-        BigQueryDestinationTestUtils.createConfig(
-                configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
-                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
-            )
-            .serializeToString(),
+        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig.serializeToString()
     ) {
     @Test
     override fun testBasicWrite() {
@@ -129,14 +122,7 @@ class StandardInsertRawOverride :
 }
 
 class StandardInsert :
-    BigqueryTDWriteTest(
-        BigQueryDestinationTestUtils.createConfig(
-                configFile = Path.of("secrets/credentials-1s1t-standard.json"),
-                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-            )
-            .serializeToString(),
-    ) {
+    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig.serializeToString()) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()

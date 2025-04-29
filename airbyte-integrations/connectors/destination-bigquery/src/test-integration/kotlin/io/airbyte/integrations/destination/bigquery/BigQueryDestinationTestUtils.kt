@@ -16,7 +16,6 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -24,10 +23,22 @@ import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-private val logger = KotlinLogging.logger {}
-
 object BigQueryDestinationTestUtils {
     private val LOGGER: Logger = LoggerFactory.getLogger(BigQueryDestinationTestUtils::class.java)
+
+    val standardInsertRawOverrideConfig =
+        createConfig(
+            configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
+            datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
+            stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+            rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
+        )
+    val standardInsertConfig =
+        createConfig(
+            configFile = Path.of("secrets/credentials-1s1t-standard.json"),
+            datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
+            stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+        )
 
     /**
      * Parse the config file and replace dataset with rawNamespace and stagingPath randomly
