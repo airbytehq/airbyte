@@ -1,4 +1,4 @@
-java    21
+java    openjdk-21
 poetry  2.0.1
 python  3.11
 uv      0.6.9
