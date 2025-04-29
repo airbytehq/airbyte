@@ -14,7 +14,7 @@ pytest_plugins = [
 ]
 
 class TestSuite(SourceTestSuiteBase):
-    """Test suite for the source_pokeapi_w_components source.
+    """Test suite for Python sources.
 
     This class inherits from SourceTestSuiteBase and implements all of the tests in the suite.
 
