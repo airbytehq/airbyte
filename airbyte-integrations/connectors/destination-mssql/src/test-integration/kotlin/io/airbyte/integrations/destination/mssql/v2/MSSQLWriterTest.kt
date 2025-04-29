@@ -174,7 +174,11 @@ object MSSQLDataCleaner : DestinationCleaner {
                     val hoursSinceCreation =
                         ChronoUnit.HOURS.between(createdTime, OffsetDateTime.now())
                     if (hoursSinceCreation >= 1) {
-                        azureBlobClient.delete(blobItem.key)
+                        try {
+                            azureBlobClient.delete(blobItem.key)
+                        } catch (e: Exception) {
+                            // do nothing
+                        }
                     }
                 }
             }
