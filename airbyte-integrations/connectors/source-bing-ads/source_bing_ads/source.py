@@ -155,7 +155,6 @@ class SourceBingAds(YamlDeclarativeSource):
 
         client = Client(**config)
         streams = [
-            # Accounts(client, config),
             AdGroups(client, config),
             AdGroupLabels(client, config),
             AppInstallAds(client, config),
