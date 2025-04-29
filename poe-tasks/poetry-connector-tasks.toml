@@ -24,6 +24,8 @@ install = "poetry install --all-extras"
 pytest = "poetry run pytest"
 pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
 
+fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
+
 test-all = [
     "pytest",
 ]

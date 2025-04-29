@@ -118,12 +118,21 @@ jobs:
     name: Test Connectors
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
     if: ${{ needs.generate-matrix.outputs.connector-matrix != '' }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 5  # Limit number of parallel jobs
     steps:
-      - name: Run Poe Slash Command Processor
+      - name: Fetch connector secrets
+        uses: aaronsteers/poe-command-processor@v1
+        with:
+          command: fetch-secrets
+          no-commit: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run 'test-all' Poe Command
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: test-all
