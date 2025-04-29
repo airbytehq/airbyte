@@ -125,16 +125,16 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 ### SSL Modes
 
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
+Airbyte Cloud uses `required` SSL mode by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
 
 Here is a breakdown of available SSL connection modes:
 
-- `disable` to disable encrypted communication between Airbyte and the source
+- `required` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+- `preferred` to allow unencrypted communication only when the source doesn't support encryption
+- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate
+- `verify_identity` to always require encryption and verify the identity of the source
+- `disabled` to disable encrypted communication between Airbyte and the source
 - `allow` to enable encrypted communication only when required by the source
-- `prefer` to allow unencrypted communication only when the source doesn't support encryption
-- `require` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
-- `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
-- `verify-full` to always require encryption and verify the identity of the source
 
 </FieldAnchor>
 
@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.14     | 2025-04-29 | [59144](https://github.com/airbytehq/airbyte/pull/59144)   | Update default SSL mode.                                                                                                                        |
 | 3.11.13     | 2025-04-24 | [58646](https://github.com/airbytehq/airbyte/pull/58646)   | Fix vulnerabilities in dependencies.                                                                                                            |
 | 3.11.12     | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                            |
 | 3.11.11     | 2025-04-23 | [58623](https://github.com/airbytehq/airbyte/pull/58623) | Bump CDK version to the latets published                                                                                                        |
