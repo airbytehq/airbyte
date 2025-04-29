@@ -105,9 +105,9 @@ jobs:
             exit 0
           fi
           # Convert the matrix from newline-delimited string to a JSON string
-          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map(select(. != "") | {connector: .})')
-          echo -e "Matrix JSON:\n${matrix}"
-          echo "matrix=\"${matrix}\"" | tee -a "$GITHUB_OUTPUT"
+          json_elements=$(IFS=,; echo "${json_array[*]}")
+          json_output="{ \"connector\": [$json_elements] }"
+          echo "matrix=$json_output" | tee -a "$GITHUB_OUTPUT"
 
     outputs:
       connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
