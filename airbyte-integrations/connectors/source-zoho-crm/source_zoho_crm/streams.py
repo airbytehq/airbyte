@@ -238,7 +238,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             current_cursor_value = datetime.datetime.fromisoformat(self.state[self.cursor_field])
-            latest_cursor_value = datetime.datetime.fromisoformat(record[self.cursor_field])
+            latest_cursor_value = datetime.datetime.fromisoformat(record.get(self.cursor_field,'2000-01-01T00:00:00+00:00'))
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
             self.state = {self.cursor_field: new_cursor_value.isoformat("T", "seconds")}
             yield record
@@ -296,11 +296,88 @@ class ZohoStreamFactory:
                 executor.map(lambda module: populate_module(module), batch)
 
         bases = (IncrementalZohoCrmStream,)
-        for module in modules:
-            stream_cls_attrs = {"url_base": self.api.api_url, "module": module}
-            stream_cls_name = f"Incremental{module.api_name}ZohoCRMStream"
-            incremental_stream_cls = type(stream_cls_name, bases, stream_cls_attrs)
-            stream = incremental_stream_cls(self.api.authenticator, config=self._config)
-            if stream.get_json_schema():
-                streams.append(stream)
+        # for module in modules:
+        #     stream_cls_attrs = {"url_base": self.api.api_url, "module": module}
+        #     stream_cls_name = f"Incremental{module.api_name}ZohoCRMStream"
+        #     incremental_stream_cls = type(stream_cls_name, bases, stream_cls_attrs)
+        #     stream = incremental_stream_cls(self.api.authenticator, config=self._config)
+        #     if stream.get_json_schema():
+        #         streams.append(stream)
+
+        streams.append(IncrementalUsersZohoCrmStream(self.api.authenticator, config=self._config))
         return streams
+
+
+class IncrementalUsersZohoCrmStream(IncrementalZohoCrmStream):
+    """
+    This stream is a special case for the Users module.
+    It is not a standard Zoho CRM module and has a different API endpoint.
+    """
+    module = ModuleMeta(
+            api_name="users",
+            module_name="Users",
+            api_supported=True,
+            fields=[
+                FieldMeta(api_name="country", data_type="string", json_type="string", display_label="country", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="name_format__s", data_type="string", json_type="string", display_label="name_format__s", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="language", data_type="string", json_type="string", display_label="language", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="microsoft", data_type="boolean", json_type="boolean", display_label="microsoft", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="id", data_type="string", json_type="string", display_label="id", system_mandatory=True, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="state", data_type="string", json_type="string", display_label="state", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="fax", data_type="string", json_type="string", display_label="fax", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="country_locale", data_type="string", json_type="string", display_label="country_locale", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="sandboxDeveloper", data_type="boolean", json_type="boolean", display_label="sandboxDeveloper", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="zip", data_type="string", json_type="string", display_label="zip", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="decimal_separator", data_type="string", json_type="string", display_label="decimal_separator", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="created_time", data_type="string", json_type="string", display_label="created_time", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="time_format", data_type="string", json_type="string", display_label="time_format", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="offset", data_type="string", json_type="string", display_label="offset", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="zuid", data_type="string", json_type="string", display_label="zuid", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="full_name", data_type="string", json_type="string", display_label="full_name", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="phone", data_type="string", json_type="string", display_label="phone", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="dob", data_type="date", json_type="string", display_label="dob", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="sort_order_preference__s", data_type="string", json_type="string", display_label="sort_order_preference__s", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="status", data_type="string", json_type="string", display_label="status", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="type__s", data_type="string", json_type="string", display_label="type__s", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="city", data_type="string", json_type="string", display_label="city", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="signature", data_type="string", json_type="string", display_label="signature", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="locale", data_type="string", json_type="string", display_label="locale", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="personal_account", data_type="boolean", json_type="boolean", display_label="personal_account", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="Isonline", data_type="boolean", json_type="boolean", display_label="Isonline", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="default_tab_group", data_type="string", json_type="string", display_label="default_tab_group", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="street", data_type="string", json_type="string", display_label="street", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="first_name", data_type="string", json_type="string", display_label="first_name", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="email", data_type="string", json_type="string", display_label="email", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="status_reason__s", data_type="string", json_type="string", display_label="status_reason__s", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="website", data_type="string", json_type="string", display_label="website", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="Modified_Time", data_type="string", json_type="string", display_label="Modified_Time", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="mobile", data_type="string", json_type="string", display_label="mobile", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="last_name", data_type="string", json_type="string", display_label="last_name", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="time_zone", data_type="string", json_type="string", display_label="time_zone", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="number_separator", data_type="string", json_type="string", display_label="number_separator", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="confirm", data_type="boolean", json_type="boolean", display_label="confirm", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="date_format", data_type="string", json_type="string", display_label="date_format", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="theme", data_type="object", json_type="jsonobject", display_label="theme", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="customize_info", data_type="object", json_type="jsonobject", display_label="customize_info", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="role", data_type="object", json_type="jsonobject", display_label="role", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="profile", data_type="object", json_type="jsonobject", display_label="profile", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="created_by", data_type="object", json_type="jsonobject", display_label="created_by", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="Modified_By", data_type="object", json_type="jsonobject", display_label="Modified_By", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="Reporting_To", data_type="object", json_type="jsonobject", display_label="Reporting_To", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+            ]
+        )
+
+    @property
+    def url_base(self) -> str:
+        return self.api.api_url
+
+    def path(self, *args, **kwargs) -> str:
+        return "/crm/v8/users?type=AllUsers"
+
+    def __init__(self, authenticator: "requests.auth.AuthBase" = None, config: Mapping[str, Any] = None):
+        self.api = ZohoAPI(config)
+        super().__init__(authenticator, config)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = [] if response.status_code in EMPTY_BODY_STATUSES else response.json()["users"]
+        yield from data
