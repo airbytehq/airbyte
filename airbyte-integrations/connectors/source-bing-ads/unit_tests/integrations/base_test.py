@@ -10,11 +10,10 @@ from bingads.v13.reporting.reporting_service_manager import ReportingServiceMana
 from client_builder import build_request, build_request_2, response_with_status
 from config_builder import ConfigBuilder
 from protocol_helpers import read_helper
-from source_bing_ads.source import SourceBingAds
 from suds.transport.https import HttpAuthenticated
 from suds_response_mock import mock_http_authenticated_send
 
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode, AirbyteMessage, Type, AirbyteLogMessage, Level
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -71,3 +70,13 @@ class BaseTest(TestCase):
     @property
     def http_mocker(self) -> HttpMocker:
         return self._http_mocker
+
+    @staticmethod
+    def create_log_message(log_message = ""):
+        return AirbyteMessage(
+            type=Type.LOG,
+            log=AirbyteLogMessage(
+                level=Level.INFO,
+                message=log_message,
+            )
+        )
