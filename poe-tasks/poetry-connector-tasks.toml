@@ -24,6 +24,17 @@ install = "poetry install --all-extras"
 pytest = "poetry run pytest"
 pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
 
+test-all = [
+    "pytest",
+]
+lint-check = [
+    "check-ruff-lint",
+    "check-mypy",
+]
+format-check = [
+    "check-ruff-format",
+]
+
 # Coverage checks
 coverage = "pytest --cov=. --cov-report=term-missing"
 coverage-html = "pytest --cov=. --cov-report=html"
