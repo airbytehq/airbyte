@@ -4,6 +4,8 @@ from typing import Any, Dict, Optional, Tuple
 from unittest.mock import MagicMock, patch
 
 from base_test import BaseTest
+from protocol_helpers import read_helper
+from request_builder import RequestBuilder
 from source_bing_ads.source import SourceBingAds
 from suds.transport.https import HttpAuthenticated
 from suds_response_mock import mock_http_authenticated_send
@@ -13,8 +15,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from protocol_helpers import read_helper
-from request_builder import RequestBuilder
+
 
 class TestAccountsStream(BaseTest):
     stream_name = "accounts"
@@ -44,7 +45,11 @@ class TestAccountsStream(BaseTest):
             HttpResponse(json.dumps(find_template("user_query", __file__)), 200),
         )
         http_mocker.post(
-            RequestBuilder(resource="Accounts/Search").with_body(b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}').build(),
+            RequestBuilder(resource="Accounts/Search")
+            .with_body(
+                b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}'
+            )
+            .build(),
             HttpResponse(json.dumps(find_template("accounts_search", __file__)), 200),
         )
 

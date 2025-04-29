@@ -3,7 +3,9 @@
 #
 
 from __future__ import annotations
+
 from typing import Union
+
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
 

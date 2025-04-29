@@ -28,6 +28,7 @@ def build_request(config: Dict[str, Any]) -> HttpRequest:
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
 
+
 def build_request_2(config: Dict[str, Any]) -> HttpRequest:
     body = (
         "grant_type=refresh_token"
