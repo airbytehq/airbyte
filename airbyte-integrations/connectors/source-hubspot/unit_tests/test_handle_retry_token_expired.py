@@ -11,7 +11,7 @@ from unit_tests.conftest import find_stream
 def test_handle_request_with_retry(config, requests_mock):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.get(
-        "https://api.hubapi.com/email/public/v1/campaigns?count=500",
+        "https://api.hubapi.com/email/public/v1/campaigns?limit=500",
         json={"campaigns": [{"id": "test_id", "lastUpdatedTime": 1744969160000}]},
         status_code=200,
     )
@@ -29,7 +29,7 @@ def test_handle_request_with_retry(config, requests_mock):
 def test_handle_request_with_retry_token_expired(config, requests_mock):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.get(
-        "https://api.hubapi.com/email/public/v1/campaigns?count=500",
+        "https://api.hubapi.com/email/public/v1/campaigns?limit=500",
         json={"campaigns": [{"id": "test_id", "lastUpdatedTime": 1744969160000}]},
         status_code=200,
     )
