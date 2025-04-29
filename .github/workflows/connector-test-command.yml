@@ -188,17 +188,3 @@ jobs:
       - name: Report Lint Summary
         run: echo "🟦 No connectors updated. All good here."
 
-  validate-matrix:
-    name: Validate Connector Matrix
-    runs-on: ubuntu-24.04
-    needs: generate-matrix
-    steps:
-      - name: Validate Connector Matrix
-        run: |
-          echo 'matrix=${{ needs.generate-matrix.outputs.connector-matrix }}'
-
-      - name: Debug fromJson Parsing
-        run: |
-          echo "Raw matrix: '${{ needs.generate-matrix.outputs.connector-matrix }}'"
-          echo "Parsed matrix:"
-          echo '${{ toJson(fromJson(needs.generate-matrix.outputs.connector-matrix)) }}'
