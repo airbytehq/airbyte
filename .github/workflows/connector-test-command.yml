@@ -150,6 +150,10 @@ jobs:
         run: |
           uv tool install poethepoet
 
+      - name: Install connector dependencies
+        run: |
+          poe connector ${{ matrix.connector }} install
+
       - name: Fetch connector secrets
         run: |
           poe connector ${{ matrix.connector }} fetch-secrets
@@ -197,6 +201,10 @@ jobs:
       - name: Install Poe
         run: |
           uv tool install poethepoet
+
+      - name: Install connector dependencies
+        run: |
+          poe connector ${{ matrix.connector }} install
 
       - name: Run lint check
         run: |
