@@ -32,9 +32,11 @@ class TableCatalogFactory(
 ) {
     @Singleton
     fun get(): TableCatalog {
-        // TODO handle collisions in table names
         return TableCatalog(
             catalog.streams.associateWith { stream ->
+                val originalRawTableName = rawTableNameGenerator.getTableName(stream.descriptor)
+                val originalFinalTableName = finalTableNameGenerator.getTableName(stream.descriptor)
+
                 TableNameInfo(
                     TableNames(
                         rawTableName = rawTableNameGenerator.getTableName(stream.descriptor),
