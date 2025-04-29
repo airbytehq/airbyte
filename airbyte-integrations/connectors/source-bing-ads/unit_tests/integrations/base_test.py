@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
-from client_builder import build_request, response_with_status
+from client_builder import build_request, build_request_2, response_with_status
 from config_builder import ConfigBuilder
 from protocol_helpers import read_helper
 from source_bing_ads.source import SourceBingAds
@@ -50,6 +50,7 @@ class BaseTest(TestCase):
 
     def _auth_client(self, http_mocker: HttpMocker) -> None:
         http_mocker.post(request=build_request(self._config), responses=response_with_status("oauth", 200))
+        http_mocker.post(request=build_request_2(self._config), responses=response_with_status("oauth", 200))
 
     def read_stream(
         self,
@@ -67,3 +68,7 @@ class BaseTest(TestCase):
                 catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
                 # return read(SourceBingAds(), config, catalog, state, expecting_exception), service_call_mock
                 return read_helper(config, catalog, state, expecting_exception), service_call_mock
+
+    @property
+    def http_mocker(self) -> HttpMocker:
+        return self._http_mocker
