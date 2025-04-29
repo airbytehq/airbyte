@@ -81,7 +81,7 @@ class GoogleSearchConsole(HttpStream, ABC):
                 self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
                 self.aggregation_type = QueryAggregationType.auto
                 setattr(self, "raise_on_http_errors", False)
-        return super().should_retry(response)
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
 
 class Sites(GoogleSearchConsole):
@@ -384,7 +384,7 @@ class SearchByKeyword(SearchAnalytics):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        search_appearance_stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
+        search_appearance_stream = SearchAppearance(self._http_client._session.auth, self._site_urls, self._start_date, self._end_date)
 
         for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
             keywords_records = search_appearance_stream.read_records(
