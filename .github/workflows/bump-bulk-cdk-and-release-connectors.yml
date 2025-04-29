@@ -25,7 +25,7 @@ jobs:
         with:
           # Fetch all history for all tags and branches
           fetch-depth: 0
-      - name: Fetch version from repo
+      - name: Fetch latest Bulk Load CDK version
         id: fetch-version
         run: |
           # 1. Define the target URL
