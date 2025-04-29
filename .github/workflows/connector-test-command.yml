@@ -181,6 +181,15 @@ jobs:
         run: |
           poe connector ${{ matrix.connector }} test-all
 
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-results/**/*.xml
+            test-results/**/*.trx
+            test-results/**/*.json
+
   test-summary:
     name: Connector Test Summary Check
     needs: [connectors-test-matrix]
