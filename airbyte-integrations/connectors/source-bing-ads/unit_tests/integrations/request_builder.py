@@ -14,7 +14,6 @@ CLIENT_CENTER_BASE_URL = "https://clientcenter.api.bingads.microsoft.com/Custome
 
 class RequestBuilder:
     def __init__(self, resource: str = None) -> None:
-        self._spreadsheet_id = None
         self._query_params = {}
         self._body = None
         self.resource = resource

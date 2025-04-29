@@ -17,7 +17,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = source(config).streams(config)
-    assert len(streams) == 78
+    assert len(streams) == 77
 
 
 @patch.object(source_bing_ads.source, "Client")

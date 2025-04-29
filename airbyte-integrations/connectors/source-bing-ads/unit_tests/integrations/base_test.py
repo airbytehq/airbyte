@@ -66,7 +66,6 @@ class BaseTest(TestCase):
                 self.service_manager, "download_file", return_value=self._download_file(stream_data_file)
             ) as service_call_mock:
                 catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-                # return read(SourceBingAds(), config, catalog, state, expecting_exception), service_call_mock
                 return read_helper(config, catalog, state, expecting_exception), service_call_mock
 
     @property

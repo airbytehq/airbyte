@@ -96,7 +96,6 @@ definitions:
         schema_normalization: Default
 
 streams:
-  - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/accounts_stream"
 
 concurrency_level:

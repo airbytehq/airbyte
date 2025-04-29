@@ -30,6 +30,13 @@ def build_request(config: Dict[str, Any]) -> HttpRequest:
 
 
 def build_request_2(config: Dict[str, Any]) -> HttpRequest:
+    """
+    This function is used to build a request for refreshing the OAuth token.
+    We should just have temporarily having a second request builder as we are maintaining the client
+    one and the declarative requester one. Once the client one is removed, the extra function can be removed as well.
+    And probably the integration test will yell by then.
+    The diff between the two is the order of the query parameters in the body.
+    """
     body = (
         "grant_type=refresh_token"
         f"&client_id={config['client_id']}"
@@ -39,7 +46,7 @@ def build_request_2(config: Dict[str, Any]) -> HttpRequest:
         "&oauth_scope=msads.manage"
         "&scope=https%3A%2F%2Fads.microsoft.com%2Fmsads.manage+offline_access"
         f"&tenant={config['tenant_id']}"
-    )  # Remove the leading '&' for correct formatting
+    )
 
     return HttpRequest(
         url="https://login.microsoftonline.com/common/oauth2/v2.0/token",
