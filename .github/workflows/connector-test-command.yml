@@ -122,6 +122,8 @@ jobs:
           # Check if the matrix is empty
           echo "${{ needs.generate-matrix.outputs.connector-matrix }}"
 
+  # Connector tests
+
   connectors-test-matrix:
     name: Test Connectors
     needs: [generate-matrix]
@@ -135,6 +137,25 @@ jobs:
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: test-all
+
+  test-summary:
+    name: Connector Test Summary Check
+    needs: [connectors-test-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All connector tests completed successfully."
+
+  test-summary-noop:
+    name: Connector Test Summary Check
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "🟦 No connectors updated. All good here."
+
+  # Lint and format checks
 
   connectors-lint-matrix:
     name: Lint Connectors
@@ -153,23 +174,6 @@ jobs:
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: format-check
-
-  test-summary:
-    name: Connector Test Summary Check
-    needs: [connectors-test-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "✅ All connector tests completed successfully."
-
-  test-summary-noop:
-    name: Connector Test Summary Check
-    needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "🟦 No connectors updated. All good here."
 
   lint-summary:
     name: Connector Lint Summary Check
