@@ -143,6 +143,14 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev
+
       - name: Install Tools from ASDF Config
         uses: ai/asdf-cache-action@v1
 
