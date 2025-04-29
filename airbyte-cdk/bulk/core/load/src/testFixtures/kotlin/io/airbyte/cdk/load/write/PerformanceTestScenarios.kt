@@ -16,6 +16,9 @@ import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.Jsons
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.security.SecureRandom
@@ -224,6 +227,112 @@ class SingleStreamFileTransfer(
                     )
                 )
             destination.sendMessage(message.asProtocolMessage())
+        }
+    }
+
+    override fun getSummary(): PerformanceTestScenario.Summary =
+        PerformanceTestScenario.Summary(
+            records = numFiles.toLong(),
+            size = numFiles * fileSizeMb * 1024 * 1024L,
+            expectedRecordsCount = numFiles.toLong()
+        )
+}
+
+class SingleStreamFileAndMetadataTransfer(
+    private val randomizedNamespace: String,
+    private val streamName: String,
+    private val numFiles: Int,
+    private val fileSizeMb: Int,
+    private val stagingDirectory: Path,
+    private val seed: Long = 8656931613L
+) : PerformanceTestScenario {
+    private val log = KotlinLogging.logger {}
+
+    private val descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName)
+    private val stream =
+        DestinationStream(
+            descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+            importType = Append,
+            schema = ObjectType(linkedMapOf()),
+            generationId = 1,
+            minimumGenerationId = 0,
+            syncId = 1,
+            includeFiles = true,
+        )
+
+    override val catalog: DestinationCatalog =
+        DestinationCatalog(
+            listOf(
+                DestinationStream(
+                    descriptor = descriptor,
+                    importType = Append,
+                    schema = ObjectTypeWithoutSchema,
+                    generationId = 1,
+                    minimumGenerationId = 1,
+                    syncId = 101,
+                    includeFiles = true,
+                )
+            )
+        )
+
+    private fun makeFileName(index: Long): String =
+        "test_file__${randomizedNamespace}__${streamName}__$index.txt"
+
+    fun setup() {
+        // TODO: Maybe make these files different sizes?
+        val prng = Random(seed)
+        val randomMegabyte = ByteArray(1024 * 1024) { prng.nextInt().toByte() }
+        repeat(numFiles) {
+            val file = stagingDirectory.resolve(makeFileName(it.toLong()))
+            log.info { "Creating file $file with size ${fileSizeMb}mb" }
+            val outputStream = file.toFile().outputStream()
+            repeat(fileSizeMb) { outputStream.write(randomMegabyte) }
+            outputStream.close()
+        }
+    }
+
+    override fun send(destination: DestinationProcess) {
+        repeat(numFiles) {
+            val fileName = makeFileName(it.toLong())
+
+            val file =
+                AirbyteRecordMessageFileReference()
+                    .withFileSizeBytes(fileSizeMb * 1024 * 1024L)
+                    .withStagingFileUrl(stagingDirectory.resolve(fileName).toString())
+                    .withSourceFileRelativePath(fileName)
+
+            val dataStr =
+                """
+                {
+                      "id": 12138758717583,
+                      "url": "https://d3v-airbyte.zendesk.com/api/v2/help_center/articles/attachments/12138758717583",
+                      "article_id": 12138789487375,
+                      "display_file_name": "DALL·E 2024-11-19 10.07.37 - A cartoon-style robot with a metallic, retro-futuristic design, holding a smoking cigar in one hand. The robot has a humorous, relaxed expression, wit (1).webp",
+                      "file_name": "DALL·E 2024-11-19 10.07.37 - A cartoon-style robot with a metallic, retro-futuristic design, holding a smoking cigar in one hand. The robot has a humorous, relaxed expression, wit (1).webp",
+                      "locale": "en-us",
+                      "content_url": "https://d3v-airbyte.zendesk.com/hc/article_attachments/12138758717583",
+                      "relative_path": "/hc/article_attachments/12138758717583",
+                      "content_type": "image/webp",
+                      "size": 109284,
+                      "inline": true,
+                      "created_at": "2025-03-11T23:33:57Z",
+                      "updated_at": "2025-03-11T23:33:57Z"
+                    }
+            """.trimIndent()
+
+            val msg =
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage()
+                            .withStream(stream.descriptor.name)
+                            .withNamespace(stream.descriptor.namespace)
+                            .withEmittedAt(System.currentTimeMillis())
+                            .withFileReference(file)
+                            .withData(Jsons.deserialize(dataStr))
+                    )
+
+            destination.sendMessage(msg)
         }
     }
 
