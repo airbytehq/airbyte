@@ -101,11 +101,11 @@ jobs:
           # Check if CONNECTORS is empty
           if [ -z "$CONNECTORS" ]; then
             echo "No connectors modified. Setting matrix to empty."
-            echo "matrix=" >> $GITHUB_OUTPUT
+            echo "matrix={\"connectors\": []}" >> $GITHUB_OUTPUT
             exit 0
           fi
           # Convert the matrix from newline-delimited string to a JSON string
-          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map(select(. != "") | map({connector: .})')
+          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map(select(. != "") | {connector: .}')
           echo -e "Matrix JSON:\n${matrix}"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
@@ -122,24 +122,26 @@ jobs:
           # Check if the matrix is empty
           echo "${{ needs.generate-matrix.outputs.connector-matrix }}"
 
-  test-connectors:
+  connectors-test-matrix:
     name: Test Connectors
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      max-parallel: 5  # Limit number of parallel jobs
     steps:
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: test-all
 
-  lint-connectors:
+  connectors-lint-matrix:
     name: Lint Connectors
     needs: generate-matrix
     runs-on: ubuntu-24.04
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      max-parallel: 10  # Limit number of parallel jobs
     steps:
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
@@ -152,7 +154,7 @@ jobs:
 
   test-summary:
     name: Connector Test Summary Check
-    needs: [test-connectors]
+    needs: [connectors-test-matrix]
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
@@ -160,7 +162,7 @@ jobs:
 
   lint-summary:
     name: Connector Lint Summary Check
-    needs: [lint-connectors]
+    needs: [connectors-lint-matrix]
     runs-on: ubuntu-24.04
     steps:
       - name: Report Lint Summary
