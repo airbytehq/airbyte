@@ -296,13 +296,13 @@ class ZohoStreamFactory:
                 executor.map(lambda module: populate_module(module), batch)
 
         bases = (IncrementalZohoCrmStream,)
-        # for module in modules:
-        #     stream_cls_attrs = {"url_base": self.api.api_url, "module": module}
-        #     stream_cls_name = f"Incremental{module.api_name}ZohoCRMStream"
-        #     incremental_stream_cls = type(stream_cls_name, bases, stream_cls_attrs)
-        #     stream = incremental_stream_cls(self.api.authenticator, config=self._config)
-        #     if stream.get_json_schema():
-        #         streams.append(stream)
+        for module in modules:
+            stream_cls_attrs = {"url_base": self.api.api_url, "module": module}
+            stream_cls_name = f"Incremental{module.api_name}ZohoCRMStream"
+            incremental_stream_cls = type(stream_cls_name, bases, stream_cls_attrs)
+            stream = incremental_stream_cls(self.api.authenticator, config=self._config)
+            if stream.get_json_schema():
+                streams.append(stream)
 
         streams.append(IncrementalUsersZohoCrmStream(self.api.authenticator, config=self._config))
         return streams
