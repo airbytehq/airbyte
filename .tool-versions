@@ -1,4 +1,8 @@
+# This asdf file is used to set the versions of the tools used in this project.
+# You can use the `asdf` command to manage these versions, or you can use another
+# method. GitHub CI Actions will reference this file to set the versions of the tools
+# used in CI.
 java    openjdk-21
 poetry  2.0.1
-python  3.11
+python  3.11.11
 uv      0.6.9
