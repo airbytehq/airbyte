@@ -226,7 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.11.14     | 2025-04-29 | []()   | Update default SSL mode.                                                                                                                        |
+| 3.11.14     | 2025-04-29 | [59144](https://github.com/airbytehq/airbyte/pull/59144)   | Update default SSL mode.                                                                                                                        |
 | 3.11.13     | 2025-04-24 | [58646](https://github.com/airbytehq/airbyte/pull/58646)   | Fix vulnerabilities in dependencies.                                                                                                            |
 | 3.11.12     | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                            |
 | 3.11.11     | 2025-04-23 | [58623](https://github.com/airbytehq/airbyte/pull/58623) | Bump CDK version to the latets published                                                                                                        |
