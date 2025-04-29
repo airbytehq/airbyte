@@ -54,23 +54,21 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
             BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
 
         return bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName))?.let { table ->
-            table.list().iterateAll().map { row ->
+            val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!
+            table.list(bigquerySchema).iterateAll().map { row ->
                 OutputRecord(
-                    rawId = row.get(Meta.COLUMN_NAME_AB_RAW_ID).stringValue,
+                    rawId = row[Meta.COLUMN_NAME_AB_RAW_ID].stringValue,
                     extractedAt =
-                        row.get(Meta.COLUMN_NAME_AB_EXTRACTED_AT).timestampInstant.toEpochMilli(),
+                        row[Meta.COLUMN_NAME_AB_EXTRACTED_AT].timestampInstant.toEpochMilli(),
                     // loadedAt is nullable (e.g. if we disabled T+D, then it will always be null)
                     loadedAt =
-                        row.get(Meta.COLUMN_NAME_AB_LOADED_AT).mapNotNull {
+                        row[Meta.COLUMN_NAME_AB_LOADED_AT].mapNotNull {
                             it.timestampInstant.toEpochMilli()
                         },
-                    generationId = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID).longValue,
+                    generationId = row[Meta.COLUMN_NAME_AB_GENERATION_ID].longValue,
                     data =
-                        row.get(Meta.COLUMN_NAME_DATA)
-                            .stringValue
-                            .deserializeToNode()
-                            .toAirbyteValue(),
-                    airbyteMeta = stringToMeta(row.get(Meta.COLUMN_NAME_AB_META).stringValue),
+                        row[Meta.COLUMN_NAME_DATA].stringValue.deserializeToNode().toAirbyteValue(),
+                    airbyteMeta = stringToMeta(row[Meta.COLUMN_NAME_AB_META].stringValue),
                 )
             }
         }
@@ -103,12 +101,12 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
 
         return bigquery.getTable(TableId.of(datasetName, finalTableName))?.let { table ->
             val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!
-            table.list().iterateAll().map { row ->
+            table.list(bigquerySchema).iterateAll().map { row ->
                 val valuesMap: LinkedHashMap<String, AirbyteValue> =
                     bigquerySchema.fields
                         .filter { field -> !Meta.COLUMN_NAMES.contains(field.name) }
                         .associateTo(linkedMapOf()) { field ->
-                            val value: FieldValue = row.get(field.name)
+                            val value: FieldValue = row[field.name]
                             val airbyteValue =
                                 value.mapNotNull {
                                     when (field.type) {
@@ -140,13 +138,13 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
                             field.name to (airbyteValue ?: NullValue)
                         }
                 OutputRecord(
-                    rawId = row.get(Meta.COLUMN_NAME_AB_RAW_ID).stringValue,
+                    rawId = row[Meta.COLUMN_NAME_AB_RAW_ID].stringValue,
                     extractedAt =
-                        row.get(Meta.COLUMN_NAME_AB_EXTRACTED_AT).timestampInstant.toEpochMilli(),
+                        row[Meta.COLUMN_NAME_AB_EXTRACTED_AT].timestampInstant.toEpochMilli(),
                     loadedAt = null,
-                    generationId = row.get(Meta.COLUMN_NAME_AB_GENERATION_ID).longValue,
+                    generationId = row[Meta.COLUMN_NAME_AB_GENERATION_ID].longValue,
                     data = ObjectValue(valuesMap),
-                    airbyteMeta = stringToMeta(row.get(Meta.COLUMN_NAME_AB_META).stringValue),
+                    airbyteMeta = stringToMeta(row[Meta.COLUMN_NAME_AB_META].stringValue),
                 )
             }
         }
