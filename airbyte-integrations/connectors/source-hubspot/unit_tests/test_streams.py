@@ -21,7 +21,6 @@ from source_hubspot.streams import (
     Deals,
     DealsArchived,
     DealSplits,
-    EmailEvents,
     EngagementsCalls,
     EngagementsEmails,
     EngagementsMeetings,
@@ -55,14 +54,15 @@ def time_sleep_mock(mocker):
 def test_updated_at_field_non_exist_handler(requests_mock, config, common_params, fake_properties_list, custom_object_schema):
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     stream = find_stream("contact_lists", config)
-    expected = "2022-03-25T16:43:11Z"
+    created_at = "2022-03-25T16:43:11Z"
+    expected_created_at = int(pendulum.parse(created_at).timestamp()) * 1000
     responses = [
         {
             "json": {
                 "lists": [
                     {
                         "id": "test_id",
-                        "createdAt": expected,
+                        "createdAt": created_at,
                     },
                 ],
             }
@@ -76,7 +76,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
 
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
     assert len(records) == 1
-    assert records[0]["updatedAt"] == expected
+    assert records[0]["updatedAt"] == expected_created_at
 
 
 @pytest.mark.parametrize(
@@ -84,14 +84,14 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
     [
         (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        ("contact_lists", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contact_lists", "contact", {"updatedAt": "2022-02-25T16:43:11Z", "createdAt": "2021-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
         (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -384,17 +384,17 @@ def test_contact_lists_transform(requests_mock, common_params, config, custom_ob
                 "lists": [
                     {
                         "listId": 1,
-                        "createdAt": 1654117200000,
+                        "createdAt": "2022-02-25T16:43:11Z",
                         "filters": [[{"value": "@hubspot"}]],
                     },
                     {
                         "listId": 2,
-                        "createdAt": 1654117200001,
+                        "createdAt": "2022-02-25T16:43:11Z",
                         "filters": [[{"value": True}, {"value": "FORM_ABUSE"}]],
                     },
                     {
                         "listId": 3,
-                        "createdAt": 1654117200002,
+                        "createdAt": "2022-02-25T16:43:11Z",
                         "filters": [[{"value": 1000}]],
                     },
                 ]
