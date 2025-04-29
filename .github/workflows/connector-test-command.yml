@@ -101,7 +101,7 @@ jobs:
           # Check if CONNECTORS is empty
           if [ -z "$CONNECTORS" ]; then
             echo "No connectors modified. Setting matrix to empty."
-            echo "matrix=[]" >> $GITHUB_OUTPUT
+            echo "matrix=" >> $GITHUB_OUTPUT
             exit 0
           fi
           # Convert the matrix from newline-delimited string to a JSON string
@@ -111,6 +111,16 @@ jobs:
 
     outputs:
       connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
+
+  validate-matrix:
+    name: Validate Connector Matrix
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Validate Connector Matrix
+        run: |
+          # Check if the matrix is empty
+          echo "${{ needs.generate-matrix.outputs.connector-matrix }}"
 
   test-connectors:
     name: Test Connectors
