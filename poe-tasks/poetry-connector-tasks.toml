@@ -22,7 +22,7 @@ install = "poetry install --all-extras"
 
 # Pytest
 pytest = "poetry run pytest"
-pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
+pytest-fast = "poetry run pytest --ff -m 'not slow and not requires_creds'"
 
 fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
 
@@ -38,17 +38,17 @@ format-check = [
 ]
 
 # Coverage checks
-coverage = "pytest --cov=. --cov-report=term-missing"
-coverage-html = "pytest --cov=. --cov-report=html"
+coverage = "poetry run pytest --cov=. --cov-report=term-missing"
+coverage-html = "poetry run pytest --cov=. --cov-report=html"
 
 # Check commands
-check-ruff-lint = "ruff check ."
-check-ruff-format = "ruff format ."
+check-ruff-lint = "poetry run ruff check ."
+check-ruff-format = "poetry run ruff format ."
 check-ruff = [
     "check-ruff-lint",
     "check-ruff-format",
 ]
-check-mypy = "mypy ."
+check-mypy = "poetry run mypy ."
 
 check-all = [
     "check-ruff",
@@ -56,8 +56,8 @@ check-all = [
 ]
 
 # Fix commands
-fix-ruff-format = "ruff format --fix ."
-fix-ruff-lint = "ruff check --fix ."
+fix-ruff-format = "poetry run ruff format --fix ."
+fix-ruff-lint = "poetry run ruff check --fix ."
 fix-ruff = [
     "fix-ruff-format",
     "fix-ruff-lint",
