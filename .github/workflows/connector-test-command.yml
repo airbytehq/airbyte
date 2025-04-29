@@ -7,6 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
   # Available as a reusable workflow
+  # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
   workflow_call:
     inputs:
 
