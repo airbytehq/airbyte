@@ -101,11 +101,11 @@ jobs:
           # Check if CONNECTORS is empty
           if [ -z "$CONNECTORS" ]; then
             echo "No connectors modified. Setting matrix to empty."
-            echo matrix="[]" >> $GITHUB_OUTPUT
+            echo "matrix=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
           # Convert the matrix from newline-delimited string to a JSON string
-          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map({connector: .})')
+          matrix=$(printf '%s\n' "$CONNECTORS" | jq -R -s -c 'split("\n")[:-1] | map(select(. != "") | map({connector: .})')
           echo -e "Matrix JSON:\n${matrix}"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
