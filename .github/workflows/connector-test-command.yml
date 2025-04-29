@@ -127,6 +127,8 @@ jobs:
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: test-all
+          no-commit: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   test-summary:
     name: Connector Test Summary Check
@@ -160,10 +162,14 @@ jobs:
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: lint-check
+          no-commit: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
         with:
           command: format-check
+          no-commit: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   lint-summary:
     name: Connector Lint Summary Check
