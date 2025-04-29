@@ -128,14 +128,14 @@ jobs:
       - name: Fetch connector secrets
         uses: aaronsteers/poe-command-processor@v1
         with:
-          command: fetch-secrets
+          command: connector ${{ matrix.connector }} fetch-secrets
           no-commit: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run 'test-all' Poe Command
         uses: aaronsteers/poe-command-processor@v1
         with:
-          command: test-all
+          command: connector ${{ matrix.connector }} test-all
           no-commit: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -170,13 +170,13 @@ jobs:
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
         with:
-          command: lint-check
+          command: connector ${{ matrix.connector }} lint-check
           no-commit: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Poe Slash Command Processor
         uses: aaronsteers/poe-command-processor@v1
         with:
-          command: format-check
+          command: connector ${{ matrix.connector }} format-check
           no-commit: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
