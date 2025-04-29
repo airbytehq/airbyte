@@ -125,19 +125,21 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 5  # Limit number of parallel jobs
     steps:
-      - name: Fetch connector secrets
-        uses: aaronsteers/poe-command-processor@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
         with:
-          command: connector ${{ matrix.connector }} fetch-secrets
-          no-commit: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install tools from asdf config
+        uses: ai/asdf-cache-action@v1
+
+      - name: Fetch connector secrets
+        run: |
+          poe connector ${{ matrix.connector }} fetch-secrets
 
       - name: Run 'test-all' Poe Command
-        uses: aaronsteers/poe-command-processor@v1
-        with:
-          command: connector ${{ matrix.connector }} test-all
-          no-commit: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          poe connector ${{ matrix.connector }} test-all
 
   test-summary:
     name: Connector Test Summary Check
@@ -167,18 +169,22 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 10  # Limit number of parallel jobs
     steps:
-      - name: Run Poe Slash Command Processor
-        uses: aaronsteers/poe-command-processor@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
         with:
-          command: connector ${{ matrix.connector }} lint-check
-          no-commit: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run Poe Slash Command Processor
-        uses: aaronsteers/poe-command-processor@v1
-        with:
-          command: connector ${{ matrix.connector }} format-check
-          no-commit: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install tools from asdf config
+        uses: ai/asdf-cache-action@v1
+
+      - name: Run lint check
+        run: |
+          poe connector ${{ matrix.connector }} lint-check
+
+      - name: Run format-check
+        run: |
+          poe connector ${{ matrix.connector }} format-check
+
 
   lint-summary:
     name: Connector Lint Summary Check
