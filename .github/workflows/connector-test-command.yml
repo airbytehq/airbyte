@@ -186,9 +186,7 @@ jobs:
         if: always()
         with:
           files: |
-            test-results/**/*.xml
-            test-results/**/*.trx
-            test-results/**/*.json
+            airbyte-integrations/connectors/${{ matrix.connector }}/test-results/**/*.xml
 
   test-summary:
     name: Connector Test Summary Check

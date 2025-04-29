@@ -21,8 +21,8 @@ lock = "poetry lock"
 install = "poetry install --all-extras"
 
 # Pytest
-pytest = "poetry run pytest --junitxml=test-reports/pytest-junit.xml"
-pytest-fast = "poetry run pytest --ff -m 'not slow and not requires_creds' --junitxml=test-reports/pytest-fast-junit.xml"
+pytest = "poetry run pytest --junitxml=test-results/pytest-junit.xml"
+pytest-fast = "poetry run pytest --ff -m 'not slow and not requires_creds' --junitxml=test-results/pytest-fast-junit.xml"
 
 fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
 
