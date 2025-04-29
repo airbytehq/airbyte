@@ -100,8 +100,8 @@ jobs:
         run: |
           # Check if CONNECTORS is empty
           if [ -z "$CONNECTORS" ]; then
-            echo "No connectors modified. Setting matrix to empty."
-            echo "matrix={\"connectors\": []}" >> $GITHUB_OUTPUT
+            echo "No connectors modified. Setting matrix to empty string."
+            echo "matrix=" >> $GITHUB_OUTPUT
             exit 0
           fi
           # Convert the matrix from newline-delimited string to a JSON string
@@ -126,6 +126,7 @@ jobs:
     name: Test Connectors
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
+    if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 5  # Limit number of parallel jobs
@@ -139,6 +140,7 @@ jobs:
     name: Lint Connectors
     needs: generate-matrix
     runs-on: ubuntu-24.04
+    if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 10  # Limit number of parallel jobs
@@ -158,7 +160,16 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
-        run: echo "✅ All connectors completed successfully, or no connectors were updated."
+        run: echo "✅ All connector tests completed successfully."
+
+  test-summary-noop:
+    name: Connector Test Summary Check
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "🟦 No connectors updated. All good here."
 
   lint-summary:
     name: Connector Lint Summary Check
@@ -166,4 +177,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Report Lint Summary
-        run: echo "✅ All connectors completed successfully, or no connectors were updated."
+        run: echo "✅ All connectors lint checks completed successfully."
+
+  lint-summary-noop:
+    name: Connector Test Summary Check
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Lint Summary
+        run: echo "🟦 No connectors updated. All good here."
