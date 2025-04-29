@@ -43,12 +43,21 @@ class DefaultFailStreamTask(
             }
             is StreamProcessingFailed -> {
                 if (shouldRunStreamLoaderClose) {
-                    syncManager
-                        .getStreamLoaderOrNull(stream)
-                        ?.close(hadNonzeroRecords = streamManager.hadNonzeroRecords(), streamResult)
-                        ?: log.warn {
-                            "StreamLoader not found for stream $stream, cannot call close."
+                    try {
+                        syncManager
+                            .getStreamLoaderOrNull(stream)
+                            ?.close(
+                                hadNonzeroRecords = streamManager.hadNonzeroRecords(),
+                                streamResult,
+                            )
+                            ?: log.warn {
+                                "StreamLoader not found for stream $stream, cannot call close."
+                            }
+                    } catch (e: Exception) {
+                        log.warn(e) {
+                            "Exception while closing StreamLoader for $stream after another failure in the sync. Ignoring this exception and continuing with shutdown."
                         }
+                    }
                 } else {
                     log.info { "Skipping StreamLoader.close for stream $stream" }
                 }
