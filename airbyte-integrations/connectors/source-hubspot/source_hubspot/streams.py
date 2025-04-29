@@ -1612,20 +1612,6 @@ class DealSplits(CRMSearchStream):
     scopes = {"crm.objects.deals.read"}
 
 
-class EmailEvents(IncrementalStream):
-    """Email events, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
-    """
-
-    url = "/email/public/v1/events"
-    data_field = "events"
-    more_key = "hasMore"
-    updated_at_field = "created"
-    created_at_field = "created"
-    primary_key = "id"
-    scopes = {"content"}
-
-
 class EngagementsABC(BaseStream, ABC):
     more_key = "hasMore"
     updated_at_field = "lastUpdated"

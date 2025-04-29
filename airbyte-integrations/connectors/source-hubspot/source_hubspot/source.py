@@ -37,7 +37,6 @@ from source_hubspot.streams import (
     DealSplits,
     DealsPropertyHistory,
     DealsWebAnalytics,
-    EmailEvents,
     Engagements,
     EngagementsCalls,
     EngagementsCallsWebAnalytics,
@@ -97,6 +96,7 @@ scopes = {
         "crm.objects.companies.write",
     },
     "contact_lists": {"crm.lists.read"},
+    "email_events": {"content"},
 }
 
 
@@ -199,7 +199,6 @@ class SourceHubspot(YamlDeclarativeSource):
             DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),
-            EmailEvents(**common_params),
             Engagements(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),
