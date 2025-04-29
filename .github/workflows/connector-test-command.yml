@@ -1,8 +1,6 @@
 name: Connector Tests (beta)
 
 on:
-  # Triggered by all push events
-  push:
   pull_request:
     types: [opened, synchronize, reopened]
 
