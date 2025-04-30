@@ -241,57 +241,6 @@ find_merge_base() {
     echo "$merge_base" # Return merge base commit hash
 }
 
-# Function to find modified connector folders since the merge base
-# Usage: find_modified_connectors <merge_base_commit>
-# Returns: A string containing unique connector folder names (e.g., "source-postgres\ndestination-bigquery")
-find_modified_connectors() {
-    local merge_base_commit="$1"
-    local modified_files connector_folders
-
-    log_info "Checking for modified connector files since merge base ${merge_base_commit}..." >&2
-    modified_files=$(git diff --name-only --diff-filter=M "$merge_base_commit" HEAD -- 'airbyte-integrations/connectors/*') # Be specific
-
-    if [ -z "$modified_files" ]; then
-      log_info "No connector files were modified on the current branch compared to its merge-base with origin/master." >&2
-      echo "" # Return empty string
-    else
-      log_info "Modified connector files found: $modified_files" >&2
-      # Extract unique connector folder names (e.g., source-postgres)
-      connector_folders=$(echo "$modified_files" | \
-          # --- Old Line (remove or comment out) ---
-          # grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
-          # --- New Line using awk ---
-          awk -F'/' '$1=="airbyte-integrations" && $2=="connectors" && $3!="" { print $3 }' | \
-          sort -u) # Use sort -u for unique sort
-      log_info "Unique modified connector folders: $connector_folders" >&2
-      echo "$connector_folders" # Return the list
-    fi
-}
-
-# Function to get the PR number associated with a given branch
-# Usage: get_pr_number "feature/branch-name"
-# Returns: The PR number or exits if not found or 'gh' fails
-get_pr_number() {
-    local branch_name="$1"
-    local pr_num
-
-    log_info "Attempting to find PR number for branch: ${branch_name}"
-    # Ensure gh is installed
-    if ! command -v gh &> /dev/null; then
-        error_exit "'gh' command not found. Please install the GitHub CLI."
-    fi
-
-    # Use gh pr list to find the PR number for the specified head branch
-    pr_num=$(gh pr list --state open --head "$branch_name" --json number --jq '.[0].number // empty')
-
-    if [ -z "$pr_num" ]; then
-        error_exit "Could not find an open PR number for branch '${branch_name}'. Make sure the PR exists and the branch name is correct."
-    fi
-
-    log_info "Found PR number: ${pr_num}"
-    echo "$pr_num" # Return the PR number
-}
-
 # Function to stage, commit, and push changes for a specific connector
 # Usage: stage_commit_push "connector-folder-name" "/path/to/connector.md"
 stage_commit_push() {
@@ -376,32 +325,30 @@ main() {
     local merge_base
     merge_base=$(find_merge_base)
 
-    # Pull potentially new changes fetched from master (optional, fetch might be enough)
+    # Pull potentially new changes
     log_info "Pulling latest changes..."
     if ! git pull; then
        log_info "Warning: git pull failed, continuing with fetched state."
     fi
 
     local modified_connectors pr_num changelog_message updated_filepath
-    modified_connectors=$(find_modified_connectors "$merge_base")
 
-    if [ -z "$modified_connectors" ]; then
+    if [ -z "$MODIFIED_CONNECTORS" ]; then
         log_info "No modified connectors found requiring changelog updates. Exiting."
         exit 0
     fi
 
-    pr_num=$(get_pr_number "$branch_name")
     # Define the standard message here, could be made a script argument later
     changelog_message="Update CDK version"
 
     # Process each modified connector
-    echo "$modified_connectors" | while IFS= read -r connector_folder; do
+    echo "$MODIFIED_CONNECTORS" | while IFS= read -r connector_folder; do
         # Skip empty lines just in case
         [ -z "$connector_folder" ] && continue
 
         log_info "Processing connector: ${connector_folder}"
         # Call the main update logic for this connector
-        updated_filepath=$(update_single_connector_changelog "$pr_num" "$connector_folder" "$changelog_message")
+        updated_filepath=$(update_single_connector_changelog "$PR_NUMBER" "$connector_folder" "$changelog_message")
         # Stage, commit, and push the changes for this connector's changelog
         stage_commit_push "$connector_folder" "$updated_filepath"
     done

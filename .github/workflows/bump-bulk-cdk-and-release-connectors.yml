@@ -10,14 +10,15 @@ on:
         options:
           - airbytehq/airbyte
 jobs:
-  publish-bulk-cdk:
-    uses: ./.github/workflows/publish-bulk-cdk.yml
-    secrets: inherit
+#  publish-bulk-cdk:
+#    uses: ./.github/workflows/publish-bulk-cdk.yml
+#    secrets: inherit
   bump-cdk-version:
     runs-on: ubuntu-24.04
     outputs:
-      # Output the matrix config as a JSON string
       modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
+      # Output the matrix config as a JSON string
+      modified_connectors_json: ${{ steps.export-connection-modified.outputs.modified_connectors_json }}
     needs: [publish-bulk-cdk]
     steps:
       - name: Checkout repository
@@ -55,22 +56,22 @@ jobs:
           git commit -m "Bump the cdk version to ${{ steps.fetch-version.outputs.latest_version }}"
           git push
 
-  publish-connectors:
-    needs: [bump-cdk-version, publish-bulk-cdk]
-    uses: ./.github/workflows/publish_connectors.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
-    with:
-      connectors-options: "--name=${{ matrix.connector_name }}"
-      publish-options: --main-release
-      airbyte_ci_binary_url: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
-    secrets: inherit
+#  publish-connectors:
+#    needs: [bump-cdk-version, publish-bulk-cdk]
+#    uses: ./.github/workflows/publish_connectors.yml
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors_json) }}
+#    with:
+#      connectors-options: "--name=${{ matrix.connector_name }}"
+#      publish-options: --main-release
+#      airbyte_ci_binary_url: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+#    secrets: inherit
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
-    needs: [publish-connectors]
+    needs: [publish-connectors, bump-cdk-version]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -85,5 +86,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
           AUTO_MERGE_PRODUCTION: false
+          PR_NUMBER: ${{ github.event.number }}
+          MODIFIED_CONNECTORS: ${{ needs.bump-cdk-version.outputs.modified_connectors }}
         run: |
           ./tools/bin/cdk-auto-release/update-changelog.sh ${{ github.ref_name }}

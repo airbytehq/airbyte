@@ -35,11 +35,12 @@ else
 fi
 
 echo "Modified connector folders (files modified on this branch only): $connector_folders"
+echo "modified_connectors=$connector_folders" >> $GITHUB_OUTPUT
 
 MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -c -s .)
 
 echo "Modified connector folders: $MODIFIED_LIST_JSON"
-echo "modified_connectors=$MODIFIED_LIST_JSON" >> $GITHUB_OUTPUT
+echo "modified_connectors_json=$MODIFIED_LIST_JSON" >> $GITHUB_OUTPUT
 # Update all modified connectors to the CDK version passed into the script.
 echo "$connector_folders" | while read -r folder; do
   gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
