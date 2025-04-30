@@ -3,7 +3,7 @@ import DocsVersionDropdownNavbarItem from "@theme-original/NavbarItem/DocsVersio
 import { useLocation } from "@docusaurus/router";
 
 export default function DocsVersionDropdownNavbarItemWrapper(props) {
-  const { docsPluginId, className, type } = props;
+  const { docsPluginId } = props;
   const { pathname } = useLocation();
 
   // Check if the docsPluginId property for this instance contains the URL pathname. If it does, show the version dropdown. If it doesn't, don't show it. This is a workaround for the fact that Docusaurus shows the version dropdown for all instances of the DocsVersionDropdownNavbarItem component, even if the current page or instance is not versioned.
@@ -15,23 +15,19 @@ export default function DocsVersionDropdownNavbarItemWrapper(props) {
     return null;
   }
 
-  function WrappedDocsVersionDropdownNavbarItem(props) {
-    if (props.items) {
-      const modifiedItems = props.items.map(item => {
-        if (item.label === 'Next') {
-          return {
-            ...item,
-            label: 'Cloud / Next version',
-          };
-        }
-        return item;
-      });
-
-      return <DocsVersionDropdownNavbarItem {...props} items={modifiedItems} />;
-    }
-
-    return <DocsVersionDropdownNavbarItem {...props} />;
+  const newProps = {...props};
+  
+  if (props.items) {
+    newProps.items = props.items.map(item => {
+      if (item.label === 'Next') {
+        return {
+          ...item,
+          label: 'Cloud / Next version',
+        };
+      }
+      return item;
+    });
   }
 
-  return <WrappedDocsVersionDropdownNavbarItem {...props} />;
+  return <DocsVersionDropdownNavbarItem {...newProps} />;
 }
