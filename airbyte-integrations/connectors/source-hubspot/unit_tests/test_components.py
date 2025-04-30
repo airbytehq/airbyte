@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 import requests
-from source_hubspot.components import HubspotPropertyHistoryExtractor, NewtoLegacyFieldTransformation
+from source_hubspot.components import HubspotPropertyHistoryExtractor, MigrateEmptyStringState, NewtoLegacyFieldTransformation
 from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
 
 
@@ -86,6 +86,27 @@ def test_new_to_legacy_field_transformation(input, expected):
     transformer = NewtoLegacyFieldTransformation(DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
     transformer.transform(input)
     assert input == expected
+
+
+@pytest.mark.parametrize(
+    "state, expected_should_migrate, expected_state",
+    [
+        ({"updatedAt": ""}, True, {"updatedAt": "2021-01-10T00:00:00Z"}),
+        ({"updatedAt": "2022-01-10T00:00:00Z"}, False, {"updatedAt": "2022-01-10T00:00:00Z"}),
+    ],
+    ids=[
+        "Invalid state: empty string, should migrate",
+        "Valid state: date string, no need to migrate",
+    ],
+)
+def test_migrate_empty_string_state(config, state, expected_should_migrate, expected_state):
+    state_migration = MigrateEmptyStringState("updatedAt", config)
+
+    actual_should_migrate = state_migration.should_migrate(stream_state=state)
+    assert actual_should_migrate is expected_should_migrate
+
+    if actual_should_migrate:
+        assert state_migration.migrate(stream_state=state) == expected_state
 
 
 def test_property_history_extractor():

@@ -503,6 +503,10 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_pipelines"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
 
 streams:
   - "#/definitions/companies_property_history_stream"
