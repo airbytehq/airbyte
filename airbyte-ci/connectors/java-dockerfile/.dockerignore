@@ -1,0 +1,11 @@
+# Exclude common build artifacts and unnecessary directories
+**/build/
+**/.git/
+**/.gradle/
+**/node_modules/
+**/target/
+**/.idea/
+**/.vscode/
+**/*.iml
+**/tmp/
+**/logs/
