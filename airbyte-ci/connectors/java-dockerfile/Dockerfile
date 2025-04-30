@@ -22,9 +22,13 @@ RUN chmod +x ./gradlew
 
 # Build arguments
 ARG CONNECTOR_PATH=airbyte-integrations/connectors/source-mysql
+ARG CONNECTOR_NAME=source-mysql
+
+# Set environment variable for Gradle task
+ENV GRADLE_CONNECTOR_NAME=${CONNECTOR_NAME}
 
 # Build the connector
-RUN ./gradlew :airbyte-integrations:connectors:${CONNECTOR_NAME}:distTar
+RUN ./gradlew :airbyte-integrations:connectors:$GRADLE_CONNECTOR_NAME:distTar
 
 # Runtime stage
 FROM amazoncorretto:21-al2023
