@@ -344,7 +344,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - LinkedAgencies
-            value: "{{ { \"CustomerInfo\": record.LinkedAgencies } }}"
+            value: '{{ { "CustomerInfo": record.LinkedAgencies } }}'
 
 streams:
   - $ref: "#/definitions/accounts_stream"
