@@ -85,7 +85,7 @@ class TableCatalogFactory(
             // Create a hash-suffixed name to avoid collision
             val hash =
                 DigestUtils.sha1Hex("${originalName.namespace}&airbyte&${originalName.name}")
-                    .substring(0, 6)
+                    .substring(0, 3)
             val newName = "${originalName.name}_$hash"
             TableName(originalName.namespace, newName).also {
                 processedNames.add(it.toPrettyString())
