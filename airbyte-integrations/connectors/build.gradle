@@ -98,4 +98,16 @@ allprojects {
     // Convenience tasks for local airbyte-ci execution.
     airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
     airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
+    
+    // Task to build connector image using the CDK CLI
+    tasks.register('buildImage', Exec) {
+        description = 'Build connector Docker image using the CDK CLI'
+        group = 'build'
+        workingDir projectDir
+        commandLine pythonBin
+        args "-m", "uvx", "airbyte-cdk[dev]", "image", "build"
+        
+        // Always re-run this task
+        outputs.upToDateWhen { false }
+    }
 }
