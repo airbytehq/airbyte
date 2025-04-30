@@ -674,7 +674,9 @@ async def run_connector_rollback_pipeline(context: PublishConnectorContext, sema
                 return connector_report
 
             # Open PR when all previous steps are successful
-            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=False, labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "rollback-rc"])
+            initial_pr_creation = CreateOrUpdatePullRequest(
+                context, skip_ci=False, labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "rollback-rc"]
+            )
             pr_creation_args, pr_creation_kwargs = get_rollback_pr_creation_arguments(all_modified_files, context, results, current_version)
             initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
             results.append(initial_pr_creation_result)
