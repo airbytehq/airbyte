@@ -69,7 +69,7 @@ CDC-enabled tables.
 Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync
 from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
-Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte
+Please read the [CDC docs](../../platform/understanding-airbyte/cdc) for an overview of how Airbyte
 approaches CDC.
 
 ### Should I use CDC for MSSQL?
@@ -86,7 +86,7 @@ approaches CDC.
 
 #### CDC Limitations
 
-- Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that
+- Make sure to read our [CDC docs](../../platform/understanding-airbyte/cdc) to see limitations that
   impact all databases using CDC replication.
 - `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by
   Debezium). For more details please check
@@ -445,6 +445,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.27  | 2025-04-28 | [59124](https://github.com/airbytehq/airbyte/pull/59124) | Fix _ab_cdc_event_serial_no datatype in addMetaDataToRowsFetchedOutsideDebezium method                                                          |
 | 4.1.26  | 2025-03-27 | [56401](https://github.com/airbytehq/airbyte/pull/56401) | Fix non-unique value clustered index issue                                                                                                      |
 | 4.1.25  | 2025-03-20 | [55878](https://github.com/airbytehq/airbyte/pull/55878) | Integrate with the latest mssql jdbc driver to solve a pre-gregorian date offset bug                                                            |
 | 4.1.24  | 2025-03-11 | [55709](https://github.com/airbytehq/airbyte/pull/55709) | Filter unwanted tables in discover to prevent null table issues                                                                                 |

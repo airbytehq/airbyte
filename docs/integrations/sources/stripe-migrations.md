@@ -37,7 +37,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 
 
@@ -68,7 +68,7 @@ The stream `Refunds` will need to be synced historically again to ensure the con
 6. Confirm the modal to save the connection and initiate a `Refresh`. This will start to pull in all historical data for the stream.
 
 :::note
-If you are using a destination that does not support the `Refresh` feature, you will need to [Clear](/operator-guides/clear) your stream. This will remove the data from the destination for just that stream. You will then need to sync the connection again in order to sync all data again for that stream.
+If you are using a destination that does not support the `Refresh` feature, you will need to [Clear](/platform/operator-guides/clear) your stream. This will remove the data from the destination for just that stream. You will then need to sync the connection again in order to sync all data again for that stream.
 :::
 
 ## Upgrading to 5.0.0
