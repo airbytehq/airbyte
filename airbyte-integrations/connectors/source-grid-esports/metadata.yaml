@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.grid.gg"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-grid-esports
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.3@sha256:a58049fa7b068f8442bc801c6b7899716959e44acc8d942966ba1cce7a6d611d
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 699d87a7-b6bb-486a-bc1c-144920cf9ad4
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-grid-esports
+  githubIssueLabel: source-grid-esports
+  icon: icon.svg
+  license: MIT
+  name: GRID Esports
+  releaseDate: 2025-04-30
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/grid-esports
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
