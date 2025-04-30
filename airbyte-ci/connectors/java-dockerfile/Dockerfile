@@ -64,11 +64,11 @@ ARG CONNECTOR_PATH=airbyte-integrations/connectors/source-mysql
 ARG CONNECTOR_NAME=source-mysql
 
 # Set environment variables
-ENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec
-ENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check
-ENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover
-ENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read
-ENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write
+ENV AIRBYTE_SPEC_CMD="/airbyte/javabase.sh --spec"
+ENV AIRBYTE_CHECK_CMD="/airbyte/javabase.sh --check"
+ENV AIRBYTE_DISCOVER_CMD="/airbyte/javabase.sh --discover"
+ENV AIRBYTE_READ_CMD="/airbyte/javabase.sh --read"
+ENV AIRBYTE_WRITE_CMD="/airbyte/javabase.sh --write"
 ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 ENV APPLICATION=${CONNECTOR_NAME}
 

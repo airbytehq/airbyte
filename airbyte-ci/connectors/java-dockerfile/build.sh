@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ ! -d "$CONNECTOR_PATH" ]; then
+if [ ! -d "../../../$CONNECTOR_PATH" ]; then
   echo "Error: Connector directory not found: $CONNECTOR_PATH"
   exit 1
 fi
