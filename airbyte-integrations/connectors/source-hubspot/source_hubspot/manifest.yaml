@@ -431,6 +431,61 @@ definitions:
       schema:
         $ref: "#/schemas/engagements"
 
+  subscription_changes_stream:
+    $ref: "#/definitions/stream_base"
+    name: subscription_changes
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /email/public/v1/subscriptions/timeline
+      record_selector:
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - timeline
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      step: P30D
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%ms"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      start_time_option:
+        type: RequestOption
+        field_name: startTimestamp
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: endTimestamp
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/subscription_changes"
+
 streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/email_subscriptions_stream"
@@ -438,6 +493,7 @@ streams:
   - "#/definitions/contact_lists_stream"
   - "#/definitions/email_events_stream"
   - "#/definitions/engagements_stream"
+  - "#/definitions/subscription_changes_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -3481,3 +3537,88 @@ schemas:
         type:
           - "null"
           - boolean
+  
+  subscription_changes:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      timestamp:
+        description: Timestamp when the subscription change data was fetched
+        type:
+          - "null"
+          - integer
+      portalId:
+        description: ID of the portal related to the subscription changes
+        type:
+          - "null"
+          - integer
+      recipient:
+        description: Recipient of the subscription change notification
+        type:
+          - "null"
+          - string
+      normalizedEmailId:
+        description: Normalized email identifier associated with the subscription
+        type:
+          - "null"
+          - string
+      changes:
+        description: List of all subscription changes
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of each subscription change
+          type:
+            - "null"
+            - object
+          properties:
+            change:
+              description: Details of the change that occurred
+              type:
+                - "null"
+                - string
+            timestamp:
+              description: Timestamp when the subscription change occurred
+              type:
+                - "null"
+                - integer
+            source:
+              description: Source of the subscription change
+              type:
+                - "null"
+                - string
+            portalId:
+              description: ID of the portal associated with the subscription change
+              type:
+                - "null"
+                - integer
+            subscriptionId:
+              description: Unique identifier for the subscription affected by the change
+              type:
+                - "null"
+                - integer
+            changeType:
+              description: Type of change (e.g., add, remove, update)
+              type:
+                - "null"
+                - string
+            causedByEvent:
+              description: Event that triggered the subscription change
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the event that caused the change
+                  type:
+                    - "null"
+                    - string
+                created:
+                  description: Timestamp when the event that caused the change occurred
+                  type:
+                    - "null"
+                    - integer

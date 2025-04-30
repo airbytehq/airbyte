@@ -1612,108 +1612,6 @@ class DealSplits(CRMSearchStream):
     scopes = {"crm.objects.deals.read"}
 
 
-class EngagementsABC(BaseStream, ABC):
-    more_key = "hasMore"
-    updated_at_field = "lastUpdated"
-    created_at_field = "createdAt"
-    primary_key = "id"
-    scopes = {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"}
-
-    def _transform(self, records: Iterable) -> Iterable:
-        yield from super()._transform({**record.pop("engagement"), **record} for record in records)
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {"count": 250}
-        if next_page_token:
-            params["offset"] = next_page_token["offset"]
-        return params
-
-
-class EngagementsAll(EngagementsABC):
-    """All Engagements API:
-    https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
-
-    Note: Returns all engagements records ordered by 'createdAt' (not 'lastUpdated') field
-    """
-
-    unnest_fields = ["associations", "metadata"]
-
-    @property
-    def url(self):
-        return "/engagements/v1/engagements/paged"
-
-
-class EngagementsRecentError(Exception):
-    pass
-
-
-class EngagementsRecent(EngagementsABC):
-    """Recent Engagements API:
-    https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-
-    Get the most recently created or updated engagements in a portal, sorted by when they were last updated,
-    with the most recently updated engagements first.
-
-    Important: This endpoint returns only last 10k most recently updated records in the last 30 days.
-    """
-
-    total_records_limit = 10000
-    last_days_limit = 29
-    unnest_fields = ["associations", "metadata"]
-
-    @property
-    def url(self):
-        return "/engagements/v1/engagements/recent/modified"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self._start_date < pendulum.now() - timedelta(days=self.last_days_limit):
-            raise EngagementsRecentError(
-                '"Recent engagements" API returns records updated in the last 30 days only. '
-                f'Start date {self._start_date} is older so "All engagements" API should be used'
-            )
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update(
-            {
-                "since": int(self._start_date.timestamp() * 1000),
-                "count": 100,
-            }
-        )
-        return params
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        # Check if "Recent engagements" API is applicable for use
-        response_info = response.json()
-        if response_info:
-            total = response_info.get("total")
-            if total > self.total_records_limit:
-                yield from []
-                raise EngagementsRecentError(
-                    '"Recent engagements" API returns only 10k most recently updated records. '
-                    'API response indicates that there are more records so "All engagements" API should be used'
-                )
-        yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-
 class Forms(ClientSideIncrementalStream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
@@ -2095,18 +1993,6 @@ class DealsPropertyHistory(PropertyHistoryV3):
         properties: IURLPropertyRepresentation = None,
     ) -> str:
         return f"{self.url}?{properties.as_url_param()}"
-
-
-class SubscriptionChanges(IncrementalStream):
-    """Subscriptions timeline for a portal, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions_timeline
-    """
-
-    url = "/email/public/v1/subscriptions/timeline"
-    data_field = "timeline"
-    more_key = "hasMore"
-    updated_at_field = "timestamp"
-    scopes = {"content"}
 
 
 class Workflows(ClientSideIncrementalStream):

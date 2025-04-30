@@ -58,7 +58,6 @@ from source_hubspot.streams import (
     OwnersArchived,
     Products,
     ProductsWebAnalytics,
-    SubscriptionChanges,
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
@@ -96,6 +95,8 @@ scopes = {
     },
     "contact_lists": {"crm.lists.read"},
     "email_events": {"content"},
+    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
+    "subscription_changes": {"content"},
 }
 
 
@@ -214,7 +215,6 @@ class SourceHubspot(YamlDeclarativeSource):
             ContactsPropertyHistory(**common_params),
             CompaniesPropertyHistory(**common_params),
             DealsPropertyHistory(**common_params),
-            SubscriptionChanges(**common_params),
             Tickets(**common_params),
             Workflows(**common_params),
         ]
