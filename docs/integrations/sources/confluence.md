@@ -39,10 +39,10 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 ## Supported streams
 
 - [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
-- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-blog-post/#api-blogposts-get)
 - [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
-- [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-- [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
+- [Pages](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get)
+- [Space](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-space/#api-spaces-get)
 
 :::note
 The `audit` stream requires a Standard or Premium plan.
@@ -63,6 +63,13 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.4 | 2025-04-26 | [58851](https://github.com/airbytehq/airbyte/pull/58851) | Update dependencies |
+| 1.0.3 | 2025-04-19 | [58320](https://github.com/airbytehq/airbyte/pull/58320) | Update dependencies |
+| 1.0.2 | 2025-04-12 | [57774](https://github.com/airbytehq/airbyte/pull/57774) | Update dependencies |
+| 1.0.1 | 2025-04-05 | [57269](https://github.com/airbytehq/airbyte/pull/57269) | Update dependencies |
+| 1.0.0 | 2025-04-01 | [55876](https://github.com/airbytehq/airbyte/pull/55876) | Migrate API to V2 |
+| 0.3.16 | 2025-03-29 | [56506](https://github.com/airbytehq/airbyte/pull/56506) | Update dependencies |
+| 0.3.15 | 2025-03-22 | [55966](https://github.com/airbytehq/airbyte/pull/55966) | Update dependencies |
 | 0.3.14 | 2025-03-08 | [55335](https://github.com/airbytehq/airbyte/pull/55335) | Update dependencies |
 | 0.3.13 | 2025-03-01 | [54978](https://github.com/airbytehq/airbyte/pull/54978) | Update dependencies |
 | 0.3.12 | 2025-02-22 | [54431](https://github.com/airbytehq/airbyte/pull/54431) | Update dependencies |
@@ -88,7 +95,7 @@ The Confluence connector should not run into Confluence API limitations under no
 | 0.2.9 | 2024-07-06 | [41013](https://github.com/airbytehq/airbyte/pull/41013) | Update dependencies |
 | 0.2.8 | 2024-06-25 | [40436](https://github.com/airbytehq/airbyte/pull/40436) | Update dependencies |
 | 0.2.7 | 2024-06-22 | [40115](https://github.com/airbytehq/airbyte/pull/40115) | Update dependencies |
-| 0.2.6 | 2024-06-15 | [39495](https://github.com/airbytehq/airbyte/pull/39495) | Fix parameters as comma seperated single string |
+| 0.2.6 | 2024-06-15 | [39495](https://github.com/airbytehq/airbyte/pull/39495) | Fix parameters as comma separated single string |
 | 0.2.5 | 2024-06-06 | [39261](https://github.com/airbytehq/airbyte/pull/39261) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.4 | 2024-05-14 | [38137](https://github.com/airbytehq/airbyte/pull/38137) | Make connector compatible with the builder |
 | 0.2.3 | 2024-04-19 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

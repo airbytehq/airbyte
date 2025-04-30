@@ -270,7 +270,8 @@ If enabled, sends subdirectory folder structure along with source file names to 
 ### Multi-Site Support
 
 By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
-The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+The site url should be in the format `https://<tenant_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+To have the connector iterate all sub-sites provide the site url as `https://<tenant_name>.sharepoint.com/sites/`.
 
 ### Supported sync modes
 
@@ -305,6 +306,12 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.9.3 | 2025-04-19 | [58471](https://github.com/airbytehq/airbyte/pull/58471) | Update dependencies |
+| 0.9.2 | 2025-04-12 | [57920](https://github.com/airbytehq/airbyte/pull/57920) | Update dependencies |
+| 0.9.1 | 2025-04-05 | [57065](https://github.com/airbytehq/airbyte/pull/57065) | Update dependencies |
+| 0.9.0 | 2025-04-01 | [55912](https://github.com/airbytehq/airbyte/pull/55912) | Provide ability to iterate all sharepoint sites |
+| 0.8.2 | 2025-03-29 | [56712](https://github.com/airbytehq/airbyte/pull/56712) | Update dependencies |
+| 0.8.1 | 2025-03-22 | [56014](https://github.com/airbytehq/airbyte/pull/56014) | Update dependencies |
 | 0.8.0 | 2025-03-12 | [54658](https://github.com/airbytehq/airbyte/pull/54658) | Provide ability to sync other sites than Main sharepoint site |
 | 0.7.2 | 2025-03-08 | [55427](https://github.com/airbytehq/airbyte/pull/55427) | Update dependencies |
 | 0.7.1 | 2025-03-01 | [54749](https://github.com/airbytehq/airbyte/pull/54749) | Update dependencies |

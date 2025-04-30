@@ -91,6 +91,13 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.9.1 | 2025-04-26 | [58243](https://github.com/airbytehq/airbyte/pull/58243) | Update dependencies |
+| 0.9.0 | 2025-04-14 | [57587](https://github.com/airbytehq/airbyte/pull/57587) | change how to collect custom fields for custom reports |
+| 0.8.3 | 2025-04-12 | [57604](https://github.com/airbytehq/airbyte/pull/57604) | Update dependencies |
+| 0.8.2 | 2025-04-05 | [57190](https://github.com/airbytehq/airbyte/pull/57190) | Update dependencies |
+| 0.8.1 | 2025-03-29 | [56627](https://github.com/airbytehq/airbyte/pull/56627) | Update dependencies |
+| 0.8.0 | 2025-02-28 | [54688](https://github.com/airbytehq/airbyte/pull/54688) | Add customers stream |
+| 0.7.3 | 2025-03-22 | [56137](https://github.com/airbytehq/airbyte/pull/56137) | Update dependencies |
 | 0.7.2 | 2025-03-08 | [55362](https://github.com/airbytehq/airbyte/pull/55362) | Update dependencies |
 | 0.7.1 | 2025-03-01 | [54842](https://github.com/airbytehq/airbyte/pull/54842) | Update dependencies |
 | 0.7.0 | 2025-02-27 | [54701](https://github.com/airbytehq/airbyte/pull/54701) | Add timesheet_entrees stream |

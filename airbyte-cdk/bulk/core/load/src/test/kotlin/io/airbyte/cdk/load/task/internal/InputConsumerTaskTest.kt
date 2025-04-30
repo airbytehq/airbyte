@@ -100,7 +100,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -111,7 +111,7 @@ class InputConsumerTaskTest {
             queue1.publish(
                 match {
                     it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream == STREAM1
+                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM1
                 }
             )
         }
@@ -119,7 +119,7 @@ class InputConsumerTaskTest {
             queue2.publish(
                 match {
                     it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream == STREAM2
+                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM2
                 }
             )
         }
@@ -161,7 +161,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -203,7 +203,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -263,7 +263,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -340,7 +340,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(relaxed = true),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),

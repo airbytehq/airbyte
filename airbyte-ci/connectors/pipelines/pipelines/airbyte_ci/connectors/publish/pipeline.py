@@ -513,16 +513,20 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if metadata_validation_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results, context)
 
+            # Check if the connector image is already published to the registry.
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
+
             python_registry_steps, terminate_early = await _run_python_registry_publish_pipeline(context)
             results.extend(python_registry_steps)
+
             if terminate_early:
                 return create_connector_report(results, context)
 
             # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
             # We also need to upload the spec to the spec cache bucket.
-            if check_connector_image_results.status is StepStatus.SKIPPED:
+            # For pre-releases, rebuild all the time.
+            if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
                 context.logger.info(
                     "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
@@ -540,8 +544,8 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
-            # Exit early if the connector image already exists or has failed to build
-            if check_connector_image_results.status is not StepStatus.SUCCESS:
+            # Exit early if the connector image already exists
+            if check_connector_image_results.status is not StepStatus.SUCCESS and not context.pre_release:
                 return create_connector_report(results, context)
 
             build_connector_results = await steps.run_connector_build(context)

@@ -64,7 +64,7 @@ data class InputFile(
     val file: DestinationFile,
 ) : InputMessage {
     constructor(
-        stream: DestinationStream.Descriptor,
+        stream: DestinationStream,
         emittedAtMs: Long,
         fileMessage: DestinationFile.AirbyteRecordMessageFile,
         serialized: String = ""

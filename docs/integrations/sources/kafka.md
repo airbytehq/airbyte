@@ -68,6 +68,7 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
+| 0.4.0   | 2025-03-18 | [55828](https://github.com/airbytehq/airbyte/pull/55828)                                           | Add configurations for AWS MSK IAM and fix JSON format               |
 | 0.3.0   | 2025-02-18 | [53231](https://github.com/airbytehq/airbyte/pull/53231)                                           | Add configurations for OAUTHBEARER SASL Mechanism                    |
 | 0.2.8 | 2025-02-07 | [53221](https://github.com/airbytehq/airbyte/pull/53221)                                           | For AVRO MessageFormat, schema_registry_password is a secret         |
 | 0.2.7 | 2025-01-10 | [51480](https://github.com/airbytehq/airbyte/pull/51480)                                           | Use a non root base image                                            |

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
@@ -37,6 +38,7 @@ import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
+import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
@@ -143,13 +145,15 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
 
     // New interface shim
-    @Named("recordQueue")
-    private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+    @Named("pipelineInputQueue")
+    private val pipelineInputQueue:
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     private val loadPipeline: LoadPipeline?,
     private val partitioner: InputPartitioner,
     private val updateBatchTaskFactory: UpdateBatchStateTaskFactory,
+    @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
+    private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -160,10 +164,6 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val failSyncIsEnqueued = AtomicBoolean(false)
 
     private val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
-
-    companion object {
-        val hasThrown = AtomicBoolean(false)
-    }
 
     inner class WrappedTask(
         private val innerTask: Task,
@@ -180,6 +180,13 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 log.error(e) { "Caught exception in task $innerTask" }
                 if (hasThrown.setOnce()) {
                     handleException(e)
+                } else {
+                    log.info { "Skipping exception handling, because it has already run." }
+                }
+            } catch (t: Throwable) {
+                log.error(t) { "Critical error in task $innerTask" }
+                if (hasThrown.setOnce()) {
+                    handleException(SystemErrorException(t.message, t))
                 } else {
                     log.info { "Skipping exception handling, because it has already run." }
                 }
@@ -207,7 +214,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 checkpointQueue = checkpointQueue,
                 fileTransferQueue = fileTransferQueue,
                 destinationTaskLauncher = this,
-                recordQueueForPipeline = recordQueueForPipeline,
+                pipelineInputQueue = pipelineInputQueue,
                 loadPipeline = loadPipeline,
                 partitioner = partitioner,
                 openStreamQueue = openStreamQueue,
@@ -230,6 +237,8 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
             log.info { "Launching update batch task" }
             val updateBatchTask = updateBatchTaskFactory.make(this)
             launch(updateBatchTask)
+            log.info { "Launching heartbeat task" }
+            launch(heartbeatTask)
         } else {
             // TODO: pluggable file transfer
             if (!fileTransferEnabled) {
@@ -274,7 +283,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        recordQueueForPipeline.close()
+        pipelineInputQueue.close()
         batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()
@@ -284,6 +293,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     }
 
     override suspend fun handleSetupComplete() {
+        syncManager.markSetupComplete()
         if (loadPipeline == null) {
             log.info { "Setup task complete, opening streams" }
             catalog.streams.forEach { openStreamQueue.publish(it) }
@@ -322,9 +332,15 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     override suspend fun handleStreamComplete(stream: DestinationStream.Descriptor) {
         log.info { "Processing complete for $stream" }
         if (closeStreamHasRun.getOrPut(stream) { AtomicBoolean(false) }.setOnce()) {
-            log.info { "Batch processing complete: Starting close stream task for $stream" }
-            val task = closeStreamTaskFactory.make(this, stream)
-            launch(task)
+            if (syncManager.getStreamManager(stream).setClosed()) {
+                log.info { "Batch processing complete: Starting close stream task for $stream" }
+                val task = closeStreamTaskFactory.make(this, stream)
+                launch(task)
+            } else {
+                log.warn {
+                    "Close stream task was already initiated for $stream. This is probably undesired; skipping it."
+                }
+            }
         } else {
             log.info { "Close stream task has already run, skipping." }
         }
@@ -342,7 +358,16 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     override suspend fun handleException(e: Exception) {
         openStreamQueue.close()
         catalog.streams
-            .map { failStreamTaskFactory.make(this, e, it.descriptor) }
+            .map {
+                val shouldRunStreamLoaderClose =
+                    syncManager.getStreamManager(it.descriptor).setClosed()
+                failStreamTaskFactory.make(
+                    this,
+                    e,
+                    it.descriptor,
+                    shouldRunStreamLoaderClose = shouldRunStreamLoaderClose,
+                )
+            }
             .forEach { launch(it, withExceptionHandling = false) }
     }
 

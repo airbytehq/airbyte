@@ -312,7 +312,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
         // Use a sql literal because jooq's interface is being dumb about varargs in DSL.coalesce
         return field(
                 sql(
-                    """COALESCE(${JavaBaseConstants.COLUMN_NAME_AB_META}, CAST('{"changes":[]}' AS JSON))"""
+                    """COALESCE(${JavaBaseConstants.COLUMN_NAME_AB_META}, JSON_OBJECT('changes', JSON_ARRAY()))"""
                 )
             )
             .`as`(JavaBaseConstants.COLUMN_NAME_AB_META)

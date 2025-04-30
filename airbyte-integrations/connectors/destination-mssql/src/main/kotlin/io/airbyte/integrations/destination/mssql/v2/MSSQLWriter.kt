@@ -4,10 +4,12 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationFailure
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.InsertLoadTypeConfiguration
@@ -22,7 +24,9 @@ class MSSQLWriter(
     private val config: MSSQLConfiguration,
     private val dataSourceFactory: MSSQLDataSourceFactory,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
-    private val recordBatchSizeOverride: Long? = null
+    private val recordBatchSizeOverride: Long? = null,
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>,
+    private val destinationConfig: DestinationConfiguration,
 ) : DestinationWriter {
 
     /** Lazily initialized when [setup] is called. */
@@ -50,7 +54,9 @@ class MSSQLWriter(
                     azureBlobClient =
                         AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig),
                     validateValuesPreLoad = loadConfig.validateValuesPreLoad ?: false,
-                    recordBatchSizeOverride = recordBatchSizeOverride
+                    recordBatchSizeOverride = recordBatchSizeOverride,
+                    streamStateStore = streamStateStore,
+                    destinationConfig,
                 )
             }
             is InsertLoadTypeConfiguration -> {

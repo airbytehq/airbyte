@@ -43,7 +43,7 @@ After creating your account you will be able to get your `Client ID` and `Secret
 
 By default, syncs are run with a slice period of 7 days. If you see errors with the message `Result set size is greater than the maximum limit` or an error code like `RESULTSET_TOO_LARGE`:
 
-- Try lower the the size of the slice period in your optional parameters in your connection configuration.
+- Try lower the size of the slice period in your optional parameters in your connection configuration.
 - You can try to lower the scheduling sync window in case a day slice period is not enough. Lowering the sync period it may help avoid reaching the 10K limit.
 
 :::

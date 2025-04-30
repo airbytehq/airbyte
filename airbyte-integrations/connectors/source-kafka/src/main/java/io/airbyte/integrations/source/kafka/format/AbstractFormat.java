@@ -20,6 +20,7 @@ import org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule;
 import org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.msk.auth.iam.IAMClientCallbackHandler;
 
 public abstract class AbstractFormat implements KafkaFormat {
 
@@ -85,6 +86,9 @@ public abstract class AbstractFormat implements KafkaFormat {
         if (saslMechanism.equals(OAuthBearerLoginModule.OAUTHBEARER_MECHANISM)) {
           builder.put(SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL, protocolConfig.get("oauthbearer_token_endpoint_url").asText());
           builder.put(SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS, OAuthBearerLoginCallbackHandler.class.getName());
+        } else if (saslMechanism.equals("AWS_MSK_IAM")) {
+          // IAMClientCallbackHandler
+          builder.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, IAMClientCallbackHandler.class.getName());
         }
       }
       default -> throw new RuntimeException("Unexpected Kafka protocol: " + Jsons.serialize(protocol));

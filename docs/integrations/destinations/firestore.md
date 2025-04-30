@@ -39,6 +39,11 @@ Each stream will be output into a BigQuery table.
 
 | Version | Date       | Pull Request                                           | Subject                       |
 |:--------| :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.2.20 | 2025-04-26 | [58266](https://github.com/airbytehq/airbyte/pull/58266) | Update dependencies |
+| 0.2.19 | 2025-04-12 | [57626](https://github.com/airbytehq/airbyte/pull/57626) | Update dependencies |
+| 0.2.18 | 2025-04-05 | [57167](https://github.com/airbytehq/airbyte/pull/57167) | Update dependencies |
+| 0.2.17 | 2025-03-29 | [56569](https://github.com/airbytehq/airbyte/pull/56569) | Update dependencies |
+| 0.2.16 | 2025-03-22 | [56127](https://github.com/airbytehq/airbyte/pull/56127) | Update dependencies |
 | 0.2.15 | 2025-03-08 | [55399](https://github.com/airbytehq/airbyte/pull/55399) | Update dependencies |
 | 0.2.14 | 2025-03-01 | [54831](https://github.com/airbytehq/airbyte/pull/54831) | Update dependencies |
 | 0.2.13 | 2025-03-01 | [54739](https://github.com/airbytehq/airbyte/pull/54739) | Update airbyte-cdk to ^6.0.0 in destination-firestore |

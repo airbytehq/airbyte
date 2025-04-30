@@ -1126,6 +1126,11 @@ definitions:
         type:
           - "null"
           - integer
+      actual_time_minutes:
+        type:
+          - "null"
+          - integer
+        description: "The actual time spent on the task in minutes"
       resource_subtype:
         type:
           - "null"
