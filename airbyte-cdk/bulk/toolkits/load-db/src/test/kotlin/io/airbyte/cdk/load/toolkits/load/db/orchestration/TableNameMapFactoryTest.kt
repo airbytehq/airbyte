@@ -137,10 +137,7 @@ class TableNameMapFactoryTest {
 
         assertEquals(2, mappedNames.size)
         assertEquals("aVeryLongC", mappedNames[0])
-
-        val secondColName = mappedNames[1]
-        assertTrue(secondColName.startsWith("aV"))
-        assertTrue(secondColName.substring(2).any { it.isDigit() })
+        assertEquals("aV36rd", mappedNames[1])
     }
 
     private fun createSchemaWithLongColumnNames(): AirbyteType {
@@ -151,6 +148,7 @@ class TableNameMapFactoryTest {
             FieldType(io.airbyte.cdk.load.data.StringType, true)
         return ObjectType(schemaProperties)
     }
+
     private fun setupColumnNameGeneratorWithTruncation(columnNameGenerator: ColumnNameGenerator) {
         every { columnNameGenerator.getColumnName(any()) } answers
             { call ->
@@ -159,6 +157,7 @@ class TableNameMapFactoryTest {
                 ColumnNameGenerator.ColumnName(truncated, truncated)
             }
     }
+
     @Test
     fun testMultipleColumnNameCollisions() {
         val rawTableNameGenerator = mockk<RawTableNameGenerator>()
@@ -218,6 +217,7 @@ class TableNameMapFactoryTest {
             }
         }
     }
+
     private fun createSchemaWithMultipleColumnCollisions(): AirbyteType {
         val schemaProperties = linkedMapOf<String, FieldType>()
         schemaProperties["column1"] = FieldType(io.airbyte.cdk.load.data.StringType, true)

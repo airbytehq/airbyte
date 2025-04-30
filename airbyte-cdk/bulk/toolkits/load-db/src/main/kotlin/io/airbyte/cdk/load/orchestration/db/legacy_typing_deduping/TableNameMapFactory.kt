@@ -105,14 +105,23 @@ class TableCatalogFactory(
     private fun createColumnNameMapping(stream: DestinationStream): ColumnNameMapping {
         val processedColumnNames = mutableSetOf<String>()
         val columnMappings = mutableMapOf<String, String>()
+        // Map to track original column names by their truncated versions
+        val originalColumnNameMap = mutableMapOf<String, String>()
 
         stream.schema.asColumns().forEach { (columnName, _) ->
-            val originalColumnName =
+            val processedColumnName =
                 finalTableColumnNameGenerator.getColumnName(columnName).displayName
+
+            // Store mapping between processed name and original name
+            originalColumnNameMap[processedColumnName] = columnName
 
             // Get a unique column name by adding incremental numbers if necessary
             val finalColumnName =
-                resolveColumnNameCollision(originalColumnName, processedColumnNames)
+                resolveColumnNameCollision(
+                    processedColumnName,
+                    existingNames = processedColumnNames,
+                    originalColumnName = columnName
+                )
 
             processedColumnNames.add(finalColumnName)
             columnMappings[columnName] = finalColumnName
@@ -127,10 +136,12 @@ class TableCatalogFactory(
      *
      * @param processedName The name after initial processing by the column name generator
      * @param existingNames Set of names already used for other columns
+     * @param originalColumnName The original column name before processing
      */
     private fun resolveColumnNameCollision(
         processedName: String,
-        existingNames: Set<String>
+        existingNames: Set<String>,
+        originalColumnName: String
     ): String {
         // If processed name is unique, use it
         if (processedName !in existingNames) {
@@ -150,9 +161,9 @@ class TableCatalogFactory(
             // Check if we're making progress (detecting potential truncation)
             if (candidateName == previousCandidate) {
                 // We're not making progress, likely due to name truncation
-                // Use the more powerful resolution method
+                // Use the more powerful resolution method with the ORIGINAL column name
                 return superResolveColumnCollisions(
-                    processedName,
+                    originalColumnName,
                     existingNames,
                     processedName.length
                 )
@@ -192,15 +203,10 @@ class TableCatalogFactory(
             )
         }
 
-        val prefix = originalName.substring(0, affixLength.coerceAtMost(originalName.length))
-        val suffix =
-            if (originalName.length > affixLength) {
-                originalName.substring(originalName.length - affixLength, originalName.length)
-            } else {
-                ""
-            }
+        val prefix = originalName.substring(0, affixLength)
+        val suffix = originalName.substring(originalName.length - affixLength, originalName.length)
 
-        val length = originalName.length - 2 * affixLength.coerceAtMost(originalName.length / 2)
+        val length = originalName.length - 2 * affixLength
         val newColumnName = "$prefix$length$suffix"
 
         // If there's still a collision after this, just give up.
