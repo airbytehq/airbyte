@@ -173,7 +173,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pipx
           pipx run airbyte-cdk[dev] secrets fetch \
-            --connector-name=${{ matrix.connector }}
+            --connector-name=${{ matrix.connector }} \
+            --print-ci-secrets-masks
 
       - name: Run 'test-all' Poe Command
         run: |
