@@ -35,19 +35,15 @@
       "type": ["null", "string"]
     },
     "LinkedAgencies": {
-      "description": "The agencies linked to the account for management purposes.",
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "Id": {
-            "description": "ID of the linked agency",
-            "type": ["null", "integer"]
-          },
-          "Name": {
-            "description": "Name of the linked agency",
-            "type": ["null", "string"]
-          }
+      "type": ["null", "object"],
+      "properties": {
+        "Id": {
+          "description": "ID of the linked agency",
+          "type": ["null", "integer"]
+        },
+        "Name": {
+          "description": "Name of the linked agency",
+          "type": ["null", "string"]
         }
       }
     },
