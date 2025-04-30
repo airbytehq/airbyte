@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
@@ -34,6 +35,12 @@ class TableCatalogFactory(
 ) {
     @Singleton
     fun get(): TableCatalog {
+        if (catalog.streams.isEmpty()) {
+            throw ConfigErrorException(
+                "The catalog contained no streams. This likely indicates a platform/configuration error."
+            )
+        }
+
         val processedRawTableNames = mutableSetOf<String>()
         val processedFinalTableNames = mutableSetOf<String>()
 
