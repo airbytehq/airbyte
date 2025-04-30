@@ -15,17 +15,23 @@ export default function DocsVersionDropdownNavbarItemWrapper(props) {
     return null;
   }
 
-  const modifiedProps = { ...props };
-  
-  // Check if props has items and modify the "Next" label
-  if (props.items) {
-    modifiedProps.items = props.items.map(item => {
-      if (item.label === 'Next') {
-        return { ...item, label: 'Cloud / Next version' };
-      }
-      return item;
-    });
+  function WrappedDocsVersionDropdownNavbarItem(props) {
+    if (props.items) {
+      const modifiedItems = props.items.map(item => {
+        if (item.label === 'Next') {
+          return {
+            ...item,
+            label: 'Cloud / Next version',
+          };
+        }
+        return item;
+      });
+
+      return <DocsVersionDropdownNavbarItem {...props} items={modifiedItems} />;
+    }
+
+    return <DocsVersionDropdownNavbarItem {...props} />;
   }
 
-  return <DocsVersionDropdownNavbarItem {...modifiedProps} />;
+  return <WrappedDocsVersionDropdownNavbarItem {...props} />;
 }
