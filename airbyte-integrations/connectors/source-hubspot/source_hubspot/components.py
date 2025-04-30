@@ -80,7 +80,12 @@ class EngagementsHttpRequester(HttpRequester):
     recent_api_path = "/engagements/v1/engagements/recent/modified"
     all_api_path = "/engagements/v1/engagements/paged"
 
+    _use_recent_api = None
+
     def should_use_recent_api(self, stream_slice: StreamSlice) -> bool:
+        if self._use_recent_api is not None:
+            return self._use_recent_api
+
         # Recent engagements API returns records updated in the last 30 days only. If start time is older All engagements API should be used
         if int(stream_slice["start_time"]) >= int((pendulum.now() - timedelta(days=self.recent_api_last_days_limit)).timestamp() * 1000):
             # Recent engagements API returns only 10k most recently updated records.
@@ -93,9 +98,11 @@ class EngagementsHttpRequester(HttpRequester):
                 request_kwargs={"stream": self.stream_response},
             )
             if response.json().get("total") <= self.recent_api_total_records_limit:
-                return True
+                self._use_recent_api = True
+        else:
+            self._use_recent_api = False
 
-        return False
+        return self._use_recent_api
 
     def get_path(
         self,
