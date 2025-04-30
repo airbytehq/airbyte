@@ -1,12 +1,15 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+from datetime import timedelta
+from typing import Any, Dict, Mapping, MutableMapping, Optional
 
-from typing import Any, Dict, Mapping, Optional
+import pendulum
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 
 class NewtoLegacyFieldTransformation(RecordTransformation):
@@ -67,3 +70,56 @@ class MigrateEmptyStringState(StateMigration):
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state.get(self.cursor_field) == ""
+
+
+class EngagementsHttpRequester(HttpRequester):
+
+    recent_api_total_records_limit = 10000
+    recent_api_last_days_limit = 29
+
+    recent_api_path = "/engagements/v1/engagements/recent/modified"
+    all_api_path = "/engagements/v1/engagements/paged"
+
+    def should_use_recent_api(self, stream_slice: StreamSlice) -> bool:
+        # Recent engagements API returns records updated in the last 30 days only. If start time is older All engagements API should be used
+        if int(stream_slice["start_time"]) >= int((pendulum.now() - timedelta(days=self.recent_api_last_days_limit)).timestamp() * 1000):
+            # Recent engagements API returns only 10k most recently updated records.
+            # API response indicates that there are more records so All engagements API should be used
+            _, response = self._http_client.send_request(
+                http_method=self.get_method().value,
+                url=self._join_url(self.get_url_base(), self.recent_api_path),
+                headers=self._request_headers({}, stream_slice, {}, {}),
+                params={"count": 250, "since": stream_slice["start_time"]},
+                request_kwargs={"stream": self.stream_response},
+            )
+            if response.json().get("total") <= self.recent_api_total_records_limit:
+                return True
+
+        return False
+
+    def get_path(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        if self.should_use_recent_api(stream_slice):
+            return self.recent_api_path
+        return self.all_api_path
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        request_params = self._request_options_provider.get_request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
+        if self.should_use_recent_api(stream_slice):
+            request_params.update({"since": stream_slice["start_time"]})
+        return request_params
