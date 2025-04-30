@@ -83,12 +83,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-#        This one is currently disabled in GSM
-#        - name: SECRET_SOURCE-BING-ADS_NO_DATE_CREDS
-#          fileName: config_no_date.json
-#          secretStore:
-#            type: GSM
-#            alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-BING-ADS_NO_START_DATE__CREDS
           fileName: config_no_date.json
           secretStore:
