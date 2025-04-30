@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-aviationstack
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.44.0@sha256:cc993e8883bb1d9de36e007c4335462d74273b942c2aeac7a14393df76f4fa42
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.46.1@sha256:5e56569cab810e31e367b0667d846b324988fabd3d3bdc0bfa4c4afa3276d059
   connectorSubtype: api
   connectorType: source
   definitionId: 874cbc8d-6b04-4da6-9f88-881da2b0febe
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-aviationstack
   githubIssueLabel: source-aviationstack
   icon: icon.svg

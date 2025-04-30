@@ -134,7 +134,7 @@ class BulkLoadSpecification(
     @JsonSchemaInject(
         json =
             """{
-            "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
+            "examples": ["sv=2021-08-06&st=2025-04-11T00%3A00%3A00Z&se=2025-04-12T00%3A00%3A00Z&sr=b&sp=rw&sig=abcdefghijklmnopqrstuvwxyz1234567890%2Fabcdefg%3D"],
             "order": 3,
             "airbyte_secret": true,
             "always_show": true

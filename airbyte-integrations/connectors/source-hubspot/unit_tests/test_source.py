@@ -15,11 +15,12 @@ import pytest
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, BaseStream, Companies, Deals, Engagements, MarketingEmails, Products
+from source_hubspot.streams import API, BaseStream, Companies, Deals, Engagements, Products
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
+from .conftest import find_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -40,7 +41,7 @@ def test_check_connection_ok(requests_mock, config):
     ]
 
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    ok, error_msg = SourceHubspot().check_connection(logger, config=config)
+    ok, error_msg = SourceHubspot(config, None, None).check_connection(logger, config=config)
 
     assert ok
     assert not error_msg
@@ -50,18 +51,18 @@ def test_check_connection_empty_config(config):
     config = {}
 
     with pytest.raises(KeyError):
-        SourceHubspot().check_connection(logger, config=config)
+        SourceHubspot(config, None, None).check_connection(logger, config=config)
 
 
 def test_check_connection_invalid_config(config):
     config.pop("credentials")
 
     with pytest.raises(KeyError):
-        SourceHubspot().check_connection(logger, config=config)
+        SourceHubspot(config, None, None).check_connection(logger, config=config)
 
 
 def test_check_connection_exception(config):
-    ok, error_msg = SourceHubspot().check_connection(logger, config=config)
+    ok, error_msg = SourceHubspot(config, None, None).check_connection(logger, config=config)
 
     assert not ok
     assert error_msg
@@ -72,35 +73,35 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
         {"json": {"message": "invalid client_id"}, "status_code": 400},
     ]
     requests_mock.register_uri("POST", "/oauth/v1/token", responses)
-    ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_client_id)
+    ok, error_msg = SourceHubspot(config_invalid_client_id, None, None).check_connection(logger, config=config_invalid_client_id)
     assert not ok
     assert error_msg
 
 
 def test_check_connection_invalid_start_date_exception(config_invalid_date):
     with pytest.raises(InvalidStartDateConfigError):
-        ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_date)
+        ok, error_msg = SourceHubspot(config_invalid_date, None, None).check_connection(logger, config=config_invalid_date)
         assert not ok
         assert error_msg
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams(requests_mock, config):
-    streams = SourceHubspot().streams(config)
+    streams = SourceHubspot(config, None, None).streams(config)
 
     assert len(streams) == 35
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams_incremental(requests_mock, config_experimental):
-    streams = SourceHubspot().streams(config_experimental)
+    streams = SourceHubspot(config_experimental, None, None).streams(config_experimental)
 
     assert len(streams) == 47
 
 
 def test_custom_streams(config_experimental):
     custom_object_stream_instances = [MagicMock()]
-    streams = SourceHubspot().get_web_analytics_custom_objects_stream(
+    streams = SourceHubspot(config_experimental, None, None).get_web_analytics_custom_objects_stream(
         custom_object_stream_instances=custom_object_stream_instances,
         common_params={"api": MagicMock(), "start_date": "2021-01-01T00:00:00Z", "credentials": config_experimental["credentials"]},
     )
@@ -111,7 +112,7 @@ def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
 
     with pytest.raises(Exception):
-        SourceHubspot().check_connection(logger, config=config)
+        SourceHubspot(config, None, None).check_connection(logger, config=config)
 
 
 def test_parse_and_handle_errors(some_credentials):
@@ -156,7 +157,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     ]
 
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    source = SourceHubspot()
+    source = SourceHubspot(config, None, None)
     alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
@@ -170,7 +171,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    source = SourceHubspot()
+    source = SourceHubspot(config, None, None)
     alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
@@ -201,7 +202,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
         }
     )
     with pytest.raises(AirbyteTracedException):
-        records = list(SourceHubspot().read(logger, config, catalog, {}))
+        records = list(SourceHubspot(config, None, None).read(logger, config, catalog, {}))
         records = [r for r in records if r.type == Type.RECORD]
         assert not records
     assert json["message"] in caplog.text
@@ -243,7 +244,7 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
     )
 
     with pytest.raises(AirbyteTracedException):
-        records = list(SourceHubspot().read(logger, config, catalog, {}))
+        records = list(SourceHubspot(config, None, None).read(logger, config, catalog, {}))
         records = [r for r in records if r.type == Type.RECORD]
         assert not records
     assert json["message"] in caplog.text
@@ -727,7 +728,8 @@ def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, commo
     assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
-def test_pagination_marketing_emails_stream(requests_mock, common_params):
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_pagination_marketing_emails_stream(mock_get_custom_objects_stream, requests_mock, common_params, config):
     """
     Test pagination for Marketing Emails stream
     """
@@ -765,7 +767,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
             },
         ],
     )
-    test_stream = MarketingEmails(**common_params)
+    test_stream = find_stream("marketing_emails", config)
 
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
@@ -782,7 +784,7 @@ def test_get_granted_scopes(requests_mock, mocker):
     ]
     requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
 
-    actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
+    actual_scopes = SourceHubspot({}, None, None).get_granted_scopes(authenticator)
 
     assert expected_scopes == actual_scopes
 
@@ -797,7 +799,7 @@ def test_get_granted_scopes_retry(requests_mock, mocker):
     ]
 
     requests_mock.register_uri("GET", mock_url, response)
-    actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
+    actual_scopes = SourceHubspot({}, None, None).get_granted_scopes(authenticator)
     assert len(requests_mock.request_history) > 1
 
 
@@ -816,6 +818,6 @@ def test_streams_oauth_2_auth_no_suitable_scopes(requests_mock, mocker, config):
     ]
     requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
 
-    streams = SourceHubspot().streams(config)
+    streams = SourceHubspot(config, None, None).streams(config)
 
     assert len(streams) == 0

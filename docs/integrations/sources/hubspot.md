@@ -338,7 +338,16 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.6.0-rc.1  | 2025-03-31  | [56919](https://github.com/airbytehq/airbyte/pull/56919) | Update CDK to v6                                                                                                                                                                                                             |
+| 4.7.0      | 2025-04-30 | [59165](https://github.com/airbytehq/airbyte/pull/59165)     | Promoting release candidate 4.7.0-rc.2 to a main version. |
+| 4.7.0-rc.2 | 2025-04-28 | [59118](https://github.com/airbytehq/airbyte/pull/59118) | Add empty string state migration                                                                                                                                                 |
+| 4.7.0-rc.1 | 2025-04-23 | [58083](https://github.com/airbytehq/airbyte/pull/58083) | Migrate ticket_pipelines to low code |
+| 4.6.4      | 2025-04-22 | [58138](https://github.com/airbytehq/airbyte/pull/58138) | Use short-hand custom object type name path for custom object streams.                                                                                                                                                       |
+| 4.6.3      | 2025-04-19 | [58226](https://github.com/airbytehq/airbyte/pull/58226) | Update dependencies |
+| 4.6.2      | 2025-04-18 | [58137](https://github.com/airbytehq/airbyte/pull/58137) | Promoting release candidate 4.6.2-rc.1 to a main version. |
+| 4.6.2-rc.1 | 2025-04-13 | [57534](https://github.com/airbytehq/airbyte/pull/57534) | Migrate marketing_emails and email_subscriptions to low code |
+| 4.6.1      | 2025-04-12 | [57694](https://github.com/airbytehq/airbyte/pull/57694) | Update dependencies |
+| 4.6.0      | 2025-04-11 | [57572](https://github.com/airbytehq/airbyte/pull/57572) | Promoting release candidate 4.6.0-rc.1 to a main version. |
+| 4.6.0-rc.1 | 2025-03-31 | [56919](https://github.com/airbytehq/airbyte/pull/56919) | Update CDK to v6                                                                                                                                                                                                             |
 | 4.5.6      | 2025-03-29 | [56647](https://github.com/airbytehq/airbyte/pull/56647) | Update dependencies |
 | 4.5.5      | 2025-03-26 | [56416](https://github.com/airbytehq/airbyte/pull/56416) | Disabled `blog_comment` and `all` form-types for `Forms` and `FormSubmissions` stream |
 | 4.5.4      | 2025-03-25 | [55822](https://github.com/airbytehq/airbyte/pull/55822) | add userIdIncludingInactive to owners and owners_archived streams |
