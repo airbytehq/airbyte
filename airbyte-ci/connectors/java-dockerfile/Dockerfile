@@ -24,7 +24,7 @@ RUN chmod +x ./gradlew
 ARG CONNECTOR_PATH=airbyte-integrations/connectors/source-mysql
 
 # Build the connector
-RUN ./gradlew :${CONNECTOR_PATH}:distTar
+RUN ./gradlew :airbyte-integrations:connectors:${CONNECTOR_NAME}:distTar
 
 # Runtime stage
 FROM amazoncorretto:21-al2023
