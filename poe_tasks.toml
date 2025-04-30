@@ -22,6 +22,11 @@ pnpm install
 pnpm build
 '''
 
+[tasks.get-modified-connectors]
+help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files.
+"""
+shell = "./poe-tasks/get-modified-connectors.sh"
+
 [tasks.connector]
 help = "Run a poe task in a connector's directory. Usage: poe connector <connector-name> <task> [args...]"
 
