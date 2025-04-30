@@ -86,7 +86,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
           AUTO_MERGE_PRODUCTION: false
-          PR_NUMBER: ${{ github.event.number }}
           MODIFIED_CONNECTORS: ${{ needs.bump-cdk-version.outputs.modified_connectors }}
         run: |
           ./tools/bin/cdk-auto-release/update-changelog.sh ${{ github.ref_name }}

@@ -241,6 +241,30 @@ find_merge_base() {
     echo "$merge_base" # Return merge base commit hash
 }
 
+# Function to get the PR number associated with a given branch
+# Usage: get_pr_number "feature/branch-name"
+# Returns: The PR number or exits if not found or 'gh' fails
+get_pr_number() {
+    local branch_name="$1"
+    local pr_num
+
+    log_info "Attempting to find PR number for branch: ${branch_name}"
+    # Ensure gh is installed
+    if ! command -v gh &> /dev/null; then
+        error_exit "'gh' command not found. Please install the GitHub CLI."
+    fi
+
+    # Use gh pr list to find the PR number for the specified head branch
+    pr_num=$(gh pr list --state open --head "$branch_name" --json number --jq '.[0].number // empty')
+
+    if [ -z "$pr_num" ]; then
+        error_exit "Could not find an open PR number for branch '${branch_name}'. Make sure the PR exists and the branch name is correct."
+    fi
+
+    log_info "Found PR number: ${pr_num}"
+    echo "$pr_num" # Return the PR number
+}
+
 # Function to stage, commit, and push changes for a specific connector
 # Usage: stage_commit_push "connector-folder-name" "/path/to/connector.md"
 stage_commit_push() {
@@ -338,6 +362,8 @@ main() {
         exit 0
     fi
 
+    pr_num=$(get_pr_number "$branch_name")
+
     # Define the standard message here, could be made a script argument later
     changelog_message="Update CDK version"
 
@@ -348,7 +374,7 @@ main() {
 
         log_info "Processing connector: ${connector_folder}"
         # Call the main update logic for this connector
-        updated_filepath=$(update_single_connector_changelog "$PR_NUMBER" "$connector_folder" "$changelog_message")
+        updated_filepath=$(update_single_connector_changelog "$pr_num" "$connector_folder" "$changelog_message")
         # Stage, commit, and push the changes for this connector's changelog
         stage_commit_push "$connector_folder" "$updated_filepath"
     done
