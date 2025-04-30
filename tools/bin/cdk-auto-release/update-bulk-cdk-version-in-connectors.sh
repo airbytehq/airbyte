@@ -45,7 +45,18 @@ echo "modified_connectors_json=$MODIFIED_LIST_JSON" >> $GITHUB_OUTPUT
 echo "$connector_folders" | while read -r folder; do
   gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
   if [ -f "$gradle_file" ]; then
+    cp "$gradle_file" "$gradle_file.bak"
     sed -i "s/cdk = '.*'/cdk = '$1'/" "$gradle_file"
     sed -i "/useLocalCdk/d" "$gradle_file"
+
+    if cmp -s "$gradle_file" "${gradle_file}.bak"; then
+        # Files are identical, sed made no effective change for this command
+        echo "Warning: sed command ran successfully but did not modify '$gradle_file'. Pattern 'cdk = ...' might not have been found."
+
+        rm -f "${gradle_file}.bak" # Clean up backup
+        exit 1 # Uncomment if no change should cause failure
+    else
+        rm -f "${gradle_file}.bak" # Clean up backup
+    fi
   fi
 done

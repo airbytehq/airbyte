@@ -30,7 +30,7 @@ jobs:
         id: fetch-version
         run: |
           # 1. Define the target URL
-          REPO_URL="https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/bulk-cdk-core-load/"
+          REPO_URL="https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/bulk-cdk-core-base/"
           echo "Fetching versions from $REPO_URL" >&2 # Log output to standard error
 
           # 2. Fetch HTML, extract versions (X.Y), sort, get the latest
