@@ -12,12 +12,10 @@ import requests
 
 from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
@@ -30,9 +28,7 @@ from source_mixpanel.source import raise_config_error
 class MixpanelHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.api_budget = DEFAULT_API_BUDGET
-        self.error_handler.backoff_strategies = ConstantBackoffStrategy(
-            backoff_time_in_seconds=60 * 2, config=self.config, parameters=parameters
-        )
+        self.error_handler.backoff_strategies = ExponentialBackoffStrategy(factor=30, config=self.config, parameters=parameters)
         super().__post_init__(parameters)
 
     def get_request_headers(

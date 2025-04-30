@@ -54,6 +54,8 @@ Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-req
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 0.4.12 | 2025-04-26 | [58732](https://github.com/airbytehq/airbyte/pull/58732) | Update dependencies |
+| 0.4.11 | 2025-04-19 | [58230](https://github.com/airbytehq/airbyte/pull/58230) | Update dependencies |
 | 0.4.10 | 2025-04-12 | [57643](https://github.com/airbytehq/airbyte/pull/57643) | Update dependencies |
 | 0.4.9 | 2025-04-05 | [57132](https://github.com/airbytehq/airbyte/pull/57132) | Update dependencies |
 | 0.4.8 | 2025-03-29 | [56574](https://github.com/airbytehq/airbyte/pull/56574) | Update dependencies |

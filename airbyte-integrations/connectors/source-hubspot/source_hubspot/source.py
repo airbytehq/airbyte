@@ -62,7 +62,6 @@ from source_hubspot.streams import (
     Products,
     ProductsWebAnalytics,
     SubscriptionChanges,
-    TicketPipelines,
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
@@ -80,6 +79,25 @@ scopes = {
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
     "deals": {"contacts", "crm.objects.deals.read"},
+    "ticket_pipelines": {
+        "media_bridge.read",
+        "tickets",
+        "crm.schemas.custom.read",
+        "e-commerce",
+        "timeline",
+        "contacts",
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.deals.read",
+        "crm.schemas.quotes.read",
+        "crm.objects.deals.write",
+        "crm.objects.companies.read",
+        "crm.schemas.companies.read",
+        "crm.schemas.deals.read",
+        "crm.schemas.line_items.read",
+        "crm.objects.companies.write",
+    },
 }
 
 
@@ -202,7 +220,6 @@ class SourceHubspot(YamlDeclarativeSource):
             DealsPropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
-            TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
 

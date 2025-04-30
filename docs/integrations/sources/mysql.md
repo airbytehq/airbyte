@@ -90,7 +90,7 @@ To fill out the required information:
 #### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
+our [Airbyte Security docs](../../platform/operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
 
@@ -125,16 +125,16 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 ### SSL Modes
 
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
+Airbyte Cloud uses `required` SSL mode by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
 
 Here is a breakdown of available SSL connection modes:
 
-- `disable` to disable encrypted communication between Airbyte and the source
+- `required` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+- `preferred` to allow unencrypted communication only when the source doesn't support encryption
+- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate
+- `verify_identity` to always require encryption and verify the identity of the source
+- `disabled` to disable encrypted communication between Airbyte and the source
 - `allow` to enable encrypted communication only when required by the source
-- `prefer` to allow unencrypted communication only when the source doesn't support encryption
-- `require` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
-- `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
-- `verify-full` to always require encryption and verify the identity of the source
 
 </FieldAnchor>
 
@@ -226,16 +226,22 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.11.9 | 2025-03-14 | [55731](https://github.com/airbytehq/airbyte/pull/55731) | More meaningful errors for variables used in extra checks for CDC |
-| 3.11.8 | 2025-03-14 | [55761](https://github.com/airbytehq/airbyte/pull/55761) | Do not perform complex sampling for source-mysql |
-| 3.11.7 | 2025-03-12 | [55734](https://github.com/airbytehq/airbyte/pull/55734) | Expose additional stream context for debezium properties at startup |
-| 3.11.6 | 2025-03-06 | [55237](https://github.com/airbytehq/airbyte/pull/55237) | [Fix fetching binlog status for version >=8.4](https://github.com/airbytehq/airbyte/pull/55237#top) |
-| 3.11.5 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
-| 3.11.4 | 2025-03-06 | [55214](https://github.com/airbytehq/airbyte/pull/55214) | Update default encryption method to 'required'.                                                                                                 | |
-| 3.11.3 | 2025-02-24 | [54156](https://github.com/airbytehq/airbyte/pull/54156) | Improve error handling.                                                                                                                         | |
-| 3.11.2 | 2025-02-06 | [53195](https://github.com/airbytehq/airbyte/pull/53195) | Fix typo in CDC configuration.                                                                                                                  | |
-| 3.11.1 | 2025-01-30 | [52039](https://github.com/airbytehq/airbyte/pull/52039) | Adopt latest API changes from Bulk CDK. |
-| 3.11.0 | 2025-01-14 | [51545](https://github.com/airbytehq/airbyte/pull/51545) | Promoting release candidate 3.11.0-rc.1 to a main version. |
+| 3.11.15     | 2025-04-29 | [59150](https://github.com/airbytehq/airbyte/pull/59150)   | Mitigate issue where cursor state was serialized with scientific notation                                                                       |
+| 3.11.14     | 2025-04-29 | [59144](https://github.com/airbytehq/airbyte/pull/59144)   | Update default SSL mode.                                                                                                                        |
+| 3.11.13     | 2025-04-24 | [58646](https://github.com/airbytehq/airbyte/pull/58646)   | Fix vulnerabilities in dependencies.                                                                                                            |
+| 3.11.12     | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                            |
+| 3.11.11     | 2025-04-23 | [58623](https://github.com/airbytehq/airbyte/pull/58623)   | Bump CDK version to the latets published                                                                                                        |
+| 3.11.10     | 2025-04-22 | [58599](https://github.com/airbytehq/airbyte/pull/58599)   | Extend debezium shutdown timeout to allow the engine to gracefully close                                                                        |
+| 3.11.9      | 2025-03-14 | [55731](https://github.com/airbytehq/airbyte/pull/55731)   | More meaningful errors for variables used in extra checks for CDC                                                                               |
+| 3.11.8      | 2025-03-14 | [55761](https://github.com/airbytehq/airbyte/pull/55761)   | Do not perform complex sampling for source-mysql                                                                                                |
+| 3.11.7      | 2025-03-12 | [55734](https://github.com/airbytehq/airbyte/pull/55734)   | Expose additional stream context for debezium properties at startup                                                                             |
+| 3.11.6      | 2025-03-06 | [55237](https://github.com/airbytehq/airbyte/pull/55237)   | [Fix fetching binlog status for version >=8.4](https://github.com/airbytehq/airbyte/pull/55237#top)                                             |
+| 3.11.5      | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234)   | Update base image version for certified DB source connectors                                                                                    |
+| 3.11.4      | 2025-03-06 | [55214](https://github.com/airbytehq/airbyte/pull/55214)   | Update default encryption method to 'required'.                                                                                                 |
+| 3.11.3      | 2025-02-24 | [54156](https://github.com/airbytehq/airbyte/pull/54156)   | Improve error handling.                                                                                                                         |
+| 3.11.2      | 2025-02-06 | [53195](https://github.com/airbytehq/airbyte/pull/53195)   | Fix typo in CDC configuration.                                                                                                                  |
+| 3.11.1      | 2025-01-30 | [52039](https://github.com/airbytehq/airbyte/pull/52039)   | Adopt latest API changes from Bulk CDK.                                                                                                         |
+| 3.11.0      | 2025-01-14 | [51545](https://github.com/airbytehq/airbyte/pull/51545)   | Promoting release candidate 3.11.0-rc.1 to a main version.                                                                                      |
 | 3.11.0-rc.1 | 2025-01-09 | [51029](https://github.com/airbytehq/airbyte/pull/51029)   | Fix unnecessary schema change when upgrading from legacy mysql source.                                                                          |
 | 3.10.1      | 2025-01-10 | [51510](https://github.com/airbytehq/airbyte/pull/51510)   | Use a non root base image                                                                                                                       |
 | 3.10.0      | 2025-01-09 | [51008](https://github.com/airbytehq/airbyte/pull/51008)   | Promoting release candidate 3.10.0-rc.9 to a main version.                                                                                      |
