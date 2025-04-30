@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-  - accounts
+    - accounts
 
 definitions:
   authenticator:
@@ -15,7 +15,8 @@ definitions:
       oauth_scope: "msads.manage"
       scope: "https://ads.microsoft.com/msads.manage offline_access"
       tenant: "{{ config['tenant_id'] }}"
-    token_refresh_endpoint: 'https://login.microsoftonline.com/{{ config["tenant_id"]
+    token_refresh_endpoint:
+      'https://login.microsoftonline.com/{{ config["tenant_id"]
       }}/oauth2/v2.0/token'
     grant_type: refresh_token
     client_id: '{{ config["client_id"] }}'
@@ -63,247 +64,246 @@ definitions:
           Id:
             description: ID of the account
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           AccountFinancialStatus:
             description: The financial status of the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           AccountLifeCycleStatus:
             description: The life cycle status of the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           AutoTagType:
             description: The type of auto-tagging
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           AccountMode:
             description: The mode of the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ForwardCompatibilityMap:
             description: Map for forward compatibility
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           PaymentMethodType:
             description: Type of the payment method
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           Language:
             description: The language used in the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           LinkedAgencies:
             description: The agencies linked to the account for management purposes.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               Id:
                 description: ID of the linked agency
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               Name:
                 description: Name of the linked agency
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           TaxInformation:
             description: Tax information of the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           CurrencyCode:
             description: The currency code used by the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           TimeZone:
             description: The time zone of the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           BusinessAddress:
             description: The business address associated with the account.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               City:
                 description: The city of the business address
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               CountryCode:
                 description: The country code of the business address
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               Id:
                 description: ID of the business address
                 type:
-                - 'null'
-                - integer
+                  - "null"
+                  - integer
               Line1:
                 description: Address line 1
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               Line2:
                 description: Address line 2
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               Line3:
                 description: Address line 3
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               Line4:
                 description: Address line 4
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               PostalCode:
                 description: The postal code of the business address
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               StateOrProvince:
                 description: The state or province of the business address
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               TimeStamp:
                 description: Timestamp of the business address
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               BusinessName:
                 description: The business name
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           BackUpPaymentInstrumentId:
             description: ID of the backup payment instrument
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           BillingThresholdAmount:
             description: The threshold amount for billing
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
           BillToCustomerId:
             description: Customer ID for billing
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           LastModifiedByUserId:
             description: ID of the user who last modified the account
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           LastModifiedTime:
             description: The date and time of the last modification
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
             airbyte_type: timestamp_without_timezone
           Name:
             description: The name of the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           Number:
             description: The account number
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ParentCustomerId:
             description: ID of the parent customer
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           PauseReason:
             description: Reason for pausing the account
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           PaymentMethodId:
             description: ID of the payment method
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           PrimaryUserId:
             description: ID of the primary user
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           SalesHouseCustomerId:
             description: Customer ID for sales house
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           SoldToPaymentInstrumentId:
             description: ID of the payment instrument for sales
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           TimeStamp:
             description: Timestamp of the account
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           TaxCertificate:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               TaxCertificateBlobContainerName:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               Status:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
                 enum:
-                - Invalid
-                - Pending
-                - Valid
+                  - Invalid
+                  - Pending
+                  - Valid
               TaxCertificates:
                 type:
-                - 'null'
-                - array
+                  - "null"
+                  - array
                 items:
                   type:
-                  - 'null'
-                  - object
+                    - "null"
+                    - object
                   properties:
                     key:
                       type:
-                      - 'null'
-                      - string
+                        - "null"
+                        - string
                     value:
                       type:
-                      - 'null'
-                      - string
+                        - "null"
+                        - string
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 
-          https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search
+        url_base: https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search
         http_method: POST
         request_headers:
           Content-Type: application/json
@@ -313,9 +313,9 @@ definitions:
             Index: "{{ next_page_token.next_page_token }}"
             Size: 1000
           Predicates:
-          - Field: UserId
-            Operator: Equals
-            Value: "'{{ stream_partition['user_id'] }}'"
+            - Field: UserId
+              Operator: Equals
+              Value: "'{{ stream_partition['user_id'] }}'"
           ReturnAdditionalFields: TaxCertificate,AccountMode
         authenticator: "#/definitions/authenticator"
       paginator:
@@ -327,11 +327,11 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-        - type: ParentStreamConfig
-          parent_key: Id
-          partition_field: user_id
-          stream:
-            $ref: "#/definitions/users_stream"
+          - type: ParentStreamConfig
+            parent_key: Id
+            partition_field: user_id
+            stream:
+              $ref: "#/definitions/users_stream"
       record_selector:
         type: RecordSelector
         extractor:
@@ -340,7 +340,7 @@ definitions:
         schema_normalization: Default
 
 streams:
-- $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/accounts_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
