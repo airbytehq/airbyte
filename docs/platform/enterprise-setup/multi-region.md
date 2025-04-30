@@ -47,7 +47,7 @@ Before you begin, make sure you've completed the following.
 
 - Deploy your Self-Managed Enterprise version of Airbyte as described in the [implementation guide](implementation-guide).
 
-- You must be an Organization Administrator to manage regions and data planes.
+- You must be an Instance Administrator to manage regions and data planes.
 
 - You need a Kubernetes cluster on which your data plane can run. For example, if your Airbyte control plane already runs on an EKS cluster on `us-west-2`, and you want your data plane to run on `eu-west-1`, create an EKS cluster on `eu-west-1`.
 
