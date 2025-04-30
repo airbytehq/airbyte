@@ -891,7 +891,6 @@ class BaseStream(HttpStream, ABC):
                 f"to be able to fetch all properties available."
             )
             return props
-        print("getting properties")
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
@@ -1234,7 +1233,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         if next_page_token:
             payload.update(next_page_token["payload"])
 
-        print(self.url, payload)
+        logger.debug(f"CRMSearchStream search. URL: {self.url}, Body: {payload}")
         response, raw_response = self.search(url=self.url, data=payload)
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
             stream_records[record["id"]] = record

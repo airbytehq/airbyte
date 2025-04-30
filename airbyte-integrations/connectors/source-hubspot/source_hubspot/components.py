@@ -100,6 +100,20 @@ class MigrateEmptyStringState(StateMigration):
         return stream_state.get(self.cursor_field) == ""
 
 
+class HubspotAssociationsTransformation(RecordTransformation):
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        if "associations" in record:
+            associations = record.pop("associations")
+            for name, association in associations.items():
+                record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
+
+
 @dataclass
 class HubspotAssociationsExtractor(RecordExtractor):
     """

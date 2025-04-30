@@ -133,7 +133,7 @@ definitions:
     cursor_field: updatedAt
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     lookback_window: P{{ config.get('lookback_window', 0) }}D
@@ -270,19 +270,21 @@ definitions:
           - path: [ "updatedAt" ]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
       - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotAssociationsTransformation
+      - type: CustomTransformation
         class_name: source_hubspot.components.NewtoLegacyFieldTransformation
         field_mapping:
           hs_date_entered_: "hs_v2_date_entered_"
           hs_date_exited_: "hs_v2_date_exited_"
           hs_time_in_: "hs_v2_latest_time_in_"
       - type: DpathFlattenFields
-        field_path: [ "properties" ]
+        field_path:
+          - properties
         key_transformation:
           type: KeyTransformation
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      cursor_field: updatedAt
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
@@ -367,7 +369,6 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      cursor_field: updatedAt
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
@@ -389,18 +390,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /crm/v3/pipelines/tickets
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updatedAt
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%SZ"
+      $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     transformations:
       - type: AddFields
