@@ -5,11 +5,13 @@
 from dataclasses import dataclass
 from functools import wraps
 from time import sleep
-from typing import Mapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 
 
@@ -152,3 +154,36 @@ class ErrorHandlerWithRateLimiter(DefaultErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         # Check for response.headers to define the backoff time before the next api call
         return super().interpret_response(response_or_exception)
+
+
+@dataclass
+class CustomScrollRetriever(SimpleRetriever):
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        super().__post_init__(parameters)
+        # No cursor needed for scroll-based pagination, as Intercom uses scroll_param
+
+    def request_params(
+        self,
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        """
+        Customize request parameters for the Intercom Companies API scroll endpoint.
+        Intercom uses a 'scroll_param' returned in the response to fetch the next page.
+        If next_page_token is present, it includes the 'scroll_param' for the next request.
+        """
+        params = self._get_request_options(
+            stream_slice or {},
+            next_page_token,
+            self.requester.get_request_params,
+            self.paginator.get_request_params,
+            self.stream_slicer.get_request_params if self.stream_slicer else lambda *args, **kwargs: {},
+            self.requester.get_authenticator().get_request_body_json if self.requester.get_authenticator() else lambda *args, **kwargs: {},
+        )
+
+        # If there's a next_page_token, it contains the scroll_param; otherwise, this is the first request
+        if next_page_token and "scroll_param" in next_page_token:
+            params["scroll_param"] = next_page_token["scroll_param"]
+
+        return params

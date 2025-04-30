@@ -242,7 +242,8 @@ definitions:
       primary_key:
         - id
       retriever:
-        type: SimpleRetriever
+        type: CustomRetriever
+        class_name: source_declarative_manifest.components.CustomScrollRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: companies/scroll
