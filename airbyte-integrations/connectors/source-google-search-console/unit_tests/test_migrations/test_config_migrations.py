@@ -6,8 +6,8 @@
 import json
 import os
 import shutil
-from typing import Any, Mapping
 from pathlib import Path
+from typing import Any, Mapping
 
 from source_google_search_console.config_migrations import MigrateCustomReports
 from source_google_search_console.source import SourceGoogleSearchConsole
