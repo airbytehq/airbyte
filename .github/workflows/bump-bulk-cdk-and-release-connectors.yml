@@ -19,7 +19,7 @@ jobs:
       modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
       # Output the matrix config as a JSON string
       modified_connectors_json: ${{ steps.export-connection-modified.outputs.modified_connectors_json }}
-    needs: [publish-bulk-cdk]
+#    needs: [publish-bulk-cdk]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
-    needs: [publish-connectors, bump-cdk-version]
+    needs: [bump-cdk-version] #[publish-connectors, bump-cdk-version]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
