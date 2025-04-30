@@ -33,7 +33,6 @@ from source_hubspot.streams import (
     ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
-    Deals,
     DealsArchived,
     DealSplits,
     DealsPropertyHistory,
