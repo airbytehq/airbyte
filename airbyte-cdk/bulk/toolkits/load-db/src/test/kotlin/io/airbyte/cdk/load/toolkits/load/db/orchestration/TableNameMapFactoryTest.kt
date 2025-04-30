@@ -91,7 +91,7 @@ class TableNameMapFactoryTest {
         val rawTableNameWithHash = rawTableNames.first { it != "raw_foofoo" }
         assertTrue(rawTableNameWithHash.startsWith("raw_foofoo_"))
         assertTrue(
-            rawTableNameWithHash.substring("raw_foofoo_".length).matches(Regex("[0-9a-f]{6}"))
+            rawTableNameWithHash.substring("raw_foofoo_".length).matches(Regex("[0-9a-f]{3}"))
         )
 
         // Final table names: One should be the original, one should have a hash suffix
@@ -99,7 +99,7 @@ class TableNameMapFactoryTest {
         val finalTableNameWithHash = finalTableNames.first { it != "final_foofoo" }
         assertTrue(finalTableNameWithHash.startsWith("final_foofoo_"))
         assertTrue(
-            finalTableNameWithHash.substring("final_foofoo_".length).matches(Regex("[0-9a-f]{6}"))
+            finalTableNameWithHash.substring("final_foofoo_".length).matches(Regex("[0-9a-f]{3}"))
         )
     }
 
