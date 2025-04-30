@@ -15,7 +15,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 def test_streams(config):
     source = SourceJira(config=config, catalog=None, state=None)
     streams = source.streams(config)
-    expected_streams_number = 56
+    expected_streams_number = 55
     assert len(streams) == expected_streams_number
 
 
