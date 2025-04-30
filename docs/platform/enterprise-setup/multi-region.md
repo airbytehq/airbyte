@@ -114,7 +114,7 @@ Once you have a region, you create a data plane within it.
 Send a POST request to /v1/dataplanes.
 
 ```bash
-curl -X POST https://api.airbyte.com/v1/dataplanes \
+curl -X POST https://example.com/api/public/v1/dataplanes \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_TOKEN" \
   -d '{
