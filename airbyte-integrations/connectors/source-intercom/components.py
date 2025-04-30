@@ -8,7 +8,10 @@ from time import sleep
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
+from requests.exceptions import HTTPError
 
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -156,34 +159,106 @@ class ErrorHandlerWithRateLimiter(DefaultErrorHandler):
         return super().interpret_response(response_or_exception)
 
 
-@dataclass
-class CustomScrollRetriever(SimpleRetriever):
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        super().__post_init__(parameters)
-        # No cursor needed for scroll-based pagination, as Intercom uses scroll_param
+class SubstreamStateMigration(StateMigration):
+    """
+    We require a custom state migration to move from the custom substream state that was generated via the legacy
+    cursor custom components. State was not written back to the platform in a way that is compatible with concurrent cursors.
 
-    def request_params(
+    The old state roughly had the following shape:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+    }
+
+    However, this was incompatible when we removed the custom cursors with the concurrent substream partition cursor
+    components that were configured with use global_substream_cursor and incremental_dependency. They rely on passing the value
+    of parent_state when getting parent records for the conversations/companies parent stream. The migration results in state:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+            # There are a lot of nested elements here, but are not used or relevant to syncs
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+        "parent_state": {
+            "conversations": {
+                "updated_at": 1744153060
+            }
+        }
+    }
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return "parent_state" not in stream_state and ("conversations" in stream_state or "companies" in stream_state)
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_parent_state = {}
+        if stream_state.get("conversations"):
+            migrated_parent_state["conversations"] = stream_state.get("conversations")
+        if stream_state.get("companies"):
+            migrated_parent_state["companies"] = stream_state.get("companies")
+        return {**stream_state, "parent_state": migrated_parent_state}
+
+
+class CustomScrollRetriever(SimpleRetriever):
+    def __init__(self, requester, paginator, record_selector, stream_slicer=None, **kwargs):
+        stream_slicer = stream_slicer if stream_slicer is not None else SinglePartitionRouter(parameters={})
+        super().__init__(requester=requester, paginator=paginator, record_selector=record_selector, stream_slicer=stream_slicer, **kwargs)
+
+    def read_records(self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None):
+        next_page_token = None
+        while True:
+            try:
+                params = self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+                response = self.requester.send_request(
+                    path=self._paginator_path(),
+                    stream_state=stream_state,
+                    stream_slice=stream_slice,
+                    next_page_token=next_page_token,
+                    request_params=params,
+                    request_headers=self._request_headers(
+                        stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                    ),
+                )
+                response_json = response.json()
+                # Stop if the data array is empty
+                if not response_json.get("data", []):
+                    break
+                records = self._parse_response(
+                    response=response,
+                    stream_state=stream_state,
+                    records_schema={},
+                    stream_slice=stream_slice,
+                    next_page_token=next_page_token,
+                )
+                for record in records:
+                    yield record
+                next_page_token = self._get_next_page_token(response)
+            except HTTPError as e:
+                if e.response.status_code == 500:
+                    next_page_token = None
+                    continue
+                else:
+                    raise
+
+    def _request_params(
         self,
-        stream_state: StreamState,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        """
-        Customize request parameters for the Intercom Companies API scroll endpoint.
-        Intercom uses a 'scroll_param' returned in the response to fetch the next page.
-        If next_page_token is present, it includes the 'scroll_param' for the next request.
-        """
-        params = self._get_request_options(
-            stream_slice or {},
-            next_page_token,
-            self.requester.get_request_params,
-            self.paginator.get_request_params,
-            self.stream_slicer.get_request_params if self.stream_slicer else lambda *args, **kwargs: {},
-            self.requester.get_authenticator().get_request_body_json if self.requester.get_authenticator() else lambda *args, **kwargs: {},
-        )
-
-        # If there's a next_page_token, it contains the scroll_param; otherwise, this is the first request
+    ) -> Mapping[str, Any]:
         if next_page_token and "scroll_param" in next_page_token:
-            params["scroll_param"] = next_page_token["scroll_param"]
+            return {"scroll_param": next_page_token["scroll_param"]}
+        return {}
 
-        return params
+    def _get_next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response_json = response.json()
+        scroll_param = response_json.get("scroll_param", "")
+        return {"scroll_param": scroll_param} if scroll_param else None

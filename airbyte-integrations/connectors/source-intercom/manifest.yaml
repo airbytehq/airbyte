@@ -236,20 +236,21 @@ definitions:
           $ref: "#/schemas/segments"
     companies:
       type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/scrolloverallcompanies
-      name: companies
+      name: "companies"
       primary_key:
         - id
       retriever:
         type: CustomRetriever
-        class_name: source_declarative_manifest.components.CustomScrollRetriever
+        class_name: "source_declarative_manifest.components.CustomScrollRetriever"
+        $parameters:
+          stream_name: "companies"
         requester:
+          $parameters:
+            name: "base_requester"
           $ref: "#/definitions/base_requester"
-          path: companies/scroll
-          http_method: GET
+          path: "companies/scroll"
           request_headers:
-            Accept: application/json
+            Accept: "application/json"
             Intercom-Version: "2.11"
           error_handler:
             type: CompositeErrorHandler
@@ -257,61 +258,30 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 400
-                    error_message: >-
-                      A scroll (export) job is already in progress for this
-                      Intercom account, causing the request to fail. Only one
-                      active scroll per Intercom account is allowed; ensure no
-                      overlap by limiting active connections or scheduling jobs
-                      appropriately.
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
+                    action: FAIL
                     http_codes:
                       - 500
-                    #We cannot retry 500 errors, so we fail the stream. Docs: https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
-                    #We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, Tracked here: https://github.com/airbytehq/airbyte-internal-issues/issues/12107
-                    error_message: "A network timeout occurred. Please restart the sync to continue fetching companies. Stream: companies must be restarted to continue fetching companies."
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
+                    error_message: "Internal server error. Scroll will restart from the beginning."
+        paginator:
+          type: DefaultPaginator
+          $parameters:
+            url_base: "{{ parameters.requester.url_base }}"
+          page_token_option:
+            type: RequestOption
+            inject_into: "request_parameter"
+            field_name: "scroll_param"
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('scroll_param', '') }}"
+            stop_condition: "{{ not response.get('data') or not response.get('scroll_param') }}"
         record_selector:
+          $parameters:
+            name: ""
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: scroll_param
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('scroll_param') }}"
-            stop_condition: "{{ not response.get('data') }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-          datetime_format: "%s"
-        datetime_format: "%s"
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
-        cursor_datetime_formats:
-          - "%s"
-        is_client_side_incremental: true
+              - "data"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -573,6 +543,7 @@ definitions:
                 $ref: "#/definitions/streams/conversations"
               parent_key: id
               partition_field: id
+              incremental_dependency: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -585,6 +556,7 @@ definitions:
         cursor_datetime_formats:
           - "%s"
         is_client_side_incremental: true
+        global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
@@ -595,6 +567,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversation_parts"
+        state_migrations:
+         - type: CustomStateMigration
+           class_name: source_declarative_manifest.components.SubstreamStateMigration
     company_segments:
       description: >-
         https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies
@@ -651,10 +626,14 @@ definitions:
         cursor_datetime_formats:
           - "%s"
         is_client_side_incremental: true
+        global_substream_cursor: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/company_segments"
+      state_migrations:
+         - type: CustomStateMigration
+           class_name: source_declarative_manifest.components.SubstreamStateMigration
     tickets:
       type: DeclarativeStream
       description: >-
