@@ -44,22 +44,24 @@ class TableCatalogFactory(
         val processedRawTableNames = mutableSetOf<String>()
         val processedFinalTableNames = mutableSetOf<String>()
 
-        return TableCatalog(
-            catalog.streams.associateWith { stream ->
-                val originalRawTableName = rawTableNameGenerator.getTableName(stream.descriptor)
-                val originalFinalTableName = finalTableNameGenerator.getTableName(stream.descriptor)
+        val result = mutableMapOf<DestinationStream, TableNameInfo>()
 
-                // Handle raw table name collisions
-                val finalRawTableName =
-                    resolveTableNameCollision(originalRawTableName, processedRawTableNames)
+        catalog.streams.forEach { stream ->
+            val originalRawTableName = rawTableNameGenerator.getTableName(stream.descriptor)
+            val originalFinalTableName = finalTableNameGenerator.getTableName(stream.descriptor)
 
-                // Handle final table name collisions
-                val finalFinalTableName =
-                    resolveTableNameCollision(originalFinalTableName, processedFinalTableNames)
+            // Handle raw table name collisions
+            val finalRawTableName =
+                resolveTableNameCollision(originalRawTableName, processedRawTableNames)
 
-                // Create column name mapping with collision handling
-                val columnNameMapping = createColumnNameMapping(stream)
+            // Handle final table name collisions
+            val finalFinalTableName =
+                resolveTableNameCollision(originalFinalTableName, processedFinalTableNames)
 
+            // Create column name mapping with collision handling
+            val columnNameMapping = createColumnNameMapping(stream)
+
+            result[stream] =
                 TableNameInfo(
                     TableNames(
                         rawTableName = finalRawTableName,
@@ -67,8 +69,9 @@ class TableCatalogFactory(
                     ),
                     columnNameMapping
                 )
-            }
-        )
+        }
+
+        return TableCatalog(result)
     }
 
     /**
