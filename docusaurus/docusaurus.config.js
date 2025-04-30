@@ -112,6 +112,11 @@ const config = {
           productInformation,
           docMetaTags,
         ],
+        versions: {
+          current: {
+            label: 'Cloud / Next version',
+          },
+        },
       },
     ],
     // This plugin controls release notes, which are unversioned
