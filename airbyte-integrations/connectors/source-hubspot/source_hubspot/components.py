@@ -5,12 +5,9 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 import dpath
 import requests
-from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
-from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+
 from airbyte_cdk import (
     BearerAuthenticator,
     CursorPaginationStrategy,
@@ -27,16 +24,21 @@ from airbyte_cdk import (
     SimpleRetriever,
     StreamSlice,
 )
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+
+
 # from source_hubspot.streams import AssociationsStream
 
 
@@ -222,12 +224,7 @@ def build_associations_retriever(
     )
 
     # Slice over IDs emitted by the parent stream
-    slicer = ListPartitionRouter(
-        values=associations_list,
-        cursor_field="association_name",
-        config=config,
-        parameters=parameters
-    )
+    slicer = ListPartitionRouter(values=associations_list, cursor_field="association_name", config=config, parameters=parameters)
 
     # Record selector
     selector = RecordSelector(
@@ -266,11 +263,11 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         return {"after": 0}
 
     def next_page_token(
-            self,
-            response: requests.Response,
-            last_page_size: int,
-            last_record: Optional[Record],
-            last_page_token_value: Optional[Any] = None,
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any] = None,
     ) -> Optional[Any]:
         if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size > self.RECORDS_LIMIT:
             return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
