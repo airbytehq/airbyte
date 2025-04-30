@@ -36,6 +36,7 @@ See more in the [API doc](https://developers.freshchat.com/api/#authentication)
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.11 | 2025-04-26 | [58887](https://github.com/airbytehq/airbyte/pull/58887) | Update dependencies |
 | 0.0.10 | 2025-04-19 | [57771](https://github.com/airbytehq/airbyte/pull/57771) | Update dependencies |
 | 0.0.9 | 2025-04-05 | [57204](https://github.com/airbytehq/airbyte/pull/57204) | Update dependencies |
 | 0.0.8 | 2025-03-29 | [56505](https://github.com/airbytehq/airbyte/pull/56505) | Update dependencies |
