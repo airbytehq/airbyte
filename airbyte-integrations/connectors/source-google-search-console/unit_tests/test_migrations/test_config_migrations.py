@@ -7,6 +7,7 @@ import json
 import os
 import shutil
 from typing import Any, Mapping
+from pathlib import Path
 
 from source_google_search_console.config_migrations import MigrateCustomReports
 from source_google_search_console.source import SourceGoogleSearchConsole
@@ -18,7 +19,7 @@ from airbyte_cdk.sources import Source
 # BASE ARGS
 CMD = "check"
 TEST_CONFIG_PATH = "unit_tests/test_migrations/test_config.json"
-BACKUP_CONFIG_PATH = "unit_tests/test_migrations/test_config.json.bak"
+BACKUP_CONFIG_PATH = str(Path(__file__).parent / "test_config.json.bak")
 NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/test_new_config.json"
 SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
 SOURCE: Source = SourceGoogleSearchConsole()
