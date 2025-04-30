@@ -999,7 +999,6 @@ class AssociationsStream(BaseStream):
     """
 
     http_method = "POST"
-    limit = 5
     filter_old_records = False
 
     def __init__(self, parent_stream: Stream, identifiers: Iterable[Union[int, str]], *args, **kwargs):
@@ -1225,7 +1224,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                 ],
                 "sorts": [{"propertyName": key, "direction": "ASCENDING"}],
                 "properties": properties_list,
-                "limit": 10,
+                "limit": 100,
             }
             if self.state
             else {}
@@ -1573,17 +1572,6 @@ class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
 class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
     records_field = "merge-audits"
     unnest_fields = ["merged_from_email", "merged_to_email"]
-
-
-class Deals(CRMSearchStream):
-    """Deals, API v3"""
-
-    entity = "deal"
-    last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "companies", "line_items"]
-    primary_key = "id"
-    scopes = {"contacts", "crm.objects.deals.read"}
-    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
 class DealsArchived(ClientSideIncrementalStream):
