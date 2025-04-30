@@ -338,6 +338,13 @@ definitions:
           type: DpathExtractor
           field_path: ["Accounts"]
         schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - LinkedAgencies
+            value: "{{ { \"CustomerInfo\": record.LinkedAgencies } }}"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
