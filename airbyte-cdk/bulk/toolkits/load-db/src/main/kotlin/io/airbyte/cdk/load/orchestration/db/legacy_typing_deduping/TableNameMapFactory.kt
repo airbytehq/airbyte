@@ -41,8 +41,8 @@ class TableCatalogFactory(
             )
         }
 
-        val processedRawTableNames = mutableSetOf<String>()
-        val processedFinalTableNames = mutableSetOf<String>()
+        val processedRawTableNames = mutableSetOf<TableName>()
+        val processedFinalTableNames = mutableSetOf<TableName>()
 
         val result = mutableMapOf<DestinationStream, TableNameInfo>()
 
@@ -80,22 +80,20 @@ class TableCatalogFactory(
      */
     private fun resolveTableNameCollision(
         originalName: TableName,
-        processedNames: MutableSet<String>
+        processedNames: MutableSet<TableName>
     ): TableName {
-        val nameStr = originalName.toPrettyString()
-
-        return if (nameStr in processedNames) {
+        return if (originalName in processedNames) {
             // Create a hash-suffixed name to avoid collision
             val hash =
                 DigestUtils.sha1Hex("${originalName.namespace}&airbyte&${originalName.name}")
                     .substring(0, 3)
             val newName = "${originalName.name}_$hash"
-            TableName(originalName.namespace, newName).also {
-                processedNames.add(it.toPrettyString())
-            }
+            val currentProcessedName = TableName(originalName.namespace, newName)
+            processedNames.add(currentProcessedName)
+            currentProcessedName
         } else {
             // Use original name and add to processed set
-            processedNames.add(nameStr)
+            processedNames.add(originalName)
             originalName
         }
     }
