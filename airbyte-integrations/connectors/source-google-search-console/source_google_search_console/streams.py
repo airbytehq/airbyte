@@ -90,6 +90,7 @@ class Sites(GoogleSearchConsole):
     """
 
     primary_key = None
+    is_resumable = False
 
     def path(
         self,
@@ -107,6 +108,7 @@ class Sitemaps(GoogleSearchConsole):
 
     primary_key = None
     data_field = "sitemap"
+    is_resumable = False
 
     def path(
         self,
