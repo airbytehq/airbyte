@@ -106,6 +106,7 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
             record.update(data)
 
 
+@dataclass
 class HubspotPropertyHistoryExtractor(RecordExtractor):
     """
     Custom record extractor which parses the JSON response from Hubspot and for each instance returned for the specified
