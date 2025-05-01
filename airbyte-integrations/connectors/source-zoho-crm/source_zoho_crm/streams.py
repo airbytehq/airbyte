@@ -12,6 +12,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import urlencode
 
 import requests
+import logging
 
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -24,6 +25,7 @@ from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 # but `.json()` will fail because the response body is empty
 EMPTY_BODY_STATUSES = (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED)
 
+logger = logging.getLogger(__name__)
 
 # Zoho API request to include fields but limit the max fields to 50
 FIELDS_MAP = {
@@ -283,8 +285,13 @@ class ZohoStreamFactory:
         streams = []
 
         def populate_module(module):
-            self._populate_module_meta(module)
-            self._populate_fields_meta(module)
+            try:
+                self._populate_module_meta(module)
+                self._populate_fields_meta(module)
+
+            except Exception:
+                logger.exception("Failed while processing module %s", module.api_name)
+                return
 
         def chunk(max_len, lst):
             for i in range(math.ceil(len(lst) / max_len)):
@@ -293,7 +300,9 @@ class ZohoStreamFactory:
         max_concurrent_request = self.api.max_concurrent_requests
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent_request) as executor:
             for batch in chunk(max_concurrent_request, modules):
-                executor.map(lambda module: populate_module(module), batch)
+                futures = [executor.submit(populate_module, m) for m in batch]
+                for fut in futures:
+                    fut.result()
 
         bases = (IncrementalZohoCrmStream,)
         for module in modules:

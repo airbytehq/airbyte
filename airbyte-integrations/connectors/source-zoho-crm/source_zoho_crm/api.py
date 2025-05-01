@@ -77,9 +77,11 @@ class ZohoAPI:
         return response.json()[key]
 
     def module_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
+        logger.info(f"Fetching settings for module: {module_name}")
         return self._json_from_path(f"/crm/v8/settings/modules/{module_name}", key="modules")
 
     def modules_settings(self) -> List[MutableMapping[Any, Any]]:
+        logger.info(f"Fetching settings for modules")
         return self._json_from_path("/crm/v8/settings/modules", key="modules")
 
     def fields_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
