@@ -29,6 +29,7 @@
 
 test-all = "gradle check"
 format-check = "gradle 'check -x test'"
+install = "echo 'No install step for this connector.'"
 
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
