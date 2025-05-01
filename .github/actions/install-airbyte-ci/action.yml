@@ -48,8 +48,7 @@ runs:
 
     - name: Install Airbyte CI from binary
       id: install-airbyte-ci-binary
-      if: false
-      # if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
+      if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
       shell: bash
       run: |
         curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
@@ -59,7 +58,7 @@ runs:
     - name: Install Python 3.11
       id: install-python-3-11
       uses: actions/setup-python@v4
-      # if: steps.determine-install-mode.outputs.install-mode == 'source'
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
       with:
         python-version: "3.11"
         token: ${{ inputs.github_token }}
@@ -69,8 +68,7 @@ runs:
 
     - name: Install Airbyte CI from source
       id: install-airbyte-ci-source
-      if: true
-      # if: steps.determine-install-mode.outputs.install-mode == 'source'
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
       shell: bash
       run: |
         pip install --upgrade pip
