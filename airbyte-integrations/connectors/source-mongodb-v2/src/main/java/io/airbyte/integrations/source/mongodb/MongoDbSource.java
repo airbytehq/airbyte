@@ -47,6 +47,7 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
+    LOGGER.error("Starting MongoDbSource!!!!!");
     AirbyteExceptionHandler.addThrowableForDeinterpolation(MongoCommandException.class);
     final Source source = new MongoDbSource();
     LOGGER.info("starting source: {}", MongoDbSource.class);
