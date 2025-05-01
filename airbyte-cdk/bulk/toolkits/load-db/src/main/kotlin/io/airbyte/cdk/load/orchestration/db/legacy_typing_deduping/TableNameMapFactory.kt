@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream.Descriptor
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
@@ -16,6 +17,8 @@ import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
+
+const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal"
 
 data class TableNameInfo(val tableNames: TableNames, val columnNameMapping: ColumnNameMapping)
 
@@ -49,14 +52,35 @@ class TableCatalogFactory(
         catalog.streams.forEach { stream ->
             val originalRawTableName = rawTableNameGenerator.getTableName(stream.descriptor)
             val originalFinalTableName = finalTableNameGenerator.getTableName(stream.descriptor)
+            val currentRawProcessedName: TableName
+            val currentFinalProcessedName: TableName
 
-            // Handle raw table name collisions
-            val finalRawTableName =
-                resolveTableNameCollision(originalRawTableName, processedRawTableNames)
+            // Create a hash-suffixed name to avoid collision
+            val hash =
+                DigestUtils.sha1Hex(
+                        "${originalFinalTableName.namespace}&airbyte&${stream.descriptor.name}"
+                    )
+                    .substring(0, 3)
 
-            // Handle final table name collisions
-            val finalFinalTableName =
-                resolveTableNameCollision(originalFinalTableName, processedFinalTableNames)
+            if (originalRawTableName in processedRawTableNames) {
+                val newName = "${stream.descriptor.name}_$hash"
+                currentRawProcessedName = TableName(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE, newName)
+                processedRawTableNames.add(currentRawProcessedName)
+            } else {
+                // Add to processed set
+                processedRawTableNames.add(originalRawTableName)
+                currentRawProcessedName = originalRawTableName
+            }
+
+            if (originalFinalTableName in processedFinalTableNames) {
+                val newName = "${stream.descriptor.name}_$hash"
+                currentFinalProcessedName = TableName(stream.descriptor.namespace!!, newName)
+                processedFinalTableNames.add(currentFinalProcessedName)
+            } else {
+                // Add to processed set
+                processedFinalTableNames.add(originalFinalTableName)
+                currentFinalProcessedName = originalFinalTableName
+            }
 
             // Create column name mapping with collision handling
             val columnNameMapping = createColumnNameMapping(stream)
@@ -64,38 +88,14 @@ class TableCatalogFactory(
             result[stream] =
                 TableNameInfo(
                     TableNames(
-                        rawTableName = finalRawTableName,
-                        finalTableName = finalFinalTableName,
+                        rawTableName = currentRawProcessedName,
+                        finalTableName = currentFinalProcessedName,
                     ),
                     columnNameMapping
                 )
         }
 
         return TableCatalog(result)
-    }
-
-    /**
-     * Resolves table name collisions by adding a hash suffix when needed. Adds the processed name
-     * to the tracking set.
-     */
-    private fun resolveTableNameCollision(
-        originalName: TableName,
-        processedNames: MutableSet<TableName>
-    ): TableName {
-        return if (originalName in processedNames) {
-            // Create a hash-suffixed name to avoid collision
-            val hash =
-                DigestUtils.sha1Hex("${originalName.namespace}&airbyte&${originalName.name}")
-                    .substring(0, 3)
-            val newName = "${originalName.name}_$hash"
-            val currentProcessedName = TableName(originalName.namespace, newName)
-            processedNames.add(currentProcessedName)
-            currentProcessedName
-        } else {
-            // Use original name and add to processed set
-            processedNames.add(originalName)
-            originalName
-        }
     }
 
     /**

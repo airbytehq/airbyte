@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogFactory
 import io.mockk.every
 import io.mockk.mockk
@@ -53,19 +54,27 @@ class TableNameMapFactoryTest {
         val finalTableNameGenerator = mockk<FinalTableNameGenerator>()
         val columnNameGenerator = mockk<ColumnNameGenerator>()
 
+        // Create the same streams as in the original test - "foobarfoo" and "foofoo"
         val stream1 = createTestStream("foobarfoo", "a")
         val stream2 = createTestStream("foofoo", "a")
         val catalog = DestinationCatalog(listOf(stream1, stream2))
 
+        // Mock the generators to simulate name collision by removing "bar" for both raw and final
+        // table names
         every { rawTableNameGenerator.getTableName(stream1.descriptor) } returns
-            TableName("raw_a", "raw_foofoo")
+            TableName(
+                "airbyte_internal",
+                "foofoo"
+            ) // foobarfoo becomes foofoo when "bar" is removed
         every { rawTableNameGenerator.getTableName(stream2.descriptor) } returns
-            TableName("raw_a", "raw_foofoo")
+            TableName("airbyte_internal", "foofoo")
 
         every { finalTableNameGenerator.getTableName(stream1.descriptor) } returns
-            TableName("final_a", "final_foofoo")
+            TableName("a", "foofoo") // foobarfoo becomes foofoo when "bar" is removed
         every { finalTableNameGenerator.getTableName(stream2.descriptor) } returns
-            TableName("final_a", "final_foofoo")
+            TableName("a", "foofoo")
+
+        // Simple pass-through for column name generator (not needed for this test)
         every { columnNameGenerator.getColumnName(any()) } answers
             { call ->
                 val input = call.invocation.args[0] as String
@@ -81,25 +90,41 @@ class TableNameMapFactoryTest {
             )
         val tableCatalog = factory.get()
 
-        val tableNames1 = tableCatalog[stream1]!!.tableNames
-        val tableNames2 = tableCatalog[stream2]!!.tableNames
+        // Get the final table names for both streams
+        val stream1TableInfo = tableCatalog[stream1]!!
+        val stream2TableInfo = tableCatalog[stream2]!!
 
-        val rawTableNames = setOf(tableNames1.rawTableName!!.name, tableNames2.rawTableName!!.name)
+        // One stream should get the original name, the other should get a hash suffix
         val finalTableNames =
-            setOf(tableNames1.finalTableName!!.name, tableNames2.finalTableName!!.name)
-        assertTrue(rawTableNames.contains("raw_foofoo"))
-        val rawTableNameWithHash = rawTableNames.first { it != "raw_foofoo" }
-        assertTrue(rawTableNameWithHash.startsWith("raw_foofoo_"))
-        assertTrue(
-            rawTableNameWithHash.substring("raw_foofoo_".length).matches(Regex("[0-9a-f]{3}"))
+            setOf(
+                stream1TableInfo.tableNames.finalTableName!!.name,
+                stream2TableInfo.tableNames.finalTableName!!.name
+            )
+
+        // Verify that one name is "final_foofoo" and the other has the expected hash suffix
+        assertAll(
+            { assertTrue(stream1TableInfo.tableNames.finalTableName!!.name == "foofoo") },
+            { assertTrue(stream1TableInfo.tableNames.finalTableName!!.namespace == "a") },
+            { assertTrue(stream2TableInfo.tableNames.finalTableName!!.name == "foofoo_3fd") },
+            { assertTrue(stream2TableInfo.tableNames.finalTableName!!.namespace == "a") }
         )
 
-        // Final table names: One should be the original, one should have a hash suffix
-        assertTrue(finalTableNames.contains("final_foofoo"))
-        val finalTableNameWithHash = finalTableNames.first { it != "final_foofoo" }
-        assertTrue(finalTableNameWithHash.startsWith("final_foofoo_"))
-        assertTrue(
-            finalTableNameWithHash.substring("final_foofoo_".length).matches(Regex("[0-9a-f]{3}"))
+        // Now check raw table names with exact expected suffix
+        assertAll(
+            { assertTrue(stream1TableInfo.tableNames.rawTableName!!.name == "foofoo") },
+            {
+                assertTrue(
+                    stream1TableInfo.tableNames.rawTableName!!.namespace ==
+                        DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+                )
+            },
+            { assertTrue(stream2TableInfo.tableNames.rawTableName!!.name == "foofoo_3fd") },
+            {
+                assertTrue(
+                    stream2TableInfo.tableNames.rawTableName!!.namespace ==
+                        DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+                )
+            }
         )
     }
 
@@ -117,7 +142,12 @@ class TableNameMapFactoryTest {
         every { finalTableNameGenerator.getTableName(any()) } returns
             TableName("final_dataset", "final_stream")
 
-        setupColumnNameGeneratorWithTruncation(columnNameGenerator)
+        every { columnNameGenerator.getColumnName(any()) } answers
+            { call ->
+                val input = call.invocation.args[0] as String
+                val truncated = input.substring(0, 10.coerceAtMost(input.length))
+                ColumnNameGenerator.ColumnName(truncated, truncated)
+            }
 
         val factory =
             TableCatalogFactory(
@@ -147,15 +177,6 @@ class TableNameMapFactoryTest {
         schemaProperties["aVeryLongColumnNameWithMoreTextAfterward"] =
             FieldType(io.airbyte.cdk.load.data.StringType, true)
         return ObjectType(schemaProperties)
-    }
-
-    private fun setupColumnNameGeneratorWithTruncation(columnNameGenerator: ColumnNameGenerator) {
-        every { columnNameGenerator.getColumnName(any()) } answers
-            { call ->
-                val input = call.invocation.args[0] as String
-                val truncated = input.substring(0, 10.coerceAtMost(input.length))
-                ColumnNameGenerator.ColumnName(truncated, truncated)
-            }
     }
 
     @Test
