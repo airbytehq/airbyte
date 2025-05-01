@@ -96,6 +96,7 @@ scopes = {
         "crm.objects.companies.write",
     },
     "campaigns": {"crm.lists.read"},
+    "deal_pipelines": {"crm.objects.contacts.read"},
 }
 
 
