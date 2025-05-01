@@ -81,7 +81,7 @@ runs:
     - name: Upload pipx logs as artifacts on failure
       # E.g. /opt/pipx/logs/cmd_2025-05-01_16.46.50_1_pip_errors.log
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pipx-logs
         path: /opt/pipx/logs/
