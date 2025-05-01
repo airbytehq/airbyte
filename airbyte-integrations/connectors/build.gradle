@@ -106,7 +106,6 @@ allprojects {
 
         doLast {
             logger.lifecycle("Building connector image using airbyte-cdk")
-            logger.lifecycle("If this fails with 'command not found', please install with 'pip install airbyte-cdk[dev]'")
 
             // Run the command directly
             def result = exec {
