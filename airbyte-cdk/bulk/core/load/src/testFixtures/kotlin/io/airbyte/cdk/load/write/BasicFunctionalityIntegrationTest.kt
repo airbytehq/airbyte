@@ -535,10 +535,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 ),
             )
         )
+
+        val parsedConfigWithRandomizedDefaultNamespace =
+            ValidatedJsonUtils.parseOne(configSpecClass, configWithRandomizedDefaultNamespace)
         assertAll(
             {
                 dumpAndDiffRecords(
-                    parsedConfig,
+                    parsedConfigWithRandomizedDefaultNamespace,
                     listOf(
                         OutputRecord(
                             extractedAt = 1234,
@@ -554,7 +557,7 @@ abstract class BasicFunctionalityIntegrationTest(
             },
             {
                 dumpAndDiffRecords(
-                    parsedConfig,
+                    parsedConfigWithRandomizedDefaultNamespace,
                     listOf(
                         OutputRecord(
                             extractedAt = 1234,
@@ -570,7 +573,7 @@ abstract class BasicFunctionalityIntegrationTest(
             },
             {
                 dumpAndDiffRecords(
-                    parsedConfig,
+                    parsedConfigWithRandomizedDefaultNamespace,
                     listOf(
                         OutputRecord(
                             extractedAt = 1234,
