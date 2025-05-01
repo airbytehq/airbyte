@@ -43,6 +43,7 @@ pydash = "6.0.2"
 python-slugify = ">=8.0.4"
 deepdiff = "^7.0.1"
 auto-merge = { path = "../auto_merge", develop = true }
+setuptools = "^80.1.0"  # Needed due to pkg_resources refs
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"
