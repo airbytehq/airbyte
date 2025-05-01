@@ -108,32 +108,17 @@ allprojects {
             logger.lifecycle("Building connector image using airbyte-cdk")
             logger.lifecycle("If this fails with 'command not found', please install with 'pip install airbyte-cdk[dev]'")
             
-            // Create a shell script to run the command with proper syntax
-            def scriptFile = new File(temporaryDir, "build_image.sh")
-            scriptFile.text = """#!/bin/bash
-cd "${projectDir.absolutePath}"
-# Check if airbyte-cdk command is available
-command -v airbyte-cdk >/dev/null 2>&1 || { 
-  echo "airbyte-cdk command not found. Please install with 'pip install airbyte-cdk[dev]'"; 
-  echo "If pip is not available, install uv with 'brew install uv' first";
-  exit 127; 
-}
-# Run the image build command
-airbyte-cdk image build
-exit \$?
-"""
-            scriptFile.setExecutable(true)
-            
+            // Run the command directly
             def result = exec {
                 workingDir = projectDir
-                executable '/bin/bash'
-                args scriptFile.absolutePath
+                executable 'sh'
+                args '-c', 'airbyte-cdk image build'
                 ignoreExitValue = true
             }
             
             if (result.exitValue != 0) {
                 if (result.exitValue == 127) { // Command not found exit code
-                    throw new GradleException("Error: 'uvx' command not found. Please install uv with 'brew install uv'")
+                    throw new GradleException("Error: 'airbyte-cdk' command not found. Please install with 'pip install airbyte-cdk[dev]'")
                 } else {
                     throw new GradleException("Error: Image build failed with exit code ${result.exitValue}. Check the logs for details.")
                 }
