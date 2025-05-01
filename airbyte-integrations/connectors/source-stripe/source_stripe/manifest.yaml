@@ -344,8 +344,8 @@ definitions:
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
-              expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
-              #expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate", "data.lines"]}}'
+              expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'  # REMOVED data.lines expansion
+              #limit: 100  # Added explicit limit for better pagination control
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -1093,100 +1093,44 @@ definitions:
               types[]: '{{["person.created", "person.updated", "person.deleted"]}}'
 
     invoice_line_items:
-      type: StateDelegatingStream
+      $ref: "#/definitions/entity_stream"
       $parameters:
         name: invoice_line_items
-      full_refresh_stream:
-        type: DeclarativeStream
-        primary_key:
-          - id
-        schema_loader:
-          type: JsonFileSchemaLoader
-          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
-        retriever:
-          type: SimpleRetriever
-          requester:
-            $ref: "#/definitions/base_requester"
-            path: invoices/{{stream_partition.invoice_id}}/lines
-          record_selector:
-            type: RecordSelector
-            extractor:
-              type: DpathExtractor
-              field_path:
-                - data
-            transform_before_filtering: true
-            schema_normalization: Default
-          paginator:
-            $ref: "#/definitions/base_paginator"
-          partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: invoice_id
-                extra_fields:
-                  - ["id"]
-                  - ["created"]
-                  - ["updated"]
-                lazy_read_pointer: ["lines"]
-                stream:
-                  $ref: "#/definitions/streams/invoices"
-        incremental_sync:
-          $ref: "#/definitions/entity_single_slice_cursor"
-          cursor_field: invoice_updated
-          global_substream_cursor: true
-        transformations:
-          - type: AddFields
-            fields:
-              - path:
-                  - invoice_id
-                value: "{{ stream_slice.extra_fields['id']}}"
-                value_type: integer
-          - type: AddFields
-            fields:
-              - path:
-                  - invoice_created
-                value: "{{ stream_slice.extra_fields['created'] | int}}"
-                value_type: integer
-          - type: AddFields
-            fields:
-              - path:
-                  - invoice_updated
-                value: "{{ stream_slice.extra_fields['updated'] | int}}"
-                value_type: integer
-      incremental_stream:
-        $ref: "#/definitions/events_based_stream"
-        incremental_sync:
-          $ref: "#/definitions/entity_single_slice_cursor"
-          cursor_field: invoice_updated
-        retriever:
-          $ref: "#/definitions/events_objects_retriever"
-          $parameters:
-            request_parameters:
-              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
-        transformations:
-          - type: AddFields
-            fields:
-              - path:
-                  - data
-                  - object
-                  - is_deleted
-                value: "{{ True }}"
-            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
-          - type: AddFields
-            fields:
-              - path:
-                  - data
-                  - object
-                  - invoice_updated
-                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
-                value_type: integer
-            condition: "{{ record.get('data', {}).get('object', False) }}"
-          - type: DpathFlattenFields
-            field_path:
-              - data
-              - object
-            replace_record: true
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: invoice_id
+              stream:
+                $ref: "#/definitions/streams/invoices"
+              incremental_dependency: true
+              extra_fields:
+                - ["created"]
+                - ["updated"]
+              # REMOVED lazy_read_pointer - this is crucial
+        $parameters:
+          path: invoices/{{ stream_partition.invoice_id }}/lines
+        # Ensure proper pagination is enabled
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/entity_single_slice_cursor"
+        cursor_field: invoice_updated
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["invoice_id"]
+              value: "{{ stream_partition.invoice_id }}"
+            - path: ["invoice_created"]
+              value: "{{ stream_slice.extra_fields['created'] | int }}"
+              value_type: integer
+            - path: ["invoice_updated"]
+              value: "{{ stream_slice.extra_fields['updated'] | int }}"
+              value_type: integer
 
     application_fees_refunds:
       type: StateDelegatingStream
