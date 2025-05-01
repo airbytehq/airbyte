@@ -27,6 +27,9 @@
 
 [tasks]
 
+test-all = "gradle check"
+format-check = "gradle 'check -x test'"
+
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
 shell = '''
