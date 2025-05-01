@@ -211,12 +211,13 @@ class CustomScrollRetriever(SimpleRetriever):
     """
     For the companies stream, we need to implement a custom retriever since we cannot retry on HTTP 500 errors, See Docs: https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
     We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, Tracked here: https://github.com/airbytehq/airbyte-internal-issues/issues/12107
-    However, the team does not have the bandwidth to implement this at the moment. 
-    
+    However, the team does not have the bandwidth to implement this at the moment.
+
     So we are implementing a custom retriever that will handle 500 errors by restarting the stream from the beginning.
     This is a temporary solution until the CDK team can implement the 'RESTART' action.
     This is done by setting next_page_token to None if we get a 500 error.
     """
+
     def __init__(self, requester, paginator, record_selector, stream_slicer=None, **kwargs):
         stream_slicer = stream_slicer if stream_slicer is not None else SinglePartitionRouter(parameters={})
         super().__init__(requester=requester, paginator=paginator, record_selector=record_selector, stream_slicer=stream_slicer, **kwargs)
