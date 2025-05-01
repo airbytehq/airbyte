@@ -321,8 +321,10 @@ definitions:
             path: subscriptions
           requester:
             $ref: "#/definitions/base_requester"
+            use_cache: true
             request_parameters:
               status: "all"
+              expand[]: '{{["data.items"]}}'
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -343,6 +345,7 @@ definitions:
             path: invoices
           requester:
             $ref: "#/definitions/base_requester"
+            use_cache: true
             request_parameters:
               expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
       incremental_stream:
@@ -1109,10 +1112,12 @@ definitions:
               extra_fields:
                 - ["created"]
                 - ["updated"]
-        $parameters:
-          path: invoices/{{ stream_partition.invoice_id }}/lines
-        paginator:
-          $ref: "#/definitions/base_paginator"
+              lazy_read_pointer: ["lines", "data"]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: invoice_updated
@@ -1190,10 +1195,6 @@ definitions:
         name: subscription_items
       retriever:
         $ref: "#/definitions/base_retriever"
-        requester:
-          $ref: "#/definitions/base_requester"
-          request_parameters:
-            subscription: "{{ stream_partition.subscription_id }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1205,8 +1206,12 @@ definitions:
               incremental_dependency: true
               extra_fields:
                 - ["updated"]
-        $parameters:
-          path: subscription_items
+              lazy_read_pointer: ["items", "data"]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: subscription_updated
@@ -1215,7 +1220,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["subscription_id"]
-              value: "{{ stream_slice['subscription_id'] }}"
+              value: "{{ stream_partition.subscription_id }}"
             - path: ["subscription_updated"]
               value: "{{ stream_slice.extra_fields['updated'] | int }}"
               value_type: integer
