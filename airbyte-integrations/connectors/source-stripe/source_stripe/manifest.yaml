@@ -344,8 +344,7 @@ definitions:
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
-              expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'  # REMOVED data.lines expansion
-              #limit: 100  # Added explicit limit for better pagination control
+              expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -1110,10 +1109,8 @@ definitions:
               extra_fields:
                 - ["created"]
                 - ["updated"]
-              # REMOVED lazy_read_pointer - this is crucial
         $parameters:
           path: invoices/{{ stream_partition.invoice_id }}/lines
-        # Ensure proper pagination is enabled
         paginator:
           $ref: "#/definitions/base_paginator"
       incremental_sync:
