@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.toolkits.load.db.orchestration
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
-import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -21,9 +20,7 @@ object RootLevelTimestampsToUtcMapper : ExpectedRecordMapper {
                 expectedRecord.data.values.mapValuesTo(linkedMapOf()) { (_, value) ->
                     when (value) {
                         is TimeWithTimezoneValue ->
-                            TimeWithoutTimezoneValue(
-                                value.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
-                            )
+                            TimeWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
                         is TimestampWithTimezoneValue ->
                             TimestampWithTimezoneValue(
                                 value.value.withOffsetSameInstant(ZoneOffset.UTC)
