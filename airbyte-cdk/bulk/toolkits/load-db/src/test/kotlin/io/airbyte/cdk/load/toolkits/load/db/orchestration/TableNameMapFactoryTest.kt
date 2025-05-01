@@ -18,8 +18,8 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogFactory
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -159,31 +159,33 @@ class TableNameMapFactoryTest {
     }
 
     @Test
-    fun testMultipleColumnNameCollisions() {
+    fun testColumnNameCollision() {
         val rawTableNameGenerator = mockk<RawTableNameGenerator>()
         val finalTableNameGenerator = mockk<FinalTableNameGenerator>()
         val columnNameGenerator = mockk<ColumnNameGenerator>()
 
-        val schema = createSchemaWithMultipleColumnCollisions()
+        // Create a schema with columns that will have name collision after processing
+        val schemaProperties = linkedMapOf<String, FieldType>()
+        schemaProperties["foobarfoo"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
+        schemaProperties["foofoo"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
+        val schema = ObjectType(schemaProperties)
+
         val stream = createTestStream("stream", "namespace", schema)
         val catalog = DestinationCatalog(listOf(stream))
+
         every { rawTableNameGenerator.getTableName(any()) } returns
             TableName("raw_dataset", "raw_stream")
         every { finalTableNameGenerator.getTableName(any()) } returns
             TableName("final_dataset", "final_stream")
 
+        // Mock the column name generator to simulate name collision by removing "bar"
         every { columnNameGenerator.getColumnName(any()) } answers
             { call ->
                 val input = call.invocation.args[0] as String
-                if (input.startsWith("column") && !input.contains("_")) {
-                    ColumnNameGenerator.ColumnName("column", "column")
-                } else if (input.matches(Regex("column_\\d+"))) {
-                    val suffix = input.substring("column".length)
-                    ColumnNameGenerator.ColumnName("column$suffix", "column$suffix")
-                } else {
-                    ColumnNameGenerator.ColumnName(input, input)
-                }
+                val processedName = input.replace("bar", "")
+                ColumnNameGenerator.ColumnName(processedName, processedName)
             }
+
         val factory =
             TableCatalogFactory(
                 catalog,
@@ -194,37 +196,15 @@ class TableNameMapFactoryTest {
         val tableCatalog = factory.get()
 
         val columnMapping = tableCatalog[stream]!!.columnNameMapping
+        val mappedColumns = listOf(columnMapping["foobarfoo"]!!, columnMapping["foofoo"]!!)
 
-        val columnNames = columnMapping.values.toSet()
-        assertEquals(4, columnNames.size)
-
-        assertEquals("column", columnMapping["column1"])
-
-        assertTrue(columnMapping["column2"]!!.startsWith("column_"))
-        assertTrue(columnMapping["column3"]!!.startsWith("column_"))
-        assertTrue(columnMapping["column4"]!!.startsWith("column_"))
-        val mappedNames =
-            listOf(
-                columnMapping["column1"]!!,
-                columnMapping["column2"]!!,
-                columnMapping["column3"]!!,
-                columnMapping["column4"]!!
-            )
-
-        for (i in mappedNames.indices) {
-            for (j in i + 1 until mappedNames.size) {
-                assertNotEquals(mappedNames[i], mappedNames[j])
-            }
-        }
-    }
-
-    private fun createSchemaWithMultipleColumnCollisions(): AirbyteType {
-        val schemaProperties = linkedMapOf<String, FieldType>()
-        schemaProperties["column1"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
-        schemaProperties["column2"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
-        schemaProperties["column3"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
-        schemaProperties["column4"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
-        return ObjectType(schemaProperties)
+        // Verify column name collision was properly resolved
+        // One column should be "foofoo" and the other should be "foofoo_1"
+        assertAll(
+            { assertEquals(2, mappedColumns.size) },
+            { assertEquals("foofoo", mappedColumns[0]) },
+            { assertEquals("foofoo_1", mappedColumns[1]) }
+        )
     }
 
     private fun createTestStream(

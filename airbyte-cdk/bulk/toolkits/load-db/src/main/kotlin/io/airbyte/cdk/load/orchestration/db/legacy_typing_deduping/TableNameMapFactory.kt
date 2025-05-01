@@ -110,7 +110,7 @@ class TableCatalogFactory(
 
         stream.schema.asColumns().forEach { (columnName, _) ->
             val processedColumnName =
-                finalTableColumnNameGenerator.getColumnName(columnName).displayName
+                finalTableColumnNameGenerator.getColumnName(columnName).canonicalName
 
             // Store mapping between processed name and original name
             originalColumnNameMap[processedColumnName] = columnName
@@ -156,7 +156,9 @@ class TableCatalogFactory(
         do {
             // Generate candidate name by adding numeric suffix
             candidateName =
-                finalTableColumnNameGenerator.getColumnName("${processedName}_$counter").displayName
+                finalTableColumnNameGenerator
+                    .getColumnName("${originalColumnName}_$counter")
+                    .canonicalName
 
             // Check if we're making progress (detecting potential truncation)
             if (candidateName == previousCandidate) {
