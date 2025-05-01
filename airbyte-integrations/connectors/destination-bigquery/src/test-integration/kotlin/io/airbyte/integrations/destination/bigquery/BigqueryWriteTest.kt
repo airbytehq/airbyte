@@ -98,7 +98,6 @@ class StandardInsertRawOverrideDisableTd :
                     Path.of("secrets/credentials-1s1t-disabletd-standard-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
@@ -140,7 +139,6 @@ class GcsRawOverrideDisableTd :
                 configFile = Path.of("secrets/credentials-1s1t-disabletd-gcs-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
@@ -156,7 +154,6 @@ class GcsRawOverride :
                 configFile = Path.of("secrets/credentials-1s1t-gcs-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
