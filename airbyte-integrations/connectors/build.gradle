@@ -103,11 +103,11 @@ allprojects {
     tasks.register('buildImage') {
         description = 'Build connector Docker image using the CDK CLI'
         group = 'build'
-        
+
         doLast {
             logger.lifecycle("Building connector image using airbyte-cdk")
             logger.lifecycle("If this fails with 'command not found', please install with 'pip install airbyte-cdk[dev]'")
-            
+
             // Run the command directly
             def result = exec {
                 workingDir = projectDir
@@ -115,7 +115,7 @@ allprojects {
                 args '-c', 'airbyte-cdk image build'
                 ignoreExitValue = true
             }
-            
+
             if (result.exitValue != 0) {
                 if (result.exitValue == 127) { // Command not found exit code
                     throw new GradleException("Error: 'airbyte-cdk' command not found. Please install with 'pip install airbyte-cdk[dev]'")
@@ -124,7 +124,7 @@ allprojects {
                 }
             }
         }
-        
+
         // Always re-run this task
         outputs.upToDateWhen { false }
     }
