@@ -20,304 +20,22 @@ from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
-
 # 204 and 304 status codes are valid successful responses,
 # but `.json()` will fail because the response body is empty
 EMPTY_BODY_STATUSES = (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED)
 
 logger = logging.getLogger(__name__)
-
-# Zoho API request to include fields but limit the max fields to 50
-FIELDS_MAP = {
-    "Contacts": {
-        "Name",
-        "Owner",
-        "Email",
-        "Description",
-        "currency_symbol",
-        "Vendor_Name",
-        "Mailing_Zip",
-        "Other_Phone",
-        "Mailing_State",
-        "Twitter",
-        "Other_Zip",
-        "Mailing_Street",
-        "Other_State",
-        "Salutation",
-        "Other_Country",
-        "Last_Activity_Time",
-        "First_Name",
-        "Full_Name",
-        "Asst_Phone",
-        "Record_Image",
-        "Department",
-        "Modified_By",
-        "Skype_ID",
-        "process_flow",
-        "Assistant",
-        "Phone",
-        "Mailing_Country",
-        "Account_Name",
-        "id",
-        "Email_Opt_Out",
-        "approved",
-        "Reporting_To",
-        "approval",
-        "Modified_Time",
-        "Date_of_Birth",
-        "Mailing_City",
-        "Other_City",
-        "Created_Time",
-        "Title",
-        "editable",
-        "Other_Street",
-        "Mobile",
-        "Home_Phone",
-        "Last_Name",
-        "Lead_Source",
-        "Tag",
-        "Created_By",
-        "Fax",
-        "Secondary_Email"
-    },
-    "Leads": {
-        "Name",
-        "Owner",
-        "Company",
-        "Email",
-        "Description",
-        "currency_symbol",
-        "Rating",
-        "Website",
-        "Twitter",
-        "Salutation",
-        "Last_Activity_Time",
-        "First_Name",
-        "Full_Name",
-        "Lead_Status",
-        "Industry",
-        "Record_Image",
-        "Modified_By",
-        "Skype_ID",
-        "converted",
-        "process_flow",
-        "Phone",
-        "Street",
-        "Zip_Code",
-        "id",
-        "Email_Opt_Out",
-        "approved",
-        "Designation",
-        "approval",
-        "Modified_Time",
-        "Created_Time",
-        "editable",
-        "City",
-        "No_of_Employees",
-        "Mobile",
-        "Last_Name",
-        "State",
-        "Lead_Source",
-        "Country",
-        "Tag",
-        "Created_By",
-        "Fax",
-        "Annual_Revenue",
-        "Secondary_Email"
-    },
-    "Accounts": {
-        "Name",
-        "Owner",
-        "Ownership",
-        "Description",
-        "currency_symbol",
-        "Account_Type",
-        "Rating",
-        "SIC_Code",
-        "Shipping_State",
-        "Website",
-        "Employees",
-        "Last_Activity_Time",
-        "Industry",
-        "Record_Image",
-        "Modified_By",
-        "Account_Site",
-        "process_flow",
-        "Phone",
-        "Billing_Country",
-        "Account_Name",
-        "id",
-        "Account_Number",
-        "approved",
-        "Ticker_Symbol",
-        "approval",
-        "Modified_Time",
-        "Billing_Street",
-        "Created_Time",
-        "editable",
-        "Billing_Code",
-        "Parent_Account",
-        "Shipping_City",
-        "Shipping_Country",
-        "Shipping_Code",
-        "Billing_City",
-        "Billing_State",
-        "Tag",
-        "Created_By",
-        "Fax",
-        "Annual_Revenue",
-        "Shipping_Street"
-    },
-}
-
-
-# Zoho API request to include fields but limit the max fields to 50
-FIELDS_MAP = {
-    "Contacts": {
-        "Name",
-        "Owner",
-        "Email",
-        "Description",
-        "currency_symbol",
-        "Vendor_Name",
-        "Mailing_Zip",
-        "Other_Phone",
-        "Mailing_State",
-        "Twitter",
-        "Other_Zip",
-        "Mailing_Street",
-        "Other_State",
-        "Salutation",
-        "Other_Country",
-        "Last_Activity_Time",
-        "First_Name",
-        "Full_Name",
-        "Asst_Phone",
-        "Record_Image",
-        "Department",
-        "Modified_By",
-        "Skype_ID",
-        "process_flow",
-        "Assistant",
-        "Phone",
-        "Mailing_Country",
-        "Account_Name",
-        "id",
-        "Email_Opt_Out",
-        "approved",
-        "Reporting_To",
-        "approval",
-        "Modified_Time",
-        "Date_of_Birth",
-        "Mailing_City",
-        "Other_City",
-        "Created_Time",
-        "Title",
-        "editable",
-        "Other_Street",
-        "Mobile",
-        "Home_Phone",
-        "Last_Name",
-        "Lead_Source",
-        "Tag",
-        "Created_By",
-        "Fax",
-        "Secondary_Email"
-    },
-    "Leads": {
-        "Name",
-        "Owner",
-        "Company",
-        "Email",
-        "Description",
-        "currency_symbol",
-        "Rating",
-        "Website",
-        "Twitter",
-        "Salutation",
-        "Last_Activity_Time",
-        "First_Name",
-        "Full_Name",
-        "Lead_Status",
-        "Industry",
-        "Record_Image",
-        "Modified_By",
-        "Skype_ID",
-        "converted",
-        "process_flow",
-        "Phone",
-        "Street",
-        "Zip_Code",
-        "id",
-        "Email_Opt_Out",
-        "approved",
-        "Designation",
-        "approval",
-        "Modified_Time",
-        "Created_Time",
-        "editable",
-        "City",
-        "No_of_Employees",
-        "Mobile",
-        "Last_Name",
-        "State",
-        "Lead_Source",
-        "Country",
-        "Tag",
-        "Created_By",
-        "Fax",
-        "Annual_Revenue",
-        "Secondary_Email"
-    },
-    "Accounts": {
-        "Name",
-        "Owner",
-        "Ownership",
-        "Description",
-        "currency_symbol",
-        "Account_Type",
-        "Rating",
-        "SIC_Code",
-        "Shipping_State",
-        "Website",
-        "Employees",
-        "Last_Activity_Time",
-        "Industry",
-        "Record_Image",
-        "Modified_By",
-        "Account_Site",
-        "process_flow",
-        "Phone",
-        "Billing_Country",
-        "Account_Name",
-        "id",
-        "Account_Number",
-        "approved",
-        "Ticker_Symbol",
-        "approval",
-        "Modified_Time",
-        "Billing_Street",
-        "Created_Time",
-        "editable",
-        "Billing_Code",
-        "Parent_Account",
-        "Shipping_City",
-        "Shipping_Country",
-        "Shipping_Code",
-        "Billing_City",
-        "Billing_State",
-        "Tag",
-        "Created_By",
-        "Fax",
-        "Annual_Revenue",
-        "Shipping_Street"
-    },
-}
+FIELDS_LIMIT = 50
 
 
 class ZohoCrmStream(HttpStream, ABC):
     primary_key: str = "id"
     module: ModuleMeta = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.all_fields = {field.api_name for field in self.module.fields} if self.module.api_name else set()
+        self.current_fields = []
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.status_code in EMPTY_BODY_STATUSES:
@@ -328,7 +46,7 @@ class ZohoCrmStream(HttpStream, ABC):
         return {"page": pagination["page"] + 1}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -337,16 +55,16 @@ class ZohoCrmStream(HttpStream, ABC):
         yield from data
 
     def path(self, *args, **kwargs) -> str:
-        field_names = ([field.api_name for field in self.module.fields
-                        if self.module.api_name not in FIELDS_MAP or field.api_name in FIELDS_MAP[self.module.api_name]]
-            if self.module.fields else [])
-        query_string = urlencode({"fields": ",".join(field_names)})
-        return f"/crm/v8/{self.module.api_name}?{query_string}"
+        field_names = self.current_fields if self.current_fields else self.all_fields
+        if field_names:
+            query_string = urlencode({"fields": ",".join(field_names)})
+            return f"/crm/v8/{self.module.api_name}?{query_string}"
+        return f"/crm/v8/{self.module.api_name}"
 
     def get_json_schema(self) -> Optional[Dict[Any, Any]]:
         try:
             return asdict(self.module.schema)
-        except IncompleteMetaDataException:
+        except IncompleteMetaDataException as e:
             # to build a schema for a stream, a sequence of requests is made:
             # one `/settings/modules` which introduces a list of modules,
             # one `/settings/modules/{module_name}` per module and
@@ -354,7 +72,7 @@ class ZohoCrmStream(HttpStream, ABC):
             # Any of former two can result in 204 and empty body what blocks us
             # from generating stream schema and, therefore, a stream.
             self.logger.warning(
-                f"Could not retrieve fields Metadata for module {self.module.api_name}. " f"This stream will not be available for syncs."
+                f"Could not retrieve fields Metadata for module {self.module.api_name}. " f"This stream will not be available for syncs. Details: {e}"
             )
             return None
         except UnknownDataTypeException as exc:
@@ -366,7 +84,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     cursor_field = "Modified_Time"
 
     def __init__(self, authenticator: "requests.auth.AuthBase" = None, config: Mapping[str, Any] = None):
-        super().__init__(authenticator)
+        super().__init__(authenticator=authenticator)
         self._config = config
         self._state = {}
         self._start_datetime = self._config.get("start_datetime") or "1970-01-01T00:00:00+00:00"
@@ -381,8 +99,36 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
+    def merge_records(self, records: List[Mapping[str, Any]]) -> List[Mapping[str, Any]]:
+        """
+        Merge records with the same primary key.
+        """
+        merged_records = {}
+        for record in records:
+            primary_key_value = record.get(self.primary_key)
+            if primary_key_value not in merged_records:
+                merged_records[primary_key_value] = record
+            else:
+                merged_records[primary_key_value].update(record)
+        return list(merged_records.values())
+
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(*args, **kwargs):
+        records = []
+        if len(self.all_fields) > FIELDS_LIMIT:
+            offset = 0
+            all_fields_without_pk = list(self.all_fields - {self.primary_key})
+            while offset < len(all_fields_without_pk):
+                self.current_fields = all_fields_without_pk[offset:offset + FIELDS_LIMIT - 1] + [self.primary_key]
+                offset += FIELDS_LIMIT
+                logger.info("Reading records from %s with fields: %s", self.module.api_name, self.current_fields)
+                records.extend(list(super().read_records(*args, **kwargs)))
+            self.merge_records(records)
+        else:
+            self.current_fields = self.all_fields
+            logger.info("Reading records from %s with All fields: %s", self.module.api_name, self.current_fields)
+            records = super().read_records(*args, **kwargs)
+
+        for record in records:
             current_cursor_value = datetime.datetime.fromisoformat(self.state[self.cursor_field])
             latest_cursor_value = datetime.datetime.fromisoformat(record.get(self.cursor_field,'2000-01-01T00:00:00+00:00'))
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
@@ -439,7 +185,7 @@ class ZohoStreamFactory:
 
         def chunk(max_len, lst):
             for i in range(math.ceil(len(lst) / max_len)):
-                yield lst[i * max_len : (i + 1) * max_len]
+                yield lst[i * max_len: (i + 1) * max_len]
 
         max_concurrent_request = self.api.max_concurrent_requests
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent_request) as executor:
