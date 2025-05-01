@@ -39,7 +39,7 @@ Airbyte CI `(airbyte-ci`) is a Dagger-based tool for accomplishing specific task
 
 ## Gradle
 
-Gradle is used in Java and Kotlin development.  A full discussion of how to install and use docker is outside the scope of this guide. Similar to running `poe`, you can run `gradle tasks` to view a list of available Gradle development tasks.
+Gradle is used in Java and Kotlin development. A full discussion of how to install and use docker is outside the scope of this guide. Similar to running `poe`, you can run `gradle tasks` to view a list of available Gradle development tasks.
 
 :::tip
 
