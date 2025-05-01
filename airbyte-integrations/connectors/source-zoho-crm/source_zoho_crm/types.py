@@ -107,13 +107,13 @@ FieldType = Dict[Any, Any]
 @dataclasses.dataclass
 class FieldMeta(FromDictMixin):
     json_type: str
-    length: Optional[int]
     api_name: str
     data_type: str
-    decimal_place: Optional[int]
     system_mandatory: bool
     display_label: str
-    pick_list_values: Optional[List[ZohoPickListItem]]
+    decimal_place: Optional[int] = None
+    pick_list_values: Optional[List[ZohoPickListItem]] = None
+    length: Optional[int] = None
     auto_number: Optional[AutoNumberDict] = AutoNumberDict(prefix="", suffix="")
 
     def _default_type_kwargs(self) -> Dict[str, str]:

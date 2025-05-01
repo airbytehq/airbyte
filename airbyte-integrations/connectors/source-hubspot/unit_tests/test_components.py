@@ -1,8 +1,12 @@
 #
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
+
+from unittest.mock import Mock
+
 import pytest
-from source_hubspot.components import MigrateEmptyStringState, NewtoLegacyFieldTransformation
+import requests
+from source_hubspot.components import HubspotPropertyHistoryExtractor, MigrateEmptyStringState, NewtoLegacyFieldTransformation
 from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
 
 
@@ -103,3 +107,211 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
 
     if actual_should_migrate:
         assert state_migration.migrate(stream_state=state) == expected_state
+
+
+def test_property_history_extractor():
+    expected_records = [
+        {
+            "dealId": "1234",
+            "property": "pilot",
+            "sourceId": "0",
+            "sourceType": "MIGRATION",
+            "timestamp": "2022-08-04T15:57:22.188Z",
+            "updatedByUserId": 987,
+            "value": "rei_ayanami",
+            "archived": False,
+        },
+        {
+            "dealId": "1234",
+            "property": "pilot",
+            "sourceId": "1",
+            "sourceType": "MIGRATION",
+            "timestamp": "2022-08-04T15:57:22.188Z",
+            "updatedByUserId": 987,
+            "value": "shinji_ikari",
+            "archived": False,
+        },
+        {
+            "dealId": "1234",
+            "property": "pilot",
+            "sourceId": "2",
+            "sourceType": "MIGRATION",
+            "timestamp": "2022-08-04T15:57:22.188Z",
+            "updatedByUserId": 987,
+            "value": "asuka_langley_soryu",
+            "archived": False,
+        },
+        {
+            "dealId": "1234",
+            "property": "evangelion_unit",
+            "sourceId": "0",
+            "sourceType": "MIGRATION",
+            "timestamp": "2022-08-04T15:57:22.188Z",
+            "updatedByUserId": 987,
+            "value": "0",
+            "archived": False,
+        },
+        {
+            "dealId": "1234",
+            "property": "evangelion_unit",
+            "sourceId": "1",
+            "sourceType": "MIGRATION",
+            "timestamp": "2022-08-04T15:57:22.188Z",
+            "updatedByUserId": 987,
+            "value": "1",
+            "archived": False,
+        },
+        {
+            "dealId": "1234",
+            "property": "evangelion_unit",
+            "sourceId": "2",
+            "sourceType": "MIGRATION",
+            "timestamp": "2022-08-04T15:57:22.188Z",
+            "updatedByUserId": 987,
+            "value": "2",
+            "archived": False,
+        },
+    ]
+
+    response = [
+        {
+            "results": [
+                {
+                    "id": "1234",
+                    "properties": {
+                        "amount": "3",
+                        "closedate": "2022-08-31T15:56:49.107Z",
+                        "dealname": "Evangelion Contracts",
+                        "dealstage": "completed",
+                        "hs_lastmodifieddate": "2024-08-28T00:00:00.000Z",
+                        "hs_object_id": "5678",
+                        "pipeline": "default",
+                    },
+                    "propertiesWithHistory": {
+                        "pilot": [
+                            {
+                                "value": "rei_ayanami",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "0",
+                                "updatedByUserId": 987,
+                            },
+                            {
+                                "value": "shinji_ikari",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "1",
+                                "updatedByUserId": 987,
+                            },
+                            {
+                                "value": "asuka_langley_soryu",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "2",
+                                "updatedByUserId": 987,
+                            },
+                        ],
+                        "evangelion_unit": [
+                            {
+                                "value": "0",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "0",
+                                "updatedByUserId": 987,
+                            },
+                            {
+                                "value": "1",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "1",
+                                "updatedByUserId": 987,
+                            },
+                            {
+                                "value": "2",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "2",
+                                "updatedByUserId": 987,
+                            },
+                        ],
+                    },
+                    "archived": False,
+                }
+            ]
+        }
+    ]
+
+    decoder = Mock()
+    decoder.decode.return_value = response
+
+    extractor = HubspotPropertyHistoryExtractor(
+        field_path=["results"], entity_primary_key="dealId", additional_keys=["archived"], decoder=decoder, config={}, parameters={}
+    )
+
+    actual_records = list(extractor.extract_records(response=requests.Response()))
+
+    assert actual_records == expected_records
+
+
+def test_property_history_extractor_ignore_hs_lastmodifieddate():
+    expected_records = [
+        {
+            "dealId": "1234",
+            "property": "pilot",
+            "sourceId": "0",
+            "sourceType": "MIGRATION",
+            "timestamp": "2022-08-04T15:57:22.188Z",
+            "updatedByUserId": 987,
+            "value": "rei_ayanami",
+        }
+    ]
+
+    response = [
+        {
+            "results": [
+                {
+                    "id": "1234",
+                    "properties": {
+                        "amount": "3",
+                        "closedate": "2022-08-31T15:56:49.107Z",
+                        "dealname": "Evangelion Contracts",
+                        "dealstage": "completed",
+                        "hs_lastmodifieddate": "2024-08-28T00:00:00.000Z",
+                        "hs_object_id": "5678",
+                        "pipeline": "default",
+                    },
+                    "propertiesWithHistory": {
+                        "pilot": [
+                            {
+                                "value": "rei_ayanami",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "0",
+                                "updatedByUserId": 987,
+                            },
+                        ],
+                        "hs_lastmodifieddate": [
+                            {
+                                "value": "2022-08-04T15:57:22.188Z",
+                                "timestamp": "2022-08-04T15:57:22.188Z",
+                                "sourceType": "MIGRATION",
+                                "sourceId": "0",
+                                "updatedByUserId": 987,
+                            },
+                        ],
+                    },
+                }
+            ]
+        }
+    ]
+
+    decoder = Mock()
+    decoder.decode.return_value = response
+
+    extractor = HubspotPropertyHistoryExtractor(
+        field_path=["results"], entity_primary_key="dealId", additional_keys=[], decoder=decoder, config={}, parameters={}
+    )
+
+    actual_records = list(extractor.extract_records(response=requests.Response()))
+
+    assert actual_records == expected_records
