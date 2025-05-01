@@ -104,6 +104,7 @@ jobs:
           fi
           # Split the comma-separated string into an array
           IFS=',' read -r -a CONNECTORS_ARRAY <<< "$CONNECTORS"
+          echo "Detected ${#CONNECTORS_ARRAY[@]} connectors: ${CONNECTORS_ARRAY[*]}"
           # Convert the array to a JSON-compatible string
           json_elements=$(printf '"%s",' "${CONNECTORS_ARRAY[@]}" | sed 's/,$//')
           json_output="{ \"connector\": [$json_elements] }"
