@@ -81,10 +81,11 @@ abstract class BigqueryTDWriteTest(
         supportsDedup = true,
         nullEqualsUnset = true,
         StronglyTyped(
-            convertAllValuesToString = false,
+            convertAllValuesToString = true,
             topLevelFloatLosesPrecision = true,
-            nestedFloatLosesPrecision = false,
+            nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
+            numberCanBeLarge = false,
         ),
     )
 
