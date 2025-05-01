@@ -74,8 +74,8 @@ jobs:
       - name: Get Connector List from Input
         if: inputs.connector_name
         run: |
-          # If input is comma-separated list, translate to a newline-delimited string
-          CONNECTORS=$(echo "${{ inputs.connector_name }}" | tr ',' '\n')
+          # If input is newline-delimited, translate to comma-delimited
+          CONNECTORS=$(echo "${{ inputs.connector_name }}" | tr '\n' ',')
           echo "Found connectors input:\n${CONNECTORS}"
           echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
 
@@ -91,7 +91,7 @@ jobs:
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
           echo -e "Detected connectors with changes:\n${CONNECTORS}"
-          echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
+          echo "CONNECTORS=$(echo \"$CONNECTORS\" | tr '\n' ',')" >> $GITHUB_ENV
 
       - name: Convert to JSON
         id: convert-matrix
@@ -102,8 +102,10 @@ jobs:
             echo "matrix=" >> $GITHUB_OUTPUT
             exit 0
           fi
-          # Convert the matrix from newline-delimited string to a JSON string
-          json_elements=$(IFS=,; echo "\"${CONNECTORS[*]}\"")
+          # Split the comma-separated string into an array
+          IFS=',' read -r -a CONNECTORS_ARRAY <<< "$CONNECTORS"
+          # Convert the array to a JSON-compatible string
+          json_elements=$(printf '"%s",' "${CONNECTORS_ARRAY[@]}" | sed 's/,$//')
           json_output="{ \"connector\": [$json_elements] }"
           echo "matrix=$json_output" | tee -a "$GITHUB_OUTPUT"
 
