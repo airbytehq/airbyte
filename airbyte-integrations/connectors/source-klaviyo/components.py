@@ -320,3 +320,6 @@ class PerPartitionToSingleStateMigration(StateMigration):
 
         min_state = min(stream_state.get("states"), key=lambda state: state["cursor"][self._cursor_field])
         return min_state.get("cursor")
+
+
+# blerg (revert-me)
