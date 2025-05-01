@@ -1574,6 +1574,17 @@ class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
     unnest_fields = ["merged_from_email", "merged_to_email"]
 
 
+class Deals(CRMSearchStream):
+    """Deals, API v3"""
+
+    entity = "deal"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "companies", "line_items"]
+    primary_key = "id"
+    scopes = {"contacts", "crm.objects.deals.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
+
+
 class DealsArchived(ClientSideIncrementalStream):
     """Archived Deals, API v3"""
 

@@ -270,7 +270,7 @@ definitions:
           - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
       - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotAssociationsTransformation
+        class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
       - type: CustomTransformation
         class_name: source_hubspot.components.NewtoLegacyFieldTransformation
         field_mapping:
@@ -319,7 +319,7 @@ definitions:
                 type: DpathExtractor
                 field_path: []
         request_body_json:
-          limit: 10
+          limit: 100
           sorts:
             - propertyName: hs_object_id
               direction: ASCENDING
@@ -342,7 +342,7 @@ definitions:
         pagination_strategy:
           type: CustomPaginationStrategy
           class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
-          page_size: 10
+          page_size: 100
       record_selector:
         type: RecordSelector
         extractor:

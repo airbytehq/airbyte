@@ -26,6 +26,8 @@ from airbyte_cdk import (
 )
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -102,7 +104,29 @@ class MigrateEmptyStringState(StateMigration):
         return stream_state.get(self.cursor_field) == ""
 
 
-class HubspotAssociationsTransformation(RecordTransformation):
+class HubspotFlattenAssociationsTransformation(RecordTransformation):
+    """
+    A record transformation that flattens the `associations` field in HubSpot records.
+
+    This transformation takes a nested dictionary under the `associations` key and extracts the IDs
+    of associated objects. The extracted lists of IDs are added as new top-level fields in the record,
+    using the association name as the key (spaces replaced with underscores).
+
+    Example:
+        Input:
+        {
+            "id": 1,
+            "associations": {
+                "Contacts": {"results": [{"id": 101}, {"id": 102}]}
+            }
+        }
+
+        Output:
+        {
+            "id": 1,
+            "Contacts": [101, 102]
+        }
+    """
     def transform(
         self,
         record: Dict[str, Any],
@@ -119,13 +143,18 @@ class HubspotAssociationsTransformation(RecordTransformation):
 @dataclass
 class HubspotAssociationsExtractor(RecordExtractor):
     """
-    Custom record extractor which parses the JSON response from Hubspot and for each instance returned for the specified
-    object type (ex. Contacts, Deals, etc.), yields records for every requested property. Because this is a property
-    history stream, an individual property can yield multiple records representing the previous version of that property.
+    Custom extractor for HubSpot association-enriched records.
 
-    The custom behavior of this component is:
-    - Iterating over and extracting property history instances as individual records
-    - Injecting fields from out levels of the response into yielded records to be used as primary keys
+    This extractor:
+    - Navigates a specified `field_path` within the JSON response to extract a list of primary entities.
+    - Gets records IDs to use in associations retriever body.
+    - Uses a secondary retriever to fetch associated objects for each entity (based on provided `associations_list`).
+    - Merges associated object IDs back into each entity's record under the corresponding association name.
+
+    Attributes:
+        field_path: Path to the list of records in the API response.
+        entity_primary_key: The field used for associations retriever endpoint.
+        associations_list: List of associations to fetch (e.g., ["contacts", "companies"]).
     """
 
     field_path: List[Union[InterpolatedString, str]]
@@ -169,7 +198,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
             slices = assoc_retriever.stream_slices()
 
             for _slice in slices:
-                logger.info(f"Reading {_slice} associations of {self.entity_primary_key}")
+                logger.debug(f"Reading {_slice} associations of {self.entity_primary_key}")
                 associations = assoc_retriever.read_records({}, stream_slice=_slice)
                 for group in associations:
                     slice_value = _slice["association_name"]
@@ -195,7 +224,7 @@ def build_associations_retriever(
     parameters: Mapping[str, Any] = {}
 
     access_token = config["credentials"]["access_token"]
-    authenticator = BearerAuthenticator(
+    bearer_authenticator = BearerAuthenticator(
         token_provider=InterpolatedStringTokenProvider(
             api_token=access_token,
             config=config,
@@ -205,6 +234,20 @@ def build_associations_retriever(
         parameters=parameters,
     )
 
+    # Use default values to create a component if another authentication method is used.
+    # If values are missing it will fail in the parent stream
+    oauth_authenticator = DeclarativeOauth2Authenticator(
+        config=config,
+        parameters=parameters,
+        client_id = config['credentials'].get('client_id', 'client_id'),
+        client_secret = config['credentials'].get('client_secret', 'client_secret'),
+        refresh_token = config['credentials'].get('refresh_token', 'refresh_token'),
+        token_refresh_endpoint = "https://api.hubapi.com/oauth/v1/token"
+    )
+
+    authenticator = SelectiveAuthenticator(config, authenticators={"Private App Credentials": bearer_authenticator,
+                                                                   "OAuth Credentials": oauth_authenticator},
+                                           authenticator_selection_path=["credentials", "credentials_title"])
     # HTTP requester
     requester = HttpRequester(
         name="associations",
