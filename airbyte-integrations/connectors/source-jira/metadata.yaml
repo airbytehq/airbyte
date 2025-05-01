@@ -31,6 +31,12 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      4.0.0:
+        message: "The `pull_requests` stream has been fully deprecated. This change constitutes a breaking change. For more information, see our migration documentation for source Jira."
+        upgradeDeadline: "2025-05-15"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["pull_requests"]
       3.0.0:
         message: "Primary key for Workflows stream has been changed from `Id` to [`entityId`, `name`]. This change of pk makes the stream compatible with more types of destinations."
         upgradeDeadline: "2024-07-02"
@@ -49,6 +55,8 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["board_issues"]
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - issues
