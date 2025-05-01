@@ -588,29 +588,27 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /crm/v3/pipelines/deals
+        path: /crm-pipelines/v1/pipelines/deals
       record_selector:
         type: RecordSelector
-        transform_before_filtering: false
+        transform_before_filtering: true
         extractor:
           type: DpathExtractor
           field_path:
             - results
       paginator:
         type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1
         page_token_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: offset
+          field_name: page
         page_size_option:
           type: RequestOption
           inject_into: request_parameter
           field_name: limit
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 500
-          cursor_value: "{{ response.get('offset') }}"
-          stop_condition: "{{ not response.get('hasMore') }}"
       decoder:
         type: JsonDecoder
     incremental_sync:
@@ -624,8 +622,6 @@ definitions:
       lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%SZ"
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
