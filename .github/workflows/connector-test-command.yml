@@ -91,9 +91,12 @@ jobs:
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
           echo "Found connectors with changes:\n${CONNECTORS}"
-          CONNECTORS=$(echo \"$CONNECTORS\" | tr '\n' ',')
+          # Convert newlines → commas (and drop any trailing comma)
+          CONNECTORS=$(printf '%s\n' "$CONNECTORS" \
+            | tr '\n' ',' \
+            | sed 's/,$//')
           echo "Converted to comma-delimited list: ${CONNECTORS}"
-          echo "CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
+          echo CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
 
       - name: Convert to JSON
         id: convert-matrix
