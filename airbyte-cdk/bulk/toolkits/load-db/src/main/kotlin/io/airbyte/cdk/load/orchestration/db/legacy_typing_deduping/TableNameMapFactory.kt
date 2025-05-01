@@ -64,19 +64,22 @@ class TableCatalogFactory(
             val newName = "${stream.descriptor.name}_$hash"
 
             if (originalRawTableName in processedRawTableNames) {
-                currentRawProcessedName = TableName(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE, newName)
+                currentRawProcessedName =
+                    TableName(
+                        originalRawTableName.namespace.takeUnless { it.isEmpty() }
+                            ?: DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
+                        newName
+                    )
                 processedRawTableNames.add(currentRawProcessedName)
             } else {
-                // Add to processed set
                 processedRawTableNames.add(originalRawTableName)
                 currentRawProcessedName = originalRawTableName
             }
 
             if (originalFinalTableName in processedFinalTableNames) {
-                currentFinalProcessedName = TableName(stream.descriptor.namespace!!, newName)
+                currentFinalProcessedName = TableName(originalFinalTableName.namespace, newName)
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
-                // Add to processed set
                 processedFinalTableNames.add(originalFinalTableName)
                 currentFinalProcessedName = originalFinalTableName
             }
