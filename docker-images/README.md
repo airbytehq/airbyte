@@ -29,6 +29,8 @@ For example:
 ### Building a Connector Image
 
 ```bash
+cd airbyte-integrations/connectors/source-mysql
+
 DOCKER_BUILDKIT=1
 ARCH=amd64
 
