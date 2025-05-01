@@ -186,7 +186,7 @@ jobs:
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           files: |
-            airbyte-integrations/connectors/${{ matrix.connector }}/test-results/**/*.xml
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
   test-summary:
     name: Connector Test Summary Check
