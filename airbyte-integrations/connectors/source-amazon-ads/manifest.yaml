@@ -12108,6 +12108,2266 @@ schemas:
           - string
     title: sponsored_products_asins_targets_report_stream
     additionalProperties: true
+  sponsored_brands_v3_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      attributionType:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      newToBrandSales14d:
+        type:
+          - "null"
+          - number
+      orders14d:
+        type:
+          - "null"
+          - integer
+      productName:
+        type:
+          - "null"
+          - string
+      sales14d:
+        type:
+          - "null"
+          - number
+      newToBrandPurchasesPercentage14d:
+        type:
+          - "null"
+          - number
+      purchasedAsin:
+        type:
+          - "null"
+          - string
+      newToBrandSalesPercentage14d:
+        type:
+          - "null"
+          - number
+      productCategory:
+        type:
+          - "null"
+          - string
+      newToBrandPurchases14d:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldPercentage14d:
+        type:
+          - "null"
+          - number
+      unitsSold14d:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      newToBrandUnitsSold14d:
+        type:
+          - "null"
+          - integer
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+    title: sponsored_brands_v3_report_stream_daily
+    additionalProperties: true
+  sponsored_display_campaigns_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToCartViews:
+        type:
+          - "null"
+          - integer
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      addToListFromViews:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearchesViews:
+        type:
+          - "null"
+          - integer
+      brandedSearchRate:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      eCPBrandSearch:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      impressionsViews:
+        type:
+          - "null"
+          - integer
+      leadFormOpens:
+        type:
+          - "null"
+          - integer
+      leads:
+        type:
+          - "null"
+          - integer
+      linkOuts:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromotedClicks:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromotedClicks:
+        type:
+          - "null"
+          - number
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewClickThroughRate:
+        type:
+          - "null"
+          - number
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      costType:
+        type:
+          - "null"
+          - string
+      cumulativeReach:
+        type:
+          - "null"
+          - string
+      impressionsFrequencyAverage:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewViews:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+    title: sponsored_display_campaigns_report_stream_daily
+    additionalProperties: true
+  sponsored_display_adgroups_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToCartViews:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      addToListFromViews:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      bidOptimization:
+        type:
+          - "null"
+          - string
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearchesViews:
+        type:
+          - "null"
+          - integer
+      brandedSearchRate:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      eCPBrandSearch:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      impressionsViews:
+        type:
+          - "null"
+          - integer
+      leadFormOpens:
+        type:
+          - "null"
+          - integer
+      leads:
+        type:
+          - "null"
+          - integer
+      linkOuts:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromotedClicks:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromotedClicks:
+        type:
+          - "null"
+          - number
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewClickThroughRate:
+        type:
+          - "null"
+          - number
+      cumulativeReach:
+        type:
+          - "null"
+          - string
+      impressionsFrequencyAverage:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViewClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewViews:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+    title: sponsored_display_adgroups_report_stream_daily
+    additionalProperties: true
+  sponsored_display_productads_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      adId:
+        type:
+          - "null"
+          - integer
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToCartViews:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      addToListFromViews:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      bidOptimization:
+        type:
+          - "null"
+          - string
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearchesViews:
+        type:
+          - "null"
+          - integer
+      brandedSearchRate:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      cumulativeReach:
+        type:
+          - "null"
+          - string
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      eCPBrandSearch:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      impressionsFrequencyAverage:
+        type:
+          - "null"
+          - number
+      impressionsViews:
+        type:
+          - "null"
+          - integer
+      leadFormOpens:
+        type:
+          - "null"
+          - integer
+      leads:
+        type:
+          - "null"
+          - integer
+      linkOuts:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewRate:
+        type:
+          - "null"
+          - number
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewViews:
+        type:
+          - "null"
+          - integer
+      newToBrandECPDetailPageView:
+        type:
+          - "null"
+          - number
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      promotedAsin:
+        type:
+          - "null"
+          - string
+      promotedSku:
+        type:
+          - "null"
+          - string
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromotedClicks:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromotedClicks:
+        type:
+          - "null"
+          - number
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewClickThroughRate:
+        type:
+          - "null"
+          - number
+    title: sponsored_display_productads_report_stream_daily
+    additionalProperties: true
+  sponsored_display_targets_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    date:
+      type:
+        - "null"
+        - string
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      targetingId:
+        type:
+          - "null"
+          - integer
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartRate:
+        type:
+          - "null"
+          - number
+      addToCartViews:
+        type:
+          - "null"
+          - integer
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      addToListFromViews:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearchesViews:
+        type:
+          - "null"
+          - integer
+      brandedSearchRate:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      eCPAddToCart:
+        type:
+          - "null"
+          - number
+      eCPBrandSearch:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      impressionsViews:
+        type:
+          - "null"
+          - integer
+      leadFormOpens:
+        type:
+          - "null"
+          - integer
+      leads:
+        type:
+          - "null"
+          - integer
+      linkOuts:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandUnitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesPromotedClicks:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesPromotedClicks:
+        type:
+          - "null"
+          - number
+      targetingExpression:
+        type:
+          - "null"
+          - string
+      targetingText:
+        type:
+          - "null"
+          - string
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoUnmutes:
+        type:
+          - "null"
+          - integer
+      viewabilityRate:
+        type:
+          - "null"
+          - number
+      viewClickThroughRate:
+        type:
+          - "null"
+          - number
+    title: sponsored_display_targets_report_stream_daily
+    additionalProperties: true
+  sponsored_display_asins_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      promotedAsin:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      asinBrandHalo:
+        type:
+          - "null"
+          - string
+      addToList:
+        type:
+          - "null"
+          - integer
+      addToListFromClicks:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromClicks:
+        type:
+          - "null"
+          - integer
+      addToListFromViews:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrowsFromViews:
+        type:
+          - "null"
+          - integer
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      conversionsBrandHalo:
+        type:
+          - "null"
+          - integer
+      conversionsBrandHaloClicks:
+        type:
+          - "null"
+          - integer
+      promotedSku:
+        type:
+          - "null"
+          - string
+      salesBrandHalo:
+        type:
+          - "null"
+          - integer
+      salesBrandHaloClicks:
+        type:
+          - "null"
+          - integer
+      unitsSoldBrandHalo:
+        type:
+          - "null"
+          - integer
+      unitsSoldBrandHaloClicks:
+        type:
+          - "null"
+          - integer
+    title: sponsored_display_asins_report_stream_daily
+    additionalProperties: true
+  sponsored_products_campaigns_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignRuleBasedBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignApplicableBudgetRuleId:
+        type:
+          - "null"
+          - string
+      campaignApplicableBudgetRuleName:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_campaigns_report_stream_daily
+    additionalProperties: true
+  sponsored_products_adgroups_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_adgroups_report_stream_daily
+    additionalProperties: true
+  sponsored_products_keywords_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      keywordId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_keywords_report_stream_daily
+    additionalProperties: true
+  sponsored_products_targets_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      keywordId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      targeting:
+        type:
+          - "null"
+          - string
+      keywordType:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_targets_report_stream_daily
+    additionalProperties: true
+  sponsored_products_productads_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      adId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      advertisedAsin:
+        type:
+          - "null"
+          - string
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_productads_report_stream_daily
+    additionalProperties: true
+  sponsored_products_asins_keywords_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      advertisedAsin:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      keywordId:
+        type:
+          - "null"
+          - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      purchasedAsin:
+        type:
+          - "null"
+          - string
+      advertisedSku:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku30d:
+        type:
+          - "null"
+          - integer
+      salesOtherSku1d:
+        type:
+          - "null"
+          - number
+      salesOtherSku7d:
+        type:
+          - "null"
+          - number
+      salesOtherSku14d:
+        type:
+          - "null"
+          - number
+      salesOtherSku30d:
+        type:
+          - "null"
+          - number
+    title: sponsored_products_asins_keywords_report_stream_daily
+    additionalProperties: true
+  sponsored_products_asins_targets_report_stream_daily:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      advertisedAsin:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      purchasedAsin:
+        type:
+          - "null"
+          - string
+      advertisedSku:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldOtherSku30d:
+        type:
+          - "null"
+          - integer
+      salesOtherSku1d:
+        type:
+          - "null"
+          - number
+      salesOtherSku7d:
+        type:
+          - "null"
+          - number
+      salesOtherSku14d:
+        type:
+          - "null"
+          - number
+      salesOtherSku30d:
+        type:
+          - "null"
+          - number
+      keywordId:
+        type:
+          - "null"
+          - integer
+      targeting:
+        type:
+          - "null"
+          - string
+      keywordType:
+        type:
+          - "null"
+          - string
+    title: sponsored_products_asins_targets_report_stream_daily
+    additionalProperties: true
 
 concurrency_level:
   type: ConcurrencyLevel
