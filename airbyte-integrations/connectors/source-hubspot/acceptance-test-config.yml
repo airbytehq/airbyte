@@ -149,5 +149,5 @@ acceptance_tests:
       - config_path: secrets/config_oauth.json
         configured_catalog_path: integration_tests/incremental_catalog.json
         future_state:
-          bypass_reason: "Skipping as some streams change state type after migration"
+          bypass_reason: "This test is not that useful and migration for Hubspot's API from v1 to v3 changes state type"
         timeout_seconds: 7200
