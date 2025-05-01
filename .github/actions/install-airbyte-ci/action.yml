@@ -31,7 +31,7 @@ runs:
       shell: bash
       id: determine-install-mode
       run: |
-        echo "install-mode=source" >> $GITHUB_OUTPUT
+        echo "install-mode=binary" >> $GITHUB_OUTPUT
         echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
 
       # When the PR is from a fork, we always install from binary
