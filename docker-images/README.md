@@ -40,7 +40,7 @@ docker build \
     --build-arg=BASE_IMAGE=docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3 \
     --build-arg=CONNECTOR_NAME=source-mysql \
     --build-arg=EXTRA_BUILD_SCRIPT= \
-    -t airbyte/source-mysql:dev-${ARCH} .'
+    -t airbyte/source-mysql:dev-${ARCH} .
 ```
 
 ## Common Build Args
