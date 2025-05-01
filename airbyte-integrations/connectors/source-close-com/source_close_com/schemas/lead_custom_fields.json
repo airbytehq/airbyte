@@ -4,52 +4,52 @@
   "additionalProperties": true,
   "properties": {
     "status_id": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "description": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "back_reference_is_visible": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "date_updated": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "referenced_custom_type_id": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "name": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "accepts_multiple_values": {
-      "date_updated": ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "choices": {
-      "date_updated": ["null", "array"]
+      "type": ["null", "array"]
     },
     "editable_with_roles": {
-      "date_updated": ["null", "array"]
+      "type": ["null", "array"]
     },
     "created_by": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "updated_by": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "type": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "organization_id": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "is_shared": {
-      "date_updated": ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "id": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     },
     "date_created": {
-      "date_updated": ["null", "string"]
+      "type": ["null", "string"]
     }
   }
 }
