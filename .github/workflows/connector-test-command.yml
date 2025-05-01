@@ -140,6 +140,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 5  # Limit number of parallel jobs
+      fail-fast: false  # Don't stop on first failure
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
