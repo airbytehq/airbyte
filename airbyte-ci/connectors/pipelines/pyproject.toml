@@ -12,7 +12,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "~3.11"
 dagger-io = "==0.13.3"
 beartype = ">=0.18.2"
-asyncer = "^0"
+asyncer = "^0.0.8"
 exceptiongroup = ">=1.2.0"
 anyio = ">=4.2.0"  # Required by Python 3.11
 trio = ">=0.24.0"  # Required by anyio
@@ -20,7 +20,8 @@ more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
 airbyte-protocol-models = "*"
-jinja2 = "^3.0.2"
+jinja2 = "^3.1.6"
+MarkupSafe = "==2.1.5"  # pin transitive dependency to avoid issues with version resolution
 requests = "^2.31"
 airbyte-connectors-base-images = { path = "../base_images", develop = true }
 connector-ops = { path = "../connector_ops", develop = true }

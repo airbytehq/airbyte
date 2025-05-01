@@ -66,15 +66,22 @@ runs:
         check-latest: true
         update-environment: true
 
+    - name: Install the latest version of uv
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
+      uses: astral-sh/setup-uv@v6
     - name: Install Airbyte CI from source
       id: install-airbyte-ci-source
       if: steps.determine-install-mode.outputs.install-mode == 'source'
       shell: bash
       run: |
-        pip install --upgrade pip
-        pip install pipx
-        pipx ensurepath
-        pipx install ${{ inputs.path_to_airbyte_ci_source }}
+        uv tool install ${{ inputs.path_to_airbyte_ci_source }}
+
+    - name: Upload uv logs as artifacts on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: uv-logs
+        path: /opt/uv/logs/
 
     - name: Upload pipx logs as artifacts on failure
       # E.g. /opt/pipx/logs/cmd_2025-05-01_16.46.50_1_pip_errors.log
