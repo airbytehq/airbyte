@@ -105,22 +105,15 @@ allprojects {
         group = 'build'
 
         doLast {
-            logger.lifecycle("Building connector image using airbyte-cdk")
+            logger.lifecycle("Building connector image using airbyte-cdk...")
+            logger.lifecycle("If this fails, make sure `uv` is installed (`brew install uv`).")
 
             // Run the command directly
             def result = exec {
                 workingDir = projectDir
-                executable 'sh'
-                args '-c', 'airbyte-cdk image build'
-                ignoreExitValue = true
-            }
-
-            if (result.exitValue != 0) {
-                if (result.exitValue == 127) { // Command not found exit code
-                    throw new GradleException("Error: 'airbyte-cdk' command not found. Please install with 'pip install airbyte-cdk[dev]'")
-                } else {
-                    throw new GradleException("Error: Image build failed with exit code ${result.exitValue}. Check the logs for details.")
-                }
+                executable 'uvx'
+                args 'airbyte-cdk[dev]@latest', 'image', 'build'
+                ignoreExitValue = false
             }
         }
 
