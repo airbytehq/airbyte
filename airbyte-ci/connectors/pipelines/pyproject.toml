@@ -19,7 +19,7 @@ trio = ">=0.24.0"  # Required by anyio
 more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
-airbyte-protocol-models = "^1.0"
+airbyte-protocol-models = "*"
 jinja2 = "^3.1.6"
 MarkupSafe = "==2.1.5"  # pin transitive dependency to avoid issues with version resolution
 requests = "^2.31"
