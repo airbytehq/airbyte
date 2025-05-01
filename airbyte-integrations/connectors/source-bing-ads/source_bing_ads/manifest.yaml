@@ -344,7 +344,20 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - LinkedAgencies
+            value: |
+              {% set linked_agencies = [] %}
+              {% for agency in (record.get('LinkedAgencies') or []) %}
+              {% set _ = linked_agencies.append({ "Id": agency.Id|int, "Name": agency.Name }) %}
+              {% endfor %}
+              {{ linked_agencies }}
+          - type: AddedFieldDefinition
+            path:
+              - LinkedAgencies
             value: '{{ { "CustomerInfo": record.LinkedAgencies } }}'
+          - type: AddedFieldDefinition
+            path:
+              - LastModifiedTime
+            value: '{{ format_datetime(record.LastModifiedTime, "%Y-%m-%dT%H:%M:%S.%f" ) }}'
 
 streams:
   - $ref: "#/definitions/accounts_stream"
