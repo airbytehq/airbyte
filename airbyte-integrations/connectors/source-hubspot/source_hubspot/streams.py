@@ -1585,12 +1585,12 @@ class DealPipelines(ClientSideIncrementalStream):
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
     """
 
-    url = "/crm-pipelines/v1/pipelines/deals"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "pipelineId"
-    scopes = {"crm.objects.contacts.read"}
+    # url = "/crm-pipelines/v1/pipelines/deals"
+    # updated_at_field = "updatedAt"
+    # created_at_field = "createdAt"
+    # cursor_field_datetime_format = "x"
+    # primary_key = "pipelineId"
+    # scopes = {"crm.objects.contacts.read"}
 
 
 class DealSplits(CRMSearchStream):
