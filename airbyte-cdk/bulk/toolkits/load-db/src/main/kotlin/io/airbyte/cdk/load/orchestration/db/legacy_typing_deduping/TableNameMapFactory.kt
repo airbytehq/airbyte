@@ -61,9 +61,9 @@ class TableCatalogFactory(
                         "${originalFinalTableName.namespace}&airbyte&${stream.descriptor.name}"
                     )
                     .substring(0, 3)
+            val newName = "${stream.descriptor.name}_$hash"
 
             if (originalRawTableName in processedRawTableNames) {
-                val newName = "${stream.descriptor.name}_$hash"
                 currentRawProcessedName = TableName(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE, newName)
                 processedRawTableNames.add(currentRawProcessedName)
             } else {
@@ -73,7 +73,6 @@ class TableCatalogFactory(
             }
 
             if (originalFinalTableName in processedFinalTableNames) {
-                val newName = "${stream.descriptor.name}_$hash"
                 currentFinalProcessedName = TableName(stream.descriptor.namespace!!, newName)
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
