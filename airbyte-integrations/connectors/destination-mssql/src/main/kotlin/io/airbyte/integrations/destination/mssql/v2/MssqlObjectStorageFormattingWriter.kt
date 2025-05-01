@@ -10,6 +10,8 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
+import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import java.io.OutputStream
 import javax.inject.Singleton
 
@@ -34,7 +36,7 @@ class MSSQLCSVFormattingWriter(
 }
 
 @Singleton
-class MssqlObjectStorageFormattingWriterFactory(val validateValuesPreLoad: Boolean) :
+class MssqlObjectStorageFormattingWriterFactory(val config: MSSQLConfiguration) :
     ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
@@ -43,7 +45,9 @@ class MssqlObjectStorageFormattingWriterFactory(val validateValuesPreLoad: Boole
         return MSSQLCSVFormattingWriter(
             stream,
             outputStream,
-            validateValuesPreLoad,
+            (config.mssqlLoadTypeConfiguration.loadTypeConfiguration as BulkLoadConfiguration)
+                .validateValuesPreLoad
+                ?: false,
         )
     }
 }
