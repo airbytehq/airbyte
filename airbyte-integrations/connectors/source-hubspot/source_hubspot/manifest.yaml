@@ -596,19 +596,6 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 1
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
       decoder:
         type: JsonDecoder
     incremental_sync:
