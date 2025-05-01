@@ -53,7 +53,7 @@ docker build \
 
 ### Why is `DOCKER_BUILDKIT=1` needed?
 
-This uses Buildkit in Docker, which allows us to use custom `.dockerignore` files, which is normally not allowed. Instead, docker will accept a `{Dockerfile-name}.dockerignore` in the same directory as the Dockerfile, saving us from needing to store `.dockerignore` files redundantly in each connector directory.
+This uses Buildkit in Docker, which allows us to use custom `.dockerignore` files, which is normally not allowed. With this env var set, docker will accept a `{Dockerfile-name}.dockerignore` in the same directory as the Dockerfile. This eliminates the need for us to store `.dockerignore` files redundantly in each connector directory.
 
 ### Why don't the base image definitions have a `.dockerignore` file
 
