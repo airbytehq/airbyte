@@ -15,6 +15,22 @@ on:
       - master
     paths:
       - "airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "Dry run (no-op)"
+        required: true
+        type: boolean
+        default: false
+      force:
+        description: "Force release (overwrite existing)"
+        required: true
+        type: boolean
+        default: false
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       repo:

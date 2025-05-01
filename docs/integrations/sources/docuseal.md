@@ -24,6 +24,7 @@ API Reference: https://www.docuseal.com/docs/api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.5 | 2025-04-26 | [58904](https://github.com/airbytehq/airbyte/pull/58904) | Update dependencies |
 | 0.0.4 | 2025-04-19 | [58316](https://github.com/airbytehq/airbyte/pull/58316) | Update dependencies |
 | 0.0.3 | 2025-04-12 | [57831](https://github.com/airbytehq/airbyte/pull/57831) | Update dependencies |
 | 0.0.2 | 2025-04-05 | [57272](https://github.com/airbytehq/airbyte/pull/57272) | Update dependencies |

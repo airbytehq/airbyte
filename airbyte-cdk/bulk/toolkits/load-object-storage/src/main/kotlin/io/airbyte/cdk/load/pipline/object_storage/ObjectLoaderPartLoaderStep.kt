@@ -11,22 +11,16 @@ import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTask
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
-import io.micronaut.context.annotation.Requires
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 
-@Singleton
-@Requires(bean = ObjectLoader::class)
 class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
-    val loader: ObjectLoader,
-    val partLoader: ObjectLoaderPartLoader<T>,
-    @Named("objectLoaderPartQueue")
-    val inputQueue:
+    loader: ObjectLoader,
+    private val partLoader: ObjectLoaderPartLoader<T>,
+    private val inputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    @Named("objectLoaderLoadedPartQueue")
-    val outputQueue:
+    private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
-    val taskFactory: LoadPipelineStepTaskFactory,
+    private val taskFactory: LoadPipelineStepTaskFactory,
+    private val taskId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
 
@@ -38,7 +32,7 @@ class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
             outputQueue,
             partition,
             numWorkers,
-            taskIndex = 2
+            taskId = taskId,
         )
     }
 }

@@ -117,7 +117,6 @@ const buildAConnector = {
         },
       ],
     },
-    "connector-development/local-connector-development",
     {
       type: "category",
       label: "Testing Connectors",
@@ -129,6 +128,7 @@ const buildAConnector = {
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
       ],
     },
+    "connector-development/local-connector-development",
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
     "connector-development/debugging-docker",

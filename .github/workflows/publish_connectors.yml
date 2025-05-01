@@ -6,6 +6,20 @@ on:
       - master
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
+  workflow_call:
+    inputs:
+      connectors-options:
+        description: "Options to pass to the 'airbyte-ci connectors' command group."
+        default: "--name=source-pokeapi"
+        type: string
+      publish-options:
+        description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
+        default: "--pre-release"
+        type: string
+      airbyte_ci_binary_url:
+        description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
+        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+        type: string
   workflow_dispatch:
     inputs:
       connectors-options:

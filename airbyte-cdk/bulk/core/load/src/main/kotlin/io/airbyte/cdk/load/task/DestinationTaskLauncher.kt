@@ -145,8 +145,8 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
 
     // New interface shim
-    @Named("recordQueue")
-    private val recordQueueForPipeline:
+    @Named("pipelineInputQueue")
+    private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     private val loadPipeline: LoadPipeline?,
@@ -214,7 +214,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 checkpointQueue = checkpointQueue,
                 fileTransferQueue = fileTransferQueue,
                 destinationTaskLauncher = this,
-                recordQueueForPipeline = recordQueueForPipeline,
+                pipelineInputQueue = pipelineInputQueue,
                 loadPipeline = loadPipeline,
                 partitioner = partitioner,
                 openStreamQueue = openStreamQueue,
@@ -283,7 +283,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        recordQueueForPipeline.close()
+        pipelineInputQueue.close()
         batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()
@@ -332,9 +332,15 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     override suspend fun handleStreamComplete(stream: DestinationStream.Descriptor) {
         log.info { "Processing complete for $stream" }
         if (closeStreamHasRun.getOrPut(stream) { AtomicBoolean(false) }.setOnce()) {
-            log.info { "Batch processing complete: Starting close stream task for $stream" }
-            val task = closeStreamTaskFactory.make(this, stream)
-            launch(task)
+            if (syncManager.getStreamManager(stream).setClosed()) {
+                log.info { "Batch processing complete: Starting close stream task for $stream" }
+                val task = closeStreamTaskFactory.make(this, stream)
+                launch(task)
+            } else {
+                log.warn {
+                    "Close stream task was already initiated for $stream. This is probably undesired; skipping it."
+                }
+            }
         } else {
             log.info { "Close stream task has already run, skipping." }
         }
@@ -352,7 +358,16 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     override suspend fun handleException(e: Exception) {
         openStreamQueue.close()
         catalog.streams
-            .map { failStreamTaskFactory.make(this, e, it.descriptor) }
+            .map {
+                val shouldRunStreamLoaderClose =
+                    syncManager.getStreamManager(it.descriptor).setClosed()
+                failStreamTaskFactory.make(
+                    this,
+                    e,
+                    it.descriptor,
+                    shouldRunStreamLoaderClose = shouldRunStreamLoaderClose,
+                )
+            }
             .forEach { launch(it, withExceptionHandling = false) }
     }
 

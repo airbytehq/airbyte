@@ -18,6 +18,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
+// TODO: Add unit tests
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectLoader) :
@@ -49,11 +50,20 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
     ): BatchAccumulatorResult<State, UploadResult<T>> {
         return when (input) {
             is ObjectLoaderPartLoader.LoadedPart -> {
+                // by setting bytes to null, we tell the bookkeeper
+                // not to track this empty part
+                val bytes =
+                    if (input.empty) {
+                        null
+                    } else {
+                        ByteArray(0)
+                    }
+
                 val part =
                     Part(
                         key = state.objectKey,
                         fileNumber = 0L, // ignored
-                        bytes = ByteArray(0), // only null/not-null is significant
+                        bytes = bytes,
                         isFinal = input.isFinal,
                         partIndex = input.partIndex
                     )

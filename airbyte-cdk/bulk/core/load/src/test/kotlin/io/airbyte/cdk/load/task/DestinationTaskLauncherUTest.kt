@@ -184,14 +184,21 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleException(e)
         destinationTaskLauncher.handleTeardownComplete()
 
-        coVerify { failStreamTaskFactory.make(any(), e, any()) }
+        // mock stream manager always returns `false` from `setClosed()`, so we set
+        // shouldRunStreamLoaderClose = false.
+        coVerify { failStreamTaskFactory.make(any(), e, any(), shouldRunStreamLoaderClose = false) }
         coVerify { taskScopeProvider.launch(match { it is FailStreamTask }) }
     }
 
     @Test
     fun `run close stream no more than once per stream`() = runTest {
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-        val streamManager = mockk<StreamManager>(relaxed = true)
+        val streamManager =
+            mockk<StreamManager>(relaxed = true) {
+                // simulate more realistic behavior.
+                // The first call to setClosed returns true; subsequent calls return false.
+                every { setClosed() } returnsMany (listOf(true, false))
+            }
         coEvery { syncManager.getStreamManager(any()) } returns streamManager
         coEvery { streamManager.isBatchProcessingComplete() } returns true
         val descriptor = DestinationStream.Descriptor("namespace", "name")
@@ -249,7 +256,10 @@ class DestinationTaskLauncherUTest {
             failStreamTaskFactory.make(
                 any(),
                 any(),
-                match { it.namespace == "namespace" && it.name == "name" }
+                match { it.namespace == "namespace" && it.name == "name" },
+                // mock stream manager always returns `false` from `setClosed()`, so we set
+                // shouldRunStreamLoaderClose = false.
+                shouldRunStreamLoaderClose = false,
             )
         }
     }

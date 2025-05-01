@@ -1,0 +1,160 @@
+{
+  "data": [
+    {
+      "type": "event",
+      "id": "string",
+      "attributes": {
+        "timestamp": 0,
+        "event_properties": {},
+        "datetime": "2022-11-08T01:23:45+00:00",
+        "uuid": "string"
+      },
+      "links": {
+        "self": "string"
+      },
+      "relationships": {
+        "profile": {
+          "data": {
+            "type": "profile",
+            "id": "string"
+          },
+          "links": {
+            "self": "string",
+            "related": "string"
+          }
+        },
+        "metric": {
+          "data": {
+            "type": "metric",
+            "id": "string"
+          },
+          "links": {
+            "self": "string",
+            "related": "string"
+          }
+        },
+        "attributions": {
+          "data": [
+            {
+              "type": "attribution",
+              "id": "string"
+            }
+          ],
+          "links": {
+            "self": "string",
+            "related": "string"
+          }
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": "string",
+    "first": "string",
+    "last": "string",
+    "prev": "string",
+    "next": "string"
+  },
+  "included": [
+    {
+      "type": "attribution",
+      "id": "925e385b52fb405715f3616c337cc65c",
+      "relationships": {
+        "event": {
+          "data": {
+            "type": "event",
+            "id": "string"
+          }
+        },
+        "attributed-event": {
+          "data": {
+            "type": "event",
+            "id": "string"
+          }
+        },
+        "campaign": {
+          "data": {
+            "type": "campaign",
+            "id": "string"
+          }
+        },
+        "campaign-message": {
+          "data": {
+            "type": "campaign-message",
+            "id": "string"
+          }
+        },
+        "flow": {
+          "data": {
+            "type": "flow",
+            "id": "string"
+          }
+        },
+        "flow-message": {
+          "data": {
+            "type": "flow-message",
+            "id": "string"
+          }
+        },
+        "flow-message-variation": {
+          "data": {
+            "type": "flow-message",
+            "id": "string"
+          }
+        }
+      },
+      "links": {
+        "self": "string"
+      }
+    },
+    {
+      "type": "metric",
+      "id": "string",
+      "attributes": {
+        "name": "string",
+        "created": "string",
+        "updated": "string",
+        "integration": {}
+      },
+      "links": {
+        "self": "string"
+      }
+    },
+    {
+      "type": "profile",
+      "id": "01GDDKASAP8TKDDA2GRZDSVP4H",
+      "attributes": {
+        "email": "sarah.mason@klaviyo-demo.com",
+        "phone_number": "+15005550006",
+        "external_id": "string",
+        "first_name": "Sarah",
+        "last_name": "Mason",
+        "organization": "Example Corporation",
+        "locale": "en-US",
+        "title": "Regional Manager",
+        "image": "https://images.pexels.com/photos/3760854/pexels-photo-3760854.jpeg",
+        "created": "2022-11-08T00:00:00+00:00",
+        "updated": "2022-11-08T00:00:00+00:00",
+        "last_event_date": "2022-11-08T00:00:00+00:00",
+        "location": {
+          "address1": "89 E 42nd St",
+          "address2": "1st floor",
+          "city": "New York",
+          "country": "United States",
+          "latitude": "string",
+          "longitude": "string",
+          "region": "NY",
+          "zip": "10017",
+          "timezone": "America/New_York",
+          "ip": "127.0.0.1"
+        },
+        "properties": {
+          "pseudonym": "Dr. Octopus"
+        }
+      },
+      "links": {
+        "self": "string"
+      }
+    }
+  ]
+}

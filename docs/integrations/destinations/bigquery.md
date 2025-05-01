@@ -213,6 +213,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.2  | 2025-04-29 | [59142](https://github.com/airbytehq/airbyte/pull/59142)   | Add `europe-north2` region. |
 | 2.10.1  | 2025-04-14 | [57569](https://github.com/airbytehq/airbyte/pull/57569)   | Remove StringSubstitutor usage                                                                                                                                                   |
 | 2.10.0  | 2025-04-02 | [56982](https://github.com/airbytehq/airbyte/pull/56982)   | Change default raw table partitioning scheme to be on `_airbyte_extracted_at`; upgrade CDK                                                                                       |
 | 2.9.3   | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                |

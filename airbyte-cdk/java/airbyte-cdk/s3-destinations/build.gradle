@@ -31,12 +31,19 @@ dependencies {
     api ('org.apache.hadoop:hadoop-common:3.4.0') {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+        // The below dependencies contain security vulnerabilities and are unused.
+        exclude group: 'com.google.protobuf'
+        exclude group: 'dnsjava'
+        exclude group: 'io.netty'
     }
     api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.0') {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+        // The below dependencies contain security vulnerabilities and are unused.
+        exclude group: 'com.google.protobuf'
+        exclude group: 'io.netty'
     }
-    api 'org.apache.parquet:parquet-avro:1.14.2'
+    api 'org.apache.parquet:parquet-avro:1.15.1'
     runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
 
     testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')

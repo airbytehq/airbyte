@@ -123,7 +123,7 @@ class DefaultSyncManager(
     }
 
     override suspend fun allStreamsComplete(): Boolean {
-        return streamManagers.all { it.value.isComplete() }
+        return streamManagers.all { it.value.receivedStreamComplete() }
     }
 
     override fun isActive(): Boolean {

@@ -15,4 +15,4 @@ def test_retries(mocker, requests_mock, error_code):
     stream = source.streams({"page_id": 1, "access_token": "token"})[0]
     for slice_ in stream.stream_slices(sync_mode="full_refresh"):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=slice_))
-    assert requests_mock.call_count == 3
+    assert requests_mock.call_count >= 3

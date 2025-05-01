@@ -159,8 +159,7 @@ class DestinationTaskLauncherTest {
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
             destinationTaskLauncher: DestinationTaskLauncher,
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-            recordQueueForPipeline:
-                PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+            pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
             loadPipeline: LoadPipeline?,
             partitioner: InputPartitioner,
             openStreamQueue: QueueWriter<DestinationStream>,
@@ -309,7 +308,8 @@ class DestinationTaskLauncherTest {
         override fun make(
             taskLauncher: DestinationTaskLauncher,
             exception: Exception,
-            stream: DestinationStream.Descriptor
+            stream: DestinationStream.Descriptor,
+            shouldRunStreamLoaderClose: Boolean,
         ): FailStreamTask {
             return object : FailStreamTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
