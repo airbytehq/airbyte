@@ -169,17 +169,18 @@ object MSSQLDataCleaner : DestinationCleaner {
             azureBlobClient.list("").toList(blobList)
 
             for (blobItem in blobList) {
-                val properties = azureBlobClient.getProperties(blobItem.key)
-                properties?.let { createdTime ->
-                    val hoursSinceCreation =
-                        ChronoUnit.HOURS.between(createdTime, OffsetDateTime.now())
-                    if (hoursSinceCreation >= 1) {
-                        try {
+                try {
+                    val properties = azureBlobClient.getProperties(blobItem.key)
+                    properties?.let { createdTime ->
+                        val hoursSinceCreation =
+                            ChronoUnit.HOURS.between(createdTime, OffsetDateTime.now())
+                        if (hoursSinceCreation >= 1) {
                             azureBlobClient.delete(blobItem.key)
-                        } catch (e: Exception) {
-                            // do nothing
                         }
                     }
+                } catch (e: Exception) {
+                    // ignore exception - presumably someone else deleted the blob
+                    // before we got to it
                 }
             }
         }
