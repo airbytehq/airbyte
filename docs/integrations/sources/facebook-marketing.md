@@ -269,6 +269,13 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.7 | 2025-04-19 | [58296](https://github.com/airbytehq/airbyte/pull/58296) | Update dependencies |
+| 3.4.6 | 2025-04-12 | [57827](https://github.com/airbytehq/airbyte/pull/57827) | Update dependencies |
+| 3.4.5 | 2025-04-05 | [57219](https://github.com/airbytehq/airbyte/pull/57219) | Update dependencies |
+| 3.4.4 | 2025-03-29 | [56467](https://github.com/airbytehq/airbyte/pull/56467) | Update dependencies |
+| 3.4.3 | 2025-02-20 | [54171](https://github.com/airbytehq/airbyte/pull/54171) | Fix retry pattern |
+| 3.4.2 | 2025-03-22 | [55991](https://github.com/airbytehq/airbyte/pull/55991) | Update dependencies |
+| 3.4.1 | 2024-03-14 | [55760](https://github.com/airbytehq/airbyte/pull/55760) | Fixed KeyError during discovery due to outdated breakdown schema |
 | 3.4.0 | 2024-12-24 | [50418](https://github.com/airbytehq/airbyte/pull/50418) | Add `learning_stage_info` field to `ad_sets` stream |
 | 3.3.35 | 2025-03-08 | [55307](https://github.com/airbytehq/airbyte/pull/55307) | Update dependencies |
 | 3.3.34 | 2025-03-01 | [54990](https://github.com/airbytehq/airbyte/pull/54990) | Update dependencies |

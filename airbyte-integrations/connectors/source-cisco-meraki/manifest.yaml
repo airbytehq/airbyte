@@ -1,0 +1,873 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://account.meraki.com/secure/login/dashboard_login
+  API documentation: https://developer.cisco.com/meraki/api-v1/introduction/
+
+check:
+  type: CheckStream
+  stream_names:
+    - organizations
+
+definitions:
+  streams:
+    datacenters:
+      type: DeclarativeStream
+      name: datacenters
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            secureConnect/v1/organizations/{{ stream_partition['org_id']
+            }}/datacenters
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/organizations"
+              parent_key: id
+              partition_field: org_id
+      primary_key:
+        - uuid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datacenters"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    organization_saml:
+      type: DeclarativeStream
+      name: organization_saml
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ headers.get('Link', '').split(',') | map('trim') |
+              selectattr('contains', 'rel=next') | map('regex_search',
+              'endingBefore=([^&]+)') | map('first') | first | default(None) }}
+            stop_condition: >-
+              {{ not (headers.get('Link', '') | string |
+              regex_search('rel=next')) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/organizations/{{stream_partition['org_id']  }}/saml
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/organizations"
+              parent_key: id
+              partition_field: org_id
+      primary_key:
+        - uuid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_saml"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+    organization_admins:
+      type: DeclarativeStream
+      name: organization_admins
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ headers.get('Link', '').split(',') | map('trim') |
+              selectattr('contains', 'rel=next') | map('regex_search',
+              'endingBefore=([^&]+)') | map('first') | first | default(None) }}
+            stop_condition: >-
+              {{ not (headers.get('Link', '') | string |
+              regex_search('rel=next')) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/organizations/{{ stream_partition['org_id'] }}/admins
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/organizations"
+              parent_key: id
+              partition_field: org_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_admins"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastActive
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: startingAfter
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    organization_devices:
+      type: DeclarativeStream
+      name: organization_devices
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            api/v1/organizations/{{ stream_partition['org_id']
+            }}/wirelessController/overview/byDevice
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/organizations"
+              parent_key: id
+              partition_field: org_id
+      primary_key:
+        - uuid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_devices"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+    organization_networks:
+      type: DeclarativeStream
+      name: organization_networks
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers.get('link', {}).get('next', {}).get('url') }}"
+            stop_condition: "{{ headers.get('link', {}).get('next') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/organizations/{{ stream_partition['org_id'] }}/networks
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/organizations"
+              parent_key: id
+              partition_field: org_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_networks"
+    organization_apiRequests:
+      type: DeclarativeStream
+      name: organization_apiRequests
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ headers.get('Link', '').split(',') | map('trim') |
+              selectattr('contains', 'rel=next') | map('regex_search',
+              'endingBefore=([^&]+)') | map('first') | first | default(None) }}
+            stop_condition: >-
+              {{ not (headers.get('Link', '') | string |
+              regex_search('rel=next')) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/organizations/{{ stream_partition['org_id'] }}/apiRequests
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/organizations"
+              parent_key: id
+              partition_field: org_id
+      primary_key:
+        - uuid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_apiRequests"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: ts
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: startingAfter
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    organization_network_settings:
+      type: DeclarativeStream
+      name: organization_network_settings
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ headers.get('Link', '').split(',') | map('trim') |
+              selectattr('contains', 'rel=next') | map('regex_search',
+              'endingBefore=([^&]+)') | map('first') | first | default(None) }}
+            stop_condition: >-
+              {{ not (headers.get('Link', '') | string |
+              regex_search('rel=next')) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v1/networks/{{ stream_partition['net_id'] }}/settings
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/organization_networks"
+              parent_key: id
+              partition_field: net_id
+      primary_key:
+        - uuid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_network_settings"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.meraki.com/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/datacenters"
+  - $ref: "#/definitions/streams/organization_networks"
+  - $ref: "#/definitions/streams/organization_devices"
+  - $ref: "#/definitions/streams/organization_apiRequests"
+  - $ref: "#/definitions/streams/organization_admins"
+  - $ref: "#/definitions/streams/organization_saml"
+  - $ref: "#/definitions/streams/organization_network_settings"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your Meraki API key. Obtain it by logging into your Meraki Dashboard
+          at https://dashboard.meraki.com/, navigating to 'My Profile' via the
+          avatar icon in the top right corner, and generating the API key. Save
+          this key securely as it represents your admin credentials.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developer.cisco.com/meraki/api-v1/introduction/
+  testedStreams:
+    datacenters:
+      hasRecords: true
+      streamHash: b36ec0584a161032e1a5546b1f67fcf5b090810c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organizations:
+      hasRecords: true
+      streamHash: 00e257831137c57636e8044bfd95bbbcf629fca5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_saml:
+      hasRecords: true
+      streamHash: 84416b28fe796e8405f6c52c42b76d34e42473d4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_admins:
+      hasRecords: true
+      streamHash: 50a8b4fbbfb463c72213c04f5f66b946906f1668
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_devices:
+      hasRecords: true
+      streamHash: f8d8a3c57321bffeafb60343fea2f1ed75368bdc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_networks:
+      hasRecords: true
+      streamHash: 29751b3d17a79abe2647609f2f3b8e75f6eab9f6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_apiRequests:
+      hasRecords: true
+      streamHash: 61280867ddc1ac172becb0d771d44231005bbbee
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_network_settings:
+      hasRecords: true
+      streamHash: 8740f599998751da93ca010ddc98855b80c42d45
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    datacenters: true
+    organizations: true
+    organization_saml: true
+    organization_admins: true
+    organization_devices: true
+    organization_networks: true
+    organization_apiRequests: true
+    organization_network_settings: true
+
+schemas:
+  datacenters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uuid
+    properties:
+      mode:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    additionalProperties: true
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      api:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+      url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      cloud:
+        type:
+          - object
+          - "null"
+        properties:
+          region:
+            type:
+              - object
+              - "null"
+            properties:
+              host:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+      licensing:
+        type:
+          - object
+          - "null"
+        properties:
+          model:
+            type:
+              - string
+              - "null"
+      management:
+        type:
+          - object
+          - "null"
+        properties:
+          details:
+            type:
+              - array
+              - "null"
+    additionalProperties: true
+  organization_saml:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uuid
+    properties:
+      uuid:
+        type: string
+      enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  organization_admins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - lastActive
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      networks:
+        type:
+          - array
+          - "null"
+      hasApiKey:
+        type:
+          - boolean
+          - "null"
+      orgAccess:
+        type:
+          - string
+          - "null"
+      lastActive:
+        type: string
+      accountStatus:
+        type:
+          - string
+          - "null"
+      authenticationMethod:
+        type:
+          - string
+          - "null"
+      twoFactorAuthEnabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  organization_devices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uuid
+    properties:
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          counts:
+            type:
+              - object
+              - "null"
+            properties:
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  total:
+                    type:
+                      - number
+                      - "null"
+                  remaining:
+                    type:
+                      - number
+                      - "null"
+      uuid:
+        type: string
+      items:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  organization_networks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      isVirtual:
+        type:
+          - boolean
+          - "null"
+      productTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      organizationId:
+        type:
+          - string
+          - "null"
+      isBoundToConfigTemplate:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  organization_apiRequests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uuid
+      - ts
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      ts:
+        type: string
+      host:
+        type:
+          - string
+          - "null"
+      path:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      client:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      method:
+        type:
+          - string
+          - "null"
+      adminId:
+        type:
+          - string
+          - "null"
+      sourceIp:
+        type:
+          - string
+          - "null"
+      userAgent:
+        type:
+          - string
+          - "null"
+      operationId:
+        type:
+          - string
+          - "null"
+      queryString:
+        type:
+          - string
+          - "null"
+      responseCode:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  organization_network_settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uuid
+    properties:
+      uuid:
+        type: string
+      namedVlans:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+      securePort:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+      localStatusPage:
+        type:
+          - object
+          - "null"
+        properties:
+          authentication:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+      localStatusPageEnabled:
+        type:
+          - boolean
+          - "null"
+      remoteStatusPageEnabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true

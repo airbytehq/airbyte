@@ -13,18 +13,6 @@
       "id": "3874523487643/insights/replies/lifetime"
     },
     {
-      "name": "impressions",
-      "period": "lifetime",
-      "values": [
-        {
-          "value": 105
-        }
-      ],
-      "title": "impressions title",
-      "description": "Impressions description.",
-      "id": "3874523487643/insights/impressions/lifetime"
-    },
-    {
       "name": "reach",
       "period": "lifetime",
       "values": [

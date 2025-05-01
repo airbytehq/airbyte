@@ -42,7 +42,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 5. Click **Authenticate your Amazon Ads account**.
 6. Log in and Authorize to the Amazon account.
 7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 90 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 11. Click **Set up source**.
@@ -53,12 +53,12 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 90 days in the past. If a date is not specified, yesterday's date is used. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 10. Click **Set up source**.
@@ -72,7 +72,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 3. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 90 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 6. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 7. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 <!-- /env:oss -->
@@ -129,8 +129,12 @@ All the reports are generated relative to the target profile's timezone.
 
 Campaign reports may sometimes have no data or may not be presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
 
-Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
+Report data synchronization only covers the last 90 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
 
+:::note
+The 'Reports' stream(s) by default will have `timeUnit` set to `SUMMARY`. If you would like more granularity, use the `_daily` versions of the report streams, which have
+ `timeUnit` set to `DAILY`. More info about this can be found [here](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
+:::
 ## Performance considerations
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
@@ -153,7 +157,15 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.2.0 | 2025-03-18 | [55814](https://github.com/airbytehq/airbyte/pull/55814) | Migrate to Manifest Only |
+| 7.3.0 | 2025-03-18 | [55814](https://github.com/airbytehq/airbyte/pull/55814) | Migrate to Manifest Only |
+| 7.2.1 | 2025-04-28 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability |
+| 7.2.0 | 2025-04-28 | [59121](https://github.com/airbytehq/airbyte/pull/59121) | Promoting release candidate 7.2.0-rc.2 to a main version & 7.2.0-rc.1 since they were merged at the same time.|
+| 7.2.0-rc.2 | 2025-04-23 | [58610](https://github.com/airbytehq/airbyte/pull/58610) | Used latest version of Python cdk (6.45.10) |
+| 7.2.0-rc.1 | 2025-04-22 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams & Auto-update start_date if past lookback window|
+| 7.1.7 | 2025-04-12 | [57591](https://github.com/airbytehq/airbyte/pull/57591) | Update dependencies |
+| 7.1.6 | 2025-04-05 | [57138](https://github.com/airbytehq/airbyte/pull/57138) | Update dependencies |
+| 7.1.5 | 2025-03-29 | [56554](https://github.com/airbytehq/airbyte/pull/56554) | Update dependencies |
+| 7.1.4 | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies |
 | 7.1.3 | 2025-03-08 | [55352](https://github.com/airbytehq/airbyte/pull/55352) | Update dependencies |
 | 7.1.2 | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Added handling 401 error for Polling Requester |
 | 7.1.1 | 2025-03-01 | [54895](https://github.com/airbytehq/airbyte/pull/54895) | Update dependencies |
