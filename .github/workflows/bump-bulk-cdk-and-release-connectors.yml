@@ -42,9 +42,8 @@ jobs:
           echo "latest_version=$latest_version" >> "$GITHUB_OUTPUT"
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
       - name: Update cdk in build.gradle files
         id: export-connection-modified
         run: |
@@ -80,8 +79,8 @@ jobs:
           fetch-depth: 0
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
       - name: Merge the changelog of the connectors
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
