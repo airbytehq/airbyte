@@ -90,8 +90,10 @@ jobs:
         run: |
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
-          echo -e "Detected connectors with changes:\n${CONNECTORS}"
-          echo "CONNECTORS=$(echo \"$CONNECTORS\" | tr '\n' ',')" >> $GITHUB_ENV
+          echo "Found connectors with changes:\n${CONNECTORS}"
+          CONNECTORS=$(echo \"$CONNECTORS\" | tr '\n' ',')
+          echo "Converted to comma-delimited list: ${CONNECTORS}"
+          echo "CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
 
       - name: Convert to JSON
         id: convert-matrix
