@@ -94,14 +94,6 @@ class TableNameMapFactoryTest {
         val stream1TableInfo = tableCatalog[stream1]!!
         val stream2TableInfo = tableCatalog[stream2]!!
 
-        // One stream should get the original name, the other should get a hash suffix
-        val finalTableNames =
-            setOf(
-                stream1TableInfo.tableNames.finalTableName!!.name,
-                stream2TableInfo.tableNames.finalTableName!!.name
-            )
-
-        // Verify that one name is "final_foofoo" and the other has the expected hash suffix
         assertAll(
             { assertTrue(stream1TableInfo.tableNames.finalTableName!!.name == "foofoo") },
             { assertTrue(stream1TableInfo.tableNames.finalTableName!!.namespace == "a") },
