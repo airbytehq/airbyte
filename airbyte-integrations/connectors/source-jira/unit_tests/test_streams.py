@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 import responses
 from conftest import find_stream
 from source_jira.source import SourceJira
-from source_jira.utils import read_full_refresh, read_incremental
+from source_jira.utils import read_full_refresh
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -782,8 +783,6 @@ def test_project_versions_stream(config, mock_non_deleted_projects_responses, pr
         json=projects_versions_response,
     )
 
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = find_stream("project_versions", config)
     records = list(read_full_refresh(stream))
 

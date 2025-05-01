@@ -58,10 +58,3 @@ def test_check_connection_404_error(config):
     assert (
         e.value.message == "Config validation error: please check that your domain is valid and does not include protocol (e.g: https://)."
     )
-
-
-def test_get_authenticator(config):
-    source = SourceJira(config=config, catalog=None, state=None)
-    authenticator = source.get_authenticator(config=config)
-
-    assert authenticator.get_auth_header() == {"Authorization": "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu"}

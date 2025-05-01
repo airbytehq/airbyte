@@ -64,7 +64,3 @@ class SourceJira(YamlDeclarativeSource):
         config["lookback_window_minutes"] = timedelta(minutes=config.get("lookback_window_minutes", 0))
         config["projects"] = config.get("projects", [])
         return config
-
-    @staticmethod
-    def get_authenticator(config: Mapping[str, Any]):
-        return BasicHttpAuthenticator(config.get("email"), config["api_token"])
