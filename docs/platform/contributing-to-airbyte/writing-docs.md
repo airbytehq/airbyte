@@ -5,7 +5,7 @@ import TabItem from "@theme/TabItem";
 
 Everyone is welcome to contribute to Airbyte's documentation.
 
-Airbyte's documentation is in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [Vercel](https://vercel.com). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files and historical platform docs versions are in the `/docusaurus` folder.
+Airbyte's documentation is in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [Vercel](https://vercel.com). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files and previously-released versions of platform docs versions are in the `/docusaurus` folder.
 
 ## Open source contributions welcome
 
@@ -164,11 +164,9 @@ Currently, the site has four instances, but Airbyte could add more instances lat
 - Connectors (not versioned)
 - Release notes (not versioned)
 
-For most contributors, this reality is transparent and not particularly relevant. However, there is one important concept to keep in mind.
+For most contributors, this reality isn't particularly relevant to producing docs. However, there is one important concept to keep in mind.
 
-When you update content for a versioned set of docs, your changes go into what Docusaurus calls the Next version: the version of Airbyte that isn't released yet, and which users can access by selecting "Next" using the version picker in the navigation. Docs for previously released versions of Airbyte aren't updated with these changes.
-
-If you find yourself looking at a local build but unable to see your changes, you're probably looking at docs for a version that was already released. Switch to the Next version to see your changes immediately.
+When you update content for a versioned set of docs, your changes go into what Docusaurus calls the Next version: the version of Airbyte that isn't released yet, and which users can access by selecting "Next" using the version picker in the navigation. Docs for previously released versions of Airbyte aren't updated. If you are unable to see your changes reflected on the site, you're probably looking at docs for a version that was already released. Switch to the Next version to see your changes.
 
 You can still update documentation for released versions, but you need to make these changes to the released files. Docusaurus stores these in `/docusaurus/<instance>_versioned_docs`.
 
@@ -483,29 +481,38 @@ When someone merges documentation changes into the `master` branch, Vercel deplo
 This information is only relevant to Airbyte employees who release new versions of Airbyte.
 :::
 
+When you release a new version of Airbyte, make a new docs version of the docs to match it.
+
 ### Create a new major version
 
 When you release a new major version of Airbyte (for example, 2.0, 2.1, etc.), generate a documentation version for it. This process generates a "frozen" set of the docs based on their state at that point in time. Once the version exists, you _can_ still update those docs, but changes you make don't carry forward to future versions.
 
-Open a terminal, change to the docusaurus folder, and run the command to generate a version.
+1. In GitHub, create a new branch off `master`.
 
-```bash
-cd docusaurus
-pnpm run docusaurus docs:version:platform <version>
-```
+2. Open a terminal, change to the docusaurus folder, and run the command to generate a version. `<version>` can be a number like `2.0` or anything else you like. Be consistent with Airbyte and other versions on the docs site. Whatever string you enter here later appears in the docs UI.
 
-Where `<version>` can be `1.7`, `1.8`, etc.
+      ```bash
+      cd docusaurus
+      pnpm run docusaurus docs:version:platform <version>
+      ```
+
+      Docusaurus automatically does three things at this point. It:
+
+      - Defines the existence of that version in the `/docusaurus/platform_versions.json` file
+      - Creates a physical copy of the versioned platform docs in `/docusaurus/platform_versioned_docs`
+      - Creates a physical copy of the versioned platform sidebar in `/docusaurus/platform_versioned_sidebars`
+
+3. Test your build locally to make sure everything looks as expected. Verify:
+
+   - The docs site builds locally
+   - Your local Docusaurus build doesn't report new broken links
+   - The version selector in the navigation contains your new version
+
+4. Create a pull request, get an approval, wait for CI checks to pass, and merge your changes into `master`.
 
 ### Create a new minor version
 
-Typically, you don't generate a docs version for patch releases (2.1.1). The only exception is if there is an actual substantive change in that patch and it needs separate documentation. If you actually need to do this, the process is the same as a major version.
-
-```bash
-cd docusaurus
-pnpm run docusaurus docs:version:platform <version>
-```
-
-Where `<version>` can be `1.7.1`, `1.8.2`, etc.
+Typically, you don't generate a docs version for patch releases (2.1.1). The only exception is if there is an actual substantive change in that patch and it needs separate documentation. If you actually need to do this, the process is the same as a major version, described in the preceding section.
 
 ### Delete a version
 
@@ -519,15 +526,15 @@ Delete old documentation versions when they're no longer useful, like when all u
 
 In almost all cases, you work on docs for the Next version. Sometimes, though, you need to update something you've already released.
 
-Though released documentation versions are "frozen," they're made of normal files, and you can still edit them like you would anything else. When you do, those changes only apply to the version you are editing. You can't automatically carry them forward. For this reason, it's best not to make major changes to released docs versions. Focus on making future versions better and only updated released versions because you have to.
+Though released documentation versions are "frozen," they're made of normal files, and you can still edit them like you would anything else. When you do, those changes only apply to the version you are editing. You can't automatically carry them forward to future versions. For this reason, it's best not to make major changes to released docs versions. Focus on making the next version better and only updated released versions when it's unavoidable.
 
 Find content files in `/docusaurus/<instance>_versioned_docs` and sidebars in `/docusaurus/<instance>_versioned_sidebars`.
 
 ### Regenerate an existing version
 
-From time to time, you may need to regenerate an existing version. For example, imagine you follow a major version release with a patch, and that patch requires updating all docs for that version. Rather than trying to update both the next and current docs versions, you could potentially just regenerate them using the current state of the docs.
+From time to time, you may need to regenerate an existing version of the docs from the next version. For example, you follow a major version release with a critical patch, and that patch requires updating all docs for that version. Rather than trying to update both the next and current docs versions, you could potentially just regenerate the versioned docs using the current state of the docs.
 
 1. Follow the preceding steps to delete that version.
 2. Follow the preceding steps to create that version.
 
-When you do this, you run the risk of an unintended change leaking into this version of the docs. For example, a documented feature from a future, unreleased version of Airbyte. Pay attention to the diff in GitHub and, if necessary, expunge anything from the versioned docs that shouldn't be there.
+When you do this, you run the risk of an unintended change leaking into this version of the docs. For example, a documented feature from a future, unreleased version of Airbyte. Pay attention to the diff in GitHub and, if necessary, expunge anything from the versioned docs files that shouldn't be there.
