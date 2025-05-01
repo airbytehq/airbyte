@@ -272,8 +272,8 @@ definitions:
             field_name: "scroll_param"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('scroll_param', '') }}"
-            stop_condition: "{{ not response.get('data') or not response.get('scroll_param') }}"
+            cursor_value: "{{ response.get('scroll_param') }}"
+            stop_condition: "{{ not response.get('data') }}"
         record_selector:
           $parameters:
             name: ""
@@ -406,7 +406,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
             stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
           page_size_option:
             type: RequestOption
@@ -477,7 +477,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
             stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
           page_size_option:
             type: RequestOption
@@ -681,7 +681,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
             stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
           page_size_option:
             type: RequestOption

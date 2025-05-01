@@ -97,7 +97,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.0-rc.3 | 2025-04-30| [55829](https://github.com/airbytehq/airbyte/pull/55829) |  Fix pagination for `conversations`, `tickets`, `companies` & `contacts` and cleanup manifest|
+| 0.13.0-rc.3 | 2025-05-02| [55829](https://github.com/airbytehq/airbyte/pull/55829) |  Fix pagination for `conversations`, `tickets`, `companies` & `contacts` and cleanup manifest|
 | 0.13.0-rc.2 | 2025-04-08 | [57524](https://github.com/airbytehq/airbyte/pull/57524) | Use global state and pass state to parent streams for conversation_parts and company_segments                                    |
 | 0.13.0-rc.1 | 2025-02-22 | [53187](https://github.com/airbytehq/airbyte/pull/53187) | Update with latest CDK features, remove custom incremental sync components, update schema for conversation_parts  |
 | 0.12.2 | 2025-02-15 | [53835](https://github.com/airbytehq/airbyte/pull/53835) | Update dependencies |
