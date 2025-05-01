@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.48.2.post1.dev14733922675"
+version = "6.48.5"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.48.2.post1.dev14733922675-py3-none-any.whl", hash = "sha256:726ba096e4fa22871f2d3e9330a01ff3b70940a977e40bdc3b5b3531deeefcdf"},
-    {file = "airbyte_cdk-6.48.2.post1.dev14733922675.tar.gz", hash = "sha256:016399d6aa7724f305c7bb8c8640d71e9bfd35c864df5f0a4147c05a6b88138b"},
+    {file = "airbyte_cdk-6.48.5-py3-none-any.whl", hash = "sha256:51dae61f8c696efcd54a1db395e3a2025bb6728a3653b3a677703de0d574b1f9"},
+    {file = "airbyte_cdk-6.48.5.tar.gz", hash = "sha256:0a9d5afd0e3f010c79e663b5c123091b8285b3720e2959c28280a52cf537dbe9"},
 ]
 
 [package.dependencies]
@@ -45,6 +45,7 @@ PyYAML = ">=6.0.1,<7.0.0"
 rapidfuzz = ">=3.10.1,<4.0.0"
 requests = "*"
 requests_cache = "*"
+rich = "*"
 rich-click = ">=1.8.8,<2.0.0"
 serpyco-rs = ">=1.10.2,<2.0.0"
 typing-extensions = "*"
@@ -2643,4 +2644,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "aaf4612335ace1a51e932e1fae259cfb18b9e01e33d3f3695a2182f3cd9ef16c"
+content-hash = "eb326fac6ee6f9acf3dcc6031b12edc95d845eec49d042e875785eedb64a2973"

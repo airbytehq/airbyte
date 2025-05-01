@@ -19,7 +19,7 @@ include = "source_bing_ads"
 python = "^3.10,<3.12"
 bingads = "==13.0.18.1"
 urllib3 = "==1.26.18"
-airbyte-cdk = "6.48.2.post1.dev14733922675"
+airbyte-cdk = "^6"
 cached-property = "==1.5.2"
 pendulum = "<3.0.0"
 
