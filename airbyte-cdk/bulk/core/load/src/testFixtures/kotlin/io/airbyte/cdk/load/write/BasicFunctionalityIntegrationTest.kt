@@ -1342,7 +1342,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
-                    emittedAtMs = 1234,
+                    emittedAtMs = 2345,
                 )
             )
         )
@@ -1361,7 +1361,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 2345,
                     generationId = 0,
                     data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
