@@ -1,4 +1,4 @@
-version: 6.41.1
+version: 6.45.10
 
 type: DeclarativeSource
 
@@ -6,6 +6,8 @@ check:
   type: CheckStream
   stream_names:
     - profiles
+
+max_concurrent_async_job_count: "{{ config.get('max_concurrent_async_job_count', 10) }}"
 
 definitions:
   streams:
@@ -25,6 +27,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        decoder:
+          type: JsonDecoder
       name: profiles
       primary_key:
         - profileId
@@ -51,10 +55,14 @@ definitions:
           record_filter:
             type: RecordFilter
             condition: >-
-              {{ record["profileId"] in config.get("profiles", []) or
+              {%- set requested_profiles = config.get("profiles", []) -%} {%-
+              set requested_marketplace_ids = config.get("marketplace_ids", [])
+              -%} {{ record["profileId"] in requested_profiles or
               record["accountInfo"]["marketplaceStringId"] in
-              config.get("marketplace_ids", []) if config.get("profiles", []) or
-              config.get("marketplace_ids", []) else True }}
+              requested_marketplace_ids if requested_profiles or
+              requested_marketplace_ids else True }}
+        decoder:
+          type: JsonDecoder
       name: profiles_filtered
       primary_key:
         - profileId
@@ -103,6 +111,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       transformations:
         - type: AddFields
           fields:
@@ -194,6 +204,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       name: sponsored_display_campaigns
       primary_key:
         - campaignId
@@ -252,6 +264,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -307,6 +321,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -362,6 +378,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -417,6 +435,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -430,7 +450,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: sp/budgetRules
+          #    Important: API docs contains incorrect endpoint path:
+          #        sd/budgetRules - endpoint from API docs which always returns empty results
+          #        sp/budgetRules - working endpoint
+          path: sp/budgetRules # TODO: check/rename stream during next breaking changes
           http_method: GET
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
@@ -473,6 +496,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -528,6 +553,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -589,6 +616,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -648,6 +677,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -698,6 +729,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -746,6 +779,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -794,6 +829,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -842,6 +879,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -890,6 +929,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -938,6 +979,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -986,6 +1029,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1014,6 +1059,7 @@ definitions:
               - type: SUBSTITUTES
               - type: COMPLEMENTS
           error_handler:
+            #    max_retries: 5
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
@@ -1067,6 +1113,8 @@ definitions:
               extra_fields:
                 - - campaignId
               partition_field: adGroupId
+        decoder:
+          type: JsonDecoder
       transformations:
         - type: AddFields
           fields:
@@ -1098,6 +1146,7 @@ definitions:
             Amazon-Advertising-API-Scope: "{{ stream_slice.parent_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
+            #    max_retries: 5
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
@@ -1137,6 +1186,8 @@ definitions:
               extra_fields:
                 - - campaignId
               partition_field: adGroupId
+        decoder:
+          type: JsonDecoder
       name: sponsored_product_ad_group_suggested_keywords
       schema_loader:
         type: InlineSchemaLoader
@@ -1237,6 +1288,8 @@ definitions:
               extra_fields:
                 - - timezone
               partition_field: profileId
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1328,6 +1381,8 @@ definitions:
               extra_fields:
                 - - timezone
               partition_field: profileId
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1419,6 +1474,8 @@ definitions:
               extra_fields:
                 - - timezone
               partition_field: profileId
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1509,6 +1566,8 @@ definitions:
               extra_fields:
                 - - timezone
               partition_field: profileId
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1549,6 +1608,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -1572,7 +1633,12 @@ definitions:
           request_body_json:
             name: purchasedAsin report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -1628,8 +1694,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -1640,9 +1706,11 @@ definitions:
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
           http_method: GET
           request_headers:
+            # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -1660,8 +1728,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -1676,7 +1752,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -1745,6 +1826,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -1768,7 +1851,12 @@ definitions:
           request_body_json:
             name: campaigns report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -1842,6 +1930,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_DISPLAY
               reportTypeId: sdCampaigns
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1872,8 +1962,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -1886,7 +1976,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -1904,8 +1994,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -1919,7 +2017,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -1988,6 +2091,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -2011,7 +2116,12 @@ definitions:
           request_body_json:
             name: adGroups report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -2104,6 +2214,8 @@ definitions:
                   {{ 'Tactic T00020 is not supported for report API in
                   marketplace' in response.details }}
                 error_message: "{{ response.details }}"
+              # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
               - type: HttpResponseFilter
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
@@ -2115,8 +2227,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2129,7 +2241,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -2147,8 +2259,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -2163,7 +2283,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -2232,6 +2357,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -2255,7 +2382,12 @@ definitions:
           request_body_json:
             name: productAds report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -2332,6 +2464,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_DISPLAY
               reportTypeId: sdAdvertisedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -2362,8 +2496,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2376,7 +2510,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -2394,8 +2528,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -2410,7 +2552,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -2479,6 +2626,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -2502,7 +2651,12 @@ definitions:
           request_body_json:
             name: targets report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -2601,8 +2755,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2611,11 +2765,13 @@ definitions:
             refresh_token: "{{ config[\"refresh_token\"] }}"
             refresh_request_body: {}
             token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           http_method: GET
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -2633,8 +2789,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -2649,7 +2813,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -2718,6 +2887,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -2741,7 +2912,12 @@ definitions:
           request_body_json:
             name: asins report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -2795,6 +2971,8 @@ definitions:
                   {{ 'Tactic T00020 is not supported for report API in
                   marketplace' in response.details }}
                 error_message: "{{ response.details }}"
+              # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
               - type: HttpResponseFilter
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
@@ -2806,8 +2984,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2820,7 +2998,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -2838,8 +3016,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -2854,7 +3040,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -2923,6 +3114,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -2946,7 +3139,12 @@ definitions:
           request_body_json:
             name: campaigns report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -2990,6 +3188,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_PRODUCTS
               reportTypeId: spCampaigns
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -3020,8 +3220,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3034,7 +3234,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -3052,8 +3252,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -3067,7 +3275,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -3136,6 +3349,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -3159,7 +3374,12 @@ definitions:
           request_body_json:
             name: adGroups report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -3220,6 +3440,8 @@ definitions:
                   {{ 'Tactic T00020 is not supported for report API in
                   marketplace' in response.details }}
                 error_message: "{{ response.details }}"
+              # TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
               - type: HttpResponseFilter
                 action: FAIL
                 predicate: "{{ 'Report date is too far in the past' in response.details }}"
@@ -3231,8 +3453,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3245,7 +3467,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -3263,8 +3485,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -3279,7 +3509,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -3348,6 +3583,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -3371,7 +3608,12 @@ definitions:
           request_body_json:
             name: keywords report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -3420,6 +3662,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_PRODUCTS
               reportTypeId: spTargeting
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -3450,8 +3694,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3464,7 +3708,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -3482,8 +3726,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -3498,7 +3750,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -3567,6 +3824,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -3590,7 +3849,12 @@ definitions:
           request_body_json:
             name: targets report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -3639,6 +3903,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_PRODUCTS
               reportTypeId: spTargeting
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -3669,8 +3935,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3683,7 +3949,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -3701,8 +3967,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -3717,7 +3991,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -3786,6 +4065,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -3809,7 +4090,12 @@ definitions:
           request_body_json:
             name: productAds report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -3853,6 +4139,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_PRODUCTS
               reportTypeId: spAdvertisedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -3883,8 +4171,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3897,7 +4185,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -3915,8 +4203,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -3931,7 +4227,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -4000,6 +4301,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -4023,7 +4326,12 @@ definitions:
           request_body_json:
             name: asins_keywords report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -4056,6 +4364,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_PRODUCTS
               reportTypeId: spPurchasedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -4086,8 +4396,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -4100,7 +4410,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -4118,8 +4428,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -4134,7 +4452,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -4203,6 +4526,8 @@ definitions:
               partition_field: profileId
               stream:
                 $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
         creation_requester:
           type: HttpRequester
           url_base: |-
@@ -4226,7 +4551,12 @@ definitions:
           request_body_json:
             name: asins_targets report {{ stream_interval.start_time }}
             endDate: "{{ stream_interval.end_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             configuration:
               format: GZIP_JSON
               columns:
@@ -4260,6 +4590,8 @@ definitions:
               timeUnit: SUMMARY
               adProduct: SPONSORED_PRODUCTS
               reportTypeId: spPurchasedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -4290,8 +4622,8 @@ definitions:
                 "NA": "https://advertising-api.amazon.com/",
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
-            } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{ creation_response['id'] }}
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -4304,7 +4636,7 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: >-
               {{
-              stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope']
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
               }}
             Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
           error_handler:
@@ -4322,8 +4654,16 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{ download_target }}
+          url_base: {{ download_target }}
           http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
       primary_key:
         - profileId
         - reportDate
@@ -4338,7 +4678,12 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_time_option:
           type: RequestOption
@@ -4371,6 +4716,3153 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sponsored_products_asins_targets_report_stream"
+    sponsored_brands_v3_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_v3_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: purchasedAsin report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignBudgetCurrencyCode
+                - campaignName
+                - adGroupName
+                - attributionType
+                - purchasedAsin
+                - productName
+                - productCategory
+                - sales14d
+                - orders14d
+                - unitsSold14d
+                - newToBrandSales14d
+                - newToBrandPurchases14d
+                - newToBrandUnitsSold14d
+                - newToBrandSalesPercentage14d
+                - newToBrandPurchasesPercentage14d
+                - newToBrandUnitsSoldPercentage14d
+              filters: []
+              groupBy:
+                - purchasedAsin
+              timeUnit: DAILY
+              adProduct: SPONSORED_BRANDS
+              reportTypeId: sbPurchasedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - purchasedAsin
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_v3_report_stream_daily"
+    sponsored_display_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_campaigns_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: campaigns report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - addToCart
+                - addToCartClicks
+                - addToCartRate
+                - addToCartViews
+                - addToList
+                - addToListFromClicks
+                - addToListFromViews
+                - qualifiedBorrows
+                - qualifiedBorrowsFromClicks
+                - qualifiedBorrowsFromViews
+                - royaltyQualifiedBorrows
+                - royaltyQualifiedBorrowsFromClicks
+                - royaltyQualifiedBorrowsFromViews
+                - brandedSearches
+                - brandedSearchesClicks
+                - brandedSearchesViews
+                - brandedSearchRate
+                - campaignBudgetCurrencyCode
+                - campaignId
+                - campaignName
+                - clicks
+                - cost
+                - detailPageViews
+                - detailPageViewsClicks
+                - eCPAddToCart
+                - eCPBrandSearch
+                - impressions
+                - impressionsViews
+                - leadFormOpens
+                - leads
+                - linkOuts
+                - newToBrandPurchases
+                - newToBrandPurchasesClicks
+                - newToBrandSalesClicks
+                - newToBrandUnitsSold
+                - newToBrandUnitsSoldClicks
+                - purchases
+                - purchasesClicks
+                - purchasesPromotedClicks
+                - sales
+                - salesClicks
+                - salesPromotedClicks
+                - unitsSold
+                - unitsSoldClicks
+                - videoCompleteViews
+                - videoFirstQuartileViews
+                - videoMidpointViews
+                - videoThirdQuartileViews
+                - videoUnmutes
+                - viewabilityRate
+                - viewClickThroughRate
+                - campaignBudgetAmount
+                - campaignStatus
+                - costType
+                - cumulativeReach
+                - impressionsFrequencyAverage
+                - newToBrandDetailPageViewClicks
+                - newToBrandDetailPageViewRate
+                - newToBrandDetailPageViews
+                - newToBrandDetailPageViewViews
+                - newToBrandECPDetailPageView
+                - newToBrandSales
+              filters: []
+              groupBy:
+                - campaign
+              timeUnit: DAILY
+              adProduct: SPONSORED_DISPLAY
+              reportTypeId: sdCampaigns
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - campaignId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_display_campaigns_report_stream_daily"
+    sponsored_display_adgroups_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_adgroups_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: adGroups report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - addToCart
+                - addToCartClicks
+                - addToCartRate
+                - addToCartViews
+                - adGroupId
+                - adGroupName
+                - addToList
+                - addToListFromClicks
+                - addToListFromViews
+                - qualifiedBorrows
+                - qualifiedBorrowsFromClicks
+                - qualifiedBorrowsFromViews
+                - royaltyQualifiedBorrows
+                - royaltyQualifiedBorrowsFromClicks
+                - royaltyQualifiedBorrowsFromViews
+                - bidOptimization
+                - brandedSearches
+                - brandedSearchesClicks
+                - brandedSearchesViews
+                - brandedSearchRate
+                - campaignBudgetCurrencyCode
+                - campaignId
+                - campaignName
+                - clicks
+                - cost
+                - detailPageViews
+                - detailPageViewsClicks
+                - eCPAddToCart
+                - eCPBrandSearch
+                - impressions
+                - impressionsViews
+                - leadFormOpens
+                - leads
+                - linkOuts
+                - newToBrandPurchases
+                - newToBrandPurchasesClicks
+                - newToBrandSales
+                - newToBrandSalesClicks
+                - newToBrandUnitsSold
+                - newToBrandUnitsSoldClicks
+                - purchases
+                - purchasesClicks
+                - purchasesPromotedClicks
+                - sales
+                - salesClicks
+                - salesPromotedClicks
+                - unitsSold
+                - unitsSoldClicks
+                - videoCompleteViews
+                - videoFirstQuartileViews
+                - videoMidpointViews
+                - videoThirdQuartileViews
+                - videoUnmutes
+                - viewabilityRate
+                - viewClickThroughRate
+                - cumulativeReach
+                - impressionsFrequencyAverage
+                - newToBrandDetailPageViewClicks
+                - newToBrandDetailPageViewRate
+                - newToBrandDetailPageViews
+                - newToBrandDetailPageViewViews
+                - newToBrandECPDetailPageView
+              filters: []
+              groupBy:
+                - adGroup
+              timeUnit: DAILY
+              adProduct: SPONSORED_DISPLAY
+              reportTypeId: sdAdGroup
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - adGroupId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_display_adgroups_report_stream_daily"
+    sponsored_display_productads_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_productads_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: productAds report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - addToCart
+                - addToCartRate
+                - addToCartViews
+                - addToCartClicks
+                - adGroupId
+                - adGroupName
+                - adId
+                - addToList
+                - addToListFromClicks
+                - qualifiedBorrows
+                - royaltyQualifiedBorrows
+                - addToListFromViews
+                - qualifiedBorrowsFromClicks
+                - qualifiedBorrowsFromViews
+                - royaltyQualifiedBorrowsFromClicks
+                - royaltyQualifiedBorrowsFromViews
+                - bidOptimization
+                - brandedSearches
+                - brandedSearchesClicks
+                - brandedSearchesViews
+                - brandedSearchRate
+                - campaignBudgetCurrencyCode
+                - campaignId
+                - campaignName
+                - clicks
+                - cost
+                - cumulativeReach
+                - detailPageViews
+                - detailPageViewsClicks
+                - eCPAddToCart
+                - eCPBrandSearch
+                - impressions
+                - impressionsFrequencyAverage
+                - impressionsViews
+                - leadFormOpens
+                - leads
+                - linkOuts
+                - newToBrandDetailPageViewClicks
+                - newToBrandDetailPageViewRate
+                - newToBrandDetailPageViews
+                - newToBrandDetailPageViewViews
+                - newToBrandECPDetailPageView
+                - newToBrandPurchases
+                - newToBrandPurchasesClicks
+                - newToBrandSales
+                - newToBrandSalesClicks
+                - newToBrandUnitsSold
+                - newToBrandUnitsSoldClicks
+                - promotedAsin
+                - promotedSku
+                - purchases
+                - purchasesClicks
+                - purchasesPromotedClicks
+                - sales
+                - salesClicks
+                - salesPromotedClicks
+                - unitsSold
+                - unitsSoldClicks
+                - videoCompleteViews
+                - videoFirstQuartileViews
+                - videoMidpointViews
+                - videoThirdQuartileViews
+                - videoUnmutes
+                - viewabilityRate
+                - viewClickThroughRate
+              filters: []
+              groupBy:
+                - advertiser
+              timeUnit: DAILY
+              adProduct: SPONSORED_DISPLAY
+              reportTypeId: sdAdvertisedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - adId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_display_productads_report_stream_daily"
+    sponsored_display_targets_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_targets_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: targets report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - addToCart
+                - addToCartClicks
+                - addToCartRate
+                - addToCartViews
+                - adGroupId
+                - adGroupName
+                - addToList
+                - addToListFromClicks
+                - addToListFromViews
+                - qualifiedBorrows
+                - qualifiedBorrowsFromClicks
+                - qualifiedBorrowsFromViews
+                - royaltyQualifiedBorrows
+                - royaltyQualifiedBorrowsFromClicks
+                - royaltyQualifiedBorrowsFromViews
+                - brandedSearches
+                - brandedSearchesClicks
+                - brandedSearchesViews
+                - brandedSearchRate
+                - campaignBudgetCurrencyCode
+                - campaignId
+                - campaignName
+                - clicks
+                - cost
+                - detailPageViews
+                - detailPageViewsClicks
+                - eCPAddToCart
+                - eCPBrandSearch
+                - impressions
+                - impressionsViews
+                - leadFormOpens
+                - leads
+                - linkOuts
+                - newToBrandPurchases
+                - newToBrandPurchasesClicks
+                - newToBrandSales
+                - newToBrandSalesClicks
+                - newToBrandUnitsSold
+                - newToBrandUnitsSoldClicks
+                - purchases
+                - purchasesClicks
+                - purchasesPromotedClicks
+                - sales
+                - salesClicks
+                - salesPromotedClicks
+                - targetingExpression
+                - targetingId
+                - targetingText
+                - unitsSold
+                - unitsSoldClicks
+                - videoCompleteViews
+                - videoFirstQuartileViews
+                - videoMidpointViews
+                - videoThirdQuartileViews
+                - videoUnmutes
+                - viewabilityRate
+                - viewClickThroughRate
+              filters: []
+              groupBy:
+                - targeting
+              timeUnit: DAILY
+              adProduct: SPONSORED_DISPLAY
+              reportTypeId: sdTargeting
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - targetingId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_display_targets_report_stream_daily"
+    sponsored_display_asins_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_display_asins_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: asins report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - adGroupId
+                - adGroupName
+                - asinBrandHalo
+                - addToList
+                - addToListFromClicks
+                - qualifiedBorrowsFromClicks
+                - royaltyQualifiedBorrowsFromClicks
+                - addToListFromViews
+                - qualifiedBorrows
+                - qualifiedBorrowsFromViews
+                - royaltyQualifiedBorrows
+                - royaltyQualifiedBorrowsFromViews
+                - campaignBudgetCurrencyCode
+                - campaignId
+                - campaignName
+                - conversionsBrandHalo
+                - conversionsBrandHaloClicks
+                - promotedAsin
+                - promotedSku
+                - salesBrandHalo
+                - salesBrandHaloClicks
+                - unitsSoldBrandHalo
+                - unitsSoldBrandHaloClicks
+              filters: []
+              groupBy:
+                - asin
+              timeUnit: DAILY
+              adProduct: SPONSORED_DISPLAY
+              reportTypeId: sdPurchasedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - promotedAsin
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_display_asins_report_stream_daily"
+    sponsored_products_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_campaigns_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: campaigns report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignName
+                - campaignId
+                - campaignStatus
+                - campaignBudgetAmount
+                - campaignRuleBasedBudgetAmount
+                - campaignApplicableBudgetRuleId
+                - campaignApplicableBudgetRuleName
+                - impressions
+                - clicks
+                - cost
+                - purchases1d
+                - purchases7d
+                - purchases14d
+                - purchases30d
+                - purchasesSameSku1d
+                - purchasesSameSku7d
+                - purchasesSameSku14d
+                - purchasesSameSku30d
+                - unitsSoldClicks1d
+                - unitsSoldClicks7d
+                - unitsSoldClicks14d
+                - unitsSoldClicks30d
+                - sales1d
+                - sales7d
+                - sales14d
+                - sales30d
+                - attributedSalesSameSku1d
+                - attributedSalesSameSku7d
+                - attributedSalesSameSku14d
+                - attributedSalesSameSku30d
+                - unitsSoldSameSku1d
+                - unitsSoldSameSku7d
+                - unitsSoldSameSku14d
+                - unitsSoldSameSku30d
+              filters: []
+              groupBy:
+                - campaign
+              timeUnit: DAILY
+              adProduct: SPONSORED_PRODUCTS
+              reportTypeId: spCampaigns
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - campaignId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_campaigns_report_stream_daily"
+    sponsored_products_adgroups_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_adgroups_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: adGroups report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignName
+                - campaignId
+                - adGroupName
+                - adGroupId
+                - impressions
+                - clicks
+                - cost
+                - purchases1d
+                - purchases7d
+                - purchases14d
+                - purchases30d
+                - purchasesSameSku1d
+                - purchasesSameSku7d
+                - purchasesSameSku14d
+                - purchasesSameSku30d
+                - unitsSoldClicks1d
+                - unitsSoldClicks7d
+                - unitsSoldClicks14d
+                - unitsSoldClicks30d
+                - sales1d
+                - sales7d
+                - sales14d
+                - sales30d
+                - attributedSalesSameSku1d
+                - attributedSalesSameSku7d
+                - attributedSalesSameSku14d
+                - attributedSalesSameSku30d
+                - unitsSoldSameSku1d
+                - unitsSoldSameSku7d
+                - unitsSoldSameSku14d
+                - unitsSoldSameSku30d
+              filters: []
+              groupBy:
+                - campaign
+                - adGroup
+              timeUnit: DAILY
+              adProduct: SPONSORED_PRODUCTS
+              reportTypeId: spCampaigns
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - adGroupId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_adgroups_report_stream_daily"
+    sponsored_products_keywords_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_keywords_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: keywords report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignName
+                - campaignId
+                - adGroupName
+                - adGroupId
+                - keywordId
+                - keyword
+                - matchType
+                - impressions
+                - clicks
+                - cost
+                - purchases1d
+                - purchases7d
+                - purchases14d
+                - purchases30d
+                - purchasesSameSku1d
+                - purchasesSameSku7d
+                - purchasesSameSku14d
+                - purchasesSameSku30d
+                - unitsSoldClicks1d
+                - unitsSoldClicks7d
+                - unitsSoldClicks14d
+                - unitsSoldClicks30d
+                - sales1d
+                - sales7d
+                - sales14d
+                - sales30d
+                - attributedSalesSameSku1d
+                - attributedSalesSameSku7d
+                - attributedSalesSameSku14d
+                - attributedSalesSameSku30d
+                - unitsSoldSameSku1d
+                - unitsSoldSameSku7d
+                - unitsSoldSameSku14d
+                - unitsSoldSameSku30d
+              filters:
+                - field: keywordType
+                  values:
+                    - BROAD
+                    - PHRASE
+                    - EXACT
+              groupBy:
+                - targeting
+              timeUnit: DAILY
+              adProduct: SPONSORED_PRODUCTS
+              reportTypeId: spTargeting
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - keywordId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_keywords_report_stream_daily"
+    sponsored_products_targets_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_targets_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: targets report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignName
+                - campaignId
+                - adGroupName
+                - adGroupId
+                - keywordId
+                - keyword
+                - targeting
+                - keywordType
+                - impressions
+                - clicks
+                - cost
+                - purchases1d
+                - purchases7d
+                - purchases14d
+                - purchases30d
+                - purchasesSameSku1d
+                - purchasesSameSku7d
+                - purchasesSameSku14d
+                - purchasesSameSku30d
+                - unitsSoldClicks1d
+                - unitsSoldClicks7d
+                - unitsSoldClicks14d
+                - unitsSoldClicks30d
+                - sales1d
+                - sales7d
+                - sales14d
+                - sales30d
+                - attributedSalesSameSku1d
+                - attributedSalesSameSku7d
+                - attributedSalesSameSku14d
+                - attributedSalesSameSku30d
+                - unitsSoldSameSku1d
+                - unitsSoldSameSku7d
+                - unitsSoldSameSku14d
+                - unitsSoldSameSku30d
+              filters:
+                - field: keywordType
+                  values:
+                    - TARGETING_EXPRESSION
+                    - TARGETING_EXPRESSION_PREDEFINED
+              groupBy:
+                - targeting
+              timeUnit: DAILY
+              adProduct: SPONSORED_PRODUCTS
+              reportTypeId: spTargeting
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - keywordId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_targets_report_stream_daily"
+    sponsored_products_productads_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_productads_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: productAds report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignName
+                - campaignId
+                - adGroupName
+                - adGroupId
+                - adId
+                - impressions
+                - clicks
+                - cost
+                - campaignBudgetCurrencyCode
+                - advertisedAsin
+                - purchases1d
+                - purchases7d
+                - purchases14d
+                - purchases30d
+                - purchasesSameSku1d
+                - purchasesSameSku7d
+                - purchasesSameSku14d
+                - purchasesSameSku30d
+                - unitsSoldClicks1d
+                - unitsSoldClicks7d
+                - unitsSoldClicks14d
+                - unitsSoldClicks30d
+                - sales1d
+                - sales7d
+                - sales14d
+                - sales30d
+                - attributedSalesSameSku1d
+                - attributedSalesSameSku7d
+                - attributedSalesSameSku14d
+                - attributedSalesSameSku30d
+                - unitsSoldSameSku1d
+                - unitsSoldSameSku7d
+                - unitsSoldSameSku14d
+                - unitsSoldSameSku30d
+              filters: []
+              groupBy:
+                - advertiser
+              timeUnit: DAILY
+              adProduct: SPONSORED_PRODUCTS
+              reportTypeId: spAdvertisedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - adId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_productads_report_stream_daily"
+    sponsored_products_asins_keywords_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_asins_keywords_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: asins_keywords report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignName
+                - campaignId
+                - adGroupName
+                - adGroupId
+                - keywordId
+                - keyword
+                - advertisedAsin
+                - purchasedAsin
+                - advertisedSku
+                - campaignBudgetCurrencyCode
+                - matchType
+                - unitsSoldClicks1d
+                - unitsSoldClicks7d
+                - unitsSoldClicks14d
+                - unitsSoldClicks30d
+                - unitsSoldOtherSku1d
+                - unitsSoldOtherSku7d
+                - unitsSoldOtherSku14d
+                - unitsSoldOtherSku30d
+                - salesOtherSku1d
+                - salesOtherSku7d
+                - salesOtherSku14d
+                - salesOtherSku30d
+              filters: []
+              groupBy:
+                - asin
+              timeUnit: DAILY
+              adProduct: SPONSORED_PRODUCTS
+              reportTypeId: spPurchasedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - advertisedAsin
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_asins_keywords_report_stream_daily"
+    sponsored_products_asins_targets_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_asins_targets_report_stream_daily
+      retriever:
+        type: AsyncRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        download_target_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: profileId
+              partition_field: profileId
+              stream:
+                $ref: "#/definitions/streams/profiles_filtered"
+        decoder:
+          type: JsonDecoder
+        creation_requester:
+          type: HttpRequester
+          url_base: |-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          request_body_json:
+            name: asins_targets report daily {{ stream_interval.start_time }}
+            endDate: "{{ stream_interval.end_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
+            configuration:
+              format: GZIP_JSON
+              columns:
+                - date
+                - campaignName
+                - campaignId
+                - adGroupName
+                - adGroupId
+                - advertisedAsin
+                - purchasedAsin
+                - advertisedSku
+                - campaignBudgetCurrencyCode
+                - matchType
+                - unitsSoldClicks1d
+                - unitsSoldClicks7d
+                - unitsSoldClicks14d
+                - unitsSoldClicks30d
+                - unitsSoldOtherSku1d
+                - unitsSoldOtherSku7d
+                - unitsSoldOtherSku14d
+                - unitsSoldOtherSku30d
+                - salesOtherSku1d
+                - salesOtherSku7d
+                - salesOtherSku14d
+                - salesOtherSku30d
+                - keywordId
+                - targeting
+                - keywordType
+              filters: []
+              groupBy:
+                - asin
+              timeUnit: DAILY
+              adProduct: SPONSORED_PRODUCTS
+              reportTypeId: spPurchasedProduct
+            TODO Fix me: The creation_response interpolation context should be available directly in the headers.
+            # https://github.com/airbytehq/airbyte/pull/55806#issuecomment-2734493924
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'KDP authors do not have access to Sponsored Brands
+                  functionality' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Not authorized to access scope' in response.details }}"
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: >-
+                  {{ 'Tactic T00020 is not supported for report API in
+                  marketplace' in response.details }}
+                error_message: "{{ response.details }}"
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ 'Report date is too far in the past' in response.details }}"
+                error_message: "{{ response.details }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%} {{ URL_MAPPING[config["region"]] }}/reporting/reports/{{
+            creation_response['reportId'] }}
+          authenticator:
+            type: OAuthAuthenticator
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: refresh_token
+            client_secret: "{{ config[\"client_secret\"] }}"
+            refresh_token: "{{ config[\"refresh_token\"] }}"
+            refresh_request_body: {}
+            token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: >-
+              {{
+              stream_slice.extra_fields['creation_response'].request.headers['Amazon-Advertising-API-Scope']
+              }}
+            Amazon-Advertising-API-ClientId: "{{ config[\"client_id\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      Unauthorized error while report status checking. Known
+                      error. Please, retry the request or restart sync.
+        download_requester:
+          type: HttpRequester
+          url_base: {{ download_target }}
+          http_method: GET
+        download_decoder:
+          # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
+          # https://github.com/airbytehq/airbyte/issues/56988
+          type: GzipDecoder
+          decoder:
+            type: GzipDecoder
+            decoder:
+              type: JsonDecoder
+      primary_key:
+        - profileId
+        - reportDate
+        - adGroupName
+        - advertisedAsin
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reportDate
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {%- set today = today_utc() - duration('P1D') -%} {%- set
+            user_start_date = config.get('start_date',
+            today.strftime('%Y-%m-%d')) -%} {%- set ninety_days_ago = today -
+            duration('P90D') -%} "{{ max(user_start_date,
+            ninety_days_ago.strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P{{ config.get('events_time_step', 30) }}D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - reportDate
+              value: "{{ stream_interval.end_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - profileId
+              value: "{{ stream_partition['profileId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_asins_targets_report_stream_daily"
   base_requester:
     type: HttpRequester
     url_base: |-
@@ -4426,6 +7918,19 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_productads_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream"
+  - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_productads_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_targets_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_display_asins_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_campaigns_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_adgroups_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_keywords_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_targets_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_productads_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream_daily"
 
 spec:
   type: Spec
@@ -4620,123 +8125,159 @@ spec:
             - client_secret
 
 metadata:
-  autoImportSchema:
-    profiles: false
-    profiles_filtered: false
-    portfolios: false
-    sponsored_display_campaigns: false
-    sponsored_display_ad_groups: false
-    sponsored_display_product_ads: false
-    sponsored_display_targetings: false
-    sponsored_display_creatives: false
-    sponsored_display_budget_rules: false
-    sponsored_brands_keywords: false
-    sponsored_brands_campaigns: false
-    sponsored_brands_ad_groups: false
-    sponsored_product_campaigns: false
-    sponsored_product_ad_groups: false
-    sponsored_product_keywords: false
-    sponsored_product_negative_keywords: false
-    sponsored_product_campaign_negative_keywords: false
-    sponsored_product_ads: false
-    sponsored_product_targetings: false
-    sponsored_product_ad_group_bid_recommendations: false
-    sponsored_product_ad_group_suggested_keywords: false
-    attribution_report_products: false
-    attribution_report_performance_adgroup: false
-    attribution_report_performance_campaign: false
-    attribution_report_performance_creative: false
-    sponsored_brands_v3_report_stream: false
-    sponsored_display_campaigns_report_stream: false
-    sponsored_display_adgroups_report_stream: false
-    sponsored_display_productads_report_stream: false
-    sponsored_display_targets_report_stream: false
-    sponsored_display_asins_report_stream: false
-    sponsored_products_campaigns_report_stream: false
-    sponsored_products_adgroups_report_stream: false
-    sponsored_products_keywords_report_stream: false
-    sponsored_products_targets_report_stream: false
-    sponsored_products_productads_report_stream: false
-    sponsored_products_asins_keywords_report_stream: false
-    sponsored_products_asins_targets_report_stream: false
+  assist: {}
   testedStreams:
     profiles:
       streamHash: 5bcf60ed019768f598ab1b41ab9ec59c46b6a564
-    profiles_filtered:
-      streamHash: f36edccafcdcb6e617a94734070207ded09b1412
     portfolios:
-      streamHash: 6929d5fdf3aaea1ffc2054c34c5fd5efa7151d15
-    sponsored_display_campaigns:
-      streamHash: 9525fc98e6021d19046251341303f0f27026c5cf
-    sponsored_display_ad_groups:
-      streamHash: ba3332cae7715610b7ee632d3949d7aef510ac53
-    sponsored_display_product_ads:
-      streamHash: 0b3dd6db5bbe5574dcb174e7fa0682c885cda09e
-    sponsored_display_targetings:
-      streamHash: 54f769ad102f3fbfa6055342ae2f4c8747840f05
-    sponsored_display_creatives:
-      streamHash: 1b0334337f98d9f263d33aaf1b71f41badfef4a7
-    sponsored_display_budget_rules:
-      streamHash: 3ac844fc13eaa9d90a67b39975d2431d437735ce
-    sponsored_brands_keywords:
-      streamHash: 14b4ed1b1ad1a451bae8d1c43b02a8859e0c42c8
-    sponsored_brands_campaigns:
-      streamHash: 04f7e67567e39a19f465d2b76521d96ccf348ef9
-    sponsored_brands_ad_groups:
-      streamHash: a72c4119757e11e610cb20e7619ff563172ef6ef
-    sponsored_product_campaigns:
-      streamHash: bc0dea24e4e04881fe74b237b66987f784ed6d0d
-    sponsored_product_ad_groups:
-      streamHash: 28c5679bdabd8b820d7404ed9700da62739f7f80
-    sponsored_product_keywords:
-      streamHash: 15d7b7f0898467b9db18dc9f61a4bae8a48c9cca
-    sponsored_product_negative_keywords:
-      streamHash: b25e0db45f9216c0415a569b7b6a9bbb7ddb1535
-    sponsored_product_campaign_negative_keywords:
-      streamHash: 16393a47bb430b012e54a253957759d402ee9e3b
+      streamHash: b01793f483774f1acc92344ee6928117de616a14
     sponsored_product_ads:
-      streamHash: 51b955f8b0ab3b0183abc0ca37eed6804bc7cf0b
-    sponsored_product_targetings:
-      streamHash: e214c1af94bd8cf48f4ae29d5fec250cc93fac0a
-    sponsored_product_ad_group_bid_recommendations:
-      streamHash: 89688f14e1c90e0bb43474c68b9b4599e300e907
-    sponsored_product_ad_group_suggested_keywords:
-      streamHash: 29cac8c857d756b15df482267fc5b199fb48c028
+      streamHash: 3dc5dc701d5f3e3f0d0a397b344e03478909e3ec
+    sponsored_brands_keywords:
+      streamHash: 90e4d8bb242d08bc71197ea50d34c6e24d16f9c5
+    sponsored_brands_ad_groups:
+      streamHash: 9c01870a4178160cc30cfbcaf377e9ed195aa7a4
+    sponsored_brands_campaigns:
+      streamHash: 8a551f3355b86728cedec91b929ce8f0aa28a3e5
+    sponsored_product_keywords:
+      streamHash: 1f420353b856aece6e9271b4432e5cefa527e4a8
     attribution_report_products:
-      streamHash: edbc077da83e143715e1afea1231c6383010f50d
-    attribution_report_performance_adgroup:
-      streamHash: 8b75eac859f1ea75c58c8d9c09163cec6150eb4f
-    attribution_report_performance_campaign:
-      streamHash: f21a5aa58ffaec25215e72ceedeb8edb17009b26
-    attribution_report_performance_creative:
-      streamHash: 580c55a93c8d3fa44f0416df25f4338453dc0dcc
+      streamHash: bc35301d9d26f7eeee26e39be91a204da7c6da5a
+    sponsored_display_ad_groups:
+      streamHash: d1d12d0c6e71f29fa98cb4a6730ba1a7f0b35461
+    sponsored_display_campaigns:
+      streamHash: d292f14f778613d6426f0164de6f4ad285c2f6c4
+    sponsored_display_creatives:
+      streamHash: 2b580047be740b00fbeb5c0cac1294b805ae8a81
+    sponsored_product_ad_groups:
+      streamHash: 4fa49b1748d820f493bb9c23a99a7d680ddf4762
+    sponsored_product_campaigns:
+      streamHash: 99068757f625f261c58c6227f59707f014c8c10a
+    sponsored_display_targetings:
+      streamHash: 9084f7a290ec26c239b53d878d6c243a65f2fee9
+    sponsored_product_targetings:
+      streamHash: 8ef8e8736bbf0e94545b0600180e5f9cedd15036
+    sponsored_display_product_ads:
+      streamHash: 26c8d5d6342e30f3ee9f0a26d897b8fa4972f49b
+    sponsored_display_budget_rules:
+      streamHash: b782ce0a96580b232f871f7457eadfc28b9d2274
     sponsored_brands_v3_report_stream:
-      streamHash: a806e0abc725b846ef7c162f67e2b7af6f887e19
-    sponsored_display_campaigns_report_stream:
-      streamHash: bda2dc46fd462735985103991b0e673959e26728
-    sponsored_display_adgroups_report_stream:
-      streamHash: 596bbbe4ad3f1fa4e460bf3bd280b1304737f8f3
-    sponsored_display_productads_report_stream:
-      streamHash: d2f39d0dde49210c69b1c44bdc0a5043bfed9afc
-    sponsored_display_targets_report_stream:
-      streamHash: 3f17c86a0bb91b806501c27810bd3a302b10cede
+      streamHash: cfd098d9faf1935eeac98ba0a22f7e912117fa16
+    sponsored_product_negative_keywords:
+      streamHash: 30ced0db3e512825f5670a3680c7cdc1f0a6c340
     sponsored_display_asins_report_stream:
-      streamHash: ed8488a654e301e872c5c7af14457202a0d48a51
-    sponsored_products_campaigns_report_stream:
-      streamHash: 3013aa89c6b0e67c4cc2694fd5a8e93273a89f8a
-    sponsored_products_adgroups_report_stream:
-      streamHash: 68fda129f91a98ceafd59488e613b2b63ac2c9ea
-    sponsored_products_keywords_report_stream:
-      streamHash: 02ffd1fa0714f0449e55b84f569293c9fbb7ec85
+      streamHash: 22ceeb55572279f9bb9173876b7b1d45ae4fe944
+    attribution_report_performance_adgroup:
+      streamHash: a0e6ae84006d16c64432fa00e2b7a1b6487e0103
+    attribution_report_performance_campaign:
+      streamHash: 54cbc96663eb04eb06700c327d5ce57069dcafde
+    attribution_report_performance_creative:
+      streamHash: 68fccaab11defb92c96901e738741a316c48f884
+    sponsored_brands_v3_report_stream_daily:
+      streamHash: a604da6e71ff5f5db311b2895f7bed21362a12d2
+    sponsored_display_targets_report_stream:
+      streamHash: 5f374ec4911d9c9f04ef06144e91d0ccd3f8e16a
+    sponsored_display_adgroups_report_stream:
+      streamHash: b6bce7ee17dabdfb93ec35a5d11122385e10efe3
     sponsored_products_targets_report_stream:
-      streamHash: ecd756d03abdaab694c85db9a3b55a477e8ea679
+      streamHash: a02efe2233a5f9b3469898b9bb1107c0b1786a97
+    sponsored_display_campaigns_report_stream:
+      streamHash: f8382a89eeba528030c716b3ee7cf924a4d2742c
+    sponsored_products_adgroups_report_stream:
+      streamHash: 81624dfee77167102b9ea88e58986e713f633103
+    sponsored_products_keywords_report_stream:
+      streamHash: 69a6e6639d51592e3b0e8e4078b53f186289715c
+    sponsored_display_productads_report_stream:
+      streamHash: 7359419cf0f14945796a03527c9d4faea94e54c2
+    sponsored_products_campaigns_report_stream:
+      streamHash: 7aab46f99a43cc78d6df58bf06d76cfe4216d9c7
+    sponsored_display_asins_report_stream_daily:
+      streamHash: b0f0ee19f48f7350ca46d4c49547f955e14cf6c5
     sponsored_products_productads_report_stream:
-      streamHash: 74a77264343ab57efb2558a4683d1d665d791525
-    sponsored_products_asins_keywords_report_stream:
-      streamHash: b0d301d774876f7cc0190976ff539d35491f2930
+      streamHash: 776e162325d1c350e7d0dcc03943577643552f15
+    sponsored_product_campaign_negative_keywords:
+      streamHash: 02f3a03e3d1a61da6c8294b09742d678af4e5035
+    sponsored_display_targets_report_stream_daily:
+      streamHash: b0bf742d6aeab91c11ad9bd9ab5463bb840c32fe
+    sponsored_product_ad_group_suggested_keywords:
+      streamHash: 01e0e45cb6d37fd2e924f11d43cf4b4a05c261d5
+    sponsored_display_adgroups_report_stream_daily:
+      streamHash: eed13ecb216ccaeafbb657de9d4f9532583784f7
+    sponsored_product_ad_group_bid_recommendations:
+      streamHash: 71f498d54acd2a708228e13559882a8034048d92
     sponsored_products_asins_targets_report_stream:
-      streamHash: b43f5c301245d7afeb49032b8c1e3b80fae742b6
-  assist: {}
+      streamHash: 36622d3dda4dedaec8d3ff77324148443b76c79a
+    sponsored_products_targets_report_stream_daily:
+      streamHash: 8a3c1bb06092f5bf64ab3566b22c2c22b92589da
+    sponsored_display_campaigns_report_stream_daily:
+      streamHash: 2f6c5a779f1cb4dd430321a638417f15012916c6
+    sponsored_products_adgroups_report_stream_daily:
+      streamHash: 6290ea0d28491306dcdc7b47a0b3d6f4abc2618b
+    sponsored_products_asins_keywords_report_stream:
+      streamHash: ea1e904f0eba6b028cd5b68fe53c849605033c07
+    sponsored_products_keywords_report_stream_daily:
+      streamHash: 4ee16d2a24b03c264b7f1dd900d1e7e8392ca281
+    sponsored_display_productads_report_stream_daily:
+      streamHash: 348ee25f54706c2b5d8f2a35cb3ee9ada347f85b
+    sponsored_products_campaigns_report_stream_daily:
+      streamHash: 1b3cc9814a8d841d8c608a5e6579aaddb2b8168f
+    sponsored_products_productads_report_stream_daily:
+      streamHash: 7b984c803bdbba0421d38caab898cadc4d21b9e5
+    sponsored_products_asins_targets_report_stream_daily:
+      streamHash: 9e008fa134929d190880beb78e133251d808691b
+    sponsored_products_asins_keywords_report_stream_daily:
+      streamHash: 4b8da8e740d1d9eab8add3dbba4fda6efd80f58d
+  autoImportSchema:
+    profiles: false
+    portfolios: false
+    sponsored_product_ads: false
+    sponsored_brands_keywords: false
+    sponsored_brands_ad_groups: false
+    sponsored_brands_campaigns: false
+    sponsored_product_keywords: false
+    attribution_report_products: false
+    sponsored_display_ad_groups: false
+    sponsored_display_campaigns: false
+    sponsored_display_creatives: false
+    sponsored_product_ad_groups: false
+    sponsored_product_campaigns: false
+    sponsored_display_targetings: false
+    sponsored_product_targetings: false
+    sponsored_display_product_ads: false
+    sponsored_display_budget_rules: false
+    sponsored_brands_v3_report_stream: false
+    sponsored_product_negative_keywords: false
+    sponsored_display_asins_report_stream: false
+    attribution_report_performance_adgroup: false
+    attribution_report_performance_campaign: false
+    attribution_report_performance_creative: false
+    sponsored_brands_v3_report_stream_daily: false
+    sponsored_display_targets_report_stream: false
+    sponsored_display_adgroups_report_stream: false
+    sponsored_products_targets_report_stream: false
+    sponsored_display_campaigns_report_stream: false
+    sponsored_products_adgroups_report_stream: false
+    sponsored_products_keywords_report_stream: false
+    sponsored_display_productads_report_stream: false
+    sponsored_products_campaigns_report_stream: false
+    sponsored_display_asins_report_stream_daily: false
+    sponsored_products_productads_report_stream: false
+    sponsored_product_campaign_negative_keywords: false
+    sponsored_display_targets_report_stream_daily: false
+    sponsored_product_ad_group_suggested_keywords: false
+    sponsored_display_adgroups_report_stream_daily: false
+    sponsored_product_ad_group_bid_recommendations: false
+    sponsored_products_asins_targets_report_stream: false
+    sponsored_products_targets_report_stream_daily: false
+    sponsored_display_campaigns_report_stream_daily: false
+    sponsored_products_adgroups_report_stream_daily: false
+    sponsored_products_asins_keywords_report_stream: false
+    sponsored_products_keywords_report_stream_daily: false
+    sponsored_display_productads_report_stream_daily: false
+    sponsored_products_campaigns_report_stream_daily: false
+    sponsored_products_productads_report_stream_daily: false
+    sponsored_products_asins_targets_report_stream_daily: false
+    sponsored_products_asins_keywords_report_stream_daily: false
 
 schemas:
   profiles:
