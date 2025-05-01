@@ -624,6 +624,8 @@ definitions:
       lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
