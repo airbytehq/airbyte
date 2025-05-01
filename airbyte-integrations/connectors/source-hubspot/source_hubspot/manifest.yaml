@@ -508,6 +508,48 @@ definitions:
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
 
+  deal_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: deal_pipelines
+    primary_key:
+      - pipelineId
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm-pipelines/v1/pipelines/deals
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: true
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deal_pipelines"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record['createdAt'] }}"
+        condition: "{{ record.get('updatedAt') is none }}"
+
 streams:
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contacts_property_history_stream"
@@ -515,6 +557,7 @@ streams:
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
+  - "#/definitions/deal_pipelines_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -523,6 +566,111 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  deal_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the deal pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The ordering of the deal pipeline for display.
+        type:
+          - "null"
+          - integer
+      active:
+        description: Indicates if the deal pipeline is currently active or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description: List of deal stages within the pipeline.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the deal stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The ordering of the deal stage for display within the pipeline.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description: Additional information related to the deal stage.
+              type:
+                - "null"
+                - object
+              properties:
+                isClosed:
+                  description: Indicates if the deal stage is considered closed or not.
+                  type:
+                    - "null"
+                    - string
+                probability:
+                  description: The probability of closing a deal at this stage.
+                  type:
+                    - "null"
+                    - string
+            stageId:
+              description: The unique identifier of the deal stage.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: Timestamp for the creation date of the deal stage.
+              type:
+                - "null"
+                - integer
+            updatedAt:
+              description: Timestamp for the last update to the deal stage.
+              type:
+                - "null"
+                - integer
+            active:
+              description: Indicates if the deal stage is currently active or not.
+              type:
+                - "null"
+                - boolean
+      objectType:
+        description: The type of object this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      objectTypeId:
+        description: The ID of the object type this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      pipelineId:
+        description: The unique identifier of the deal pipeline.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp for the creation date of the deal pipeline.
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        description: Timestamp for the last update to the deal pipeline.
+        type:
+          - "null"
+          - integer
+      default:
+        description: Indicates if this pipeline is the default one in the system.
   companies_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
     type:

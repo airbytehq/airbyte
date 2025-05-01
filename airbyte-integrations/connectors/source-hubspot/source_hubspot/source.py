@@ -30,7 +30,6 @@ from source_hubspot.streams import (
     ContactsMergedAudit,
     ContactsWebAnalytics,
     CustomObject,
-    DealPipelines,
     Deals,
     DealsArchived,
     DealSplits,
@@ -97,6 +96,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "deal_pipelines": {"crm.objects.contacts.read"},
 }
 
 
@@ -200,7 +200,6 @@ class SourceHubspot(YamlDeclarativeSource):
             ContactsFormSubmissions(**common_params),
             ContactsListMemberships(**common_params),
             ContactsMergedAudit(**common_params),
-            DealPipelines(**common_params),
             DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),

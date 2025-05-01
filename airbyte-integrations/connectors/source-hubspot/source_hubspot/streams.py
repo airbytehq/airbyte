@@ -1607,20 +1607,6 @@ class DealsArchived(ClientSideIncrementalStream):
         return params
 
 
-class DealPipelines(ClientSideIncrementalStream):
-    """Deal pipelines, API v1,
-    This endpoint requires the contacts scope the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
-    """
-
-    url = "/crm-pipelines/v1/pipelines/deals"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "pipelineId"
-    scopes = {"crm.objects.contacts.read"}
-
-
 class DealSplits(CRMSearchStream):
     """Deal splits, API v3"""
 
