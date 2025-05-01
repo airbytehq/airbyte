@@ -12,7 +12,6 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
-from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
