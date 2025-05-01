@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
+import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
+import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -71,7 +73,9 @@ abstract class BigqueryTDWriteTest(
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
-        ColumnNameModifyingMapper(BigqueryColumnNameGenerator()),
+        ColumnNameModifyingMapper(BigqueryColumnNameGenerator())
+            .compose(RootLevelTimestampsToUtcMapper)
+            .compose(TypingDedupingMetaChangeMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
         supportsDedup = true,
