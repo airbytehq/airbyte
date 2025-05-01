@@ -26,8 +26,8 @@ from airbyte_cdk import (
 )
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -127,6 +127,7 @@ class HubspotFlattenAssociationsTransformation(RecordTransformation):
             "Contacts": [101, 102]
         }
     """
+
     def transform(
         self,
         record: Dict[str, Any],
@@ -239,15 +240,17 @@ def build_associations_retriever(
     oauth_authenticator = DeclarativeOauth2Authenticator(
         config=config,
         parameters=parameters,
-        client_id = config['credentials'].get('client_id', 'client_id'),
-        client_secret = config['credentials'].get('client_secret', 'client_secret'),
-        refresh_token = config['credentials'].get('refresh_token', 'refresh_token'),
-        token_refresh_endpoint = "https://api.hubapi.com/oauth/v1/token"
+        client_id=config["credentials"].get("client_id", "client_id"),
+        client_secret=config["credentials"].get("client_secret", "client_secret"),
+        refresh_token=config["credentials"].get("refresh_token", "refresh_token"),
+        token_refresh_endpoint="https://api.hubapi.com/oauth/v1/token",
     )
 
-    authenticator = SelectiveAuthenticator(config, authenticators={"Private App Credentials": bearer_authenticator,
-                                                                   "OAuth Credentials": oauth_authenticator},
-                                           authenticator_selection_path=["credentials", "credentials_title"])
+    authenticator = SelectiveAuthenticator(
+        config,
+        authenticators={"Private App Credentials": bearer_authenticator, "OAuth Credentials": oauth_authenticator},
+        authenticator_selection_path=["credentials", "credentials_title"],
+    )
     # HTTP requester
     requester = HttpRequester(
         name="associations",
