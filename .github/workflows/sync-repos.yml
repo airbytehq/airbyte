@@ -5,7 +5,7 @@ name: Sync Repos
 on:
   push:
     branches:
-      - main
+      - master
   # You can add more triggers, such as scheduled events
   # schedule:
   #   - cron: '0 0 * * *'
