@@ -6,17 +6,18 @@ package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.DestinationStream.Descriptor
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
+private val LOGGER = KotlinLogging.logger {}
 const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal"
 
 data class TableNameInfo(val tableNames: TableNames, val columnNameMapping: ColumnNameMapping)
@@ -52,6 +53,9 @@ class TableCatalogFactory(
                 originalRawTableName in processedRawTableNames ||
                     originalFinalTableName in processedFinalTableNames
             ) {
+                LOGGER.info {
+                    "Detected table name collision for ${stream.descriptor.namespace}.${stream.descriptor.name}"
+                }
                 // Create a hash-suffixed name to avoid collision
                 val hash =
                     DigestUtils.sha1Hex(
@@ -108,6 +112,7 @@ class TableCatalogFactory(
             // Get a unique column name by adding incremental numbers if necessary
             val finalColumnName =
                 resolveColumnNameCollision(
+                    stream,
                     processedColumnName,
                     existingNames = processedColumnNames,
                     originalColumnName = columnName
@@ -129,6 +134,7 @@ class TableCatalogFactory(
      * @param originalColumnName The original column name before processing
      */
     private fun resolveColumnNameCollision(
+        stream: DestinationStream,
         processedName: String,
         existingNames: Set<String>,
         originalColumnName: String
@@ -136,6 +142,10 @@ class TableCatalogFactory(
         // If processed name is unique, use it
         if (processedName !in existingNames) {
             return processedName
+        }
+
+        LOGGER.info {
+            "Detected column name collision for ${stream.descriptor.namespace}.${stream.descriptor.name}.$originalColumnName"
         }
 
         // Try adding incremental suffixes until we find a non-colliding name
