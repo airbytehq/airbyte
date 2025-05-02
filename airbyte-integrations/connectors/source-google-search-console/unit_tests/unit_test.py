@@ -376,13 +376,13 @@ def test_custom_streams(config_gen, requests_mock, dimensions, aggregation_type,
     assert status is expected_status
     if status is Status.FAILED:
         return
-    # Updated instantiation with authenticator argument
+
     stream = SearchAnalyticsByCustomDimensions(
         dimensions=dimensions,
         aggregation_type=aggregation_type,
-        authenticator=None,  # Passing None as a placeholder for authenticator
+        authenticator=None, 
         site_urls=["https://domain1.com", "https://domain2.com"],
         start_date="2021-09-01",
         end_date="2021-09-07",
     )
-    # Additional assertions can remain unchanged if present
+
