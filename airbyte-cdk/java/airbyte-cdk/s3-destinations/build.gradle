@@ -35,6 +35,7 @@ dependencies {
         exclude group: 'com.google.protobuf'
         exclude group: 'dnsjava'
         exclude group: 'io.netty'
+        exclude group: "org.apache.hadoop.thirdparty", module: "hadoop-shaded-protobuf_3_21"
     }
     api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.0') {
         exclude group: 'org.apache.zookeeper'
@@ -42,6 +43,7 @@ dependencies {
         // The below dependencies contain security vulnerabilities and are unused.
         exclude group: 'com.google.protobuf'
         exclude group: 'io.netty'
+        exclude group: "org.apache.hadoop.thirdparty", module: "hadoop-shaded-protobuf_3_21"
     }
     api 'org.apache.parquet:parquet-avro:1.15.1'
     runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
