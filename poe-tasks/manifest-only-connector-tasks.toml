@@ -12,6 +12,6 @@
 
 [tasks]
 
-test-all = "uvx airbyte-cdk[dev] connector test"
+test-all = "uvx 'airbyte-cdk[dev]' connector test"
 format-check = "echo 'No format check step for this connector.'"
 install = "echo 'No install step for this connector.'"
