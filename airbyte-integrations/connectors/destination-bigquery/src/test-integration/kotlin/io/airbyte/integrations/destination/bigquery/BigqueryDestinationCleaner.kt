@@ -18,7 +18,23 @@ import kotlinx.coroutines.runBlocking
 
 private val logger = KotlinLogging.logger {}
 
-class BigqueryDestinationCleaner(private val configJson: JsonNode) : DestinationCleaner {
+object BigqueryDestinationCleaner : DestinationCleaner {
+    private val actualCleaner =
+        BigqueryDestinationCleanerInstance(
+                BigQueryDestinationTestUtils.standardInsertRawOverrideConfig
+            )
+            .compose(
+                BigqueryDestinationCleanerInstance(
+                    BigQueryDestinationTestUtils.standardInsertConfig
+                )
+            )
+
+    override fun cleanup() {
+        actualCleaner.cleanup()
+    }
+}
+
+class BigqueryDestinationCleanerInstance(private val configJson: JsonNode) : DestinationCleaner {
     override fun cleanup() {
         val config = BigQueryDestinationTestUtils.parseConfig(configJson)
         val bigquery = BigqueryClientFactory(config).make()
