@@ -12,21 +12,21 @@ import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 object BigQueryDestinationTestUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(BigQueryDestinationTestUtils::class.java)
+    const val RAW_DATASET_OVERRIDE = "overridden_raw_dataset"
+    const val STANDARD_INSERT_CONFIG = "secrets/credentials-1s1t-standard.json"
+    const val GCS_STAGING_CONFIG = "secrets/credentials-1s1t-gcs.json"
 
     val standardInsertRawOverrideConfig =
         createConfig(
-            configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
+            configFile = STANDARD_INSERT_CONFIG,
             datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
         )
     val standardInsertConfig =
         createConfig(
-            configFile = Path.of("secrets/credentials-1s1t-standard.json"),
+            configFile = STANDARD_INSERT_CONFIG,
             datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
         )
 
@@ -36,18 +36,21 @@ object BigQueryDestinationTestUtils {
      *
      * @param configFile Path to the config file
      * @param datasetId Dataset id to use in the test. Should be randomized per test case.
-     * @param stagingPath Staging GCS path to use in the test, or null if the test is running in
-     * standard inserts mode. Should be randomized per test case.
      */
     @Throws(IOException::class)
     fun createConfig(
-        configFile: Path?,
+        configFile: String,
         datasetId: String?,
+        rawDatasetId: String? = null,
+        disableTypingDeduping: Boolean? = null,
     ): ObjectNode {
-        LOGGER.info("Setting default dataset to {}", datasetId)
-        val tmpConfigAsString = Files.readString(configFile)
+        val tmpConfigAsString = Files.readString(Path.of(configFile))
         val config = Jsons.readTree(tmpConfigAsString) as ObjectNode
         config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        rawDatasetId?.let { config.put(BigQueryConsts.RAW_DATA_DATASET, rawDatasetId) }
+        disableTypingDeduping?.let {
+            config.put(BigQueryConsts.DISABLE_TYPE_DEDUPE, disableTypingDeduping)
+        }
         return config
     }
 
