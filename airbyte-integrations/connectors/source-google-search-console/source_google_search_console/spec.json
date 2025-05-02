@@ -149,7 +149,7 @@
               "title": "Aggregation Type",
               "description": "The type of aggregation to apply to the report.",
               "type": "string",
-              "enum": ["auto", "by_site", "by_property"],
+              "enum": ["auto", "by_page", "by_property"],
               "default": "auto"
             }
           },

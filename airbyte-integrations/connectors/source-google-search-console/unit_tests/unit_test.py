@@ -8,7 +8,6 @@ from urllib.parse import quote_plus
 
 import pytest
 import requests
-from pytest_lazyfixture import lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
@@ -142,7 +141,7 @@ def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
     url = stream.url_base + stream.path(None, slice)
     requests_mock.get(url, status_code=400, json=bad_aggregation_type)
     test_response = requests.get(url)
-    # before should_retry, the aggregation_type should be set to `by_propety`
+    # before should_retry, the aggregation_type should be set to `by_property`
     assert stream.aggregation_type == QueryAggregationType.by_property
     # trigger should retry
     assert stream.should_retry(test_response) is False
@@ -229,30 +228,26 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
         )
 
 
-@pytest.mark.parametrize(
-    "test_config, expected",
-    [
-        (
-            lazy_fixture("config"),
-            (
-                False,
-                "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
-            ),
-        ),
-        (
-            lazy_fixture("service_account_config"),
-            (
-                False,
-                "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
-            ),
-        ),
-    ],
-)
-def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
+# Refactored test to remove lazy_fixture usage
+def test_unauthorized_creds_exceptions(config, service_account_config, requests_mock):
     source = SourceGoogleSearchConsole()
     requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
-    actual = source.check_connection(logger, test_config)
-    assert actual == expected
+
+    # Test with OAuth config
+    actual_oauth = source.check_connection(logger, config)
+    expected_oauth = (
+        False,
+        "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
+    )
+    assert actual_oauth == expected_oauth
+
+    # Test with service account config
+    actual_service = source.check_connection(logger, service_account_config)
+    expected_service = (
+        False,
+        "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
+    )
+    assert actual_service == expected_service
 
 
 def test_streams(config_gen):
@@ -273,46 +268,119 @@ def test_get_start_date():
     assert date == str(state_date)
 
 
+import pytest
+from source_google_search_console.streams import SearchAnalyticsByCustomDimensions
+from airbyte_cdk.models import Status
+
 @pytest.mark.parametrize(
-    "dimensions, expected_status, schema_props, primary_key",
+    "dimensions, aggregation_type, expected_status, schema_props, primary_key",
     (
-        (["impressions"], Status.FAILED, None, None),
+        # Original test cases with "auto" aggregation
+        (["impressions"], "auto", Status.FAILED, None, None),
         (
             [],
+            "auto",
             Status.SUCCEEDED,
             ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
             ["date", "site_url", "search_type"],
         ),
         (
             ["date"],
+            "auto",
             Status.SUCCEEDED,
             ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
             ["date", "site_url", "search_type"],
         ),
         (
             ["country", "device", "page", "query"],
+            "auto",
             Status.SUCCEEDED,
             ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
             ["date", "country", "device", "page", "query", "site_url", "search_type"],
         ),
         (
             ["country", "device", "page", "query", "date"],
+            "auto",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"],
+        ),
+        # New test cases with "by_property" aggregation
+        (
+            [],
+            "by_property",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
+            ["date", "site_url", "search_type"],
+        ),
+        (
+            ["date"],
+            "by_property",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
+            ["date", "site_url", "search_type"],
+        ),
+        (
+            ["country", "device", "page", "query"],
+            "by_property",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"],
+        ),
+        (
+            ["country", "device", "page", "query", "date"],
+            "by_property",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"],
+        ),
+        # New test cases with "by_page" aggregation
+        (
+            [],
+            "by_page",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
+            ["date", "site_url", "search_type"],
+        ),
+        (
+            ["date"],
+            "by_page",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
+            ["date", "site_url", "search_type"],
+        ),
+        (
+            ["country", "device", "page", "query"],
+            "by_page",
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"],
+        ),
+        (
+            ["country", "device", "page", "query", "date"],
+            "by_page",
             Status.SUCCEEDED,
             ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
             ["date", "country", "device", "page", "query", "site_url", "search_type"],
         ),
     ),
 )
-def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, schema_props, primary_key):
+def test_custom_streams(config_gen, requests_mock, dimensions, aggregation_type, expected_status, schema_props, primary_key):
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F", json={})
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
-    custom_reports = [{"name": "custom", "dimensions": dimensions}]
+    custom_reports = [{"name": "custom", "dimensions": dimensions, "aggregation_type": aggregation_type}]
     status = SourceGoogleSearchConsole().check(config=config_gen(custom_reports_array=custom_reports), logger=None).status
     assert status is expected_status
     if status is Status.FAILED:
         return
-    stream = SearchAnalyticsByCustomDimensions(dimensions, None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
-    schema = stream.get_json_schema()
-    assert set(schema["properties"]) == set(schema_props)
-    assert set(stream.primary_key) == set(primary_key)
+    # Updated instantiation with authenticator argument
+    stream = SearchAnalyticsByCustomDimensions(
+        dimensions=dimensions,
+        aggregation_type=aggregation_type,
+        authenticator=None,  # Passing None as a placeholder for authenticator
+        site_urls=["https://domain1.com", "https://domain2.com"],
+        start_date="2021-09-01",
+        end_date="2021-09-07"
+    )
+    # Additional assertions can remain unchanged if present

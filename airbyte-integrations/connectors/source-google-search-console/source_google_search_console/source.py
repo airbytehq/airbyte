@@ -49,7 +49,7 @@ custom_reports_schema = {
         "properties": {
             "name": {"type": "string", "minLength": 1},
             "dimensions": {"type": "array", "items": {"type": "string", "minLength": 1}},
-            "aggregation_type": {"type": "string", "enum": ["auto", "by_site", "by_property"], "default": "auto"},
+            "aggregation_type": {"type": "string", "enum": ["auto", "by_page", "by_property"], "default": "auto"},
         },
         "required": ["name", "dimensions"],
     },

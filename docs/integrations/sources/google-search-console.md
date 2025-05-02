@@ -173,10 +173,9 @@ The available `Dimensions` are:
 The avilable [Aggregation Types](https://support.google.com/webmasters/answer/7576553?visit_id=638817934993280152-73127237&rd=1#urlorsite) are:
 
 - `auto` - Let the service decide the appropriate aggregation type.
-- `by_site` - means that all results for the same query that point to the same Search Console property are counted once in total. So if a query contains two URLs from the same site (example.com/petstore/giraffe and example.com/recipes/pumpkin_pie), this is counted as one impression when results are aggregated by property.
+- `by_property` - Also reffered as (by_site); means that all results for the same query that point to the same Search Console property are counted once in total. So if a query contains two URLs from the same site (example.com/petstore/giraffe and example.com/recipes/pumpkin_pie), this is counted as one impression when results are aggregated by property.
 - `by_page` - means that each unique URL in a search result is counted once, even if they point to the same page. In this case, if a query contains two URLs from the same site (example.com/petstore/giraffe and example.com/recipes/pumpkin_pie), this is counted as two impressions.
 
-Note: If you group or filter by page, you cannot aggregate by property.
 
 
 For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
