@@ -96,6 +96,11 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             )
                         }
 
+                        /**
+                         * Enforce the specified maximum number of concurrent keys. If this is a new
+                         * key, AND we are already at the max, force a call to finish on the key
+                         * whose state contains the most data, then evict it.
+                         */
                         maxNumConcurrentKeys?.let { maxKeys ->
                             if (
                                 !stateStore.stateWithCounts.contains(input.key) &&
