@@ -1,4 +1,4 @@
-name: Connector Tests (Beta)
+name: Connector CI (Beta)
 
 on:
   pull_request:
