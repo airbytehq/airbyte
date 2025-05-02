@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
+import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
+import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -71,16 +73,19 @@ abstract class BigqueryTDWriteTest(
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
-        ColumnNameModifyingMapper(BigqueryColumnNameGenerator()),
+        ColumnNameModifyingMapper(BigqueryColumnNameGenerator())
+            .compose(RootLevelTimestampsToUtcMapper)
+            .compose(TypingDedupingMetaChangeMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
         supportsDedup = true,
         nullEqualsUnset = true,
         StronglyTyped(
-            convertAllValuesToString = false,
+            convertAllValuesToString = true,
             topLevelFloatLosesPrecision = true,
-            nestedFloatLosesPrecision = false,
+            nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
+            numberCanBeLarge = false,
         ),
     )
 
@@ -93,7 +98,6 @@ class StandardInsertRawOverrideDisableTd :
                     Path.of("secrets/credentials-1s1t-disabletd-standard-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
@@ -135,7 +139,6 @@ class GcsRawOverrideDisableTd :
                 configFile = Path.of("secrets/credentials-1s1t-disabletd-gcs-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
@@ -151,7 +154,6 @@ class GcsRawOverride :
                 configFile = Path.of("secrets/credentials-1s1t-gcs-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
                 stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-                rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
             )
             .serializeToString(),
     ) {
