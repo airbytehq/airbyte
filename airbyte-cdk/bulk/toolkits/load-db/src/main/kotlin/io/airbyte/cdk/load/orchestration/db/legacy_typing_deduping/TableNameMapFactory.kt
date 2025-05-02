@@ -48,27 +48,27 @@ class TableCatalogFactory(
             val currentRawProcessedName: TableName
             val currentFinalProcessedName: TableName
 
-            // Create a hash-suffixed name to avoid collision
-            val hash =
-                DigestUtils.sha1Hex(
-                        "${originalFinalTableName.namespace}&airbyte&${stream.descriptor.name}"
-                    )
-                    .substring(0, 3)
-            val newName = "${stream.descriptor.name}_$hash"
+            if (
+                originalRawTableName in processedRawTableNames ||
+                    originalFinalTableName in processedFinalTableNames
+            ) {
+                // Create a hash-suffixed name to avoid collision
+                val hash =
+                    DigestUtils.sha1Hex(
+                            "${originalFinalTableName.namespace}&airbyte&${stream.descriptor.name}"
+                        )
+                        .substring(0, 3)
+                val newName = "${stream.descriptor.name}_$hash"
 
-            if (originalRawTableName in processedRawTableNames) {
                 currentRawProcessedName = TableName(originalRawTableName.namespace, newName)
                 processedRawTableNames.add(currentRawProcessedName)
-            } else {
-                processedRawTableNames.add(originalRawTableName)
-                currentRawProcessedName = originalRawTableName
-            }
 
-            if (originalFinalTableName in processedFinalTableNames) {
                 currentFinalProcessedName = TableName(originalFinalTableName.namespace, newName)
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
+                processedRawTableNames.add(originalRawTableName)
                 processedFinalTableNames.add(originalFinalTableName)
+                currentRawProcessedName = originalRawTableName
                 currentFinalProcessedName = originalFinalTableName
             }
 
