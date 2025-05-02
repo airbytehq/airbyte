@@ -197,7 +197,7 @@ class SourceGoogleSearchConsole(AbstractSource):
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(
-                dimensions=report["dimensions"], aggregation_type=report["aggregation_type"], **stream_config
+                dimensions=report["dimensions"], aggregation_type=report.get("aggregation_type", "auto"), **stream_config
             )
             for report in config.get("custom_reports_array", [])
         ]
