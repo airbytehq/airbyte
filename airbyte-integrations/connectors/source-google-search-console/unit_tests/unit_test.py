@@ -380,9 +380,8 @@ def test_custom_streams(config_gen, requests_mock, dimensions, aggregation_type,
     stream = SearchAnalyticsByCustomDimensions(
         dimensions=dimensions,
         aggregation_type=aggregation_type,
-        authenticator=None, 
+        authenticator=None,
         site_urls=["https://domain1.com", "https://domain2.com"],
         start_date="2021-09-01",
         end_date="2021-09-07",
     )
-
