@@ -23,10 +23,11 @@ fun interface ExpectedRecordMapper {
 
     fun compose(mapper: ExpectedRecordMapper) =
         object : ExpectedRecordMapper {
-            override fun mapRecord(
-                expectedRecord: OutputRecord,
-                schema: AirbyteType
-            ): OutputRecord = mapper.mapRecord(this.mapRecord(expectedRecord, schema), schema)
+            override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType) =
+                mapper.mapRecord(
+                    this@ExpectedRecordMapper.mapRecord(expectedRecord, schema),
+                    schema
+                )
         }
 }
 
