@@ -28,15 +28,15 @@
 [tasks]
 
 test-all = "gradle check"
-format-check = "gradle 'check -x test'"
+format-check = "gradle check -x test"
 install = "echo 'No install step for this connector.'"
 
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
 shell = '''
 connector_name=$(basename "$PWD")
-echo "Running: gradle :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
-gradle :airbyte-integrations:connectors:${connector_name}:${task_and_args}
+echo "Running: ./gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
+${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}
 '''
 args = [
   { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }
