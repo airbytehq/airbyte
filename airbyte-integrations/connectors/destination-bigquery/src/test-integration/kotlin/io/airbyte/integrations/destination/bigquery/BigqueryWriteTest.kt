@@ -100,7 +100,6 @@ class StandardInsertRawOverrideDisableTd :
                 configFile =
                     Path.of("secrets/credentials-1s1t-disabletd-standard-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
     ) {
@@ -141,7 +140,6 @@ class GcsRawOverrideDisableTd :
         BigQueryDestinationTestUtils.createConfig(
                 configFile = Path.of("secrets/credentials-1s1t-disabletd-gcs-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
     ) {
@@ -156,7 +154,6 @@ class GcsRawOverride :
         BigQueryDestinationTestUtils.createConfig(
                 configFile = Path.of("secrets/credentials-1s1t-gcs-raw-override.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
     ) {
@@ -171,7 +168,6 @@ class Gcs :
         BigQueryDestinationTestUtils.createConfig(
                 configFile = Path.of("secrets/credentials-1s1t-gcs.json"),
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
     ) {

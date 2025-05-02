@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.bigquery
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getLoadingMethod
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
@@ -24,13 +23,11 @@ object BigQueryDestinationTestUtils {
         createConfig(
             configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
             datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-            stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
         )
     val standardInsertConfig =
         createConfig(
             configFile = Path.of("secrets/credentials-1s1t-standard.json"),
             datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-            stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
         )
 
     /**
@@ -46,27 +43,11 @@ object BigQueryDestinationTestUtils {
     fun createConfig(
         configFile: Path?,
         datasetId: String?,
-        stagingPath: String?,
-        rawDatasetId: String? = null,
     ): ObjectNode {
         LOGGER.info("Setting default dataset to {}", datasetId)
         val tmpConfigAsString = Files.readString(configFile)
         val config = Jsons.readTree(tmpConfigAsString) as ObjectNode
         config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        rawDatasetId?.let { config.put(BigQueryConsts.RAW_DATA_DATASET, rawDatasetId) }
-
-        // This is sort of a hack. Ideally tests shouldn't interfere with each other even when using
-        // the
-        // same staging path.
-        // Most likely there's a real bug in the connector - but we should investigate that and
-        // write a real
-        // test case,
-        // rather than relying on tests randomly failing to indicate that bug.
-        // See https://github.com/airbytehq/airbyte/issues/28372.
-        if (stagingPath != null && getLoadingMethod(config) == UploadingMethod.GCS) {
-            val loadingMethodNode = config[BigQueryConsts.LOADING_METHOD] as ObjectNode
-            loadingMethodNode.put(BigQueryConsts.GCS_BUCKET_PATH, stagingPath)
-        }
         return config
     }
 
