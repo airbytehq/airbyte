@@ -1,14 +1,9 @@
-# @format
-
-name: Sync Repos
+name: Sync Repos via PR
 
 on:
   push:
     branches:
       - master
-  # You can add more triggers, such as scheduled events
-  # schedule:
-  #   - cron: '0 0 * * *'
 
 jobs:
   sync:
@@ -18,16 +13,36 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v2
 
-      - name: Push to destination repository
+      - name: Sync changes via PR
         run: |
+          # Set git identity
           git config --global user.email "romario.silva@syniti.com"
           git config --global user.name "romario-syniti"
+          
+          # Clone destination repo
           git clone https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/my-private-airbyte.git
           cd my-private-airbyte
+          
+          # Add source repo as remote
           git remote add ${{ env.ORIGINAL_REPO_NAME }} https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/${{ env.ORIGINAL_REPO_NAME }}.git
           git remote update
-          git merge ${{ env.ORIGINAL_REPO_NAME }}/master
-          git push origin main
+          
+          # Create new branch with timestamp
+          BRANCH_NAME="sync-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b $BRANCH_NAME
+          
+          # Merge changes from source
+          git merge ${{ env.ORIGINAL_REPO_NAME }}/master --no-ff -m "Sync changes from ${{ env.ORIGINAL_REPO_NAME }}"
+          
+          # Push to new branch
+          git push origin $BRANCH_NAME
+          
+          # Create PR using GitHub CLI
+          gh pr create \
+            --title "Sync changes from ${{ env.ORIGINAL_REPO_NAME }} (automated)" \
+            --body "Automated sync of changes from source repository." \
+            --base main \
+            --head $BRANCH_NAME
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           ORIGINAL_REPO_NAME: ${{ github.event.repository.name }}
