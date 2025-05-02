@@ -134,7 +134,7 @@ class CollectionsList(WebflowStream):
         Returns a list which contains high-level information about each collection.
         """
 
-        path = f"sites/{self.site_id}/collections"
+        path = f"v2/sites/{self.site_id}/collections"
         return path
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
