@@ -56,6 +56,9 @@ value class ColumnNameMapping(private val columnNameMapping: Map<String, String>
     Map<String, String> by columnNameMapping
 
 sealed interface TableNameGenerator {
+    fun getTableName(namespace: String, name: String): TableName {
+        return getTableName(DestinationStream.Descriptor(namespace, name))
+    }
     fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName
 }
 

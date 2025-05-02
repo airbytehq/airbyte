@@ -64,10 +64,12 @@ class TableCatalogFactory(
                         .substring(0, 3)
                 val newName = "${stream.descriptor.name}_$hash"
 
-                currentRawProcessedName = TableName(originalRawTableName.namespace, newName)
+                currentRawProcessedName =
+                    rawTableNameGenerator.getTableName(originalRawTableName.namespace, newName)
                 processedRawTableNames.add(currentRawProcessedName)
 
-                currentFinalProcessedName = TableName(originalFinalTableName.namespace, newName)
+                currentFinalProcessedName =
+                    finalTableNameGenerator.getTableName(originalFinalTableName.namespace, newName)
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
                 processedRawTableNames.add(originalRawTableName)
