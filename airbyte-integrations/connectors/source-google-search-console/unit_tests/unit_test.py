@@ -270,7 +270,9 @@ def test_get_start_date():
 
 import pytest
 from source_google_search_console.streams import SearchAnalyticsByCustomDimensions
+
 from airbyte_cdk.models import Status
+
 
 @pytest.mark.parametrize(
     "dimensions, aggregation_type, expected_status, schema_props, primary_key",
@@ -381,6 +383,6 @@ def test_custom_streams(config_gen, requests_mock, dimensions, aggregation_type,
         authenticator=None,  # Passing None as a placeholder for authenticator
         site_urls=["https://domain1.com", "https://domain2.com"],
         start_date="2021-09-01",
-        end_date="2021-09-07"
+        end_date="2021-09-07",
     )
     # Additional assertions can remain unchanged if present
