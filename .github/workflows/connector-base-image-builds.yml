@@ -1,6 +1,8 @@
 # Whenever a change is made to the connector base image Dockerfiles, this workflow will be
 # triggered.
 
+# NOTE: This workflow does not publish the images to Docker Hub. It only builds them and tests them.
+
 on:
   pull_request:
     branches:
