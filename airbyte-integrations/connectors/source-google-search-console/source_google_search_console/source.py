@@ -49,6 +49,7 @@ custom_reports_schema = {
         "properties": {
             "name": {"type": "string", "minLength": 1},
             "dimensions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+            "aggregation_type": {"type": "string", "enum": ["auto", "by_site", "by_property"], "default": "auto"},
         },
         "required": ["name", "dimensions"],
     },
@@ -195,7 +196,9 @@ class SourceGoogleSearchConsole(AbstractSource):
 
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
         return [
-            type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
+            type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(
+                dimensions=report["dimensions"], aggregation_type=report["aggregation_type"], **stream_config
+            )
             for report in config.get("custom_reports_array", [])
         ]
 

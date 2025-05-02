@@ -458,9 +458,10 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
 
     primary_key = None
 
-    def __init__(self, dimensions: List[str], *args, **kwargs):
+    def __init__(self, dimensions: List[str], aggregation_type: str, *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions + [dimension for dimension in self.DEFAULT_DIMENSIONS if dimension not in dimensions]
+        self.aggregation_type = QueryAggregationType(aggregation_type)
         # Assign the dimensions as PK for the custom report stream.
         # Site URL and Search Type are included in the API call thus affect the resulting data.
         # `site_url` is a required URL param for making API calls;

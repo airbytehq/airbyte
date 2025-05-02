@@ -160,6 +160,7 @@ Custom reports allow you to query the API with a custom set of dimensions to gro
 1. Click `Add` under the `Custom Reports` section
 2. Enter the `Name` of the report, this will be the name of the stream
 3. Select one or more `Dimensions` from the available dropdown list
+4. Select one 'Aggregation Types' from the available dropdown list
 
 The available `Dimensions` are:
 
@@ -169,14 +170,33 @@ The available `Dimensions` are:
 - `page`
 - `query`
 
+The avilable [Aggregation Types](https://support.google.com/webmasters/answer/7576553?visit_id=638817934993280152-73127237&rd=1#urlorsite) are:
+
+- `auto` - Let the service decide the appropriate aggregation type.
+- `by_site` - means that all results for the same query that point to the same Search Console property are counted once in total. So if a query contains two URLs from the same site (example.com/petstore/giraffe and example.com/recipes/pumpkin_pie), this is counted as one impression when results are aggregated by property.
+- `by_page` - means that each unique URL in a search result is counted once, even if they point to the same page. In this case, if a query contains two URLs from the same site (example.com/petstore/giraffe and example.com/recipes/pumpkin_pie), this is counted as two impressions.
+
+Note: If you group or filter by page, you cannot aggregate by property.
+
+
 For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
 
 - Name: country_date
 - Dimensions: ["country", "date"]
+(aggregation will default to auto in this case)
+
+Aggregation Type Example:
+ - Name: date_country_device_query
+ - Dimensions: ["date", "country", "device", "query"]
+ - Aggregation Type: "by_page"
+
+This would query the API for a report that groups results by date, then by country, then by device, then by query, and aggregates them by page.
 
 Please note, that for technical reasons `date` is the default dimension which will be included in your query whether you specify it or not. By specifying it you can change the order the results are grouped in. Primary key will consist of your custom dimensions and the default dimension along with `site_url` and `search_type`.
 
+Additonally for, 
 The information you provide via UI Custom report builder will then be transformed into the custom stream by it's `Name`
+
 
 You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
 
@@ -230,6 +250,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| 1.5.16 | 2025-05-05 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add aggregation options to custom reports|
 | 1.5.15 | 2025-02-22 | [54426](https://github.com/airbytehq/airbyte/pull/54426) | Update dependencies |
 | 1.5.14 | 2025-02-15 | [53781](https://github.com/airbytehq/airbyte/pull/53781) | Update dependencies |
 | 1.5.13 | 2025-02-01 | [52854](https://github.com/airbytehq/airbyte/pull/52854) | Update dependencies |
