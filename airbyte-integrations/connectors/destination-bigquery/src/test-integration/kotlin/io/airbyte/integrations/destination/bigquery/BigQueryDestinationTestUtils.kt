@@ -3,19 +3,13 @@
  */
 package io.airbyte.integrations.destination.bigquery
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.cloud.bigquery.BigQuery
-import com.google.cloud.bigquery.Dataset
-import com.google.cloud.bigquery.DatasetInfo
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getLoadingMethod
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
-import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -76,102 +70,8 @@ object BigQueryDestinationTestUtils {
         return config
     }
 
-    /**
-     * Get a handle for the BigQuery dataset instance used by the test. This dataset instance will
-     * be used to verify results of test operations and for cleaning up after the test runs
-     *
-     * @param config
-     * @param bigquery
-     * @param datasetId
-     * @return
-     */
-    fun initDataSet(config: JsonNode, bigquery: BigQuery?, datasetId: String?): Dataset? {
-        val datasetInfo =
-            DatasetInfo.newBuilder(datasetId)
-                .setLocation(config[BigQueryConsts.CONFIG_DATASET_LOCATION].asText())
-                .build()
-        try {
-            return bigquery!!.create(datasetInfo)
-        } catch (ex: Exception) {
-            if (ex.message!!.indexOf("Already Exists") > -1) {
-                return bigquery!!.getDataset(datasetId)
-            }
-        }
-        return null
-    }
-
     fun parseConfig(config: JsonNode): BigqueryConfiguration {
         val spec = Jsons.treeToValue(config, BigquerySpecification::class.java)
         return BigqueryConfigurationFactory().make(spec)
-    }
-
-    /**
-     * Initialized bigQuery instance that will be used for verifying results of test operations and
-     * for cleaning up BigQuery dataset after the test
-     *
-     * @param config
-     * @return
-     * @throws IOException
-     */
-    @Throws(IOException::class)
-    fun initBigQuery(config: JsonNode): BigQuery {
-        val parsedConfig = parseConfig(config)
-        return BigqueryClientFactory(parsedConfig).make()
-    }
-
-    /**
-     * Deletes bigquery data set created during the test
-     *
-     * @param bigquery
-     * @param dataset
-     * @param LOGGER
-     */
-    fun tearDownBigQuery(bigquery: BigQuery?, dataset: Dataset?, LOGGER: Logger) {
-        // allows deletion of a dataset that has contents
-        val option = BigQuery.DatasetDeleteOption.deleteContents()
-        if (bigquery == null || dataset == null) {
-            return
-        }
-        try {
-            val success = bigquery.delete(dataset.datasetId, option)
-            if (success) {
-                LOGGER.info("BQ Dataset $dataset deleted...")
-            } else {
-                LOGGER.info("BQ Dataset cleanup for $dataset failed!")
-            }
-        } catch (ex: Exception) {
-            LOGGER.error("Failed to remove BigQuery resources after the test", ex)
-        }
-    }
-
-    /** Remove all the GCS output from the tests. */
-    fun tearDownGcs(s3Client: AmazonS3?, config: JsonNode?, LOGGER: Logger) {
-        if (s3Client == null) {
-            return
-        }
-        if (getLoadingMethod(config!!) != UploadingMethod.GCS) {
-            return
-        }
-        val properties = config[BigQueryConsts.LOADING_METHOD]
-        val gcsBucketName = properties[BigQueryConsts.GCS_BUCKET_NAME].asText()
-        val gcs_bucket_path = properties[BigQueryConsts.GCS_BUCKET_PATH].asText()
-        try {
-            val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
-            val objects = s3Client.listObjects(gcsBucketName, gcs_bucket_path).objectSummaries
-            for (`object` in objects) {
-                keysToDelete.add(DeleteObjectsRequest.KeyVersion(`object`.key))
-            }
-
-            if (keysToDelete.size > 0) {
-                LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path)
-                // Google Cloud Storage doesn't accept request to delete multiple objects
-                for (keyToDelete in keysToDelete) {
-                    s3Client.deleteObject(gcsBucketName, keyToDelete.key)
-                }
-                LOGGER.info("Deleted {} file(s).", keysToDelete.size)
-            }
-        } catch (ex: Exception) {
-            LOGGER.error("Failed to remove GCS resources after the test", ex)
-        }
     }
 }
