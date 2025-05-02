@@ -102,14 +102,10 @@ class TableCatalogFactory(
         val processedColumnNames = mutableSetOf<String>()
         val columnMappings = mutableMapOf<String, String>()
         // Map to track original column names by their truncated versions
-        val originalColumnNameMap = mutableMapOf<String, String>()
 
         stream.schema.asColumns().forEach { (columnName, _) ->
             val processedColumnName =
                 finalTableColumnNameGenerator.getColumnName(columnName).canonicalName
-
-            // Store mapping between processed name and original name
-            originalColumnNameMap[processedColumnName] = columnName
 
             // Get a unique column name by adding incremental numbers if necessary
             val finalColumnName =
