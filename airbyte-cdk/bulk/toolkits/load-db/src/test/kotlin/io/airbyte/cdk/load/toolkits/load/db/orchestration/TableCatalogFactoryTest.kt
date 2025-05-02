@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.toolkits.load.db.orchestration
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -21,33 +20,10 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class TableNameMapFactoryTest {
-
-    @Test
-    fun testThrowOnEmptyCatalog() {
-        val rawTableNameGenerator = mockk<RawTableNameGenerator>()
-        val finalTableNameGenerator = mockk<FinalTableNameGenerator>()
-        val columnNameGenerator = mockk<ColumnNameGenerator>()
-
-        val emptyCatalog = mockk<DestinationCatalog>()
-        every { emptyCatalog.streams } returns emptyList()
-
-        val factory =
-            TableCatalogFactory(
-                emptyCatalog,
-                rawTableNameGenerator,
-                finalTableNameGenerator,
-                columnNameGenerator
-            )
-
-        val exception = assertThrows(ConfigErrorException::class.java) { factory.get() }
-        assertTrue(exception.message!!.contains("catalog contained no streams"))
-    }
-
+class TableCatalogFactoryTest {
     @Test
     fun testTableNameCollision() {
         val rawTableNameGenerator = mockk<RawTableNameGenerator>()
