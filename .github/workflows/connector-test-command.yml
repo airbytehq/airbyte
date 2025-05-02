@@ -115,24 +115,24 @@ jobs:
     outputs:
       connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
 
-  warm-tool-cache:
-    # We warm the tool cache to speed up subsequent jobs
-    name: Warm ASDF Tool Cache
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+  # warm-tool-cache:
+  #   # We warm the tool cache to speed up subsequent jobs
+  #   name: Warm ASDF Tool Cache
+  #   runs-on: ubuntu-24.04
+  #   steps:
+  #     - name: Checkout Airbyte
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 1
 
-      - name: Install tools from asdf config
-        uses: ai/asdf-cache-action@v1
+  #     - name: Install tools from asdf config
+  #       uses: ai/asdf-cache-action@v1
 
   # Connector tests
 
   connectors-test-matrix:
     name: Test Connectors
-    needs: [generate-matrix, warm-tool-cache]
+    needs: [generate-matrix]
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -152,6 +152,8 @@ jobs:
         with:
           distribution: zulu
           java-version: 21
+          cache: gradle
+
       - uses: gradle/actions/setup-gradle@v3
         with:
           cache-read-only: false
@@ -240,7 +242,7 @@ jobs:
 
   connectors-lint-matrix:
     name: Lint Connectors
-    needs: [generate-matrix, warm-tool-cache]
+    needs: [generate-matrix]
     runs-on: ubuntu-24.04
     if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
@@ -252,8 +254,41 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Install Tools from ASDF Config
-        uses: ai/asdf-cache-action@v1
+      # Java deps
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
+          cache-write-only: false
+
+      # Python deps
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
 
       - name: Install Poe and Dev Dependencies
         run: |
