@@ -25,8 +25,8 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 /**
- * It's only safe to split the streams for bulk load, since everything is going into the
- * object loader, which maintains separate objects per stream no matter what.
+ * It's only safe to split the streams for bulk load, since everything is going into the object
+ * loader, which maintains separate objects per stream no matter what.
  *
  * TODO: Push this into the interface?
  */

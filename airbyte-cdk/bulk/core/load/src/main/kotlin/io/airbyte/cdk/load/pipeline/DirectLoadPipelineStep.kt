@@ -23,6 +23,10 @@ class DirectLoadPipelineStep<S : DirectLoader>(
     private val log = KotlinLogging.logger {}
     override val numWorkers: Int = directLoaderFactory.inputPartitions
 
+    /**
+     * Enforce that each worker can hold at least one open loader. (TODO: Maybe clamp the number of
+     * input partitions instead?)
+     */
     val maxNumConcurrentKeys =
         directLoaderFactory.maxNumOpenLoaders?.div(directLoaderFactory.inputPartitions)?.also {
             check(it > 0) {
