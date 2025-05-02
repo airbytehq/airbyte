@@ -15,7 +15,7 @@ Users who do not have this stream enabled will not be affected and can safely up
 For **OSS users**, the **Pull Request** stream can still be synced by pinning this source to an earlier version:
 
 1. Select **Settings** in the main navbar.
-2. Select **Sources**.  the entry for `source-jira` and set the **Default Version** to `3.5.4`
+2. Select **Sources**, edit the entry for `source-jira` and set the **Default Version** to `3.5.4`
 
 This feature is not available in **Airbyte Cloud**
 :::
