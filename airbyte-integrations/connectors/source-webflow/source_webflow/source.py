@@ -81,7 +81,7 @@ class CollectionSchema(WebflowStream):
         Returns a collection with full schema by collection_id
         """
 
-        path = f"collections/{self.collection_id}"
+        path = f"v2/collections/{self.collection_id}"
         return path
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -142,7 +142,7 @@ class CollectionsList(WebflowStream):
         This API returns a list containing json objects. So we can just yield each element from the list
         """
         response_json = response.json()
-        yield from response_json
+        yield from response_json["collections"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """This API does not return any information to support pagination"""
@@ -273,7 +273,7 @@ class SourceWebflow(AbstractSource):
 
         # Loop over the list of records and create a dictionary with name as key, and _id as value
         for collection_obj in collections_records:
-            collection_name_to_id_dict[collection_obj["name"]] = collection_obj["_id"]
+            collection_name_to_id_dict[collection_obj["displayName"]] = collection_obj["id"]
 
         return collection_name_to_id_dict
 
