@@ -168,9 +168,6 @@ jobs:
             libffi-dev \
             python3-dev
 
-      # - name: Install Tools from ASDF Config
-      #   uses: ai/asdf-cache-action@v1
-
       - name: Install Poe and Dev Dependencies
         run: |
           # Install Poe so we can run the connector tasks:
