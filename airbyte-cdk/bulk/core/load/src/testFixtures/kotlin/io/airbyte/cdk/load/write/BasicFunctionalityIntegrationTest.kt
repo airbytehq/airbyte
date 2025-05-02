@@ -1342,7 +1342,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
-                    emittedAtMs = 1234,
+                    emittedAtMs = 2345,
                 )
             )
         )
@@ -1361,7 +1361,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 2345,
                     generationId = 0,
                     data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
@@ -1800,7 +1800,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        fun makeRecord(cursorName: String) =
+        fun makeRecord(cursorName: String, emittedAtMs: Long) =
             InputRecord(
                 randomizedNamespace,
                 "test_stream",
@@ -1808,16 +1808,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 // this is unrealistic (extractedAt should always increase between syncs),
                 // but it lets us force the dedupe behavior to rely solely on the cursor column,
                 // instead of being able to fallback onto extractedAt.
-                emittedAtMs = 100,
+                emittedAtMs = emittedAtMs,
             )
-        runSync(updatedConfig, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        runSync(
+            updatedConfig,
+            makeStream("cursor1"),
+            listOf(makeRecord("cursor1", emittedAtMs = 100)),
+        )
         val stream2 = makeStream("cursor2")
-        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2")))
+        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2", emittedAtMs = 200)))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
                 OutputRecord(
-                    extractedAt = 100,
+                    extractedAt = 200,
                     generationId = 42,
                     data =
                         mapOf(
