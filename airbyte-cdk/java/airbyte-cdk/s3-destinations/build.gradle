@@ -27,7 +27,11 @@ dependencies {
     api 'org.apache.avro:avro:1.12.0'
     api 'org.apache.commons:commons-csv:1.11.0'
     api 'org.apache.commons:commons-text:1.12.0'
-    api ('org.apache.hadoop:hadoop-aws:3.4.0') { exclude group: 'com.amazonaws', module: 'aws-java-sdk-bundle' }
+    api ('org.apache.hadoop:hadoop-aws:3.4.0') {
+        exclude group: 'com.amazonaws', module: 'aws-java-sdk-bundle'
+        // The below dependencies contain security vulnerabilities and are unused.
+        exclude group: 'software.amazon.awssdk', module: 'bundle'
+    }
     api ('org.apache.hadoop:hadoop-common:3.4.0') {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
