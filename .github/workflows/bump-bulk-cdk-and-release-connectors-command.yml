@@ -2,6 +2,16 @@ name: Bump Bulk CDK Version
 on:
   workflow_dispatch:
     inputs:
+      pr:
+        description: "Pull request number. This PR will be referenced in the changelog line."
+        type: number
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo."
         type: choice
