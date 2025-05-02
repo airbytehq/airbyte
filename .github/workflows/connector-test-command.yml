@@ -147,6 +147,31 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Java deps
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
+          cache-write-only: false
+
+      # Python deps
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -156,8 +181,8 @@ jobs:
             libffi-dev \
             python3-dev
 
-      - name: Install Tools from ASDF Config
-        uses: ai/asdf-cache-action@v1
+      # - name: Install Tools from ASDF Config
+      #   uses: ai/asdf-cache-action@v1
 
       - name: Install Poe and Dev Dependencies
         run: |
