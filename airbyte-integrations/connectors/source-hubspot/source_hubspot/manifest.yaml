@@ -163,6 +163,62 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_without_pagination"
 
+  deals_schema_loader:
+    type: DynamicSchemaLoader
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/deal/properties
+      decoder:
+        type: JsonDecoder
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotSchemaExtractor
+          field_path: []
+    schema_transformations:
+      - type: AddFields
+        fields:
+          - path: ["properties"]
+            value: "{{ record }}"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+      - type: AddFields
+        fields:
+          #          - path: [ "properties"]
+          #            value: "{{ {'type': 'object'} }}"
+          - path: ["id"]
+            value: "{{ {'description': 'Unique identifier for the deal', 'type': ['null', 'string']} }}"
+          - path: ["createdAt"]
+            value: "{{ {'description': 'The date and time when the deal was created', 'type': ['null', 'string'], 'format': 'date-time'} }}"
+          - path: ["updatedAt"]
+            value: "{{ {'description': 'The date and time when the deal was last updated', 'type': ['null', 'string'], 'format': 'date-time'} }}"
+          - path: ["archived"]
+            value: "{{ {'description': 'Indicates if the deal is archived', 'type': ['null', 'boolean']} }}"
+    schema_type_identifier:
+      type: SchemaTypeIdentifier
+      key_pointer:
+        - name
+      type_pointer:
+        - type
+      schema_pointer:
+        - properties
+      types_mapping:
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: datetime
+        - type: TypesMap
+          target_type: string
+          current_type: enumeration
+        - type: TypesMap
+          target_type: boolean
+          current_type: bool
+        - type: TypesMap
+          target_type: string
+          current_type: object_coordinates
+
   # Stream Definitions
   marketing_emails_stream:
     $ref: "#/definitions/stream_base"
@@ -287,9 +343,10 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/deals"
+      $ref: "#/definitions/deals_schema_loader"
+  #      type: InlineSchemaLoader
+  #      schema:
+  #        $ref: "#/schemas/deals"
 
   deals_incremental_stream:
     primary_key:
@@ -371,9 +428,10 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/deals"
+      $ref: "#/definitions/deals_schema_loader"
+  #      type: InlineSchemaLoader
+  #      schema:
+  #        $ref: "#/schemas/deals"
 
   deals_stream:
     type: StateDelegatingStream
@@ -1436,24 +1494,24 @@ schemas:
         type:
           - "null"
           - string
-      createdAt:
+      createdAt: # This is definitely in the response
         description: The date and time when the deal was created
         type:
           - "null"
           - string
         format: date-time
-      updatedAt:
+      updatedAt: # This is definitely in the response
         description: The date and time when the deal was last updated
         type:
           - "null"
           - string
         format: date-time
-      archived:
+      archived: # This is definitely in the response
         description: Indicates if the deal is archived
         type:
           - "null"
           - boolean
-      companies:
+      companies: # Is this actually valid?
         description: Information about companies associated with the deal
         type:
           - "null"
@@ -1462,7 +1520,7 @@ schemas:
           type:
             - "null"
             - string
-      contacts:
+      contacts: # Is this actually valid?
         description: Information about contacts associated with the deal
         type:
           - "null"
@@ -1471,7 +1529,7 @@ schemas:
           type:
             - "null"
             - string
-      line_items:
+      line_items: # is this actually valid?
         description: Details of line items associated with the deal
         type:
           - "null"

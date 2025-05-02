@@ -326,3 +326,54 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size
+
+
+@dataclass
+class HubspotSchemaExtractor(RecordExtractor):
+    """
+    Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
+    accepts the set of dynamic schema fields as a single record.
+
+    This might be doable with the existing DpathExtractor configuration.
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        yield {"properties": list(self.decoder.decode(response))}
+
+
+@dataclass
+class HubspotRenamePropertiesTransformation(RecordTransformation):
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        transformed_record = {}
+        for key, value in record.items():
+            if key == "properties":
+                # Transforms properties object so that it adheres to JSON schema format
+                # This could also be replaced with this in the manifest:
+                #   type: AddFields
+                #   fields:
+                #     - path: [ "properties", "properties" ]
+                #       value: "{{ record }}"
+                #     - path: [ "properties" ]
+                #       value: "{{ {'type': 'object'} }}"
+                transformed_record[key] = {
+                    "type": "object",
+                    "properties": value,
+                }
+            else:
+                # We need to rename all the properties at the top level to include the properties_
+                # prefix and I didn't think of a way to do that w/o a custom transformation
+                updated_key = f"properties_{key}"
+                transformed_record[updated_key] = value
+
+        record.clear()
+        record.update(transformed_record)
