@@ -23,7 +23,7 @@ jobs:
           git config --global user.email "romario.silva@syniti.com"
           git config --global user.name "romario-syniti"
           git clone https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/my-private-airbyte.git
-          cd destination-repo
+          cd my-private-airbyte
           git remote add ${{ env.ORIGINAL_REPO_NAME }} https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/${{ env.ORIGINAL_REPO_NAME }}.git
           git remote update
           git merge ${{ env.ORIGINAL_REPO_NAME }}/main
