@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import kotlin.random.Random
 
-class ByPrimaryKeyInputPartitioner : InputPartitioner {
+open class ByPrimaryKeyInputPartitioner : InputPartitioner {
     private val random = Random(System.currentTimeMillis())
 
     override fun getPartition(record: DestinationRecordRaw, numParts: Int): Int {
