@@ -10,8 +10,8 @@ on:
         description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
         required: false
       gitref:
-        description: "Ref (Ignored)"
-        required: false
+        description: "Branch"
+        required: true
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo."
         type: choice
@@ -22,9 +22,11 @@ on:
 jobs:
   publish-bulk-cdk:
     uses: ./.github/workflows/publish-bulk-cdk.yml
+    git-ref: ${{ github.event.inputs.gitref }}
     secrets: inherit
   bump-cdk-version:
     runs-on: ubuntu-24.04
+    git-ref: ${{ github.event.inputs.gitref }}
     outputs:
       modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
       # Output the matrix config as a JSON string
@@ -67,6 +69,7 @@ jobs:
 
   publish-connectors:
     needs: [bump-cdk-version, publish-bulk-cdk]
+    git-ref: ${{ github.event.inputs.gitref }}
     uses: ./.github/workflows/publish_connectors.yml
     strategy:
       fail-fast: false
@@ -80,6 +83,7 @@ jobs:
 
   update-changelog-and-merge:
     runs-on: ubuntu-24.04
+    git-ref: ${{ github.event.inputs.gitref }}
     needs: [publish-connectors, bump-cdk-version]
     steps:
       - name: Checkout repository
