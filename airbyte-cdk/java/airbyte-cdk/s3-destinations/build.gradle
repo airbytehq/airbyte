@@ -33,6 +33,7 @@ dependencies {
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
         // The below dependencies contain security vulnerabilities and are unused.
         exclude group: 'com.google.protobuf'
+        exclude group: "com.nimbusds", module: "nimbus-jose-jwt"
         exclude group: 'dnsjava'
         exclude group: 'io.netty'
         exclude group: "org.apache.hadoop.thirdparty", module: "hadoop-shaded-protobuf_3_21"
