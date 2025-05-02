@@ -1957,21 +1957,6 @@ class SubscriptionChanges(IncrementalStream):
     scopes = {"content"}
 
 
-class Workflows(ClientSideIncrementalStream):
-    """Workflows, API v3
-    Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
-    """
-
-    url = "/automation/v3/workflows"
-    data_field = "workflows"
-    updated_at_field = "updatedAt"
-    created_at_field = "insertedAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "id"
-    scopes = {"automation"}
-    unnest_fields = ["contactListIds"]
-
-
 class Companies(CRMSearchStream):
     entity = "company"
     last_modified_field = "hs_lastmodifieddate"

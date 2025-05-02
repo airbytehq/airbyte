@@ -62,7 +62,6 @@ from source_hubspot.streams import (
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
-    Workflows,
 )
 
 
@@ -97,6 +96,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "workflows": {"automation"},
 }
 
 
@@ -221,7 +221,6 @@ class SourceHubspot(YamlDeclarativeSource):
             Products(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
-            Workflows(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
