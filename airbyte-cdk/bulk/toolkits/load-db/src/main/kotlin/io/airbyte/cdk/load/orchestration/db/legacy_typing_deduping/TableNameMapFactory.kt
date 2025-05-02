@@ -65,15 +65,11 @@ class TableCatalogFactory(
                 val newName = "${stream.descriptor.name}_$hash"
 
                 currentRawProcessedName =
-                    rawTableNameGenerator.getTableName(
-                        DestinationStream.Descriptor(originalRawTableName.namespace, newName)
-                    )
+                    rawTableNameGenerator.getTableName(stream.descriptor.copy(name = newName))
                 processedRawTableNames.add(currentRawProcessedName)
 
                 currentFinalProcessedName =
-                    finalTableNameGenerator.getTableName(
-                        DestinationStream.Descriptor(originalFinalTableName.namespace, newName)
-                    )
+                    finalTableNameGenerator.getTableName(stream.descriptor.copy(name = newName))
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
                 processedRawTableNames.add(originalRawTableName)
@@ -103,13 +99,12 @@ class TableCatalogFactory(
      * numbering, with advanced resolution for truncation cases.
      */
     private fun createColumnNameMapping(stream: DestinationStream): ColumnNameMapping {
-        val processedColumnNames = mutableSetOf<String>()
+        val processedColumnNames = mutableSetOf<ColumnNameGenerator.ColumnName>()
         val columnMappings = mutableMapOf<String, String>()
         // Map to track original column names by their truncated versions
 
         stream.schema.asColumns().forEach { (columnName, _) ->
-            val processedColumnName =
-                finalTableColumnNameGenerator.getColumnName(columnName).canonicalName
+            val processedColumnName = finalTableColumnNameGenerator.getColumnName(columnName)
 
             // Get a unique column name by adding incremental numbers if necessary
             val finalColumnName =
@@ -121,7 +116,7 @@ class TableCatalogFactory(
                 )
 
             processedColumnNames.add(finalColumnName)
-            columnMappings[columnName] = finalColumnName
+            columnMappings[columnName] = finalColumnName.displayName
         }
 
         return ColumnNameMapping(columnMappings)
@@ -137,10 +132,10 @@ class TableCatalogFactory(
      */
     private fun resolveColumnNameCollision(
         stream: DestinationStream,
-        processedName: String,
-        existingNames: Set<String>,
-        originalColumnName: String
-    ): String {
+        processedName: ColumnNameGenerator.ColumnName,
+        existingNames: Set<ColumnNameGenerator.ColumnName>,
+        originalColumnName: String,
+    ): ColumnNameGenerator.ColumnName {
         // If processed name is unique, use it
         if (processedName !in existingNames) {
             return processedName
@@ -152,15 +147,13 @@ class TableCatalogFactory(
 
         // Try adding incremental suffixes until we find a non-colliding name
         var counter = 1
-        var candidateName: String
+        var candidateName: ColumnNameGenerator.ColumnName
         var previousCandidate = processedName
 
         do {
             // Generate candidate name by adding numeric suffix
             candidateName =
-                finalTableColumnNameGenerator
-                    .getColumnName("${originalColumnName}_$counter")
-                    .canonicalName
+                finalTableColumnNameGenerator.getColumnName("${originalColumnName}_$counter")
 
             // Check if we're making progress (detecting potential truncation)
             if (candidateName == previousCandidate) {
@@ -169,7 +162,7 @@ class TableCatalogFactory(
                 return superResolveColumnCollisions(
                     originalColumnName,
                     existingNames,
-                    processedName.length
+                    processedName.canonicalName.length
                 )
             }
 
@@ -190,9 +183,9 @@ class TableCatalogFactory(
      */
     private fun superResolveColumnCollisions(
         originalName: String,
-        existingNames: Set<String>,
+        existingNames: Set<ColumnNameGenerator.ColumnName>,
         maximumColumnNameLength: Int
-    ): String {
+    ): ColumnNameGenerator.ColumnName {
         // Assume that the <length> portion can be expressed in at most 5 characters.
         // If someone is giving us a column name that's longer than 99999 characters,
         // that's just being silly.
@@ -211,7 +204,7 @@ class TableCatalogFactory(
         val suffix = originalName.substring(originalName.length - affixLength, originalName.length)
 
         val length = originalName.length - 2 * affixLength
-        val newColumnName = "$prefix$length$suffix"
+        val newColumnName = finalTableColumnNameGenerator.getColumnName("$prefix$length$suffix")
 
         // If there's still a collision after this, just give up.
         // We could try to be more clever, but this is already a pretty rare case.

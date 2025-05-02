@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
@@ -18,7 +19,6 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBY
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogFactory
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class TableCatalogFactoryTest {
@@ -30,23 +30,17 @@ class TableCatalogFactoryTest {
 
         // Use SAM syntax with conditional logic in the lambda
         val rawTableNameGenerator = RawTableNameGenerator { descriptor ->
-            // Check if this is a generated name with the hash suffix (for collision resolution)
-            if (descriptor.name.contains("_3fd")) {
-                TableName("airbyte_internal", "a_foofoo_3fd")
-            } else {
-                // Otherwise always return the same value to force collision
-                TableName("airbyte_internal", "a_foofoo")
-            }
+            TableName(
+                "airbyte_internal",
+                """${descriptor.namespace}_${descriptor.name.replace("bar", "")}""",
+            )
         }
 
         val finalTableNameGenerator = FinalTableNameGenerator { descriptor ->
-            // Check if this is a generated name with the hash suffix (for collision resolution)
-            if (descriptor.name.contains("_3fd")) {
-                TableName("a", "foofoo_3fd")
-            } else {
-                // Otherwise always return the same value to force collision
-                TableName("a", "foofoo")
-            }
+            TableName(
+                descriptor.namespace!!,
+                descriptor.name.replace("bar", ""),
+            )
         }
 
         val columnNameGenerator = ColumnNameGenerator { input ->
@@ -69,26 +63,31 @@ class TableCatalogFactoryTest {
         val stream2TableInfo = tableCatalog[stream2]!!
 
         assertAll(
-            { assertTrue(stream1TableInfo.tableNames.finalTableName!!.name == "foofoo") },
-            { assertTrue(stream1TableInfo.tableNames.finalTableName!!.namespace == "a") },
-            { assertTrue(stream2TableInfo.tableNames.finalTableName!!.name == "foofoo_3fd") },
-            { assertTrue(stream2TableInfo.tableNames.finalTableName!!.namespace == "a") }
+            { assertEquals("foofoo", stream1TableInfo.tableNames.finalTableName!!.name) },
+            { assertEquals("a", stream1TableInfo.tableNames.finalTableName!!.namespace) },
+            { assertEquals("foofoo_3fd", stream2TableInfo.tableNames.finalTableName!!.name) },
+            {
+                assertEquals(
+                    "a",
+                    stream2TableInfo.tableNames.finalTableName!!.namespace,
+                )
+            }
         )
 
         // Now check raw table names with exact expected suffix
         assertAll(
-            { assertTrue(stream1TableInfo.tableNames.rawTableName!!.name == "a_foofoo") },
+            { assertEquals("a_foofoo", stream1TableInfo.tableNames.rawTableName!!.name) },
             {
-                assertTrue(
-                    stream1TableInfo.tableNames.rawTableName!!.namespace ==
-                        DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+                assertEquals(
+                    DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
+                    stream1TableInfo.tableNames.rawTableName!!.namespace
                 )
             },
-            { assertTrue(stream2TableInfo.tableNames.rawTableName!!.name == "a_foofoo_3fd") },
+            { assertEquals("a_foofoo_3fd", stream2TableInfo.tableNames.rawTableName!!.name) },
             {
-                assertTrue(
-                    stream2TableInfo.tableNames.rawTableName!!.namespace ==
-                        DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+                assertEquals(
+                    DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
+                    stream2TableInfo.tableNames.rawTableName!!.namespace
                 )
             }
         )
@@ -96,7 +95,13 @@ class TableCatalogFactoryTest {
 
     @Test
     fun testTruncatingColumnNameCollision() {
-        val schema = createSchemaWithLongColumnNames()
+        val schema =
+            ObjectType(
+                linkedMapOf(
+                    "aVeryLongColumnName" to FieldType(StringType, true),
+                    "aVeryLongColumnNameWithMoreTextAfterward" to FieldType(StringType, true),
+                )
+            )
         val stream = createTestStream("stream", "namespace", schema)
         val catalog = DestinationCatalog(listOf(stream))
 
@@ -134,22 +139,16 @@ class TableCatalogFactoryTest {
         assertEquals("aV36rd", mappedNames[1])
     }
 
-    private fun createSchemaWithLongColumnNames(): AirbyteType {
-        val schemaProperties = linkedMapOf<String, FieldType>()
-        schemaProperties["aVeryLongColumnName"] =
-            FieldType(io.airbyte.cdk.load.data.StringType, true)
-        schemaProperties["aVeryLongColumnNameWithMoreTextAfterward"] =
-            FieldType(io.airbyte.cdk.load.data.StringType, true)
-        return ObjectType(schemaProperties)
-    }
-
     @Test
     fun testColumnNameCollision() {
         // Create a schema with columns that will have name collision after processing
-        val schemaProperties = linkedMapOf<String, FieldType>()
-        schemaProperties["foobarfoo"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
-        schemaProperties["foofoo"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
-        val schema = ObjectType(schemaProperties)
+        val schema =
+            ObjectType(
+                linkedMapOf(
+                    "foobarfoo" to FieldType(StringType, true),
+                    "foofoo" to FieldType(StringType, true),
+                )
+            )
 
         val stream = createTestStream("stream", "namespace", schema)
         val catalog = DestinationCatalog(listOf(stream))
