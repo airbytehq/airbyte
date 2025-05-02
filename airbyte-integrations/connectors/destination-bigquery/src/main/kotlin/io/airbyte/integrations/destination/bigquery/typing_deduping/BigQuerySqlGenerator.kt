@@ -521,7 +521,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                      FROM intermediate_data
                    ), numbered_rows AS (
                      SELECT *, row_number() OVER (
-                       PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
+                       PARTITION BY $pkList ORDER BY $cursorOrderClause, `_airbyte_extracted_at` DESC
                      ) AS row_number
                      FROM new_records
                    )
