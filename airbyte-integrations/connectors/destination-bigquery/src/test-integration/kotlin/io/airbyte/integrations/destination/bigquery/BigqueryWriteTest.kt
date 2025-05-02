@@ -75,7 +75,8 @@ abstract class BigqueryTDWriteTest(
         BigqueryFinalTableDataDumper,
         ColumnNameModifyingMapper(BigqueryColumnNameGenerator())
             .compose(RootLevelTimestampsToUtcMapper)
-            .compose(TypingDedupingMetaChangeMapper),
+            .compose(TypingDedupingMetaChangeMapper)
+            .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
         supportsDedup = true,
