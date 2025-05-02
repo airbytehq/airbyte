@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.pipeline.ByPrimaryKeyInputPartitioner
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -17,6 +18,10 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.PreparedStatement
+
+@Singleton
+@Requires(condition = MSSQLIsNotConfiguredForBulkLoad::class)
+class MSSQLStandardInsertPartitioner: ByPrimaryKeyInputPartitioner()
 
 class MSSQLDirectLoader(
     config: MSSQLConfiguration,
@@ -48,8 +53,7 @@ class MSSQLDirectLoader(
 
         // Periodically execute the batch to avoid too-large batches
         if (++rows % recordCommitBatchSize == 0L) {
-            preparedStatement.executeBatch()
-            connection.commit()
+            attemptExecuteBatch()
         }
 
         // Periodically complete the batch and ack underlying records.
@@ -63,11 +67,27 @@ class MSSQLDirectLoader(
         return DirectLoader.Incomplete
     }
 
+    private fun attemptExecuteBatch() {
+        var retries = 0
+        while (true) {
+            try {
+                preparedStatement.executeBatch()
+                connection.commit()
+                break
+            } catch (e: Exception) {
+                if (++retries >= 3) {
+                    throw e
+                }
+                log.error(e) { "Error executing batch (attempt $retries) for stream $streamDescriptor, retrying" }
+            }
+        }
+    }
+
     override fun finish() {
         log.info { "Executing batch $batch for stream $streamDescriptor" }
 
         // Execute remaining records if any
-        preparedStatement.executeBatch()
+        attemptExecuteBatch()
         preparedStatement.close()
 
         // If CDC is enabled, remove stale records

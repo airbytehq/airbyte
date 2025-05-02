@@ -24,7 +24,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-@Singleton class MSSQLInputPartitioner : RoundRobinInputPartitioner()
+/**
+ * It's only safe to split the streams for bulk load, since everything is going into the
+ * object loader, which maintains separate objects per stream no matter what.
+ *
+ * TODO: Push this into the interface?
+ */
+@Singleton
+@Requires(bean = MSSQLIsConfiguredForBulkLoad::class)
+class MSSQLInputPartitioner : RoundRobinInputPartitioner()
 
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
 class MSSQLBulkLoader(
