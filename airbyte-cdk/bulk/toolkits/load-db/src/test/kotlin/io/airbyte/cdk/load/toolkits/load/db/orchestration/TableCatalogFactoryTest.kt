@@ -16,8 +16,6 @@ import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogFactory
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -26,36 +24,36 @@ import org.junit.jupiter.api.Test
 class TableCatalogFactoryTest {
     @Test
     fun testTableNameCollision() {
-        val rawTableNameGenerator = mockk<RawTableNameGenerator>()
-        val finalTableNameGenerator = mockk<FinalTableNameGenerator>()
-        val columnNameGenerator = mockk<ColumnNameGenerator>()
-
         // Create the same streams as in the original test - "foobarfoo" and "foofoo"
         val stream1 = createTestStream("foobarfoo", "a")
         val stream2 = createTestStream("foofoo", "a")
-        val catalog = DestinationCatalog(listOf(stream1, stream2))
 
-        // Mock the generators to simulate name collision by removing "bar" for both raw and final
-        // table names
-        every { rawTableNameGenerator.getTableName(stream1.descriptor) } returns
-            TableName(
-                "airbyte_internal",
-                "foofoo"
-            ) // foobarfoo becomes foofoo when "bar" is removed
-        every { rawTableNameGenerator.getTableName(stream2.descriptor) } returns
-            TableName("airbyte_internal", "foofoo")
-
-        every { finalTableNameGenerator.getTableName(stream1.descriptor) } returns
-            TableName("a", "foofoo") // foobarfoo becomes foofoo when "bar" is removed
-        every { finalTableNameGenerator.getTableName(stream2.descriptor) } returns
-            TableName("a", "foofoo")
-
-        // Simple pass-through for column name generator (not needed for this test)
-        every { columnNameGenerator.getColumnName(any()) } answers
-            { call ->
-                val input = call.invocation.args[0] as String
-                ColumnNameGenerator.ColumnName(input, input)
+        // Use SAM syntax with conditional logic in the lambda
+        val rawTableNameGenerator = RawTableNameGenerator { descriptor ->
+            // Check if this is a generated name with the hash suffix (for collision resolution)
+            if (descriptor.name.contains("_3fd")) {
+                TableName("airbyte_internal", "a_foofoo_3fd")
+            } else {
+                // Otherwise always return the same value to force collision
+                TableName("airbyte_internal", "a_foofoo")
             }
+        }
+
+        val finalTableNameGenerator = FinalTableNameGenerator { descriptor ->
+            // Check if this is a generated name with the hash suffix (for collision resolution)
+            if (descriptor.name.contains("_3fd")) {
+                TableName("a", "foofoo_3fd")
+            } else {
+                // Otherwise always return the same value to force collision
+                TableName("a", "foofoo")
+            }
+        }
+
+        val columnNameGenerator = ColumnNameGenerator { input ->
+            ColumnNameGenerator.ColumnName(input, input)
+        }
+
+        val catalog = DestinationCatalog(listOf(stream1, stream2))
 
         val factory =
             TableCatalogFactory(
@@ -79,14 +77,14 @@ class TableCatalogFactoryTest {
 
         // Now check raw table names with exact expected suffix
         assertAll(
-            { assertTrue(stream1TableInfo.tableNames.rawTableName!!.name == "foofoo") },
+            { assertTrue(stream1TableInfo.tableNames.rawTableName!!.name == "a_foofoo") },
             {
                 assertTrue(
                     stream1TableInfo.tableNames.rawTableName!!.namespace ==
                         DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
                 )
             },
-            { assertTrue(stream2TableInfo.tableNames.rawTableName!!.name == "foofoo_3fd") },
+            { assertTrue(stream2TableInfo.tableNames.rawTableName!!.name == "a_foofoo_3fd") },
             {
                 assertTrue(
                     stream2TableInfo.tableNames.rawTableName!!.namespace ==
@@ -98,24 +96,22 @@ class TableCatalogFactoryTest {
 
     @Test
     fun testTruncatingColumnNameCollision() {
-        val rawTableNameGenerator = mockk<RawTableNameGenerator>()
-        val finalTableNameGenerator = mockk<FinalTableNameGenerator>()
-        val columnNameGenerator = mockk<ColumnNameGenerator>()
-
         val schema = createSchemaWithLongColumnNames()
         val stream = createTestStream("stream", "namespace", schema)
         val catalog = DestinationCatalog(listOf(stream))
-        every { rawTableNameGenerator.getTableName(any()) } returns
-            TableName("raw_dataset", "raw_stream")
-        every { finalTableNameGenerator.getTableName(any()) } returns
-            TableName("final_dataset", "final_stream")
 
-        every { columnNameGenerator.getColumnName(any()) } answers
-            { call ->
-                val input = call.invocation.args[0] as String
-                val truncated = input.substring(0, 10.coerceAtMost(input.length))
-                ColumnNameGenerator.ColumnName(truncated, truncated)
-            }
+        val rawTableNameGenerator = RawTableNameGenerator { _ ->
+            TableName("raw_dataset", "raw_stream")
+        }
+
+        val finalTableNameGenerator = FinalTableNameGenerator { _ ->
+            TableName("final_dataset", "final_stream")
+        }
+
+        val columnNameGenerator = ColumnNameGenerator { input ->
+            val truncated = input.substring(0, 10.coerceAtMost(input.length))
+            ColumnNameGenerator.ColumnName(truncated, truncated)
+        }
 
         val factory =
             TableCatalogFactory(
@@ -149,10 +145,6 @@ class TableCatalogFactoryTest {
 
     @Test
     fun testColumnNameCollision() {
-        val rawTableNameGenerator = mockk<RawTableNameGenerator>()
-        val finalTableNameGenerator = mockk<FinalTableNameGenerator>()
-        val columnNameGenerator = mockk<ColumnNameGenerator>()
-
         // Create a schema with columns that will have name collision after processing
         val schemaProperties = linkedMapOf<String, FieldType>()
         schemaProperties["foobarfoo"] = FieldType(io.airbyte.cdk.load.data.StringType, true)
@@ -162,18 +154,19 @@ class TableCatalogFactoryTest {
         val stream = createTestStream("stream", "namespace", schema)
         val catalog = DestinationCatalog(listOf(stream))
 
-        every { rawTableNameGenerator.getTableName(any()) } returns
+        val rawTableNameGenerator = RawTableNameGenerator { _ ->
             TableName("raw_dataset", "raw_stream")
-        every { finalTableNameGenerator.getTableName(any()) } returns
-            TableName("final_dataset", "final_stream")
+        }
 
-        // Mock the column name generator to simulate name collision by removing "bar"
-        every { columnNameGenerator.getColumnName(any()) } answers
-            { call ->
-                val input = call.invocation.args[0] as String
-                val processedName = input.replace("bar", "")
-                ColumnNameGenerator.ColumnName(processedName, processedName)
-            }
+        val finalTableNameGenerator = FinalTableNameGenerator { _ ->
+            TableName("final_dataset", "final_stream")
+        }
+
+        // Simulate name collision by removing "bar"
+        val columnNameGenerator = ColumnNameGenerator { input ->
+            val processedName = input.replace("bar", "")
+            ColumnNameGenerator.ColumnName(processedName, processedName)
+        }
 
         val factory =
             TableCatalogFactory(
