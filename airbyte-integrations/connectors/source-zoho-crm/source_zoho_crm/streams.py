@@ -117,12 +117,13 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
         if len(self.all_fields) > FIELDS_LIMIT:
             offset = 0
             all_fields_without_pk = list(self.all_fields - {self.primary_key})
-            while offset < len(all_fields_without_pk):
-                self.current_fields = all_fields_without_pk[offset:offset + FIELDS_LIMIT - 1] + [self.primary_key]
-                offset += FIELDS_LIMIT
+            limit = FIELDS_LIMIT - 1
+            while offset <= len(all_fields_without_pk):
+                self.current_fields = all_fields_without_pk[offset:offset + limit] + [self.primary_key]
+                offset += limit
                 logger.info("Reading records from %s with fields: %s", self.module.api_name, self.current_fields)
                 records.extend(list(super().read_records(*args, **kwargs)))
-            self.merge_records(records)
+            records = self.merge_records(records)
         else:
             self.current_fields = self.all_fields
             logger.info("Reading records from %s with All fields: %s", self.module.api_name, self.current_fields)

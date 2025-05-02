@@ -133,8 +133,8 @@ class FieldMeta(FromDictMixin):
 
     def _double_field(self) -> FieldType:
         typedef = {"type": ["null", "number"], **self._default_type_kwargs()}
-        if self.decimal_place:
-            typedef["multipleOf"] = float(Decimal("0.1") ** self.decimal_place)
+        # if self.decimal_place:
+        #     typedef["multipleOf"] = float(Decimal("0.1") ** self.decimal_place)
         return typedef
 
     def _string_field(self) -> FieldType:
@@ -143,7 +143,9 @@ class FieldMeta(FromDictMixin):
             # actual values do not correspond to the values in the list
             return {"type": ["null", "string"], "format": "date-time", **self._default_type_kwargs()}
 
-        typedef = {"type": ["null", "string"], "maxLength": self.length, **self._default_type_kwargs()}
+        typedef = {"type": ["null", "string"],
+                   # "maxLength": self.length,
+                   **self._default_type_kwargs()}
         if self.data_type == ZohoDataType.website:
             typedef["format"] = "uri"
         elif self.data_type == ZohoDataType.email:
@@ -159,8 +161,8 @@ class FieldMeta(FromDictMixin):
                 typedef["format"] = "string"
             else:
                 typedef["airbyte_type"] = "big_integer"
-        elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
-            typedef["enum"] = self._picklist_items()
+        # elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
+        #     typedef["enum"] = self._picklist_items()
         return typedef
 
     def _jsonarray_field(self) -> FieldType:
@@ -191,8 +193,8 @@ class FieldMeta(FromDictMixin):
             typedef["minItems"] = 1
             typedef["uniqueItems"] = True
             items = {"type": ["null", "string"]}
-            if self.pick_list_values:
-                items["enum"] = self._picklist_items()
+            # if self.pick_list_values:
+            #     items["enum"] = self._picklist_items()
             typedef["items"] = items
         return typedef
 
@@ -232,7 +234,7 @@ class ModuleMeta(FromDictMixin):
     def schema(self) -> Schema:
         if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
-        required = ["id", "Modified_Time"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
+        required = list({"id", "Modified_Time"}.union(set([field_.api_name for field_ in self.fields if field_.system_mandatory])))
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
         properties = {"id": {"type": "string"}, "Modified_Time": {"type": "string", "format": "date-time"}, **field_to_properties}
         return Schema(description=self.module_name, properties=properties, required=required)

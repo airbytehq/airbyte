@@ -15,7 +15,7 @@ def stream_factory(mocker):
     def wrapper(stream_name, schema=None):
         class IncrementalZohoStream(BaseIncrementalZohoCrmStream):
             url_base = "https://dummy.com"
-            _path = f"/crm/v7/{stream_name}"
+            _path = f"/crm/v8/{stream_name}"
             json_schema = schema or {}
             primary_key = "id"
 
