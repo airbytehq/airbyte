@@ -27,6 +27,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -54,6 +55,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 abstract class IntegrationTest(
     additionalMicronautEnvs: List<String>,
     val dataDumper: DestinationDataDumper,
+    /** This object MUST be a singleton. It will be invoked exactly once per gradle run. */
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
@@ -66,15 +68,6 @@ abstract class IntegrationTest(
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
     val destinationProcessFactory = DestinationProcessFactory.get(additionalMicronautEnvs)
-
-    // we want to run the cleaner exactly once per test class.
-    // technically this is a little inefficient - e.g. multiple test classes could reuse the same
-    // cleaner, so we'd prefer to only call each of them once.
-    // but this is simpler to implement than tracking hasRunCleaner across test classes,
-    // and then also requiring cleaners to be able to recognize themselves as identical.
-    // (you would think this is just an AfterAll method, but junit requires those to be static,
-    // so we wouldn't have access to the cleaner instance >.>)
-    private val hasRunCleaner = AtomicBoolean(false)
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
@@ -102,8 +95,29 @@ abstract class IntegrationTest(
 
     @AfterEach
     fun teardown() {
+        // some tests (e.g. CheckIntegrationTest) hardcode the noop cleaner.
+        // so just skip all the fancy logic if we detect it.
+        if (destinationCleaner == NoopDestinationCleaner) {
+            return
+        }
+
         if (hasRunCleaner.compareAndSet(false, true)) {
             destinationCleaner.cleanup()
+        }
+
+        // Simple guardrail to prevent people from doing the wrong thing,
+        // since it's not immediately intuitive.
+        val firstCleaner = cleanerSeen.compareAndSet(null, destinationCleaner)
+        val sameCleaner = cleanerSeen.compareAndSet(destinationCleaner, destinationCleaner)
+        if (!(firstCleaner || sameCleaner)) {
+            throw IllegalStateException(
+                """
+                Multiple DestinationCleaner instances detected. This is not supported. The cleaner MUST be a singleton.
+                Cleaners detected:
+                  $destinationCleaner
+                  ${cleanerSeen.get()}
+                """.trimIndent()
+            )
         }
     }
 
@@ -337,6 +351,9 @@ abstract class IntegrationTest(
                 LocalDate.parse(matchResult.groupValues[1], randomizedNamespaceDateFormatter)
             return namespaceCreationDate.isBefore(cleanupCutoffDate)
         }
+
+        private val hasRunCleaner = AtomicBoolean(false)
+        private val cleanerSeen = AtomicReference<DestinationCleaner>(null)
 
         // Connectors are calling System.getenv rather than using micronaut-y properties,
         // so we have to mock it out, instead of just setting more properties
