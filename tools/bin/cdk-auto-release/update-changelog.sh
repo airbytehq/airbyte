@@ -249,10 +249,6 @@ get_pr_number() {
     local pr_num
 
     log_info "Attempting to find PR number for branch: ${branch_name}"
-    # Ensure gh is installed
-    if ! command -v gh &> /dev/null; then
-        error_exit "'gh' command not found. Please install the GitHub CLI."
-    fi
 
     # Use gh pr list to find the PR number for the specified head branch
     pr_num=$(gh pr list --state open --head "$branch_name" --json number --jq '.[0].number // empty')
