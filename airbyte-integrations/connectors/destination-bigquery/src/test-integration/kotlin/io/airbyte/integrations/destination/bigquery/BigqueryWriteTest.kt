@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
+import io.airbyte.cdk.load.write.SimpleValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
@@ -87,6 +88,7 @@ abstract class BigqueryTDWriteTest(
             nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
             numberCanBeLarge = false,
+            timeWithTimezoneBehavior = SimpleValueBehavior.PASS_THROUGH,
         ),
     )
 
