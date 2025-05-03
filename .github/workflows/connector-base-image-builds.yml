@@ -6,8 +6,6 @@
 name: Dockerimage Build Testing for Connector and Base Images
 on:
   pull_request:
-    branches:
-      - main
     paths:
       - docker-images/Dockerfile.java-connector
       - docker-images/Dockerfile.java-connector-base
