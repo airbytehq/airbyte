@@ -8,10 +8,10 @@ on:
     branches:
       - main
     paths:
-      - docker-image/Dockerfile.java-connector
-      - docker-image/Dockerfile.java-connector-base
-      - docker-image/Dockerfile.python-connector
-      - docker-image/Dockerfile.python-connector-base
+      - docker-images/Dockerfile.java-connector
+      - docker-images/Dockerfile.java-connector-base
+      - docker-images/Dockerfile.python-connector
+      - docker-images/Dockerfile.python-connector-base
 
 
 jobs:
@@ -32,13 +32,13 @@ jobs:
         with:
           filters: |
             java-connector:
-              - 'docker-image/Dockerfile.java-connector'
+              - 'docker-images/Dockerfile.java-connector'
             java-base:
-              - 'docker-image/Dockerfile.java-connector-base'
+              - 'docker-images/Dockerfile.java-connector-base'
             python-connector:
-              - 'docker-image/Dockerfile.python-connector'
+              - 'docker-images/Dockerfile.python-connector'
             python-base:
-              - 'docker-image/Dockerfile.python-connector-base'
+              - 'docker-images/Dockerfile.python-connector-base'
 
   build-base-images:
     name: Detect changes in connector base image Dockerfiles
@@ -57,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker-image/Dockerfile.java-connector-base
+          file: docker-images/Dockerfile.java-connector-base
           platforms: linux/amd64,linux/arm64
           tags: airbyte/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: false
@@ -68,7 +68,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker-image/Dockerfile.python-connector-base
+          file: docker-images/Dockerfile.python-connector-base
           platforms: linux/amd64,linux/arm64
           tags: airbyte/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: false
@@ -103,7 +103,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker-image/Dockerfile.java-connector
+          file: docker-images/Dockerfile.java-connector
           platforms: linux/amd64,linux/arm64
           tags: airbyte/java-connector:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
@@ -138,7 +138,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker-image/Dockerfile.python-connector
+          file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
           tags: airbyte/python-connector:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
