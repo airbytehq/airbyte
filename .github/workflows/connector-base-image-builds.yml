@@ -24,7 +24,7 @@ jobs:
       python-connector: ${{ steps.changes.outputs.python-connector }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - id: changes
         uses: dorny/paths-filter@v3.0.2
@@ -47,6 +47,11 @@ jobs:
       needs.detect-changes.outputs.java-base ||
       needs.detect-changes.outputs.python-base
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -92,7 +97,9 @@ jobs:
           - destination-postgres
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
