@@ -19,12 +19,12 @@ ENV POETRY_VIRTUALENVS_IN_PROJECT=false
 ENV POETRY_NO_INTERACTION=1
 
 RUN pip install poetry==1.8.4
-RUN sh -c apt-get update && \
+RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get dist-upgrade -y && \
     apt-get clean
-RUN sh -c apt-get install -y socat=1.7.4.4-2
-RUN sh -c apt-get update && \
+RUN apt-get install -y socat=1.7.4.4-2
+RUN apt-get update && \
     apt-get install -y \
         tesseract-ocr=5.3.0-2 \
         poppler-utils=22.12.0-2+b1
