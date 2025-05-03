@@ -39,13 +39,11 @@ jobs:
             python-base:
               - 'docker-images/Dockerfile.python-connector-base'
 
-  build-base-images:
-    name: Build Base Images
+  build-java-base-image:
+    name: Build Java Base Image
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: >
-      needs.detect-changes.outputs.java-base ||
-      needs.detect-changes.outputs.python-base
+    if: needs.detect-changes.outputs.java-base == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,6 +64,23 @@ jobs:
           tags: airbyte/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: false
 
+    outputs:
+      java-base-image: ${{ steps.docker-build-java-base.outputs.imageid }}
+
+  build-python-base-image:
+    name: Build Python Base Image
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.python-base == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build Python Base Image
         id: docker-build-python-base
         if: needs.detect-changes.outputs.python-base == 'true'
@@ -77,16 +92,14 @@ jobs:
           tags: airbyte/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: false
     outputs:
-      java-base-image: ${{ steps.docker-build-java-base.outputs.target }}
-      python-base-image: ${{ steps.docker-build-python-base.outputs.target }}
+      python-base-image: ${{ steps.docker-build-python-base.outputs.imageid }}
 
-  test-build-java-connectors:
-    name: Test Java Connector Base Image
+  test-java-connector-image-matrix:
+    name: Test Java Connector Images
     runs-on: ubuntu-latest
-    needs: [detect-changes, build-base-images]
+    needs: [detect-changes, build-java-base-image]
     if: >
-      needs.detect-changes.outputs.java-connector ||
-      needs.build-base-images.outputs.java-base-image
+      needs.detect-changes.outputs.java-connector
     strategy:
       fail-fast: false
       matrix:
@@ -117,13 +130,12 @@ jobs:
             BASE_IMAGE=${{ needs.build-base-images.outputs.java-base-image || 'docker.io/airbyte/java-connector-base:latest'  }}
           push: false
 
-  test-build-python-connectors:
-    name: Test Python Connector Base Image
+  test-python-connector-image-matrix:
+    name: Test Python Connector Images
     runs-on: ubuntu-latest
-    needs: [detect-changes, build-base-images]
+    needs: [detect-changes, build-java-base-image]
     if: >
-      needs.detect-changes.outputs.python-connector ||
-      needs.build-base-images.outputs.python-base-image
+      needs.detect-changes.outputs.python-connector
     strategy:
       fail-fast: false
       matrix:
