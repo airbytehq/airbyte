@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
-  dockerImageTag: 0.7.7
+  dockerImageTag: 0.7.8
   dockerRepository: airbyte/source-apple-search-ads
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
@@ -35,5 +35,5 @@ data:
             alias: airbyte-connector-testing-secret-store
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.46.1@sha256:5e56569cab810e31e367b0667d846b324988fabd3d3bdc0bfa4c4afa3276d059
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
 metadataSpecVersion: "1.0"
