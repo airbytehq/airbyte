@@ -3,6 +3,7 @@
 
 # NOTE: This workflow does not publish the images to Docker Hub. It only builds them and tests them.
 
+name: Dockerimage Build Testing for Connector and Base Images
 on:
   pull_request:
     branches:
