@@ -32,3 +32,12 @@ ENV AIRBYTE_DISCOVER_CMD="/airbyte/javabase.sh --discover"
 ENV AIRBYTE_READ_CMD="/airbyte/javabase.sh --read"
 ENV AIRBYTE_WRITE_CMD="/airbyte/javabase.sh --write"
 ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
+
+WORKDIR /airbyte
+
+ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base/base.sh \
+    /airbyte/base.sh
+ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base-java/javabase.sh \
+    /airbyte/javabase.sh
+ADD https://dtdg.co/latest-java-tracer \
+    /airbyte/dd-java-agent.jar
