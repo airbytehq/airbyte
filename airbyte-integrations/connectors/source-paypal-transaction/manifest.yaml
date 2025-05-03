@@ -102,6 +102,7 @@ definitions:
             - path:
                 - transaction_id
               value: "{{ record['transaction_info']['transaction_id'] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -205,6 +206,13 @@ definitions:
             type: PageIncrement
             start_from_page: 1
             page_size: 20
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -242,6 +250,13 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/list_products"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -316,6 +331,12 @@ definitions:
             - path:
                 - updated_time_cut
               value: "{{ record['update_time'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - dispute_id
+              value: "{{ record['dispute_id'] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -366,6 +387,13 @@ definitions:
             type: PageIncrement
             start_from_page: 1
             page_size: 100
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -440,6 +468,13 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P{{ config.get('time_window', 7) }}D
         cursor_granularity: PT1S
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
