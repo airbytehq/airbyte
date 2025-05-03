@@ -12,6 +12,8 @@ ARCH='arm64'
 TAG='dev'
 CONTEXT_DIR="."  # This doesn't matter, since nothing is copied from the context dir.
 
+export DOCKER_BUILDKIT=1
+
 docker build \
     --platform linux/${ARCH} \
     --file Dockerfile.${CONNECTOR_TYPE}-connector-base \

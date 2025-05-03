@@ -16,6 +16,8 @@ ARCH='arm64'
 
 ./test-base-image-build.sh ${CONNECTOR_TYPE} ${BASE_IMAGE_TAG}
 
+export DOCKER_BUILDKIT=1
+
 docker build \
     --platform linux/${ARCH} \
     --label io.airbyte.version=3.11.15\
@@ -28,4 +30,6 @@ docker build \
     ${CONNECTOR_DIR}
 
 docker tag airbyte/${CONNECTOR_NAME}:dev-${ARCH} airbyte/${CONNECTOR_NAME}:dev
-echo -e "Built images:\n- airbyte/${CONNECTOR_NAME}:dev-${ARCH}\n- airbyte/${CONNECTOR_NAME}:dev"
+echo -e "Built images:\n- airbyte/${CONNECTOR_NAME}:dev-${ARCH}\n- airbyte/${CONNECTOR_NAME}:dev ('dev-${ARCH}' alias)"
+
+echo -e "Test by running: \n  docker run --rm -it airbyte/${CONNECTOR_NAME}:dev-${ARCH} spec"
