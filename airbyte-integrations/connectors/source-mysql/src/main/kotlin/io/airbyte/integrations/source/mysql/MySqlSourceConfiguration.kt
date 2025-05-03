@@ -9,6 +9,8 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.output.SocketConfig
+import io.airbyte.cdk.output.SocketOutputFormat
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -43,7 +45,20 @@ data class MySqlSourceConfiguration(
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
-) : JdbcSourceConfiguration, CdcSourceConfiguration {
+    val skipSynchronizedCounts: Boolean,
+    override val bufferByteSize: Int,
+    override val outputFormat: SocketOutputFormat,
+    override val devNullAfterSerialization: Boolean,
+    override val inputChannelCapacity: Int,
+    override val devNullBeforePosting: Boolean,
+    override val numSockets: Int,
+    override val writeAsync: Boolean = false,
+    override val skipJsonNodeAndUseFakeRecord: Boolean = false,
+    override val sharedInputChannel: Boolean = false,
+    override val socketPrefix: String,
+    override val useSnappy: Boolean,
+    override val useFlow: Boolean = false,
+) : JdbcSourceConfiguration, CdcSourceConfiguration, SocketConfig {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
         get() = (incrementalConfiguration as? CdcIncrementalConfiguration)?.initialLoadTimeout
@@ -158,6 +173,19 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            skipSynchronizedCounts = pojo.tmpSkipSynchronizedCounts ?: false,
+            bufferByteSize = pojo.bufferByteSize ?: (8 * 1024),
+            outputFormat = pojo.outputFormat ?: SocketOutputFormat.JSONL,
+            devNullAfterSerialization = pojo.devNullAfterSerialization ?: false,
+            inputChannelCapacity = pojo.inputChannelCapacity ?: 20_000,
+            devNullBeforePosting = pojo.devNullBeforePosting ?: false,
+            numSockets = pojo.numSockets ?: 1,
+            writeAsync = pojo.writeAsync ?: false,
+            skipJsonNodeAndUseFakeRecord = pojo.skipJsonNodeAndUseFakeRecord ?: false,
+            sharedInputChannel = pojo.useSharedInputChannel ?: false,
+            socketPrefix = pojo.socketPrefix ?: "/var/run/sockets/ab_socket_",
+            useSnappy = pojo.useSnappy ?: false,
+            useFlow = pojo.useFlow ?: false,
         )
     }
 

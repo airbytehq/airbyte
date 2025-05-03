@@ -30,6 +30,7 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
+import kotlin.random.Random
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
@@ -55,10 +56,20 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
     private val objectSizeBytes = loader.objectSizeBytes
 
+    private val garbagePart =
+        if (loader.useGarbagePart) {
+            val prng = Random(System.currentTimeMillis())
+            prng.nextBytes(loader.partSizeBytes.toInt())
+        } else {
+            null
+        }
+
     data class State<T : OutputStream>(
         val stream: DestinationStream,
         val writer: BufferedFormattingWriter<T>,
-        val partFactory: PartFactory
+        val partFactory: PartFactory,
+        val totalWorkTimeMs: Long = 0,
+        val totalBytesGenerated: Long = 0
     ) : AutoCloseable {
         override fun close() {
             writer.close()
@@ -84,14 +95,18 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     }
 
     private fun makePart(state: State<T>, forceFinish: Boolean = false): FormattedPart {
-        state.writer.flush()
+        if (!loader.useGarbagePart) {
+            state.writer.flush()
+        }
         val newSize = state.partFactory.totalSize + state.writer.bufferSize
         val isFinal =
             forceFinish ||
                 newSize >= objectSizeBytes ||
                 batchSizeOverride != null // HACK: This is a hack to force a flush
         val bytes =
-            if (isFinal) {
+            if (loader.useGarbagePart) {
+                garbagePart
+            } else if (isFinal) {
                 state.writer.finish()
             } else {
                 state.writer.takeBytes()
@@ -110,9 +125,14 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         input: DestinationRecordRaw,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
-        state.writer.accept(input)
-        val dataSufficient =
-            state.writer.bufferSize >= clampedPartSizeBytes || batchSizeOverride != null
+        val size =
+            if (!loader.useGarbagePart) {
+                state.writer.accept(input)
+                state.writer.bufferSize
+            } else {
+                372
+            }
+        val dataSufficient = size >= clampedPartSizeBytes || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)
             if (part.part.isFinal) {

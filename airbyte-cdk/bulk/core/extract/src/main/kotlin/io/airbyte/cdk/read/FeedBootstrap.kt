@@ -4,19 +4,19 @@
 
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.flatbuffers.FlatBufferBuilder
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.output.FlatBufferResult
 import io.airbyte.cdk.output.OutputConsumer
-import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.cdk.output.UnixDomainSocketOutputConsumer
+import io.airbyte.cdk.output.UnixDomainSocketOutputConsumerProvider
+import io.airbyte.protocol.AirbyteRecord
+import io.airbyte.protocol.AirbyteRecord.AirbyteRecordMessage.Builder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import java.time.ZoneOffset
 
 /**
  * [FeedBootstrap] is the input to a [PartitionsCreatorFactory].
@@ -28,7 +28,7 @@ import java.time.ZoneOffset
  * [OutputConsumer], leveraging the fact that all records for a given stream share the same schema.
  */
 sealed class FeedBootstrap<T : Feed>(
-    /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
+    //    /** The [OutputConsumer] instance to which [StreamRecordConsumer] will delegate to. */
     val outputConsumer: OutputConsumer,
     /**
      * The [MetaFieldDecorator] instance which [StreamRecordConsumer] will use to decorate records.
@@ -37,7 +37,9 @@ sealed class FeedBootstrap<T : Feed>(
     /** [StateManager] singleton which is encapsulated by this [FeedBootstrap]. */
     private val stateManager: StateManager,
     /** [Feed] to emit records for. */
-    val feed: T
+    val feed: T,
+    /** [UnixDomainSocketOutputConsumerProvider] to provide socket consumers. */
+    private val socketProvider: UnixDomainSocketOutputConsumerProvider,
 ) {
 
     /** Delegates to [StateManager.feeds]. */
@@ -74,101 +76,35 @@ sealed class FeedBootstrap<T : Feed>(
      */
     private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
         StreamRecordConsumer {
-
-        override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
-            if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData)
-            } else {
-                val protocolChanges: List<AirbyteRecordMessageMetaChange> =
-                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
-                        AirbyteRecordMessageMetaChange()
-                            .withField(field.id)
-                            .withChange(fieldValueChange.protocolChange())
-                            .withReason(fieldValueChange.protocolReason())
-                    }
-                acceptWithChanges(recordData, protocolChanges)
-            }
-        }
-
-        private fun acceptWithoutChanges(recordData: ObjectNode) {
-            synchronized(this) {
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
-                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
-                }
-                outputConsumer.accept(reusedMessageWithoutChanges)
-            }
-        }
-
-        private fun acceptWithChanges(
+        lateinit var socketOutputConsumer: UnixDomainSocketOutputConsumer
+        override suspend fun acceptAsync(
             recordData: ObjectNode,
-            changes: List<AirbyteRecordMessageMetaChange>
+            changes: Map<Field, FieldValueChange>?,
+            recordBuilder: Builder,
+            fbResult: FlatBufferResult,
+            totalNum: Int?,
+            num: Long?
         ) {
-            synchronized(this) {
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
-                    reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
-                }
-                reusedRecordMeta.changes = changes
-                outputConsumer.accept(reusedMessageWithChanges)
+            if (::socketOutputConsumer.isInitialized.not()) {
+                socketOutputConsumer = socketProvider.getNextFreeSocketConsumer(num!!.toInt())
             }
+            socketOutputConsumer.acceptAsyncMaybe(recordData, recordBuilder, fbResult, stream.namespace ?: "", stream.name)
         }
 
-        private val precedingGlobalFeed: Global? =
-            stateManager.feeds
-                .filterIsInstance<Global>()
-                .filter { it.streams.contains(stream) }
-                .firstOrNull()
+        override fun accept(
+            recordData: ObjectNode,
+            changes: Map<Field, FieldValueChange>?,
+            totalNum: Int?,
+            num: Long?
+        ) {
+            throw NotImplementedError("This method is not implemented. Use acceptAsync instead.")
+        }
 
-        // Ideally we should check if sync is trigger-based CDC by checking source connector
-        // configuration. But we don't have that information here. So this is just a hacky solution
-        private val isTriggerBasedCdc: Boolean =
-            precedingGlobalFeed == null &&
-                metaFieldDecorator.globalCursor != null &&
-                stream.schema.none { it.id == metaFieldDecorator.globalCursor?.id } &&
-                stream.configuredCursor?.id == metaFieldDecorator.globalCursor?.id &&
-                stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
-
-        private val defaultRecordData: ObjectNode =
-            Jsons.objectNode().also { recordData: ObjectNode ->
-                stream.schema.forEach { recordData.putNull(it.id) }
-                if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
-                    metaFieldDecorator.decorateRecordData(
-                        timestamp = outputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC),
-                        globalStateValue =
-                            if (precedingGlobalFeed != null)
-                                stateManager.scoped(precedingGlobalFeed).current()
-                            else null,
-                        stream,
-                        recordData,
-                    )
-                }
+        override fun close() {
+            if (::socketOutputConsumer.isInitialized) {
+                socketOutputConsumer.busy = false
             }
-
-        private val reusedRecordData: ObjectNode = defaultRecordData.deepCopy()
-
-        private val reusedMessageWithoutChanges: AirbyteMessage =
-            AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(
-                    AirbyteRecordMessage()
-                        .withStream(stream.name)
-                        .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
-                        .withData(reusedRecordData)
-                )
-
-        private val reusedRecordMeta = AirbyteRecordMessageMeta()
-
-        private val reusedMessageWithChanges: AirbyteMessage =
-            AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(
-                    AirbyteRecordMessage()
-                        .withStream(stream.name)
-                        .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
-                        .withData(reusedRecordData)
-                        .withMeta(reusedRecordMeta)
-                )
+        }
     }
 
     companion object {
@@ -221,12 +157,25 @@ sealed class FeedBootstrap<T : Feed>(
             metaFieldDecorator: MetaFieldDecorator,
             stateManager: StateManager,
             feed: Feed,
+            socketProvider: UnixDomainSocketOutputConsumerProvider,
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
+                    GlobalFeedBootstrap(
+                        outputConsumer,
+                        metaFieldDecorator,
+                        stateManager,
+                        feed,
+                        socketProvider
+                    )
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
+                    StreamFeedBootstrap(
+                        outputConsumer,
+                        metaFieldDecorator,
+                        stateManager,
+                        feed,
+                        socketProvider
+                    )
             }
     }
 }
@@ -242,11 +191,31 @@ sealed class FeedBootstrap<T : Feed>(
  *    b) field value changes and the motivating reason for these in the record metadata.
  * ```
  */
-interface StreamRecordConsumer {
+interface StreamRecordConsumer : AutoCloseable {
 
     val stream: Stream
 
-    fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
+    fun accept(
+        recordData: ObjectNode,
+        changes: Map<Field, FieldValueChange>?,
+        totalNum: Int? = null,
+        num: Long? = null
+    )
+
+    suspend fun acceptAsync(
+        recordData: ObjectNode,
+        changes: Map<Field, FieldValueChange>?,
+        recordBuilder: AirbyteRecord.AirbyteRecordMessage.Builder,
+        fbResult: FlatBufferResult,
+        totalNum: Int? = null,
+        num: Long? = null
+    ) {
+        accept(recordData, changes, totalNum, num)
+    }
+
+    override fun close() {
+        /* no-op */
+    }
 }
 
 /**
@@ -270,7 +239,8 @@ class GlobalFeedBootstrap(
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     global: Global,
-) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global)
+    socketProvider: UnixDomainSocketOutputConsumerProvider,
+) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global, socketProvider)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
@@ -278,7 +248,15 @@ class StreamFeedBootstrap(
     metaFieldDecorator: MetaFieldDecorator,
     stateManager: StateManager,
     stream: Stream,
-) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream) {
+    socketProvider: UnixDomainSocketOutputConsumerProvider,
+) :
+    FeedBootstrap<Stream>(
+        outputConsumer,
+        metaFieldDecorator,
+        stateManager,
+        stream,
+        socketProvider
+    ) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(): StreamRecordConsumer = streamRecordConsumers()[feed.id]!!

@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -26,6 +27,7 @@ class S3DataLakeDirectLoaderFactory(
     private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergUtil: IcebergUtil,
+    private val writer: DestinationWriter
 ) : DirectLoaderFactory<S3DataLakeDirectLoader> {
     private val log = KotlinLogging.logger {}
 

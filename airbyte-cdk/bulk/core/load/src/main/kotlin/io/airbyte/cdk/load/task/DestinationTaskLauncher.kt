@@ -206,20 +206,21 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     override suspend fun run() {
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
-        val inputConsumerTask =
-            inputConsumerTaskFactory.make(
-                catalog = catalog,
-                inputFlow = inputFlow,
-                recordQueueSupplier = recordQueueSupplier,
-                checkpointQueue = checkpointQueue,
-                fileTransferQueue = fileTransferQueue,
-                destinationTaskLauncher = this,
-                pipelineInputQueue = pipelineInputQueue,
-                loadPipeline = loadPipeline,
-                partitioner = partitioner,
-                openStreamQueue = openStreamQueue,
-            )
-        launch(inputConsumerTask)
+        // TEMPORARY FOR SOCKETS TEST
+        //        val inputConsumerTask =
+        //            inputConsumerTaskFactory.make(
+        //                catalog = catalog,
+        //                inputFlow = inputFlow,
+        //                recordQueueSupplier = recordQueueSupplier,
+        //                checkpointQueue = checkpointQueue,
+        //                fileTransferQueue = fileTransferQueue,
+        //                destinationTaskLauncher = this,
+        //                recordQueueForPipeline = recordQueueForPipeline,
+        //                loadPipeline = loadPipeline,
+        //                partitioner = partitioner,
+        //                openStreamQueue = openStreamQueue,
+        //
+        // launch(inputConsumerTask)
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
@@ -277,8 +278,9 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
             launch(flushTickTask)
         }
 
-        log.info { "Starting checkpoint update task" }
-        launch(updateCheckpointsTask)
+        // TEMPORARY FOR SOCKETS TEST
+        // log.info { "Starting checkpoint update task" }
+        // launch(updateCheckpointsTask)
 
         // Await completion
         val result = succeeded.receive()

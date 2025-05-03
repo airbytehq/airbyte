@@ -13,6 +13,9 @@ import io.airbyte.cdk.command.OpaqueStateValue
  */
 interface JdbcPartition<S : JdbcStreamState<*>> {
 
+    val skipSynchronizedCounts: Boolean
+        get() = false
+
     /** The partition's stream's transient state, including parameters like fetchSize, etc. */
     val streamState: S
 

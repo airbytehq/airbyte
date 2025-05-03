@@ -2,8 +2,10 @@
 package io.airbyte.cdk.read
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.UnixDomainSocketOutputConsumerProvider
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -20,6 +22,7 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeoutOrNull
 
+
 /**
  * [RootReader] is at the heart of the READ operation. A [RootReader] manages multiple [FeedReader]
  * instances (one per [Feed]) and synchronizes them using coroutines.
@@ -34,6 +37,7 @@ class RootReader(
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val unixDomainSocketOutputConsumerProvider: UnixDomainSocketOutputConsumerProvider,
 ) {
     private val log = KotlinLogging.logger {}
 

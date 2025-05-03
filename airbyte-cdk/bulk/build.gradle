@@ -14,8 +14,8 @@ allprojects {
     dependencies {
         api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')
         api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
-        api platform('com.fasterxml.jackson:jackson-bom:2.17.2')
         api platform('io.micronaut:micronaut-core-bom:4.6.1')
+        api platform('com.fasterxml.jackson:jackson-bom:2.18.3')
         api platform('org.junit:junit-bom:5.10.2')
         api platform('org.slf4j:slf4j-bom:2.0.13')
         api platform('org.apache.logging.log4j:log4j-bom:2.21.1')

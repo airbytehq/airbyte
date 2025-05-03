@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.command
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.command.Configuration
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
@@ -101,6 +102,16 @@ abstract class DestinationConfiguration : Configuration {
 
     open val generationIdMetadataKey: String = DEFAULT_GENERATION_ID_METADATA_KEY
 
+    /** TEMPORARY FOR SOCKET TEST */
+    enum class InputSerializationFormat {
+        JSONL,
+        SMILE,
+        PROTOBUF,
+        DEVNULL,
+        FLATBUFFERS
+    }
+
+
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.
@@ -113,4 +124,59 @@ abstract class DestinationConfiguration : Configuration {
             factory: DestinationConfigurationFactory<I, out DestinationConfiguration>,
         ): DestinationConfiguration = factory.make(specificationSupplier.get())
     }
+}
+
+interface SocketTestConfig {
+    val inputSerializationFormat: DestinationConfiguration.InputSerializationFormat get() = DestinationConfiguration.InputSerializationFormat.JSONL
+    val numSockets: Int get()  = 4
+    val inputBufferByteSizePerSocket: Long get() = 8 * 1024L
+    val socketPrefix: String get() = "/var/run/sockets/ab_socket"
+    val socketWaitTimeoutSeconds: Int get() = 5 * 60
+    val devNullAfterDeserialization: Boolean get() = false
+    val skipJsonOnProto: Boolean get() = false
+    val disableUUID: Boolean get() = false
+    val disableMapper: Boolean get() = false
+    val useCodedInputStream: Boolean get() = false
+    val useSnappy: Boolean get() = false
+    val runSetup: Boolean get() = false
+}
+
+interface SocketTestConfigSpec {
+    @get:JsonProperty("num_sockets") val numSockets: Int? get() = null
+
+    @get:JsonProperty("num_part_loaders") val numPartLoaders: Int? get() = null
+
+    @get:JsonProperty("input_serialization_format")
+    val inputSerializationFormat: DestinationConfiguration.InputSerializationFormat? get() = null
+
+    @get:JsonProperty("max_memory_ratio_reserved_for_parts")
+    val maxMemoryRatioReservedForParts: Double? get() = null
+
+    @get:JsonProperty("part_size_mb") val partSizeMb: Int? get() = null
+
+    @get:JsonProperty("input_buffer_byte_size_per_socket")
+    val inputBufferByteSizePerSocket: Long? get() =null
+
+    @get:JsonProperty("socket_prefix") val socketPrefix: String? get() = null
+
+    @get:JsonProperty("socket_wait_timeout_seconds") val socketWaitTimeoutSeconds: Int? get() = null
+
+    @get:JsonProperty("dev_null_after_deserialization")
+    val devNullAfterDeserialization: Boolean? get() = null
+
+    @get:JsonProperty("skip_upload") val skipUpload: Boolean? get() = null
+
+    @get:JsonProperty("use_garbage_part") val useGarbagePart: Boolean? get() = null
+
+    @get:JsonProperty("num_part_formatters") val numPartFormatters: Int? get() = null
+
+    @get:JsonProperty("skip_json_on_proto") val skipJsonOnProto: Boolean? get() = null
+
+    @get:JsonProperty("disable_uuid") val disableUUID: Boolean? get() = null
+
+    @get:JsonProperty("disable_mapper") val disableMapper: Boolean? get() = null
+
+    @get:JsonProperty("use_coded_input_stream") val useCodedInputStream: Boolean? get() = null
+
+    @get:JsonProperty("use_snappy") val useSnappy: Boolean? get() = null
 }

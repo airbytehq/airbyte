@@ -44,6 +44,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
     private val catalog: DestinationCatalog,
     private val uploads: UploadsInProgress<T>,
     private val destinationConfig: DestinationConfiguration,
+    private val loader: ObjectLoader
 ) :
     BatchAccumulator<
         ObjectLoaderPartLoader.State<T>,
@@ -98,6 +99,9 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         input: ObjectLoaderPartFormatter.FormattedPart,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, PartResult<T>> {
+        if (loader.skipUpload) {
+            return IntermediateOutput(state, NoPart(state.objectKey))
+        }
         log.info { "Uploading part $input" }
         if (!input.part.isFinal && input.part.bytes == null) {
             throw IllegalStateException("Empty non-final part received: this should not happen")

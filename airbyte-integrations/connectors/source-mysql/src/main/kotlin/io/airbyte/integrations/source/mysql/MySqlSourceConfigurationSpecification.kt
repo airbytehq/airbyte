@@ -20,6 +20,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.output.SocketOutputFormat
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
@@ -147,7 +148,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":11}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
-    var checkpointTargetIntervalSeconds: Int? = 300
+    var checkpointTargetIntervalSeconds: Int? = 600
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
@@ -180,6 +181,48 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
+
+    @JsonProperty("tmp_skip_synchronized_counts")
+    @JsonSchemaDefault("false")
+    val tmpSkipSynchronizedCounts: Boolean? = null
+
+    @JsonProperty("buffer_byte_size") @JsonSchemaDefault("8192") val bufferByteSize: Int? = null
+
+    @JsonProperty("output_format") @JsonSchemaDefault("jsonl") val outputFormat: SocketOutputFormat? = null
+
+    @JsonProperty("dev_null_after_serialization")
+    @JsonSchemaDefault("false")
+    val devNullAfterSerialization: Boolean? = null
+
+    @JsonProperty("input_channel_capacity_rows") val inputChannelCapacity: Int? = 20_000
+
+    @JsonProperty("dev_null_before_posting")
+    @JsonSchemaDefault("false")
+    val devNullBeforePosting: Boolean? = null
+
+    @JsonProperty("num_sockets") val numSockets: Int? = 1
+
+    @JsonProperty("write_async") @JsonSchemaDefault("false") val writeAsync: Boolean? = false
+
+    @JsonProperty("skip_json_node_and_use_fake_record")
+    @JsonSchemaDefault("false")
+    val skipJsonNodeAndUseFakeRecord: Boolean? = false
+
+    @JsonProperty("use_shared_input_channel")
+    @JsonSchemaDefault("false")
+    val useSharedInputChannel: Boolean? = false
+
+    @JsonProperty("socket_prefix")
+    @JsonSchemaDefault("/var/run/sockets/ab_socket_")
+    val socketPrefix: String? = null
+
+    @JsonProperty("use_snappy")
+    @JsonSchemaDefault("false")
+    val useSnappy: Boolean? = false
+
+    @JsonProperty("use_flow")
+    @JsonSchemaDefault("false")
+    val useFlow: Boolean? = false
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

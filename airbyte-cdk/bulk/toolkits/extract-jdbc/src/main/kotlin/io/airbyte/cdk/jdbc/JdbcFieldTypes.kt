@@ -58,6 +58,8 @@ abstract class JdbcFieldType<R>(
             else -> jsonEncoder.encode(decoded)
         }
 
+    fun getValueOnly(rs: ResultSet, colIdx: Int): R? = jdbcGetter.get(rs, colIdx)
+
     @Suppress("UNCHECKED_CAST")
     val genericClass: Class<R> =
         ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0].let {
