@@ -40,7 +40,7 @@ jobs:
               - 'docker-images/Dockerfile.python-connector-base'
 
   build-base-images:
-    name: Detect changes in connector base image Dockerfiles
+    name: Build Base Images
     runs-on: ubuntu-latest
     needs: detect-changes
     if: >
@@ -52,7 +52,7 @@ jobs:
 
       - name: Build Java Base Image
         id: docker-build-java-base
-        if: steps.changes.outputs.java-base == 'true'
+        if: needs.detect-changes.outputs.java-base == 'true'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -63,7 +63,7 @@ jobs:
 
       - name: Build Python Base Image
         id: docker-build-python-base
-        if: steps.changes.outputs.python-base == 'true'
+        if: needs.detect-changes.outputs.python-base == 'true'
         uses: docker/build-push-action@v5
         with:
           context: .
