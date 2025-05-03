@@ -10,7 +10,6 @@ from suds_response_mock import mock_http_authenticated_send
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
 
 
 class TestAccountsStream(BaseTest):
@@ -28,10 +27,8 @@ class TestAccountsStream(BaseTest):
             catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
             return read(SourceBingAds(), config, catalog, state, expecting_exception)
 
-    @HttpMocker()
-    def test_read_accounts_tax_certificate_data(self, http_mocker):
+    def test_read_accounts_tax_certificate_data(self):
         # Our account doesn't have configured Tax certificate.
-        self.auth_client(http_mocker)
         output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config)
         assert output.records[0].record.data["TaxCertificate"] == {
             "Status": "Active",

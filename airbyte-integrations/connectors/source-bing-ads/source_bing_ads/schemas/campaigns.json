@@ -12,7 +12,7 @@
     },
     "AudienceAdsBidAdjustment": {
       "description": "Bid adjustment value for audience targeting ads.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "BiddingScheme": {
       "description": "Details of the bidding scheme for the campaign",
@@ -40,7 +40,7 @@
     },
     "MultimediaAdsBidAdjustment": {
       "description": "Bid adjustment value for multimedia ads.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "DailyBudget": {
       "description": "The daily budget amount set for the campaign.",
@@ -48,7 +48,7 @@
     },
     "ExperimentId": {
       "description": "The identifier of the experiment linked to the campaign.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "FinalUrlSuffix": {
       "description": "The final URL suffix appended to campaign URLs.",
@@ -73,7 +73,7 @@
     },
     "Id": {
       "description": "The unique identifier of the campaign.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "Name": {
       "description": "The name of the campaign.",
@@ -166,7 +166,7 @@
     },
     "BudgetId": {
       "description": "The identifier of the budget associated with the campaign.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "Languages": {
       "description": "Languages targeted in the campaign",
