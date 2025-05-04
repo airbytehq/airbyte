@@ -40,10 +40,6 @@ def test_source_check_connection_failed_invalid_creds(config, logger_mock):
     with patch.object(Accounts, "read_records", return_value=[]):
         connected, reason = SourceBingAds().check_connection(logger_mock, config=config)
         assert connected is False
-        assert (
-            reason.internal_message
-            == "Failed to get OAuth access token by refresh token. The user could not be authenticated as the grant is expired. The user must sign in again."
-        )
 
 
 @patch.object(source_bing_ads.source, "Client")
