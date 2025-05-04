@@ -23,7 +23,7 @@ runs:
       with:
         distribution: corretto
         java-version: ${{ inputs.java_version }}
-    - uses: gradle/actions/setup-gradle@v3
+    - uses: gradle/actions/setup-gradle@v4
       with:
         cache-read-only: ${{ inputs.gradle_cache_read_only }}
         cache-write-only: ${{ inputs.gradle_cache_write_only }}
