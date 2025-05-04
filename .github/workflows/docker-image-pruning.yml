@@ -1,0 +1,28 @@
+# .github/workflows/prune-temp-ghcr-images.yml
+
+name: Prune Temporary GHCR Images
+# This workflow is responsible for pruning temporary images from the
+# GitHub Container Registry (GHCR).
+# It is scheduled to run every Sunday at 02:00 AM Pacific (09:00 UTC).
+# The workflow uses the snok/container-retention-policy action to delete
+# images that are older than 2 days and match the specified tags.
+# It can also be run as a workflow dispatch to allow manual triggering.
+on:
+  schedule:
+    - cron: '0 9 * * 0'   # every Sunday at 02:00 AM Pacific (09:00 UTC)
+  workflow_dispatch:      # allow manual triggering of the workflow
+  # The workflow is triggered manually or by a schedule.
+
+jobs:
+  prune-temp-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prune temporary GHCR images
+        uses: snok/container-retention-policy@v3.0.0
+        with:
+          account: airbytehq
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: "java-connector-base"   # or "*" for all packages
+          image-tags: "draft-* test-*"         # only delete tags starting with draft- or test-
+          cut-off: 2d                          # delete versions older than 2 days
+          dry-run: false                       # set to true first to preview only
