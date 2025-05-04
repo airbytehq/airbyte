@@ -20,7 +20,7 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write   # allow pushing to GHCR
+  packages: write # allow pushing to GHCR
 
 jobs:
   detect-changes:
