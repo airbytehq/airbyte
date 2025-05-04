@@ -135,6 +135,10 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Build Connector Tarball
+        run: |
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:distTar
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
