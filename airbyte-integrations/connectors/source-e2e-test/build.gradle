@@ -9,7 +9,7 @@ airbyteJavaConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.e2e_test.TestingSources'
+    mainClass = 'io.airbyte.integrations.source.e2e_test.DummySource'
 }
 
 dependencies {
@@ -17,4 +17,14 @@ dependencies {
     // https://github.com/airbytehq/jsongenerator
     implementation 'net.jimblackler.jsonschemafriend:core:0.12.4'
     implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.2'
+    // Core Jackson dependencies
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.18.3'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3'
+
+    // Jackson Afterburner module for performance optimizations
+    implementation 'com.fasterxml.jackson.module:jackson-module-afterburner:2.18.3'
+    api 'org.apache.commons:commons-csv:1.11.0'
+    implementation 'commons-cli:commons-cli:1.9.0'
+
 }
