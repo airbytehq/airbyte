@@ -12,6 +12,12 @@ on:
       - docker-images/Dockerfile.python-connector
       - docker-images/Dockerfile.python-connector-base
 
+concurrency:
+  # We have to kill still-running prior jobs, to avoid leakage of image artifacts
+  # across job runs.
+  group: connector-base-images-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   packages: write   # allow pushing to GHCR
