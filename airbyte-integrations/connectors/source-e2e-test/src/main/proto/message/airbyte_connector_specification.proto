@@ -1,0 +1,190 @@
+
+
+/*
+ * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+ */
+    syntax = "proto3";
+import "airbyte_commons.proto";
+package io.airbyte.protocol;
+enum auth_flow_type {
+  OAUTH_2 = 0;
+  OAUTH_1 = 1;
+}
+message oauth_state_query_param {
+  int32 min = 1;
+  int32 max = 2;
+}
+/**
+ * OAuth specific blob. Pertains to the fields defined by the connector relating to the OAuth flow.
+ */
+message o_auth_connector_input_specification {
+  // The OAuth Specific string URL string template to initiate the authentication.  The placeholders are replaced
+  // during the processing to provide necessary values.
+  // Examples: { "consent_url": "https://domain.host.com/oauth2/authorize?{{ client_id_key }}={{ client_id_value }}&{{ redirect_uri_key }}={{ {{redirect_uri_value}} | urlEncoder }}&{{ scope_key }}={{ {{scope_key}} | urlEncoder }}&{{ state_key }}={{ state_value }}&subdomain={{ subdomain }}" }
+  string consent_url = 1;
+  // The OAuth Specific string of the scopes needed to be grant for authenticated user.
+  // Examples: { "scope": "user:read user:read_orders workspaces:read" }
+  optional string scope = 2;
+  // The OAuth Specific URL templated string to obtain the `access_token`, `refresh_token` etc.  The placeholders
+  // are replaced during the processing to provide necessary values.
+  // Examples: {  "access_token_url": "https://auth.host.com/oauth2/token?{{ client_id_key }}={{ client_id_value }}&{{ client_secret_key }}={{ client_secret_value }}&{{ auth_code_key }}={{ auth_code_value }}&{{ redirect_uri_key }}={{ {{redirect_uri_key}} | urlEncoder }}" }
+  string access_token_url = 3;
+  // The OAuth Specific optional headers to inject while exchanging the `auth_code` to `access_token` during
+  // `completeOAuthFlow` step.
+  // Examples: In this example the header value will be encoded with the base64 hash from `client_id` and
+  // `client_secret`,  to provide necessary header to complete auth flow and obtain the `access_token`.
+  // { "access_token_headers": { "Authorization": "Basic {{ {{ client_id_value }}:{{ client_secret_value }} | base64Encoder }}" } }
+  optional bytes access_token_headers = 4;
+  // The OAuth Specific optional query parameters to inject while exchanging the `auth_code` to `access_token` during
+  // `completeOAuthFlow` step.  When this property is provided, the query params are encoded as `Json string`
+  // and passed to the outgoing API request.
+  // Examples: { "access_token_params": { "my_query_param": "param_value", "{{ client_id_key }}": "{{ client_id_value }}" } }
+  optional bytes access_token_parameters = 5;
+  // The OAuth Specific list of strings to indicate which keys should be extracted and returned back to the input config.
+  // Examples: In this example, once the OAuthFlow has been completed successfully, the `access_token`, `refresh_token`
+  // and other fields like `other_field` will be checked and extracted from the OAuthOutput.
+  // { "extract_output": ["access_token", "refresh_token", "other_field"] }
+  repeated string extract_output = 6;
+  // The OAuth Specific object to provide the criteria of how the `state` query param should be constructed,
+  // including length and complexity.  Examples: { "state": { "min": 7, "max": 128 } }
+  optional oauth_state_query_param state = 7;
+  // The OAuth Specific optional override to provide the custom `client_id` key name, if required by data-provider.
+  // Examples: { "client_id_key": "my_custom_client_id_key_name" }
+  optional string client_id_key = 8;
+  // The OAuth Specific optional override to provide the custom `client_secret` key name, if required by data-provider.
+  // Examples: {  "client_id_key": "my_custom_client_id_key_name" }
+  optional string client_secret_key = 9;
+  // The OAuth Specific optional override to provide the custom `scope` key name, if required by data-provider.
+  // Examples: { "scope_key": "my_custom_scope_key_key_name" }
+  optional string scope_key = 10;
+  // The OAuth Specific optional override to provide the custom `state` key name, if required by data-provider.
+  // Examples: {  "state_key": "my_custom_state_key_key_name" }
+  optional string state_key = 11;
+  // The OAuth Specific optional override to provide the custom `code` key name to something like `auth_code` or
+  // `custom_auth_code`, if required by data-provider.  Examples: { "auth_code_key": "my_custom_auth_code_key_name" }
+  optional string auth_code_key = 12;
+  // The OAuth Specific optional override to provide the custom `redirect_uri` key name to something like
+  // `callback_uri`, if required by data-provider.  Examples: {  "redirect_uri_key": "my_custom_redirect_uri_key_name" }
+  optional string redirect_url_key = 13;
+  // The OAuth Specific optional override to provide the custom key name to something like `expires_at`,
+  // if required by data-provider.  Examples: { "token_expiry_key": "expires_at" }
+  optional string token_expiry_key = 14;
+}
+message OAuthConfigSpecification {
+  // OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.
+  // Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification
+  // using special annotation 'path_in_connector_config'.
+  // These are input values the user is entering through the UI to authenticate to the connector, that might also shared
+  // as inputs for syncing data via the connector.
+  //
+  // Examples:
+  //
+  // if no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]
+  // if connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,
+  //  oauth_user_input_from_connector_config_specification={
+  //    app_id: {
+  //     type: string
+  //     path_in_connector_config: ['app_id']
+  //    }
+  //  }
+  // if connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,
+  //  oauth_user_input_from_connector_config_specification={
+  //    app_id: {
+  //     type: string
+  //     path_in_connector_config: ['info', 'app_id']
+  //    }
+  //  }
+  optional bytes oauth_user_input_from_connector_config_specification = 1;
+  //  OAuth specific blob. Pertains to the fields defined by the connector relating to the OAuth flow.
+  optional o_auth_connector_input_specification oauth_connector_input_specification = 2;
+  // OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are
+  // returned by the distant OAuth APIs.
+  // Must be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.
+  // For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+  //
+  // Examples:
+  //     With a `refresh_token` in the `oauth response`:
+  //
+  //     complete_oauth_output_specification={
+  //       refresh_token: {
+  //         type: string,
+  //         path_in_connector_config: ['credentials', 'refresh_token'],
+  //         path_in_oauth_response: ['refresh_token']
+  //       }
+  //     }
+  //
+  //     With a nested `refresh_token` under the `data` object, in the `oauth response`:
+  //
+  //      complete_oauth_output_specification={
+  //         refresh_token: {
+  //           type: string,
+  //           path_in_connector_config: ['credentials', 'refresh_token'],
+  //           path_in_oauth_response: ['data', 'refresh_token']
+  //         }
+  //     }
+  optional bytes complete_oauth_output_specification = 3;
+  // OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.
+  // Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+  // server when completing an OAuth flow (typically exchanging an auth code for refresh token).
+  //
+  // Examples:
+  //
+  //       complete_oauth_server_input_specification={
+  //         client_id: {
+  //           type: string
+  //         },
+  //         client_secret: {
+  //           type: string
+  //         }
+  //       }
+  optional bytes complete_oauth_server_input_specification = 4;
+  // OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that
+  // also need to be merged back into the connector configuration at runtime.
+  // This is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that
+  // are necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore
+  // they would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)
+  // Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+  // connector when using OAuth flow APIs.
+  // These fields are to be merged back to `ConnectorSpecification.connectionSpecification`.
+  // For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+  //
+  // Examples:
+  //
+  //      complete_oauth_server_output_specification={
+  //        client_id: {
+  //          type: string,
+  //          path_in_connector_config: ['credentials', 'client_id']
+  //        },
+  //        client_secret: {
+  //          type: string,
+  //          path_in_connector_config: ['credentials', 'client_secret']
+  //        }
+  //     }
+  optional bytes complete_oauth_server_output_specification = 5;
+}
+/**
+ * Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.
+ * - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.
+ * - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the
+ * server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical
+ * inputs anymore and the auth process is faster and easier to complete.
+ */
+message advanced_auth {
+  optional auth_flow_type auth_flow_type = 1;
+  // Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
+  repeated string predicate_key = 2;
+  // Value of the predicate_key fields for the advanced auth to be applicable.
+  optional string predicate_value = 3;
+}
+message AirbyteConnectorSpecification {
+  optional string documentationUrl = 1;
+  optional string changelogUrl = 2;
+  bytes connectionSpecification = 3;
+  bool supportsIncremental = 4;
+  bool supportsNormalization = 5;
+  bool supportsDBT = 6;
+  optional DestinationSyncMode supported_destination_sync_mode = 7;
+  optional advanced_auth advanced_auth = 8;
+  // the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer.
+  optional string protocol_version = 9;
+}

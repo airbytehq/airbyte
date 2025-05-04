@@ -1,5 +1,18 @@
 plugins {
     id 'airbyte-java-connector'
+    id ('com.google.protobuf') version '0.9.4'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "${project.layout.buildDirectory}/generated/source/proto/main/grpc"
+            srcDir "${project.layout.buildDirectory}/generated/source/proto/main/java"
+        }
+        proto {
+            srcDir "${project.projectDir}/src/main/proto"
+        }
+    }
 }
 
 airbyteJavaConnector {
@@ -9,7 +22,7 @@ airbyteJavaConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.e2e_test.TestingSources'
+    mainClass = 'io.airbyte.integrations.source.e2e_test.DummySource'
 }
 
 dependencies {
@@ -17,4 +30,38 @@ dependencies {
     // https://github.com/airbytehq/jsongenerator
     implementation 'net.jimblackler.jsonschemafriend:core:0.12.4'
     implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.2'
+    // Core Jackson dependencies
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.18.3'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3'
+
+    implementation 'io.grpc:grpc-protobuf:1.71.0'
+    implementation 'com.google.protobuf:protobuf-kotlin:4.30.0'
+
+    // Jackson Afterburner module for performance optimizations
+    implementation 'com.fasterxml.jackson.module:jackson-module-afterburner:2.18.3'
+    api 'org.apache.commons:commons-csv:1.11.0'
+    implementation 'commons-cli:commons-cli:1.9.0'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-smile
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-smile:2.18.3'
+}
+
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:4.30.0' }
+    plugins {
+        create("grpc") {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.71.0'
+        }
+    }
+    generateProtoTasks {
+        all().configureEach { task ->
+            task.plugins {
+                create("grpc")
+            }
+        }
+    }
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
