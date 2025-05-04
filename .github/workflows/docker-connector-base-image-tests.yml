@@ -201,8 +201,8 @@ jobs:
       fail-fast: false
       matrix:
         connector:
-          - source-s3
           - source-hubspot
+          - source-salesforce
           - source-shopify
           - destination-motherduck
     name: Build ${{ matrix.connector }} Python Test Image
