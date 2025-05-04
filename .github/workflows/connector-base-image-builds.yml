@@ -91,6 +91,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: airbyte/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: false
+      - name: Debug outputs
+        run: |
+          echo "python-base-image=${{ steps.docker-build-python-base.outputs.imageid }}"
+
     outputs:
       python-base-image: ${{ steps.docker-build-python-base.outputs.imageid }}
 
@@ -129,9 +133,9 @@ jobs:
           context: .
           file: docker-images/Dockerfile.java-connector
           platforms: linux/amd64,linux/arm64
-          tags: airbyte/java-connector:draft-pr-${{ github.event.pull_request.number }}
+          tags: airbyte/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
-            BASE_IMAGE=${{ needs.build-java-base-image.outputs.java-base-image }}
+            BASE_IMAGE=airbyte/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
             CONNECTOR=${{ matrix.connector }}
           push: false
 
@@ -168,8 +172,8 @@ jobs:
           context: .
           file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
-          tags: airbyte/python-connector:draft-pr-${{ github.event.pull_request.number }}
+          tags: airbyte/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
             CONNECTOR=${{ matrix.connector }}
-            BASE_IMAGE=${{ needs.build-python-base-image.outputs.python-base-image }}
+            BASE_IMAGE=airbyte/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: false
