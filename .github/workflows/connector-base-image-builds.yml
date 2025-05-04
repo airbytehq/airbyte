@@ -164,9 +164,9 @@ jobs:
       - name: Debug BUILD_ARGS
         run: |
           echo "BASE_IMAGE=${{ needs.build-java-base-image.outputs.java-base-image }}"
-          echo "CONNECTOR=${{ matrix.connector }}"
+          echo "CONNECTOR_NAME=${{ matrix.connector }}"
 
-      - name: Build Java Connector Base Image
+      - name: Build Java Connector Image
         id: docker-build-java-connector
         uses: docker/build-push-action@v5
         with:
@@ -176,7 +176,7 @@ jobs:
           tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
-            CONNECTOR=${{ matrix.connector }}
+            CONNECTOR_NAME=${{ matrix.connector }}
           push: true
 
   test-python-connector-image-matrix:
@@ -212,7 +212,7 @@ jobs:
           echo "BASE_IMAGE=${{ needs.build-python-base-image.outputs.python-base-image }}"
           echo "CONNECTOR_NAME=${{ matrix.connector }}"
 
-      - name: Build Python Connector Base Image
+      - name: Build Python Connector Image
         id: docker-build-python-connector
         uses: docker/build-push-action@v5
         with:
