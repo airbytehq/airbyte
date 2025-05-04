@@ -1,6 +1,6 @@
 # .github/workflows/prune-temp-ghcr-images.yml
 
-name: Prune Temporary GHCR Images
+name: Docker Image Pruning for GHCR
 # This workflow is responsible for pruning temporary images from the
 # GitHub Container Registry (GHCR).
 # It is scheduled to run every Sunday at 02:00 AM Pacific (09:00 UTC).
