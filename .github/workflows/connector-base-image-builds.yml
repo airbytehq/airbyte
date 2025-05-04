@@ -216,7 +216,7 @@ jobs:
         id: docker-build-python-connector
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
