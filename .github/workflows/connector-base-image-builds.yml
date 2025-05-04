@@ -71,7 +71,7 @@ jobs:
           context: .
           file: docker-images/Dockerfile.java-connector-base
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbyte/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
+          tags: ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: true
 
     outputs:
@@ -106,7 +106,7 @@ jobs:
           context: .
           file: docker-images/Dockerfile.python-connector-base
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbyte/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
+          tags: ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: true
       - name: Debug outputs
         run: |
@@ -157,9 +157,9 @@ jobs:
           context: .
           file: docker-images/Dockerfile.java-connector
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbyte/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
-            BASE_IMAGE=ghcr.io/airbyte/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
             CONNECTOR=${{ matrix.connector }}
           push: true
 
@@ -203,8 +203,8 @@ jobs:
           context: .
           file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbyte/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
             CONNECTOR=${{ matrix.connector }}
-            BASE_IMAGE=ghcr.io/airbyte/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: true
