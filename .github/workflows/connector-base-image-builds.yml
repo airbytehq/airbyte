@@ -127,7 +127,7 @@ jobs:
           tags: airbyte/java-connector:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
             CONNECTOR=${{ matrix.connector }}
-            BASE_IMAGE=${{ needs.build-base-images.outputs.java-base-image || 'docker.io/airbyte/java-connector-base:4.0.0'  }}
+            BASE_IMAGE=${{ needs.build-java-base-image.outputs.java-base-image }}
           push: false
 
   test-python-connector-image-matrix:
@@ -161,5 +161,5 @@ jobs:
           tags: airbyte/python-connector:draft-pr-${{ github.event.pull_request.number }}
           build-args: |
             CONNECTOR=${{ matrix.connector }}
-            BASE_IMAGE=${{ needs.build-base-images.outputs.python-base-image || 'docker.io/airbyte/python-connector-base:4.0.0' }}
+            BASE_IMAGE=${{ needs.build-python-base-image.outputs.python-base-image }}
           push: false
