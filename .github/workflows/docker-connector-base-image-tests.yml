@@ -152,6 +152,7 @@ jobs:
         with:
           cache-read-only: false
           cache-write-only: false
+          add-job-summary: 'on-failure'
 
       - name: Build Connector Tarball
         run: |
