@@ -14,7 +14,7 @@ on:
   workflow_dispatch: # allow manual triggering of the workflow
     inputs:
       dry-run:
-        description: 'Run in dry-run mode?'
+        description: "Run in dry-run mode?"
         required: false
         default: true
         type: boolean
