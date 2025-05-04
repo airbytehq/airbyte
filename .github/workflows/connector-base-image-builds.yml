@@ -17,11 +17,6 @@ jobs:
   detect-changes:
     name: Detect changes in connector base image Dockerfiles
     runs-on: ubuntu-latest
-    outputs:
-      java-base: ${{ steps.changes.outputs.java-base }}
-      python-base: ${{ steps.changes.outputs.python-base }}
-      java-connector: ${{ steps.changes.outputs.java-connector }}
-      python-connector: ${{ steps.changes.outputs.python-connector }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,6 +33,11 @@ jobs:
               - 'docker-images/Dockerfile.python-connector'
             python-base:
               - 'docker-images/Dockerfile.python-connector-base'
+    outputs:
+      java-base: ${{ steps.changes.outputs.java-base }}
+      python-base: ${{ steps.changes.outputs.python-base }}
+      java-connector: ${{ steps.changes.outputs.java-connector }}
+      python-connector: ${{ steps.changes.outputs.python-connector }}
 
   build-java-base-image:
     name: Build Java Base Image
