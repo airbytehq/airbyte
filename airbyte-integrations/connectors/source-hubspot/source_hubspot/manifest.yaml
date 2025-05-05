@@ -715,6 +715,7 @@ definitions:
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
+    primary_key: []
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
