@@ -104,7 +104,7 @@ class CollectionSchema(WebflowStream):
 Is "{field_type}" defined in the mapping between Webflow and json schma ? """
                 self.logger.exception(msg)
 
-                if field["required"]:
+                if field["isRequired"]:
                     # Don't eat the exception, raise it again as this needs to be fixed
                     raise e
 
