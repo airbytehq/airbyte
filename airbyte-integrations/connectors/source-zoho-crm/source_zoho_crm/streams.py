@@ -220,6 +220,7 @@ class IncrementalUsersZohoCrmStream(IncrementalZohoCrmStream):
             api_name="users",
             module_name="Users",
             api_supported=True,
+            required_fields=["id"],
             fields=[
                 FieldMeta(api_name="country", data_type="string", json_type="string", display_label="country", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
                 FieldMeta(api_name="name_format__s", data_type="string", json_type="string", display_label="name_format__s", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
@@ -234,7 +235,7 @@ class IncrementalUsersZohoCrmStream(IncrementalZohoCrmStream):
                 FieldMeta(api_name="decimal_separator", data_type="string", json_type="string", display_label="decimal_separator", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
                 FieldMeta(api_name="created_time", data_type="string", json_type="string", display_label="created_time", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
                 FieldMeta(api_name="time_format", data_type="string", json_type="string", display_label="time_format", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
-                FieldMeta(api_name="offset", data_type="string", json_type="string", display_label="offset", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
+                FieldMeta(api_name="offset", data_type="integer" , json_type="integer", display_label="offset", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
                 FieldMeta(api_name="zuid", data_type="string", json_type="string", display_label="zuid", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
                 FieldMeta(api_name="full_name", data_type="string", json_type="string", display_label="full_name", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),
                 FieldMeta(api_name="phone", data_type="string", json_type="string", display_label="phone", system_mandatory=False, length=None, decimal_place=None, pick_list_values=[]),

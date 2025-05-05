@@ -232,13 +232,15 @@ class ModuleMeta(FromDictMixin):
     api_name: str
     module_name: str
     api_supported: bool
+    required_fields: Optional[List[str]] = dataclasses.field(default=None)
     fields: Optional[Iterable[FieldMeta]] = dataclasses.field(default_factory=list)
 
     @property
     def schema(self) -> Schema:
         if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
-        required = list({"id", "Modified_Time"}.union(set([field_.api_name for field_ in self.fields if field_.system_mandatory])))
+        required = (self.required_fields or
+                    list({"id", "Modified_Time"}.union(set([field_.api_name for field_ in self.fields if field_.system_mandatory]))))
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
         properties = {"id": {"type": "string"}, "Modified_Time": {"type": "string", "format": "date-time"}, **field_to_properties}
         return Schema(description=self.module_name, properties=properties, required=required)
