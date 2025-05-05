@@ -20,11 +20,13 @@ from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
+
 # 204 and 304 status codes are valid successful responses,
 # but `.json()` will fail because the response body is empty
 EMPTY_BODY_STATUSES = (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED)
 
 logger = logging.getLogger(__name__)
+# New Zoho API versions has a limit of 50 fields per request
 FIELDS_LIMIT = 50
 
 
@@ -46,7 +48,7 @@ class ZohoCrmStream(HttpStream, ABC):
         return {"page": pagination["page"] + 1}
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -101,7 +103,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
 
     def merge_records(self, records: List[Mapping[str, Any]]) -> List[Mapping[str, Any]]:
         """
-        Merge records with the same primary key.
+        Merge records with the same primary key when multiple requests are required.
         """
         merged_records = {}
         for record in records:
@@ -114,6 +116,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = []
+        # If the number of fields is greater than the limit, we need to split the requests and merge them records from all requests by pk
         if len(self.all_fields) > FIELDS_LIMIT:
             offset = 0
             all_fields_without_pk = list(self.all_fields - {self.primary_key})
@@ -121,12 +124,12 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
             while offset <= len(all_fields_without_pk):
                 self.current_fields = all_fields_without_pk[offset:offset + limit] + [self.primary_key]
                 offset += limit
-                logger.info("Reading records from %s with fields: %s", self.module.api_name, self.current_fields)
+                logger.debug("Reading records from %s with fields: %s", self.module.api_name, self.current_fields)
                 records.extend(list(super().read_records(*args, **kwargs)))
             records = self.merge_records(records)
         else:
             self.current_fields = self.all_fields
-            logger.info("Reading records from %s with All fields: %s", self.module.api_name, self.current_fields)
+            logger.debug("Reading records from %s with All fields: %s", self.module.api_name, self.current_fields)
             records = super().read_records(*args, **kwargs)
 
         for record in records:

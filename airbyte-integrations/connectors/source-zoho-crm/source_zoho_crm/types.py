@@ -133,6 +133,7 @@ class FieldMeta(FromDictMixin):
 
     def _double_field(self) -> FieldType:
         typedef = {"type": ["null", "number"], **self._default_type_kwargs()}
+        # New API versions is returning some invalid validation data
         # if self.decimal_place:
         #     typedef["multipleOf"] = float(Decimal("0.1") ** self.decimal_place)
         return typedef
@@ -144,7 +145,7 @@ class FieldMeta(FromDictMixin):
             return {"type": ["null", "string"], "format": "date-time", **self._default_type_kwargs()}
 
         typedef = {"type": ["null", "string"],
-                   # "maxLength": self.length,
+                   # "maxLength": self.length,  # New API versions is returning some invalid validation data
                    **self._default_type_kwargs()}
         if self.data_type == ZohoDataType.website:
             typedef["format"] = "uri"
@@ -152,6 +153,7 @@ class FieldMeta(FromDictMixin):
             typedef["format"] = "email"
         elif self.data_type == ZohoDataType.date:
             typedef["format"] = "date"
+        # New API versions is returning some invalid validation data
         # elif self.data_type == ZohoDataType.datetime:
         #     typedef["format"] = "date-time"
         elif self.data_type == ZohoDataType.bigint:
@@ -161,6 +163,7 @@ class FieldMeta(FromDictMixin):
                 typedef["format"] = "string"
             else:
                 typedef["airbyte_type"] = "big_integer"
+        # New API versions is returning some invalid validation data
         # elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
         #     typedef["enum"] = self._picklist_items()
         return typedef
@@ -193,6 +196,7 @@ class FieldMeta(FromDictMixin):
             typedef["minItems"] = 1
             typedef["uniqueItems"] = True
             items = {"type": ["null", "string"]}
+            # New API versions is returning some invalid validation data
             # if self.pick_list_values:
             #     items["enum"] = self._picklist_items()
             typedef["items"] = items
