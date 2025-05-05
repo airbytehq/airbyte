@@ -540,4 +540,4 @@ class ConnectionObjects:
     def hashed_connection_id(self) -> Optional[str]:
         if not self.connection_id:
             return None
-        return hashlib.sha256(self.connection_id.encode("utf-8")).hexdigest()[:7]
+        return self.connection_id[:8]
