@@ -445,7 +445,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.28  | 2025-05-05 | []() | Add error handling for connection issues.                                                          |
+| 4.1.28  | 2025-05-05 | [59651](https://github.com/airbytehq/airbyte/pull/59651) | Add error handling for connection issues.                                                          |
 | 4.1.27  | 2025-04-28 | [59124](https://github.com/airbytehq/airbyte/pull/59124) | Fix _ab_cdc_event_serial_no datatype in addMetaDataToRowsFetchedOutsideDebezium method                                                          |
 | 4.1.26  | 2025-03-27 | [56401](https://github.com/airbytehq/airbyte/pull/56401) | Fix non-unique value clustered index issue                                                                                                      |
 | 4.1.25  | 2025-03-20 | [55878](https://github.com/airbytehq/airbyte/pull/55878) | Integrate with the latest mssql jdbc driver to solve a pre-gregorian date offset bug                                                            |
