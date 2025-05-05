@@ -91,10 +91,6 @@ allprojects {
         // Ensure that all files exist beforehand.
         dependsOn tasks.matching { it.name == 'generate' }
     }
-    tasks.named('assemble').configure {
-        // We may revisit the dependency on assemble but the dependency should always be on a base task.
-        dependsOn buildConnectorImage
-    }
 
     // Convenience tasks for local airbyte-ci execution.
     airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
