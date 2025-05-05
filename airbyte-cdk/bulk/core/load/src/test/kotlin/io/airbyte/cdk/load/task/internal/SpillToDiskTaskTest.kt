@@ -24,7 +24,6 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -152,7 +151,7 @@ class SpillToDiskTaskTest {
         private lateinit var memoryManager: ReservationManager
         private lateinit var diskManager: ReservationManager
         private lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
-        private lateinit var taskLauncher: MockTaskLauncher
+        private lateinit var taskLauncher: DestinationTaskLauncher
         private lateinit var fileAccumulatorFactory: FileAccumulatorFactory
         private val clock: Clock = mockk(relaxed = true)
         private val flushWindowMs = 60000L
@@ -171,7 +170,7 @@ class SpillToDiskTaskTest {
                     MockDestinationCatalogFactory().make(),
                 )
             fileAccumulatorFactory = FileAccumulatorFactory(flushWindowMs, spillFileProvider, clock)
-            taskLauncher = MockTaskLauncher()
+            taskLauncher = mockk<DestinationTaskLauncher>(relaxed = true)
             memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
             diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
             spillToDiskTaskFactory =
