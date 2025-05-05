@@ -104,8 +104,9 @@ class CollectionSchema(WebflowStream):
 Is "{field_type}" defined in the mapping between Webflow and json schma ? """
                 self.logger.exception(msg)
 
-                # Don't eat the exception, raise it again as this needs to be fixed
-                raise e
+                if field["required"]:
+                    # Don't eat the exception, raise it again as this needs to be fixed
+                    raise e
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """This API does not return any information to support pagination"""

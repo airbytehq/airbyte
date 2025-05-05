@@ -26,8 +26,10 @@ class WebflowToAirbyteMapping:
         },
         "ImageRef": {"type": ["null", "object"], "additionalProperties": True},
         "Image": {"type": ["null", "object"], "additionalProperties": True},
+        "MultiImage": {"type": ["null", "array"]},
         "ItemRef": {"type": ["null", "string"]},
         "ItemRefSet": {"type": ["null", "array"]},
+        "Reference": {"type": ["null", "string"]},
         "Link": {"type": ["null", "string"]},
         "Color": {"type": ["null", "string"]},
         "Number": {"type": ["null", "number"]},
@@ -35,6 +37,8 @@ class WebflowToAirbyteMapping:
         "PlainText": {"type": ["null", "string"]},
         "RichText": {"type": ["null", "string"]},
         "User": {"type": ["null", "string"]},
+        "Price": {"type": ["null", "string"]},
         "Video": {"type": ["null", "string"]},
         "FileRef": {"type": ["null", "object"]},
+        
     }
