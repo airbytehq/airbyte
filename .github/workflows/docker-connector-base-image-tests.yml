@@ -79,11 +79,14 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: true
+          # TODO: Consider passing a dynamic build arg for BASE_IMAGE:
+          # build-args: |
+          #   BASE_IMAGE=...
 
       - name: Run Java Base Image Vulnerability Scan
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}"
+          image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}"
           output-format: 'table'
           severity-cutoff: high
           fail-build: true
@@ -122,6 +125,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
           push: true
+          # TODO: Consider passing a dynamic build arg for BASE_IMAGE:
+          # build-args: |
+          #   BASE_IMAGE=...
+
       - name: Debug outputs
         run: |
           echo "python-base-image=${{ steps.docker-build-python-base.outputs.imageid }}"
