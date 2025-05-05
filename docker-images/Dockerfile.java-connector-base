@@ -1,6 +1,7 @@
 # Migrated from airbyte-ci/connectors/base_images/README.md
 
-ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023@sha256:c90f38f8a5c4494cb773a984dc9fa9a727b3e6c2f2ee2cba27c834a6e101af0d
+# https://hub.docker.com/_/amazoncorretto/tags?name=21-al2023
+ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023@sha256:b88419ff8e6f18de4e8e78b1814b12df4805cfe42dcf0c036671da86f589f35f
 FROM ${BASE_IMAGE}
 
 # Install dependencies
