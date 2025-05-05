@@ -178,6 +178,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
             val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
             Assertions.assertTrue(airbyteType is UnionType)
             val unionType = airbyteType as UnionType
+            Assertions.assertFalse(unionType.isLegacyUnion)
             Assertions.assertEquals(2, unionType.options.size)
             Assertions.assertTrue(unionType.options.contains(StringType))
             Assertions.assertTrue(unionType.options.contains(IntegerType))
@@ -193,7 +194,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
             val airbyteType = legacyJsonSchemaToAirbyteType.convert(schemaNode)
             Assertions.assertTrue(airbyteType is UnionType)
             val unionType = airbyteType as UnionType
-            Assertions.assertTrue(unionType.isLegacyUnion)
+            Assertions.assertFalse(unionType.isLegacyUnion)
             Assertions.assertEquals(2, unionType.options.size)
             Assertions.assertTrue(unionType.options.contains(StringType))
             Assertions.assertTrue(unionType.options.contains(IntegerType))
@@ -207,6 +208,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is UnionType)
         val unionType = airbyteType as UnionType
+        Assertions.assertFalse(unionType.isLegacyUnion)
         Assertions.assertEquals(3, unionType.options.size)
         Assertions.assertTrue(unionType.options.contains(StringType))
     }
@@ -238,6 +240,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val field1 = objectType.properties["field1"]!!
         Assertions.assertTrue(field1.type is UnionType)
         val unionType = field1.type as UnionType
+        Assertions.assertFalse(unionType.isLegacyUnion)
         Assertions.assertEquals(2, unionType.options.size)
         Assertions.assertTrue(unionType.options.contains(StringType))
         Assertions.assertTrue(unionType.options.contains(IntegerType))
@@ -275,6 +278,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is UnionType)
         val unionType = airbyteType as UnionType
+        Assertions.assertFalse(unionType.isLegacyUnion)
         Assertions.assertEquals(2, unionType.options.size)
         val objectOption = unionType.options.find { it is ObjectType }!!
         val arrayOption = unionType.options.find { it is ArrayType }!!

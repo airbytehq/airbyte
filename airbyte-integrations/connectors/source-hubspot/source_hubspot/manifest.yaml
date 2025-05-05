@@ -135,6 +135,287 @@ definitions:
       $ref: "#/definitions/retriever_without_pagination"
 
   # Stream Definitions
+  companies_property_history_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key:
+      - companyId
+      - property
+      - timestamp
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          propertyMode: value_and_history
+          propertiesWithHistory:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: ["name"]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.hubapi.com
+                  authenticator:
+                    $ref: "#/definitions/authenticator"
+                  path: /properties/v2/companies/properties
+                  http_method: GET
+                  request_headers:
+                    Content-Type: "application/json"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          field_path: ["results"]
+          entity_primary_key: companyId
+          additional_keys: ["archived"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("paging", {}).get("next", {}).get("after") }}'
+          stop_condition: '{{ not response.get("paging", {}) }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
+      is_client_side_incremental: true
+    $parameters:
+      name: companies_property_history
+      path: /crm/v3/objects/companies
+      extractor_field_path: results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/companies_property_history"
+
+  contacts_property_history_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key:
+      - vid
+      - property
+      - timestamp
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          propertyMode: value_and_history
+          propertiesWithHistory:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: ["name"]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.hubapi.com
+                  authenticator:
+                    $ref: "#/definitions/authenticator"
+                  path: "/properties/v2/contacts/properties"
+                  http_method: GET
+                  request_headers:
+                    Content-Type: "application/json"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          field_path: ["results"]
+          entity_primary_key: vid
+          additional_keys: ["archived"] # The old additional_keys aren't valid for the Hubspot V3 endpoint
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("paging", {}).get("next", {}).get("after") }}'
+          stop_condition: '{{ not response.get("paging", {}) }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%ms"
+      is_client_side_incremental: true
+    $parameters:
+      name: contacts_property_history
+      path: /crm/v3/objects/contacts
+      extractor_field_path: results
+    # The Hubspot V3 API uses camel case. To retain backwards compatibility, we convert fields kebab case from V1
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["vid"]
+            value: "{{ record.get('vid') }}"
+            value_type: integer
+          - type: AddedFieldDefinition
+            path: ["source-id"]
+            value_type: string
+            value: "{{ record.get('sourceId') }}"
+          - type: AddedFieldDefinition
+            path: ["source-label"]
+            value: "{{ record.get('sourceLabel') }}"
+          - type: AddedFieldDefinition
+            path: ["source-type"]
+            value: "{{ record.get('sourceType') }}"
+          - type: AddedFieldDefinition
+            path: ["updated-by-user-id"]
+            value: "{{ record.get('updatedByUserId') }}"
+          - type: AddedFieldDefinition
+            path: ["timestamp"]
+            # The Hubspot v1 API returns time as a millisecond integer, but v3 returns a millisecond ISO8601
+            # string. This transformation retains backwards compatibility without loss of precision
+            value: "{{ format_datetime(record.get('timestamp'), '%ms') }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["sourceId"]
+          - ["sourceLabel"]
+          - ["sourceType"]
+          - ["updatedByUserId"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/contacts_property_history"
+
+  deals_property_history_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key:
+      - dealId
+      - property
+      - timestamp
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          propertyMode: value_and_history
+          propertiesWithHistory:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: ["name"]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.hubapi.com
+                  authenticator:
+                    $ref: "#/definitions/authenticator"
+                  path: /properties/v2/deals/properties
+                  http_method: GET
+                  request_headers:
+                    Content-Type: "application/json"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          field_path: ["results"]
+          entity_primary_key: dealId
+          additional_keys: ["archived"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("paging", {}).get("next", {}).get("after") }}'
+          stop_condition: '{{ not response.get("paging", {}) }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
+      is_client_side_incremental: true
+    $parameters:
+      name: deals_property_history
+      path: /crm/v3/objects/deals
+      extractor_field_path: results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deals_property_history"
+
   marketing_emails_stream:
     $ref: "#/definitions/stream_base"
     name: marketing_emails
@@ -222,10 +503,17 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_pipelines"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
 
 streams:
-  - "#/definitions/marketing_emails_stream"
+  - "#/definitions/companies_property_history_stream"
+  - "#/definitions/contacts_property_history_stream"
+  - "#/definitions/deals_property_history_stream"
   - "#/definitions/email_subscriptions_stream"
+  - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
@@ -235,6 +523,194 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  companies_property_history:
+    $schema: "http://json-schema.org/draft-07/schema"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      updatedByUserId:
+        description: The user ID of the user who initiated the property update.
+        type:
+          - "null"
+          - number
+      timestamp:
+        description: The date and time when the property update occurred.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      property:
+        description: The specific property that was updated in the company record.
+        type:
+          - "null"
+          - string
+      companyId:
+        description: >-
+          The unique identifier of the company to which the property history record
+          belongs.
+        type:
+          - "null"
+          - string
+      sourceType:
+        description: The type of the source that updated the property in the company record.
+        type:
+          - "null"
+          - string
+      sourceId:
+        description: >-
+          The identifier of the source that updated the property in the company
+          record.
+        type:
+          - "null"
+          - string
+      value:
+        description: The new value of the property after the update.
+        type:
+          - "null"
+          - string
+      archived:
+        description: Flag indicating if the company property history record is archived or not.
+        type:
+          - "null"
+          - boolean
+
+  contacts_property_history:
+    $schema: "http://json-schema.org/draft-07/schema"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      value:
+        description: The value of the property at the specified timestamp.
+        type:
+          - "null"
+          - string
+      source-type:
+        description: The type or category of the data source.
+        type:
+          - "null"
+          - string
+      source-id:
+        description: The identifier of the data source that generated this historical entry.
+        type:
+          - "null"
+          - string
+      source-label:
+        description: The label representing the source of the data.
+        type:
+          - "null"
+          - string
+      updated-by-user-id:
+        description: The identifier of the user who last updated the property value.
+        type:
+          - "null"
+          - integer
+      timestamp:
+        description: The timestamp when the property value was last updated.
+        type:
+          - "null"
+          - integer
+      selected:
+        description: Indicates whether this property is currently selected or not.
+        type:
+          - "null"
+          - boolean
+      is-contact:
+        description: Indicates whether the data is associated with a contact record.
+        type:
+          - "null"
+          - boolean
+      property:
+        description: The specific property whose history is being tracked.
+        type:
+          - "null"
+          - string
+      vid:
+        description: The unique identifier for this historical data entry.
+        type:
+          - "null"
+          - integer
+      canonical-vid:
+        description: >-
+          The unique identifier for the contact record that this historical data
+          belongs to.
+        type:
+          - "null"
+          - integer
+      portal-id:
+        description: The identifier for the HubSpot portal that the data belongs to.
+        type:
+          - "null"
+          - integer
+      source-vids:
+        description: List of unique identifiers of the sources associated with this historical data.
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - "null"
+            - integer
+      archived:
+        description: Indicates whether the data is associated with a contact record.
+        type:
+          - "null"
+          - boolean
+
+  deals_property_history:
+    $schema: "http://json-schema.org/draft-07/schema"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      updatedByUserId:
+        description: The unique identifier of the user who made the update
+        type:
+          - "null"
+          - number
+      timestamp:
+        description: The date and time when the property was updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      property:
+        description: The name of the property that was updated
+        type:
+          - "null"
+          - string
+      dealId:
+        description: The unique identifier of the deal associated with this property history
+        type:
+          - "null"
+          - string
+      sourceType:
+        description: The type of source that triggered this update
+        type:
+          - "null"
+          - string
+      sourceId:
+        description: The unique identifier of the source of this update
+        type:
+          - "null"
+          - string
+      value:
+        description: The new value of the property
+        type:
+          - "null"
+          - string
+      archived:
+        description: Indicates if the deal property history is archived
+        type:
+          - "null"
+          - boolean
+
   email_subscriptions:
     $schema: http://json-schema.org/draft-07/schema#
     type:
