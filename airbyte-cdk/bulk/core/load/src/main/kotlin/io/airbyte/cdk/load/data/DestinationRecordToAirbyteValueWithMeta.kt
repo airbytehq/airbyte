@@ -12,15 +12,21 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 
+/**
+ * @param flatten whether to promote user-defined fields to the root level. If this is set to
+ * `false`, fields defined in `stream.schema` will be left inside an `_airbyte_data` field.
+ * @param extractedAtAsTimestampWithTimezone whether to return the `_airbyte_extracted_at` field as
+ * an [IntegerValue] or as a [TimestampWithTimezoneValue].
+ */
 class DestinationRecordToAirbyteValueWithMeta(
     val stream: DestinationStream,
-    private val flatten: Boolean
+    private val flatten: Boolean,
+    private val extractedAtAsTimestampWithTimezone: Boolean,
 ) {
     fun convert(
         data: AirbyteValue,
         emittedAtMs: Long,
         meta: Meta?,
-        extractedAtAsTimestampWithTimezone: Boolean
     ): ObjectValue {
         val properties =
             linkedMapOf(
@@ -75,12 +81,15 @@ fun Pair<AirbyteValue, List<Meta.Change>>.withAirbyteMeta(
     flatten: Boolean = false,
     extractedAtAsTimestampWithTimezone: Boolean = false,
 ) =
-    DestinationRecordToAirbyteValueWithMeta(stream, flatten)
+    DestinationRecordToAirbyteValueWithMeta(
+            stream,
+            flatten = flatten,
+            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+        )
         .convert(
             first,
             emittedAtMs,
             Meta(second),
-            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone
         )
 
 fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
@@ -88,12 +97,15 @@ fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
     flatten: Boolean = false,
     extractedAtAsTimestampWithTimezone: Boolean = false,
 ) =
-    DestinationRecordToAirbyteValueWithMeta(stream, flatten)
+    DestinationRecordToAirbyteValueWithMeta(
+            stream,
+            flatten = flatten,
+            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+        )
         .convert(
             data,
             emittedAtMs,
             meta,
-            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone
         )
 
 fun Meta.Change.toAirbyteValue(): ObjectValue =
