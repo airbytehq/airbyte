@@ -113,7 +113,7 @@ abstract class BasicPerformanceTest(
     val micronautProperties: Map<Property, String> = emptyMap(),
     namespaceOverride: String? = null,
     val numFilesForFileTransfer: Int = 5,
-    val fileSizeMbForFileTransfer: Int = 1024,
+    val fileSizeMbForFileTransfer: Int = 10,
     val numStreamsForMultiStream: Int = 4
 ) {
 
@@ -289,19 +289,38 @@ abstract class BasicPerformanceTest(
 
     @Test
     @Disabled("Opt-in")
-    open fun testFileTransfer() {
+    open fun testFileTransferOld() {
         val scenario =
             SingleStreamFileTransfer(
                 randomizedNamespace = randomizedNamespace,
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
-                fileSizeMb = fileSizeMbForFileTransfer,
+                fileSizeMb = 10,
                 stagingDirectory = Path.of("/tmp")
             )
         scenario.setup()
         runSync(
             testScenario = scenario,
             useFileTransfer = true,
+            validation = null,
+        )
+    }
+
+    @Test
+    @Disabled("Opt-in")
+    open fun testFileTransferNew() {
+        val scenario =
+            SingleStreamFileAndMetadataTransfer(
+                randomizedNamespace = randomizedNamespace,
+                streamName = testInfo.testMethod.get().name,
+                numFiles = numFilesForFileTransfer,
+                fileSizeMb = 10,
+                stagingDirectory = Path.of("/tmp")
+            )
+        scenario.setup()
+        runSync(
+            testScenario = scenario,
+            useFileTransfer = false,
             validation = null,
         )
     }

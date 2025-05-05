@@ -28,6 +28,8 @@ The Airbyte connector for [TicketTailor](https://tickettailor.com) enables seaml
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2025-05-04 | [59630](https://github.com/airbytehq/airbyte/pull/59630) | Update dependencies |
+| 0.0.20 | 2025-04-27 | [58984](https://github.com/airbytehq/airbyte/pull/58984) | Update dependencies |
 | 0.0.19 | 2025-04-19 | [58450](https://github.com/airbytehq/airbyte/pull/58450) | Update dependencies |
 | 0.0.18 | 2025-04-12 | [57962](https://github.com/airbytehq/airbyte/pull/57962) | Update dependencies |
 | 0.0.17 | 2025-04-05 | [57409](https://github.com/airbytehq/airbyte/pull/57409) | Update dependencies |
