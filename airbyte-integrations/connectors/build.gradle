@@ -137,10 +137,8 @@ subprojects { project ->
             if (connectorType == 'java') {
                 dependsOn project.tasks.matching { it.name == 'distTar' }
             }
-            
             inputDir = project.projectDir
             dockerFile = new File(rootProject.file("docker-images"), "Dockerfile.${connectorType}-connector")
-            
             // Get native architecture
             def nativeArch = "arm64"
             try {
@@ -154,10 +152,8 @@ subprojects { project ->
                 logger.warn("Failed to detect native architecture: ${e.message}. Defaulting to arm64.")
             }
             logger.lifecycle("Detected native architecture: ${nativeArch}")
-            
             // Determine base image based on connector type
             def baseImage = connectorType == 'java' ? 'airbyte/java-connector-base:2.0.1' : 'airbyte/python-connector-base:1.1.0'
-            
             // Configure Docker build options
             platform = "linux/${nativeArch}"
             labels = [
@@ -169,7 +165,6 @@ subprojects { project ->
                 'CONNECTOR_NAME': project.name
             ]
             images = ["airbyte/${project.name}:dev"]
-            
             doFirst {
                 logger.lifecycle("Building Docker image for ${project.name} (${connectorType} connector)")
             }
