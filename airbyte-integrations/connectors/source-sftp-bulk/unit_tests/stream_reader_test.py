@@ -8,10 +8,11 @@ from unittest.mock import MagicMock, patch
 
 import freezegun
 import paramiko
-from airbyte_cdk import AirbyteTracedException
 from source_sftp_bulk.decryptor import Decryptor
 from source_sftp_bulk.spec import GPGDecryption, NoDecryption, SourceSFTPBulkSpec
 from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
+
+from airbyte_cdk import AirbyteTracedException
 
 
 logger = logging.Logger("")
