@@ -55,7 +55,7 @@ class InputConsumerTaskUTest {
     private lateinit var dstream: DestinationStream
 
     private fun createTask(loadPipeline: LoadPipeline?) =
-        DefaultInputConsumerTask(
+        InputConsumerTask(
             catalog,
             inputFlow,
             recordQueueSupplier,

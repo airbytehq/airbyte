@@ -19,15 +19,12 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface UpdateCheckpointsTask : Task
-
 @Singleton
-@Secondary
-class DefaultUpdateCheckpointsTask(
+class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
-) : UpdateCheckpointsTask {
+) : Task() {
     val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating

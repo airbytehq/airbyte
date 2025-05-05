@@ -15,19 +15,17 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface TeardownTask : Task
-
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.
  *
  * TODO: Report teardown-complete and let the task launcher decide what to do next.
  */
-class DefaultTeardownTask(
+@Singleton
+class TeardownTask(
     private val checkpointManager: CheckpointManager<*>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher,
-) : TeardownTask {
+) : Task() {
     val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -47,22 +45,6 @@ class DefaultTeardownTask(
         destination.teardown()
         log.info { "Teardown task complete, marking sync succeeded." }
         syncManager.markDestinationSucceeded()
-        taskLauncher.handleTeardownComplete()
-    }
-}
-
-interface TeardownTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask
-}
-
-@Singleton
-@Secondary
-class DefaultTeardownTaskFactory(
-    private val checkpointManager: CheckpointManager<*>,
-    private val syncManager: SyncManager,
-    private val destination: DestinationWriter,
-) : TeardownTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
-        return DefaultTeardownTask(checkpointManager, syncManager, destination, taskLauncher)
+        taskLauncher!!.handleTeardownComplete()
     }
 }

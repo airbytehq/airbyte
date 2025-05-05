@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 class HeartbeatTask<K : WithStream, V>(
     private val config: DestinationConfiguration,
     @Named("pipelineInputQueue") private val inputQueue: PartitionedQueue<PipelineEvent<K, V>>
-) : Task {
+) : Task() {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {

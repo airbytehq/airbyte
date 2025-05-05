@@ -15,20 +15,16 @@ import io.airbyte.cdk.load.task.TerminalCondition
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-
-interface FailStreamTask : Task
-
 /**
  * FailStreamTask is a task that is executed when the processing of a stream fails in the
  * destination. It is responsible for cleaning up resources and reporting the failure.
  */
-class DefaultFailStreamTask(
-    private val taskLauncher: DestinationTaskLauncher,
-    private val exception: Exception,
+class FailStreamTask(
     private val syncManager: SyncManager,
     private val stream: DestinationStream.Descriptor,
+    private val exception: Exception,
     private val shouldRunStreamLoaderClose: Boolean,
-) : FailStreamTask {
+) : Task() {
     val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -36,7 +32,7 @@ class DefaultFailStreamTask(
     override suspend fun execute() {
         val streamManager = syncManager.getStreamManager(stream)
         syncManager.registerStartedStreamLoader(stream, Result.failure(exception))
-        streamManager.markProcessingFailed(exception)
+
         when (val streamResult = streamManager.awaitStreamResult()) {
             is StreamProcessingSucceeded -> {
                 log.info { "Cannot fail stream $stream, which is already complete, doing nothing." }
@@ -63,34 +59,17 @@ class DefaultFailStreamTask(
                 }
             }
         }
-        taskLauncher.handleFailStreamComplete(exception)
+        taskLauncher!!.handleFailStreamComplete(exception)
     }
-}
-
-interface FailStreamTaskFactory {
-    fun make(
-        taskLauncher: DestinationTaskLauncher,
-        exception: Exception,
-        stream: DestinationStream.Descriptor,
-        shouldRunStreamLoaderClose: Boolean,
-    ): FailStreamTask
 }
 
 @Singleton
-@Secondary
-class DefaultFailStreamTaskFactory(private val syncManager: SyncManager) : FailStreamTaskFactory {
-    override fun make(
-        taskLauncher: DestinationTaskLauncher,
-        exception: Exception,
+class FailStreamTaskFactory(
+    private val syncManager: SyncManager,
+) {
+    fun make(
         stream: DestinationStream.Descriptor,
-        shouldRunStreamLoaderClose: Boolean,
-    ): FailStreamTask {
-        return DefaultFailStreamTask(
-            taskLauncher,
-            exception,
-            syncManager,
-            stream,
-            shouldRunStreamLoaderClose = shouldRunStreamLoaderClose,
-        )
-    }
+        exception: Exception,
+        shouldRunStreamLoaderClose: Boolean = true,
+    ): FailStreamTask = FailStreamTask(syncManager, stream, exception, shouldRunStreamLoaderClose)
 }

@@ -52,8 +52,6 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
-interface InputConsumerTask : Task
-
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
  * [CheckpointMessage]s to the state manager.
@@ -65,8 +63,7 @@ interface InputConsumerTask : Task
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 @Singleton
-@Secondary
-class DefaultInputConsumerTask(
+class InputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
@@ -84,7 +81,7 @@ class DefaultInputConsumerTask(
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
     private val openStreamQueue: QueueWriter<DestinationStream>
-) : InputConsumerTask {
+) : Task() {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
@@ -302,61 +299,5 @@ class DefaultInputConsumerTask(
             fileTransferQueue.close()
             pipelineInputQueue.close()
         }
-    }
-}
-
-interface InputConsumerTaskFactory {
-    fun make(
-        catalog: DestinationCatalog,
-        inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-        destinationTaskLauncher: DestinationTaskLauncher,
-        fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-
-        // Required by new interface
-        pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-        loadPipeline: LoadPipeline?,
-        partitioner: InputPartitioner,
-        openStreamQueue: QueueWriter<DestinationStream>,
-    ): InputConsumerTask
-}
-
-@Singleton
-@Secondary
-class DefaultInputConsumerTaskFactory(
-    private val syncManager: SyncManager,
-) : InputConsumerTaskFactory {
-    override fun make(
-        catalog: DestinationCatalog,
-        inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-        destinationTaskLauncher: DestinationTaskLauncher,
-        fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-
-        // Required by new interface
-        pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-        loadPipeline: LoadPipeline?,
-        partitioner: InputPartitioner,
-        openStreamQueue: QueueWriter<DestinationStream>,
-    ): InputConsumerTask {
-        return DefaultInputConsumerTask(
-            catalog,
-            inputFlow,
-            recordQueueSupplier,
-            checkpointQueue,
-            syncManager,
-            destinationTaskLauncher,
-            fileTransferQueue,
-
-            // Required by new interface
-            pipelineInputQueue,
-            loadPipeline,
-            partitioner,
-            openStreamQueue,
-        )
     }
 }

@@ -8,31 +8,15 @@ import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FlushCheckpointsTask : Task
-
-class DefaultFlushCheckpointsTask(
+@Singleton
+class FlushCheckpointsTask(
     private val checkpointManager: CheckpointManager<*>,
-) : FlushCheckpointsTask {
+) : Task() {
     override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
         checkpointManager.flushReadyCheckpointMessages()
-    }
-}
-
-interface FlushCheckpointsTaskFactory {
-    fun make(): FlushCheckpointsTask
-}
-
-@Singleton
-@Secondary
-class DefaultFlushCheckpointsTaskFactory(
-    private val checkpointManager: CheckpointManager<*>,
-) : FlushCheckpointsTaskFactory {
-    override fun make(): FlushCheckpointsTask {
-        return DefaultFlushCheckpointsTask(checkpointManager)
     }
 }

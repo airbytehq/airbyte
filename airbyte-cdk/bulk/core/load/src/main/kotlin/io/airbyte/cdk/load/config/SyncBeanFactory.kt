@@ -17,6 +17,10 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.ReservationManager
+import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
+import io.airbyte.cdk.load.task.implementor.CloseStreamTask
+import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.write.LoadStrategy
@@ -152,6 +156,24 @@ class SyncBeanFactory {
     @Named("batchStateUpdateQueue")
     fun batchStateUpdateQueue(): ChannelMessageQueue<BatchUpdate> {
         return ChannelMessageQueue(Channel(100))
+    }
+
+    /* ******
+     * TASKS
+     * ******/
+    // TODO: Convert this to a single task, consuming a queue, a la OpenStreamTask
+    @Singleton
+    @Named("closeStreamTasks")
+    fun closeStreamTasks(
+        catalog: DestinationCatalog,
+        syncManager: SyncManager,
+    ): Map<DestinationStream.Descriptor, CloseStreamTask> {
+        return catalog.streams.associate { stream ->
+            stream.descriptor to CloseStreamTask(
+                syncManager = syncManager,
+                streamDescriptor = stream.descriptor,
+            )
+        }
     }
 
     /* *************

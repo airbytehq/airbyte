@@ -42,24 +42,22 @@ import kotlin.io.path.deleteExisting
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.flow.fold
 
-interface SpillToDiskTask : Task
-
 /**
  * Reads records from the message queue and writes them to disk. Completes once the upstream
  * inputQueue is closed.
  *
  * TODO: Allow for the record batch size to be supplied per-stream. (Needed?)
  */
-class DefaultSpillToDiskTask(
+@Singleton
+class SpillToDiskTask(
     private val fileAccFactory: FileAccumulatorFactory,
     private val inputQueue: QueueReader<Reserved<DestinationStreamEvent>>,
-    private val outputQueue: MultiProducerChannel<FileAggregateMessage>,
+    @Named("fileAggregateQueue") private val outputQueue: MultiProducerChannel<FileAggregateMessage>,
     private val flushStrategy: FlushStrategy,
     val streamDescriptor: DestinationStream.Descriptor,
-    private val diskManager: ReservationManager,
-    private val taskLauncher: DestinationTaskLauncher,
+    @Named("diskManager") private val diskManager: ReservationManager,
     private val processEmptyFiles: Boolean,
-) : SpillToDiskTask {
+) : Task() {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -142,7 +140,7 @@ class DefaultSpillToDiskTask(
                     TreeRangeSet.create(),
                     streamDescriptor
                 )
-            taskLauncher.handleNewBatch(streamDescriptor, empty)
+            taskLauncher!!.handleNewBatch(streamDescriptor, empty)
         } else {
             val nextRange =
                 if (sizeBytes == 0L) {
@@ -210,35 +208,6 @@ interface SpillToDiskTaskFactory {
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor
     ): SpillToDiskTask
-}
-
-@Singleton
-class DefaultSpillToDiskTaskFactory(
-    private val config: DestinationConfiguration,
-    private val fileAccFactory: FileAccumulatorFactory,
-    private val queueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-    private val flushStrategy: FlushStrategy,
-    @Named("diskManager") private val diskManager: ReservationManager,
-    @Named("fileAggregateQueue")
-    private val fileAggregateQueue: MultiProducerChannel<FileAggregateMessage>,
-) : SpillToDiskTaskFactory {
-    override fun make(
-        taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream.Descriptor
-    ): SpillToDiskTask {
-
-        return DefaultSpillToDiskTask(
-            fileAccFactory,
-            queueSupplier.get(stream),
-            fileAggregateQueue,
-            flushStrategy,
-            stream,
-            diskManager,
-            taskLauncher,
-            config.processEmptyFiles,
-        )
-    }
 }
 
 @Singleton

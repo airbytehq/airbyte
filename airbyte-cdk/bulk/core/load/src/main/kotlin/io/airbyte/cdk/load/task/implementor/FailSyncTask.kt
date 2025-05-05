@@ -15,20 +15,17 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailSyncTask : Task
-
 /**
  * FailSyncTask is a task that is executed only when the destination itself fails during a sync. If
  * the sync is failed by upstream (e.g. an incomplete stream message is received), we do not call
  * this task. It is responsible for cleaning up resources and reporting the failure.
  */
-class DefaultFailSyncTask(
-    private val taskLauncher: DestinationTaskLauncher,
+class FailSyncTask(
     private val destinationWriter: DestinationWriter,
     private val exception: Exception,
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager<*>,
-) : FailSyncTask {
+) : Task() {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -39,24 +36,18 @@ class DefaultFailSyncTask(
         val result = syncManager.markDestinationFailed(exception) // awaits stream completion
         log.info { "Calling teardown with failure result $result" }
         destinationWriter.teardown(result)
-        taskLauncher.handleTeardownComplete(success = false)
+        taskLauncher!!.handleTeardownComplete(success = false)
     }
 }
 
-interface FailSyncTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, exception: Exception): FailSyncTask
-}
-
 @Singleton
-@Secondary
-class DefaultFailSyncTaskFactory(
+class FailSyncTaskFactory(
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager<*>,
-    private val destinationWriter: DestinationWriter
-) : FailSyncTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher, exception: Exception): FailSyncTask {
-        return DefaultFailSyncTask(
-            taskLauncher,
+    private val destinationWriter: DestinationWriter,
+) {
+    fun make(exception: Exception): FailSyncTask {
+        return FailSyncTask(
             destinationWriter,
             exception,
             syncManager,

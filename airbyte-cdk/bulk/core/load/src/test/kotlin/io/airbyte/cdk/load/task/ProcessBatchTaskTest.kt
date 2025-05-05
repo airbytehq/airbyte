@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.implementor.DefaultProcessBatchTask
+import io.airbyte.cdk.load.task.implementor.ProcessBatchTask
 import io.airbyte.cdk.load.write.StreamLoader
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -45,7 +45,7 @@ class ProcessBatchTaskTest {
 
     @Test
     fun `test each enqueued batch passes through the associated processBatch`() = runTest {
-        val task = DefaultProcessBatchTask(syncManager, batchQueue, taskLauncher)
+        val task = ProcessBatchTask(syncManager, batchQueue, taskLauncher)
         coEvery { batchQueue.consume() } returns
             streamLoaders.keys
                 .map {

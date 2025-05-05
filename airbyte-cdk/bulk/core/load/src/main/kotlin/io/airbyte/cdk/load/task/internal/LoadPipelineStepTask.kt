@@ -68,7 +68,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val streamCompletions:
         ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>,
     private val maxNumConcurrentKeys: Int? = null,
-) : Task {
+) : Task() {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnEndOfSync

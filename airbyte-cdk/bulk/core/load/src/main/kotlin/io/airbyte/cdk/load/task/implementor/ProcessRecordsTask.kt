@@ -36,8 +36,6 @@ import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.inputStream
 
-interface ProcessRecordsTask : Task
-
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
  * records. On completion it rewraps the processed batch in the old envelope and kicks off batch
@@ -46,15 +44,15 @@ interface ProcessRecordsTask : Task
  * TODO: The batch handling logic here is identical to that in @[ProcessBatchTask]. Both should be
  * moved to the task launcher.
  */
-class DefaultProcessRecordsTask(
+@Singleton
+class ProcessRecordsTask(
     private val config: DestinationConfiguration,
-    private val taskLauncher: DestinationTaskLauncher,
     private val deserializer: ProtocolMessageDeserializer,
     private val syncManager: SyncManager,
-    private val diskManager: ReservationManager,
-    private val inputQueue: MessageQueue<FileAggregateMessage>,
-    private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
-) : ProcessRecordsTask {
+    @Named("diskManager") private val diskManager: ReservationManager,
+    @Named("fileAggregateQueue") private val inputQueue: MessageQueue<FileAggregateMessage>,
+    @Named("batchQueue") private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
+) : Task() {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -113,7 +111,7 @@ class DefaultProcessRecordsTask(
         indexRange: Range<Long>?
     ) {
         val wrapped = BatchEnvelope(batch, indexRange, streamDescriptor)
-        taskLauncher.handleNewBatch(streamDescriptor, wrapped)
+        taskLauncher!!.handleNewBatch(streamDescriptor, wrapped)
         log.info { "Updating batch $wrapped for $streamDescriptor" }
         if (batch.requiresProcessing) {
             outputQueue.publish(wrapped)
@@ -141,39 +139,7 @@ class DefaultProcessRecordsTask(
     }
 }
 
-interface ProcessRecordsTaskFactory {
-    fun make(
-        taskLauncher: DestinationTaskLauncher,
-    ): ProcessRecordsTask
-}
-
 data class FileAggregateMessage(
     val streamDescriptor: DestinationStream.Descriptor,
     val file: SpilledRawMessagesLocalFile
 )
-
-@Singleton
-@Secondary
-class DefaultProcessRecordsTaskFactory(
-    private val config: DestinationConfiguration,
-    private val deserializer: ProtocolMessageDeserializer,
-    private val syncManager: SyncManager,
-    @Named("diskManager") private val diskManager: ReservationManager,
-    @Named("fileAggregateQueue") private val inputQueue: MessageQueue<FileAggregateMessage>,
-    @Named("batchQueue") private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
-) : ProcessRecordsTaskFactory {
-
-    override fun make(
-        taskLauncher: DestinationTaskLauncher,
-    ): ProcessRecordsTask {
-        return DefaultProcessRecordsTask(
-            config,
-            taskLauncher,
-            deserializer,
-            syncManager,
-            diskManager,
-            inputQueue,
-            outputQueue,
-        )
-    }
-}

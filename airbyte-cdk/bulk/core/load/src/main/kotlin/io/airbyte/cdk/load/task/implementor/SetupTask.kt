@@ -9,34 +9,17 @@ import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.DestinationWriter
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface SetupTask : Task
-
 /** Wraps @[DestinationWriter.setup] and starts the open stream tasks. */
-class DefaultSetupTask(
+@Singleton
+class SetupTask(
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher,
-) : SetupTask {
+) : Task() {
     override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
         destination.setup()
-        taskLauncher.handleSetupComplete()
-    }
-}
-
-interface SetupTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher): SetupTask
-}
-
-@Singleton
-@Secondary
-class DefaultSetupTaskFactory(
-    private val destination: DestinationWriter,
-) : SetupTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
-        return DefaultSetupTask(destination, taskLauncher)
+        taskLauncher!!.handleSetupComplete()
     }
 }

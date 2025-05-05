@@ -23,7 +23,7 @@ import kotlinx.coroutines.runBlocking
  * production connectors, but for making non-release test tags. (For example, performance
  * experiments to test in the cloud.)
  */
-interface WriteOpOverride : Task
+abstract class WriteOpOverride : Task()
 
 /**
  * Write operation. Executed by the core framework when the operation is "write". Launches the core

@@ -23,7 +23,6 @@ import java.time.Clock
 import kotlinx.coroutines.channels.ClosedSendChannelException
 
 @Singleton
-@Secondary
 class FlushTickTask(
     @Value("\${airbyte.destination.core.flush.rate-ms}") private val tickIntervalMs: Long,
     private val clock: Clock,
@@ -31,7 +30,7 @@ class FlushTickTask(
     private val catalog: DestinationCatalog,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-) : Task {
+) : Task() {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnEndOfSync

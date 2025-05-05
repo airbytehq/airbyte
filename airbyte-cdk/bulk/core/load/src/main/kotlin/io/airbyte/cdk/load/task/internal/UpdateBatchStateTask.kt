@@ -19,12 +19,12 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 /** A long-running task that updates the state of record batches after they are processed. */
+@Singleton
 class UpdateBatchStateTask(
-    private val inputQueue: QueueReader<BatchUpdate>,
+    @Named("batchStateUpdateQueue") private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager<*>,
-    private val launcher: DestinationTaskLauncher
-) : Task {
+) : Task() {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition = OnEndOfSync
@@ -64,21 +64,10 @@ class UpdateBatchStateTask(
             }
             if (manager.isBatchProcessingCompleteForCheckpoints()) {
                 log.info { "Batch processing complete for ${message.stream}" }
-                launcher.handleStreamComplete(message.stream)
+                taskLauncher!!.handleStreamComplete(message.stream)
             } else {
                 log.info { "Batch processing still incomplete for ${message.stream}" }
             }
         }
-    }
-}
-
-@Singleton
-class UpdateBatchStateTaskFactory(
-    @Named("batchStateUpdateQueue") val inputQueue: QueueReader<BatchUpdate>,
-    private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*>
-) {
-    fun make(launcher: DestinationTaskLauncher): Task {
-        return UpdateBatchStateTask(inputQueue, syncManager, checkpointManager, launcher)
     }
 }

@@ -18,18 +18,17 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 
-interface OpenStreamTask : Task
-
 /**
  * Wraps @[StreamLoader.start] and starts the spill-to-disk tasks.
  *
  * TODO: There's no reason to wait on initialization to start spilling to disk.
  */
-class DefaultOpenStreamTask(
+@Singleton
+class OpenStreamTask(
     private val destinationWriter: DestinationWriter,
     private val syncManager: SyncManager,
     private val openStreamQueue: MessageQueue<DestinationStream>
-) : OpenStreamTask {
+) : Task() {
     override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
@@ -50,21 +49,5 @@ class DefaultOpenStreamTask(
                 }
                 .toList()
         results.forEach { it.getOrThrow() }
-    }
-}
-
-interface OpenStreamTaskFactory {
-    fun make(): OpenStreamTask
-}
-
-@Singleton
-@Secondary
-class DefaultOpenStreamTaskFactory(
-    private val destinationWriter: DestinationWriter,
-    private val syncManager: SyncManager,
-    @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>
-) : OpenStreamTaskFactory {
-    override fun make(): OpenStreamTask {
-        return DefaultOpenStreamTask(destinationWriter, syncManager, openStreamQueue)
     }
 }

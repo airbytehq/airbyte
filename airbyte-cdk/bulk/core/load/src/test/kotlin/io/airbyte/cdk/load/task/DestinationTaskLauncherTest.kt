@@ -82,26 +82,26 @@ import org.junit.jupiter.api.Test
         ]
 )
 class DestinationTaskLauncherTest {
-    @Inject lateinit var taskScopeProvider: TaskScopeProvider
-    @Inject lateinit var taskLauncher: DestinationTaskLauncher
-    @Inject lateinit var syncManager: SyncManager
+    @MockK(relaxed = true) lateinit var taskScopeProvider: TaskScopeProvider
+    @MockK(relaxed = true) lateinit var taskLauncher: DestinationTaskLauncher
+    @MockK(relaxed = true) lateinit var syncManager: SyncManager
 
-    @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
-    @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
-    @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
-    @Inject lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
-    @Inject lateinit var processBatchTaskFactory: ProcessBatchTaskFactory
-    @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
-    @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
-    @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
-    @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
-    @Inject lateinit var inputFlow: ReservingDeserializingInputFlow
-    @Inject lateinit var queueWriter: MockQueueWriter
-    @Inject lateinit var messageQueueSupplier: MockMessageQueueSupplier
-    @Inject lateinit var flushTickTask: FlushTickTask
-    @Inject lateinit var mockFailStreamTaskFactory: MockFailStreamTaskFactory
-    @Inject lateinit var mockFailSyncTaskFactory: MockFailSyncTaskFactory
-    @Inject lateinit var config: MockDestinationConfiguration
+    @MockK(relaxed = true) lateinit var mockInputConsumerTask: InputConsumerTask
+    @MockK(relaxed = true) lateinit var mockSetupTaskFactory: SetupTask
+    @MockK(relaxed = true) lateinit var mockSpillToDiskTaskFactory: SpillToDiskTaskFactory
+    @MockK(relaxed = true) lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
+    @MockK(relaxed = true) lateinit var processBatchTaskFactory: ProcessBatchTaskFactory
+    @MockK(relaxed = true) lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
+    @MockK(relaxed = true) lateinit var teardownTaskFactory: MockTeardownTaskFactory
+    @MockK(relaxed = true) lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
+    @MockK(relaxed = true) lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
+    @MockK(relaxed = true) lateinit var inputFlow: ReservingDeserializingInputFlow
+    @MockK(relaxed = true) lateinit var queueWriter: MockQueueWriter
+    @MockK(relaxed = true) lateinit var messageQueueSupplier: MockMessageQueueSupplier
+    @MockK(relaxed = true) lateinit var flushTickTask: FlushTickTask
+    @MockK(relaxed = true) lateinit var mockFailStreamTaskFactory: MockFailStreamTaskFactory
+    @MockK(relaxed = true) lateinit var mockFailSyncTaskFactory: MockFailSyncTaskFactory
+    @MockK(relaxed = true) lateinit var config: MockDestinationConfiguration
 
     @Singleton
     @Primary

@@ -12,8 +12,9 @@ data object OnSyncFailureOnly : TerminalCondition
 
 data object SelfTerminating : TerminalCondition
 
-interface Task {
-    val terminalCondition: TerminalCondition
+abstract class Task {
+    abstract val terminalCondition: TerminalCondition
+    open var taskLauncher: DestinationTaskLauncher? = null
 
-    suspend fun execute()
+    abstract suspend fun execute()
 }
