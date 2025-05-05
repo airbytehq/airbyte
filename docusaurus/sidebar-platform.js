@@ -436,7 +436,20 @@ module.exports = {
             "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
           ],
         },
-        "operating-airbyte/security",
+        {
+          type: "category",
+          label: "Security",
+          link: {
+            type: "doc",
+            id: "operating-airbyte/security",
+          },
+          items: [
+            {
+              type: "doc",
+              id: "operating-airbyte/ip-allowlist",
+            },
+          ],
+        },
         {
           type: "category",
           label: "Integrating with Airbyte",
