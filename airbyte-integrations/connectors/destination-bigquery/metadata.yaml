@@ -40,23 +40,8 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_DISABLETD_GCS_RAW_OVERRIDE
-          fileName: credentials-1s1t-disabletd-gcs-raw-override.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_DISABLETD_STANDARD_OVERRIDE
-          fileName: credentials-1s1t-disabletd-standard-raw-override.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS
           fileName: credentials-1s1t-gcs.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS_RAW_OVERRIDE
-          fileName: credentials-1s1t-gcs-raw-override.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
@@ -65,28 +50,13 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_STANDARD_RAW_OVERRIDE
-          fileName: credentials-1s1t-standard-raw-override.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_BAD_PROJECT_CREDS
           fileName: credentials-badproject.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_GCS_STAGING
-          fileName: credentials-gcs-staging.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_NO_PUBLIC_SCHEMA_EDIT_ROLE
           fileName: credentials-no-edit-public-schema-role.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_STANDARD
-          fileName: credentials-standard.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
