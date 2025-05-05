@@ -14,20 +14,10 @@ import jakarta.inject.Singleton
 import java.io.OutputStream
 
 class BigQueryObjectStorageFormattingWriter(
-    stream: DestinationStream,
-    outputStream: OutputStream,
-    rootLevelFlattening: Boolean = true,
-) :
-    ObjectStorageFormattingWriter by CSVFormattingWriter(
-        stream,
-        outputStream,
-        rootLevelFlattening
-    ) {
-
-    private val csvFormattingWriter = CSVFormattingWriter(stream, outputStream, rootLevelFlattening)
+    private val csvFormattingWriter: CSVFormattingWriter,
+) : ObjectStorageFormattingWriter by csvFormattingWriter {
 
     override fun accept(record: DestinationRecordRaw) {
-        record.rawData.record.emittedAt *= 1000
         csvFormattingWriter.accept(record)
     }
 }
@@ -41,6 +31,13 @@ class BigQueryObjectStorageFormattingWriterFactory(
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
-        return BigQueryObjectStorageFormattingWriter(stream, outputStream, flatten)
+        return BigQueryObjectStorageFormattingWriter(
+            CSVFormattingWriter(
+                stream,
+                outputStream,
+                rootLevelFlattening = flatten,
+                extractedAtAsTimestampWithTimezone = true,
+            ),
+        )
     }
 }
