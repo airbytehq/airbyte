@@ -39,6 +39,7 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 
 | Version | Date       | Pull Request                                              | Subject                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.17 | 2025-05-03 | [59384](https://github.com/airbytehq/airbyte/pull/59384) | Update dependencies |
 | 0.2.16 | 2025-04-26 | [58863](https://github.com/airbytehq/airbyte/pull/58863) | Update dependencies |
 | 0.2.15 | 2025-04-19 | [58366](https://github.com/airbytehq/airbyte/pull/58366) | Update dependencies |
 | 0.2.14 | 2025-04-12 | [57758](https://github.com/airbytehq/airbyte/pull/57758) | Update dependencies |

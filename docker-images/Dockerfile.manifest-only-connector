@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
+# Manifest-Only connector Dockerfile for Airbyte
+
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE}
+ARG CONNECTOR_SNAKE_NAME
+ARG CONNECTOR_NAME
+
+WORKDIR /airbyte/integration_code
+
+COPY . ./
+
+ENV AIRBYTE_ENTRYPOINT="python ./main.py"
+ENTRYPOINT ["python", "./main.py"]
