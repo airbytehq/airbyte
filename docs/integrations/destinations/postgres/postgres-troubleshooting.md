@@ -12,7 +12,7 @@ Postgres, while an excellent relational database, is not a data warehouse. Pleas
 
 1. Postgres is likely to perform poorly with large data volumes. Even postgres-compatible
    destinations (e.g. AWS Aurora) are not immune to slowdowns when dealing with large writes or
-   updates over ~100GB. Especially when using [typing and deduplication](/using-airbyte/core-concepts/typing-deduping) with `destination-postgres`, be sure to
+   updates over ~100GB. Especially when using [typing and deduplication](/platform/using-airbyte/core-concepts/typing-deduping) with `destination-postgres`, be sure to
    monitor your database's memory and CPU usage during your syncs. It is possible for your
    destination to 'lock up', and incur high usage costs with large sync volumes.
 2. When attempting to scale a postgres database to handle larger data volumes, scaling IOPS (disk throughput) is as important as increasing memory and compute capacity.

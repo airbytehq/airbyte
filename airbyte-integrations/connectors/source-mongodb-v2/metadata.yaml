@@ -36,7 +36,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 1.5.17
+  dockerImageTag: 1.5.18
   dockerRepository: airbyte/source-mongodb-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v2
@@ -47,8 +47,12 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      # avoid 1.5.18 which introduced an issue while upgrading dependencies
+      dockerImageTag: 1.5.17
     oss:
       enabled: true
+      # avoid 1.5.18 which introduced an issue while upgrading dependencies
+      dockerImageTag: 1.5.17
   releaseStage: generally_available
   releases:
     breakingChanges:

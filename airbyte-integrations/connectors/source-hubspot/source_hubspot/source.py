@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -22,21 +22,18 @@ from source_hubspot.streams import (
     BaseStream,
     Campaigns,
     Companies,
-    CompaniesPropertyHistory,
     CompaniesWebAnalytics,
     ContactLists,
     Contacts,
     ContactsFormSubmissions,
     ContactsListMemberships,
     ContactsMergedAudit,
-    ContactsPropertyHistory,
     ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
     Deals,
     DealsArchived,
     DealSplits,
-    DealsPropertyHistory,
     DealsWebAnalytics,
     EmailEvents,
     Engagements,
@@ -62,7 +59,6 @@ from source_hubspot.streams import (
     Products,
     ProductsWebAnalytics,
     SubscriptionChanges,
-    TicketPipelines,
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
@@ -77,12 +73,38 @@ we use start date 2006-01-01  as date of creation of Hubspot to retrieve all dat
 """
 DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
+    "companies_property_history": {"crm.objects.companies.read"},
+    "contacts_property_history": {"crm.objects.contacts.read"},
+    "deals_property_history": {"crm.objects.deals.read"},
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
+    "ticket_pipelines": {
+        "media_bridge.read",
+        "tickets",
+        "crm.schemas.custom.read",
+        "e-commerce",
+        "timeline",
+        "contacts",
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.deals.read",
+        "crm.schemas.quotes.read",
+        "crm.objects.deals.write",
+        "crm.objects.companies.read",
+        "crm.schemas.companies.read",
+        "crm.schemas.deals.read",
+        "crm.schemas.line_items.read",
+        "crm.objects.companies.write",
+    },
 }
 
 
-properties_scopes = {}
+properties_scopes = {
+    "companies_property_history": {"crm.schemas.companies.read"},
+    "contacts_property_history": {"crm.schemas.contacts.read"},
+    "deals_property_history": {"crm.schemas.deals.read"},
+}
 
 
 def scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
@@ -197,12 +219,8 @@ class SourceHubspot(YamlDeclarativeSource):
             Owners(**common_params),
             OwnersArchived(**common_params),
             Products(**common_params),
-            ContactsPropertyHistory(**common_params),
-            CompaniesPropertyHistory(**common_params),
-            DealsPropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
-            TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
 

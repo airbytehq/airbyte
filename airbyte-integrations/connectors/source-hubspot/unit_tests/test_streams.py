@@ -15,7 +15,6 @@ from source_hubspot.streams import (
     Contacts,
     ContactsListMemberships,
     ContactsMergedAudit,
-    ContactsPropertyHistory,
     ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
@@ -37,7 +36,6 @@ from source_hubspot.streams import (
     OwnersArchived,
     Products,
     RecordUnnester,
-    TicketPipelines,
     Tickets,
     Workflows,
 )
@@ -117,7 +115,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (OwnersArchived, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Workflows, "", {"updatedAt": 1675121674226}),
     ],
@@ -716,23 +714,6 @@ def test_web_analytics_latest_state(common_params, mocker):
     assert len(records[0]) == 1
     assert records[0][0]["objectId"] == "1"
     assert stream.state["1"]["occurredAt"] == "2021-01-02T00:00:00Z"
-
-
-def test_property_history_transform(common_params):
-    stream = ContactsPropertyHistory(**common_params)
-    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
-    records = [
-        {
-            "vid": 1,
-            "canonical-vid": 1,
-            "portal-id": 1,
-            "is-contact": True,
-            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
-        }
-    ]
-    assert [
-        {"vid": 1, "canonical-vid": 1, "portal-id": 1, "is-contact": True, "property": "hs_country", **version} for version in versions
-    ] == list(stream._transform(records=records))
 
 
 def test_contacts_membership_transform(common_params):
