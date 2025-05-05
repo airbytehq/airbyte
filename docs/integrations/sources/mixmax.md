@@ -44,6 +44,7 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.0  | 2025-05-05 | [59160](https://github.com/airbytehq/airbyte/pull/59160) | Changes to livefeed and unsubscribes stream |
 | 0.0.25 | 2025-05-03 | [59476](https://github.com/airbytehq/airbyte/pull/59476) | Update dependencies |
 | 0.0.24 | 2025-04-27 | [59045](https://github.com/airbytehq/airbyte/pull/59045) | Update dependencies |
 | 0.0.23 | 2025-04-19 | [58474](https://github.com/airbytehq/airbyte/pull/58474) | Update dependencies |
