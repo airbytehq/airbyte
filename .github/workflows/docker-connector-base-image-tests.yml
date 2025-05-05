@@ -81,14 +81,12 @@ jobs:
           push: true
 
       - name: Run Java Base Image Vulnerability Scan
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: anchore/scan-action@v6
         with:
-          image-ref: 'ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}"
+          output-format: 'table'
+          severity-cutoff: high
+          fail-build: true
 
     outputs:
       java-base-image: ${{ steps.docker-build-java-base.outputs.imageid }}
@@ -129,14 +127,12 @@ jobs:
           echo "python-base-image=${{ steps.docker-build-python-base.outputs.imageid }}"
 
       - name: Run Python Base Image Vulnerability Scan
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: anchore/scan-action@v6
         with:
-          image-ref: 'ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}"
+          output-format: 'table'
+          severity-cutoff: high
+          fail-build: true
 
     outputs:
       python-base-image: ${{ steps.docker-build-python-base.outputs.imageid }}
@@ -214,14 +210,12 @@ jobs:
             spec
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: anchore/scan-action@v6
         with:
-          image-ref: 'ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
+          output-format: 'table'
+          severity-cutoff: high
+          fail-build: true
 
   test-python-connector-image-matrix:
     runs-on: ubuntu-latest
@@ -277,11 +271,9 @@ jobs:
             spec
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: anchore/scan-action@v6
         with:
-          image-ref: 'ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
+          output-format: 'table'
+          severity-cutoff: high
+          fail-build: true
