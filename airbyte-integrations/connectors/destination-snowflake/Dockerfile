@@ -18,7 +18,6 @@ ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
 ENV APPLICATION="${CONNECTOR_NAME}"
 
 # Add the connector TAR file and extract it
-#COPY ./build/distributions/${CONNECTOR_NAME}.tar /tmp/${CONNECTOR_NAME}.tar
 COPY airbyte-app.tar /tmp/${CONNECTOR_NAME}.tar
 RUN tar xf /tmp/${CONNECTOR_NAME}.tar --strip-components=1 -C /airbyte && \
     rm -rf /tmp/${CONNECTOR_NAME}.tar && \
