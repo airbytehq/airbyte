@@ -1,6 +1,7 @@
 # Migrated from airbyte-ci/connectors/base_images/README.md
 
-ARG BASE_IMAGE=docker.io/python:3.11.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82
+# https://hub.docker.com/_/python/tags?name=3.11.11-slim-bookworm
+ARG BASE_IMAGE=docker.io/python:3.11.11-slim-bookworm@sha256:081075da77b2b55c23c088251026fb69a7b2bf92471e491ff5fd75c192fd38e5
 FROM ${BASE_IMAGE}
 
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
