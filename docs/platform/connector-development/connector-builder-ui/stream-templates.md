@@ -103,7 +103,7 @@ After clicking "Generate Streams", you'll get two streams:
 
 ## Important Notes
 
-- **Testing**: Always test both the retriever and the generated streams before publishing
+- **Testing**: Always test both Preview endpoint and the generated streams before publishing
 - **Changes**: If you modify the stream template, you'll need to regenerate streams for changes to take effect
 - **Troubleshooting**: If generated streams show warnings, fix issues in the template and regenerate
 - **References**: Use `{{ components_values.field_name }}` to access fields from the retriever results
