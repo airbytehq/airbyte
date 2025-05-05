@@ -207,10 +207,11 @@ class TypingDedupingStreamLoader(
             }
             return updatedStatus
         } else {
+            val initialRawTableStatus = initialStatus.rawTableStatus.reify()
             logger.info {
                 "${stream.descriptor.toPrettyString()}: non-truncate sync and no temp raw table. Initial raw table status is $initialRawTableStatus."
             }
-            return initialStatus.rawTableStatus.reify()
+            return initialRawTableStatus
         }
     }
 
