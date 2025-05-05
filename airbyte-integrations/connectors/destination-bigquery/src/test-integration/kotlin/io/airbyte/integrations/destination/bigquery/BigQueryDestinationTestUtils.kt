@@ -31,7 +31,6 @@ object BigQueryDestinationTestUtils {
             configFile = Path.of("secrets/credentials-1s1t-standard-raw-override.json"),
             datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
             stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
-            rawDatasetId = "${DEFAULT_NAMESPACE_PLACEHOLDER}_raw_dataset",
         )
     val standardInsertConfig =
         createConfig(
