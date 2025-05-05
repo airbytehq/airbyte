@@ -291,7 +291,7 @@ class SourceGithub(AbstractSource):
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
-        default_branches, branches_to_pull = self._get_branches_data(config.get("branches", []), repository_args)
+        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", []), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
