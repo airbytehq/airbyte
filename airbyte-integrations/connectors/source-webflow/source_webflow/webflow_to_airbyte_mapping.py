@@ -37,8 +37,8 @@ class WebflowToAirbyteMapping:
         "PlainText": {"type": ["null", "string"]},
         "RichText": {"type": ["null", "string"]},
         "User": {"type": ["null", "string"]},
-        "Price": {"type": ["null", "string"]},
+        "Price": {"type": ["null", "object"], "additionalProperties": True},
         "Video": {"type": ["null", "string"]},
         "FileRef": {"type": ["null", "object"]},
-        
+        "SkuValues": {"type": ["null", "object"], "additionalProperties": True},
     }
