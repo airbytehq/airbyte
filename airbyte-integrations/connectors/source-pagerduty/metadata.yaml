@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   dockerRepository: airbyte/source-pagerduty
   githubIssueLabel: source-pagerduty
   icon: pagerduty.svg
@@ -43,5 +43,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.47.0@sha256:b78e7be5d27d96b4eebc99fb76ccd3bad6408b0cd3a2a4d668852a4b6b9209dc
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
 metadataSpecVersion: "1.0"
