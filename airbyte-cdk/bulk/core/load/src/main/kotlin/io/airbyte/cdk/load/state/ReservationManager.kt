@@ -32,6 +32,17 @@ class Reserved<T>(
     override suspend fun close() {
         release()
     }
+
+    /**
+     * Merge another Reserved object into this one, dropping its value.
+     * (Assumes the parent managers are the same.)
+     * TODO: Check that the parent managers are the same, provide a merge
+     * function for values (if needed).
+     */
+    fun merge(other: Reserved<T>): Reserved<T> {
+        val newBytes = bytesReserved + other.bytesReserved
+        return Reserved(parentManager, newBytes, value)
+    }
 }
 
 /**

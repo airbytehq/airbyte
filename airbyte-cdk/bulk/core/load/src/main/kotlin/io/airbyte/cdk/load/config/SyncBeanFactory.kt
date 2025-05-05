@@ -19,9 +19,11 @@ import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
+import io.airbyte.cdk.load.write.BatchLoadStrategy
 import io.airbyte.cdk.load.write.LoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named

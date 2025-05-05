@@ -77,6 +77,7 @@ class FileChunkTask<T>(
                 // We enrich the record with the file_path. Ideally the schema modification
                 // should be handled outside of this scope but the hook doesn't exist.
                 event.context?.parentRecord?.enrichRecordWithFilePath(filePath)
+                event.reservation?.release()
 
                 val localFile = fileHandleFactory.make(file.stagingFileUrl)
                 val fileInputStream = localFile.inputStream()

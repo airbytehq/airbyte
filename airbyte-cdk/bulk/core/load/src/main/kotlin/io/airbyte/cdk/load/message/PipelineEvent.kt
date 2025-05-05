@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.Reserved
 
 /** Used internally by the CDK to pass messages between steps in the loader pipeline. */
 sealed interface PipelineEvent<K : WithStream, T>
@@ -20,7 +21,7 @@ data class PipelineMessage<K : WithStream, T>(
     val checkpointCounts: Map<CheckpointId, Long>,
     val key: K,
     val value: T,
-    val postProcessingCallback: (suspend () -> Unit)? = null,
+    val reservation: Reserved<T>? = null,
     var context: PipelineContext? = null,
 ) : PipelineEvent<K, T>
 
