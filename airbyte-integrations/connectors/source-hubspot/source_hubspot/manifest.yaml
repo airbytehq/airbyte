@@ -514,7 +514,7 @@ definitions:
     primary_key:
       - pipelineId
     retriever:
-      $ref: "#/definitions/base_retriever"
+      type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
         path: /crm-pipelines/v1/pipelines/deals
@@ -547,17 +547,16 @@ definitions:
       - type: AddFields
         fields:
           - path: ["updatedAt"]
-            value: "{{ record['createdAt'] }}"
-        condition: "{{ record.get('updatedAt') is none }}"
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
 
 streams:
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contacts_property_history_stream"
+  - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
-  - "#/definitions/deal_pipelines_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:

@@ -74,6 +74,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "companies_property_history": {"crm.objects.companies.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
+    "deal_pipelines": {"crm.objects.contacts.read"},
     "deals_property_history": {"crm.objects.deals.read"},
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
@@ -96,7 +97,6 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
-    "deal_pipelines": {"crm.objects.contacts.read"},
 }
 
 
