@@ -4,7 +4,6 @@ from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartition
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from collections import Counter
-
 class CustomerIdPartitionRouter(SubstreamPartitionRouter):
     def __init__(self, stream_state: Optional[Mapping[str, Any]] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -19,12 +18,10 @@ class CustomerIdPartitionRouter(SubstreamPartitionRouter):
         return customer_id, object_type, balance_or_total
 
     def stream_slices(self) -> Iterable[StreamSlice]: # type: ignore
-        parent_slices = list(super().stream_slices())
         seen_customer_ids: Set[str] = set()
-        unique_slices = []
         totals = Counter()
 
-        for slice in parent_slices:
+        for idx, slice in enumerate(super().stream_slices(), 1):
             customer_id, object_type, balance_or_total = self._extract_metadata(slice)
 
             if object_type == "customer":
@@ -34,18 +31,24 @@ class CustomerIdPartitionRouter(SubstreamPartitionRouter):
 
             if customer_id and customer_id not in seen_customer_ids and balance_or_total != 0:
                 seen_customer_ids.add(customer_id)
-                unique_slices.append(slice)
+                yield slice
             else:
                 totals["skipped"] += 1
 
-        self.logger.info(f"[CustomerIdPartitionRouter] Total parent slices: {len(parent_slices)}")
-        self.logger.info(f"[CustomerIdPartitionRouter] Total customer records: {totals['customers']}")
-        self.logger.info(f"[CustomerIdPartitionRouter] Total invoice records: {totals['invoices']}")
-        self.logger.info(f"[CustomerIdPartitionRouter] Unique slices emitted: {len(unique_slices)}")
-        self.logger.info(f"[CustomerIdPartitionRouter] Skipped records: {totals['skipped']}")
+            if idx % 1000 == 0:
+                self.logger.info(
+                    f"Processed {idx} slices | "
+                    f"Customers: {totals['customers']} | "
+                    f"Invoices: {totals['invoices']} | "
+                    f"Skipped: {totals['skipped']}"
+                )
 
-        yield from unique_slices
-
+        self.logger.info(
+            f"Deduplication complete | "
+            f"Total: {totals['customers'] + totals['invoices']} | "
+            f"Unique: {len(seen_customer_ids)} | "
+            f"Skipped: {totals['skipped']}"
+        )
 class CustomerBalanceStateMigration(StateMigration):
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return "parent_state" in stream_state
@@ -78,4 +81,23 @@ class CustomerBalanceStateMigration(StateMigration):
         }
 
         return migrated_state
+class EventIdDedupePartitionRouter(SubstreamPartitionRouter):
+    def stream_slices(self) -> Iterable[StreamSlice]: # type: ignore
+        seen_ids: Set[str] = set()
+        unique_slices = []
+        totals = Counter()
+        parent_slices = list(super().stream_slices())
 
+        for slice in parent_slices:
+            partition_id = slice.get("partition_id")
+            if partition_id and partition_id not in seen_ids:
+                seen_ids.add(partition_id)
+                unique_slices.append(slice)
+            else:
+                totals["skipped"] += 1
+
+        self.logger.info(f"[EventIdDedupePartitionRouter] Total parent slices: {len(parent_slices)}")
+        self.logger.info(f"[EventIdDedupePartitionRouter] Unique slices emitted: {len(unique_slices)}")
+        self.logger.info(f"[EventIdDedupePartitionRouter] Skipped records: {totals['skipped']}")
+
+        yield from unique_slices

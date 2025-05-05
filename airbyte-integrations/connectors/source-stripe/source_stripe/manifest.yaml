@@ -95,7 +95,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: "{{ config.get('slice_range_iso_8601', 'P365D') }}"
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -162,7 +162,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: "{{ config.get('slice_range_iso_8601', 'P365D') }}"
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -243,7 +243,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 365) }}D
+    step: "{{ config.get('slice_range_iso_8601', 'P365D') }}"
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -321,10 +321,8 @@ definitions:
             path: subscriptions
           requester:
             $ref: "#/definitions/base_requester"
-            use_cache: true
             request_parameters:
               status: "all"
-              expand[]: '{{["data.items"]}}'
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -345,7 +343,6 @@ definitions:
             path: invoices
           requester:
             $ref: "#/definitions/base_requester"
-            use_cache: true
             request_parameters:
               expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
       incremental_stream:
@@ -906,9 +903,9 @@ definitions:
                 - ["object"]
                 - ["total"]
                 - ["customer"]
-      #state_migrations:
-      #  - type: CustomStateMigration
-      #    class_name: source_stripe.components.CustomerBalanceStateMigration
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_stripe.components.CustomerBalanceStateMigration
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
@@ -1101,32 +1098,35 @@ definitions:
       retriever:
         $ref: "#/definitions/base_retriever"
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_stripe.components.EventIdDedupePartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: invoice_id
+              partition_field: partition_id
               stream:
                 $ref: "#/definitions/streams/invoices"
               incremental_dependency: true
               extra_fields:
                 - ["created"]
                 - ["updated"]
-              lazy_read_pointer: ["lines", "data"]
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          #inject_parent_record: true
+        $parameters:
+          path: invoices/{{ stream_partition.partition_id }}/lines
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data"]
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
-        cursor_field: invoice_updated
+        cursor_field: invoice_created
         global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
             - path: ["invoice_id"]
-              value: "{{ stream_partition.invoice_id }}"
+              value: "{{ stream_partition.partition_id }}"
             - path: ["invoice_created"]
               value: "{{ stream_slice.extra_fields['created'] | int }}"
               value_type: integer
@@ -1196,22 +1196,24 @@ definitions:
       retriever:
         $ref: "#/definitions/base_retriever"
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_stripe.components.EventIdDedupePartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: subscription_id
+              partition_field: partition_id
               stream:
                 $ref: "#/definitions/streams/subscriptions"
               incremental_dependency: true
               extra_fields:
                 - ["updated"]
-              lazy_read_pointer: ["items", "data"]
+        $parameters:
+          path: subscription_items?subscription={{ stream_partition.partition_id }}
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path: ["data"]
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: subscription_updated
@@ -1479,6 +1481,16 @@ spec:
           the less requests will be made and faster the sync will be. On the other hand, the more seldom
           the state is persisted.
         order: 4
+      slice_range_iso_8601:
+        type: string
+        title: Data request time increment
+        default: "P365D"
+        pattern: ^P(T(\d+H)?(\d+M)?(\d+S)?|(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?)$
+        description: >-
+          ISO 8601 duration for slicing date ranges during syncs. For example:
+          'P1D' = 1 day, 'PT1H' = 1 hour. Smaller durations create more slices
+          (better parallelism), larger durations reduce API requests.
+        order: 4
       num_workers:
         type: integer
         title: Number of concurrent workers
@@ -1493,6 +1505,7 @@ spec:
       call_rate_limit:
         type: integer
         title: Max number of API calls per second
+        default: 25
         examples: [25, 100]
         description: >-
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
@@ -1501,7 +1514,7 @@ spec:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 20) }}"
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 20
 
 api_budget:
@@ -1519,6 +1532,6 @@ api_budget:
 
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 100 if 'sk_test_' in config['client_secret'] else 25 }}"
+        - limit: "{{ config.get('call_rate_limit', 25) }}"
           interval: PT1S
       matchers: []
