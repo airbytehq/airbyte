@@ -55,9 +55,11 @@ S3 Data Lake
 
 Glue
 [Gg]raph[Qq][Ll]
+\bDocker(?:'s)?\b
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
 [Nn]ulled
 [Nn]amespaces
 [Ii]nitialisms
+\bCPU(?:s)?\b

@@ -4,13 +4,13 @@
 
 package io.airbyte.cdk.load.pipeline.db
 
+import io.airbyte.cdk.load.factory.object_storage.ObjectLoaderPartQueueFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.message.WithStream
-import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartQueueFactory
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.micronaut.context.annotation.Factory
