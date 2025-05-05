@@ -540,4 +540,4 @@ class ConnectionObjects:
     def hashed_connection_id(self) -> Optional[str]:
         if not self.connection_id:
             return None
-        return self.connection_id[:4]
+        return self.connection_id[:8]
