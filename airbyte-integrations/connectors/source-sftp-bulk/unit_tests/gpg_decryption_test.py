@@ -4,8 +4,9 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk import AirbyteTracedException
 from source_sftp_bulk.decryptor import GPGDecryptor
+
+from airbyte_cdk import AirbyteTracedException
 
 
 class TestGPGDecryptor(unittest.TestCase):
