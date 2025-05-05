@@ -28,7 +28,7 @@ class JSONStructTest {
     @Test
     @Throws(SQLException::class)
     fun testGetAttributes() {
-        Assertions.assertEquals(json, struct!!.attributes[0])
+        Assertions.assertEquals(json, struct.attributes[0])
     }
 
     /**
@@ -39,6 +39,6 @@ class JSONStructTest {
     @Test
     @Throws(SQLException::class)
     fun testGetSQLTypeName() {
-        Assertions.assertEquals("JSON", struct!!.sqlTypeName)
+        Assertions.assertEquals("JSON", struct.sqlTypeName)
     }
 }
