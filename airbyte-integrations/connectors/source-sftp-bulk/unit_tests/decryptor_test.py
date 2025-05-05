@@ -2,9 +2,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk import AirbyteTracedException
 from source_sftp_bulk.decryptor import Decryptor, GPGDecryptor, create_decryptor
 from source_sftp_bulk.spec import GPGDecryption, NoDecryption
+
+from airbyte_cdk import AirbyteTracedException
 
 
 class TestDecryptor(unittest.TestCase):
