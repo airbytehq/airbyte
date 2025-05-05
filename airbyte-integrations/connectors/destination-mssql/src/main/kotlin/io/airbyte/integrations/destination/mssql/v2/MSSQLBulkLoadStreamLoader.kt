@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.object_storage.PartToObjectAccumulator
 import io.airbyte.cdk.load.write.object_storage.RecordToPartAccumulator
+import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.atomic.AtomicLong
 import javax.sql.DataSource
@@ -40,7 +41,7 @@ class MSSQLBulkLoadStreamLoader(
     bulkUploadDataSource: String,
     private val defaultSchema: String,
     private val azureBlobClient: AzureBlobClient,
-    private val validateValuesPreLoad: Boolean,
+    private val config: MSSQLConfiguration,
     private val recordBatchSizeOverride: Long? = null,
     private val streamStateStore: StreamStateStore<MSSQLStreamState>,
     destinationConfig: DestinationConfiguration,
@@ -77,9 +78,9 @@ class MSSQLBulkLoadStreamLoader(
      * If the stream finishes successfully, super.close() will handle truncating previous
      * generations. We also delete the format file from Blob.
      */
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         deleteBlobSafe(formatFilePath)
-        super.close(streamFailure)
+        super.close(hadNonzeroRecords = hadNonzeroRecords, streamFailure)
     }
 
     /**
@@ -89,7 +90,7 @@ class MSSQLBulkLoadStreamLoader(
     override suspend fun createBatchAccumulator(): BatchAccumulator {
         val writerFactory =
             BufferedFormattingWriterFactory(
-                MssqlObjectStorageFormattingWriterFactory(validateValuesPreLoad),
+                MssqlObjectStorageFormattingWriterFactory(config),
                 NoOpCompressionProvider()
             )
 

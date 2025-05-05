@@ -5,6 +5,7 @@
 import json
 from unittest.mock import patch
 
+import mock
 import pendulum
 import pytest
 from source_hubspot.streams import (
@@ -14,7 +15,6 @@ from source_hubspot.streams import (
     Contacts,
     ContactsListMemberships,
     ContactsMergedAudit,
-    ContactsPropertyHistory,
     ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
@@ -22,7 +22,6 @@ from source_hubspot.streams import (
     DealsArchived,
     DealSplits,
     EmailEvents,
-    EmailSubscriptions,
     EngagementsCalls,
     EngagementsEmails,
     EngagementsMeetings,
@@ -33,18 +32,17 @@ from source_hubspot.streams import (
     Goals,
     Leads,
     LineItems,
-    MarketingEmails,
     Owners,
     OwnersArchived,
     Products,
     RecordUnnester,
-    TicketPipelines,
     Tickets,
     Workflows,
 )
 
 from airbyte_cdk.models import SyncMode
 
+from .conftest import find_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -90,7 +88,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint, cursor_value",
+    "stream_class, endpoint, cursor_value",
     [
         (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -102,7 +100,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
         (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EmailSubscriptions, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsMeetings, "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -113,21 +111,29 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Goals, "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Leads, "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (MarketingEmails, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("marketing_emails", "", {"updated": "1634050455543"}),
         (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (OwnersArchived, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Workflows, "", {"updatedAt": 1675121674226}),
     ],
 )
-def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list):
-    stream = stream(**common_params)
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_streams_read(
+    mock_get_custom_object_streams, stream_class, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, config
+):
+    if isinstance(stream_class, str):
+        stream = find_stream(stream_class, config)
+        data_field = stream.retriever.record_selector.extractor.field_path[0]
+    else:
+        stream = stream_class(**common_params)
+        data_field = stream.data_field
     responses = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
@@ -151,7 +157,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     contact_response = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {"id": "test_id", "created": "2022-06-25T16:43:11Z", "properties": {"hs_merged_object_ids": "test_id"}} | cursor_value
                 ],
             }
@@ -178,7 +184,10 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
 
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
-    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    if isinstance(stream_class, str):
+        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+    else:
+        stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
@@ -707,23 +716,6 @@ def test_web_analytics_latest_state(common_params, mocker):
     assert stream.state["1"]["occurredAt"] == "2021-01-02T00:00:00Z"
 
 
-def test_property_history_transform(common_params):
-    stream = ContactsPropertyHistory(**common_params)
-    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
-    records = [
-        {
-            "vid": 1,
-            "canonical-vid": 1,
-            "portal-id": 1,
-            "is-contact": True,
-            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
-        }
-    ]
-    assert [
-        {"vid": 1, "canonical-vid": 1, "portal-id": 1, "is-contact": True, "property": "hs_country", **version} for version in versions
-    ] == list(stream._transform(records=records))
-
-
 def test_contacts_membership_transform(common_params):
     stream = ContactsListMemberships(**common_params)
     versions = [{"value": "Georgia", "timestamp": 1645135236625}]
@@ -742,23 +734,32 @@ def test_contacts_membership_transform(common_params):
 
 
 @pytest.mark.parametrize(
-    "stream, cursor_value, data_to_cast, expected_casted_data",
+    "stream_class, cursor_value, data_to_cast, expected_casted_data",
     [
-        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": 123456}, {"rootMicId": "123456"}),
-        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": None}, {"rootMicId": None}),
-        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": "123456"}, {"rootMicId": "123456"}),
-        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": 1234.56}, {"rootMicId": "1234.56"}),
+        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": 123456}, {"rootMicId": "123456"}),
+        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": None}, {"rootMicId": None}),
+        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": "123456"}, {"rootMicId": "123456"}),
+        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": 1234.56}, {"rootMicId": "1234.56"}),
     ],
 )
-def test_cast_record_fields_with_schema_if_needed(stream, cursor_value, requests_mock, common_params, data_to_cast, expected_casted_data):
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_cast_record_fields_with_schema_if_needed(
+    mock_get_custom_object_stream, stream_class, cursor_value, requests_mock, common_params, data_to_cast, expected_casted_data, config
+):
     """
     Test that the stream cast record fields with stream json schema if needed
     """
-    stream = stream(**common_params)
+    if isinstance(stream_class, str):
+        stream = find_stream(stream_class, config)
+        data_field = stream.retriever.record_selector.extractor.field_path[0]
+    else:
+        stream = stream_class(**common_params)
+        data_field = stream.data_field
+
     responses = [
         {
             "json": {
-                stream.data_field: [
+                data_field: [
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
@@ -772,12 +773,18 @@ def test_cast_record_fields_with_schema_if_needed(stream, cursor_value, requests
 
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
-    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+
+    if isinstance(stream_class, str):
+        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+    else:
+        stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
     records = read_full_refresh(stream)
     record = records[0]
+    print(record)
     for casted_key, casted_value in expected_casted_data.items():
         assert record[casted_key] == casted_value
 

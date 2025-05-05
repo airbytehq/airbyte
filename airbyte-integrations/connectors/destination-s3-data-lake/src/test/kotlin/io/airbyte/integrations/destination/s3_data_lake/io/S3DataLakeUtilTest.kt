@@ -209,7 +209,7 @@ internal class S3DataLakeUtilTest {
             EnrichedDestinationRecordAirbyteValue(
                 stream = airbyteStream,
                 declaredFields =
-                    mapOf(
+                    linkedMapOf(
                         "id" to
                             EnrichedAirbyteValue(
                                 IntegerValue(42L),
@@ -225,7 +225,7 @@ internal class S3DataLakeUtilTest {
                                 airbyteMetaField = null
                             )
                     ),
-                undeclaredFields = emptyMap(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
@@ -270,7 +270,7 @@ internal class S3DataLakeUtilTest {
             EnrichedDestinationRecordAirbyteValue(
                 stream = airbyteStream,
                 declaredFields =
-                    mapOf(
+                    linkedMapOf(
                         "id" to
                             EnrichedAirbyteValue(
                                 IntegerValue(42L),
@@ -293,7 +293,7 @@ internal class S3DataLakeUtilTest {
                                 airbyteMetaField = null,
                             ),
                     ),
-                undeclaredFields = emptyMap(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
@@ -336,7 +336,7 @@ internal class S3DataLakeUtilTest {
             EnrichedDestinationRecordAirbyteValue(
                 stream = airbyteStream,
                 declaredFields =
-                    mapOf(
+                    linkedMapOf(
                         "id" to
                             EnrichedAirbyteValue(
                                 IntegerValue(42L),
@@ -352,7 +352,7 @@ internal class S3DataLakeUtilTest {
                                 airbyteMetaField = null
                             ),
                     ),
-                undeclaredFields = emptyMap(),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
@@ -391,7 +391,7 @@ internal class S3DataLakeUtilTest {
         val s3BucketConfiguration =
             S3BucketConfiguration(
                 s3BucketName = s3BucketName,
-                s3BucketRegion = S3BucketRegion.`us-east-1`,
+                s3BucketRegion = S3BucketRegion.`us-east-1`.region,
                 s3Endpoint = s3Endpoint,
             )
         val icebergCatalogConfiguration =

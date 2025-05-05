@@ -19,10 +19,8 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -50,7 +48,6 @@ import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlTy
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Date
@@ -374,19 +371,14 @@ class MSSQLQueryBuilder(
                         statementIndex,
                         Date.valueOf((value.abValue as DateValue).value)
                     )
-                IntegerType -> {
-                    val intValue = (value.abValue as IntegerValue).value
-                    if (intValue < LIMITS.MIN_BIGINT || LIMITS.MAX_BIGINT < intValue) {
-                        value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                    } else {
-                        statement.setLong(statementIndex, intValue.longValueExact())
+                IntegerType ->
+                    LIMITS.validateInteger(value)?.let {
+                        statement.setLong(statementIndex, it.longValueExact())
                     }
-                }
                 NumberType ->
-                    statement.setDouble(
-                        statementIndex,
-                        (value.abValue as NumberValue).value.toDouble()
-                    )
+                    LIMITS.validateNumber(value)?.let {
+                        statement.setBigDecimal(statementIndex, it)
+                    }
                 StringType ->
                     statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->

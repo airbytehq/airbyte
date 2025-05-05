@@ -30,6 +30,8 @@ API Reference: https://developers.giphy.com/docs/api/endpoint/#trending
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2025-05-03 | [59440](https://github.com/airbytehq/airbyte/pull/59440) | Update dependencies |
+| 0.0.3 | 2025-04-26 | [58318](https://github.com/airbytehq/airbyte/pull/58318) | Update dependencies |
 | 0.0.2 | 2025-04-12 | [57763](https://github.com/airbytehq/airbyte/pull/57763) | Update dependencies |
 | 0.0.1 | 2025-04-07 | [57503](https://github.com/airbytehq/airbyte/pull/57503) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 

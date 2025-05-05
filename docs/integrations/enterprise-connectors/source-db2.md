@@ -34,38 +34,38 @@ Alternatively, you can use Airbyte with an existing user in your database.
 
 Db2 data types are mapped to the following data types when synchronizing data.
 
-| Oracle Type              | Airbyte Type | Notes   |
-|:-------------------------|:-------------|:--------|
-| `SMALLINT`               | number       |         |
-| `INT`                    | number       | integer |
-| `INTEGER`                | number       | integer |
-| `BIGINT`                 | number       | integer |
-| `DECIMAL`                | number       |         |
-| `DEC`                    | number       |         |
-| `NUMERIC`                | number       |         |
-| `REAL`                   | number       |         |
-| `FLOAT`                  | number       |         |
-| `DOUBLE`                 | number       |         |
-| `DOUBLE PRECISION`       | number       |         |
-| `DECFLOAT`               | number       |         |
-| `CHAR`                   | string       |         |
-| `CHARACTER`              | string       |         |
-| `VARCHAR`                | string       |         |
-| `CHARACTER VARYING`      | string       |         |
-| `CHAR VARYING`           | string       |         |
-| `CLOB`                   | string       |         |
-| `CHARACTER LARGE OBJECT` | string       |         |
-| `CHAR LARGE OBJECT`      | string       |         |
-| `BLOB`                   | string       |         |
-| `BINARY LARGE OBJECT`    | string       |         |
-| `BINARY`                 | string       |         |
-| `VARBINARY`              | string       |         |
-| `BINARY VARYING`         | string       |         |
-| `DATE`                   | string       |         |
-| `TIME`                   | string       |         |
-| `TIMESTAMP`              | string       |         |
-| `BOOLEAN`                | boolean      |         |
-| `XML`                    | string       |         |
+| Oracle Type              | Airbyte Type               | Notes                                      |
+|:-------------------------|:---------------------------|:-------------------------------------------|
+| `SMALLINT`               | integer                    |                                            |
+| `INT`                    | integer                    |                                            |
+| `INTEGER`                | integer                    |                                            |
+| `BIGINT`                 | integer                    |                                            |
+| `DECIMAL`                | number/integer             | if scale is 0, use integer                 |
+| `DEC`                    | number/integer             | if scale is 0, use integer                 |
+| `NUMERIC`                | number/integer             | if scale is 0, use integer                 |
+| `REAL`                   | number                     |                                            |
+| `FLOAT`                  | number                     |                                            |
+| `DOUBLE`                 | number                     |                                            |
+| `DOUBLE PRECISION`       | number                     |                                            |
+| `DECFLOAT`               | number                     | INF, -INF, and NaN values will map to null |
+| `CHAR`                   | string                     |                                            |
+| `CHARACTER`              | string                     |                                            |
+| `VARCHAR`                | string                     |                                            |
+| `CHARACTER VARYING`      | string                     |                                            |
+| `CHAR VARYING`           | string                     |                                            |
+| `CLOB`                   | string                     |                                            |
+| `CHARACTER LARGE OBJECT` | string                     |                                            |
+| `CHAR LARGE OBJECT`      | string                     |                                            |
+| `BLOB`                   | binary                     |                                            |
+| `BINARY LARGE OBJECT`    | binary                     |                                            |
+| `BINARY`                 | binary                     |                                            |
+| `VARBINARY`              | binary                     |                                            |
+| `BINARY VARYING`         | binary                     |                                            |
+| `DATE`                   | date                       |                                            |
+| `TIME`                   | time without timezone      |                                            |
+| `TIMESTAMP`              | timestamp without timezone |                                            |
+| `BOOLEAN`                | boolean                    |                                            |
+| `XML`                    | xml                        |                                            |
 
 
 ## Changelog

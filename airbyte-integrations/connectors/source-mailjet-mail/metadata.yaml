@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 56582331-5de2-476b-b913-5798de77bbdf
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.11
   dockerRepository: airbyte/source-mailjet-mail
   githubIssueLabel: source-mailjet-mail
   icon: mailjetmail.svg
@@ -39,5 +39,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.1@sha256:101da55e5201e9ce0ba5f3ebc7528e700f75a2a1d9afe76a34573d0311fe7a98
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
 metadataSpecVersion: "1.0"

@@ -85,6 +85,9 @@ For Capella users, be aware of your cluster's performance limits and pricing tie
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.6 | 2025-05-03 | [59406](https://github.com/airbytehq/airbyte/pull/59406) | Update dependencies |
+| 0.1.5 | 2025-04-26 | [58855](https://github.com/airbytehq/airbyte/pull/58855) | Update dependencies |
+| 0.1.4 | 2025-04-19 | [57810](https://github.com/airbytehq/airbyte/pull/57810) | Update dependencies |
 | 0.1.3 | 2025-04-05 | [56552](https://github.com/airbytehq/airbyte/pull/56552) | Update dependencies |
 | 0.1.2 | 2025-03-22 | [55965](https://github.com/airbytehq/airbyte/pull/55965) | Update dependencies |
 | 0.1.1 | 2025-03-08 | [55324](https://github.com/airbytehq/airbyte/pull/55324) | Update dependencies |
