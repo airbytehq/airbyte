@@ -116,36 +116,21 @@ allprojects {
 
 // Configure Docker image building tasks for all connector projects
 subprojects { project ->
-    // Only apply to connector projects
-    if (project.path.startsWith(':airbyte-integrations:connectors:')) {
-        // Determine connector type during configuration phase
-        def isJavaConnector = project.file('build.gradle').exists()
-        def isPythonConnector = project.file('setup.py').exists() || project.file('pyproject.toml').exists()
-        def connectorType = isJavaConnector ? 'java' : (isPythonConnector ? 'python' : null)
-        
-        if (connectorType == null) {
-            logger.warn("Could not determine connector type for ${project.name}. Expected either a Java or Python connector.")
-            return // Skip this project
-        }
-        
-        // Set project properties for use in tasks
-        project.ext.connectorType = connectorType
-        
+    // Only apply to connector projects that are JVM-based (Java/Kotlin)
+    if (project.path.startsWith(':airbyte-integrations:connectors:') && project.file('build.gradle').exists()) {
         // Detect native architecture in one line
         def nativeArch = System.getProperty('os.arch').matches(/.*(arm64|aarch64).*/) ? 'arm64' : 'amd64'
         
-        // Determine base image based on connector type
-        def baseImage = connectorType == 'java' ? 'airbyte/java-connector-base:2.0.1' : 'airbyte/python-connector-base:1.1.0'
+        // Base image for Java connectors
+        def baseImage = 'airbyte/java-connector-base:2.0.1'
         
-        // Use Exec task for Docker build since it's more reliable
+        // Main task to build connector Docker image
         project.tasks.register('buildImage', Exec) {
             group = 'build'
             description = "Builds Docker image for connector ${project.name}"
             
-            // For Java connectors, depend on distTar task
-            if (connectorType == 'java') {
-                dependsOn project.tasks.matching { it.name == 'distTar' }
-            }
+            // Depend on distTar task for Java connectors
+            dependsOn project.tasks.matching { it.name == 'distTar' }
             
             // Always re-run this task
             outputs.upToDateWhen { false }
@@ -153,7 +138,7 @@ subprojects { project ->
             workingDir = rootProject.file("docker-images")
             
             doFirst {
-                logger.lifecycle("Building Docker image for ${project.name} (${connectorType} connector)")
+                logger.lifecycle("Building Docker image for ${project.name} (java connector)")
                 logger.lifecycle("Using architecture: ${nativeArch}")
                 
                 // Build Docker image using the existing Dockerfile
@@ -161,7 +146,7 @@ subprojects { project ->
                     '--platform', "linux/${nativeArch}",
                     '--label', 'io.airbyte.version=3.11.15',
                     '--label', "io.airbyte.name=airbyte/${project.name}",
-                    '--file', "Dockerfile.${connectorType}-connector",
+                    '--file', "Dockerfile.java-connector",
                     '--build-arg', "BASE_IMAGE=${baseImage}",
                     '--build-arg', "CONNECTOR_NAME=${project.name}",
                     '-t', "airbyte/${project.name}:dev",
