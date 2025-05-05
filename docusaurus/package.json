@@ -72,13 +72,12 @@
     "@babel/preset-env": "7.23.6",
     "@babel/preset-react": "7.23.3",
     "@babel/preset-typescript": "7.23.3",
-    "@babel/runtime-corejs3": "7.23.6",
+    "@babel/runtime-corejs3": "7.26.10",
     "@cmfcmf/docusaurus-search-local": "^1.1.0",
     "@docsearch/react": "3.1.0",
     "@docusaurus/core": "^3.7.0",
     "@docusaurus/cssnano-preset": "^3.7.0",
     "@docusaurus/module-type-aliases": "^3.7.0",
-    "@docusaurus/plugin-client-redirects": "^3.7.0",
     "@docusaurus/plugin-debug": "^3.7.0",
     "@docusaurus/plugin-sitemap": "^3.7.0",
     "@docusaurus/preset-classic": "^3.7.0",
@@ -153,5 +152,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "prettier": "3.5.3"
   }
 }

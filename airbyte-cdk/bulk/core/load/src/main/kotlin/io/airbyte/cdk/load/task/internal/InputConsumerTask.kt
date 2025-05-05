@@ -7,15 +7,15 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -78,9 +78,9 @@ class DefaultInputConsumerTask(
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
     // Required by new interface
-    @Named("recordQueue")
-    private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+    @Named("pipelineInputQueue")
+    private val pipelineInputQueue:
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
     private val openStreamQueue: QueueWriter<DestinationStream>
@@ -96,8 +96,8 @@ class DefaultInputConsumerTask(
         sizeBytes: Long
     ) {
         val stream = reserved.value.stream
-        val manager = syncManager.getStreamManager(stream)
-        val recordQueue = recordQueueSupplier.get(stream)
+        val manager = syncManager.getStreamManager(stream.descriptor)
+        val recordQueue = recordQueueSupplier.get(stream.descriptor)
         when (val message = reserved.value) {
             is DestinationRecord -> {
                 val wrapped =
@@ -125,17 +125,19 @@ class DefaultInputConsumerTask(
             is DestinationFile -> {
                 val index = manager.incrementReadCount()
                 // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
+                fileTransferQueue.publish(
+                    FileTransferQueueMessage(stream.descriptor, message, index)
+                )
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
                 val envelope =
                     BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream,
+                        SimpleBatch(BatchState.COMPLETE),
+                        streamDescriptor = message.stream.descriptor,
                     )
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
+                destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
@@ -146,55 +148,60 @@ class DefaultInputConsumerTask(
         reserved: Reserved<DestinationStreamAffinedMessage>,
     ) {
         val stream = reserved.value.stream
-        unopenedStreams.remove(stream)?.let {
-            log.info { "Saw first record for stream $stream; initializing" }
+        unopenedStreams.remove(stream.descriptor)?.let {
+            log.info { "Saw first record for stream $stream; awaiting setup complete" }
+            syncManager.awaitSetupComplete()
             // Note, since we're not spilling to disk, there is nothing to do with
             // any records before initialization is complete, so we'll wait here
             // for it to finish.
+            log.info { "Setup complete, starting stream $stream" }
             openStreamQueue.publish(it)
-            syncManager.getOrAwaitStreamLoader(stream)
+            syncManager.getOrAwaitStreamLoader(stream.descriptor)
             log.info { "Initialization for stream $stream complete" }
         }
-        val manager = syncManager.getStreamManager(stream)
+        val manager = syncManager.getStreamManager(stream.descriptor)
         when (val message = reserved.value) {
             is DestinationRecord -> {
-                val record = message.asRecordMarshaledToAirbyteValue()
+                val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
                 val pipelineMessage =
                     PipelineMessage(
                         mapOf(manager.getCurrentCheckpointId() to 1),
-                        StreamKey(stream),
-                        record
+                        StreamKey(stream.descriptor),
+                        record,
+                        postProcessingCallback = { reserved.release() }
                     )
-                val partition = partitioner.getPartition(record, recordQueueForPipeline.partitions)
-                recordQueueForPipeline.publish(reserved.replace(pipelineMessage), partition)
+                val partition = partitioner.getPartition(record, pipelineInputQueue.partitions)
+                pipelineInputQueue.publish(pipelineMessage, partition)
             }
             is DestinationRecordStreamComplete -> {
                 manager.markEndOfStream(true)
                 log.info { "Read COMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
+                pipelineInputQueue.broadcast(PipelineEndOfStream(stream.descriptor))
                 reserved.release()
             }
             is DestinationRecordStreamIncomplete -> {
                 manager.markEndOfStream(false)
                 log.info { "Read INCOMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
+                pipelineInputQueue.broadcast(PipelineEndOfStream(stream.descriptor))
                 reserved.release()
             }
             is DestinationFile -> {
                 val index = manager.incrementReadCount()
                 // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
+                fileTransferQueue.publish(
+                    FileTransferQueueMessage(stream.descriptor, message, index)
+                )
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
                 val envelope =
                     BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream,
+                        SimpleBatch(BatchState.COMPLETE),
+                        streamDescriptor = message.stream.descriptor,
                     )
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
+                destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
@@ -293,7 +300,7 @@ class DefaultInputConsumerTask(
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
             fileTransferQueue.close()
-            recordQueueForPipeline.close()
+            pipelineInputQueue.close()
         }
     }
 }
@@ -309,8 +316,7 @@ interface InputConsumerTaskFactory {
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+        pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -332,8 +338,7 @@ class DefaultInputConsumerTaskFactory(
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+        pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -348,7 +353,7 @@ class DefaultInputConsumerTaskFactory(
             fileTransferQueue,
 
             // Required by new interface
-            recordQueueForPipeline,
+            pipelineInputQueue,
             loadPipeline,
             partitioner,
             openStreamQueue,

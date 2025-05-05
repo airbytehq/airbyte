@@ -11,3 +11,9 @@ airbyte:
       flush:
         rate-ms: 900000 # 15 minutes
         window-ms: 900000 # 15 minutes
+      types:
+        # Connectors which need to recognize "legacy" separately from other unions should set this
+        # to LEGACY.
+        # ("legacy" unions are declared as `{"type": ["integer", "string", ...]}`; older connectors
+        # treated this differently from `{"oneOf": [...]}`)
+        unions: DEFAULT

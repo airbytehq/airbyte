@@ -89,6 +89,13 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.7 | 2025-05-04 | [58982](https://github.com/airbytehq/airbyte/pull/58982) | Update dependencies |
+| 1.3.6 | 2025-04-19 | [58405](https://github.com/airbytehq/airbyte/pull/58405) | Update dependencies |
+| 1.3.5 | 2025-04-12 | [57952](https://github.com/airbytehq/airbyte/pull/57952) | Update dependencies |
+| 1.3.4 | 2025-04-05 | [57415](https://github.com/airbytehq/airbyte/pull/57415) | Update dependencies |
+| 1.3.3 | 2025-03-29 | [56746](https://github.com/airbytehq/airbyte/pull/56746) | Update dependencies |
+| 1.3.2 | 2025-03-22 | [55038](https://github.com/airbytehq/airbyte/pull/55038) | Update dependencies |
+| 1.3.1 | 2025-03-13 | [55744](https://github.com/airbytehq/airbyte/pull/55744) | Increase max concurrent async job count to 2 |
 | 1.3.0 | 2025-03-04 | [55185](https://github.com/airbytehq/airbyte/pull/55185) | Update manifest for adapting changes with AsyncRetriever |
 | 1.2.9 | 2025-02-23 | [54625](https://github.com/airbytehq/airbyte/pull/54625) | Update dependencies |
 | 1.2.8 | 2025-02-15 | [54013](https://github.com/airbytehq/airbyte/pull/54013) | Update dependencies |

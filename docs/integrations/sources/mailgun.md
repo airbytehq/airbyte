@@ -68,6 +68,13 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.3.21 | 2025-05-03 | [59251](https://github.com/airbytehq/airbyte/pull/59251) | Update dependencies |
+| 0.3.20 | 2025-04-26 | [58768](https://github.com/airbytehq/airbyte/pull/58768) | Update dependencies |
+| 0.3.19 | 2025-04-19 | [58183](https://github.com/airbytehq/airbyte/pull/58183) | Update dependencies |
+| 0.3.18 | 2025-04-12 | [57752](https://github.com/airbytehq/airbyte/pull/57752) | Update dependencies |
+| 0.3.17 | 2025-04-05 | [57029](https://github.com/airbytehq/airbyte/pull/57029) | Update dependencies |
+| 0.3.16 | 2025-03-29 | [56670](https://github.com/airbytehq/airbyte/pull/56670) | Update dependencies |
+| 0.3.15 | 2025-03-22 | [56078](https://github.com/airbytehq/airbyte/pull/56078) | Update dependencies |
 | 0.3.14 | 2025-03-08 | [55465](https://github.com/airbytehq/airbyte/pull/55465) | Update dependencies |
 | 0.3.13 | 2025-03-01 | [54810](https://github.com/airbytehq/airbyte/pull/54810) | Update dependencies |
 | 0.3.12 | 2025-02-22 | [54297](https://github.com/airbytehq/airbyte/pull/54297) | Update dependencies |

@@ -1,4 +1,4 @@
-version: 5.7.3
+version: 6.33.4
 
 type: DeclarativeSource
 
@@ -48,17 +48,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -98,17 +98,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -117,7 +117,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -162,17 +162,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -181,7 +181,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -226,17 +226,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -276,17 +276,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -326,17 +326,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -345,7 +345,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -390,12 +390,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -411,6 +411,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: livefeed
           http_method: GET
+          request_parameters:
+            query: from:everyone
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -418,7 +420,7 @@ definitions:
                 max_retries: 3
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
-                    factor: 2
+                    factor: 6
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -430,22 +432,32 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - stats
+              - results
         paginator:
           type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: next
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            page_size: 10000
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: sent
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: sent
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       transformations:
         - type: AddFields
           fields:
@@ -491,17 +503,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -510,7 +522,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -555,17 +567,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -574,7 +586,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -619,12 +631,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -633,7 +645,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -678,12 +690,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -700,7 +712,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -745,12 +757,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -760,7 +772,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -804,12 +816,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -827,7 +839,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -872,17 +884,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -891,7 +903,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -936,17 +948,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
@@ -956,7 +968,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1001,12 +1013,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1024,7 +1036,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1068,17 +1080,17 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1117,31 +1129,99 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: next
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: '{{ response.get("next", {}) }}'
-            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users_me"
+    unsubscribes:
+      type: DeclarativeStream
+      name: unsubscribes
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: unsubscribes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: next
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ response.get(\"hasNext\", {}) == False }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: createdAt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/unsubscribes"
   base_requester:
     type: HttpRequester
     url_base: https://api.mixmax.com/v1/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: X-API-Token
-      api_token: '{{ config["api_key"] }}'
+        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/appointmentlinks"
@@ -1163,6 +1243,7 @@ streams:
   - $ref: "#/definitions/streams/snippettags_snippets"
   - $ref: "#/definitions/streams/userpreferences_me"
   - $ref: "#/definitions/streams/users_me"
+  - $ref: "#/definitions/streams/unsubscribes"
 
 spec:
   type: Spec
@@ -1175,15 +1256,15 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       start_date:
         type: string
+        order: 1
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 1
     additionalProperties: true
 
 metadata:
@@ -1207,135 +1288,143 @@ metadata:
     snippettags_snippets: true
     userpreferences_me: true
     users_me: true
+    unsubscribes: true
   testedStreams:
     appointmentlinks:
+      hasRecords: true
       streamHash: a4f4e0f2f095d51ad2d0fb50e6424bed59dbf2ae
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     codesnippets:
+      hasRecords: true
       streamHash: 8bb8b1148d38417c71e62ab2861325af0d74f181
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     insightsreports:
+      hasRecords: true
       streamHash: 16b8f388e71f621fe7516a1daf1266525270c4f6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     integrations_commands:
+      hasRecords: true
       streamHash: 5918b49f6bccd1b6b020bb4ac131b28af51bbf43
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     integrations_enhancements:
+      hasRecords: true
       streamHash: 14ff67bd24d01eff234c07684f9500482370b34e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     integrations_linkresolvers:
+      hasRecords: true
       streamHash: 7798f8a4c16e7506b2cf18a31d1d9e84b6325f20
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     integrations_sidebars:
+      hasRecords: true
       streamHash: 889dcaf0987a5977ef102646d90411938b86dabd
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     livefeed:
-      streamHash: 7fe519edb25f385ab837c1f89d2d5936768421f4
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 6f0ede253dcd5951611bd340cfb8ab5221279e88
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     meetingtypes:
+      hasRecords: true
       streamHash: 8a221ac0ca7b74990ab1772452493e1a6ce7a49b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     messages:
+      hasRecords: true
       streamHash: 61ce00eee1f4b5a7c611b3555d857de8306af8d1
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     rules:
+      hasRecords: true
       streamHash: 59011ebc375e1d6e3d69fd8b62ffefd19aa97606
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     rules_actions:
+      hasRecords: true
       streamHash: 0f51962a59bb62345e358c43c74e047679a8cde3
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sequences:
+      hasRecords: true
       streamHash: e75c1eb444a9e62c7a0fb439ef295020fba27c6c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sequences_recipients:
+      hasRecords: true
       streamHash: 31ab7dec133c9f7a77c34971fde7f31996fcdb2d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sequencefolders:
+      hasRecords: true
       streamHash: feed52f3ad874580630531a52e4ca265730098ce
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     snippettags:
+      hasRecords: true
       streamHash: 88d305a8b485baf7001bfc13a85cd37565543f41
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     snippettags_snippets:
+      hasRecords: true
       streamHash: 9946c6055b487131a23b3e92466cbcca1c7aa203
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     userpreferences_me:
+      hasRecords: true
       streamHash: 96179649ab97674648b82b0e8d2dd5e69d3849ec
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users_me:
+      hasRecords: true
       streamHash: c218bf8971ab8bbc4030d0690883b063779a06ba
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    unsubscribes:
+      streamHash: c3f32724c1a26764862be28904da07c5c8c4f8b2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1595,103 +1684,130 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      accepted:
+      _id:
+        type:
+          - string
+          - "null"
+      fromEmail:
+        type:
+          - string
+          - "null"
+      fromName:
+        type:
+          - string
+          - "null"
+      includeInTeamLiveFeed:
         type:
           - number
           - "null"
-      bounced:
+      lastEventAt:
         type:
           - number
           - "null"
-      clicked:
+      lastEventByEmail:
+        type:
+          - string
+          - "null"
+      lastEventByName:
+        type:
+          - string
+          - "null"
+      lastEventType:
+        type:
+          - string
+          - "null"
+      numClicks:
         type:
           - number
           - "null"
-      declined:
+      numDownloads:
         type:
           - number
           - "null"
-      delivered:
+      numOpens:
         type:
           - number
           - "null"
-      downloaded:
-        type:
-          - number
-          - "null"
-      opened:
-        type:
-          - number
-          - "null"
-      percentages:
-        type:
-          - object
-          - "null"
-        properties:
-          accepted:
-            type:
-              - number
-              - "null"
-          bounced:
-            type:
-              - number
-              - "null"
-          clicked:
-            type:
-              - number
-              - "null"
-          declined:
-            type:
-              - number
-              - "null"
-          delivered:
-            type:
-              - number
-              - "null"
-          downloaded:
-            type:
-              - number
-              - "null"
-          opened:
-            type:
-              - number
-              - "null"
-          replied:
-            type:
-              - number
-              - "null"
-          tasksCompleted:
-            type:
-              - number
-              - "null"
-          tentative:
-            type:
-              - number
-              - "null"
-          unsubscribed:
-            type:
-              - number
-              - "null"
       recipients:
         type:
-          - number
+          - array
           - "null"
-      replied:
-        type:
-          - number
-          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       sent:
+        type: number
+      service:
+        type:
+          - string
+          - "null"
+      serviceMessageId:
+        type:
+          - string
+          - "null"
+      serviceThreadId:
+        type:
+          - string
+          - "null"
+      showContentTeamFeed:
         type:
           - number
           - "null"
-      tentative:
+      subject:
+        type:
+          - string
+          - "null"
+      trackingMuted:
         type:
           - number
           - "null"
       uid:
         type: string
+      userId:
+        type:
+          - string
+          - "null"
+      wasAccepted:
+        type:
+          - number
+          - "null"
+      wasBounced:
+        type:
+          - number
+          - "null"
+      wasDeclined:
+        type:
+          - number
+          - "null"
+      wasDeliveredWithTrackedOpens:
+        type:
+          - number
+          - "null"
+      wasReplied:
+        type:
+          - number
+          - "null"
+      wasSentViaMixmax:
+        type:
+          - number
+          - "null"
+      wasTentative:
+        type:
+          - number
+          - "null"
     required:
       - uid
+      - sent
   meetingtypes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3033,3 +3149,39 @@ schemas:
         type: string
     required:
       - _id
+  unsubscribes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      messageId:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      orgId:
+        type:
+          - string
+          - "null"
+      sequenceId:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt

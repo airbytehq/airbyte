@@ -25,6 +25,13 @@ https://www.cqc.org.uk/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.25 | 2025-05-03 | [59320](https://github.com/airbytehq/airbyte/pull/59320) | Update dependencies |
+| 0.0.24 | 2025-04-26 | [58743](https://github.com/airbytehq/airbyte/pull/58743) | Update dependencies |
+| 0.0.23 | 2025-04-19 | [58286](https://github.com/airbytehq/airbyte/pull/58286) | Update dependencies |
+| 0.0.22 | 2025-04-12 | [57601](https://github.com/airbytehq/airbyte/pull/57601) | Update dependencies |
+| 0.0.21 | 2025-04-05 | [57125](https://github.com/airbytehq/airbyte/pull/57125) | Update dependencies |
+| 0.0.20 | 2025-03-29 | [56575](https://github.com/airbytehq/airbyte/pull/56575) | Update dependencies |
+| 0.0.19 | 2025-03-22 | [56124](https://github.com/airbytehq/airbyte/pull/56124) | Update dependencies |
 | 0.0.18 | 2025-03-08 | [55383](https://github.com/airbytehq/airbyte/pull/55383) | Update dependencies |
 | 0.0.17 | 2025-03-01 | [54860](https://github.com/airbytehq/airbyte/pull/54860) | Update dependencies |
 | 0.0.16 | 2025-02-22 | [54218](https://github.com/airbytehq/airbyte/pull/54218) | Update dependencies |

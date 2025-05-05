@@ -7,6 +7,7 @@ check:
   stream_names:
     - bounces
 
+max_concurrent_async_job_count: 2
 definitions:
   streams:
     bounces:

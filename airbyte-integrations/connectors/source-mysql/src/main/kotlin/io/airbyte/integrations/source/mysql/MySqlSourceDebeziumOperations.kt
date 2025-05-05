@@ -342,7 +342,7 @@ class MySqlSourceDebeziumOperations(
         }
     }
 
-    override fun generateColdStartProperties(): Map<String, String> =
+    override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
         DebeziumPropertiesBuilder()
             .with(commonProperties)
             // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
@@ -350,7 +350,6 @@ class MySqlSourceDebeziumOperations(
             // construct the db schema history. Note that we used to use schema_only_recovery mode
             // instead, but this mode has been deprecated.
             .with("snapshot.mode", "recovery")
-            .withStreams(listOf())
             .buildMap()
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =

@@ -298,7 +298,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: ITEM
+            object_types: "[ \"ITEM\" ]"
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -387,7 +387,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: CATEGORY
+            object_types: "[ \"CATEGORY\" ]"
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -476,7 +476,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: DISCOUNT
+            object_types: "[ \"DISCOUNT\" ]"
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -565,7 +565,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: TAX
+            object_types: "[\"TAX\"]"
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -654,7 +654,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: MODIFIER_LIST
+            object_types: "[ \"MODIFIER_LIST\" ]"
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -1390,31 +1390,31 @@ metadata:
       - authenticator
   testedStreams:
     customers:
-      streamHash: 512f6c0efa25012a95ae404d59b34f51381d63ea
+      streamHash: e6ebc3464383aee86e3304afcd6302ae5577bbc0
     locations:
-      streamHash: d4582c3b8bac1a5cb02bb2a3969ae5d61715072f
+      streamHash: 56d8b67de73cdfdadbe19d50f959b77b1ac45a5c
     shifts:
-      streamHash: 2543e0b1511dfcfb93100f892701b86d7df41b2e
+      streamHash: ee6406f00bcbde92b5dbf3b6a8d212dba1f41445
     team_members:
-      streamHash: 27e584f390cd72f919397e5c38cd87b19543327c
+      streamHash: 3e17e08e6601e42bf2bd9318933fb68ab6615b0a
     team_member_wages:
-      streamHash: df7b36ae383488e650e7915068e3043ee07461ac
+      streamHash: 2667ffbf86e3a4332f386bd911bcc52ea2cbbb92
     items:
-      streamHash: bd3ab876b289b4dba7065b913910b8045d3fb747
+      streamHash: b7c808ec7abe3ef60c58a97420b877c84c3569c0
     categories:
-      streamHash: 00e5efbf9ca77b0980b2bfa9588f2b96aa360af8
+      streamHash: 0b00f3847e3d4d8f16b5aad8ec9d643a603659f6
     discounts:
-      streamHash: 115de6f88c47141c141e6b40de20775da3815a06
+      streamHash: 71715c06aa77314689de616f21ca8f5eb6dc54ba
     taxes:
-      streamHash: 98f52a1e47bf1a68b2e1c195405dacbb7dd86ed8
+      streamHash: 9df5623442f14d39d432b2d7147dcbfca9789e65
     modifier_list:
-      streamHash: e430f0c3735e10a7715a7e8950a477bc0a2a218c
+      streamHash: 6535b3939bb4145076a0fd45da54d2f616e8223a
     refunds:
-      streamHash: 3e3ef3b42273620897faeff5f34df0bc35d0d6fa
+      streamHash: f77f287a6f1503e4701120ca8911c2d5ad178851
     inventory:
       streamHash: b799f598deb52190117f2e3626d87e62b8987c6a
     payments:
-      streamHash: 3f9c6b9f4894d778bfe4214b1a3155cc3eda24aa
+      streamHash: 79e362e00062c869c94f1612393558f5402b5790
     orders:
       streamHash: 2c6311a34808057dd827658bb191672270b7d957
     bank_accounts:
@@ -1422,7 +1422,7 @@ metadata:
     cash_drawers:
       streamHash: 7a857ae17a85d3b6387fe58a4b300b40cd85c66e
     loyalty:
-      streamHash: 59b9bdbd762fef15515bcedbe6e2b2bc8f2b27dd
+      streamHash: 8759511aab6d092421dac775373d8216ede60c0b
   assist: {}
 
 schemas:

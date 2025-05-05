@@ -12,6 +12,7 @@ import java.time.Duration
 import java.util.Properties
 import java.util.regex.Pattern
 import kotlin.reflect.KClass
+import kotlin.time.Duration.Companion.minutes
 import org.apache.kafka.connect.connector.Connector
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.storage.FileOffsetBackingStore
@@ -59,7 +60,10 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         with("value.converter.replace.null.with.default", "false")
         // Timeout for DebeziumEngine's close() method.
         // We find that in production, substantial time is in fact legitimately required here.
-        with("debezium.embedded.shutdown.pause.before.interrupt.ms", "60000")
+        with(
+            "debezium.embedded.shutdown.pause.before.interrupt.ms",
+            5.minutes.inWholeMilliseconds.toString()
+        )
         // Unblock CDC syncs by skipping errors caused by unparseable DDLs
         with("schema.history.internal.skip.unparseable.ddl", "true")
     }
@@ -117,6 +121,12 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
 
     /** Tells Debezium which tables and columns we care about. */
     fun withStreams(streams: List<Stream>): DebeziumPropertiesBuilder {
+        if (streams.isEmpty()) {
+            return apply {
+                with("table.include.list", "$^")
+                with("column.include.list", "$^")
+            }
+        }
         val tableIncludeList: List<String> =
             streams.map { Pattern.quote("${it.namespace}.${it.name}") }
         val columnIncludeList: List<String> =

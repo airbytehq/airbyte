@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/destination-kafka
   githubIssueLabel: destination-kafka
   icon: kafka.svg

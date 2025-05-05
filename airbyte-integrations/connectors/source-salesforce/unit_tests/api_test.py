@@ -27,6 +27,7 @@ from source_salesforce.streams import (
     RestSalesforceStream,
 )
 
+from airbyte_cdk import Record
 from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStream,
@@ -148,7 +149,14 @@ def _bulk_stream_path() -> str:
 
 def _get_result_id(stream):
     stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
-    return int(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))[0]["ID"])
+    return int(
+        list(
+            filter(
+                lambda message: isinstance(message, Record) or message.type == Type.RECORD,
+                stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices),
+            )
+        )[0]["ID"]
+    )
 
 
 # maximum timeout is wait_timeout * max_retry_attempt
@@ -619,8 +627,13 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
 
     # as the execution is concurrent, we can only assert the last state message here
     last_actual_state = [item.state.stream.stream_state for item in result if item.type == Type.STATE][-1]
-    last_expected_state = {"slices": [{"start": "2023-01-01T00:00:00.000Z", "end": "2023-04-01T00:00:00.000Z"}], "state_type": "date-range"}
-    assert last_actual_state == AirbyteStateBlob(last_expected_state)
+    last_expected_state = {
+        "slices": [
+            {"start": "2023-01-01T00:00:00.000Z", "end": "2023-04-01T00:00:00.000Z", "most_recent_cursor_value": "2023-04-01T00:00:00.000Z"}
+        ],
+        "state_type": "date-range",
+    }
+    assert last_actual_state.__dict__ == last_expected_state
 
 
 def test_request_params_incremental(stream_config_date_format, stream_api):

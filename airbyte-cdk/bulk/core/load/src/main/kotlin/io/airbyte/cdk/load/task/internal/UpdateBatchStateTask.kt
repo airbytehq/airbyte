@@ -5,8 +5,9 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.QueueReader
+import io.airbyte.cdk.load.pipeline.BatchEndOfStream
 import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointManager
@@ -32,28 +33,36 @@ class UpdateBatchStateTask(
     override suspend fun execute() {
         inputQueue.consume().collect { message ->
             val manager = syncManager.getStreamManager(message.stream)
-            if (message is BatchStateUpdate) {
-                when (message.state) {
-                    Batch.State.COMPLETE -> {
-                        message.checkpointCounts.forEach {
-                            manager.incrementCompletedCount(
-                                it.key,
-                                it.value,
-                            )
+            val state =
+                when (message) {
+                    is BatchStateUpdate -> {
+                        log.info {
+                            "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
                         }
+                        manager.incrementCheckpointCounts(
+                            message.taskName,
+                            message.part,
+                            message.state,
+                            message.checkpointCounts,
+                            message.inputCount
+                        )
+                        message.state
                     }
-                    Batch.State.PERSISTED -> {
-                        message.checkpointCounts.forEach {
-                            manager.incrementPersistedCount(
-                                it.key,
-                                it.value,
-                            )
+                    is BatchEndOfStream -> {
+                        log.info {
+                            "End-of-stream checks for ${message.stream}: ${message.taskName}[${message.part}]"
                         }
+                        manager.markTaskEndOfStream(
+                            message.taskName,
+                            message.part,
+                            message.totalInputCount
+                        )
+                        BatchState.COMPLETE
                     }
-                    else -> return@collect
                 }
+            if (state.isPersisted()) {
+                checkpointManager.flushReadyCheckpointMessages()
             }
-            checkpointManager.flushReadyCheckpointMessages()
             if (manager.isBatchProcessingCompleteForCheckpoints()) {
                 log.info { "Batch processing complete for ${message.stream}" }
                 launcher.handleStreamComplete(message.stream)

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.7.2"
+version = "0.9.3"
 name = "source-microsoft-sharepoint"
 description = "Source implementation for Microsoft SharePoint."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_microsoft_sharepoint"
 
 [tool.poetry.dependencies]
 python = "^3.11,<3.12"
-msal = "==1.25.0"
+msal = "==1.27.0"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
 airbyte-cdk = {extras = ["file-based"], version = "^6"}

@@ -10,11 +10,9 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import java.time.Instant
 import java.util.*
-import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.commons.lang3.StringUtils
-import org.apache.commons.text.StringSubstitutor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -65,6 +63,7 @@ class BigQuerySqlGenerator
             val chosenType: AirbyteType = airbyteType.chooseType()
             return extractAndCast(column, chosenType, forceSafeCast)
         }
+        val columnName = escapeColumnNameForJsonPath(column.originalName)
 
         if (airbyteType is Struct) {
             // We need to validate that the struct is actually a struct.
@@ -74,44 +73,26 @@ class BigQuerySqlGenerator
             // JSON null).
             // JSON_QUERY(JSON'{}', '$."foo"') returns a SQL null.
             // JSON_QUERY(JSON'{"foo": null}', '$."foo"') returns a JSON null.
-            return StringSubstitutor(
-                    java.util.Map.of(
-                        "column_name",
-                        escapeColumnNameForJsonPath(column.originalName)
-                    )
-                )
-                .replace(
-                    """
-          PARSE_JSON(CASE
-            WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"') IS NULL
-              OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"'), wide_number_mode=>'round')) != 'object'
-              THEN NULL
-            ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"')
-          END, wide_number_mode=>'round')
-          
-          """.trimIndent()
-                )
+            return """
+                   PARSE_JSON(CASE
+                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"') IS NULL
+                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"'), wide_number_mode=>'round')) != 'object'
+                       THEN NULL
+                     ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"')
+                   END, wide_number_mode=>'round')
+                   """.trimIndent()
         }
 
         if (airbyteType is Array) {
             // Much like the Struct case above, arrays need special handling.
-            return StringSubstitutor(
-                    java.util.Map.of(
-                        "column_name",
-                        escapeColumnNameForJsonPath(column.originalName)
-                    )
-                )
-                .replace(
-                    """
-          PARSE_JSON(CASE
-            WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"') IS NULL
-              OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"'), wide_number_mode=>'round')) != 'array'
-              THEN NULL
-            ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"')
-          END, wide_number_mode=>'round')
-          
-          """.trimIndent()
-                )
+            return """
+                   PARSE_JSON(CASE
+                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"') IS NULL
+                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"'), wide_number_mode=>'round')) != 'array'
+                       THEN NULL
+                     ELSE JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"')
+                   END, wide_number_mode=>'round')
+                   """.trimIndent()
         }
 
         if (airbyteType is UnsupportedOneOf || airbyteType === AirbyteProtocolType.UNKNOWN) {
@@ -119,18 +100,7 @@ class BigQuerySqlGenerator
             // the
             // airbyte_data to json
             // and json_query it directly (which preserves nulls correctly).
-            return StringSubstitutor(
-                    java.util.Map.of(
-                        "column_name",
-                        escapeColumnNameForJsonPath(column.originalName)
-                    )
-                )
-                .replace(
-                    """
-          JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."${'$'}{column_name}"')
-          
-          """.trimIndent()
-                )
+            return """JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."$columnName"')"""
         }
 
         if (airbyteType === AirbyteProtocolType.STRING) {
@@ -139,31 +109,19 @@ class BigQuerySqlGenerator
             // Naive json_value returns NULL for object/array values and json_query adds escaped
             // quotes to the
             // string.
-            return StringSubstitutor(
-                    java.util.Map.of(
-                        "column_name",
-                        escapeColumnNameForJsonPath(column.originalName)
-                    )
-                )
-                .replace(
-                    """
-          (CASE
-                WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"') IS NULL
-                  OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"'), wide_number_mode=>'round')) != 'string'
-                  THEN JSON_QUERY(`_airbyte_data`, '${'$'}."${'$'}{column_name}"')
-              ELSE
-              JSON_VALUE(`_airbyte_data`, '${'$'}."${'$'}{column_name}"')
-            END)
-          
-          """.trimIndent()
-                )
+            return """
+                   (CASE
+                     WHEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"') IS NULL
+                       OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"'), wide_number_mode=>'round')) != 'string'
+                       THEN JSON_QUERY(`_airbyte_data`, '${'$'}."$columnName"')
+                     ELSE
+                     JSON_VALUE(`_airbyte_data`, '${'$'}."$columnName"')
+                   END)
+                   """.trimIndent()
         }
 
         val dialectType = toDialectType(airbyteType)
-        val baseTyping =
-            "JSON_VALUE(`_airbyte_data`, '$.\"" +
-                escapeColumnNameForJsonPath(column.originalName) +
-                "\"')"
+        val baseTyping = """JSON_VALUE(`_airbyte_data`, '$."$columnName"')"""
         return if (dialectType == StandardSQLTypeName.STRING) {
             // json_value implicitly returns a string, so we don't need to cast it.
             baseTyping
@@ -181,54 +139,28 @@ class BigQuerySqlGenerator
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
         val forceCreateTable = if (force) "OR REPLACE" else ""
-
+        val finalTableId = stream.id.finalTableId(QUOTE, suffix)
         return Sql.of(
-            StringSubstitutor(
-                    java.util.Map.of<String, String>(
-                        "project_id",
-                        "`$projectId`",
-                        "final_namespace",
-                        stream.id.finalNamespace(QUOTE),
-                        "force_create_table",
-                        forceCreateTable,
-                        "final_table_id",
-                        stream.id.finalTableId(QUOTE, suffix),
-                        "column_declarations",
-                        columnDeclarations,
-                        "cluster_config",
-                        clusterConfig
-                    )
-                )
-                .replace(
-                    """
-            CREATE ${'$'}{force_create_table} TABLE ${'$'}{project_id}.${'$'}{final_table_id} (
+            """
+            CREATE $forceCreateTable TABLE `$projectId`.$finalTableId (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
               _airbyte_generation_id INTEGER,
-            ${'$'}{column_declarations}
+              $columnDeclarations
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY ${'$'}{cluster_config};
-            
+            CLUSTER BY $clusterConfig;
             """.trimIndent()
-                )
         )
     }
 
     private fun columnsAndTypes(stream: StreamConfig): String {
         return stream.columns.entries
             .stream()
-            .map<String>(
-                Function<Map.Entry<ColumnId, AirbyteType>, String> {
-                    column: Map.Entry<ColumnId, AirbyteType> ->
-                    java.lang.String.join(
-                        " ",
-                        column.key.name(QUOTE),
-                        toDialectType(column.value).name
-                    )
-                }
-            )
+            .map { column: Map.Entry<ColumnId, AirbyteType> ->
+                java.lang.String.join(" ", column.key.name(QUOTE), toDialectType(column.value).name)
+            }
             .collect(Collectors.joining(",\n"))
     }
 
@@ -250,41 +182,15 @@ class BigQuerySqlGenerator
             )
     }
 
-    fun dropTableIfExists(stream: StreamConfig, suffix: String): Sql {
-        return Sql.of(
-            StringSubstitutor(
-                    java.util.Map.of<String, String>(
-                        "project_id",
-                        "`$projectId`",
-                        "table_id",
-                        stream.id.finalTableId(QUOTE, suffix)
-                    )
-                )
-                .replace(
-                    """
-                     DROP TABLE IF EXISTS ${'$'}{project_id}.${'$'}{table_id};
-                     
-                     """.trimIndent()
-                )
-        )
+    private fun dropTableIfExists(stream: StreamConfig, suffix: String): Sql {
+        val tableId = stream.id.finalTableId(QUOTE, suffix)
+        return Sql.of("""DROP TABLE IF EXISTS `$projectId`.$tableId;""")
     }
 
     override fun clearLoadedAt(streamId: StreamId): Sql {
+        val rawTableId = streamId.rawTableId(QUOTE)
         return Sql.of(
-            StringSubstitutor(
-                    java.util.Map.of<String, String>(
-                        "project_id",
-                        "`$projectId`",
-                        "raw_table_id",
-                        streamId.rawTableId(QUOTE)
-                    )
-                )
-                .replace(
-                    """
-                     UPDATE ${'$'}{project_id}.${'$'}{raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
-                     
-                     """.trimIndent()
-                )
+            """UPDATE `$projectId`.$rawTableId SET _airbyte_loaded_at = NULL WHERE 1=1;"""
         )
     }
 
@@ -314,39 +220,22 @@ class BigQuerySqlGenerator
         val columnList: String =
             stream.columns.keys
                 .stream()
-                .map<String>(
-                    Function<ColumnId, String> { quotedColumnId: ColumnId ->
-                        quotedColumnId.name(QUOTE) + ","
-                    }
-                )
+                .map { quotedColumnId: ColumnId -> quotedColumnId.name(QUOTE) + "," }
                 .collect(Collectors.joining("\n"))
         val extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp)
+        val finalTableId = stream.id.finalTableId(QUOTE, finalSuffix)
 
-        return StringSubstitutor(
-                java.util.Map.of(
-                    "project_id",
-                    "`$projectId`",
-                    "final_table_id",
-                    stream.id.finalTableId(QUOTE, finalSuffix),
-                    "column_list",
-                    columnList,
-                    "extractNewRawRecords",
-                    extractNewRawRecords
-                )
-            )
-            .replace(
-                """
-            INSERT INTO ${'$'}{project_id}.${'$'}{final_table_id}
-            (
-            ${'$'}{column_list}
-              _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at,
-              _airbyte_generation_id
-            )
-            ${'$'}{extractNewRawRecords};
-            """.trimIndent()
-            )
+        return """
+               INSERT INTO `$projectId`.$finalTableId
+               (
+               $columnList
+                 _airbyte_meta,
+                 _airbyte_raw_id,
+                 _airbyte_extracted_at,
+                 _airbyte_generation_id
+               )
+               $extractNewRawRecords;
+               """.trimIndent()
     }
 
     private fun upsertNewRecords(
@@ -360,35 +249,21 @@ class BigQuerySqlGenerator
                 .stream()
                 .map { pk: ColumnId ->
                     val quotedPk = pk.name(QUOTE)
-                    ("(target_table." +
-                        quotedPk +
-                        " = new_record." +
-                        quotedPk +
-                        " OR (target_table." +
-                        quotedPk +
-                        " IS NULL AND new_record." +
-                        quotedPk +
-                        " IS NULL))")
+                    ("""(target_table.$quotedPk = new_record.$quotedPk OR (target_table.$quotedPk IS NULL AND new_record.$quotedPk IS NULL))""")
                 }
                 .collect(Collectors.joining(" AND "))
 
         val columnList: String =
             stream.columns.keys
                 .stream()
-                .map<String>(
-                    Function<ColumnId, String> { quotedColumnId: ColumnId ->
-                        quotedColumnId.name(QUOTE) + ","
-                    }
-                )
+                .map { quotedColumnId: ColumnId -> quotedColumnId.name(QUOTE) + "," }
                 .collect(Collectors.joining("\n"))
         val newRecordColumnList: String =
             stream.columns.keys
                 .stream()
-                .map<String>(
-                    Function<ColumnId, String> { quotedColumnId: ColumnId ->
-                        "new_record." + quotedColumnId.name(QUOTE) + ","
-                    }
-                )
+                .map { quotedColumnId: ColumnId ->
+                    "new_record." + quotedColumnId.name(QUOTE) + ","
+                }
                 .collect(Collectors.joining("\n"))
         val extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp)
 
@@ -397,31 +272,14 @@ class BigQuerySqlGenerator
             val cursor = stream.cursor.get().name(QUOTE)
             // Build a condition for "new_record is more recent than target_table":
             cursorComparison = // First, compare the cursors.
-            ("(target_table." +
-                    cursor +
-                    " < new_record." +
-                    cursor // Then, break ties with extracted_at. (also explicitly check for both
-                    // new_record and final table
-                    // having null cursor
-                    // because NULL != NULL in SQL)
-                    +
-                    " OR (target_table." +
-                    cursor +
-                    " = new_record." +
-                    cursor +
-                    " AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)" +
-                    " OR (target_table." +
-                    cursor +
-                    " IS NULL AND new_record." +
-                    cursor +
-                    " IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)" // Or, if the final table has null cursor but new_record has non-null cursor, then take the new
-                    // record.
-                    +
-                    " OR (target_table." +
-                    cursor +
-                    " IS NULL AND new_record." +
-                    cursor +
-                    " IS NOT NULL))")
+            ("""
+             (
+               target_table.$cursor < new_record.$cursor
+               OR (target_table.$cursor = new_record.$cursor AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
+               OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
+               OR (target_table.$cursor IS NULL AND new_record.$cursor IS NOT NULL)
+             )
+             """.trimIndent())
         } else {
             // If there's no cursor, then we just take the most-recently-emitted record
             cursorComparison =
@@ -446,67 +304,40 @@ class BigQuerySqlGenerator
         val columnAssignments: String =
             stream.columns.keys
                 .stream()
-                .map<String>(
-                    Function<ColumnId, String> { airbyteType: ColumnId ->
-                        val column = airbyteType.name(QUOTE)
-                        "$column = new_record.$column,"
-                    }
-                )
+                .map { airbyteType: ColumnId ->
+                    val column = airbyteType.name(QUOTE)
+                    "$column = new_record.$column,"
+                }
                 .collect(Collectors.joining("\n"))
+        val finalTableId = stream.id.finalTableId(QUOTE, finalSuffix)
 
-        return StringSubstitutor(
-                java.util.Map.of(
-                    "project_id",
-                    "`$projectId`",
-                    "final_table_id",
-                    stream.id.finalTableId(QUOTE, finalSuffix),
-                    "extractNewRawRecords",
-                    extractNewRawRecords,
-                    "pkEquivalent",
-                    pkEquivalent,
-                    "cdcDeleteClause",
-                    cdcDeleteClause,
-                    "cursorComparison",
-                    cursorComparison,
-                    "columnAssignments",
-                    columnAssignments,
-                    "cdcSkipInsertClause",
-                    cdcSkipInsertClause,
-                    "column_list",
-                    columnList,
-                    "newRecordColumnList",
-                    newRecordColumnList
-                )
-            )
-            .replace(
-                """
-            MERGE ${'$'}{project_id}.${'$'}{final_table_id} target_table
-            USING (
-              ${'$'}{extractNewRawRecords}
-            ) new_record
-            ON ${'$'}{pkEquivalent}
-            ${'$'}{cdcDeleteClause}
-            WHEN MATCHED AND ${'$'}{cursorComparison} THEN UPDATE SET
-              ${'$'}{columnAssignments}
-              _airbyte_meta = new_record._airbyte_meta,
-              _airbyte_raw_id = new_record._airbyte_raw_id,
-              _airbyte_extracted_at = new_record._airbyte_extracted_at,
-              _airbyte_generation_id = new_record._airbyte_generation_id
-            WHEN NOT MATCHED ${'$'}{cdcSkipInsertClause} THEN INSERT (
-              ${'$'}{column_list}
-              _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at,
-              _airbyte_generation_id
-            ) VALUES (
-              ${'$'}{newRecordColumnList}
-              new_record._airbyte_meta,
-              new_record._airbyte_raw_id,
-              new_record._airbyte_extracted_at,
-              new_record._airbyte_generation_id
-            );
-            """.trimIndent()
-            )
+        return """
+               MERGE `$projectId`.$finalTableId target_table
+               USING (
+                 $extractNewRawRecords
+               ) new_record
+               ON $pkEquivalent
+               $cdcDeleteClause
+               WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+                 $columnAssignments
+                 _airbyte_meta = new_record._airbyte_meta,
+                 _airbyte_raw_id = new_record._airbyte_raw_id,
+                 _airbyte_extracted_at = new_record._airbyte_extracted_at,
+                 _airbyte_generation_id = new_record._airbyte_generation_id
+               WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
+                 $columnList
+                 _airbyte_meta,
+                 _airbyte_raw_id,
+                 _airbyte_extracted_at,
+                 _airbyte_generation_id
+               ) VALUES (
+                 $newRecordColumnList
+                 new_record._airbyte_meta,
+                 new_record._airbyte_raw_id,
+                 new_record._airbyte_extracted_at,
+                 new_record._airbyte_generation_id
+               );
+               """.trimIndent()
     }
 
     /**
@@ -524,49 +355,33 @@ class BigQuerySqlGenerator
         val columnCasts: String =
             stream.columns.entries
                 .stream()
-                .map<String>(
-                    Function<Map.Entry<ColumnId, AirbyteType>, String> {
-                        col: Map.Entry<ColumnId, AirbyteType> ->
-                        extractAndCast(col.key, col.value, forceSafeCasting) +
-                            " as " +
-                            col.key.name(QUOTE) +
-                            ","
-                    }
-                )
+                .map { col: Map.Entry<ColumnId, AirbyteType> ->
+                    val extractAndCast = extractAndCast(col.key, col.value, forceSafeCasting)
+                    val columnName = col.key.name(QUOTE)
+                    """$extractAndCast as $columnName,"""
+                }
                 .collect(Collectors.joining("\n"))
         val columnErrors =
             if (forceSafeCasting) {
                 "[" +
                     stream.columns.entries
                         .stream()
-                        .map<String>(
-                            Function<Map.Entry<ColumnId, AirbyteType>, String> {
-                                col: Map.Entry<ColumnId, AirbyteType> ->
-                                StringSubstitutor(
-                                        java.util.Map.of<String, String>(
-                                            "raw_col_name",
-                                            escapeColumnNameForJsonPath(col.key.originalName),
-                                            "col_type",
-                                            toDialectType(col.value).name,
-                                            "json_extract",
-                                            extractAndCast(col.key, col.value, true)
-                                        )
-                                    )
-                                    .replace( // Explicitly parse json here. This is safe because
-                                        // we're not using the actual value anywhere,
-                                        // and necessary because json_query
-                                        """
-                  CASE
-                    WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."${'$'}{raw_col_name}"') IS NOT NULL)
-                      AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."${'$'}{raw_col_name}"')) != 'null')
-                      AND (${'$'}{json_extract} IS NULL)
-                      THEN JSON '{"field":"${'$'}{raw_col_name}","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
-                    ELSE NULL
-                  END
-                  """.trimIndent()
-                                    )
-                            }
-                        )
+                        .map { col: Map.Entry<ColumnId, AirbyteType> ->
+                            val rawColName = escapeColumnNameForJsonPath(col.key.originalName)
+                            val jsonExtract = extractAndCast(col.key, col.value, true)
+                            // Explicitly parse json here. This is safe because
+                            // we're not using the actual value anywhere,
+                            // and necessary because json_query
+                            """
+                            CASE
+                              WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."$rawColName"') IS NOT NULL)
+                                AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '${'$'}."$rawColName"')) != 'null')
+                                AND ($jsonExtract IS NULL)
+                                THEN JSON '{"field":"$rawColName","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
+                              ELSE NULL
+                            END
+                            """.trimIndent()
+                        }
                         .collect(Collectors.joining(",\n")) +
                     "]"
             } else {
@@ -578,14 +393,11 @@ class BigQuerySqlGenerator
         val columnList: String =
             stream.columns.keys
                 .stream()
-                .map<String>(
-                    Function<ColumnId, String> { quotedColumnId: ColumnId ->
-                        quotedColumnId.name(QUOTE) + ","
-                    }
-                )
+                .map { quotedColumnId: ColumnId -> quotedColumnId.name(QUOTE) + "," }
                 .collect(Collectors.joining("\n"))
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
 
+        val rawTableId = stream.id.rawTableId(QUOTE)
         if (stream.postImportAction == ImportType.DEDUPE) {
             // When deduping, we need to dedup the raw records. Note the row_number() invocation in
             // the SQL
@@ -602,12 +414,11 @@ class BigQuerySqlGenerator
             if (stream.columns.containsKey(CDC_DELETED_AT_COLUMN)) {
                 cdcConditionalOrIncludeStatement =
                     """
-                                           OR (
-                                             _airbyte_loaded_at IS NOT NULL
-                                             AND JSON_VALUE(`_airbyte_data`, '${'$'}._ab_cdc_deleted_at') IS NOT NULL
-                                           )
-                                           
-                                           """.trimIndent()
+                    OR (
+                      _airbyte_loaded_at IS NOT NULL
+                      AND JSON_VALUE(`_airbyte_data`, '${'$'}._ab_cdc_deleted_at') IS NOT NULL
+                    )
+                    """.trimIndent()
             }
 
             val pkList =
@@ -620,168 +431,104 @@ class BigQuerySqlGenerator
                     .map { cursorId: ColumnId -> cursorId.name(QUOTE) + " DESC NULLS LAST," }
                     .orElse("")
 
-            return StringSubstitutor(
-                    java.util.Map.of(
-                        "project_id",
-                        "`$projectId`",
-                        "raw_table_id",
-                        stream.id.rawTableId(QUOTE),
-                        "column_casts",
-                        columnCasts,
-                        "column_errors",
-                        columnErrors,
-                        "cdcConditionalOrIncludeStatement",
-                        cdcConditionalOrIncludeStatement,
-                        "extractedAtCondition",
-                        extractedAtCondition,
-                        "column_list",
-                        columnList,
-                        "pk_list",
-                        pkList,
-                        "cursor_order_clause",
-                        cursorOrderClause
-                    )
-                )
-                .replace(
-                    """
-              WITH intermediate_data AS (
-                SELECT
-              ${'$'}{column_casts}
-                ${'$'}{column_errors} AS column_errors,
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id
-                FROM ${'$'}{project_id}.${'$'}{raw_table_id}
-                WHERE (
-                    _airbyte_loaded_at IS NULL
-                    ${'$'}{cdcConditionalOrIncludeStatement}
-                  ) ${'$'}{extractedAtCondition}
-              ), new_records AS (
-                SELECT
-                ${'$'}{column_list}
-                  to_json(json_set(
-                    coalesce(parse_json(_airbyte_meta), JSON'{}'),
-                    '${'$'}.changes',
-                    json_array_append(
-                      coalesce(json_query(parse_json(_airbyte_meta), '${'$'}.changes'), JSON'[]'),
-                      '${'$'}',
-                      COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
-                     )
-                  )) as _airbyte_meta,
-                  _airbyte_raw_id,
-                  _airbyte_extracted_at,
-                  _airbyte_generation_id
-                FROM intermediate_data
-              ), numbered_rows AS (
-                SELECT *, row_number() OVER (
-                  PARTITION BY ${'$'}{pk_list} ORDER BY ${'$'}{cursor_order_clause} `_airbyte_extracted_at` DESC
-                ) AS row_number
-                FROM new_records
-              )
-              SELECT ${'$'}{column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
-              FROM numbered_rows
-              WHERE row_number = 1
-              """.trimIndent()
-                )
+            return """
+                   WITH intermediate_data AS (
+                     SELECT
+                   $columnCasts
+                     $columnErrors AS column_errors,
+                     _airbyte_raw_id,
+                     _airbyte_extracted_at,
+                     _airbyte_meta,
+                     _airbyte_generation_id
+                     FROM `$projectId`.$rawTableId
+                     WHERE (
+                         _airbyte_loaded_at IS NULL
+                         $cdcConditionalOrIncludeStatement
+                       ) $extractedAtCondition
+                   ), new_records AS (
+                     SELECT
+                     $columnList
+                       to_json(json_set(
+                         coalesce(parse_json(_airbyte_meta), JSON'{}'),
+                         '${'$'}.changes',
+                         json_array_append(
+                           coalesce(json_query(parse_json(_airbyte_meta), '${'$'}.changes'), JSON'[]'),
+                           '${'$'}',
+                           COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
+                          )
+                       )) as _airbyte_meta,
+                       _airbyte_raw_id,
+                       _airbyte_extracted_at,
+                       _airbyte_generation_id
+                     FROM intermediate_data
+                   ), numbered_rows AS (
+                     SELECT *, row_number() OVER (
+                       PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
+                     ) AS row_number
+                     FROM new_records
+                   )
+                   SELECT $columnList _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
+                   FROM numbered_rows
+                   WHERE row_number = 1
+                   """.trimIndent()
         } else {
             // When not deduplicating, we just need to handle type casting.
             // Extract+cast the not-yet-loaded records in a CTE, then select that CTE and build
             // airbyte_meta.
 
-            return StringSubstitutor(
-                    java.util.Map.of(
-                        "project_id",
-                        "`$projectId`",
-                        "raw_table_id",
-                        stream.id.rawTableId(QUOTE),
-                        "column_casts",
-                        columnCasts,
-                        "column_errors",
-                        columnErrors,
-                        "extractedAtCondition",
-                        extractedAtCondition,
-                        "column_list",
-                        columnList
-                    )
-                )
-                .replace(
-                    """
-              WITH intermediate_data AS (
-                SELECT
-              ${'$'}{column_casts}
-                ${'$'}{column_errors} AS column_errors,
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_meta,
-                _airbyte_generation_id
-                FROM ${'$'}{project_id}.${'$'}{raw_table_id}
-                WHERE
-                  _airbyte_loaded_at IS NULL
-                  ${'$'}{extractedAtCondition}
-              )
-              SELECT
-              ${'$'}{column_list}
-                to_json(json_set(
-                    coalesce(parse_json(_airbyte_meta), JSON'{}'),
-                    '${'$'}.changes',
-                    json_array_append(
-                      coalesce(json_query(parse_json(_airbyte_meta), '${'$'}.changes'), JSON'[]'),
-                      '${'$'}',
-                      COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
-                     )
-                  )) as _airbyte_meta,
-                _airbyte_raw_id,
-                _airbyte_extracted_at,
-                _airbyte_generation_id
-              FROM intermediate_data
-              """.trimIndent()
-                )
+            return """
+                   WITH intermediate_data AS (
+                     SELECT
+                   $columnCasts
+                     $columnErrors AS column_errors,
+                     _airbyte_raw_id,
+                     _airbyte_extracted_at,
+                     _airbyte_meta,
+                     _airbyte_generation_id
+                     FROM `$projectId`.$rawTableId
+                     WHERE
+                       _airbyte_loaded_at IS NULL
+                       $extractedAtCondition
+                   )
+                   SELECT
+                   $columnList
+                     to_json(json_set(
+                         coalesce(parse_json(_airbyte_meta), JSON'{}'),
+                         '${'$'}.changes',
+                         json_array_append(
+                           coalesce(json_query(parse_json(_airbyte_meta), '${'$'}.changes'), JSON'[]'),
+                           '${'$'}',
+                           COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
+                          )
+                       )) as _airbyte_meta,
+                     _airbyte_raw_id,
+                     _airbyte_extracted_at,
+                     _airbyte_generation_id
+                   FROM intermediate_data
+                   """.trimIndent()
         }
     }
 
     @VisibleForTesting
     fun commitRawTable(id: StreamId, minRawTimestamp: Optional<Instant>): String {
-        return StringSubstitutor(
-                java.util.Map.of(
-                    "project_id",
-                    "`$projectId`",
-                    "raw_table_id",
-                    id.rawTableId(QUOTE),
-                    "extractedAtCondition",
-                    buildExtractedAtCondition(minRawTimestamp)
-                )
-            )
-            .replace(
-                """
-            UPDATE ${'$'}{project_id}.${'$'}{raw_table_id}
-            SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
-            WHERE `_airbyte_loaded_at` IS NULL
-              ${'$'}{extractedAtCondition}
-            ;
-            """.trimIndent()
-            )
+        val rawTableId = id.rawTableId(QUOTE)
+        val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
+        return """
+               UPDATE `$projectId`.$rawTableId
+               SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
+               WHERE `_airbyte_loaded_at` IS NULL
+                 $extractedAtCondition
+               ;
+               """.trimIndent()
     }
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
-        val substitutor =
-            StringSubstitutor(
-                java.util.Map.of(
-                    "project_id",
-                    "`$projectId`",
-                    "final_table_id",
-                    stream.finalTableId(QUOTE),
-                    "tmp_final_table",
-                    stream.finalTableId(QUOTE, finalSuffix),
-                    "real_final_table",
-                    stream.finalName(QUOTE)
-                )
-            )
+        val finalTableId = stream.finalTableId(QUOTE)
+        val tempFinalTableId = stream.finalTableId(QUOTE, finalSuffix)
+        val realFinalTableName = stream.finalName(QUOTE)
         return Sql.separately(
-            substitutor.replace("DROP TABLE IF EXISTS \${project_id}.\${final_table_id};"),
-            substitutor.replace(
-                "ALTER TABLE \${project_id}.\${tmp_final_table} RENAME TO \${real_final_table};"
-            )
+            "DROP TABLE IF EXISTS `$projectId`.$finalTableId;",
+            "ALTER TABLE `$projectId`.$tempFinalTableId RENAME TO $realFinalTableName;"
         )
     }
 
@@ -792,38 +539,19 @@ class BigQuerySqlGenerator
     }
 
     override fun createSchema(schema: String): Sql {
+        val projectId = StringUtils.wrap(projectId, QUOTE)
+        val quotedSchema = StringUtils.wrap(schema, QUOTE)
         return Sql.of(
-            StringSubstitutor(
-                    java.util.Map.of<String, String>(
-                        "schema",
-                        StringUtils.wrap(schema, QUOTE),
-                        "project_id",
-                        StringUtils.wrap(projectId, QUOTE),
-                        "dataset_location",
-                        datasetLocation
-                    )
-                )
-                .replace(
-                    "CREATE SCHEMA IF NOT EXISTS \${project_id}.\${schema} OPTIONS(location=\"\${dataset_location}\");"
-                )
+            """CREATE SCHEMA IF NOT EXISTS $projectId.$quotedSchema OPTIONS(location="$datasetLocation");"""
         )
     }
 
     override fun migrateFromV1toV2(streamId: StreamId, namespace: String, tableName: String): Sql {
+        val v2RawTable = streamId.rawTableId(QUOTE)
+        val v1RawTable = wrapAndQuote(namespace, tableName)
         return Sql.of(
-            StringSubstitutor(
-                    java.util.Map.of<String, String>(
-                        "project_id",
-                        "`$projectId`",
-                        "v2_raw_table",
-                        streamId.rawTableId(QUOTE),
-                        "v1_raw_table",
-                        wrapAndQuote(namespace, tableName)
-                    )
-                )
-                .replace(
-                    """
-            CREATE OR REPLACE TABLE ${'$'}{project_id}.${'$'}{v2_raw_table} (
+            """
+            CREATE OR REPLACE TABLE `$projectId`.$v2RawTable (
               _airbyte_raw_id STRING,
               _airbyte_data STRING,
               _airbyte_extracted_at TIMESTAMP,
@@ -841,11 +569,9 @@ class BigQuerySqlGenerator
                     CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at,
                     '{"sync_id": 0, "changes": []}' AS _airbyte_meta,
                     0 as _airbyte_generation_id
-                FROM ${'$'}{project_id}.${'$'}{v1_raw_table}
+                FROM `$projectId`.$v1RawTable
             );
-            
             """.trimIndent()
-                )
         )
     }
 
