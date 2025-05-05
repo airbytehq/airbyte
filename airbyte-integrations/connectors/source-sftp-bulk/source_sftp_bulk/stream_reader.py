@@ -94,9 +94,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                         [
                             RemoteFile(
                                 uri=f"{current_dir}/{item.filename}",
-                                last_modified=datetime.datetime.fromtimestamp(
-                                    item.st_mtime
-                                ),
+                                last_modified=datetime.datetime.fromtimestamp(item.st_mtime),
                             )
                         ],
                         globs,
@@ -141,9 +139,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         return progress_handler
 
     @override
-    def get_file(
-        self, file: RemoteFile, local_directory: str, logger: logging.Logger
-    ) -> Dict[str, str | int]:
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
         """
         Downloads a file from SFTP server to a specified local directory and decrypts it if needed.
 
@@ -171,9 +167,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                 failure_type=FailureType.config_error,
             )
 
-        file_relative_path, local_file_path, absolute_file_path = (
-            self._get_file_transfer_paths(file, local_directory)
-        )
+        file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
         # Get available disk space
         disk_usage = psutil.disk_usage("/")
@@ -194,23 +188,15 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         progress_handler = self.create_progress_handler(local_file_path, logger)
         start_download_time = time.time()
         # Copy a remote file in remote path from the SFTP server to the local host as local path.
-        self.sftp_client.sftp_connection.get(
-            file.uri, local_file_path, callback=progress_handler
-        )
+        self.sftp_client.sftp_connection.get(file.uri, local_file_path, callback=progress_handler)
 
         download_duration = time.time() - start_download_time
-        logger.info(
-            f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds."
-        )
-        logger.info(
-            f"File {file_relative_path} successfully written to {local_directory}."
-        )
+        logger.info(f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds.")
+        logger.info(f"File {file_relative_path} successfully written to {local_directory}.")
 
         # Check if file needs decryption and we have an appropriate decryptor
         if self._decryptor and self._decryptor.can_decrypt(local_file_path):
-            logger.info(
-                f"File {local_file_path} appears to be encrypted. Attempting decryption."
-            )
+            logger.info(f"File {local_file_path} appears to be encrypted. Attempting decryption.")
 
             # Decrypt the file
             start_decrypt_time = time.time()
@@ -221,19 +207,11 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             decrypted_file_size = os.path.getsize(decrypted_file_path)
 
             # Get the relative path for decrypted file
-            decrypted_file_relative_path = os.path.relpath(
-                decrypted_file_path, local_directory
-            )
+            decrypted_file_relative_path = os.path.relpath(decrypted_file_path, local_directory)
 
-            logger.info(
-                f"Time taken to decrypt the file: {decrypt_duration:,.2f} seconds."
-            )
-            logger.info(
-                f"Decrypted file {decrypted_file_relative_path} successfully created."
-            )
-            logger.info(
-                f"Decrypted file size: {decrypted_file_size / (1024 * 1024):,.2f} MB."
-            )
+            logger.info(f"Time taken to decrypt the file: {decrypt_duration:,.2f} seconds.")
+            logger.info(f"Decrypted file {decrypted_file_relative_path} successfully created.")
+            logger.info(f"Decrypted file size: {decrypted_file_size / (1024 * 1024):,.2f} MB.")
 
             # Return the decrypted file information
             decrypted_absolute_file_path = os.path.abspath(decrypted_file_path)

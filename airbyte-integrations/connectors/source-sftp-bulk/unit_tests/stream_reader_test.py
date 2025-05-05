@@ -43,9 +43,7 @@ def test_stream_reader_files_read_and_filter_by_date():
             decryption=NoDecryption(decryption_type="none"),
         )
         reader.config = config
-        files = list(
-            reader.get_matching_files(globs=["**"], prefix=None, logger=logger)
-        )
+        files = list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
         assert len(files) == 1
         assert files[0].uri == "//sample_file_1.csv"
         assert files[0].last_modified == datetime.datetime(2024, 1, 1, 0, 0)
@@ -83,9 +81,7 @@ class TestStreamReaderDecryption:
         # Verify the decryptor was set on the stream reader
         assert reader._decryptor == mock_decryptor
 
-    @patch(
-        "source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader._get_file_transfer_paths"
-    )
+    @patch("source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader._get_file_transfer_paths")
     @patch("source_sftp_bulk.stream_reader.os.path.getsize")
     def test_get_file_with_decryption(self, mock_getsize, mock_get_paths):
         """Test get_file method with decryption enabled"""
@@ -130,9 +126,7 @@ class TestStreamReaderDecryption:
         assert result["bytes"] == 80
         assert "file_relative_path" in result
 
-    @patch(
-        "source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader._get_file_transfer_paths"
-    )
+    @patch("source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader._get_file_transfer_paths")
     def test_get_file_without_decryption(self, mock_get_paths):
         """Test get_file method without decryption"""
         # Setup
@@ -166,9 +160,7 @@ class TestStreamReaderDecryption:
         assert result["bytes"] == 100
         assert result["file_relative_path"] == "relative/path/file.csv"
 
-    @patch(
-        "source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader._get_file_transfer_paths"
-    )
+    @patch("source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader._get_file_transfer_paths")
     def test_get_file_with_decryptor_not_encrypted(self, mock_get_paths):
         """Test get_file method with decryptor but file is not encrypted"""
         # Setup

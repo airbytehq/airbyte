@@ -19,9 +19,7 @@ class PasswordCredentials(BaseModel):
         discriminator = "auth_type"
 
     auth_type: Literal["password"] = Field("password", const=True)
-    password: str = Field(
-        title="Password", description="Password", airbyte_secret=True, order=3
-    )
+    password: str = Field(title="Password", description="Password", airbyte_secret=True, order=3)
 
 
 class PrivateKeyCredentials(BaseModel):

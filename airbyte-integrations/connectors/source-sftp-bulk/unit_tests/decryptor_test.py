@@ -38,9 +38,7 @@ class TestDecryptor(unittest.TestCase):
         decryptor = create_decryptor(config)
 
         # Verify the GPGDecryptor was created with the correct parameters
-        mock_gpg_decryptor.assert_called_once_with(
-            gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE
-        )
+        mock_gpg_decryptor.assert_called_once_with(gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE)
 
         # Verify the correct instance was returned
         self.assertEqual(decryptor, mock_instance)
@@ -56,6 +54,4 @@ class TestDecryptor(unittest.TestCase):
             create_decryptor(config)
 
         # Update assertion to match the actual error message
-        self.assertIn(
-            "No decryptor implementation available for unknown", str(context.exception)
-        )
+        self.assertIn("No decryptor implementation available for unknown", str(context.exception))

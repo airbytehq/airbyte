@@ -21,11 +21,7 @@ logger = logging.getLogger("airbyte")
 
 
 def handle_backoff(details):
-    logger.warning(
-        "SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(
-            **details
-        )
-    )
+    logger.warning("SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(**details))
 
 
 class SFTPClient:
@@ -45,11 +41,7 @@ class SFTPClient:
         self.password = password
         self.port = int(port) or 22
 
-        self.key = (
-            paramiko.RSAKey.from_private_key(io.StringIO(private_key))
-            if private_key
-            else None
-        )
+        self.key = paramiko.RSAKey.from_private_key(io.StringIO(private_key)) if private_key else None
         self.timeout = float(timeout) if timeout else REQUEST_TIMEOUT
 
         self._connect()

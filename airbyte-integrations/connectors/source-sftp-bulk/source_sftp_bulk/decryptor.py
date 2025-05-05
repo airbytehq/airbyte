@@ -20,9 +20,7 @@ class Decryptor(ABC):
     """
 
     @abstractmethod
-    def decrypt_file(
-        self, encrypted_file_path: str, output_file_path: Optional[str] = None
-    ) -> str:
+    def decrypt_file(self, encrypted_file_path: str, output_file_path: Optional[str] = None) -> str:
         """
         Decrypt a file.
 
@@ -96,9 +94,7 @@ class GPGDecryptor(Decryptor):
         except Exception as e:
             logger.warning(f"Failed to clean up GPG temporary directory: {e}")
 
-    def decrypt_file(
-        self, encrypted_file_path: str, output_file_path: Optional[str] = None
-    ) -> str:
+    def decrypt_file(self, encrypted_file_path: str, output_file_path: Optional[str] = None) -> str:
         """
         Decrypt a GPG encrypted file.
 
@@ -127,9 +123,7 @@ class GPGDecryptor(Decryptor):
                 encrypted_data = f.read()
 
             # Decrypt the data
-            decrypted_data = self.gpg.decrypt(
-                encrypted_data, passphrase=self.gpg_passphrase, output=output_file_path
-            )
+            decrypted_data = self.gpg.decrypt(encrypted_data, passphrase=self.gpg_passphrase, output=output_file_path)
 
             if not decrypted_data.ok:
                 raise AirbyteTracedException(

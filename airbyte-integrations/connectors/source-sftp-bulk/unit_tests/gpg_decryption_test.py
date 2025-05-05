@@ -43,9 +43,7 @@ class TestGPGDecryptor(unittest.TestCase):
         mock_gpg.import_keys.return_value = mock_import_result
 
         # Initialize decryptor
-        decryptor = GPGDecryptor(
-            gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE
-        )
+        decryptor = GPGDecryptor(gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE)
 
         # Verify GPG was initialized with a temp directory
         self.assertTrue(mock_gpg_class.called)
@@ -84,9 +82,7 @@ class TestGPGDecryptor(unittest.TestCase):
         expected_output_path = os.path.join(self.temp_dir, "test.csv")
 
         # Initialize decryptor and test decryption
-        decryptor = GPGDecryptor(
-            gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE
-        )
+        decryptor = GPGDecryptor(gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE)
         output_path = decryptor.decrypt_file(encrypted_file_path)
 
         # Assertions
@@ -124,9 +120,7 @@ class TestGPGDecryptor(unittest.TestCase):
             f.write("This is mock encrypted content")
 
         # Initialize decryptor
-        decryptor = GPGDecryptor(
-            gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE
-        )
+        decryptor = GPGDecryptor(gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE)
 
         # Test that decryption failure raises AirbyteTracedException
         with self.assertRaises(AirbyteTracedException) as context:
@@ -148,9 +142,7 @@ class TestGPGDecryptor(unittest.TestCase):
         mock_gpg.import_keys.return_value = mock_import_result
 
         # Initialize decryptor
-        decryptor = GPGDecryptor(
-            gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE
-        )
+        decryptor = GPGDecryptor(gpg_private_key=self.TEST_PRIVATE_KEY, gpg_passphrase=self.TEST_PASSPHRASE)
 
         # Test various file extensions
         self.assertTrue(decryptor.can_decrypt("file.gpg"))
@@ -174,9 +166,7 @@ class TestGPGDecryptor(unittest.TestCase):
 
         # Initialize decryptor - should raise exception
         with self.assertRaises(AirbyteTracedException) as context:
-            GPGDecryptor(
-                gpg_private_key="Invalid key", gpg_passphrase=self.TEST_PASSPHRASE
-            )
+            GPGDecryptor(gpg_private_key="Invalid key", gpg_passphrase=self.TEST_PASSPHRASE)
 
         # Update assertion to match the actual error message
         self.assertIn("GPG key import failed", str(context.exception))
