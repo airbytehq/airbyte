@@ -36,6 +36,10 @@ import kotlinx.coroutines.runBlocking
 class SyncBeanFactory {
     private val log = KotlinLogging.logger {}
 
+    /* ******************
+     * RESOURCE MANAGERS
+     * ******************/
+
     @Singleton
     @Secondary
     @Named("globalMemoryManager")
@@ -57,6 +61,7 @@ class SyncBeanFactory {
         return ReservationManager(reservation.bytesReserved)
     }
 
+    /** DEPRECATED: Old interface. */
     @Singleton
     @Named("diskManager")
     fun diskManager(
@@ -65,12 +70,18 @@ class SyncBeanFactory {
         return ReservationManager(availableBytes)
     }
 
+    /* ********************
+     * ASYNCHRONOUS QUEUES
+     * ********************/
+
     /**
      * The queue that sits between the aggregation (SpillToDiskTask) and load steps
      * (ProcessRecordsTask).
      *
      * Since we are buffering on disk, we must consider the available disk space in our depth
      * configuration.
+     *
+     * DEPRECATED: Old interface.
      */
     @Singleton
     @Named("fileAggregateQueue")
@@ -95,6 +106,7 @@ class SyncBeanFactory {
         return MultiProducerChannel(streamCount.toLong(), channel, "fileAggregateQueue")
     }
 
+    /** DEPRECATED: Old interface. */
     @Singleton
     @Named("batchQueue")
     fun batchQueue(
@@ -116,20 +128,6 @@ class SyncBeanFactory {
     @Singleton
     @Named("openStreamQueue")
     class OpenStreamQueue : ChannelMessageQueue<DestinationStream>(Channel(Channel.UNLIMITED))
-
-    /**
-     * If the client uses a new-style LoadStrategy, then we need to checkpoint by checkpoint id
-     * instead of record index.
-     */
-    @Singleton
-    @Named("checkpointById")
-    fun isCheckpointById(loadStrategy: LoadStrategy? = null): Boolean = loadStrategy != null
-
-    /** True if the catalog has at least one stream that includeFiles. */
-    @Singleton
-    @Named("isFileTransfer")
-    fun isFileTransfer(catalog: DestinationCatalog): Boolean =
-        catalog.streams.any { it.includeFiles }
 
     /**
      * A single record queue for the whole sync, containing all streams, optionally partitioned by a
@@ -155,6 +153,28 @@ class SyncBeanFactory {
     fun batchStateUpdateQueue(): ChannelMessageQueue<BatchUpdate> {
         return ChannelMessageQueue(Channel(100))
     }
+
+    /* *************
+     * GLOBAL FLAGS
+     * *************/
+
+    /**
+     * If the client uses a new-style LoadStrategy, then we need to checkpoint by checkpoint id
+     * instead of record index.
+     */
+    @Singleton
+    @Named("checkpointById")
+    fun isCheckpointById(loadStrategy: LoadStrategy? = null): Boolean = loadStrategy != null
+
+    /** True if the catalog has at least one stream that includeFiles. */
+    @Singleton
+    @Named("isFileTransfer")
+    fun isFileTransfer(catalog: DestinationCatalog): Boolean =
+        catalog.streams.any { it.includeFiles }
+
+    /* *************
+     * GLOBAL STATE
+     * *************/
 
     @Singleton
     @Named("defaultDestinationTaskLauncherHasThrown")
