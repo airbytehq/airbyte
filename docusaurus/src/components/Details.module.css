@@ -14,7 +14,7 @@
   display: flex;
 }
 
-.details>summary > p {
+.details > summary > p {
   margin-bottom: 0;
 }
 

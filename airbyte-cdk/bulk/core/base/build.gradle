@@ -5,7 +5,7 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind'
     api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     api 'com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39'
-    api('io.airbyte.airbyte-protocol:protocol-models:0.12.2') {
+    api('io.airbyte.airbyte-protocol:protocol-models:0.15.0') {
         exclude group: 'com.google.guava', module: 'guava'
         exclude group: 'com.google.api-client'
         exclude group: 'org.apache.logging.log4j'
@@ -15,6 +15,7 @@ dependencies {
     }
     api 'io.github.oshai:kotlin-logging-jvm:7.0.0'
     api 'io.micronaut:micronaut-runtime'
+    api 'org.apache.mina:mina-core:2.0.27' // for fixing vulnerability of sshd-mina
     api 'org.apache.sshd:sshd-mina:2.13.2'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
 
