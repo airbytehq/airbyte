@@ -1,0 +1,37 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 196a42fc-39f2-473f-88ff-d68b2ea702e9
+  dockerImageTag: 0.0.13
+  dockerRepository: airbyte/source-mysql-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
+  githubIssueLabel: source-firetruck
+  icon: oracle.svg
+  license: Airbyte Enterprise
+  name: MySql Source (new)
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_ORACLE_PERFORMANCE_TEST_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
