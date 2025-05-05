@@ -87,7 +87,7 @@ jobs:
         uses: anchore/scan-action@v6
         with:
           image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}"
-          output-format: 'table'
+          output-format: "table"
           severity-cutoff: high
           fail-build: true
 
@@ -137,7 +137,7 @@ jobs:
         uses: anchore/scan-action@v6
         with:
           image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}"
-          output-format: 'table'
+          output-format: "table"
           severity-cutoff: high
           fail-build: true
 
@@ -175,7 +175,7 @@ jobs:
         with:
           cache-read-only: false
           cache-write-only: false
-          add-job-summary: 'on-failure'
+          add-job-summary: "on-failure"
 
       - name: Build Connector Tarball
         run: |
@@ -220,7 +220,7 @@ jobs:
         uses: anchore/scan-action@v6
         with:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
-          output-format: 'table'
+          output-format: "table"
           severity-cutoff: high
           fail-build: true
 
@@ -281,6 +281,6 @@ jobs:
         uses: anchore/scan-action@v6
         with:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}"
-          output-format: 'table'
+          output-format: "table"
           severity-cutoff: high
           fail-build: true
