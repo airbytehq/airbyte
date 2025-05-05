@@ -93,7 +93,7 @@
               "default" : "Delete all tmp files from GCS",
               "enum" : [ "Delete all tmp files from GCS", "Keep all tmp files in GCS" ],
               "description" : "This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default \"Delete all tmp files from GCS\" value is used if not set explicitly.",
-              "title" : "GCS Tmp Files Afterward Processing",
+              "title" : "GCS Tmp Files Post-Processing",
               "order" : 3
             },
             "gcs_bucket_name" : {
