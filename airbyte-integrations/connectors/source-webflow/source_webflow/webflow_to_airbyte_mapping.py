@@ -13,6 +13,7 @@ class WebflowToAirbyteMapping:
 
     webflow_to_airbyte_mapping = {
         "Bool": {"type": ["null", "boolean"]},
+        "Switch": {"type": ["null", "boolean"]},
         "Date": {
             "type": ["null", "string"],
             "format": "date-time",
@@ -20,11 +21,15 @@ class WebflowToAirbyteMapping:
         "Email": {
             "type": ["null", "string"],
         },
+        "Phone": {
+            "type": ["null", "string"],
+        },
         "ImageRef": {"type": ["null", "object"], "additionalProperties": True},
         "Image": {"type": ["null", "object"], "additionalProperties": True},
         "ItemRef": {"type": ["null", "string"]},
         "ItemRefSet": {"type": ["null", "array"]},
         "Link": {"type": ["null", "string"]},
+        "Color": {"type": ["null", "string"]},
         "Number": {"type": ["null", "number"]},
         "Option": {"type": ["null", "string"]},
         "PlainText": {"type": ["null", "string"]},
