@@ -6,6 +6,9 @@ plugins {
 
 // Configure Docker client
 docker {
+    // Set Docker client service
+    url = 'unix:///var/run/docker.sock'
+    
     registryCredentials {
         url = 'https://index.docker.io/v1/'
         username = System.getenv('DOCKER_HUB_USERNAME') ?: 'airbyte'
@@ -135,7 +138,7 @@ subprojects { project ->
             // Always re-run this task
             outputs.upToDateWhen { false }
             
-            workingDir = rootProject.file("docker-images")
+            workingDir = project.projectDir
             
             doFirst {
                 logger.lifecycle("Building Docker image for ${project.name} (java connector)")
@@ -146,11 +149,11 @@ subprojects { project ->
                     '--platform', "linux/${nativeArch}",
                     '--label', 'io.airbyte.version=3.11.15',
                     '--label', "io.airbyte.name=airbyte/${project.name}",
-                    '--file', "Dockerfile.java-connector",
+                    '--file', "${rootProject.file("docker-images/Dockerfile.java-connector")}",
                     '--build-arg', "BASE_IMAGE=${baseImage}",
                     '--build-arg', "CONNECTOR_NAME=${project.name}",
                     '-t', "airbyte/${project.name}:dev",
-                    project.projectDir
+                    '.'
             }
             
             doLast {
