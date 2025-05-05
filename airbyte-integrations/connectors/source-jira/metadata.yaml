@@ -32,8 +32,9 @@ data:
   releases:
     breakingChanges:
       4.0.0:
+        deadlineAction: "auto_upgrade"
         message: "The `pull_requests` stream has been fully deprecated. This change constitutes a breaking change. For more information, see our migration documentation for source Jira."
-        upgradeDeadline: "2025-05-15"
+        upgradeDeadline: "2025-05-19"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["pull_requests"]
