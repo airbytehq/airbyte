@@ -482,7 +482,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                     ""
                 } else if (importType.cursor.size == 1) {
                     val columnName = importType.cursor.first()
-                    "`$columnName` DESC NULLS LAST"
+                    "`$columnName` DESC NULLS LAST,"
                 } else {
                     throw UnsupportedOperationException(
                         "Only top-level cursors are supported, got ${importType.cursor}"
@@ -521,7 +521,7 @@ class BigQuerySqlGenerator(private val projectId: String?, private val datasetLo
                      FROM intermediate_data
                    ), numbered_rows AS (
                      SELECT *, row_number() OVER (
-                       PARTITION BY $pkList ORDER BY $cursorOrderClause, `_airbyte_extracted_at` DESC
+                       PARTITION BY $pkList ORDER BY $cursorOrderClause `_airbyte_extracted_at` DESC
                      ) AS row_number
                      FROM new_records
                    )
