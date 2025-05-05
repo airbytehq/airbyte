@@ -4,7 +4,6 @@
 package io.airbyte.integrations.destination.teradata
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
-import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations
@@ -53,7 +52,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     /**
      * Checks if a schema with the specified name exists in the given database.
      *
-     * This function queries the database to count the number of records in the `DBC.Databases`
+     * This function queries the database to count the number of records in the `DBC.DatabasesV`
      * table that match the provided `schemaName`. If the count is greater than 0, the function
      * returns `true`, indicating that the schema exists. Otherwise, it returns `false`.
      *
@@ -66,7 +65,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     override fun isSchemaExists(database: JdbcDatabase?, schemaName: String?): Boolean {
         return (database?.queryInt(
             String.format(
-                "SELECT COUNT(1) FROM DBC.Databases WHERE DatabaseName = '%s'",
+                "SELECT COUNT(1) FROM DBC.DatabasesV WHERE DatabaseName = '%s'",
                 schemaName,
             ),
         )
@@ -87,10 +86,12 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         schemaName: String?,
         tableName: String?
     ) {
-        if (checkTableExists(database, schemaName, tableName) == 0)
+        val tabelCount = checkTableExists(database, schemaName, tableName)
+        if (tabelCount == 0) {
             database.execute(
                 createTableQuery(database, schemaName, tableName),
             )
+        }
     }
 
     /**
@@ -115,9 +116,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         tableName: String?
     ): Int? {
         val query =
-            """
-                    SELECT count(1)  FROM DBC.TVM TVM  JOIN DBC.Dbase Dbase ON TVM.DatabaseId = Dbase.DatabaseId 
-                    WHERE TVM.TVMName = '$tableName'  AND Dbase.DatabaseName = '$schemaName' """.trimIndent()
+            """SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' """.trimIndent()
         return database?.queryInt(query)
     }
 
@@ -214,14 +213,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         oldTableName: String?,
         newTableName: String?
     ) {
-        try {
-            database.execute(renameTableQuery(schemaName, oldTableName, newTableName))
-        } catch (e: SQLException) {
-            AirbyteTraceMessageUtility.emitSystemErrorTrace(
-                e,
-                "Connector failed while renaming table $schemaName.$oldTableName",
-            )
-        }
+        database.execute(renameTableQuery(schemaName, oldTableName, newTableName))
     }
 
     /**

@@ -664,12 +664,5 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
                 Any::class.java,
                 "json",
             )
-
-        const val CASE_STATEMENT_SQL_TEMPLATE: String = "CASE WHEN {0} THEN {1} ELSE {2} END "
-
-        private const val AB_META_COLUMN_CHANGES_KEY = "changes"
-        private const val AB_META_CHANGES_FIELD_KEY = "field"
-        private const val AB_META_CHANGES_CHANGE_KEY = "change"
-        private const val AB_META_CHANGES_REASON_KEY = "reason"
     }
 }

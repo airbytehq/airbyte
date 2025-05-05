@@ -17,13 +17,15 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
-import io.airbyte.integrations.base.destination.typing_deduping.Union
-import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.integrations.destination.teradata.TeradataSqlOperations.Companion
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import java.sql.SQLException
+import java.sql.Timestamp
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 import org.jooq.Condition
 import org.jooq.SQLDialect
@@ -87,9 +89,7 @@ class TeradataDestinationHandler(
             } else {
                 when (airbyteType.typeName) {
                     Struct.TYPE,
-                    UnsupportedOneOf.TYPE,
                     Array.TYPE -> "json"
-                    Union.TYPE -> toJdbcTypeName((airbyteType as Union).chooseType())
                     else -> throw IllegalArgumentException("Unsupported AirbyteType: $airbyteType")
                 }
             }
@@ -105,32 +105,30 @@ class TeradataDestinationHandler(
     @Throws(Exception::class)
     override fun isFinalTableEmpty(id: StreamId): Boolean {
         return try {
-            val existsFlag =
-                !jdbcDatabase.queryBoolean(
-                    dslContext
-                        .select(
-                            DSL.case_()
-                                .`when`<Int>(
-                                    field<Int>(
-                                            DSL.select<Int>(DSL.count())
-                                                .from(DSL.name(id.finalNamespace, id.finalName)),
-                                        )
-                                        .gt(0),
-                                    DSL.inline(1),
-                                )
-                                .otherwise(DSL.inline(0))
-                                .`as`("exists_flag"),
-                        )
-                        .getSQL(ParamType.INLINED),
-                )
-            return existsFlag
-        } catch (e: SQLException) {
-            if (e.message!!.contains("does not exist")) {
+            return !jdbcDatabase.queryBoolean(
+                dslContext
+                    .select(
+                        DSL.case_()
+                            .`when`<Int>(
+                                field<Int>(
+                                        DSL.select<Int>(DSL.count())
+                                            .from(DSL.name(id.finalNamespace, id.finalName)),
+                                    )
+                                    .gt(0),
+                                DSL.inline(1),
+                            )
+                            .otherwise(DSL.inline(0))
+                            .`as`("exists_flag"),
+                    )
+                    .getSQL(ParamType.INLINED),
+            )
+        } catch (se: SQLException) {
+            if (se.errorCode == 3807) {
                 LOGGER.warn(
                     "Table $id.finalNamespace.$id.finalNamespace does not exists.",
                 )
             }
-            true
+            throw se
         }
     }
     /**
@@ -190,6 +188,13 @@ class TeradataDestinationHandler(
             for ((streamId, value) in destinationStates) {
                 val stateJson = Jsons.serialize(value)
 
+                val currentTime =
+                    Timestamp.from(
+                        Instant.ofEpochMilli(System.currentTimeMillis())
+                            .atZone(ZoneOffset.UTC)
+                            .toInstant(),
+                    )
+
                 // Reinsert all of our states
                 val insertStatesStep: String =
                     dslContext
@@ -214,13 +219,16 @@ class TeradataDestinationHandler(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
                                 String::class.java
                             ),
-                            field(quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT)),
+                            field(
+                                quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
+                                Timestamp::class.java
+                            ),
                         )
                         .values(
                             streamId.originalName,
                             streamId.originalNamespace,
                             stateJson,
-                            null,
+                            currentTime,
                         )
                         .getSQL(ParamType.INLINED)
                 sqlStatementsDestinationState.add(insertStatesStep)
@@ -231,6 +239,23 @@ class TeradataDestinationHandler(
             LOGGER.warn("Failed to commit destination states", e)
         }
     }
+
+    private fun isTableExists(schemaName: String?, tableName: String?): Boolean {
+        val countQuery =
+            dslContext
+                .select(DSL.count())
+                .from(DSL.table("DBC.TablesV"))
+                .where(
+                    DSL.field("TableName")
+                        .eq(tableName)
+                        .and(DSL.field("DataBaseName").eq(schemaName))
+                )
+                .getSQL(ParamType.INLINED)
+
+        return (jdbcDatabase.queryInt(countQuery)
+            ?: 0) > 0 // If the result is greater than 0, return true, else false
+    }
+
     /**
      * Retrieves all destination states from the database.
      *
@@ -239,34 +264,28 @@ class TeradataDestinationHandler(
     override fun getAllDestinationStates():
         Map<AirbyteStreamNameNamespacePair, MinimumDestinationState> {
         try {
-            val sqlStatement: String =
-                dslContext
-                    .createTable(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME))
-                    .column(
-                        quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
-                        SQLDataType.VARCHAR(256)
-                    )
-                    .column(
-                        quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
-                        SQLDataType.VARCHAR(256),
-                    )
-                    .column(
-                        quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                        SQLDataType.VARCHAR(256)
-                    )
-                    .column(
-                        quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
-                        stateTableUpdatedAtType,
-                    )
-                    .getSQL(ParamType.INLINED)
-            try {
+            if (!isTableExists(rawTableNamespace, DESTINATION_STATE_TABLE_NAME)) {
+                val sqlStatement: String =
+                    dslContext
+                        .createTable(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME))
+                        .column(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
+                            SQLDataType.VARCHAR(256)
+                        )
+                        .column(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
+                            SQLDataType.VARCHAR(256),
+                        )
+                        .column(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
+                            SQLDataType.VARCHAR(256)
+                        )
+                        .column(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
+                            stateTableUpdatedAtType,
+                        )
+                        .getSQL(ParamType.INLINED)
                 jdbcDatabase.execute(sqlStatement)
-            } catch (e: SQLException) {
-                if (e.message!!.contains("already exists")) {
-                    LOGGER.warn("Table already exists: {}", sqlStatement)
-                } else {
-                    throw java.lang.RuntimeException(e)
-                }
             }
 
             // Fetch all records from it. We _could_ filter down to just our streams... but meh.
@@ -290,9 +309,6 @@ class TeradataDestinationHandler(
                         .sql,
                 )
                 .map { recordJson: JsonNode ->
-                    // Forcibly downcase all key names.
-                    // This is to handle any destinations that upcase the column names.
-                    // For example - Snowflake with QUOTED_IDENTIFIERS_IGNORE_CASE=TRUE.
                     val record = recordJson as ObjectNode
                     val newFields: HashMap<String, JsonNode> = HashMap()
 
@@ -314,7 +330,7 @@ class TeradataDestinationHandler(
                     // That shouldn't typically happen, but let's be defensive.
                     val updatedAt = it.get(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT)?.asText()
                     if (updatedAt != null) {
-                        OffsetDateTime.parse(updatedAt)
+                        LocalDateTime.parse(updatedAt).atOffset(ZoneOffset.UTC)
                     } else {
                         OffsetDateTime.MIN
                     }
@@ -344,7 +360,11 @@ class TeradataDestinationHandler(
      * @return An optional `TableDefinition` object representing the existing table, if found.
      */
     override fun findExistingTable(id: StreamId): Optional<TableDefinition> =
-        findExistingTable(jdbcDatabase, id.finalNamespace, null, id.finalName)
+        if (isTableExists(id.finalNamespace, id.finalName)) {
+            findExistingTable(jdbcDatabase, id.finalNamespace, null, id.finalName)
+        } else {
+            Optional.empty()
+        }
     /**
      * Executes a list of SQL statements within a transaction.
      *
@@ -357,12 +377,13 @@ class TeradataDestinationHandler(
                 jdbcDatabase.executeWithinTransaction(transaction)
             } catch (se: SQLException) {
                 // Ignoring specific error codes i.e. object already exists, object does not exist
-                if (se.errorCode != 5612 && se.errorCode != 3807 && se.errorCode != 3598) {
+                if (se.errorCode !in ignorableErrorCodes) {
                     throw se
                 }
             }
         }
     }
+
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(TeradataDestinationHandler::class.java)
         private const val DESTINATION_STATE_TABLE_COLUMN_STATE: String = "destination_state"
@@ -370,6 +391,8 @@ class TeradataDestinationHandler(
         private const val DESTINATION_STATE_TABLE_NAME = "_airbyte_destination_state"
         private const val DESTINATION_STATE_TABLE_COLUMN_NAME = "name"
         private const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
+        // Define a set of error codes that should be ignored
+        private val ignorableErrorCodes = setOf(5612, 3807, 3598, 3803)
         /**
          * Converts an Airbyte Protocol type to a JDBC type name.
          *
@@ -379,13 +402,13 @@ class TeradataDestinationHandler(
         private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
             val test =
                 when (airbyteProtocolType) {
-                    AirbyteProtocolType.STRING -> "varchar2(10000)"
-                    AirbyteProtocolType.NUMBER -> "decimal"
+                    AirbyteProtocolType.STRING -> "varchar"
+                    AirbyteProtocolType.NUMBER -> "float"
                     AirbyteProtocolType.INTEGER -> "bigint"
-                    AirbyteProtocolType.BOOLEAN -> "byteint"
-                    AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "varchar"
-                    AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "datetime"
-                    AirbyteProtocolType.TIME_WITH_TIMEZONE -> "varchar"
+                    AirbyteProtocolType.BOOLEAN -> "smallint"
+                    AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "timestamp with time zone"
+                    AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "timestamp"
+                    AirbyteProtocolType.TIME_WITH_TIMEZONE -> "time with time zone"
                     AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "time"
                     AirbyteProtocolType.DATE -> "date"
                     AirbyteProtocolType.UNKNOWN -> "json"

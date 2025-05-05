@@ -24,6 +24,22 @@ import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.argumentCaptor
 
+/**
+ * Unit tests for the {@link TeradataSqlOperations} class.
+ *
+ * This test class validates the behavior of SQL utility methods that interact with Teradata using a
+ * mocked {@link JdbcDatabase} connection. It ensures schema creation, table creation, data
+ * insertion, and transaction execution behave correctly under various scenarios.
+ *
+ * The tests use Mockito for mocking and verifying interactions, and JUnit 5 for test lifecycle and
+ * assertions.
+ *
+ * <p>Tested operations include:
+ * - Checking schema and table existence
+ * - Creating schemas and tables if not already present
+ * - Generating raw SQL queries for operations
+ * - Executing inserts and transactions
+ */
 class TeradataSqlOperationsTest {
 
     @Mock private lateinit var database: JdbcDatabase
@@ -35,13 +51,17 @@ class TeradataSqlOperationsTest {
     @Mock private lateinit var mockPreparedStatement: PreparedStatement
 
     @Captor private lateinit var stringCaptor: ArgumentCaptor<String>
-
+    /**
+     * Initializes mocks and test setup before each test case.
+     *
+     * @throws SQLException if any mock setup fails
+     */
     @BeforeEach
     @Throws(SQLException::class)
     fun setUp() {
         MockitoAnnotations.openMocks(this)
     }
-
+    /** Verifies that no exceptions are thrown when inserting an empty record list. */
     @Test
     @Throws(SQLException::class)
     fun testEmptyInsertRecordsInternal() {
@@ -57,7 +77,11 @@ class TeradataSqlOperationsTest {
             0
         )
     }
-
+    /**
+     * Verifies that a record is properly passed to the internal insert method.
+     *
+     * Mocks record data and ensures no SQL exceptions are raised during execution.
+     */
     @Test
     @Throws(SQLException::class)
     fun testInsertRecordsInternal() {
@@ -90,7 +114,11 @@ class TeradataSqlOperationsTest {
         verify(database, times(1)).queryInt(stringCaptor.capture())
         assertTrue(stringCaptor.lastValue.contains("SELECT COUNT(1) FROM DBC.Databases"))
     }
-
+    /**
+     * Validates the behavior when a schema exists.
+     *
+     * Asserts that the correct query is executed to check schema existence.
+     */
     @Test
     @Throws(Exception::class)
     fun testIsSchemaNotExists() {
@@ -100,7 +128,7 @@ class TeradataSqlOperationsTest {
         verify(database, times(1)).queryInt(stringCaptor.capture())
         assertTrue(stringCaptor.lastValue.contains("SELECT COUNT(1) FROM DBC.Databases"))
     }
-
+    /** Validates the behavior when a schema does not exist. */
     @Test
     @Throws(Exception::class)
     fun testCreateSchemaIfNotExists() {
@@ -115,7 +143,11 @@ class TeradataSqlOperationsTest {
         verify(database, times(1)).execute(stringCaptor.capture())
         assertTrue(stringCaptor.lastValue.contains("CREATE DATABASE \"schema\""))
     }
-
+    /**
+     * Ensures a schema is created only when it does not already exist.
+     *
+     * Verifies correct SQL is executed for schema creation.
+     */
     @Test
     @Throws(Exception::class)
     fun testCreateSchemaIfExists() {
@@ -128,7 +160,7 @@ class TeradataSqlOperationsTest {
         assertTrue(stringCaptor.lastValue.contains("SELECT COUNT(1) FROM DBC.Databases"))
         verify(database, times(0)).execute("")
     }
-
+    /** Checks that the proper existence query is executed when checking if a table exists. */
     @Test
     @Throws(Exception::class)
     fun testIsTableExists() {
@@ -136,11 +168,9 @@ class TeradataSqlOperationsTest {
         doReturn(1).`when`(database).queryInt(anyString())
         teradataSqlOperations.createTableIfNotExists(database, "schema", "table")
         verify(database, times(1)).queryInt(stringCaptor.capture())
-        assertTrue(
-            stringCaptor.lastValue.contains("SELECT count(1)  FROM DBC.TVM TVM  JOIN DBC.Dbase")
-        )
+        assertTrue(stringCaptor.lastValue.contains("SELECT count(1)  FROM DBC.TablesV"))
     }
-
+    /** Tests SQL generation logic for creating a Teradata-compatible raw table. */
     @Test
     fun testCreateTableQuery() {
         val expectedQuery =
@@ -158,7 +188,7 @@ class TeradataSqlOperationsTest {
 
         assertEquals(expectedQuery, actualQuery.trim())
     }
-
+    /** Ensures a table is created only when it does not already exist. */
     @Test
     @Throws(Exception::class)
     fun testCreateTableIfNotExists() {
@@ -168,13 +198,11 @@ class TeradataSqlOperationsTest {
         doReturn(0).`when`(database).queryInt(anyString())
         teradataSqlOperations.createTableIfNotExists(database, "schema", "table")
         verify(database, times(1)).queryInt(stringCaptor.capture())
-        assertTrue(
-            stringCaptor.lastValue.contains("SELECT count(1)  FROM DBC.TVM TVM  JOIN DBC.Dbase")
-        )
+        assertTrue(stringCaptor.lastValue.contains("SELECT count(1)  FROM DBC.TablesV"))
         verify(database, times(1)).execute(stringCaptor.capture())
         assertTrue(stringCaptor.lastValue.contains("CREATE TABLE schema.table"))
     }
-
+    /** Ensures no table creation logic is run when the table already exists. */
     @Test
     @Throws(Exception::class)
     fun testCreateTableIfExists() {
@@ -184,14 +212,10 @@ class TeradataSqlOperationsTest {
         doReturn(1).`when`(database).queryInt(anyString())
         teradataSqlOperations.createTableIfNotExists(database, "schema", "table")
         verify(database, times(1)).queryInt(stringCaptor.capture())
-        assertTrue(
-            stringCaptor.lastValue.contains(
-                "SELECT count(1)  FROM DBC.TVM TVM  JOIN DBC.Dbase Dbase"
-            )
-        )
+        assertTrue(stringCaptor.lastValue.contains("SELECT count(1)  FROM DBC.TablesV"))
         verify(database, times(0)).execute("")
     }
-
+    /** Ensures the correct SQL is generated and executed for dropping a table if it exists. */
     @Test
     @Throws(SQLException::class)
     fun testDropTableIfExists() {
@@ -203,13 +227,15 @@ class TeradataSqlOperationsTest {
         verify(database, times(1)).execute(stringCaptor.capture())
         assertTrue(stringCaptor.lastValue.contains("DROP TABLE  schema.table;"))
     }
-
+    /** Verifies the SQL used to truncate a table is correct for Teradata. */
     @Test
     fun testTruncateTableQuery() {
         val query = teradataSqlOperations.truncateTableQuery(database, "schema", "table")
         assertEquals("DELETE schema.table ALL;\n", query)
     }
-
+    /**
+     * Validates transaction execution with an empty query list does not throw or execute anything.
+     */
     @Test
     @Throws(Exception::class)
     fun testExecuteTransactionEmptyQueries() {
@@ -225,7 +251,7 @@ class TeradataSqlOperationsTest {
         // Test case where transaction fails
         doThrow(SQLException("Execution failed")).`when`(database).execute(anyString())
     }
-
+    /** Verifies that a batch of SQL queries are executed as a single transaction. */
     @Test
     @Throws(Exception::class)
     fun testExecuteTransaction() {

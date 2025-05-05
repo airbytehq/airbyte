@@ -10,7 +10,23 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.*
 
+/**
+ * Teradata-specific implementation of {@link JdbcSourceOperations} to handle custom data types such
+ * as JSON and time zones during result set processing.
+ *
+ * This class overrides the default behavior to ensure correct deserialization and mapping of
+ * Teradata-specific column types into JSON format.
+ */
 class TeradataSourceOperations : JdbcSourceOperations() {
+    /**
+     * Overrides the default method to convert a specific SQL column value into a JSON field, with
+     * custom logic for Teradata-specific types such as `JSON`, `TIMETZ`, and `TIMESTAMPTZ`.
+     *
+     * @param resultSet the {@link ResultSet} containing the data
+     * @param colIndex the 1-based column index in the result set
+     * @param json the {@link ObjectNode} to populate with the deserialized field
+     * @throws SQLException if an SQL error occurs while accessing the result set
+     */
     @Throws(SQLException::class)
     override fun copyToJsonField(resultSet: ResultSet, colIndex: Int, json: ObjectNode) {
         val columnName = resultSet.metaData.getColumnName(colIndex)
