@@ -32,23 +32,23 @@ sealed class GcsAuthSpecification(
 
 @JsonSchemaTitle("HMAC key")
 class GcsHmacKeySpecification(
-    @get:JsonSchemaTitle("HMAC Access Key")
+    @get:JsonSchemaTitle("HMAC Key Access ID")
     @get:JsonPropertyDescription(
         """HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long."""
     )
     @get:JsonProperty("hmac_key_access_id")
     @get:JsonSchemaInject(
-        json = """{"examples":["1234567890abcdefghij1234"],"airbyte_secret": true, "order": 0}"""
+        json = """{"examples":["1234567890abcdefghij1234"],"airbyte_secret": true, "order": 1}"""
     )
     val accessKeyId: String,
-    @get:JsonSchemaTitle("HMAC Secret")
+    @get:JsonSchemaTitle("HMAC Key Secret")
     @get:JsonPropertyDescription(
         """The corresponding secret for the access ID. It is a 40-character base-64 encoded string."""
     )
     @get:JsonProperty("hmac_key_secret")
     @get:JsonSchemaInject(
         json =
-            """{"examples":["1234567890abcdefghij1234567890ABCDEFGHIJ"],"airbyte_secret": true, "order": 1}"""
+            """{"examples":["1234567890abcdefghij1234567890ABCDEFGHIJ"],"airbyte_secret": true, "order": 2}"""
     )
     val secretAccessKey: String,
 ) : GcsAuthSpecification(Type.HMAC_KEY) {

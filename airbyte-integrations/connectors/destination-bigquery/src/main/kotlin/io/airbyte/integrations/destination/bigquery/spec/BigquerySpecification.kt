@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
 @Singleton
+@JsonSchemaTitle("BigQuery Destination Spec")
 class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Project ID")
     @get:JsonPropertyDescription(
@@ -120,7 +121,7 @@ class BatchedStandardInsertSpecification :
 )
 class GcsStagingSpecification :
     GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
-    @get:JsonSchemaTitle("GCS Tmp Files Post-Processing")
+    @get:JsonSchemaTitle("GCS Tmp Files Afterward Processing")
     @get:JsonPropertyDescription(
         """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly."""
     )
@@ -137,8 +138,8 @@ class GcsStagingSpecification :
 // bigquery supports a subset of GCS regions.
 // See https://cloud.google.com/bigquery/docs/locations#supported_locations
 enum class BigqueryRegion(@get:JsonValue val region: String, val gcsRegion: GcsRegion) {
-    EU("EU", GcsRegion.EU),
     US("US", GcsRegion.US),
+    EU("EU", GcsRegion.EU),
     AFRICA_SOUTH1("africa-south1", GcsRegion.AFRICA_SOUTH1),
     ASIA_EAST1("asia-east1", GcsRegion.ASIA_EAST1),
     ASIA_EAST2("asia-east2", GcsRegion.ASIA_EAST2),
