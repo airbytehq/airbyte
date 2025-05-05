@@ -14,12 +14,9 @@ import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.icerberg.parquet.IcebergDestinationCleaner
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.test.util.DestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
@@ -40,7 +37,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 
 abstract class S3DataLakeWriteTest(
     configContents: String,
-    destinationCleaner: DestinationCleaner,
     tableIdGenerator: TableIdGenerator,
 ) :
     IcebergWriteTest(
@@ -52,7 +48,7 @@ abstract class S3DataLakeWriteTest(
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
         },
-        destinationCleaner,
+        S3DataLakeCleaner,
         tableIdGenerator,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         micronautProperties =
@@ -62,12 +58,6 @@ abstract class S3DataLakeWriteTest(
 class GlueWriteTest :
     S3DataLakeWriteTest(
         Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        IcebergDestinationCleaner(
-            S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
-            )
-        ),
         GlueTableIdGenerator(null),
     ) {
     @Test
@@ -179,22 +169,10 @@ class GlueWriteTest :
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
         Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        IcebergDestinationCleaner(
-            S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
-            )
-        ),
         GlueTableIdGenerator(null),
     )
 
-class NessieMinioWriteTest :
-    S3DataLakeWriteTest(
-        getConfig(),
-        // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
-        NoopDestinationCleaner,
-        SimpleTableIdGenerator(),
-    ) {
+class NessieMinioWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator()) {
 
     companion object {
         private fun getToken(): String {
@@ -260,8 +238,7 @@ class NessieMinioWriteTest :
 // even across multiple streams.
 // so run singlethreaded.
 @Execution(ExecutionMode.SAME_THREAD)
-class RestWriteTest :
-    S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner, SimpleTableIdGenerator()) {
+class RestWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator()) {
 
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
