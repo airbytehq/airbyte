@@ -1,6 +1,7 @@
 plugins {
     id 'base'
     id 'ru.vyarus.use-python' version '2.3.0'
+    id "io.airbyte.gradle.docker" version "0.62.0" apply false
 }
 
 // Pyenv support.
