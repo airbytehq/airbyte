@@ -20,7 +20,10 @@ def test_client_exception():
 
 
 def test_client_connection():
-    with patch.object(paramiko, "Transport", MagicMock()), patch.object(paramiko, "SFTPClient", MagicMock()):
+    with (
+        patch.object(paramiko, "Transport", MagicMock()),
+        patch.object(paramiko, "SFTPClient", MagicMock()),
+    ):
         SFTPClient(
             host="localhost",
             username="username",

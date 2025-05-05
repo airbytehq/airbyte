@@ -3,6 +3,7 @@
 
 import datetime
 import logging
+import os
 import stat
 import time
 from io import IOBase
@@ -11,11 +12,15 @@ from typing import Dict, Iterable, List, Optional
 import psutil
 from typing_extensions import override
 
-from airbyte_cdk import FailureType
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_based_stream_reader import (
+    AbstractFileBasedStreamReader,
+    FileReadMode,
+)
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_sftp_bulk.client import SFTPClient
+from source_sftp_bulk.decryptor import Decryptor, create_decryptor
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 
 
@@ -25,6 +30,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
         self._sftp_client = None
+        self._decryptor = None
 
     @property
     def config(self) -> SourceSFTPBulkSpec:
@@ -43,6 +49,9 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         """
         assert isinstance(value, SourceSFTPBulkSpec)
         self._config = value
+
+        # Initialize decryptor based on configuration
+        self._decryptor = create_decryptor(self.config.decryption)
 
     @property
     def sftp_client(self) -> SFTPClient:
@@ -82,11 +91,24 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                     directories.append(f"{current_dir}/{item.filename}")
                 else:
                     yield from self.filter_files_by_globs_and_start_date(
-                        [RemoteFile(uri=f"{current_dir}/{item.filename}", last_modified=datetime.datetime.fromtimestamp(item.st_mtime))],
+                        [
+                            RemoteFile(
+                                uri=f"{current_dir}/{item.filename}",
+                                last_modified=datetime.datetime.fromtimestamp(
+                                    item.st_mtime
+                                ),
+                            )
+                        ],
                         globs,
                     )
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(
+        self,
+        file: RemoteFile,
+        mode: FileReadMode,
+        encoding: Optional[str],
+        logger: logging.Logger,
+    ) -> IOBase:
         remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
         return remote_file
 
@@ -119,9 +141,11 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         return progress_handler
 
     @override
-    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+    def get_file(
+        self, file: RemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Dict[str, str | int]:
         """
-        Downloads a file from SFTP server to a specified local directory.
+        Downloads a file from SFTP server to a specified local directory and decrypts it if needed.
 
         Args:
             file (RemoteFile): The remote file object containing URI and metadata.
@@ -130,21 +154,26 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
 
         Returns:
             dict: A dictionary containing the following:
-                - "file_url" (str): The absolute path of the downloaded file.
+                - "file_url" (str): The absolute path of the downloaded file (decrypted if applicable).
                 - "bytes" (int): The file size in bytes.
-                - "file_relative_path" (str): The relative path of the file for local storage. Is relative to local_directory as
-                this a mounted volume in the pod container.
+                - "file_relative_path" (str): The relative path of the file for local storage.
 
         Raises:
-            FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
+            FileSizeLimitError: If the file size exceeds the predefined limit.
         """
         file_size = self.file_size(file)
-        # I'm putting this check here so we can remove the safety wheels per connector when ready.
+        # Check file size limit
         if file_size > self.FILE_SIZE_LIMIT:
             message = "File size exceeds the 1 GB limit."
-            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+            raise FileSizeLimitError(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            )
 
-        file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+        file_relative_path, local_file_path, absolute_file_path = (
+            self._get_file_transfer_paths(file, local_directory)
+        )
 
         # Get available disk space
         disk_usage = psutil.disk_usage("/")
@@ -165,13 +194,60 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         progress_handler = self.create_progress_handler(local_file_path, logger)
         start_download_time = time.time()
         # Copy a remote file in remote path from the SFTP server to the local host as local path.
-        self.sftp_client.sftp_connection.get(file.uri, local_file_path, callback=progress_handler)
+        self.sftp_client.sftp_connection.get(
+            file.uri, local_file_path, callback=progress_handler
+        )
 
         download_duration = time.time() - start_download_time
-        logger.info(f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds.")
-        logger.info(f"File {file_relative_path} successfully written to {local_directory}.")
+        logger.info(
+            f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds."
+        )
+        logger.info(
+            f"File {file_relative_path} successfully written to {local_directory}."
+        )
 
-        return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+        # Check if file needs decryption and we have an appropriate decryptor
+        if self._decryptor and self._decryptor.can_decrypt(local_file_path):
+            logger.info(
+                f"File {local_file_path} appears to be encrypted. Attempting decryption."
+            )
+
+            # Decrypt the file
+            start_decrypt_time = time.time()
+            decrypted_file_path = self._decryptor.decrypt_file(local_file_path)
+            decrypt_duration = time.time() - start_decrypt_time
+
+            # Get decrypted file size
+            decrypted_file_size = os.path.getsize(decrypted_file_path)
+
+            # Get the relative path for decrypted file
+            decrypted_file_relative_path = os.path.relpath(
+                decrypted_file_path, local_directory
+            )
+
+            logger.info(
+                f"Time taken to decrypt the file: {decrypt_duration:,.2f} seconds."
+            )
+            logger.info(
+                f"Decrypted file {decrypted_file_relative_path} successfully created."
+            )
+            logger.info(
+                f"Decrypted file size: {decrypted_file_size / (1024 * 1024):,.2f} MB."
+            )
+
+            # Return the decrypted file information
+            decrypted_absolute_file_path = os.path.abspath(decrypted_file_path)
+            return {
+                "file_url": decrypted_absolute_file_path,
+                "bytes": decrypted_file_size,
+                "file_relative_path": decrypted_file_relative_path,
+            }
+
+        return {
+            "file_url": absolute_file_path,
+            "bytes": file_size,
+            "file_relative_path": file_relative_path,
+        }
 
     def file_size(self, file: RemoteFile):
         file_size = self.sftp_client.sftp_connection.stat(file.uri).st_size
