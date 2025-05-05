@@ -53,11 +53,11 @@ abstract class MSSQLPerformanceTest(
         configSpecClass = MSSQLSpecification::class.java,
         configUpdater = configUpdater,
         dataValidator = MSSQLDataValidator(getConfiguration),
-        defaultRecordsToInsert = 10000,
+        defaultRecordsToInsert = 1_000_000,
     ) {
     @Test
     override fun testInsertRecords() {
-        testInsertRecords(recordsToInsert = 100000) {}
+        testInsertRecords(recordsToInsert = 1_000_000) {}
     }
 
     @Test

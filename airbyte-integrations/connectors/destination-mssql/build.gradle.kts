@@ -16,7 +16,7 @@ airbyteBulkConnector {
 application {
     mainClass = "io.airbyte.integrations.destination.mssql.v2.MSSQLDestination"
 
-    applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0", "‑Dcom.microsoft.sqlserver.tcpNoDelay=false")
+    applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0")
 
     // Uncomment and replace to run locally
     //applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "java.base/sun.security.action=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED")

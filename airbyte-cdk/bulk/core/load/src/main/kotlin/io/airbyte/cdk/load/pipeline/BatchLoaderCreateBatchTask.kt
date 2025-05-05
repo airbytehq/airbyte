@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.write.BatchLoadStrategy
@@ -26,7 +27,7 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
 ): Task {
     private val log = KotlinLogging.logger {}
 
-    override val terminalCondition = SelfTerminating
+    override val terminalCondition = OnEndOfSync
 
     val taskName = "BatchLoaderCreateBatchTask"
 
@@ -65,6 +66,14 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
                             batch.reservation = batch.reservation?.merge(event.reservation)
                         }
                     }
+                    val now = System.currentTimeMillis()
+                    if (flushStrategy.shouldFlush(batch.inputCount, now - batch.startTimeMs)) {
+                        log.info { "Force flush by flush strategy ${flushStrategy::class.simpleName} for ${event.key}" }
+                        removeAndProcess(batches.byKey, event.key, batch)
+                    } else if(batch.inputSizeBytes >= loadStrategy.targetBatchSizeBytes) {
+                        log.info { "Batch size ${batch.inputSizeBytes}b is data-sufficient for ${event.key}, flushing" }
+                        removeAndProcess(batches.byKey, event.key, batch)
+                    }
                 }
                 is PipelineHeartbeat -> {
                     maybeFlush(batches)
@@ -78,6 +87,14 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
                         log.info { "End-of-stream ${event.stream}: finishing batch for $key" }
                         removeAndProcess(batches.byKey, key, batch)
                     }
+                    batchStateUpdateQueue.publish(
+                        BatchEndOfStream(
+                            event.stream,
+                            taskName,
+                            partition,
+                            batchesToEvict.values.sumOf { it.inputCount }
+                        )
+                    )
                 }
             }
             batches

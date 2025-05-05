@@ -264,8 +264,13 @@ internal class StandardInsert :
     ) {
 
     @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
     }
 
     companion object {

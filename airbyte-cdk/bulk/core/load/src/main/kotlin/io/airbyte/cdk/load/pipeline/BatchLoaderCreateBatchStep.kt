@@ -24,8 +24,7 @@ class BatchLoaderCreateBatchStep<K: WithStream>(
     val flushStrategy: PipelineFlushStrategy,
     @Named("batchStateUpdateQueue") val batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>,
 ): LoadPipelineStep {
-    override val numWorkers: Int
-        get() = TODO("Not yet implemented")
+    override val numWorkers: Int = loadStrategy.inputPartitions
 
     private val streamCompletions =
         ConcurrentHashMap<Pair<DestinationStream.Descriptor, String>, AtomicLong>()

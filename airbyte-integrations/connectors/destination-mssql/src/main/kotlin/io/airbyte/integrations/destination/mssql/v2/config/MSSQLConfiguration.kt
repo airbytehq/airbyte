@@ -26,12 +26,11 @@ data class MSSQLConfiguration(
     val numInputPartitions: Int,
     val batchEveryNRecords: Int,
     val maxBatchSizeBytes: Long,
-    val maxNumOpenLoaders: Int
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
     override val numProcessRecordsWorkers = 1
     override val numProcessBatchWorkers: Int = 1
     override val processEmptyFiles: Boolean = true
-    override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
+    override val recordBatchSizeBytes = maxBatchSizeBytes
 
     /**
      * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
@@ -71,10 +70,9 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
             mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
-            numInputPartitions = spec.numInputPartitions ?: 2,
-            batchEveryNRecords = spec.batchEveryNRecords ?: 5_000,
-            maxBatchSizeBytes = (spec.maxBatchSizeMb ?: 10) * 1024L * 1024,
-            maxNumOpenLoaders = spec.maxNumOpenLoaders ?: 8
+            numInputPartitions = spec.numInputPartitions ?: 1,
+            batchEveryNRecords = spec.batchEveryNRecords ?: 100_000,
+            maxBatchSizeBytes = (spec.maxBatchSizeMb ?: 20) * 1024L * 1024,
         )
     }
 }

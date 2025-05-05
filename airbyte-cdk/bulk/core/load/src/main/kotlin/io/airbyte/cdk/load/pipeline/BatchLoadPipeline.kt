@@ -5,18 +5,13 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 /**
- * Implements BatchLoadStrategy. A pipleine that
- *  * accumulates records into configurably sized batches
- *  * flushes the batches downstream to the batch loader
+ * Implements BatchLoadStrategy as a single-step pipline that
+ * accumulates batches and loads them with BatchLoadStrategy::loadBatch.
  */
 @Singleton
 @Requires(bean = BatchLoadStrategy::class)
 class BatchLoadPipeline(
     createBatchStep: BatchLoaderCreateBatchStep<*>,
-    loadBatchStep: BatchLoaderLoadBatchStep<*,*>,
 ): LoadPipeline(
-    listOf(
-        createBatchStep,
-        loadBatchStep
-    )
+    listOf(createBatchStep)
 )
