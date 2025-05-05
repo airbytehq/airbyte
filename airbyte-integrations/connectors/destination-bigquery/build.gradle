@@ -35,21 +35,4 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery'
 
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
-
-    integrationTestLegacyImplementation 'io.airbyte.cdk:airbyte-cdk-core:0.46.0'
-    integrationTestLegacyImplementation 'io.airbyte.cdk:airbyte-cdk-datastore-bigquery:0.46.0'
-    integrationTestLegacyImplementation 'io.airbyte.cdk:airbyte-cdk-db-destinations:0.46.0'
-    integrationTestLegacyImplementation 'io.airbyte.cdk:airbyte-cdk-dependencies:0.46.0'
-    integrationTestLegacyImplementation 'io.airbyte.cdk:airbyte-cdk-gcs-destinations:0.46.0'
-    integrationTestLegacyImplementation 'io.airbyte.cdk:airbyte-cdk-typing-deduping:0.46.0'
-    integrationTestLegacyImplementation testFixtures('io.airbyte.cdk:airbyte-cdk-core:0.46.0')
-    integrationTestLegacyImplementation testFixtures('io.airbyte.cdk:airbyte-cdk-datastore-bigquery:0.46.0')
-    integrationTestLegacyImplementation testFixtures('io.airbyte.cdk:airbyte-cdk-db-destinations:0.46.0')
-    integrationTestLegacyImplementation testFixtures('io.airbyte.cdk:airbyte-cdk-dependencies:0.46.0')
-    integrationTestLegacyImplementation testFixtures('io.airbyte.cdk:airbyte-cdk-gcs-destinations:0.46.0')
-    integrationTestLegacyImplementation testFixtures('io.airbyte.cdk:airbyte-cdk-typing-deduping:0.46.0')
-
-    integrationTestLegacyImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
-    integrationTestLegacyImplementation 'org.assertj:assertj-core:3.25.3'
-    integrationTestLegacyImplementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
 }
