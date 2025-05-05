@@ -52,6 +52,7 @@ The maximum sync speed is limited by the number of requests per second per API k
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
+| 0.2.22 | 2025-05-04 | [59642](https://github.com/airbytehq/airbyte/pull/59642) | Update dependencies |
 | 0.2.21 | 2025-04-27 | [59021](https://github.com/airbytehq/airbyte/pull/59021) | Update dependencies |
 | 0.2.20 | 2025-04-19 | [58426](https://github.com/airbytehq/airbyte/pull/58426) | Update dependencies |
 | 0.2.19 | 2025-04-12 | [57956](https://github.com/airbytehq/airbyte/pull/57956) | Update dependencies |
