@@ -18,9 +18,11 @@ import io.airbyte.cdk.load.write.SimpleValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
+import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.GCS_STAGING_CONFIG
+import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.RAW_DATASET_OVERRIDE
+import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.STANDARD_INSERT_CONFIG
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
-import java.nio.file.Path
 import org.junit.jupiter.api.Test
 
 abstract class BigqueryWriteTest(
@@ -92,15 +94,13 @@ abstract class BigqueryTDWriteTest(
         ),
     )
 
-// TODO we should make the config stuff less dumb, this is just the minimal wiring to get something
-// that works
 class StandardInsertRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile =
-                    Path.of("secrets/credentials-1s1t-disabletd-standard-raw-override.json"),
+                configFile = STANDARD_INSERT_CONFIG,
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+                rawDatasetId = RAW_DATASET_OVERRIDE,
+                disableTypingDeduping = true,
             )
             .serializeToString(),
     ) {
@@ -139,9 +139,10 @@ class StandardInsert :
 class GcsRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = Path.of("secrets/credentials-1s1t-disabletd-gcs-raw-override.json"),
+                configFile = GCS_STAGING_CONFIG,
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+                rawDatasetId = RAW_DATASET_OVERRIDE,
+                disableTypingDeduping = true,
             )
             .serializeToString(),
     ) {
@@ -154,9 +155,9 @@ class GcsRawOverrideDisableTd :
 class GcsRawOverride :
     BigqueryTDWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = Path.of("secrets/credentials-1s1t-gcs-raw-override.json"),
+                configFile = GCS_STAGING_CONFIG,
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
+                rawDatasetId = RAW_DATASET_OVERRIDE,
             )
             .serializeToString(),
     ) {
@@ -169,9 +170,8 @@ class GcsRawOverride :
 class Gcs :
     BigqueryTDWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = Path.of("secrets/credentials-1s1t-gcs.json"),
+                configFile = GCS_STAGING_CONFIG,
                 datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                stagingPath = "test_path/$DEFAULT_NAMESPACE_PLACEHOLDER",
             )
             .serializeToString(),
     ) {
