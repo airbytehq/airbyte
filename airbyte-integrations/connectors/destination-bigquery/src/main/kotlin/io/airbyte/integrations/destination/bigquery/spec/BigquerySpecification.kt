@@ -23,6 +23,9 @@ import jakarta.inject.Singleton
 
 @Singleton
 class BigquerySpecification : ConfigurationSpecification() {
+    val maxMessageQueueMemoryUsageRatio: Double = 0.2
+    val estimatedRecordMemoryOverheadRatio: Double = 1.1
+
     @get:JsonSchemaTitle("Project ID")
     @get:JsonPropertyDescription(
         """The GCP project ID for the project containing the target BigQuery dataset. Read more <a href="https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects">here</a>."""

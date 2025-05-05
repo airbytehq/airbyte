@@ -20,6 +20,8 @@ data class BigqueryConfiguration(
     val transformationPriority: TransformationPriority,
     val rawTableDataset: String,
     val disableTypingDeduping: Boolean,
+    override val maxMessageQueueMemoryUsageRatio: Double,
+    override val estimatedRecordMemoryOverheadRatio: Double,
 ) : DestinationConfiguration()
 
 sealed interface LoadingMethodConfiguration
@@ -61,6 +63,8 @@ class BigqueryConfigurationFactory :
                     pojo.rawTableDataset!!
                 },
             disableTypingDeduping = pojo.disableTypingDeduping ?: false,
+            maxMessageQueueMemoryUsageRatio = pojo.maxMessageQueueMemoryUsageRatio,
+            estimatedRecordMemoryOverheadRatio = pojo.estimatedRecordMemoryOverheadRatio,
         )
     }
 }

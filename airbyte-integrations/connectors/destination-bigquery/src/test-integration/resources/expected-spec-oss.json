@@ -6,6 +6,12 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
+      "maxMessageQueueMemoryUsageRatio" : {
+        "type" : "number"
+      },
+      "estimatedRecordMemoryOverheadRatio" : {
+        "type" : "number"
+      },
       "project_id" : {
         "type" : "string",
         "description" : "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
@@ -154,7 +160,7 @@
         "default" : false
       }
     },
-    "required" : [ "project_id", "dataset_location", "dataset_id" ],
+    "required" : [ "maxMessageQueueMemoryUsageRatio", "estimatedRecordMemoryOverheadRatio", "project_id", "dataset_location", "dataset_id" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
