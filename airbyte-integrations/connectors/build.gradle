@@ -129,42 +129,49 @@ subprojects { project ->
         }
         // Set project properties for use in tasks
         project.ext.connectorType = connectorType
-        // Task to build connector Docker image
-        def buildConnectorDockerImage = project.tasks.register('buildConnectorDockerImage', Exec) {
-            description = 'Build connector Docker image using existing Dockerfiles'
+        // Task to build connector Docker image using Docker plugin
+        def buildConnectorDockerImage = project.tasks.register('buildConnectorDockerImage', DockerBuildImage) {
+            description = 'Build connector Docker image using Docker plugin'
             group = 'build'
             // For Java connectors, depend on distTar task
             if (connectorType == 'java') {
                 dependsOn project.tasks.matching { it.name == 'distTar' }
             }
-            workingDir = rootProject.file("docker-images")
+            
+            inputDir = project.projectDir
+            dockerFile = new File(rootProject.file("docker-images"), "Dockerfile.${connectorType}-connector")
+            
+            // Get native architecture
+            def nativeArch = "arm64"
+            try {
+                def archProcess = "uname -m".execute()
+                archProcess.waitFor()
+                def arch = archProcess.text.trim()
+                if (arch == "amd64" || arch == "x86_64") {
+                    nativeArch = "amd64"
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to detect native architecture: ${e.message}. Defaulting to arm64.")
+            }
+            logger.lifecycle("Detected native architecture: ${nativeArch}")
+            
+            // Determine base image based on connector type
+            def baseImage = connectorType == 'java' ? 'airbyte/java-connector-base:2.0.1' : 'airbyte/python-connector-base:1.1.0'
+            
+            // Configure Docker build options
+            platform = "linux/${nativeArch}"
+            labels = [
+                'io.airbyte.version': '3.11.15',
+                'io.airbyte.name': "airbyte/${project.name}"
+            ]
+            buildArgs = [
+                'BASE_IMAGE': baseImage,
+                'CONNECTOR_NAME': project.name
+            ]
+            images = ["airbyte/${project.name}:dev"]
+            
             doFirst {
                 logger.lifecycle("Building Docker image for ${project.name} (${connectorType} connector)")
-                // Get native architecture
-                def nativeArch = "amd64"
-                try {
-                    def archProcess = "uname -m".execute()
-                    archProcess.waitFor()
-                    def arch = archProcess.text.trim()
-                    if (arch == "arm64" || arch == "aarch64") {
-                        nativeArch = "arm64"
-                    }
-                } catch (Exception e) {
-                    logger.warn("Failed to detect native architecture: ${e.message}. Defaulting to amd64.")
-                }
-                logger.lifecycle("Detected native architecture: ${nativeArch}")
-                // Determine base image based on connector type
-                def baseImage = connectorType == 'java' ? 'airbyte/java-connector-base:2.0.1' : 'airbyte/python-connector-base:1.1.0'
-                // Build Docker image using the existing Dockerfile
-                commandLine 'docker', 'build',
-                    '--platform', "linux/${nativeArch}",
-                    '--label', 'io.airbyte.version=3.11.15',
-                    '--label', "io.airbyte.name=airbyte/${project.name}",
-                    '--file', "Dockerfile.${connectorType}-connector",
-                    '--build-arg', "BASE_IMAGE=${baseImage}",
-                    '--build-arg', "CONNECTOR_NAME=${project.name}",
-                    '-t', "airbyte/${project.name}:dev",
-                    project.projectDir
             }
         }
         // Main task to build connector Docker image
