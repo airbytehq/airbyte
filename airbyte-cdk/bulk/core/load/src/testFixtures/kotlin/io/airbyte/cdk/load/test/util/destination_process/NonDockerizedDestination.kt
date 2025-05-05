@@ -8,20 +8,36 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executors
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions.assertFalse
 
 private val logger = KotlinLogging.logger {}
@@ -137,5 +153,77 @@ class NonDockerizedDestinationFactory(
             micronautProperties,
             *featureFlags
         )
+    }
+}
+
+// TODO if this is actually what we do - need to move NonDockerDest to src/main
+// TODO the cleaner maybe should also be looking for old streams??
+fun interface CheckCleanerUpper<C : DestinationConfiguration> {
+    fun cleanup(config: C, stream: DestinationStream)
+}
+
+class GenericChecker<C : DestinationConfiguration>(
+    private val cleanerUpper: CheckCleanerUpper<C>,
+) : DestinationChecker<C> {
+    override fun check(config: C) {
+        // generate a string like "20240523"
+        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        // generate 5 random characters
+        val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
+        val mockStream =
+            DestinationStream(
+                descriptor = DestinationStream.Descriptor("airbyte_test", "test$date$random"),
+                importType = Append,
+                schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
+                generationId = 1,
+                minimumGenerationId = 0,
+                syncId = 1,
+            )
+        try {
+            val destination =
+                NonDockerizedDestination(
+                    command = "check",
+                    configContents = config.serializeToString(),
+                    catalog =
+                        ConfiguredAirbyteCatalog()
+                            .withStreams(listOf(mockStream.asProtocolObject())),
+                    useFileTransfer = false,
+                    // TODO pass these in
+                    additionalMicronautEnvs = emptyList(),
+                    micronautProperties = emptyMap(),
+                )
+            destination.sendMessages(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage()
+                            .withEmittedAt(System.currentTimeMillis())
+                            .withStream(mockStream.descriptor.name)
+                            .withNamespace(mockStream.descriptor.namespace)
+                            .withData("""{"test": 42}""".deserializeToNode())
+                    ),
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(System.currentTimeMillis().toDouble())
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(
+                                        StreamDescriptor()
+                                            .withName(mockStream.descriptor.name)
+                                            .withNamespace(mockStream.descriptor.namespace)
+                                    )
+                                    .withStatus(
+                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                                    )
+                            )
+                    )
+            )
+            runBlocking { destination.shutdown() }
+        } finally {
+            cleanerUpper.cleanup(config, mockStream)
+        }
     }
 }
