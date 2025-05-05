@@ -16,13 +16,13 @@ interface GcsCommonSpecification {
         """The name of the GCS bucket. Read more <a href="https://cloud.google.com/storage/docs/naming-buckets">here</a>."""
     )
     @get:JsonProperty("gcs_bucket_name")
-    @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"], "order": 1}""")
+    @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"], "order": 2}""")
     val gcsBucketName: String
 
     @get:JsonSchemaTitle("GCS Bucket Path")
     @get:JsonPropertyDescription("Directory under the GCS bucket where data will be written.")
     @get:JsonProperty("gcs_bucket_path")
-    @get:JsonSchemaInject(json = """{"examples":["data_sync/test"], "order": 2}""")
+    @get:JsonSchemaInject(json = """{"examples":["data_sync/test"], "order": 3}""")
     val path: String
 
     @get:JsonSchemaTitle("Credential")
@@ -30,6 +30,6 @@ interface GcsCommonSpecification {
     @get:JsonPropertyDescription(
         """An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href="https://cloud.google.com/storage/docs/authentication/hmackeys">here</a>."""
     )
-    @get:JsonSchemaInject(json = """{"order": 0}""")
+    @get:JsonSchemaInject(json = """{"order": 1}""")
     val credential: GcsAuthSpecification
 }
