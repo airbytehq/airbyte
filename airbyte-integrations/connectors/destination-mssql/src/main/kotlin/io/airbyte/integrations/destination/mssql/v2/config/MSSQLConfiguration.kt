@@ -26,7 +26,9 @@ data class MSSQLConfiguration(
     val numInputPartitions: Int,
     val batchEveryNRecords: Int,
     val maxBatchSizeBytes: Long,
-    val maxNumOpenLoaders: Int
+    val maxNumOpenLoaders: Int,
+    override val maxMessageQueueMemoryUsageRatio: Double,
+    override val estimatedRecordMemoryOverheadRatio: Double
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
     override val numProcessRecordsWorkers = 1
     override val numProcessBatchWorkers: Int = 1
@@ -71,10 +73,12 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
             mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
-            numInputPartitions = spec.numInputPartitions ?: 2,
-            batchEveryNRecords = spec.batchEveryNRecords ?: 5_000,
-            maxBatchSizeBytes = (spec.maxBatchSizeMb ?: 10) * 1024L * 1024,
-            maxNumOpenLoaders = spec.maxNumOpenLoaders ?: 8
+            numInputPartitions = spec.numInputPartitions ?: 1,
+            batchEveryNRecords = spec.batchEveryNRecords ?: 100_000,
+            maxBatchSizeBytes = (spec.maxBatchSizeMb ?: 200) * 1024L * 1024,
+            maxNumOpenLoaders = spec.maxNumOpenLoaders ?: 8,
+            maxMessageQueueMemoryUsageRatio = spec.maxMessageQueueMemoryUsageRatio ?: 0.2,
+            estimatedRecordMemoryOverheadRatio = spec.estimatedRecordMemoryOverheadRatio ?: 8.0
         )
     }
 }

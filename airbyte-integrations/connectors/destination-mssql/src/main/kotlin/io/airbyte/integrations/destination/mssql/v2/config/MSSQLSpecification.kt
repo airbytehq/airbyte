@@ -83,6 +83,11 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonProperty("batch_every_n_records") val batchEveryNRecords: Int? = null
     @get:JsonProperty("max_batch_size_mb") val maxBatchSizeMb: Int? = null
     @get:JsonProperty("max_num_open_loaders") val maxNumOpenLoaders: Int? = null
+
+    @get:JsonProperty("max_message_queue_memory_usage_ratio")
+    val maxMessageQueueMemoryUsageRatio: Double? = null
+    @get:JsonProperty("estimated_record_memory_overhead_ratio")
+    val estimatedRecordMemoryOverheadRatio: Double? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")
