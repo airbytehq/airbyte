@@ -56,7 +56,6 @@ class TestAccountsStream(BaseTest):
             "TaxCertificates": [{"key": "test_key", "value": "test_value"}],
         }
 
-
     def test_read_linked_agencies_data(self):
         """
         Test reading linked agencies data from the accounts stream.
@@ -80,8 +79,10 @@ class TestAccountsStream(BaseTest):
         # Our account doesn't have configured Tax certificate.
         output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config)
         assert output.records[0].record.data["LinkedAgencies"] == {
-            "CustomerInfo": [{
-                "Id": 123456789,
-                "Name": "Ramp (MCC)",
-            }]
+            "CustomerInfo": [
+                {
+                    "Id": 123456789,
+                    "Name": "Ramp (MCC)",
+                }
+            ]
         }

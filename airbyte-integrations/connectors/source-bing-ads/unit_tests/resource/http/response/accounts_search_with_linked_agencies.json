@@ -24,7 +24,7 @@
       "TimeZone": "Arizona",
       "PauseReason": null,
       "ForwardCompatibilityMap": null,
-      "LinkedAgencies": [{"Id": "123456789", "Name": "Ramp (MCC)"}],
+      "LinkedAgencies": [{ "Id": "123456789", "Name": "Ramp (MCC)" }],
       "SalesHouseCustomerId": null,
       "TaxInformation": [],
       "BackUpPaymentInstrumentId": null,
