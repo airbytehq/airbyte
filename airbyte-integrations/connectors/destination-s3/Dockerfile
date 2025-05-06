@@ -4,7 +4,8 @@
 # Java connector Dockerfile for Airbyte
 
 # Build arguments
-ARG BASE_IMAGE=docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+#ARG BASE_IMAGE=docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+ARG BASE_IMAGE
 
 # Base image - using Amazon Corretto (Amazon's distribution of OpenJDK)
 FROM ${BASE_IMAGE}

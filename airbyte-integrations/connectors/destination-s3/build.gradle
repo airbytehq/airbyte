@@ -45,3 +45,36 @@ airbyte {
         imageName.set("destination-s3")
     }
 }
+
+//project.ext["docker.buildArgs.ARG1"] = "value1"
+import io.airbyte.gradle.GenerateConnectorBuildArgs
+
+def generateConnectorDockerBuildArgs = tasks.register('generateConnectorDockerBuildArgs', GenerateConnectorBuildArgs) {
+    metadata.set(layout.projectDirectory.file('metadata.yaml'))
+    output.set(layout.buildDirectory.file('docker/buildArgs.properties'))
+}
+
+tasks.named('dockerBuildx').configure { task ->
+
+    dependsOn generateConnectorDockerBuildArgs
+    inputs.file generateConnectorDockerBuildArgs.flatMap { it.output }
+
+    /*  A Provider<String> that lazily reads the properties file at execution */
+    def propsText = providers.fileContents(generateConnectorDockerBuildArgs.flatMap { it.output })
+            .asText                                    // Provider<String>
+            .orElse('')                                 // handle missing file
+
+    /*  Transform that String -> Map<String,String> lazily as well            */
+    def propsMap = propsText.map { txt ->
+        txt.readLines()
+                .findAll { it.contains('=') }
+                .collectEntries { line ->
+                    def (k, v) = line.split('=', 2)
+                    [(k.trim()): v.trim()]
+                }
+    }                                                       // Provider<Map<String,String>>
+
+    /*  Inject the map *during configuration*, but its contents are resolved
+        only when Gradle needs buildArgs (after the task graph is ready).      */
+    task.buildArgs.putAll(propsMap)
+}
