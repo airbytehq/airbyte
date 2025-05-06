@@ -8,7 +8,6 @@ on:
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
   workflow_call:
     inputs:
-
       connector_name:
         type: string
         required: false
@@ -40,7 +39,6 @@ on:
   # Available as a slash command and workflow dispatch
   workflow_dispatch:
     inputs:
-
       # Custom inputs for the connector test command:
       connector_name:
         required: false
@@ -123,8 +121,8 @@ jobs:
     if: ${{ needs.generate-matrix.outputs.connector-matrix != '' }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
-      max-parallel: 5  # Limit number of parallel jobs
-      fail-fast: false  # Don't stop on first failure
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
     name: Test ${{ matrix.connector }} Connector
     steps:
       - name: Checkout Airbyte
@@ -184,7 +182,7 @@ jobs:
 
       - name: Get Connector Language
         id: get-language
-        continue-on-error: true  # Will fail for now (null output) for manifest-only connectors
+        continue-on-error: true # Will fail for now (null output) for manifest-only connectors
         run: |
           echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
 
@@ -245,7 +243,7 @@ jobs:
     if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
-      max-parallel: 10  # Limit number of parallel jobs
+      max-parallel: 10 # Limit number of parallel jobs
     name: Lint ${{ matrix.connector }} Connector
     steps:
       - name: Checkout Airbyte
@@ -302,7 +300,7 @@ jobs:
 
       - name: Get Connector Language
         id: get-language
-        continue-on-error: true  # Will fail for now (null output) for manifest-only connectors
+        continue-on-error: true # Will fail for now (null output) for manifest-only connectors
         run: |
           echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
 
@@ -316,13 +314,12 @@ jobs:
         run: |
           poe connector ${{ matrix.connector }} format-check
 
-      - name: Run lint check
+      - name: Run lint check (info only)
         if: ${{ steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} lint-check
         # Most connectors can't pass lint checks, so this is non-blocking for now
         continue-on-error: true
-
 
   lint-summary:
     name: Connector Lint Summary Check
