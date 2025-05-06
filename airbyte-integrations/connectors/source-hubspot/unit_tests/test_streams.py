@@ -13,8 +13,6 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
-    ContactsListMemberships,
-    ContactsMergedAudit,
     ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
@@ -94,7 +92,6 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
@@ -565,29 +562,6 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     assert not adapter.called
 
 
-def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(requests_mock, common_params):
-    stream = ContactsMergedAudit(**common_params)
-
-    adapter = requests_mock.register_uri(
-        "GET",
-        f"/properties/v2/{stream.entity}/properties",
-        [
-            {
-                "json": [
-                    {
-                        "name": "hs_object_id",
-                        "label": "Record ID",
-                        "type": "number",
-                    }
-                ]
-            }
-        ],
-    )
-    _ = stream.get_json_schema()
-
-    assert not adapter.called
-
-
 def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     for entity, fully_qualified_name, schema, custom_properties in api.get_custom_objects_metadata():
@@ -714,23 +688,6 @@ def test_web_analytics_latest_state(common_params, mocker):
     assert len(records[0]) == 1
     assert records[0][0]["objectId"] == "1"
     assert stream.state["1"]["occurredAt"] == "2021-01-02T00:00:00Z"
-
-
-def test_contacts_membership_transform(common_params):
-    stream = ContactsListMemberships(**common_params)
-    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
-    memberships = [{"membership": 1}]
-    records = [
-        {
-            "vid": 1,
-            "canonical-vid": 1,
-            "portal-id": 1,
-            "is-contact": True,
-            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
-            "list-memberships": memberships,
-        }
-    ]
-    assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))
 
 
 @pytest.mark.parametrize(
