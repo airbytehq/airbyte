@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.file.s3.S3ClientFactory
 import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
 @Singleton
-@Named("destinationChecker")
 class S3V2Checker<T : OutputStream>(
     private val timeProvider: TimeProvider,
     private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
