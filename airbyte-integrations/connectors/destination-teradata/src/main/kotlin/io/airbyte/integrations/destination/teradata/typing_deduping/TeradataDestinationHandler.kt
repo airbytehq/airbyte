@@ -250,7 +250,8 @@ class TeradataDestinationHandler(
                 )
                 .getSQL(ParamType.INLINED)
 
-        return jdbcDatabase.queryInt(countQuery) > 0 // If the result is greater than 0, return true, else false
+        return jdbcDatabase.queryInt(countQuery) >
+            0 // If the result is greater than 0, return true, else false
     }
 
     /**

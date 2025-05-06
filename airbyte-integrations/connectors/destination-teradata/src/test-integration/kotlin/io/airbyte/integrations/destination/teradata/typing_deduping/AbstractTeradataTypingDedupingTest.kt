@@ -98,7 +98,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     /** Tears down the Teradata ClearScape environment after all tests complete. */
     @AfterAll
     fun teardownTeradata() {
-            clearscapeManager.stop()
+        clearscapeManager.stop()
     }
 
     /** Setup logic to run before each test. Initializes random stream and schema names. */

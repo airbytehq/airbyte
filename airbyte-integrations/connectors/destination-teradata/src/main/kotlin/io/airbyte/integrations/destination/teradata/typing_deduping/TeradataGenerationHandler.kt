@@ -80,7 +80,8 @@ class TeradataGenerationHandler() : JdbcGenerationHandler {
     ): Boolean {
         val countQuery =
             """SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' """.trimIndent()
-        return jdbcDatabase.queryInt(countQuery) > 0 // If the result is greater than 0, return true, else false
+        return jdbcDatabase.queryInt(countQuery) >
+            0 // If the result is greater than 0, return true, else false
     }
 
     companion object {

@@ -75,9 +75,7 @@ class ClearScapeManager(private val configFileName: String) {
         createAndStartClearScapeInstance()
     }
 
-    /**
-     * Public method to stop the clea
-     */
+    /** Public method to stop the clea */
     fun stop() {
         stopClearScapeInstance()
     }
@@ -134,9 +132,7 @@ class ClearScapeManager(private val configFileName: String) {
         configJSON.set<JsonNode>(TeradataConstants.LOG_MECH, Jsons.jsonNode(authMap))
     }
 
-    /**
-     * Handles the logic for stopping a ClearScape environment instance.
-     */
+    /** Handles the logic for stopping a ClearScape environment instance. */
     private fun stopClearScapeInstance() {
         val teradataHttpClient = getTeradataHttpClient(configJSON)
         val name = configJSON["env_name"].asText()
@@ -148,7 +144,11 @@ class ClearScapeManager(private val configFileName: String) {
         } catch (be: BaseException) {
             LOGGER.info("Environment $name is not available. ${be.message}")
         }
-       if (response != null && response.ip != null && response.state == EnvironmentResponse.State.RUNNING) {
+        if (
+            response != null &&
+                response.ip != null &&
+                response.state == EnvironmentResponse.State.RUNNING
+        ) {
             val request = EnvironmentRequest(name, OperationRequest("stop"))
             teradataHttpClient.stopEnvironment(request, token)
         }

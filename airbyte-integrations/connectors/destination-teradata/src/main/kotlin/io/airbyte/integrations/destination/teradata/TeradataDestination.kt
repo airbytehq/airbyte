@@ -214,11 +214,7 @@ class TeradataDestination :
         database: JdbcDatabase,
         rawTableSchema: String
     ): JdbcDestinationHandler<MinimumDestinationState> {
-        return TeradataDestinationHandler(
-            database,
-            rawTableSchema,
-            getGenerationHandler()
-        )
+        return TeradataDestinationHandler(database, rawTableSchema, getGenerationHandler())
     }
     /**
      * Returns a list of migration objects that perform database migrations. In this case, an empty
