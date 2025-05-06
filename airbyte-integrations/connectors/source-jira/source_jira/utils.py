@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import re
 from typing import Any, MutableMapping
 
 from airbyte_cdk.sources.streams import Stream
