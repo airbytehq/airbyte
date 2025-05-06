@@ -5,9 +5,26 @@
 package io.airbyte.cdk.load.check
 
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.write.WriteOperation
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.PipedOutputStream
+import java.io.PrintWriter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * A check operation that is run before the destination is used.
@@ -32,5 +49,66 @@ interface DestinationChecker<C : DestinationConfiguration> {
         )
 
     fun check(config: C)
-    fun cleanup() {}
+    fun cleanup(config: C) {}
+}
+
+class DestinationCheckerSync<C : DestinationConfiguration>(
+    val catalog: DestinationCatalog,
+    pipe: PipedOutputStream,
+    private val writeOperation: WriteOperation,
+    private val cleaner: CheckCleaner<C>,
+) : DestinationChecker<C> {
+    private val pipe = PrintWriter(pipe)
+
+    override fun check(config: C) {
+        check(catalog.streams.size == 1) { "test catalog should have exactly 1 stream" }
+        val mockStream = catalog.streams.first()
+        runBlocking(Dispatchers.IO) {
+            launch { writeOperation.execute() }
+
+            pipe.println(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage()
+                            .withEmittedAt(System.currentTimeMillis())
+                            .withStream(mockStream.descriptor.name)
+                            .withNamespace(mockStream.descriptor.namespace)
+                            .withData("""{"test": 42}""".deserializeToNode())
+                    )
+                    .serializeToString()
+            )
+            pipe.println(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(System.currentTimeMillis().toDouble())
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(
+                                        StreamDescriptor()
+                                            .withName(mockStream.descriptor.name)
+                                            .withNamespace(mockStream.descriptor.namespace)
+                                    )
+                                    .withStatus(
+                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                                    )
+                            )
+                    )
+                    .serializeToString()
+            )
+            pipe.close()
+        }
+    }
+
+    override fun cleanup(config: C) {
+        catalog.streams.forEach { stream -> cleaner.cleanup(config, stream) }
+    }
+}
+
+// TODO the cleaner maybe should also be looking for old test tables, a la DestinationCleaner??
+fun interface CheckCleaner<C : DestinationConfiguration> {
+    fun cleanup(config: C, stream: DestinationStream)
 }

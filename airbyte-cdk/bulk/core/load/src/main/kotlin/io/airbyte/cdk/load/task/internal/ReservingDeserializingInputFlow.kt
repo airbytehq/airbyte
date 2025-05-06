@@ -21,7 +21,7 @@ class ReservingDeserializingInputFlow(
     val config: DestinationConfiguration,
     val deserializer: ProtocolMessageDeserializer,
     @Named("queueMemoryManager") val memoryManager: ReservationManager,
-    val inputStream: InputStream,
+    @Named("inputStream") val inputStream: InputStream,
 ) : Flow<Pair<Long, Reserved<DestinationMessage>>> {
     val log = KotlinLogging.logger {}
 
