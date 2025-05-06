@@ -6,11 +6,13 @@ package io.airbyte.integrations.destination.azure_blob_storage
 
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobStorageClientFactory
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import java.io.OutputStream
-import javax.inject.Singleton
 import kotlinx.coroutines.runBlocking
 
 @Singleton
+@Named("destinationChecker")
 class AzureBlobStorageChecker<T : OutputStream> :
     DestinationChecker<AzureBlobStorageConfiguration<T>> {
     override fun check(config: AzureBlobStorageConfiguration<T>) {
