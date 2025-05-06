@@ -11,12 +11,14 @@ The SFTP Bulk connector offers several features that are not available in the st
 - **Bulk ingestion of files**: This connector can consolidate and process multiple files as a single data stream in your destination system.
 - **Incremental loading**: This connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their creation or last modification time.
 - **Load most recent file**: You can choose to load only the most recent file from the designated folder path. This feature is particularly useful when dealing with snapshot files that are regularly added and contain the latest data.
+- **GPG decryption**: This connector can automatically decrypt GPG-encrypted files after downloading them from the SFTP server.
 
 ## Prerequisites
 
 - Access to a remote server that supports SFTP
 - Host address
 - Valid username and password associated with the host server
+- (Optional) For GPG decryption: GPG private key and, if required, its passphrase
 
 ## Setup guide
 
@@ -58,6 +60,28 @@ ssh <username>@<server_ip_address>
 For more information on SSH key pair authentication, please refer to the
 [official documentation](https://www.ssh.com/academy/ssh/keygen).
 
+#### Step 2 (Optional): Set up GPG decryption
+
+If your files on the SFTP server are encrypted with GPG, you can configure the connector to automatically decrypt them after download. To use this feature, you'll need:
+
+1. Your GPG private key in armored format (begins with "-----BEGIN PGP PRIVATE KEY BLOCK-----")
+2. The passphrase for your private key (if it's protected by one)
+
+To set up GPG decryption:
+
+1. If you already have a GPG key pair you want to use, export the private key:
+   ```
+   gpg --export-secret-key --armor your.email@example.com > private-key.asc
+   ```
+
+2. If you need to create a new GPG key pair, run:
+   ```
+   gpg --full-generate-key
+   ```
+   Follow the prompts to create your key, then export it as shown above.
+
+3. Open the private key file in a text editor. You'll need to copy its entire content (including the BEGIN and END lines) into the Airbyte configuration.
+
 ### Set up the SFTP Bulk connector in Airbyte
 
 ### For Airbyte Cloud:
@@ -74,7 +98,7 @@ For more information on SSH key pair authentication, please refer to the
 10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
 12. (Optional) Specify the **Host Address**. The default port for SFTP is 2​2. If your remote server is using a different port, enter it here.
-(Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
+13. (Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
 
 ```
 Root
@@ -95,7 +119,12 @@ log-([0-9]{4})([0-9]{2})([0-9]{2})
 
 This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represented four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
 
-14. Click **Set up source** to complete setup. A test will run to verify the configuration.
+14. (Optional) In the Advanced settings, you can enable GPG decryption if your files are encrypted:
+    - Enable **GPG Decryption**
+    - Paste your **GPG Private Key** (the entire content of your .asc file including BEGIN and END lines)
+    - If your key requires it, provide the **GPG Key Passphrase**
+
+15. Click **Set up source** to complete setup. A test will run to verify the configuration.
 
 ### For Airbyte Open Source:
 
@@ -126,6 +155,16 @@ For example, assuming your folder path is not set in the connector configuration
 
 If your files are in a folder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`.
 
+#### GPG Decryption Configuration
+
+If your files on the SFTP server are encrypted with GPG, you can enable automatic decryption:
+
+- **Enable GPG Decryption**: Turn on GPG decryption for encrypted files
+- **GPG Private Key**: Your GPG private key in armored format (text that begins with "-----BEGIN PGP PRIVATE KEY BLOCK-----")
+- **GPG Key Passphrase**: The passphrase for your private key (if required)
+
+The connector will automatically detect files with GPG extensions (.gpg, .pgp, or .asc) and decrypt them after downloading from the SFTP server.
+
 ## Supported sync modes
 
 The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -139,7 +178,7 @@ The SFTP Bulk source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format. 
+This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format. The connector can also handle GPG-encrypted versions of these files.
 
 ## Changelog
 <details>
@@ -147,6 +186,7 @@ This source provides a single stream per file with a dynamic schema. The current
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.8.0 | 2025-03-20 | [54123](https://github.com/airbytehq/airbyte/pull/54123) | Add GPG decryption support |
 | 1.7.8 | 2025-04-19 | [58448](https://github.com/airbytehq/airbyte/pull/58448) | Update dependencies |
 | 1.7.7 | 2025-04-05 | [57475](https://github.com/airbytehq/airbyte/pull/57475) | Update dependencies |
 | 1.7.6 | 2025-03-29 | [56898](https://github.com/airbytehq/airbyte/pull/56898) | Update dependencies |

@@ -48,7 +48,14 @@ class SFTPClient:
 
     # If connection is snapped during connect flow, retry up to a
     # minute for SSH connection to succeed. 2^6 + 2^5 + ...
-    @backoff.on_exception(backoff.expo, EOFError, max_tries=6, on_backoff=handle_backoff, jitter=None, factor=2)
+    @backoff.on_exception(
+        backoff.expo,
+        EOFError,
+        max_tries=6,
+        on_backoff=handle_backoff,
+        jitter=None,
+        factor=2,
+    )
     def _connect(self):
         if self._connection is not None:
             return
@@ -56,7 +63,12 @@ class SFTPClient:
         try:
             self.transport = paramiko.Transport((self.host, self.port))
             self.transport.use_compression(True)
-            self.transport.connect(username=self.username, password=self.password, hostkey=None, pkey=self.key)
+            self.transport.connect(
+                username=self.username,
+                password=self.password,
+                hostkey=None,
+                pkey=self.key,
+            )
             self._connection = paramiko.SFTPClient.from_transport(self.transport)
 
             # get 'socket' to set the timeout
