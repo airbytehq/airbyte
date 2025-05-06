@@ -6,16 +6,17 @@ from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
-import pendulum
 import requests
 
+from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 class NewtoLegacyFieldTransformation(RecordTransformation):
@@ -142,6 +143,28 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
 
 
 class EngagementsHttpRequester(HttpRequester):
+    """
+    Engagements stream uses different endpoints:
+    - Engagements Recent if start_date/state is less than 30 days and API is able to return all records (<10k), or
+    - Engagements All which extracts all records, but supports filter on connector side
+
+    Recent Engagements API:
+    https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
+
+    Important: This endpoint returns only last 10k most recently updated records in the last 30 days.
+
+    All Engagements API:
+    https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
+
+    Important:
+
+    1. The stream is declared to use one stream slice from start date(default/config/state) to time.now(). It doesn't have step.
+    Based on this we can use stream_slice["start_time"] and be sure that this is equal to value in initial state.
+    2.The stream is declared to use 250 as page size param in pagination.
+    Recent Engagements API have 100 as max param but doesn't fail is bigger value was provided and returns to 100 as default.
+    3. The stream has is_client_side_incremental=true to filter Engagements All response.
+    """
+
     recent_api_total_records_limit = 10000
     recent_api_last_days_limit = 29
 
@@ -155,7 +178,9 @@ class EngagementsHttpRequester(HttpRequester):
             return self._use_recent_api
 
         # Recent engagements API returns records updated in the last 30 days only. If start time is older All engagements API should be used
-        if int(stream_slice["start_time"]) >= int((pendulum.now() - timedelta(days=self.recent_api_last_days_limit)).timestamp() * 1000):
+        if int(stream_slice["start_time"]) >= int(
+            DatetimeParser().format((ab_datetime_now() - timedelta(days=self.recent_api_last_days_limit)), "%ms")
+        ):
             # Recent engagements API returns only 10k most recently updated records.
             # API response indicates that there are more records so All engagements API should be used
             _, response = self._http_client.send_request(

@@ -557,21 +557,17 @@ definitions:
     transformations:
       - type: DpathFlattenFields
         field_path:
-          - metaData
-        key_transformation:
-          type: KeyTransformation
-          prefix: metaData_
+          - additionalProperties
       - type: AddFields
         fields:
           - path: [ "updatedAt" ]
-            value: "{{ record['createdAt'] }}"
-        condition: "{{ not record.get('updatedAt') }}"
-      - type: AddFields
-        fields:
+            value: "{{ record.get('updatedAt') or record.get('createdAt') }}"
           - path: [ "updatedAt" ]
             value: "{{ format_datetime(record['updatedAt'], '%ms') }}"
+            value_type: integer
           - path: [ "createdAt" ]
             value: "{{ format_datetime(record['createdAt'], '%ms') }}"
+            value_type: integer
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -673,6 +669,8 @@ definitions:
           field_name: count
         pagination_strategy:
           type: CursorPagination
+          # set to 250 as max page size for All engagements API.
+          # if Recent engagements API is used API returns to 100 as default
           page_size: 250
           cursor_value: "{{ response.get('offset') }}"
           stop_condition: "{{ not response.get('hasMore') }}"
