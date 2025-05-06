@@ -6186,7 +6186,7 @@ definitions:
         $ref: "#/definitions/retriever/record_selector"
         extractor:
           type: CustomRecordExtractor
-          class_name: "source_jira.components.LabelsRecordExtractor"
+          class_name: "source_declarative_manifest.components.LabelsRecordExtractor"
           field_path: ["values"]
     name: labels
     primary_key: "label"
@@ -12217,7 +12217,7 @@ definitions:
       $ref: "#/definitions/retriever"
       partition_router:
         type: CustomPartitionRouter
-        class_name: "source_jira.components.SubstreamOrSinglePartitionRouter"
+        class_name: "source_declarative_manifest.components.SubstreamOrSinglePartitionRouter"
         parent_stream_configs:
         - type: ParentStreamConfig
           stream: "#/definitions/projects_stream"
@@ -12256,7 +12256,7 @@ definitions:
         value_type: string
         value: "{{ record.fields.updated }}"
     - type: CustomTransformation
-      class_name: "source_jira.components.RemoveEmptyFields"
+      class_name: "source_declarative_manifest.components.RemoveEmptyFields"
       field_pointers: ["renderedFields", fields]
 
     $parameters:
@@ -13840,7 +13840,7 @@ definitions:
       $ref: "#/definitions/retriever_v1"
       partition_router:
         type: CustomPartitionRouter
-        class_name: "source_jira.components.SprintIssuesSubstreamPartitionRouter"
+        class_name: "source_declarative_manifest.components.SprintIssuesSubstreamPartitionRouter"
         parent_stream_configs:
         - type: ParentStreamConfig
           stream: "#/definitions/__story_points_issue_fields_substream"
@@ -14517,3 +14517,120 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 40
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/jira
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Jira Spec
+    type: object
+    required:
+    - api_token
+    - domain
+    - email
+    additionalProperties: true
+    properties:
+      api_token:
+        type: string
+        title: API Token
+        description: Jira API Token. See the <a href="https://docs.airbyte.com/integrations/sources/jira">docs</a>
+          for more information on how to generate this key. API Token is used for Authorization
+          to your account by BasicAuth.
+        airbyte_secret: true
+        order: 0
+      domain:
+        type: string
+        title: Domain
+        examples:
+        - "<your-domain>.atlassian.net"
+        - "<your-domain>.jira.com"
+        - jira.<your-domain>.com
+        description: The Domain for your Jira account, e.g. airbyteio.atlassian.net,
+          airbyteio.jira.com, jira.your-domain.com
+        order: 1
+      email:
+        type: string
+        title: Email
+        description: The user email for your Jira account which you used to generate
+          the API token. This field is used for Authorization to your account by BasicAuth.
+        order: 2
+      projects:
+        type: array
+        title: Projects
+        items:
+          type: string
+        examples:
+        - PROJ1
+        - PROJ2
+        description: List of Jira project keys to replicate data for, or leave it empty
+          if you want to replicate data for all projects.
+        order: 3
+      start_date:
+        type: string
+        title: Start Date
+        description: The date from which you want to replicate data from Jira, use the
+          format YYYY-MM-DDT00:00:00Z. Note that this field only applies to certain
+          streams, and only data generated on or after the start date will be replicated.
+          Or leave it empty if you want to replicate all data. For more information,
+          refer to the <a href="https://docs.airbyte.com/integrations/sources/jira/">documentation</a>.
+        examples:
+        - '2021-03-01T00:00:00Z'
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        format: date-time
+        order: 4
+      expand_issue_changelog:
+        type: boolean
+        title: Expand Issue Changelog
+        airbyte_hidden: true
+        description: "(DEPRECATED) Expand the changelog when replicating issues."
+        default: false
+      render_fields:
+        type: boolean
+        title: Render Issue Fields
+        airbyte_hidden: true
+        description: "(DEPRECATED) Render issue fields in HTML format in addition to
+          Jira JSON-like format."
+        default: false
+      expand_issue_transition:
+        type: boolean
+        title: Expand Issue Transitions
+        airbyte_hidden: true
+        description: "(DEPRECATED) Expand the transitions when replicating issues."
+        default: false
+      issues_stream_expand_with:
+        type: array
+        items:
+          type: string
+          enum:
+          - renderedFields
+          - transitions
+          - changelog
+        title: Expand Issues stream
+        airbyte_hidden: true
+        description: 'Select fields to Expand the `Issues` stream when replicating with: '
+        default: []
+      lookback_window_minutes:
+        title: Lookback window
+        description: When set to N, the connector will always refresh resources created
+          within the past N minutes. By default, updated objects that are not newly
+          created are not incrementally synced.
+        examples:
+        - 60
+        default: 0
+        minimum: 0
+        maximum: 576000
+        type: integer
+        order: 5
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 40
+        default: 3
+        examples:
+        - 1
+        - 2
+        - 3
+        description: The number of worker threads to use for the sync.
+        order: 6
