@@ -27,9 +27,27 @@
 
 [tasks]
 
-test-all = "gradle check"
-format-check = "gradle check -x test"
+# Universal Connector Tasks
+# These tasks are available in all connectors, regardless of the language.
+
 install = "echo 'No install step for this connector.'"
+test-all = "gradle check"
+test-fast = "test-all"  # TODO: Add a fast-fail unit test definition
+format-check = "gradle check -x test"
+lint-check = "echo 'No lint check step for this connector.'"
+
+fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
+get-language = "echo 'java'" # Use with -qq to get just the language name
+
+test-unit-tests = "gradle test"
+test-integration-tests.shell = '''
+if [ -d src/test-integration ]; then
+  echo "Found 'src/test-integration' directory, running integration tests..."
+  gradle integrationTestJava
+else
+  echo "No integration tests defined; skipping integration tests."
+fi
+'''
 
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
