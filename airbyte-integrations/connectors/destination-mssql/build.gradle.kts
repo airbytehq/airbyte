@@ -44,6 +44,8 @@ dependencies {
     implementation("com.zaxxer:HikariCP:6.2.1")
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
+    runtimeOnly("com.microsoft.azure:msal4j:1.19.0")
+
     testImplementation("io.mockk:mockk:1.13.16")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
