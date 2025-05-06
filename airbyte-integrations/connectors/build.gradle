@@ -62,6 +62,7 @@ tasks.named('clean').configure {
 
 allprojects {
     // Adds airbyte-ci task.
+    // The following can be removed once we transition all tests away from Dagger.
     def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
         def task = tasks.register(taskName, Exec) {
             workingDir rootDir
