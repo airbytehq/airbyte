@@ -39,7 +39,6 @@ configurations.all {
         exclude group: "org.slf4j", module: "slf4j-reload4j"
 }
 
-
 airbyte {
     docker {
         imageName.set("destination-s3")
@@ -74,4 +73,16 @@ tasks.named('dockerBuildx').configure { task ->
     /*  Inject the map *during configuration* while buildArgs are still mutable, but its contents are resolved
         only when Gradle needs buildArgs (after the task graph is ready).      */
     task.buildArgs.putAll(propsMap)
+
+    task.dependsOn 'dockerCopyDockerfile'
+    task.dockerfile.set(layout.buildDirectory.file('airbyte/docker/Dockerfile'))
+}
+
+/* Copy the top-level dockerfile into the build directory. */
+tasks.named('dockerCopyDockerfile', Copy).configure {
+    description = 'Copy shared Dockerfile into build/airbyte/docker'
+    from (rootProject.file('docker-images/Dockerfile.java-connector-non-airbyte-ci')) {
+        rename { 'Dockerfile' }
+    }
+    into layout.buildDirectory.dir('airbyte/docker')
 }
