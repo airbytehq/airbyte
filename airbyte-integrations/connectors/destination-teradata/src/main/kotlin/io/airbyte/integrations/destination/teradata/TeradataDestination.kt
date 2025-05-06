@@ -215,7 +215,6 @@ class TeradataDestination :
         rawTableSchema: String
     ): JdbcDestinationHandler<MinimumDestinationState> {
         return TeradataDestinationHandler(
-            databaseName,
             database,
             rawTableSchema,
             getGenerationHandler()

@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import javax.sql.DataSource
-import org.apache.commons.lang3.RandomStringUtils
+import kotlin.random.Random
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -98,7 +98,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     /** Tears down the Teradata ClearScape environment after all tests complete. */
     @AfterAll
     fun teardownTeradata() {
-        clearscapeManager.teardown()
+            clearscapeManager.stop()
     }
 
     /** Setup logic to run before each test. Initializes random stream and schema names. */
@@ -106,11 +106,18 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     @Throws(Exception::class)
     fun setupBETeradata() {
         super.setup()
-        val schemaName = RandomStringUtils.randomAlphabetic(10).lowercase(Locale.getDefault())
+        val schemaName = generateRandomAlphabeticLowercase(10)
         streamNamespace = "tdtest_$schemaName"
         streamName = "test_$schemaName"
     }
 
+    private fun generateRandomAlphabeticLowercase(length: Int): String {
+        val chars = ('a'..'z')
+        return (1..length)
+            .map { chars.random(Random.Default) }
+            .joinToString("")
+            .lowercase(Locale.getDefault())
+    }
     /**
      * Provides a JDBC DataSource for Teradata using the test configuration.
      *
@@ -140,14 +147,14 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
      */
     @Throws(Exception::class)
     override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String) {
-        var streamNamespace = streamNamespace
-        if (streamNamespace == null) {
-            streamNamespace = getDefaultSchema(config!!)
+        var namespace = streamNamespace
+        if (namespace == null) {
+            namespace = getDefaultSchema(config!!)
         }
         val rawTableName =
             nameTransformer.convertStreamName(
                 concatenateRawTableName(
-                    streamNamespace,
+                    namespace,
                     streamName,
                 ),
             )
@@ -160,10 +167,10 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                 ),
             )
         }
-        if (isSchemaExists(database, streamNamespace)) {
+        if (isSchemaExists(database, namespace)) {
             // Delete drops all everything in database. So no need to drop only given table
-            database!!.execute(java.lang.String.format("DELETE DATABASE %s;", streamNamespace))
-            database!!.execute(java.lang.String.format("DROP DATABASE %s;", streamNamespace))
+            database!!.execute(java.lang.String.format("DELETE DATABASE %s;", namespace))
+            database!!.execute(java.lang.String.format("DROP DATABASE %s;", namespace))
         }
     }
 
@@ -198,7 +205,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                     ),
                 )
 
-        var noOfRecords = 500
+        val noOfRecords = 500
         // Run a sync with 500 copies of the input messages
         val messages1 = repeatList(noOfRecords, readMessages("dat/sync1_messages.jsonl"))
 
@@ -569,7 +576,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
         tableName: String?
     ): Boolean {
         return (database?.queryInt(
-            "SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' "
+            "SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' ",
         )
             ?: 0) > 0
     }

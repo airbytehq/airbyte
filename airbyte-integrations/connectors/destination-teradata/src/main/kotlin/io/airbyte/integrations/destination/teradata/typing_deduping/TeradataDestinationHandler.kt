@@ -43,13 +43,11 @@ import org.slf4j.LoggerFactory
  * for managing destination states, mapping Airbyte types to JDBC types, and interacting with the
  * Teradata destination.
  *
- * @param databaseName The name of the database.
  * @param jdbcDatabase The JDBC database instance used to interact with the database.
  * @param rawTableSchema The schema for the raw table in the database.
  * @param generationHandler The handler for generating the SQL for database operations.
  */
 class TeradataDestinationHandler(
-    databaseName: String?,
     jdbcDatabase: JdbcDatabase,
     rawTableSchema: String,
     generationHandler: JdbcGenerationHandler,
@@ -104,7 +102,7 @@ class TeradataDestinationHandler(
      */
     @Throws(Exception::class)
     override fun isFinalTableEmpty(id: StreamId): Boolean {
-        return try {
+        try {
             return !jdbcDatabase.queryBoolean(
                 dslContext
                     .select(
@@ -252,8 +250,7 @@ class TeradataDestinationHandler(
                 )
                 .getSQL(ParamType.INLINED)
 
-        return (jdbcDatabase.queryInt(countQuery)
-            ?: 0) > 0 // If the result is greater than 0, return true, else false
+        return jdbcDatabase.queryInt(countQuery) > 0 // If the result is greater than 0, return true, else false
     }
 
     /**
@@ -396,7 +393,7 @@ class TeradataDestinationHandler(
         /**
          * Converts an Airbyte Protocol type to a JDBC type name.
          *
-         * @param airbyteType The Airbyte Protocol type.
+         * @param airbyteProtocolType The Airbyte Protocol type.
          * @return The corresponding JDBC type name.
          */
         private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
