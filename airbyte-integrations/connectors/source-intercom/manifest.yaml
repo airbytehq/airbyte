@@ -241,43 +241,37 @@ definitions:
         - id
       retriever:
         type: CustomRetriever
-        class_name: "source_declarative_manifest.components.CustomScrollRetriever"
-        $parameters:
-          stream_name: "companies"
+        class_name: "source_declarative_manifest.components.IntercomScrollRetriever"
         requester:
           $parameters:
-            name: "base_requester"
+            name: "companies"
           $ref: "#/definitions/base_requester"
           path: "companies/scroll"
           request_headers:
             Accept: "application/json"
             Intercom-Version: "2.11"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 500
-                    error_message: "Internal server error. Scroll will restart from the beginning."
+            type: CustomErrorHandler
+            class_name: "source_declarative_manifest.components.IntercomErrorHandler"
+            $parameters:
+              next_page_token: "{{ response.get('scroll_param') }}"
         paginator:
-          type: DefaultPaginator
           $parameters:
-            url_base: "{{ parameters.requester.url_base }}"
+            url_base: "https://api.intercom.io/"
+          type: DefaultPaginator
           page_token_option:
             type: RequestOption
             inject_into: "request_parameter"
             field_name: "scroll_param"
           pagination_strategy:
-            type: CursorPagination
+            type: CustomPaginationStrategy
+            class_name: "source_declarative_manifest.components.CursorManagerAwarePaginationStrategy"
             cursor_value: "{{ response.get('scroll_param') }}"
             stop_condition: "{{ not response.get('data') }}"
         record_selector:
-          $parameters:
-            name: ""
           type: RecordSelector
+          $parameters:
+            name: "companies"
           extractor:
             type: DpathExtractor
             field_path:
