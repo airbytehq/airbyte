@@ -13,9 +13,12 @@ import io.airbyte.cdk.load.task.Task
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import java.io.InputStream
-import javax.inject.Singleton
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -74,9 +77,21 @@ class WriteOperation(
 @Factory
 class InputStreamProvider {
     @Singleton
-    @Secondary
-    @Requires(property = Operation.PROPERTY, value = "write")
-    fun make(): InputStream {
-        return System.`in`
+    @Named("inputStream")
+    fun makeWrite(
+        @Value("\${${Operation.PROPERTY}}") operation: String,
+        @Named("checkInputStreamPipe") pipe: PipedOutputStream?,
+    ): InputStream =
+        if (operation == "check") {
+            PipedInputStream(pipe!!)
+        } else {
+            System.`in`
+        }
+
+    @Singleton
+    @Named("checkInputStreamPipe")
+    @Requires(property = Operation.PROPERTY, value = "check")
+    fun makeCheckPipe(): PipedOutputStream {
+        return PipedOutputStream()
     }
 }
