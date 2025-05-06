@@ -49,6 +49,8 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.2.7 | 2025-05-05 | [58704](https://github.com/airbytehq/airbyte/pull/59652) | Fix contact pagination |
+| 0.2.6 | 2025-05-03 | [58704](https://github.com/airbytehq/airbyte/pull/58704) | Update dependencies |
 | 0.2.5 | 2025-04-24 | [57576](https://github.com/airbytehq/airbyte/pull/57576) | Set ordering in ascending on incremental streams |
 | 0.2.4 | 2025-04-19 | [57595](https://github.com/airbytehq/airbyte/pull/57595) | Update dependencies |
 | 0.2.3 | 2025-04-05 | [57126](https://github.com/airbytehq/airbyte/pull/57126) | Update dependencies |
