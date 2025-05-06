@@ -54,6 +54,9 @@ object MockDestinationBackend {
             if (cursor.isEmpty()) {
                 TimestampWithTimezoneValue(record.extractedAt.atOffset(ZoneOffset.UTC))
             } else {
+                // technically this is wrong - we should actually return a tuple of
+                // (cursor_field, extracted_at)
+                // but this is easier to implement :P
                 getField(cursor, record)
             }
 
