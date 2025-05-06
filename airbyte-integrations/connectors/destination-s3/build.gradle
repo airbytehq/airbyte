@@ -46,7 +46,6 @@ airbyte {
     }
 }
 
-//project.ext["docker.buildArgs.ARG1"] = "value1"
 import io.airbyte.gradle.GenerateConnectorBuildArgs
 
 def generateConnectorDockerBuildArgs = tasks.register('generateConnectorDockerBuildArgs', GenerateConnectorBuildArgs) {
@@ -54,17 +53,15 @@ def generateConnectorDockerBuildArgs = tasks.register('generateConnectorDockerBu
     output.set(layout.buildDirectory.file('docker/buildArgs.properties'))
 }
 
+/* Lazily read the generated buildArgs.properties file in the build/docker directory, and turns each PROP=VALUE line into a docker build arg. */
 tasks.named('dockerBuildx').configure { task ->
-
     dependsOn generateConnectorDockerBuildArgs
     inputs.file generateConnectorDockerBuildArgs.flatMap { it.output }
 
-    /*  A Provider<String> that lazily reads the properties file at execution */
-    def propsText = providers.fileContents(generateConnectorDockerBuildArgs.flatMap { it.output })
-            .asText                                    // Provider<String>
+    def propsText = providers.fileContents(generateConnectorDockerBuildArgs.flatMap { it.output } as Provider<RegularFile>)
+            .asText
             .orElse('')                                 // handle missing file
 
-    /*  Transform that String -> Map<String,String> lazily as well            */
     def propsMap = propsText.map { txt ->
         txt.readLines()
                 .findAll { it.contains('=') }
@@ -72,9 +69,9 @@ tasks.named('dockerBuildx').configure { task ->
                     def (k, v) = line.split('=', 2)
                     [(k.trim()): v.trim()]
                 }
-    }                                                       // Provider<Map<String,String>>
+    }
 
-    /*  Inject the map *during configuration*, but its contents are resolved
+    /*  Inject the map *during configuration* while buildArgs are still mutable, but its contents are resolved
         only when Gradle needs buildArgs (after the task graph is ready).      */
     task.buildArgs.putAll(propsMap)
 }

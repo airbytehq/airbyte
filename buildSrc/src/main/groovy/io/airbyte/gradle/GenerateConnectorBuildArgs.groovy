@@ -33,8 +33,7 @@ class GenerateConnectorBuildArgs extends DefaultTask {
         }
 
         Map root = yaml.get().load(metaFile.text) ?: [:]
-        Map<String, ?> opts =
-                ((root['data'] ?: [:])['connectorBuildOptions'] ?: [:]) as Map<String, ?>
+        Map<String, ?> opts = ((root['data'] ?: [:])['connectorBuildOptions'] ?: [:]) as Map<String, ?>
         outFile.withPrintWriter { pw ->
             opts.each { k, v ->
                 if (v != null) {
@@ -45,6 +44,8 @@ class GenerateConnectorBuildArgs extends DefaultTask {
                     pw.println("${key}=$v")
                 }
             }
+            /* Always add CONNECTOR_NAME=<module‑directory> */
+            pw.println("CONNECTOR_NAME=${project.projectDir.name}")
         }
     }
 }

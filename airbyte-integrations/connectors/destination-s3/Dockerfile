@@ -9,7 +9,7 @@ ARG BASE_IMAGE
 
 # Base image - using Amazon Corretto (Amazon's distribution of OpenJDK)
 FROM ${BASE_IMAGE}
-ARG CONNECTOR_NAME=destination-s3
+ARG CONNECTOR_NAME
 
 # Set permissions for downloaded files
 RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
