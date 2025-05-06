@@ -15,7 +15,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 private val logger = KotlinLogging.logger {}
@@ -26,7 +25,7 @@ private val logger = KotlinLogging.logger {}
 class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguration>(
     val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
     val configFactory: DestinationConfigurationFactory<T, C>,
-    @Named("destinationChecker") val destinationChecker: DestinationChecker<C>,
+    val destinationChecker: DestinationChecker<C>,
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer,
 ) : Operation {
