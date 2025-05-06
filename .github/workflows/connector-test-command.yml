@@ -83,9 +83,6 @@ jobs:
         if: ${{ ! inputs.connector_name }}
         uses: actions/checkout@v4
         with:
-          # Java Gradle tasks still calls Airbyte-CI, which fails on a detached head.
-          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
-          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Get Connector List from Changes
@@ -133,6 +130,9 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
+          # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
+          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
+          ref: ${{ github.head_ref }}
           fetch-depth: 1
 
       # Java deps
