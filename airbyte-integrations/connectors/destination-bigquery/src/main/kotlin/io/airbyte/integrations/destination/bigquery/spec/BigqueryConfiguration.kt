@@ -20,7 +20,9 @@ data class BigqueryConfiguration(
     val transformationPriority: TransformationPriority,
     val rawTableDataset: String,
     val disableTypingDeduping: Boolean,
-) : DestinationConfiguration()
+) : DestinationConfiguration() {
+    override val estimatedRecordMemoryOverheadRatio = 2.0
+}
 
 sealed interface LoadingMethodConfiguration
 
