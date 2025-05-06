@@ -144,6 +144,13 @@
               },
               "default": ["date"],
               "minItems": 0
+            },
+            "aggregation_type": {
+              "title": "Aggregation Type",
+              "description": "The type of aggregation to apply to the report.",
+              "type": "string",
+              "enum": ["auto", "by_page", "by_property"],
+              "default": "auto"
             }
           },
           "required": ["name", "dimensions"]
