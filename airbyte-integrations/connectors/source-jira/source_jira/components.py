@@ -1,11 +1,28 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Iterable, Mapping
+from dataclasses import InitVar, dataclass
+from typing import Any, Iterable, List, Mapping, Optional
 
+from requests_cache import Response
+
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.types import StreamSlice
+
+
+@dataclass
+class LabelsRecordExtractor(DpathExtractor):
+    """
+    A custom record extractor is needed to handle cases when records are represented as list of strings insted of dictionaries.
+    Example:
+        -> ["label 1", "label 2", ..., "label n"]
+        <- [{"label": "label 1"}, {"label": "label 2"}, ..., {"label": "label n"}]
+    """
+
+    def extract_records(self, response: Response) -> List[Mapping[str, Any]]:
+        records = super().extract_records(response)
+        return [{"label": record} for record in records]
 
 
 class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):
@@ -53,3 +70,21 @@ class SubstreamOrSinglePartitionRouter(SubstreamPartitionRouter):
             yield from super().stream_slices()
         else:
             yield from [StreamSlice(partition={}, cursor_slice={})]
+
+
+@dataclass
+class RemoveEmptyFields(RecordTransformation):
+    field_pointers: FieldPointer
+    parameters: InitVar[Mapping[str, Any]]
+
+    def transform(
+        self,
+        record: Mapping[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Mapping[str, Any]:
+        for pointer in self.field_pointers:
+            if pointer in record:
+                record[pointer] = {k: v for k, v in record[pointer].items() if v is not None}
+        return record

@@ -323,7 +323,7 @@ definitions:
         $ref: "#/definitions/retriever/record_selector"
         extractor:
           type: CustomRecordExtractor
-          class_name: "source_jira.components.extractors.LabelsRecordExtractor"
+          class_name: "source_jira.components.LabelsRecordExtractor"
           field_path: ["values"]
     name: labels
     primary_key: "label"
@@ -1142,7 +1142,7 @@ definitions:
       $ref: "#/definitions/retriever"
       partition_router:
         type: CustomPartitionRouter
-        class_name: "source_jira.components.partition_routers.SubstreamOrSinglePartitionRouter"
+        class_name: "source_jira.components.SubstreamOrSinglePartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/projects_stream"
@@ -1179,7 +1179,7 @@ definitions:
             value_type: string
             value: "{{ record.fields.updated }}"
       - type: CustomTransformation
-        class_name: "source_jira.components.transformations.RemoveEmptyFields"
+        class_name: "source_jira.components.RemoveEmptyFields"
         field_pointers: ["renderedFields", fields]
 
     $parameters:
@@ -1205,7 +1205,7 @@ definitions:
       $ref: "#/definitions/retriever_v1"
       partition_router:
         type: CustomPartitionRouter
-        class_name: "source_jira.components.partition_routers.SprintIssuesSubstreamPartitionRouter"
+        class_name: "source_jira.components.SprintIssuesSubstreamPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/__story_points_issue_fields_substream"
