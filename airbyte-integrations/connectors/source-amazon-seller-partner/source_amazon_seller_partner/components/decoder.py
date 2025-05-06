@@ -63,7 +63,7 @@ class GzipXmlDecoder(Decoder):
 
         reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
         for report in reports:
-            yield report.get("OrderReport", {})
+            yield report.get("Order", {})
 
 
 @dataclass
