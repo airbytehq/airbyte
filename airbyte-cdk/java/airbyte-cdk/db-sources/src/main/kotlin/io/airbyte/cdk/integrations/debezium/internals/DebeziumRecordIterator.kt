@@ -55,6 +55,15 @@ class DebeziumRecordIterator<T>(
     private var numUnloggedPolls: Int = -1
     private var lastLoggedPoll: Instant = Instant.MIN
 
+    fun formatDuration(duration: Duration): String {
+        return when {
+            duration.toMillis() < 1000 -> String.format("%.3f ms", duration.toNanos() / 1_000_000.0)
+            duration.toSeconds() < 60 -> String.format("%.3f seconds", duration.toMillis() / 1000.0)
+            duration.toMinutes() < 60 -> String.format("%.2f minutes", duration.toSeconds() / 60.0)
+            else -> String.format("%.2f hours", duration.toMinutes() / 60.0)
+        }
+    }
+
     // The following logic incorporates heartbeat:
     // 1. Wait on queue either the configured time first or 1 min after a record received
     // 2. If nothing came out of queue finish sync
@@ -66,6 +75,8 @@ class DebeziumRecordIterator<T>(
         // keep trying until the publisher is closed or until the queue is empty. the latter case is
         // possible when the publisher has shutdown but the consumer has not yet processed all
         // messages it emitted.
+        LOGGER.info { "Starting CDC Process" }
+        val instantBeforeSync = Instant.now()
         while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
             val next: ChangeEvent<String?, String?>?
             val waitTime =
@@ -84,15 +95,15 @@ class DebeziumRecordIterator<T>(
                     isHeartbeatEvent(next)
             if (isEventLogged) {
                 val pollDuration: Duration = Duration.between(instantBeforePoll, Instant.now())
+                // format duration to human-readable
+                val formattedPollDuration = formatDuration(pollDuration)
                 LOGGER.info {
                     "CDC events queue poll(): " +
                         when (numUnloggedPolls) {
-                            -1 -> "blocked for $pollDuration in its first call."
-                            0 ->
-                                "blocked for $pollDuration after " +
-                                    "its previous call which was also logged."
+                            -1 -> "first call - waited $formattedPollDuration for events"
+                            0 -> "waited for $formattedPollDuration since last logged call."
                             else ->
-                                "blocked for $pollDuration after " +
+                                "waited for $formattedPollDuration after " +
                                     "$numUnloggedPolls previous call(s) which were not logged."
                         }
                 }
@@ -111,8 +122,11 @@ class DebeziumRecordIterator<T>(
                 ) {
                     requestClose(
                         String.format(
-                            "No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
-                            waitTime.seconds
+                            "Closing the Debezium engine after no records received within %s seconds timeout. Status: [receivedFirstRecord=%s, hasSnapshotFinished=%s, noRecordsAttempts=%d]",
+                            waitTime.seconds,
+                            receivedFirstRecord,
+                            hasSnapshotFinished,
+                            maxInstanceOfNoRecordsFound
                         ),
                         DebeziumCloseReason.TIMEOUT
                     )
@@ -121,7 +135,7 @@ class DebeziumRecordIterator<T>(
                 maxInstanceOfNoRecordsFound++
                 LOGGER.info {
                     "CDC events queue poll(): " +
-                        "returned nothing, polling again, attempt $maxInstanceOfNoRecordsFound."
+                        "returned nothing. Waiting for more records, attempt $maxInstanceOfNoRecordsFound."
                 }
                 continue
             }
@@ -137,13 +151,14 @@ class DebeziumRecordIterator<T>(
 
                 val heartbeatPos = getHeartbeatPosition(next)
                 val isProgressing = heartbeatPos != lastHeartbeatPosition
+                val instantSyncTime: Duration = Duration.between(instantBeforeSync, Instant.now())
+                val debeziumWaitingTimeRemaining = waitTime.seconds - instantSyncTime.toSeconds()
                 LOGGER.info {
                     "CDC events queue poll(): " +
-                        "returned a heartbeat event: " +
                         if (isProgressing) {
-                            "progressing to $heartbeatPos."
+                            "returned a heartbeat event, " + "progressing to $heartbeatPos."
                         } else {
-                            "no progress since last heartbeat."
+                            "no progress since last heartbeat. Will continue polling until timeout is reached. Time remaining in seconds: ${debeziumWaitingTimeRemaining}."
                         }
                 }
                 // wrap up sync if heartbeat position crossed the target OR heartbeat position
