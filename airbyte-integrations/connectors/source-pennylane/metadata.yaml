@@ -17,13 +17,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9e4a306-4e3b-4387-a01d-c00d03d8c28c
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-pennylane
   githubIssueLabel: source-pennylane
   icon: icon.svg
   license: MIT
   name: Pennylane
-  releaseDate: 2024-08-21
+  releaseDate: 2025-05-06
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pennylane
