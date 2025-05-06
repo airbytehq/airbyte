@@ -179,16 +179,37 @@ definitions:
           class_name: source_hubspot.components.HubspotSchemaExtractor
           field_path: []
     schema_transformations:
-      - type: AddFields
-        fields:
-          - path: ["properties"]
-            value: "{{ record }}"
       - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      # If we opt to use the HubspotRenamePropertiesTransformation, the next 3 AddFields, AddFields,
+      # and DpathFlattenFields transformations can be removed
       - type: AddFields
         fields:
-          #          - path: [ "properties"]
-          #            value: "{{ {'type': 'object'} }}"
+          - path:
+              - properties
+              - properties
+            value: "{{ record }}"
+      - type: AddFields
+        fields:
+          - path:
+              - properties
+            value: "{{ {'type': 'object', 'properties': record['properties']['properties'] } }}"
+      - type: DpathFlattenFields
+        field_path: ["properties", "properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+      # Uncomment this to use the custom transformation which puts all properties under nested
+      # under a properties sub-object and updates all the dynamic properties at the top level
+      # to be prefixed with `properties_`.
+      #      - type: CustomTransformation
+      #        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+      - type: AddFields
+        fields:
           - path: ["id"]
             value: "{{ {'description': 'Unique identifier for the deal', 'type': ['null', 'string']} }}"
           - path: ["createdAt"]
@@ -197,6 +218,12 @@ definitions:
             value: "{{ {'description': 'The date and time when the deal was last updated', 'type': ['null', 'string'], 'format': 'date-time'} }}"
           - path: ["archived"]
             value: "{{ {'description': 'Indicates if the deal is archived', 'type': ['null', 'boolean']} }}"
+          - path: ["companies"]
+            value: "{{ {'description': 'Information about companies associated with the deal', 'type': ['null', 'array'], 'items': {'type': ['null', 'string']}} }}"
+          - path: ["contacts"]
+            value: "{{ {'description': 'Information about contacts associated with the deal', 'type': ['null', 'array'], 'items': {'type': ['null', 'string']}} }}"
+          - path: ["line_items"]
+            value: "{{ {'description': 'Details of line items associated with the deal', 'type': ['null', 'array'], 'items': {'type': ['null', 'string']}} }}"
     schema_type_identifier:
       type: SchemaTypeIdentifier
       key_pointer:
@@ -207,17 +234,29 @@ definitions:
         - properties
       types_mapping:
         - type: TypesMap
+          target_type: boolean
+          current_type: bool
+        - type: TypesMap
+          target_type: date
+          current_type: date
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: date-time
+        - type: TypesMap
           target_type: timestamp_with_timezone
           current_type: datetime
         - type: TypesMap
           target_type: string
           current_type: enumeration
         - type: TypesMap
-          target_type: boolean
-          current_type: bool
+          target_type: string
+          current_type: json
         - type: TypesMap
           target_type: string
           current_type: object_coordinates
+        - type: TypesMap
+          target_type: string
+          current_type: phone_number
 
   # Stream Definitions
   marketing_emails_stream:

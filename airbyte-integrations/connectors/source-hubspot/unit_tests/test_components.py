@@ -2,7 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 import pytest
-from source_hubspot.components import MigrateEmptyStringState, NewtoLegacyFieldTransformation
+from source_hubspot.components import HubspotRenamePropertiesTransformation, MigrateEmptyStringState, NewtoLegacyFieldTransformation
 from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
 
 
@@ -103,3 +103,46 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
 
     if actual_should_migrate:
         assert state_migration.migrate(stream_state=state) == expected_state
+
+
+def test_hubspot_rename_properties_transformation():
+    expected_properties = {
+        "properties_amount": {"type": ["null", "number"]},
+        "properties_hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
+        "properties_hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
+        "properties_hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+        "properties": {
+            "type": "object",
+            "properties": {
+                "amount": {"type": ["null", "number"]},
+                "hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
+                "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
+                "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+            },
+        },
+    }
+
+    dynamic_properties_record = {
+        "amount": {"type": ["null", "number"]},
+        "hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
+        "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
+        "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+    }
+    transformation = HubspotRenamePropertiesTransformation()
+
+    transformation.transform(record=dynamic_properties_record)
+
+    assert dynamic_properties_record["properties_amount"] == expected_properties["properties_amount"]
+    assert (
+        dynamic_properties_record["properties_hs_v2_date_entered_closedwon"]
+        == expected_properties["properties_hs_v2_date_entered_closedwon"]
+    )
+    assert (
+        dynamic_properties_record["properties_hs_v2_date_exited_closedlost"]
+        == expected_properties["properties_hs_v2_date_exited_closedlost"]
+    )
+    assert (
+        dynamic_properties_record["properties_hs_v2_latest_time_in_contractsent"]
+        == expected_properties["properties_hs_v2_latest_time_in_contractsent"]
+    )
+    assert dynamic_properties_record["properties"] == expected_properties["properties"]
