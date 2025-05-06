@@ -116,7 +116,6 @@ jobs:
       connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
 
   connectors-test-matrix:
-    name: Test Connectors
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     env:
@@ -126,6 +125,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 5  # Limit number of parallel jobs
       fail-fast: false  # Don't stop on first failure
+    name: Test ${{ matrix.connector }} Connector
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -242,13 +242,13 @@ jobs:
   # Lint and format checks
 
   connectors-lint-matrix:
-    name: Lint Connectors
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     if: ${{ needs.generate-matrix.outputs.connector-matrix }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
       max-parallel: 10  # Limit number of parallel jobs
+    name: Lint ${{ matrix.connector }} Connector
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
