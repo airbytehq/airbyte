@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLDataSourceFactory
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.sql.Connection
@@ -26,6 +27,7 @@ import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 
 @Singleton
+@Named("destinationChecker")
 class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
     DestinationChecker<MSSQLConfiguration> {
 
