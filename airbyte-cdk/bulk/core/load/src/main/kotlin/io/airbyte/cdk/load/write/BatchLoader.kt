@@ -10,6 +10,6 @@ interface BatchLoadStrategy: LoadStrategy {
     suspend fun loadBatch(
         stream: DestinationStream.Descriptor,
         partition: Int,
-        batch: Iterable<DestinationRecordRaw>
+        batch: Iterator<DestinationRecordRaw>
     )
 }

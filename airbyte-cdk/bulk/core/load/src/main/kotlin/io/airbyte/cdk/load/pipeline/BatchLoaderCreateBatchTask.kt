@@ -1,5 +1,6 @@
 package io.airbyte.cdk.load.pipeline
 
+import io.airbyte.cdk.load.file.SpillFileProvider
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -7,14 +8,20 @@ import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
+import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.OnEndOfSync
-import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.implementor.toRecordIterator
+import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.BatchLoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Named
+import java.io.File
+import java.io.OutputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 
@@ -23,21 +30,25 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
     val flushStrategy: PipelineFlushStrategy,
     val loadStrategy: BatchLoadStrategy,
     val partition: Int,
-    val batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>
+    val batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>,
+    val spillFileProvider: SpillFileProvider,
+    val diskManager: ReservationManager,
+    private val deserializer: ProtocolMessageDeserializer,
 ): Task {
     private val log = KotlinLogging.logger {}
 
     override val terminalCondition = OnEndOfSync
 
-    val taskName = "BatchLoaderCreateBatchTask"
+    val taskName = "BatchLoaderCreateBatchTask-$partition"
 
-    data class Batch(
+    inner class Batch(
         var inputCount: Long = 0L,
         var inputSizeBytes: Long = 0L,
         val startTimeMs: Long = System.currentTimeMillis(),
-        val data: MutableList<DestinationRecordRaw> = mutableListOf(),
+        val fileSink: File = spillFileProvider.createTempFile().toFile(),
+        val fileSinkOutputStream: OutputStream = fileSink.outputStream(),
         val checkpointCounts: MutableMap<CheckpointId, Long> = mutableMapOf(),
-        var reservation: Reserved<DestinationRecordRaw>? = null
+        var reservation: Reserved<String>? = null
     )
 
     inner class Batches(
@@ -49,7 +60,19 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
             when (event) {
                 is PipelineMessage -> {
                     val batch = batches.byKey.getOrPut(event.key) { Batch() }
-                    batch.data.add(event.value)
+
+                    // Write the record to disk.
+                    val rawRecord = event.value.asSerializedString()
+                    val diskReservation = diskManager.reserve(event.value.serializedSizeBytes, rawRecord)
+                    if (batch.reservation == null) {
+                        batch.reservation = diskReservation
+                    } else {
+                        batch.reservation = batch.reservation?.merge(diskReservation)
+                    }
+                    batch.fileSinkOutputStream.write(rawRecord)
+                    batch.fileSinkOutputStream.write('\n'.code)
+
+                    // Aggregate bookkeeping metadata.
                     event.checkpointCounts.forEach { (checkpointId, count) ->
                         batch.checkpointCounts.merge(checkpointId, count) { oldCount, newCount ->
                             oldCount + newCount
@@ -57,15 +80,8 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
                     }
                     batch.inputCount ++
                     batch.inputSizeBytes += event.value.serializedSizeBytes
-                    // Merge the underlying memory reservation.
-                    // The next step will free it when done with the batch.
-                    if (event.reservation != null) {
-                        if (batch.reservation == null) {
-                            batch.reservation = event.reservation
-                        } else {
-                            batch.reservation = batch.reservation?.merge(event.reservation)
-                        }
-                    }
+
+                    // Test whether we should flush.
                     val now = System.currentTimeMillis()
                     if (flushStrategy.shouldFlush(batch.inputCount, now - batch.startTimeMs)) {
                         log.info { "Force flush by flush strategy ${flushStrategy::class.simpleName} for ${event.key}" }
@@ -74,6 +90,7 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
                         log.info { "Batch size ${batch.inputSizeBytes}b is data-sufficient for ${event.key}, flushing" }
                         removeAndProcess(batches.byKey, event.key, batch)
                     }
+                    event.reservation?.release()
                 }
                 is PipelineHeartbeat -> {
                     maybeFlush(batches)
@@ -120,8 +137,15 @@ class BatchLoaderCreateBatchTask<K: WithStream>(
     }
 
     private suspend fun removeAndProcess(batchesByKey: MutableMap<K, Batch>, key: K, batch: Batch) {
+        // Finish the file
         batchesByKey.remove(key)
-        loadStrategy.loadBatch(key.stream, partition, batch.data)
+        batch.fileSinkOutputStream.flush()
+        batch.fileSinkOutputStream.close()
+
+        // Hand the batch to the client code.
+        batch.fileSink.inputStream().use {
+            loadStrategy.loadBatch(key.stream, partition, it.toRecordIterator(deserializer))
+        }
         batch.reservation?.release()
 
         batchStateUpdateQueue.publish(

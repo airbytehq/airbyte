@@ -40,7 +40,7 @@ class MSSQLBatchLoader(
     override suspend fun loadBatch(
         stream: DestinationStream.Descriptor,
         partition: Int,
-        batch: Iterable<DestinationRecordRaw>
+        batch: Iterator<DestinationRecordRaw>
     ) {
         log.info { "Loading batch ${batchNo.incrementAndGet()} for stream $stream" }
         var rows: Long = 0

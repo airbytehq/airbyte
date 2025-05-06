@@ -77,7 +77,7 @@ class DefaultProcessRecordsTask(
                                 if (file.isEmpty) {
                                     emptyList<DestinationRecordRaw>().listIterator()
                                 } else {
-                                    it.toRecordIterator()
+                                    it.toRecordIterator(deserializer)
                                 }
                             val batch =
                                 acc.processRecords(records, file.totalSizeBytes, file.endOfStream)
@@ -121,24 +121,24 @@ class DefaultProcessRecordsTask(
             log.info { "Batch $wrapped requires no further processing." }
         }
     }
+}
 
-    private fun InputStream.toRecordIterator(): Iterator<DestinationRecordRaw> {
-        return lineSequence()
-            .map {
-                when (val message = deserializer.deserialize(it)) {
-                    is DestinationStreamAffinedMessage -> message
-                    else ->
-                        throw IllegalStateException(
-                            "Expected record message, got ${message::class}"
-                        )
-                }
+fun InputStream.toRecordIterator(deserializer: ProtocolMessageDeserializer): Iterator<DestinationRecordRaw> {
+    return lineSequence()
+        .map {
+            when (val message = deserializer.deserialize(it)) {
+                is DestinationStreamAffinedMessage -> message
+                else ->
+                    throw IllegalStateException(
+                        "Expected record message, got ${message::class}"
+                    )
             }
-            .takeWhile {
-                it !is DestinationRecordStreamComplete && it !is DestinationRecordStreamIncomplete
-            }
-            .map { (it as DestinationRecord).asDestinationRecordRaw() }
-            .iterator()
-    }
+        }
+        .takeWhile {
+            it !is DestinationRecordStreamComplete && it !is DestinationRecordStreamIncomplete
+        }
+        .map { (it as DestinationRecord).asDestinationRecordRaw() }
+        .iterator()
 }
 
 interface ProcessRecordsTaskFactory {

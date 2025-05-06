@@ -315,6 +315,10 @@ data class DestinationRecordRaw(
         rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
     val serializedSizeBytes = serialized.length.toLong()
 
+    fun asSerializedString(): String {
+        return serialized
+    }
+
     fun asRawJson(): JsonNode {
         return rawData.record.data
     }
