@@ -179,11 +179,19 @@ jobs:
           uv tool install pytest
           uv tool install mypy
 
+      - name: Get Connector Language
+        id: get-language
+        continue-on-error: true  # Will fail for now (null output) for manifest-only connectors
+        run: |
+          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} get-language | '')" >> $GITHUB_OUTPUT
+
       - name: Install connector dependencies
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} install
 
       - name: Fetch connector secrets
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install pipx
@@ -192,8 +200,19 @@ jobs:
             --print-ci-secrets-masks
 
       - name: Run 'test-all' Poe Command
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} test-all
+
+      - name: Run Unit Tests
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} test-unit-tests
+
+      - name: Run Integration Tests
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} test-integration-tests
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -283,18 +302,28 @@ jobs:
           uv tool install pytest
           uv tool install mypy
 
+      - name: Get Connector Language
+        id: get-language
+        continue-on-error: true  # Will fail for now (null output) for manifest-only connectors
+        run: |
+          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} get-language | '')" >> $GITHUB_OUTPUT
+
       - name: Install connector dependencies
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} install
 
-      # Most connectors can't pass lint checks yet, so we skip for now
-      # - name: Run lint check
-      #   run: |
-      #     poe connector ${{ matrix.connector }} lint-check
-
       - name: Run format-check
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} format-check
+
+      - name: Run lint check
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} lint-check
+        # Most connectors can't pass lint checks, so this is non-blocking for now
+        continue-on-error: true
 
 
   lint-summary:
