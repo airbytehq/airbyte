@@ -199,11 +199,6 @@ jobs:
             --connector-name=${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run 'test-all' Poe Command
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
-        run: |
-          poe connector ${{ matrix.connector }} test-all
-
       - name: Run Unit Tests
         if: ${{ steps.get-language.outputs.LANGUAGE }}
         run: |
