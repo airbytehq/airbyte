@@ -40,7 +40,7 @@ data class MySqlSourceJdbcStreamStateValue(
                     Jsons.valueToTree(
                         MySqlSourceJdbcStreamStateValue(
                             cursorField = listOf(cursor.id),
-                            cursors = Jsons.writeValueAsString(cursorCheckpoint),
+                            cursors = cursorCheckpoint.asText(),
                             streamName = stream.name,
                             streamNamespace = stream.namespace!!
                         )
@@ -60,7 +60,7 @@ data class MySqlSourceJdbcStreamStateValue(
                     Jsons.valueToTree(
                         MySqlSourceJdbcStreamStateValue(
                             pkName = primaryKeyField.id,
-                            pkValue = Jsons.writeValueAsString(primaryKeyCheckpoint.first()),
+                            pkValue = primaryKeyCheckpoint.first().asText(),
                             stateType = StateType.PRIMARY_KEY.serialized,
                         )
                     )
@@ -81,7 +81,7 @@ data class MySqlSourceJdbcStreamStateValue(
                     Jsons.valueToTree(
                         MySqlSourceJdbcStreamStateValue(
                             pkName = primaryKeyField.id,
-                            pkValue = Jsons.writeValueAsString(primaryKeyCheckpoint.first()),
+                            pkValue = primaryKeyCheckpoint.first().asText(),
                             stateType = StateType.PRIMARY_KEY.serialized,
                             incrementalState =
                                 Jsons.valueToTree(
