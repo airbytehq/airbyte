@@ -38,6 +38,8 @@ You have to give your login email and password used with `when-i-work` account f
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.22 | 2025-05-04 | [59560](https://github.com/airbytehq/airbyte/pull/59560) | Update dependencies |
+| 0.0.21 | 2025-04-26 | [58934](https://github.com/airbytehq/airbyte/pull/58934) | Update dependencies |
 | 0.0.20 | 2025-04-19 | [58535](https://github.com/airbytehq/airbyte/pull/58535) | Update dependencies |
 | 0.0.19 | 2025-04-13 | [58057](https://github.com/airbytehq/airbyte/pull/58057) | Update dependencies |
 | 0.0.18 | 2025-04-05 | [57400](https://github.com/airbytehq/airbyte/pull/57400) | Update dependencies |

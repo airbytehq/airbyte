@@ -181,6 +181,9 @@ The traffic recorded on the control connector is passed to the target connector 
 ## Changelog
 
 
+### 0.21.4
+Update connection id to use first 8 chars in the report
+
 ### 0.21.3
 Update dependencies to avoid genson issue
 

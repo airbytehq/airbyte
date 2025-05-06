@@ -206,7 +206,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkVal == upperBound.asText()) {
+                if (sv.pkVal == Jsons.writeValueAsString(upperBound)) {
                     return null
                 }
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkVal)
@@ -233,7 +233,7 @@ class MySqlSourceJdbcPartitionFactory(
 
                 if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                     val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                    if (sv.pkVal == upperBound.asText()) {
+                    if (sv.pkVal == Jsons.writeValueAsString(upperBound)) {
                         return null
                     }
                     return MySqlSourceJdbcCdcRfrSnapshotPartition(
@@ -257,7 +257,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkValue == upperBound.asText()) {
+                if (sv.pkValue == Jsons.writeValueAsString(upperBound)) {
                     return null
                 }
                 val pkLowerBound: JsonNode =
@@ -316,7 +316,8 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    // visible for testing
+    fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
