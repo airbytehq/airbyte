@@ -55,3 +55,33 @@ class TestAccountsStream(BaseTest):
             "TaxCertificateBlobContainerName": "Test Container Name",
             "TaxCertificates": [{"key": "test_key", "value": "test_value"}],
         }
+
+
+    def test_read_linked_agencies_data(self):
+        """
+        Test reading linked agencies data from the accounts stream.
+        We are manually putting the data in CustomerInfo field through a transformation
+        to keep it backward compatible with the SOAP response.
+        """
+        http_mocker = self.http_mocker
+        http_mocker.post(
+            RequestBuilder(resource="User/Query").with_body('{"UserId": null}').build(),
+            HttpResponse(json.dumps(find_template("user_query", __file__)), 200),
+        )
+        http_mocker.post(
+            RequestBuilder(resource="Accounts/Search")
+            .with_body(
+                b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}'
+            )
+            .build(),
+            HttpResponse(json.dumps(find_template("accounts_search_with_linked_agencies", __file__)), 200),
+        )
+
+        # Our account doesn't have configured Tax certificate.
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config)
+        assert output.records[0].record.data["LinkedAgencies"] == {
+            "CustomerInfo": [{
+                "Id": 123456789,
+                "Name": "Ramp (MCC)",
+            }]
+        }
