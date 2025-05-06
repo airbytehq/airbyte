@@ -231,17 +231,27 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
     ) -> Iterable[Mapping[str, Any]]:
         for target_record in target_records:
             target_relationships = target_record.get("relationships", {})
-
-            for included_relation in included_relations:
-                included_relation_attributes = included_relation.get("attributes", {})
-                included_relation_type = included_relation["type"]
-                included_relation_id = included_relation["id"]
-
-                target_relationship_id = target_relationships.get(included_relation_type, {}).get("data", {}).get("id")
-
-                if included_relation_id == target_relationship_id:
-                    target_relationships[included_relation_type]["data"].update(included_relation_attributes)
-
+            for relationship_type, relationship in target_relationships.items():
+                relationship_data = relationship.get("data", {})
+                if isinstance(relationship_data, dict):
+                    # Single object relationship (e.g., metric, profile)
+                    included_type = relationship_data.get("type")
+                    included_id = relationship_data.get("id")
+                    for included_relation in included_relations:
+                        if included_relation.get("type") == included_type and included_relation.get("id") == included_id:
+                            relationship_data.update(included_relation.get("attributes", {}))
+                            if "relationships" in included_relation:
+                                relationship_data["relationships"] = included_relation["relationships"]
+                elif isinstance(relationship_data, list):
+                    # Array of objects relationship (e.g., attributions)
+                    for item in relationship_data:
+                        included_type = item.get("type")
+                        included_id = item.get("id")
+                        for included_relation in included_relations:
+                            if included_relation.get("type") == included_type and included_relation.get("id") == included_id:
+                                item.update(included_relation.get("attributes", {}))
+                                if "relationships" in included_relation:
+                                    item["relationships"] = included_relation["relationships"]
             yield target_record
 
     def extract_records_by_path(self, response: requests.Response, field_paths: list = None) -> Iterable[Mapping[str, Any]]:

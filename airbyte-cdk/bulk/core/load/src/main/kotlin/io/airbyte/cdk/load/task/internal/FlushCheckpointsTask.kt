@@ -14,7 +14,7 @@ import jakarta.inject.Singleton
 interface FlushCheckpointsTask : Task
 
 class DefaultFlushCheckpointsTask(
-    private val checkpointManager: CheckpointManager<*, *>,
+    private val checkpointManager: CheckpointManager<*>,
 ) : FlushCheckpointsTask {
     override val terminalCondition: TerminalCondition = SelfTerminating
 
@@ -30,7 +30,7 @@ interface FlushCheckpointsTaskFactory {
 @Singleton
 @Secondary
 class DefaultFlushCheckpointsTaskFactory(
-    private val checkpointManager: CheckpointManager<*, *>,
+    private val checkpointManager: CheckpointManager<*>,
 ) : FlushCheckpointsTaskFactory {
     override fun make(): FlushCheckpointsTask {
         return DefaultFlushCheckpointsTask(checkpointManager)

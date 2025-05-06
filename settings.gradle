@@ -195,6 +195,5 @@ integrationsPath.eachDir { dir ->
 }
 
 // Include miscellaneous modules.
-include ':airbyte-integrations:connector-templates:generator'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'

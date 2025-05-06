@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
@@ -26,8 +25,7 @@ interface UpdateCheckpointsTask : Task
 @Secondary
 class DefaultUpdateCheckpointsTask(
     private val syncManager: SyncManager,
-    private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>,
+    private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
 ) : UpdateCheckpointsTask {
     val log = KotlinLogging.logger {}

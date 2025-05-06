@@ -120,6 +120,8 @@ Each stream will be output into a collection in Couchbase. The connector follows
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.1.7 | 2025-05-03 | [59358](https://github.com/airbytehq/airbyte/pull/59358) | Update dependencies |
+| 0.1.6 | 2025-04-26 | [58279](https://github.com/airbytehq/airbyte/pull/58279) | Update dependencies |
 | 0.1.5 | 2025-04-12 | [57651](https://github.com/airbytehq/airbyte/pull/57651) | Update dependencies |
 | 0.1.4 | 2025-04-05 | [57148](https://github.com/airbytehq/airbyte/pull/57148) | Update dependencies |
 | 0.1.3 | 2025-03-29 | [56612](https://github.com/airbytehq/airbyte/pull/56612) | Update dependencies |

@@ -99,30 +99,9 @@ Airbyte Cloud is currently deployed on GCP with all servers located in the Unite
 
 Only certain Airbyte staff can access Airbyte infrastructure and technical logs for deployments, upgrades, configuration changes, and troubleshooting.
 
-### Network security
+### IP addresses
 
-Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
-
-#### United States and Airbyte Default
-
-GCP region: us-west3
-
-- 34.106.109.131
-- 34.106.196.165
-- 34.106.60.246
-- 34.106.229.69
-- 34.106.127.139
-- 34.106.218.58
-- 34.106.115.240
-- 34.106.225.141
-
-#### European Union
-
-AWS region: eu-west-3
-
-- 13.37.4.46
-- 13.37.142.60
-- 35.181.124.238
+See [IP allow list](ip-allowlist).
 
 ### Credential management
 

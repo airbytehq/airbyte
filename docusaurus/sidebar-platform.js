@@ -117,7 +117,6 @@ const buildAConnector = {
         },
       ],
     },
-    "connector-development/local-connector-development",
     {
       type: "category",
       label: "Testing Connectors",
@@ -129,6 +128,7 @@ const buildAConnector = {
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
       ],
     },
+    "connector-development/local-connector-development",
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
     "connector-development/debugging-docker",
@@ -436,7 +436,20 @@ module.exports = {
             "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
           ],
         },
-        "operating-airbyte/security",
+        {
+          type: "category",
+          label: "Security",
+          link: {
+            type: "doc",
+            id: "operating-airbyte/security",
+          },
+          items: [
+            {
+              type: "doc",
+              id: "operating-airbyte/ip-allowlist",
+            },
+          ],
+        },
         {
           type: "category",
           label: "Integrating with Airbyte",

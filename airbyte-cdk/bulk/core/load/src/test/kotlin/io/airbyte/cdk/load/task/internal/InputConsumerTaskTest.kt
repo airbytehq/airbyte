@@ -15,9 +15,9 @@ import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamRecordEvent
-import io.airbyte.cdk.load.state.DefaultStreamManager
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.StreamManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertThrows
 import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
@@ -63,8 +63,8 @@ class InputConsumerTaskTest {
         coEvery { recordQueueSupplier.get(STREAM1) } returns queue1
         coEvery { recordQueueSupplier.get(STREAM2) } returns queue2
 
-        coEvery { syncManager.getStreamManager(STREAM1) } returns DefaultStreamManager(stream1)
-        coEvery { syncManager.getStreamManager(STREAM2) } returns DefaultStreamManager(stream2)
+        coEvery { syncManager.getStreamManager(STREAM1) } returns StreamManager(stream1)
+        coEvery { syncManager.getStreamManager(STREAM2) } returns StreamManager(stream2)
     }
 
     private fun DestinationMessage.wrap(bytesReserved: Long) =
@@ -100,7 +100,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -161,7 +161,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -203,7 +203,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -263,7 +263,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
@@ -340,7 +340,7 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(relaxed = true),
                     fileTransferQueue = mockk(relaxed = true),
-                    recordQueueForPipeline = mockk(relaxed = true),
+                    pipelineInputQueue = mockk(relaxed = true),
                     loadPipeline = null,
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),

@@ -8,8 +8,8 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.state.DestinationFailure
 import io.airbyte.cdk.load.state.DestinationSuccess
 import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.Task
-import io.airbyte.cdk.load.task.TaskLauncher
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -32,7 +32,7 @@ interface WriteOpOverride : Task
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "write")
 class WriteOperation(
-    private val taskLauncher: TaskLauncher,
+    private val taskLauncher: DestinationTaskLauncher,
     private val syncManager: SyncManager,
     private val writeOpOverride: WriteOpOverride? = null
 ) : Operation {

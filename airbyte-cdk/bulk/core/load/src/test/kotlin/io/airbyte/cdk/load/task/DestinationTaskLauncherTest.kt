@@ -159,8 +159,7 @@ class DestinationTaskLauncherTest {
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
             destinationTaskLauncher: DestinationTaskLauncher,
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-            recordQueueForPipeline:
-                PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+            pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
             loadPipeline: LoadPipeline?,
             partitioner: InputPartitioner,
             openStreamQueue: QueueWriter<DestinationStream>,
@@ -309,7 +308,8 @@ class DestinationTaskLauncherTest {
         override fun make(
             taskLauncher: DestinationTaskLauncher,
             exception: Exception,
-            stream: DestinationStream.Descriptor
+            stream: DestinationStream.Descriptor,
+            shouldRunStreamLoaderClose: Boolean,
         ): FailStreamTask {
             return object : FailStreamTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
@@ -438,21 +438,15 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleStreamClosed() = runTest {
         // This should run teardown unconditionally.
-        launch { taskLauncher.handleStreamClosed(MockDestinationCatalogFactory.stream1.descriptor) }
+        launch { taskLauncher.handleStreamClosed() }
         teardownTaskFactory.hasRun.receive()
     }
 
     @Test
     fun `test sync failure after stream failure`() = runTest {
         val job = launch { taskLauncher.run() }
-        taskLauncher.handleFailStreamComplete(
-            MockDestinationCatalogFactory.stream1.descriptor,
-            Exception()
-        )
-        taskLauncher.handleFailStreamComplete(
-            MockDestinationCatalogFactory.stream2.descriptor,
-            Exception()
-        )
+        taskLauncher.handleFailStreamComplete(Exception())
+        taskLauncher.handleFailStreamComplete(Exception())
         taskLauncher.handleTeardownComplete()
         job.join()
         mockFailSyncTaskFactory.didRun.close()

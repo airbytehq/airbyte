@@ -27,6 +27,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -54,6 +55,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 abstract class IntegrationTest(
     additionalMicronautEnvs: List<String>,
     val dataDumper: DestinationDataDumper,
+    /** This object MUST be a singleton. It will be invoked exactly once per gradle run. */
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
@@ -93,8 +95,29 @@ abstract class IntegrationTest(
 
     @AfterEach
     fun teardown() {
+        // some tests (e.g. CheckIntegrationTest) hardcode the noop cleaner.
+        // so just skip all the fancy logic if we detect it.
+        if (destinationCleaner == NoopDestinationCleaner) {
+            return
+        }
+
         if (hasRunCleaner.compareAndSet(false, true)) {
             destinationCleaner.cleanup()
+        }
+
+        // Simple guardrail to prevent people from doing the wrong thing,
+        // since it's not immediately intuitive.
+        val firstCleaner = cleanerSeen.compareAndSet(null, destinationCleaner)
+        val sameCleaner = cleanerSeen.compareAndSet(destinationCleaner, destinationCleaner)
+        if (!(firstCleaner || sameCleaner)) {
+            throw IllegalStateException(
+                """
+                Multiple DestinationCleaner instances detected. This is not supported. The cleaner MUST be a singleton.
+                Cleaners detected:
+                  $destinationCleaner
+                  ${cleanerSeen.get()}
+                """.trimIndent()
+            )
         }
     }
 
@@ -330,6 +353,7 @@ abstract class IntegrationTest(
         }
 
         private val hasRunCleaner = AtomicBoolean(false)
+        private val cleanerSeen = AtomicReference<DestinationCleaner>(null)
 
         // Connectors are calling System.getenv rather than using micronaut-y properties,
         // so we have to mock it out, instead of just setting more properties

@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.awin.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-awin-advertiser
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.0@sha256:e2d64a8ec3b8a2b30487d394a86af0b64e9e76e6f140edfa42bed2ab113b5749
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 807cabe0-9c76-4132-8863-60f669dea534
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-awin-advertiser
+  githubIssueLabel: source-awin-advertiser
+  icon: icon.svg
+  license: MIT
+  name: AWIN Advertiser
+  releaseDate: 2025-04-29
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/awin-advertiser
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

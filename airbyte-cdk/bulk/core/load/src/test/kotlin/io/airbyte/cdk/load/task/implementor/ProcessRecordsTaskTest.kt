@@ -19,7 +19,7 @@ import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.DefaultDestinationTaskLauncher
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.BatchAccumulator
@@ -46,7 +46,7 @@ class ProcessRecordsTaskTest {
     private lateinit var batchAccumulator: BatchAccumulator
     private lateinit var inputQueue: MessageQueue<FileAggregateMessage>
     private lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
-    private lateinit var launcher: DefaultDestinationTaskLauncher<*>
+    private lateinit var launcher: DestinationTaskLauncher
     private lateinit var outputQueue: MultiProducerChannel<BatchEnvelope<*>>
     private lateinit var syncManager: SyncManager
 
