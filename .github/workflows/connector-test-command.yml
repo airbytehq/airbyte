@@ -183,7 +183,7 @@ jobs:
         id: get-language
         continue-on-error: true  # Will fail for now (null output) for manifest-only connectors
         run: |
-          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} get-language)" >> $GITHUB_OUTPUT
+          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
 
       - name: Install connector dependencies
         if: ${{ steps.get-language.outputs.LANGUAGE }}
@@ -301,7 +301,7 @@ jobs:
         id: get-language
         continue-on-error: true  # Will fail for now (null output) for manifest-only connectors
         run: |
-          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} get-language)" >> $GITHUB_OUTPUT
+          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
 
       - name: Install connector dependencies
         if: ${{ steps.get-language.outputs.LANGUAGE }}
