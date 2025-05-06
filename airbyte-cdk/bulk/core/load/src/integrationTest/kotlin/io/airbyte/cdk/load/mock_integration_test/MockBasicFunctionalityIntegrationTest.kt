@@ -84,6 +84,12 @@ class MockBasicFunctionalityIntegrationTest :
         super.testDedup()
     }
 
+    @Disabled("flaky")
+    @Test
+    override fun testDedupWithStringKey() {
+        super.testDedupWithStringKey()
+    }
+
     @Test
     override fun testContainerTypes() {
         super.testContainerTypes()

@@ -53,6 +53,13 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                             | Subject               |
 |:--------|:-----------| :------------------------------------------------------- | :-------------------- |
+| 0.2.23 | 2025-05-04 | [59514](https://github.com/airbytehq/airbyte/pull/59514) | Update dependencies |
+| 0.2.22 | 2025-04-27 | [59037](https://github.com/airbytehq/airbyte/pull/59037) | Update dependencies |
+| 0.2.21 | 2025-04-19 | [58519](https://github.com/airbytehq/airbyte/pull/58519) | Update dependencies |
+| 0.2.20 | 2025-04-12 | [57899](https://github.com/airbytehq/airbyte/pull/57899) | Update dependencies |
+| 0.2.19 | 2025-04-05 | [57331](https://github.com/airbytehq/airbyte/pull/57331) | Update dependencies |
+| 0.2.18 | 2025-03-29 | [56759](https://github.com/airbytehq/airbyte/pull/56759) | Update dependencies |
+| 0.2.17 | 2025-03-22 | [56213](https://github.com/airbytehq/airbyte/pull/56213) | Update dependencies |
 | 0.2.16 | 2025-03-08 | [55528](https://github.com/airbytehq/airbyte/pull/55528) | Update dependencies |
 | 0.2.15 | 2025-03-01 | [55025](https://github.com/airbytehq/airbyte/pull/55025) | Update dependencies |
 | 0.2.14 | 2025-02-23 | [54558](https://github.com/airbytehq/airbyte/pull/54558) | Update dependencies |

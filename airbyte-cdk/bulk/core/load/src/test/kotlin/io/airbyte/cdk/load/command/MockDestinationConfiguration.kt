@@ -16,7 +16,6 @@ class MockDestinationConfiguration : DestinationConfiguration() {
     override val recordBatchSizeBytes: Long = 1024L
     override val tmpFileDirectory: Path = Path.of("tmp-test")
 
-    override val maxCheckpointFlushTimeMs: Long = 1000L
     override val maxMessageQueueMemoryUsageRatio: Double = 0.1
     override val estimatedRecordMemoryOverheadRatio: Double = 1.1
 }

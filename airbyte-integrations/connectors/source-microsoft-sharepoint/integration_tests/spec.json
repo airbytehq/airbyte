@@ -515,7 +515,7 @@
         },
         "site_url": {
           "title": "Site URL",
-          "description": "Url of SharePoint site to search for files. Leave empty to search in the main site.",
+          "description": "Url of SharePoint site to search for files. Leave empty to search in the main site. Use 'https://<tenant_name>.sharepoint.com/sites/' to iterate over all sites.",
           "default": "",
           "order": 5,
           "type": "string"

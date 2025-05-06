@@ -14,35 +14,54 @@ import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.write.LoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 
 /** Factory for instantiating beans necessary for the sync process. */
 @Factory
 class SyncBeanFactory {
     private val log = KotlinLogging.logger {}
 
-    @Singleton
-    @Named("memoryManager")
-    fun memoryManager(
-        config: DestinationConfiguration,
-    ): ReservationManager {
-        val memory = config.maxMessageQueueMemoryUsageRatio * Runtime.getRuntime().maxMemory()
+    /* ******************
+     * RESOURCE MANAGERS
+     * ******************/
 
-        return ReservationManager(memory.toLong())
+    @Singleton
+    @Secondary
+    @Named("globalMemoryManager")
+    fun globalMemoryManager(): ReservationManager {
+        return ReservationManager(Runtime.getRuntime().maxMemory())
     }
 
+    @Singleton
+    @Named("queueMemoryManager")
+    fun queueMemoryMananger(
+        config: DestinationConfiguration,
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+    ): ReservationManager {
+        val recordQueueBytes =
+            config.maxMessageQueueMemoryUsageRatio * globalMemoryManager.totalCapacityBytes
+        val reservation = runBlocking {
+            globalMemoryManager.reserve(recordQueueBytes.toLong(), null)
+        }
+        return ReservationManager(reservation.bytesReserved)
+    }
+
+    /** DEPRECATED: Old interface. */
     @Singleton
     @Named("diskManager")
     fun diskManager(
@@ -51,12 +70,18 @@ class SyncBeanFactory {
         return ReservationManager(availableBytes)
     }
 
+    /* ********************
+     * ASYNCHRONOUS QUEUES
+     * ********************/
+
     /**
      * The queue that sits between the aggregation (SpillToDiskTask) and load steps
      * (ProcessRecordsTask).
      *
      * Since we are buffering on disk, we must consider the available disk space in our depth
      * configuration.
+     *
+     * DEPRECATED: Old interface.
      */
     @Singleton
     @Named("fileAggregateQueue")
@@ -81,6 +106,7 @@ class SyncBeanFactory {
         return MultiProducerChannel(streamCount.toLong(), channel, "fileAggregateQueue")
     }
 
+    /** DEPRECATED: Old interface. */
     @Singleton
     @Named("batchQueue")
     fun batchQueue(
@@ -104,25 +130,18 @@ class SyncBeanFactory {
     class OpenStreamQueue : ChannelMessageQueue<DestinationStream>(Channel(Channel.UNLIMITED))
 
     /**
-     * If the client uses a new-style LoadStrategy, then we need to checkpoint by checkpoint id
-     * instead of record index.
-     */
-    @Singleton
-    @Named("checkpointById")
-    fun isCheckpointById(loadStrategy: LoadStrategy? = null): Boolean = loadStrategy != null
-
-    /**
      * A single record queue for the whole sync, containing all streams, optionally partitioned by a
      * configurable number of partitions. Number of partitions is controlled by the specified
      * LoadStrategy, if any.
      */
     @Singleton
-    @Named("recordQueue")
-    fun recordQueue(
+    @Named("pipelineInputQueue")
+    fun pipelineInputQueue(
         loadStrategy: LoadStrategy? = null,
-    ): PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>> {
-        return PartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
+        @Named("isFileTransfer") isFileTransfer: Boolean = false,
+    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
+        return StrictPartitionedQueue(
+            Array(if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1) {
                 ChannelMessageQueue(Channel(Channel.UNLIMITED))
             }
         )
@@ -134,4 +153,30 @@ class SyncBeanFactory {
     fun batchStateUpdateQueue(): ChannelMessageQueue<BatchUpdate> {
         return ChannelMessageQueue(Channel(100))
     }
+
+    /* *************
+     * GLOBAL FLAGS
+     * *************/
+
+    /**
+     * If the client uses a new-style LoadStrategy, then we need to checkpoint by checkpoint id
+     * instead of record index.
+     */
+    @Singleton
+    @Named("checkpointById")
+    fun isCheckpointById(loadStrategy: LoadStrategy? = null): Boolean = loadStrategy != null
+
+    /** True if the catalog has at least one stream that includeFiles. */
+    @Singleton
+    @Named("isFileTransfer")
+    fun isFileTransfer(catalog: DestinationCatalog): Boolean =
+        catalog.streams.any { it.includeFiles }
+
+    /* *************
+     * GLOBAL STATE
+     * *************/
+
+    @Singleton
+    @Named("defaultDestinationTaskLauncherHasThrown")
+    fun defaultDestinationTaskLauncherHasThrown(): AtomicBoolean = AtomicBoolean(false)
 }

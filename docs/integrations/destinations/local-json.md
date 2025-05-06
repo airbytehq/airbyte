@@ -69,7 +69,7 @@ You can also copy the output file to your host machine, the following command wi
 docker cp airbyte-server:/tmp/airbyte_local/{destination_path}/{filename}.jsonl .
 ```
 
-Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
+Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination) for an alternative approach.
 
 ## Changelog
 
@@ -78,6 +78,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------- |
+| 0.2.13 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 0.2.12 | 2024-12-18 | [49908](https://github.com/airbytehq/airbyte/pull/49908) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.11 | 2022-02-14 | [14641](https://github.com/airbytehq/airbyte/pull/14641) | Include lifecycle management |
 

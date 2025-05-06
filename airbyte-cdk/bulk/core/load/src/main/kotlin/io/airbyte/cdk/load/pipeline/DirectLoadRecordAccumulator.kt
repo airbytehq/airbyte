@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline
 
-import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-data class DirectLoadAccResult(override val state: Batch.State) : WithBatchState
+data class DirectLoadAccResult(override val state: BatchState) : WithBatchState
 
 /**
  * Used internally by the CDK to wrap the client-provided DirectLoader in a generic
@@ -26,21 +26,24 @@ data class DirectLoadAccResult(override val state: Batch.State) : WithBatchState
 class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
     val directLoaderFactory: DirectLoaderFactory<S>
 ) : BatchAccumulator<S, K, DestinationRecordRaw, DirectLoadAccResult> {
-    override fun start(key: K, part: Int): S {
+    override suspend fun start(key: K, part: Int): S {
         return directLoaderFactory.create(key.stream, part)
     }
 
-    override fun accept(record: DestinationRecordRaw, state: S): Pair<S, DirectLoadAccResult?> {
-        state.accept(record).let {
+    override suspend fun accept(
+        input: DestinationRecordRaw,
+        state: S
+    ): BatchAccumulatorResult<S, DirectLoadAccResult> {
+        state.accept(input).let {
             return when (it) {
-                is Incomplete -> Pair(state, null)
-                is Complete -> Pair(state, DirectLoadAccResult(Batch.State.COMPLETE))
+                is Incomplete -> NoOutput(state)
+                is Complete -> FinalOutput(DirectLoadAccResult(BatchState.COMPLETE))
             }
         }
     }
 
-    override fun finish(state: S): DirectLoadAccResult {
+    override suspend fun finish(state: S): FinalOutput<S, DirectLoadAccResult> {
         state.finish()
-        return DirectLoadAccResult(Batch.State.COMPLETE)
+        return FinalOutput(DirectLoadAccResult(BatchState.COMPLETE))
     }
 }

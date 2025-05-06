@@ -8,16 +8,16 @@ from typing import Any, Dict, List
 import pytest
 import requests
 from conftest import find_stream, get_source, load_json_file
-from source_linkedin_ads.source import SourceLinkedinAds
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 logger = logging.getLogger("airbyte")
+
 
 LINKEDIN_VERSION_API = 202404
 
@@ -60,10 +60,6 @@ TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
 
 
 class TestAllStreams:
-    @pytest.fixture
-    def linkedin_source(self) -> SourceLinkedinAds:
-        return get_source(TEST_CONFIG)
-
     @staticmethod
     def _mock_initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         parent_streams = set()
@@ -169,17 +165,17 @@ class TestAllStreams:
             (
                 400,
                 False,
-                ("Bad request. Please check your request parameters."),
+                ("Stream accounts is not available: Bad request. Please check your request parameters."),
             ),
             (
                 403,
                 False,
-                ("Forbidden. You don't have permission to access this resource."),
+                ("Stream accounts is not available: Forbidden. You don't have permission to access this resource."),
             ),
             (200, True, None),
         ),
     )
-    def test_check_connection(self, requests_mock, linkedin_source, status_code, is_connection_successful, error_msg, mocker):
+    def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg, mocker):
         mocker.patch.object(
             ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
         )
@@ -191,7 +187,7 @@ class TestAllStreams:
             status_code=status_code,
             json=json,
         )
-        success, error = linkedin_source.check_connection(logger=logger, config=TEST_CONFIG)
+        success, error = get_source(config=TEST_CONFIG).check_connection(logger=logger, config=TEST_CONFIG)
         assert success is is_connection_successful
         assert error == error_msg
 

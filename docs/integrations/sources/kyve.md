@@ -29,6 +29,12 @@ You can fetch with one source configuration more than one pool simultaneously. Y
 
 | Version | Date       | Pull Request | Subject                                              |
 | :------ | :--------- | :----------- | :--------------------------------------------------- |
+| 0.2.37 | 2025-05-03 | [59300](https://github.com/airbytehq/airbyte/pull/59300) | Update dependencies |
+| 0.2.36 | 2025-04-26 | [58166](https://github.com/airbytehq/airbyte/pull/58166) | Update dependencies |
+| 0.2.35 | 2025-04-12 | [57714](https://github.com/airbytehq/airbyte/pull/57714) | Update dependencies |
+| 0.2.34 | 2025-04-05 | [57054](https://github.com/airbytehq/airbyte/pull/57054) | Update dependencies |
+| 0.2.33 | 2025-03-29 | [56675](https://github.com/airbytehq/airbyte/pull/56675) | Update dependencies |
+| 0.2.32 | 2025-03-22 | [55428](https://github.com/airbytehq/airbyte/pull/55428) | Update dependencies |
 | 0.2.31 | 2025-03-01 | [54786](https://github.com/airbytehq/airbyte/pull/54786) | Update dependencies |
 | 0.2.30 | 2025-02-22 | [54357](https://github.com/airbytehq/airbyte/pull/54357) | Update dependencies |
 | 0.2.29 | 2025-02-15 | [53854](https://github.com/airbytehq/airbyte/pull/53854) | Update dependencies |

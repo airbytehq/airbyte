@@ -10,13 +10,18 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.icerberg.parquet.IcebergDestinationCleaner
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
-import io.airbyte.cdk.load.test.util.DestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
+import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.nio.file.Files
 import java.util.Base64
 import kotlin.test.assertContains
@@ -32,7 +37,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 
 abstract class S3DataLakeWriteTest(
     configContents: String,
-    destinationCleaner: DestinationCleaner,
     tableIdGenerator: TableIdGenerator,
 ) :
     IcebergWriteTest(
@@ -44,7 +48,7 @@ abstract class S3DataLakeWriteTest(
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
         },
-        destinationCleaner,
+        S3DataLakeCleaner,
         tableIdGenerator,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         micronautProperties =
@@ -54,12 +58,6 @@ abstract class S3DataLakeWriteTest(
 class GlueWriteTest :
     S3DataLakeWriteTest(
         Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        IcebergDestinationCleaner(
-            S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
-            )
-        ),
         GlueTableIdGenerator(null),
     ) {
     @Test
@@ -90,27 +88,91 @@ class GlueWriteTest :
         val failure = expectFailure { runSync(updatedConfig, catalog, messages = emptyList()) }
         assertContains(failure.message, "Detected naming conflicts between streams")
     }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    /**
+     * Iceberg supports recursing into arrays, which is unusual from other connectors. Add a test
+     * that we correctly recurse through these values.
+     */
+    @Test
+    fun testNestedArrayCoercion() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "array" to
+                            FieldType(
+                                ArrayType(FieldType(NumberType, nullable = true)),
+                                nullable = true
+                            ),
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """
+                        {
+                          "id": 1,
+                          "array": [42, "potato"]
+                        }
+                    """.trimIndent(),
+                    emittedAtMs = 100,
+                )
+            )
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    // 42 -> 42.0; potato -> null
+                    data = mapOf("id" to 1, "array" to listOf(42.0, null)),
+                    airbyteMeta =
+                        OutputRecord.Meta(
+                            syncId = 42,
+                            changes =
+                                listOf(
+                                    Meta.Change(
+                                        "array.1",
+                                        Change.NULLED,
+                                        Reason.DESTINATION_SERIALIZATION_ERROR
+                                    )
+                                )
+                        ),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
 }
 
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
         Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        IcebergDestinationCleaner(
-            S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
-            )
-        ),
         GlueTableIdGenerator(null),
     )
 
-class NessieMinioWriteTest :
-    S3DataLakeWriteTest(
-        getConfig(),
-        // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
-        NoopDestinationCleaner,
-        SimpleTableIdGenerator(),
-    ) {
+class NessieMinioWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator()) {
 
     companion object {
         private fun getToken(): String {
@@ -176,8 +238,7 @@ class NessieMinioWriteTest :
 // even across multiple streams.
 // so run singlethreaded.
 @Execution(ExecutionMode.SAME_THREAD)
-class RestWriteTest :
-    S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner, SimpleTableIdGenerator()) {
+class RestWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator()) {
 
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")

@@ -10,8 +10,9 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -38,14 +39,14 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         override val groupId: String? = null
     }
 
-    data class LocalBatch(val records: List<DestinationRecordAirbyteValue>) : MockBatch() {
-        override val state = Batch.State.STAGED
+    data class LocalBatch(val records: List<DestinationRecordRaw>) : MockBatch() {
+        override val state = BatchState.STAGED
     }
     data class LocalFileBatch(val file: DestinationFile) : MockBatch() {
-        override val state = Batch.State.STAGED
+        override val state = BatchState.STAGED
     }
 
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             when (val importType = stream.importType) {
                 is Append -> {
@@ -72,7 +73,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     }
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecordAirbyteValue>,
+        records: Iterator<DestinationRecordRaw>,
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {
@@ -84,16 +85,17 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
             is LocalBatch -> {
                 log.info { "Persisting ${batch.records.size} records for ${stream.descriptor}" }
                 batch.records.forEach {
-                    val filename = getFilename(it.stream, staging = true)
+                    val recordAirbyteValue = it.asDestinationRecordAirbyteValue()
+                    val filename = getFilename(it.stream.descriptor, staging = true)
                     val record =
                         OutputRecord(
                             UUID.randomUUID(),
-                            Instant.ofEpochMilli(it.emittedAtMs),
+                            Instant.ofEpochMilli(recordAirbyteValue.emittedAtMs),
                             Instant.ofEpochMilli(System.currentTimeMillis()),
                             stream.generationId,
-                            it.data as ObjectValue,
+                            recordAirbyteValue.data as ObjectValue,
                             OutputRecord.Meta(
-                                changes = it.meta?.changes ?: listOf(),
+                                changes = recordAirbyteValue.meta?.changes ?: listOf(),
                                 syncId = stream.syncId
                             ),
                         )
@@ -106,7 +108,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 // in a real sync, because we would always either get more
                 // data or an end-of-stream that would force a final flush.
                 delay(100L)
-                SimpleBatch(state = Batch.State.COMPLETE)
+                SimpleBatch(state = BatchState.COMPLETE)
             }
             else -> throw IllegalStateException("Unexpected batch type: $batch")
         }

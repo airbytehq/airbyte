@@ -28,7 +28,7 @@ def oauth_config_fixture():
 
 @pytest.fixture(name="common_params")
 def common_params_fixture(config):
-    source = SourceHubspot()
+    source = SourceHubspot(config, None, None)
     common_params = source.get_common_params(config=config)
     return common_params
 
@@ -101,3 +101,10 @@ def api(some_credentials):
 @pytest.fixture
 def http_mocker():
     return None
+
+
+def find_stream(stream_name, config):
+    for stream in SourceHubspot(config=config, catalog=None, state=None).streams(config=config):
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
