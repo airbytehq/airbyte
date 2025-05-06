@@ -105,8 +105,8 @@ class DestinationTaskLauncherUTest {
     private fun getDefaultDestinationTaskLauncher(
         useFileTransfer: Boolean,
         loadPipeline: LoadPipeline? = null
-    ): DefaultDestinationTaskLauncher<Nothing> {
-        return DefaultDestinationTaskLauncher(
+    ): DestinationTaskLauncher {
+        return DestinationTaskLauncher(
             taskScopeProvider,
             catalog,
             config,

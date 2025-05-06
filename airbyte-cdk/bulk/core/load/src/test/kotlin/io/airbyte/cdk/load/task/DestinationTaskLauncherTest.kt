@@ -438,21 +438,15 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleStreamClosed() = runTest {
         // This should run teardown unconditionally.
-        launch { taskLauncher.handleStreamClosed(MockDestinationCatalogFactory.stream1.descriptor) }
+        launch { taskLauncher.handleStreamClosed() }
         teardownTaskFactory.hasRun.receive()
     }
 
     @Test
     fun `test sync failure after stream failure`() = runTest {
         val job = launch { taskLauncher.run() }
-        taskLauncher.handleFailStreamComplete(
-            MockDestinationCatalogFactory.stream1.descriptor,
-            Exception()
-        )
-        taskLauncher.handleFailStreamComplete(
-            MockDestinationCatalogFactory.stream2.descriptor,
-            Exception()
-        )
+        taskLauncher.handleFailStreamComplete(Exception())
+        taskLauncher.handleFailStreamComplete(Exception())
         taskLauncher.handleTeardownComplete()
         job.join()
         mockFailSyncTaskFactory.didRun.close()
