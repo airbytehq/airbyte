@@ -5,17 +5,17 @@
 from dataclasses import dataclass
 from functools import wraps
 from time import sleep
-from typing import Any, Mapping, Optional, Union, Iterable
+from typing import Any, Iterable, Mapping, Optional, Union
 
 import requests
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.types import Record
 
 
@@ -213,15 +213,16 @@ class CursorManager:
     Singleton class that manages the cursor state exclusively for Intercom's companies stream. It provides methods to get, update,
     and reset the cursor, which tracks the scroll position for iterating over companies. The singleton pattern ensures a single,
     shared cursor state across the sync process.
-    
+
     For the companies stream, we need to implement a custom retriever since we cannot simply retry on HTTP 500 errors.
     Instead, the stream must restart from the beginning to ensure data integrity. See Docs:
     https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
-    
+
     We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, which is tracked here:
     https://github.com/airbytehq/airbyte-internal-issues/issues/12107. However, the team does not have the bandwidth
     to implement this at the moment, so this custom component provides a workaround by resetting the cursor on errors.
     """
+
     _instance = None
 
     def __new__(cls):
@@ -232,7 +233,7 @@ class CursorManager:
 
     def get_cursor(self) -> Optional[str]:
         return self.cursor
-    
+
     def update_cursor(self, new_cursor: str) -> None:
         self.cursor = new_cursor
 
@@ -246,6 +247,7 @@ class IntercomErrorHandler(DefaultErrorHandler):
     using the CursorManager and triggers a retry, allowing the sync to restart from the beginning. For all other errors, it delegates
     to the parent class’s handling logic.
     """
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == 500:
             cursor_manager = CursorManager()
@@ -265,6 +267,7 @@ class CursorManagerAwarePaginationStrategy(CursorPaginationStrategy):
     from the response, it updates the CursorManager with this token if it exists, ensuring the cursor state reflects the latest
     pagination position for subsequent requests.
     """
+
     def next_page_token(self, response, last_page_size: int, last_record: Optional[Record], last_page_token_value: Optional[Any] = None):
         next_token = super().next_page_token(response=response, last_page_size=last_page_size, last_record=last_record)
         cursor_manager = CursorManager()
@@ -278,6 +281,7 @@ class CursorAwareSinglePartitionRouter(SinglePartitionRouter):
     Custom router that generates a single stream slice based on the current cursor state from the CursorManager. It includes the
     cursor as a `scroll_param` in the partition, enabling the retriever to request the correct page of data during the sync process.
     """
+
     def __init__(self, parameters: Mapping[str, Any]):
         super().__init__(parameters)
         self.cursor_manager = CursorManager()
@@ -293,6 +297,7 @@ class IntercomScrollRetriever(SimpleRetriever):
     Custom retriever that overrides the default stream slicer with a CursorAwareSinglePartitionRouter during initialization.
     This ensures that pagination is driven by cursor-based stream slices, allowing the sync to progress based on the managed cursor state.
     """
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.stream_slicer = CursorAwareSinglePartitionRouter(parameters)
