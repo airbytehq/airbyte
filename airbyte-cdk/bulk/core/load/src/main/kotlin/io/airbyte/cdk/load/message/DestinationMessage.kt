@@ -33,6 +33,7 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.*
@@ -51,7 +52,7 @@ import java.util.UUID
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
- * usability. Data should be marshalled to these from frontline deserialized objects.
+ * usability. Data should be unmarshalled to these from front-line deserialized objects.
  */
 sealed interface DestinationMessage {
     fun asProtocolMessage(): AirbyteMessage
@@ -289,12 +290,30 @@ data class EnrichedDestinationRecordAirbyteValue(
         get() = declaredFields + airbyteMetaFields
 }
 
+data class FileReference(
+    val stagingFileUrl: String,
+    val sourceFileRelativePath: String,
+    val fileSizeBytes: Long,
+) {
+    companion object {
+        fun fromProtocol(proto: AirbyteRecordMessageFileReference): FileReference =
+            FileReference(
+                proto.stagingFileUrl,
+                proto.sourceFileRelativePath,
+                proto.fileSizeBytes,
+            )
+    }
+}
+
 data class DestinationRecordRaw(
     val stream: DestinationStream,
     private val rawData: AirbyteMessage,
     private val serialized: String,
-    private val schema: AirbyteType
+    private val schema: AirbyteType,
 ) {
+    val fileReference: FileReference? =
+        rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
+
     fun asRawJson(): JsonNode {
         return rawData.record.data
     }

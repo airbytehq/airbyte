@@ -95,6 +95,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.14.10 | 2025-04-29 | [58123](https://github.com/airbytehq/airbyte/pull/58123) | Add missing fields for `events_detailed` stream for attributions|
 | 2.14.9 | 2025-04-26 | [58192](https://github.com/airbytehq/airbyte/pull/58192) | Update dependencies |
 | 2.14.8 | 2025-04-12 | [57751](https://github.com/airbytehq/airbyte/pull/57751) | Update dependencies |
 | 2.14.7 | 2025-04-05 | [57033](https://github.com/airbytehq/airbyte/pull/57033) | Update dependencies |
