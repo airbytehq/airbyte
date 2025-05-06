@@ -10,7 +10,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b979cb59-34b3-4f8b-9bf7-ae82d6371e2a
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-netsuite-enterprise
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite
   githubIssueLabel: source-netsuite-enterprise

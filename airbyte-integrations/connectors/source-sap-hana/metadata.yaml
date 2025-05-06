@@ -10,7 +10,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b6935898-aadb-46ae-99ca-d697207994c1
-  dockerImageTag: 0.0.9
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-sap-hana-enterprise
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-sap-hana
   githubIssueLabel: source-sap-hana-enterprise
