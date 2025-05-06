@@ -6,7 +6,6 @@ package io.airbyte.commons.jackson
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.cfg.JsonNodeFeature
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 
@@ -22,7 +21,6 @@ object MoreMappers {
         val result = ObjectMapper().registerModule(JavaTimeModule())
         result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         result.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
-        result.configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
         return result
     }
 
