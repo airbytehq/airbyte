@@ -90,6 +90,7 @@ abstract class IntegrationTest(
     fun getTestInfo(testInfo: TestInfo) {
         this.testInfo = testInfo
         testPrettyName = "${testInfo.testClass.get().simpleName}.${testInfo.displayName}"
+        destinationProcessFactory.testName = testPrettyName
     }
 
     @AfterEach
