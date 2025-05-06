@@ -31,5 +31,3 @@ RUN apt-get update && \
         poppler-utils=22.12.0-2+b1
 
 RUN mkdir -p 755 /usr/share/nltk_data
-
-# Dummy change (revert-me)

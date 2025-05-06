@@ -28,5 +28,3 @@ USER airbyte
 
 # Set entrypoint
 ENTRYPOINT ["/airbyte/base.sh"]
-
-# Dummy change (revert-me)
