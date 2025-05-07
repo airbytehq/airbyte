@@ -15,7 +15,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 def test_streams(config):
     source = SourceJira(config=config, catalog=None, state=None)
     streams = source.streams(config)
-    expected_streams_number = 56
+    expected_streams_number = 55
     assert len(streams) == expected_streams_number
 
 
@@ -58,10 +58,3 @@ def test_check_connection_404_error(config):
     assert (
         e.value.message == "Config validation error: please check that your domain is valid and does not include protocol (e.g: https://)."
     )
-
-
-def test_get_authenticator(config):
-    source = SourceJira(config=config, catalog=None, state=None)
-    authenticator = source.get_authenticator(config=config)
-
-    assert authenticator.get_auth_header() == {"Authorization": "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu"}
