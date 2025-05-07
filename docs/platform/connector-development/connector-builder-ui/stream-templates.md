@@ -2,15 +2,18 @@
 
 ## Overview
 
-Stream Templates (also known as Dynamic Streams) allow you to generate multiple similar streams from a single template configuration. This is particularly useful when an API has multiple endpoints that follow the same structure but with different parameters or identifiers.
+Stream Templates allow you to generate multiple similar streams from a single template configuration.
 
 ## When to use Stream Templates
 
 Stream templates are ideal for scenarios like:
 
-- APIs that have endpoints for multiple resources with identical structures
-- APIs where you need to fetch data from multiple regions or geographical areas using the same endpoint pattern
-- APIs that provide the same data structure for different resources (e.g., metrics for different entities)
+- APIs that have similar endpoint structures for multiple resources.
+- APIs where you need to fetch data from multiple regions or geographical areas using the same endpoint pattern.
+- APIs that provide the same data structure for different resources (e.g. metrics for different entities).
+- APIs that require a request to determine which endpoints or resources can be fetched dynamically.
+
+Not everyone needs to use stream templates, but people who are comfortable with the Connector Builder can use them to save a lot of time building and maintaining connectors.
 
 ## How Stream Templates work
 
@@ -65,7 +68,7 @@ The generated streams are read-only; to make changes to them, you must modify th
 
 Imagine an analytics API where you can fetch the same metrics for different projects:
 
-### Step 1: Configure the Retriever
+### Step 1: Configure Fetch Data for Template
 
 **URL Path**: `/api/projects`
 
@@ -88,7 +91,7 @@ The API returns:
 **Record Selector**:
 - Field Path: `projects`
 
-### Step 2: Configure the Stream Template
+### Step 2: Configure Generated Stream Template
 
 **Stream Template Configuration**:
 - URL Path: `/api/projects/{{ components_values.id }}/metrics`
