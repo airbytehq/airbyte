@@ -37,7 +37,8 @@ data:
         message: >-
           This update deprecates the `contacts_form_submissions`, `contacts_list_memberships`, and
           `contacts_merged_audit` streams from the source because they are no longer supported in
-          Hubspot's V3 API and the V1 API is being deprecated on 2025-05-30.
+          Hubspot's V3 API and the V1 API is being deprecated on 2025-05-30, updates `contact_lists` stream to use V3 API,
+          which has new records' schema, old fields no longer exposed by API, users need to refresh the source schema and clear the stream.
         upgradeDeadline: 2025-05-30
         scopedImpact:
           - scopeType: stream
