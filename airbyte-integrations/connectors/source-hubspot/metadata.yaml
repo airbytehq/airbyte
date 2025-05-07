@@ -46,6 +46,7 @@ data:
                 "contacts_form_submissions",
                 "contacts_list_memberships",
                 "contacts_merged_audit",
+                "contact_lists",
               ]
       4.0.0:
         message: >-

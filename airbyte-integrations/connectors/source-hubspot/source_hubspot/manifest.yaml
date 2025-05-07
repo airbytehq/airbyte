@@ -508,6 +508,68 @@ definitions:
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
 
+  contact_lists_stream:
+    $ref: "#/definitions/stream_base"
+    name: contact_lists
+    primary_key: listId
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/lists/search
+        http_method: POST
+      record_selector:
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - lists
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: count
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('has-more') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      is_client_side_incremental: true
+      cursor_datetime_formats:
+        - "%ms"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%d %H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "updatedAt" ]
+            value: "{{ record.get('updatedAt') or record.get('createdAt') }}"
+          - path: [ "updatedAt" ]
+            value: "{{ format_datetime(record['updatedAt'], '%ms') }}"
+            value_type: integer
+          - path: [ "createdAt" ]
+            value: "{{ format_datetime(record['createdAt'], '%ms') }}"
+            value_type: integer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/contact_lists"
+
 streams:
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contacts_property_history_stream"
@@ -515,6 +577,7 @@ streams:
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
+  - "#/definitions/contact_lists_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -2000,3 +2063,87 @@ schemas:
           - "null"
           - string
         format: date-time
+
+  contact_lists:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      processingType:
+        type:
+          - "null"
+          - string
+      objectTypeId:
+        type:
+          - "null"
+          - string
+      updatedById:
+        type:
+          - "null"
+          - string
+      filtersUpdatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      listId:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - integer
+      processingStatus:
+        type:
+          - "null"
+          - integer
+      deletedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      listVersion:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      additionalProperties:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          hs_list_size:
+            type:
+              - "null"
+              - integer
+          hs_last_record_added_at:
+            type:
+              - "null"
+              - string
+          hs_last_record_removed_at:
+            type:
+              - "null"
+              - string
+          hs_folder_name:
+            type:
+              - "null"
+              - string
+          hs_list_reference_count:
+            type:
+              - "null"
+              - integer
+      createdById:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - integer

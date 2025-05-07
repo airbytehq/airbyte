@@ -23,7 +23,6 @@ from source_hubspot.streams import (
     Campaigns,
     Companies,
     CompaniesWebAnalytics,
-    ContactLists,
     Contacts,
     ContactsWebAnalytics,
     CustomObject,
@@ -94,6 +93,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "contact_lists": {"crm.lists.read"},
 }
 
 
@@ -192,7 +192,6 @@ class SourceHubspot(YamlDeclarativeSource):
         streams += [
             Campaigns(**common_params),
             Companies(**common_params),
-            ContactLists(**common_params),
             Contacts(**common_params),
             DealPipelines(**common_params),
             DealSplits(**common_params),

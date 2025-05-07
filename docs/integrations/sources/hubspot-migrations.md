@@ -3,11 +3,11 @@
 ## Upgrading to 5.0.0 (Should we do this?)
 
 :::note
-This change is only breaking if you are syncing streams `Contacts Form Submissions`, `Contacts List Memberships`, or `Contacts Merged Audit`.
+This change is only breaking if you are syncing streams `Contact Lists`, `Contacts Form Submissions`, `Contacts List Memberships`, or `Contacts Merged Audit`.
 :::
 
-This update deprecates three contacts streams because Hubspot is deprecating V1 of their REST API and these
-streams make use of data from endpoints that no longer exist in their V3 API.
+This update deprecates three contacts streams(`Contacts Form Submissions`, `Contacts List Memberships`, and `Contacts Merged Audit`) because Hubspot is deprecating V1 of their REST API and these
+streams make use of data from endpoints that no longer exist in their V3 API, updates `Contact Lists` stream to use V3 API, which has new records' schema, old fields no longer exposed by API, users need to refresh the source schema and clear the stream.
 
 Users should:
 
