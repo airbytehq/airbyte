@@ -1,9 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any, Dict
 from unittest import TestCase
+import sys
 
 from pathlib import Path
 import freezegun
@@ -41,6 +42,7 @@ def _get_manifest_path() -> Path:
 _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 def _create_config() -> ConfigBuilder:
     return ConfigBuilder().with_api_token(_API_TOKEN).with_domain(_DOMAIN)
@@ -71,7 +73,7 @@ def _create_record() -> RecordBuilder:
 @freezegun.freeze_time(_NOW.isoformat())
 class IssuesTest(TestCase):
     @HttpMocker()
-    def test_given_timezone_in_state_when_read_consider_timezone(self, http_mocker: HttpMocker, components_module) -> None:
+    def test_given_timezone_in_state_when_read_consider_timezone(self, http_mocker: HttpMocker) -> None:
         config = _create_config().build()
         datetime_with_timezone = "2023-11-01T00:00:00.000-0800"
         timestamp_with_timezone = 1698825600000
