@@ -7,8 +7,9 @@ package io.airbyte.cdk.load.mock_integration_test
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.mock_integration_test.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
-import io.airbyte.cdk.load.mock_integration_test.MockStreamLoader.Companion.getFilename
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
