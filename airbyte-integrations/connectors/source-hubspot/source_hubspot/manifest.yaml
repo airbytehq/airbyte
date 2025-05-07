@@ -2372,6 +2372,9 @@ schemas:
           - string
       lastUpdatedTime:
         description: Timestamp indicating when the campaign data was last updated.
+        type:
+          - "null"
+          - integer
 
   workflows:
     $schema: "http://json-schema.org/draft-07/schema#"
