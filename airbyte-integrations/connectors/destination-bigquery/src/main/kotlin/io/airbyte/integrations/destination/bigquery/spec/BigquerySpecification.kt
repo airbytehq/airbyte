@@ -9,6 +9,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
@@ -18,14 +24,16 @@ import io.airbyte.cdk.load.command.gcs.GcsCommonSpecification
 import io.airbyte.cdk.load.command.gcs.GcsHmacKeySpecification
 import io.airbyte.cdk.load.command.gcs.GcsRegion
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
+import java.io.IOException
 
 @Singleton
 class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Project ID")
     @get:JsonPropertyDescription(
-        """The GCP project ID for the project containing the target BigQuery dataset. Read more <a href="https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects">here</a>."""
+        """The GCP project ID for the project containing the target BigQuery dataset. Read more <a href="https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects">here</a>.""",
     )
     @get:JsonProperty("project_id")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 0}""")
@@ -33,7 +41,7 @@ class BigquerySpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Dataset Location")
     @get:JsonPropertyDescription(
-        """The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href="https://cloud.google.com/bigquery/docs/locations">here</a>."""
+        """The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href="https://cloud.google.com/bigquery/docs/locations">here</a>.""",
     )
     @get:JsonProperty("dataset_location")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 1}""")
@@ -41,7 +49,7 @@ class BigquerySpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Default Dataset ID")
     @get:JsonPropertyDescription(
-        """The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href="https://cloud.google.com/bigquery/docs/datasets#create-dataset">here</a>."""
+        """The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href="https://cloud.google.com/bigquery/docs/datasets#create-dataset">here</a>.""",
     )
     @get:JsonProperty("dataset_id")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 2}""")
@@ -53,20 +61,23 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 3, "display_type": "radio"}""")
     val loadingMethod: LoadingMethodSpecification? = BatchedStandardInsertSpecification()
 
+    // older versions of the connector represented this field as an actual JSON object,
+    // so we need to use the RawJsonDeserializer.
+    @get:JsonDeserialize(using = RawJsonDeserializer::class)
     @get:JsonSchemaTitle("Service Account Key JSON (Required for cloud, optional for open-source)")
     @get:JsonPropertyDescription(
-        """The contents of the JSON service account key. Check out the <a href="https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty."""
+        """The contents of the JSON service account key. Check out the <a href="https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.""",
     )
     @get:JsonProperty("credentials_json")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 4, "airbyte_secret": true, "always_show": true}"""
+            """{"group": "connection", "order": 4, "airbyte_secret": true, "always_show": true}""",
     )
     val credentialsJson: String? = null
 
     @get:JsonSchemaTitle("Transformation Query Run Type")
     @get:JsonPropertyDescription(
-        """Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">here</a>. The default "interactive" value is used if not set explicitly."""
+        """Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">here</a>. The default "interactive" value is used if not set explicitly.""",
     )
     @get:JsonProperty("transformation_priority", defaultValue = "interactive")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 5}""")
@@ -74,17 +85,17 @@ class BigquerySpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Raw Table Dataset Name")
     @get:JsonPropertyDescription(
-        """The dataset to write raw tables into (default: airbyte_internal)"""
+        """The dataset to write raw tables into (default: airbyte_internal)""",
     )
     @get:JsonProperty("raw_data_dataset")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7}""")
     val rawTableDataset: String? = null
 
     @get:JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)"
+        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
     )
     @get:JsonPropertyDescription(
-        """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions"""
+        """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
     )
     @get:JsonProperty("disable_type_dedupe")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8, "default": false}""")
@@ -94,7 +105,7 @@ class BigquerySpecification : ConfigurationSpecification() {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "method"
+    property = "method",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = BatchedStandardInsertSpecification::class, name = "Standard"),
@@ -109,20 +120,20 @@ sealed class LoadingMethodSpecification(@JsonProperty("method") val method: Load
 
 @JsonSchemaTitle("Batched Standard Inserts")
 @JsonSchemaDescription(
-    "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically."
+    "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically.",
 )
 class BatchedStandardInsertSpecification :
     LoadingMethodSpecification(LoadingMethod.BATCHED_STANDARD_INSERT)
 
 @JsonSchemaTitle("GCS Staging")
 @JsonSchemaDescription(
-    "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery."
+    "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
 )
 class GcsStagingSpecification :
     GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
     @get:JsonSchemaTitle("GCS Tmp Files Post-Processing")
     @get:JsonPropertyDescription(
-        """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly."""
+        """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly.""",
     )
     // yes, this is mixed underscore+hyphen.
     @get:JsonProperty("keep_files_in_gcs-bucket", defaultValue = "Delete all tmp files from GCS")
@@ -199,7 +210,7 @@ class BigquerySpecificationExtension : DestinationSpecificationExtension {
         listOf(
             DestinationSyncMode.OVERWRITE,
             DestinationSyncMode.APPEND,
-            DestinationSyncMode.APPEND_DEDUP
+            DestinationSyncMode.APPEND_DEDUP,
         )
     override val supportsIncremental = true
     override val groups =
@@ -207,4 +218,21 @@ class BigquerySpecificationExtension : DestinationSpecificationExtension {
             DestinationSpecificationExtension.Group("connection", "Connection"),
             DestinationSpecificationExtension.Group("advanced", "Advanced"),
         )
+}
+
+/**
+ * A custom JSON deserializer, which can write any JSON value into a String field. In particular, it
+ * passes String values through unchanged, but serializes all other values.
+ *
+ * If you don't do this, then Jackson will choke on object values.
+ */
+class RawJsonDeserializer : JsonDeserializer<String?>() {
+    @Throws(IOException::class, JsonProcessingException::class)
+    override fun deserialize(jp: JsonParser, ctxt: DeserializationContext?): String {
+        val node: JsonNode = Jsons.readTree(jp)
+        if (node.isTextual) {
+            return node.asText()
+        }
+        return Jsons.writeValueAsString(node)
+    }
 }
