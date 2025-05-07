@@ -105,7 +105,7 @@ jobs:
           echo JAVA_CONNECTORS=${JAVA_CONNECTORS} >> $GITHUB_ENV
           echo NON_JAVA_CONNECTORS=${NON_JAVA_CONNECTORS} >> $GITHUB_ENV
 
-      - name: Convert to JSON
+      - name: Convert Connector List to JSON
         id: convert-matrix
         run: |
           # helper: turn comma-delimited list into a JSON array
