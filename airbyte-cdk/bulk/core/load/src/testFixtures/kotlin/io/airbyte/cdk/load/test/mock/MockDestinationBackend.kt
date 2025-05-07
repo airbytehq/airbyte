@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.mock_integration_test
+package io.airbyte.cdk.load.test.mock
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
@@ -16,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 object MockDestinationBackend {
+    const val MOCK_TEST_MICRONAUT_ENVIRONMENT = "mock_test"
+
     private val files: ConcurrentHashMap<String, ConcurrentLinkedQueue<OutputRecord>> =
         ConcurrentHashMap()
 
@@ -106,9 +108,7 @@ object MockDestinationBackend {
     }
 
     fun deleteOldRecords(filename: String, minGenerationId: Long) {
-        getFile(filename).removeAll {
-            it.generationId == null || it.generationId!! < minGenerationId
-        }
+        getFile(filename).removeAll { it.generationId == null || it.generationId < minGenerationId }
     }
 
     private fun getFile(filename: String): ConcurrentLinkedQueue<OutputRecord> {
@@ -122,7 +122,7 @@ object MockDestinationDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
-            MockStreamLoader.getFilename(stream.descriptor.namespace, stream.descriptor.name)
+            getFilename(stream.descriptor.namespace, stream.descriptor.name)
         )
     }
 
@@ -133,4 +133,13 @@ object MockDestinationDataDumper : DestinationDataDumper {
         // Not needed since the test is disabled for file transfer
         throw NotImplementedError()
     }
+
+    fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
+        getFilename(stream.namespace, stream.name, staging)
+    fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
+        if (staging) {
+            "(${namespace},${name},staging)"
+        } else {
+            "(${namespace},${name})"
+        }
 }
