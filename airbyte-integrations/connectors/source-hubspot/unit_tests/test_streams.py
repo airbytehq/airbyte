@@ -91,7 +91,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
     [
         (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z", "createdAt": "2021-02-25T16:43:11Z"}),
+        (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -196,7 +196,6 @@ def test_streams_read(
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
-    requests_mock.register_uri("POST", "/crm/v3/lists/search", responses)
 
     records = read_full_refresh(stream)
     assert records
