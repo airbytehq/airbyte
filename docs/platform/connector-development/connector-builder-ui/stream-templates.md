@@ -19,8 +19,8 @@ Not everyone needs to use stream templates, but people who are comfortable with 
 
 A stream template consists of two main sections:
 
-1. **Fetch Data for Template** - Fetches a list of items from an API endpoint
-2. **Generated Stream Template** - Defines how each generated stream will behave, using values from the items fetched in the first section
+1. **Fetch Data for Template** - Fetches a list of items from an API endpoint.
+2. **Generated Stream Template** - Defines how each generated stream will behave, using values from the items fetched in the first section.
 
 ## Step-by-Step Setup Guide - GitHub Issues API
 
@@ -32,7 +32,7 @@ To make this work, we need to fetch a list of repositories from the GitHub API, 
 
 1. Start a new connector from scratch in the Connector Builder UI.
 2. Set a name for your connector (e.g. `GitHub Issues`).
-3. Set the **API Base URL** to `https://api.github.com`
+3. Set the **API Base URL** to `https://api.github.com`.
 
 ![Base URL](./assets/stream-templates/base-url.png)
 
@@ -40,8 +40,8 @@ To make this work, we need to fetch a list of repositories from the GitHub API, 
 
 1. In the Connector Builder UI, click the `+` button next to **STREAM TEMPLATES**.
 2. Enter a name for your template (e.g. `repository issues`).
-3. Enter the URL path for fetching the repositories, which will be used to generate individual streams: `/repositories`
-4. Click **Create**
+3. Enter the URL path for fetching the repositories, which will be used to generate individual streams: `/repositories`.
+4. Click **Create**.
 
 ![New Stream Template](./assets/stream-templates/new-stream-template.png)
 
