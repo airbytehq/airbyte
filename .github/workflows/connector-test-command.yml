@@ -115,7 +115,8 @@ jobs:
 
   connectors-test-matrix:
     needs: [generate-matrix]
-    runs-on: ubuntu-24.04
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    timeout-minutes: 60 # 1 hour
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
     if: ${{ needs.generate-matrix.outputs.connector-matrix != '' }}
