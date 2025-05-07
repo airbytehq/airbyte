@@ -2994,6 +2994,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      approval_feature:
+        type:
+          - boolean
+          - "null"
       approval_required:
         type:
           - "null"
@@ -3004,6 +3008,18 @@ schemas:
           - "null"
           - string
         description: The base URI used in constructing URLs for this company.
+      currency:
+        type:
+          - string
+          - "null"
+      currency_code_display:
+        type:
+          - string
+          - "null"
+      currency_symbol_display:
+        type:
+          - string
+          - "null"
       clock:
         type:
           - "null"
@@ -3014,6 +3030,14 @@ schemas:
           - "null"
           - string
         description: The color scheme used in the user interface.
+      date_format:
+        type:
+          - string
+          - "null"
+      day_entry_notes_required:
+        type:
+          - boolean
+          - "null"
       decimal_symbol:
         type:
           - "null"
@@ -3056,6 +3080,14 @@ schemas:
           - "null"
           - string
         description: The type of plan subscribed by the company.
+      saml_sign_in_required:
+        type:
+          - boolean
+          - "null"
+      team_feature:
+        type:
+          - boolean
+          - "null"
       thousands_separator:
         type:
           - "null"
@@ -4514,6 +4546,10 @@ schemas:
               - string
             description: The date and time when the user assignment was last updated.
             format: date-time
+          use_default_rates:
+            type:
+              - boolean
+              - "null"
   user_assignments:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -4603,6 +4639,14 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      access_roles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       avatar_url:
         type:
           - "null"
@@ -4694,6 +4738,14 @@ schemas:
           - "null"
           - string
         description: User's last name.
+      permissions_claims:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       roles:
         type:
           - "null"
@@ -5126,6 +5178,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      avatar_url:
+        type:
+          - string
+          - "null"
       billable_amount:
         type:
           - "null"
@@ -5171,6 +5227,10 @@ schemas:
           - "null"
           - string
         description: The name of the user
+      weekly_capacity:
+        type:
+          - number
+          - "null"
   uninvoiced:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -5576,6 +5636,10 @@ schemas:
               - "null"
               - integer
             description: The unique identifier of the project
+          is_billable:
+            type:
+              - "null"
+              - boolean
           name:
             type:
               - "null"

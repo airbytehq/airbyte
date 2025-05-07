@@ -10,8 +10,9 @@ git fetch --quiet origin $DEFAULT_BRANCH
 
 # 2) set up ignore patterns
 ignore_patterns=(
-  'README.md'
   '.coveragerc'
+  'poe_tasks.toml'
+  'README.md'
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"

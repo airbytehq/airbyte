@@ -1,0 +1,340 @@
+name: Connector CI (Beta)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+  # Available as a reusable workflow
+  # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
+  workflow_call:
+    inputs:
+      connector_name:
+        type: string
+        required: false
+        description: >
+          The name of the connector(s) to test.
+          To test multiple connectors, use a newline-delimited
+          or comma-separated list of connector names.
+
+          If not provided, the workflow will try to infer the
+          connector name from the PR title.
+
+      repo:
+        type: string
+        required: false
+        description: "The repository name"
+      gitref:
+        type: string
+        required: false
+        description: "The git reference (branch or tag)"
+      comment-id:
+        type: number
+        required: false
+        description: "The ID of the comment triggering the workflow"
+      pr:
+        type: number
+        required: false
+        description: "The pull request number, if applicable"
+
+  # Available as a slash command and workflow dispatch
+  workflow_dispatch:
+    inputs:
+      # Custom inputs for the connector test command:
+      connector_name:
+        required: false
+        description: |
+          The name of the connector(s) to test.
+          To test multiple connectors, use a newline-delimited
+          or comma-separated list of connector names.
+
+          If not provided, the workflow will try to infer the
+          connector name from the PR title.
+
+      # Static args from the slash command dispatch:
+      repo:
+        required: false
+        description: "The repository name"
+      gitref:
+        required: false
+        description: "The git reference (branch or tag)"
+      comment-id:
+        required: false
+        description: "The ID of the comment triggering the workflow"
+      pr:
+        required: false
+        description: "The pull request number, if applicable"
+
+jobs:
+  generate-matrix:
+    name: Generate Connector Matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get Connector List from Input
+        if: inputs.connector_name
+        run: |
+          # If input is newline-delimited, translate to comma-delimited
+          CONNECTORS=$(echo "${{ inputs.connector_name }}" | tr '\n' ',')
+          echo "Found connectors input:\n${CONNECTORS}"
+          echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
+
+      - name: Checkout Current Branch
+        if: ${{ ! inputs.connector_name }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Connector List from Changes
+        if: ${{ ! inputs.connector_name }}
+        run: |
+          # Get modified connectors
+          CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
+          echo "Found connectors with changes:\n${CONNECTORS}"
+          # Convert newlines → commas (and drop any trailing comma)
+          CONNECTORS=$(printf '%s\n' "$CONNECTORS" \
+            | tr '\n' ',' \
+            | sed 's/,$//')
+          echo "Converted to comma-delimited list: ${CONNECTORS}"
+          echo CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
+
+      - name: Convert to JSON
+        id: convert-matrix
+        run: |
+          # Check if CONNECTORS is empty
+          if [ -z "$CONNECTORS" ]; then
+            echo "No connectors modified. Setting matrix to empty string."
+            echo "matrix=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # quote each comma‑separated connector and rebuild the list in one step
+          json_elements="\"${CONNECTORS//,/\",\"}\""
+          json_output="{ \"connector\": [${json_elements}] }"
+          echo "matrix=$json_output" | tee -a "$GITHUB_OUTPUT"
+
+    outputs:
+      connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
+
+  connectors-test-matrix:
+    needs: [generate-matrix]
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    timeout-minutes: 60 # 1 hour
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+    if: ${{ needs.generate-matrix.outputs.connector-matrix != '' }}
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: Test ${{ matrix.connector }} Connector
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
+          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
+          cache-write-only: false
+
+      # Python deps
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+          # These should be included as dev dependencies in the connector, but
+          # for many connectors they are undeclared:
+          uv tool install ruff
+          uv tool install pytest
+          uv tool install mypy
+
+      - name: Get Connector Language
+        id: get-language
+        continue-on-error: true # Will fail for now (null output) for manifest-only connectors
+        run: |
+          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
+
+      - name: Install connector dependencies
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} install
+
+      - name: Fetch connector secrets
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipx
+          pipx run airbyte-cdk[dev] secrets fetch \
+            --connector-name=${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
+      - name: Run Unit Tests
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} test-unit-tests
+
+      - name: Run Integration Tests
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} test-integration-tests
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: "`${{ matrix.connector }}` Connector Test Results"
+          files: |
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+  test-summary:
+    name: Connector Test Summary Check
+    needs: [connectors-test-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All connector tests completed successfully."
+
+  test-summary-noop:
+    name: Connector Test Summary Check
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "🟦 No connectors updated. All good here."
+
+  # Lint and format checks
+
+  connectors-lint-matrix:
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    if: ${{ needs.generate-matrix.outputs.connector-matrix }}
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      max-parallel: 10 # Limit number of parallel jobs
+    name: Lint ${{ matrix.connector }} Connector
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
+          cache-write-only: false
+
+      # Python deps
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+          # These should be included as dev dependencies in the connector, but
+          # for many connectors they are undeclared:
+          uv tool install ruff
+          uv tool install pytest
+          uv tool install mypy
+
+      - name: Get Connector Language
+        id: get-language
+        continue-on-error: true # Will fail for now (null output) for manifest-only connectors
+        run: |
+          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
+
+      - name: Install connector dependencies
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} install
+
+      - name: Run format-check
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} format-check
+
+      - name: Run lint check (info only)
+        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        run: |
+          poe connector ${{ matrix.connector }} lint-check
+        # Most connectors can't pass lint checks, so this is non-blocking for now
+        continue-on-error: true
+
+  lint-summary:
+    name: Connector Lint Summary Check
+    needs: [connectors-lint-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Lint Summary
+        run: echo "✅ All connectors lint checks completed successfully."
+
+  lint-summary-noop:
+    name: Connector Test Summary Check
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Lint Summary
+        run: echo "🟦 No connectors updated. All good here."
