@@ -4,9 +4,7 @@
 
 import pytest
 import responses
-from conftest import find_stream
-from source_jira.source import SourceJira
-from source_jira.utils import read_full_refresh
+from conftest import find_stream, read_full_refresh
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder

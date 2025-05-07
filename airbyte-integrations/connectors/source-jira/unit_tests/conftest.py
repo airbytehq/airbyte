@@ -9,8 +9,11 @@ from pathlib import Path
 import responses
 from pytest import fixture
 from responses import matchers
-from source_jira.source import SourceJira
 
+from airbyte_cdk.sources.streams import Stream
+
+
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
 os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
@@ -553,3 +556,7 @@ def find_stream(stream_name, config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+def read_full_refresh(stream_instance: Stream):
+    yield from stream_instance.read_only_records()

@@ -21,8 +21,17 @@ class LabelsRecordExtractor(DpathExtractor):
     """
 
     def extract_records(self, response: Response) -> List[Mapping[str, Any]]:
-        records = super().extract_records(response)
-        return [{"label": record} for record in records]
+        data = response.json()
+        # Check for values directly in the response first since that's faster
+        if (isinstance(data, dict) and "values" in data and isinstance(data["values"], list)):
+            values = data["values"]
+            return [{"label": record} for record in values]
+
+        # If not found directly, use the parent implementation
+        # (now returning a generator)
+        parent_records = super().extract_records(response)
+        result = [{"label": record} for record in parent_records]
+        return result
 
 
 class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):

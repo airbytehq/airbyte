@@ -5,9 +5,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 from unittest import TestCase
 
+from pathlib import Path
 import freezegun
-from source_jira import SourceJira
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -28,6 +29,17 @@ _STREAM_NAME = "issues"
 _API_TOKEN = "api_token"
 _DOMAIN = "airbyteio.atlassian.net"
 _NOW = datetime(2024, 1, 1, tzinfo=timezone.utc)
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 
 
 def _create_config() -> ConfigBuilder:
@@ -59,7 +71,7 @@ def _create_record() -> RecordBuilder:
 @freezegun.freeze_time(_NOW.isoformat())
 class IssuesTest(TestCase):
     @HttpMocker()
-    def test_given_timezone_in_state_when_read_consider_timezone(self, http_mocker: HttpMocker) -> None:
+    def test_given_timezone_in_state_when_read_consider_timezone(self, http_mocker: HttpMocker, components_module) -> None:
         config = _create_config().build()
         datetime_with_timezone = "2023-11-01T00:00:00.000-0800"
         timestamp_with_timezone = 1698825600000
@@ -89,7 +101,7 @@ class IssuesTest(TestCase):
             _create_response().with_record(_create_record()).with_record(_create_record()).build(),
         )
 
-        source = SourceJira(config=config, catalog=_create_catalog(), state=state)
+        source = YamlDeclarativeSource(config=config, catalog=_create_catalog(), state=state, path_to_yaml=str(_YAML_FILE_PATH))
         actual_messages = read(source, config=config, catalog=_create_catalog(), state=state)
 
         assert len(actual_messages.records) == 2

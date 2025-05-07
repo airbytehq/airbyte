@@ -6,14 +6,14 @@ from unittest.mock import MagicMock
 
 import pytest
 import responses
-from source_jira.source import SourceJira
 
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 
 @responses.activate
 def test_streams(config):
-    source = SourceJira(config=config, catalog=None, state=None)
+    source = YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=manifest_path)
     streams = source.streams(config)
     expected_streams_number = 55
     assert len(streams) == expected_streams_number
