@@ -108,16 +108,16 @@ jobs:
       - name: Convert Connector Lists to JSON
         id: convert-matrix
         run: |
-          # to_json helper: turn comma-delimited list into a JSON array
+          # Convert list to JSON in the format: {"connector":[...]}
           to_json() {
             local list="$1"
             if [ -z "$list" ]; then
-              echo "[]"
+              echo '{"connector":[]}'
             else
               printf '%s\n' "$list" \
                 | tr ',' '\n' \
                 | jq -R . \
-                | jq -cs .
+                | jq -cs '{connector: .}'
             fi
           }
 
