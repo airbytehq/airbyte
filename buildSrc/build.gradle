@@ -7,6 +7,10 @@ repositories {
     gradlePluginPortal()
 }
 
+dependencies {
+    implementation 'org.yaml:snakeyaml:2.4'
+}
+
 tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
