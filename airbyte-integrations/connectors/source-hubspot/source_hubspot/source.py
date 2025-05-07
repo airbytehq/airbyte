@@ -31,7 +31,6 @@ from source_hubspot.streams import (
     ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
-    Deals,
     DealsArchived,
     DealSplits,
     DealsWebAnalytics,
@@ -78,6 +77,7 @@ scopes = {
     "deals_property_history": {"crm.objects.deals.read"},
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
+    "deals": {"contacts", "crm.objects.deals.read"},
     "ticket_pipelines": {
         "media_bridge.read",
         "tickets",
@@ -202,7 +202,6 @@ class SourceHubspot(YamlDeclarativeSource):
             ContactsMergedAudit(**common_params),
             DealPipelines(**common_params),
             DealSplits(**common_params),
-            Deals(**common_params),
             DealsArchived(**common_params),
             EmailEvents(**common_params),
             Engagements(**common_params),
