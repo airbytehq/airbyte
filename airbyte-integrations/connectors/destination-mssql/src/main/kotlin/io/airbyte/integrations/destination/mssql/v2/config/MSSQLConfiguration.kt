@@ -23,17 +23,13 @@ data class MSSQLConfiguration(
     val jdbcUrlParams: String?,
     val sslMethod: EncryptionMethod,
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
-    val numInputPartitions: Int,
-    val batchEveryNRecords: Int,
-    val maxBatchSizeBytes: Long,
-    val maxNumOpenLoaders: Int,
-    override val maxMessageQueueMemoryUsageRatio: Double,
-    override val estimatedRecordMemoryOverheadRatio: Double
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
-    override val numProcessRecordsWorkers = 1
-    override val numProcessBatchWorkers: Int = 1
-    override val processEmptyFiles: Boolean = true
     override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
+
+    val numInputPartitions: Int = 1 // this should not be raised without implementing a partitioner
+    val batchEveryNRecords: Int = 5_000
+    val maxBatchSizeBytes: Long = recordBatchSizeBytes
+    val maxNumOpenLoaders: Int = 8 // allows for 1 concurrent open and close + 8 concurrent keys
 
     /**
      * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
@@ -73,12 +69,6 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
             mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
-            numInputPartitions = spec.numInputPartitions ?: 1,
-            batchEveryNRecords = spec.batchEveryNRecords ?: 100_000,
-            maxBatchSizeBytes = (spec.maxBatchSizeMb ?: 200) * 1024L * 1024,
-            maxNumOpenLoaders = spec.maxNumOpenLoaders ?: 8,
-            maxMessageQueueMemoryUsageRatio = spec.maxMessageQueueMemoryUsageRatio ?: 0.2,
-            estimatedRecordMemoryOverheadRatio = spec.estimatedRecordMemoryOverheadRatio ?: 8.0
         )
     }
 }

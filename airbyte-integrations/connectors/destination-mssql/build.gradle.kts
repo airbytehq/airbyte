@@ -18,17 +18,14 @@ application {
 
     applicationDefaultJvmArgs = listOf(
         "-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0",
-        "-Djava.rmi.server.hostname=localhost",
-            "-Dcom.sun.management.jmxremote=true",
-            "-Dcom.sun.management.jmxremote.port=6000",
-            "-Dcom.sun.management.jmxremote.rmi.port=6000",
-            "-Dcom.sun.management.jmxremote.local.only=false",
-            "-Dcom.sun.management.jmxremote.authenticate=false",
-            "-Dcom.sun.management.jmxremote.ssl=false",
-        "-Xms128m", "-Xmx512m",
-            "-XX:MaxDirectMemorySize=64m",
-    "-XX:MaxMetaspaceSize=128m",
-    "-XX:+HeapDumpOnOutOfMemoryError"
+        // Uncomment to attach a live profiler.
+//        "-Djava.rmi.server.hostname=localhost",
+//            "-Dcom.sun.management.jmxremote=true",
+//            "-Dcom.sun.management.jmxremote.port=6000",
+//            "-Dcom.sun.management.jmxremote.rmi.port=6000",
+//            "-Dcom.sun.management.jmxremote.local.only=false",
+//            "-Dcom.sun.management.jmxremote.authenticate=false",
+//            "-Dcom.sun.management.jmxremote.ssl=false",
     )
 
     // Uncomment and replace to run locally

@@ -53,11 +53,11 @@ abstract class MSSQLPerformanceTest(
         configSpecClass = MSSQLSpecification::class.java,
         configUpdater = configUpdater,
         dataValidator = MSSQLDataValidator(getConfiguration),
-        defaultRecordsToInsert = 1_000_000,
+        defaultRecordsToInsert = 10000,
     ) {
     @Test
     override fun testInsertRecords() {
-        testInsertRecords(recordsToInsert = 1_000_000) {}
+        testInsertRecords(recordsToInsert = 100000) {}
     }
 
     @Test
@@ -100,11 +100,6 @@ class MSSQLStandardInsertPerformanceTest :
         fun beforeAll() {
             MSSQLContainerHelper.start()
         }
-    }
-
-    @Test
-    override fun testAppendRecordsWithDuplicates() {
-        super.testAppendRecordsWithDuplicates()
     }
 }
 

@@ -308,8 +308,8 @@ data class FileReference(
 data class DestinationRecordRaw(
     val stream: DestinationStream,
     private val rawData: AirbyteMessage,
-    private var serialized: String,
-    private var schema: AirbyteType,
+    private val serialized: String,
+    private val schema: AirbyteType,
 ) {
     val fileReference: FileReference? =
         rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
@@ -345,7 +345,7 @@ data class DestinationRecordRaw(
         // Get the fields from the schema
         val schemaFields: SequencedMap<String, FieldType> =
             when (schema) {
-                is ObjectType -> (schema as ObjectType).properties
+                is ObjectType -> schema.properties
                 else -> linkedMapOf()
             }
 

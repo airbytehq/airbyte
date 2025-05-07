@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlob
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
@@ -23,16 +22,6 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsConfiguredForB
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-
-/**
- * It's only safe to split the streams for bulk load, since everything is going into the object
- * loader, which maintains separate objects per stream no matter what.
- *
- * TODO: Push this into the interface?
- */
-@Singleton
-@Requires(bean = MSSQLIsConfiguredForBulkLoad::class)
-class MSSQLInputPartitioner : RoundRobinInputPartitioner()
 
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
 class MSSQLBulkLoader(
@@ -143,11 +132,10 @@ class MSSQLBulkLoaderFactory(
                 bulkLoadConfig.dataSource,
                 MSSQLQueryBuilder(config.schema, stream)
             )
-        return MSSQLBulkLoader(
-            azureBlobClient,
-            stream,
-            mssqlBulkLoadHandler,
-            (streamStateStore.get(key.stream)!! as MSSQLBulkLoaderStreamState).formatFilePath
-        )
+        val state = streamStateStore.get(key.stream)
+        check(state != null && state is MSSQLBulkLoaderStreamState) {
+            "Stream state not properly initialized for stream ${key.stream}"
+        }
+        return MSSQLBulkLoader(azureBlobClient, stream, mssqlBulkLoadHandler, state.formatFilePath)
     }
 }

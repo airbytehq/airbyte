@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.pipeline.ByPrimaryKeyInputPartitioner
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -15,10 +14,6 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsNotConfiguredF
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-
-@Singleton
-@Requires(condition = MSSQLIsNotConfiguredForBulkLoad::class)
-class MSSQLStandardInsertPartitioner : ByPrimaryKeyInputPartitioner()
 
 class MSSQLDirectLoader(
     config: MSSQLConfiguration,
