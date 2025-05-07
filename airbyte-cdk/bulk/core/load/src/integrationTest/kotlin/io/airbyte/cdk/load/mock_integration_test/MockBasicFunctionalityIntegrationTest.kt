@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
@@ -78,13 +77,11 @@ class MockBasicFunctionalityIntegrationTest :
         super.testAppendSchemaEvolution()
     }
 
-    @Disabled("flaky")
     @Test
     override fun testDedup() {
         super.testDedup()
     }
 
-    @Disabled("flaky")
     @Test
     override fun testDedupWithStringKey() {
         super.testDedupWithStringKey()
