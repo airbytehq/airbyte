@@ -11,6 +11,7 @@ import pytest
 from source_hubspot.streams import (
     Campaigns,
     Companies,
+    ContactLists,
     Contacts,
     ContactsListMemberships,
     ContactsMergedAudit,
@@ -50,32 +51,39 @@ def time_sleep_mock(mocker):
     yield time_mock
 
 
-def test_updated_at_field_non_exist_handler(requests_mock, config, common_params, fake_properties_list, custom_object_schema):
-    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
-    stream = find_stream("contact_lists", config)
-    created_at = "2022-03-25T16:43:11Z"
-    expected_created_at = int(pendulum.parse(created_at).timestamp()) * 1000
+def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):
+    stream = ContactLists(**common_params)
+
     responses = [
         {
             "json": {
-                "lists": [
+                stream.data_field: [
                     {
                         "id": "test_id",
-                        "createdAt": created_at,
+                        "createdAt": "2022-03-25T16:43:11Z",
                     },
                 ],
             }
         }
     ]
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
 
-    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", responses)
+    requests_mock.register_uri("GET", stream.url, responses)
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", properties_response)
 
-    stream_slices = list(stream.retriever.stream_slicer.stream_slices())
-    assert len(stream_slices) == 1
+    _, stream_state = read_incremental(stream, {})
 
-    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
-    assert len(records) == 1
-    assert records[0]["updatedAt"] == expected_created_at
+    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
+
+    assert stream_state[stream.updated_at_field] == expected
 
 
 @pytest.mark.parametrize(
@@ -83,7 +91,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
     [
         (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        ("contact_lists", "contact", {"updatedAt": "2022-02-25T16:43:11Z", "createdAt": "2021-02-25T16:43:11Z"}),
+        (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z", "createdAt": "2021-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -373,27 +381,26 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
     assert len(requests_mock.request_history) > 1
 
 
-def test_contact_lists_transform(requests_mock, common_params, config, custom_object_schema):
-    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
-    stream = find_stream("contact_lists", config)
+def test_contact_lists_transform(requests_mock, common_params):
+    stream = ContactLists(**common_params)
 
     responses = [
         {
             "json": {
-                "lists": [
+                stream.data_field: [
                     {
                         "listId": 1,
-                        "createdAt": "2022-02-25T16:43:11Z",
+                        "createdAt": 1654117200000,
                         "filters": [[{"value": "@hubspot"}]],
                     },
                     {
                         "listId": 2,
-                        "createdAt": "2022-02-25T16:43:11Z",
+                        "createdAt": 1654117200001,
                         "filters": [[{"value": True}, {"value": "FORM_ABUSE"}]],
                     },
                     {
                         "listId": 3,
-                        "createdAt": "2022-02-25T16:43:11Z",
+                        "createdAt": 1654117200002,
                         "filters": [[{"value": 1000}]],
                     },
                 ]
@@ -401,7 +408,7 @@ def test_contact_lists_transform(requests_mock, common_params, config, custom_ob
         }
     ]
 
-    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", responses)
+    requests_mock.register_uri("GET", stream.url, responses)
     records = read_full_refresh(stream)
 
     assert records[0]["filters"][0][0]["value"] == "@hubspot"

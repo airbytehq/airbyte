@@ -1452,6 +1452,25 @@ class Campaigns(ClientSideIncrementalStream):
                 yield from self.record_unnester.unnest([{**row, **record}])
 
 
+class ContactLists(IncrementalStream):
+    """Contact lists, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
+    """
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    url = "/contacts/v1/lists"
+    data_field = "lists"
+    more_key = "has-more"
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    limit_field = "count"
+    primary_key = "listId"
+    need_chunk = False
+    scopes = {"crm.lists.read"}
+    unnest_fields = ["metaData"]
+
+
 # class ContactsAllBase(ClientSideIncrementalStream):
 class ContactsAllBase(BaseStream):
     url = "/contacts/v1/lists/all/contacts/all"
