@@ -13,20 +13,20 @@ import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-import java.io.PipedOutputStream
+import java.io.InputStream
 
 @Factory
 class BigqueryBeansFactory {
     @Singleton
     fun getChecker(
         catalog: DestinationCatalog,
-        @Named("checkInputStreamPipe") pipe: PipedOutputStream,
+        @Named("inputStream") stdinPipe: InputStream,
         taskLauncher: DestinationTaskLauncher,
         syncManager: SyncManager,
     ) =
         DestinationCheckerSync(
             catalog,
-            pipe,
+            stdinPipe,
             WriteOperation(taskLauncher, syncManager),
             BigqueryCheckCleaner(),
         )
