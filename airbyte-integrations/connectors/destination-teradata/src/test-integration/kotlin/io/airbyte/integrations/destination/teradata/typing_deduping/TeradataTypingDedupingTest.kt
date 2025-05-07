@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.teradata.typing_deduping
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
@@ -22,10 +24,22 @@ open class TeradataTypingDedupingTest : AbstractTeradataTypingDedupingTest() {
     /** Specifies the name of the raw schema used for storing raw synced data. */
     private val raw_schema_name = "airbyte_internal"
     /**
-     * Specifies the path to the configuration file used during test execution. This file contains
-     * credentials and environment setup for Teradata.
+     * Instance of ClearScapeManager responsible for managing Teradata test environment lifecycle.
      */
-    override val configFileName: String = "secrets/typing_config.json"
+    protected open var clearscapeManager: ClearScapeManager = ClearScapeManager("secrets/typing_config.json")
+
+    /** Sets up the Teradata ClearScape environment once before any test runs. */
+    @BeforeAll
+    fun setupTeradata() {
+        clearscapeManager.setup()
+    }
+
+
+    /** Tears down the Teradata ClearScape environment after all tests complete. */
+    @AfterAll
+    fun teardownTeradata() {
+        clearscapeManager.stop()
+    }
 
     /**
      * Returns the base configuration used in this test class.

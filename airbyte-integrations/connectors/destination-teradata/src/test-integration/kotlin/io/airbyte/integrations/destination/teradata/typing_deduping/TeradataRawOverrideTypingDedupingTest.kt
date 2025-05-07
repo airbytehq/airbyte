@@ -22,10 +22,9 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 open class TeradataRawOverrideTypingDedupingTest : TeradataTypingDedupingTest() {
 
     /**
-     * Specifies the path to the configuration file used for this test. The file should include
-     * credentials and overrides such as schema settings.
+     * Instance of ClearScapeManager responsible for managing Teradata test environment lifecycle.
      */
-    override val configFileName: String = "secrets/raw_override_typing_config.json"
+    override var clearscapeManager: ClearScapeManager = ClearScapeManager("secrets/raw_override_typing_config.json")
     /**
      * Provides the base configuration with custom overrides.
      *

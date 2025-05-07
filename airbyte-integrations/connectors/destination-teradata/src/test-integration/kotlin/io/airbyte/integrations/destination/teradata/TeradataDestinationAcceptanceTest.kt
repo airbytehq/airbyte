@@ -64,10 +64,12 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
     @BeforeAll
     @Throws(Exception::class)
     fun initEnvironment() {
-        this.configJson =
+
+        var configJson =
             Jsons.clone(
                 staticConfig,
             )
+        this.configJson = configJson
         val teradataHttpClient =
             getTeradataHttpClient(
                 configJson,

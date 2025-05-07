@@ -67,17 +67,6 @@ import org.junit.jupiter.params.provider.ValueSource
 @Execution(ExecutionMode.SAME_THREAD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
-
-    /**
-     * Path to the configuration file for the Teradata ClearScape environment. Must be overridden by
-     * subclasses.
-     */
-    abstract val configFileName: String
-
-    /**
-     * Instance of ClearScapeManager responsible for managing Teradata test environment lifecycle.
-     */
-    protected lateinit var clearscapeManager: ClearScapeManager
     /** Docker image used for the Teradata destination container. */
     override val imageName: String
         get() = "airbyte/destination-teradata:dev"
@@ -88,18 +77,6 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     override val sourceOperations: JdbcCompatibleSourceOperations<*>
         get() = TeradataSourceOperations()
 
-    /** Sets up the Teradata ClearScape environment once before any test runs. */
-    @BeforeAll
-    fun setupTeradata() {
-        clearscapeManager = ClearScapeManager(configFileName)
-        clearscapeManager.setup()
-    }
-
-    /** Tears down the Teradata ClearScape environment after all tests complete. */
-    @AfterAll
-    fun teardownTeradata() {
-        clearscapeManager.stop()
-    }
 
     /** Setup logic to run before each test. Initializes random stream and schema names. */
     @BeforeEach

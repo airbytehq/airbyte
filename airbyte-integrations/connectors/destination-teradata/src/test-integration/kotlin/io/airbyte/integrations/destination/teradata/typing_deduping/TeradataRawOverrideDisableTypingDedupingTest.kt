@@ -19,12 +19,10 @@ import org.junit.jupiter.api.parallel.ExecutionMode
  */
 @Execution(ExecutionMode.SAME_THREAD)
 class TeradataRawOverrideDisableTypingDedupingTest : TeradataRawOverrideTypingDedupingTest() {
-
     /**
-     * Specifies the configuration file that contains credentials and flags for disabling typing and
-     * deduplication.
+     * Instance of ClearScapeManager responsible for managing Teradata test environment lifecycle.
      */
-    override val configFileName: String = "secrets/disable_typing_config.json"
+    override var clearscapeManager: ClearScapeManager = ClearScapeManager("secrets/disable_typing_config.json")
     /**
      * Overrides the base configuration to include the `disable_type_dedupe = true` flag, which
      * disables Airbyte's type inference and deduplication logic for the sync.
