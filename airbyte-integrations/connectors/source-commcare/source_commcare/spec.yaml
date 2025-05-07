@@ -48,3 +48,9 @@ connectionSpecification:
       description: Include archived forms in the replication
       default: false
       order: 5
+    import_all_cases:
+      type: boolean
+      title: Import All Cases
+      description: Import cases for all forms
+      default: false
+      order: 5

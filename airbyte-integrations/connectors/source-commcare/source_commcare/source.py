@@ -236,11 +236,12 @@ class Case(IncrementalStream):
     cursor_field = "indexed_on"
     primary_key = "id"
 
-    def __init__(self, start_date, schema, app_id, **kwargs):
+    def __init__(self, start_date, schema, app_id, import_all_cases, **kwargs):
         super().__init__(**kwargs)
         self._cursor_value = parse_datetime_with_microseconds(start_date)
         self.schema = schema
         self.last_record = None
+        self.import_all_cases = import_all_cases
 
     def get_json_schema(self):
         return self.schema
@@ -285,7 +286,9 @@ class Case(IncrementalStream):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             self.last_record = record
-            if any(f in CommcareStream.forms for f in record["xform_ids"]):
+            if self.import_all_cases or any(
+                f in CommcareStream.forms for f in record["xform_ids"]
+            ):
                 self._cursor_value = parse_datetime_with_microseconds(
                     record[self.cursor_field]
                 )
@@ -475,9 +478,10 @@ class SourceCommcare(AbstractSource):
             streams.append(stream)
 
         stream = Case(
-            app_id=config["app_id"],
             start_date=config["start_date"],
             schema=self.base_schema(),
+            app_id=config["app_id"],
+            import_all_cases=config["import_all_cases"],
             project_space=config["project_space"],
             form_fields_to_exclude=form_fields_to_exclude,
             **args,

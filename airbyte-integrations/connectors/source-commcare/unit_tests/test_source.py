@@ -26,6 +26,7 @@ def config_fixture_1():
         "project_space": "project_space",
         "start_date": "2022-01-01T00:00:00Z",
         "form_fields_to_exclude": [],
+        "import_all_cases": False,
         "include_archived": False,
     }
 
@@ -39,7 +40,22 @@ def config_fixture_2():
         "project_space": "project_space",
         "start_date": "2022-01-01T00:00:00Z",
         "form_fields_to_exclude": [],
+        "import_all_cases": False,
         "include_archived": True,
+    }
+
+
+@pytest.fixture(name="config_import_all_cases")
+def config_fixture_3():
+    """import_all_cases=True config"""
+    return {
+        "api_key": "apikey",
+        "app_id": "appid",
+        "project_space": "project_space",
+        "start_date": "2022-01-01T00:00:00Z",
+        "form_fields_to_exclude": [],
+        "import_all_cases": True,
+        "include_archived": False,
     }
 
 
@@ -110,7 +126,7 @@ def test_include_archived_false(config):
     # form
     assert streams[0].name == "english_name"
     assert streams[0].xmlns == "namespace"
-    assert streams[0].include_archived == False
+    assert streams[0].include_archived is False
 
 
 def test_include_archived_true(config_include_archived):
@@ -136,7 +152,31 @@ def test_include_archived_true(config_include_archived):
     # form
     assert streams[0].name == "english_name"
     assert streams[0].xmlns == "namespace"
-    assert streams[0].include_archived == True
+    assert streams[0].include_archived is True
+
+
+def test_import_all_cases_true(config_import_all_cases):
+    """tests generate_streams with import_all_cases as True"""
+    source = SourceCommcare()
+    appdata = [
+        {
+            "modules": [
+                {
+                    "forms": [
+                        {
+                            "xmlns": "namespace",
+                            "name": {"en": "english_name"},
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+    streams = source.generate_streams({}, config_import_all_cases, appdata)
+    assert len(streams) == 2
+
+    # case
+    assert streams[1].import_all_cases is True
 
 
 def test_scrub_unwanted_fields_1():
