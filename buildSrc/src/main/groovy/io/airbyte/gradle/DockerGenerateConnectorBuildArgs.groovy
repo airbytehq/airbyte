@@ -44,7 +44,7 @@ class DockerGenerateConnectorBuildArgs extends DefaultTask {
                     pw.println("${key}=$v")
                 }
             }
-            /* Always add CONNECTOR_NAME=<module‑directory> */
+            /* Always add CONNECTOR_NAME=<module‑directory>. This is used to defined the image's name. */
             pw.println("CONNECTOR_NAME=${project.projectDir.name}")
         }
     }
