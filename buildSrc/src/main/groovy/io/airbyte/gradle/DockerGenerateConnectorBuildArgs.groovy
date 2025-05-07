@@ -11,7 +11,7 @@ import org.yaml.snakeyaml.Yaml
  * `${buildDir}/docker/buildArgs.properties`
  * so docker build tasks can consume per‑module arguments.
  */
-class GenerateConnectorBuildArgs extends DefaultTask {
+class DockerGenerateConnectorBuildArgs extends DefaultTask {
 
     @InputFile
     final RegularFileProperty metadata = project.objects.fileProperty()
