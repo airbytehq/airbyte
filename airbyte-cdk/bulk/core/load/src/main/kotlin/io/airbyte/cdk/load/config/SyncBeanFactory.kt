@@ -40,6 +40,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 
+const val CHECK_STREAM_NAMESPACE = "airbyte_internal_test"
+
 /** Factory for instantiating beans necessary for the sync process. */
 @Factory
 class SyncBeanFactory {
@@ -205,7 +207,7 @@ class SyncBeanFactory {
             listOf(
                 DestinationStream(
                     descriptor =
-                        DestinationStream.Descriptor("airbyte_internal_test", "test$date$random"),
+                        DestinationStream.Descriptor(CHECK_STREAM_NAMESPACE, "test$date$random"),
                     importType = Append,
                     schema =
                         ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
