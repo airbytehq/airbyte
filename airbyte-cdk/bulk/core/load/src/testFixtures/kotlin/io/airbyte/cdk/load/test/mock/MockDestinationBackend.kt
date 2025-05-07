@@ -108,9 +108,7 @@ object MockDestinationBackend {
     }
 
     fun deleteOldRecords(filename: String, minGenerationId: Long) {
-        getFile(filename).removeAll {
-            it.generationId == null || it.generationId!! < minGenerationId
-        }
+        getFile(filename).removeAll { it.generationId == null || it.generationId < minGenerationId }
     }
 
     private fun getFile(filename: String): ConcurrentLinkedQueue<OutputRecord> {
