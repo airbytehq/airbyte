@@ -28,7 +28,7 @@ data class CheckTestConfig(
     val name: String? = null,
 )
 
-open class CheckIntegrationTest<T : ConfigurationSpecification>(
+abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
     additionalMicronautEnvs: List<String> = emptyList(),
