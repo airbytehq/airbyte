@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -19,16 +18,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
 @Singleton
-class MockDestinationDirectLoaderFactory(
-    private val catalog: DestinationCatalog,
-) : DirectLoaderFactory<MockDestinationDirectLoader> {
+class MockDestinationDirectLoaderFactory : DirectLoaderFactory<MockDestinationDirectLoader> {
     override fun create(streamDescriptor: DestinationStream.Descriptor, part: Int) =
-        MockDestinationDirectLoader(catalog.getStream(streamDescriptor))
+        MockDestinationDirectLoader()
 }
 
-class MockDestinationDirectLoader(
-    private val stream: DestinationStream,
-) : DirectLoader {
+class MockDestinationDirectLoader : DirectLoader {
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val recordAirbyteValue = record.asDestinationRecordAirbyteValue()
         val filename = getFilename(record.stream.descriptor, staging = true)
@@ -37,11 +32,11 @@ class MockDestinationDirectLoader(
                 UUID.randomUUID(),
                 Instant.ofEpochMilli(recordAirbyteValue.emittedAtMs),
                 Instant.ofEpochMilli(System.currentTimeMillis()),
-                stream.generationId,
+                record.stream.generationId,
                 recordAirbyteValue.data as ObjectValue,
                 OutputRecord.Meta(
                     changes = recordAirbyteValue.meta?.changes ?: listOf(),
-                    syncId = stream.syncId
+                    syncId = record.stream.syncId
                 ),
             )
         // blind insert into the staging area. We'll dedupe on commit.
