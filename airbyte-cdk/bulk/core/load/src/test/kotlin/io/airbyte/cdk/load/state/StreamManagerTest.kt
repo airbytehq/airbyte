@@ -28,8 +28,8 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 class StreamManagerTest {
     @Test
     fun testCountRecordsAndCheckpoint() {
-        val manager1 = DefaultStreamManager(stream1)
-        val manager2 = DefaultStreamManager(stream2)
+        val manager1 = StreamManager(stream1)
+        val manager2 = StreamManager(stream2)
 
         Assertions.assertEquals(0, manager1.getCurrentCheckpointId().id)
         Assertions.assertEquals(0, manager2.getCurrentCheckpointId().id)
@@ -75,7 +75,7 @@ class StreamManagerTest {
 
     @Test
     fun testMarkSucceeded() = runTest {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
         launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
@@ -95,7 +95,7 @@ class StreamManagerTest {
 
     @Test
     fun testMarkFailure() = runTest {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
         launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
@@ -271,8 +271,8 @@ class StreamManagerTest {
     fun testUpdateBatchState(testCase: TestCase) {
         val managers =
             mapOf(
-                stream1.descriptor to DefaultStreamManager(stream1),
-                stream2.descriptor to DefaultStreamManager(stream2)
+                stream1.descriptor to StreamManager(stream1),
+                stream2.descriptor to StreamManager(stream2)
             )
         testCase.events.forEach { (stream, event) ->
             val manager = managers[stream.descriptor]!!
@@ -313,7 +313,7 @@ class StreamManagerTest {
 
     @Test
     fun testCannotUpdateOrCloseReadClosedStream() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
 
         // Can't mark success before end-of-stream
         Assertions.assertThrows(IllegalStateException::class.java) {
@@ -333,14 +333,14 @@ class StreamManagerTest {
 
     @Test
     fun testEmptyCompletedStreamYieldsBatchProcessingComplete() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         manager.markEndOfStream(true)
         Assertions.assertTrue(manager.isBatchProcessingComplete())
     }
 
     @Test
     fun `ranges with the same id conflate to latest state`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
@@ -365,7 +365,7 @@ class StreamManagerTest {
 
     @Test
     fun `ranges with a different id conflate to latest state`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
@@ -393,7 +393,7 @@ class StreamManagerTest {
 
     @Test
     fun `state does not conflate between id and no id`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
@@ -421,7 +421,7 @@ class StreamManagerTest {
 
     @Test
     fun `max of newer and older state is always used`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
@@ -449,7 +449,7 @@ class StreamManagerTest {
 
     @Test
     fun `max of older and newer state is always used`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
@@ -477,7 +477,7 @@ class StreamManagerTest {
 
     @Test
     fun `test persisted counts`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val checkpointId = manager.getCurrentCheckpointId()
         val taskName = "foo"
         val part = 1
@@ -506,7 +506,7 @@ class StreamManagerTest {
 
     @Test
     fun `test persisted count for multiple checkpoints`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val taskName = "foo"
         val part = 1
 
@@ -544,7 +544,7 @@ class StreamManagerTest {
 
     @Test
     fun `test persisted count for multiple checkpoints out of order`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
         val taskName = "foo"
         val part = 1
 
@@ -584,7 +584,7 @@ class StreamManagerTest {
 
     @Test
     fun `test completion implies persistence`() {
-        val manager = DefaultStreamManager(stream1)
+        val manager = StreamManager(stream1)
 
         val checkpointId1 = manager.getCurrentCheckpointId()
 
@@ -634,7 +634,7 @@ class StreamManagerTest {
             )
 
         cases.forEach { steps ->
-            val manager = DefaultStreamManager(stream1)
+            val manager = StreamManager(stream1)
             val checkpointId1 = manager.getCurrentCheckpointId()
 
             repeat(10) { manager.incrementReadCount() }
@@ -681,7 +681,7 @@ class StreamManagerTest {
 
     @Test
     fun `do not throw when counting before marking`() {
-        val manager1 = DefaultStreamManager(stream1)
+        val manager1 = StreamManager(stream1)
 
         Assertions.assertEquals(0, manager1.getCurrentCheckpointId().id)
 
