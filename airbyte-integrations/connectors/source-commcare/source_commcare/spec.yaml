@@ -50,7 +50,7 @@ connectionSpecification:
       order: 5
     import_all_cases:
       type: boolean
-      title: Import All Cases
+      title: Import cases from all applications
       description: Import cases from all applications
       default: false
       order: 5
