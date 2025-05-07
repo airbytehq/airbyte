@@ -206,7 +206,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkVal == upperBound.asText()) {
+                if (sv.pkVal == Jsons.writeValueAsString(upperBound)) {
                     return null
                 }
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkVal)
@@ -233,7 +233,7 @@ class MySqlSourceJdbcPartitionFactory(
 
                 if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                     val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                    if (sv.pkVal == upperBound.asText()) {
+                    if (sv.pkVal == Jsons.writeValueAsString(upperBound)) {
                         return null
                     }
                     return MySqlSourceJdbcCdcRfrSnapshotPartition(
@@ -257,7 +257,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkValue == upperBound.asText()) {
+                if (sv.pkValue == Jsons.writeValueAsString(upperBound)) {
                     return null
                 }
                 val pkLowerBound: JsonNode =
@@ -320,12 +320,9 @@ class MySqlSourceJdbcPartitionFactory(
     fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
-                // An incident in April 2025 caused some MySQL connections to serialize
-                // their state using scientific notation. The conversion here must handle
-                // these values as well as the expected non-scientific ones.
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
                     LeafAirbyteSchemaType.INTEGER -> {
-                        Jsons.valueToTree(stateValue?.toBigDecimal()?.toBigInteger())
+                        Jsons.valueToTree(stateValue?.toBigInteger())
                     }
                     LeafAirbyteSchemaType.NUMBER -> {
                         Jsons.valueToTree(stateValue?.toDouble())

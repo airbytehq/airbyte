@@ -24,6 +24,7 @@ Documentation: https://developers.heypoplar.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2025-05-04 | [59522](https://github.com/airbytehq/airbyte/pull/59522) | Update dependencies |
 | 0.0.5 | 2025-04-27 | [59048](https://github.com/airbytehq/airbyte/pull/59048) | Update dependencies |
 | 0.0.4 | 2025-04-19 | [58469](https://github.com/airbytehq/airbyte/pull/58469) | Update dependencies |
 | 0.0.3 | 2025-04-12 | [57910](https://github.com/airbytehq/airbyte/pull/57910) | Update dependencies |
