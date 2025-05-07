@@ -24,7 +24,8 @@ open class TeradataRawOverrideTypingDedupingTest : TeradataTypingDedupingTest() 
     /**
      * Instance of ClearScapeManager responsible for managing Teradata test environment lifecycle.
      */
-    override var clearscapeManager: ClearScapeManager = ClearScapeManager("secrets/raw_override_typing_config.json")
+    override var clearscapeManager: ClearScapeManager =
+        ClearScapeManager("secrets/raw_override_typing_config.json")
     /**
      * Provides the base configuration with custom overrides.
      *

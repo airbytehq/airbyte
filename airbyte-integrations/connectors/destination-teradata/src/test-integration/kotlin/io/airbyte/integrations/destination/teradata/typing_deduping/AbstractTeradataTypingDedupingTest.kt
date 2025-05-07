@@ -38,9 +38,7 @@ import java.util.concurrent.Executors
 import java.util.function.Consumer
 import javax.sql.DataSource
 import kotlin.random.Random
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -76,7 +74,6 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     /** JDBC-compatible operations for Teradata source data handling. */
     override val sourceOperations: JdbcCompatibleSourceOperations<*>
         get() = TeradataSourceOperations()
-
 
     /** Setup logic to run before each test. Initializes random stream and schema names. */
     @BeforeEach

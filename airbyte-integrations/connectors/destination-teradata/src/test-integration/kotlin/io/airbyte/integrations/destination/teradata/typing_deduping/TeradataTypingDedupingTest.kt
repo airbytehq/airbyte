@@ -26,14 +26,14 @@ open class TeradataTypingDedupingTest : AbstractTeradataTypingDedupingTest() {
     /**
      * Instance of ClearScapeManager responsible for managing Teradata test environment lifecycle.
      */
-    protected open var clearscapeManager: ClearScapeManager = ClearScapeManager("secrets/typing_config.json")
+    protected open var clearscapeManager: ClearScapeManager =
+        ClearScapeManager("secrets/typing_config.json")
 
     /** Sets up the Teradata ClearScape environment once before any test runs. */
     @BeforeAll
     fun setupTeradata() {
         clearscapeManager.setup()
     }
-
 
     /** Tears down the Teradata ClearScape environment after all tests complete. */
     @AfterAll
