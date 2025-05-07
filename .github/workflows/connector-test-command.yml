@@ -88,30 +88,51 @@ jobs:
         run: |
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
+          JAVA_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --java)
+          NON_JAVA_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --no-java)
           echo "Found connectors with changes:\n${CONNECTORS}"
           # Convert newlines → commas (and drop any trailing comma)
           CONNECTORS=$(printf '%s\n' "$CONNECTORS" \
             | tr '\n' ',' \
             | sed 's/,$//')
-          echo "Converted to comma-delimited list: ${CONNECTORS}"
+          JAVA_CONNECTORS=$(printf '%s\n' "$JAVA_CONNECTORS" \
+            | tr '\n' ',' \
+            | sed 's/,$//')
+          NON_JAVA_CONNECTORS=$(printf '%s\n' "$NON_JAVA_CONNECTORS" \
+            | tr '\n' ',' \
+            | sed 's/,$//')
           echo CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
+          echo JAVA_CONNECTORS=${JAVA_CONNECTORS} >> $GITHUB_ENV
+          echo NON_JAVA_CONNECTORS=${NON_JAVA_CONNECTORS} >> $GITHUB_ENV
 
       - name: Convert to JSON
         id: convert-matrix
         run: |
-          # Check if CONNECTORS is empty
-          if [ -z "$CONNECTORS" ]; then
-            echo "No connectors modified. Setting matrix to empty string."
-            echo "matrix=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          # quote each comma‑separated connector and rebuild the list in one step
-          json_elements="\"${CONNECTORS//,/\",\"}\""
-          json_output="{ \"connector\": [${json_elements}] }"
-          echo "matrix=$json_output" | tee -a "$GITHUB_OUTPUT"
+          # helper: turn comma-delimited list into a JSON array
+          to_json() {
+            local list="$1"
+            if [ -z "$list" ]; then
+              echo "[]"
+            else
+              printf '%s\n' "$list" \
+                | tr ',' '\n' \
+                | jq -R . \
+                | jq -cs .
+            fi
+          }
+
+          connectors_matrix=$(to_json "$CONNECTORS")
+          java_connectors_matrix=$(to_json "$JAVA_CONNECTORS")
+          non_java_connectors_matrix=$(to_json "$NON_JAVA_CONNECTORS")
+
+          echo "connectors_matrix=$connectors_matrix" >> $GITHUB_OUTPUT
+          echo "java_connectors_matrix=$java_connectors_matrix" >> $GITHUB_OUTPUT
+          echo "non_java_connectors_matrix=$non_java_connectors_matrix" >> $GITHUB_OUTPUT
 
     outputs:
-      connector-matrix: ${{ steps.convert-matrix.outputs.matrix }}
+      connectors_matrix: ${{ steps.convert-matrix.outputs.connectors_matrix }}
+      java_connectors_matrix: ${{ steps.convert-matrix.outputs.java_connectors_matrix }}
+      non_java_connectors_matrix: ${{ steps.convert-matrix.outputs.non_java_connectors_matrix }}
 
   connectors-test-matrix:
     needs: [generate-matrix]
