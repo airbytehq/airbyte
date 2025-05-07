@@ -136,7 +136,7 @@ jobs:
 
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
-    runs-on: ubuntu-20.04-8core
+    runs-on: ubuntu-24.04-8core
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
     if: ${{ needs.generate-matrix.outputs.jvm-connectors-matrix != '' }}
