@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.8.0 | 2025-05-06 | [59693](https://github.com/airbytehq/airbyte/pull/59693) | Promoting release candidate 4.8.0-rc.1 to a main version. |
 | 4.8.0-rc.1 | 2025-04-30  | [58092](https://github.com/airbytehq/airbyte/pull/58092)     | Migrate companies_property_history, contacts_property_history and deals_property_history to low code                                                                                                                         |
 | 4.7.0      | 2025-04-30 | [59165](https://github.com/airbytehq/airbyte/pull/59165)     | Promoting release candidate 4.7.0-rc.2 to a main version. |
 | 4.7.0-rc.2 | 2025-04-28 | [59118](https://github.com/airbytehq/airbyte/pull/59118) | Add empty string state migration                                                                                                                                                 |
