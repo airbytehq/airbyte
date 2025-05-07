@@ -124,7 +124,7 @@ object MockDestinationDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
-            MockStreamLoader.getFilename(stream.descriptor.namespace, stream.descriptor.name)
+            getFilename(stream.descriptor.namespace, stream.descriptor.name)
         )
     }
 
@@ -135,4 +135,13 @@ object MockDestinationDataDumper : DestinationDataDumper {
         // Not needed since the test is disabled for file transfer
         throw NotImplementedError()
     }
+
+    fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
+        getFilename(stream.namespace, stream.name, staging)
+    fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
+        if (staging) {
+            "(${namespace},${name},staging)"
+        } else {
+            "(${namespace},${name})"
+        }
 }

@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.mock_integration_test.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.mock_integration_test.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.pipeline.ByPrimaryKeyInputPartitioner
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.DestinationWriter
@@ -51,17 +52,6 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 stream.minimumGenerationId
             )
         }
-    }
-
-    companion object {
-        fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
-            getFilename(stream.namespace, stream.name, staging)
-        fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
-            if (staging) {
-                "(${namespace},${name},staging)"
-            } else {
-                "(${namespace},${name})"
-            }
     }
 }
 
