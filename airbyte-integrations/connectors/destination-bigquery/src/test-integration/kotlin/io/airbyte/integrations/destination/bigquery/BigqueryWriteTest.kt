@@ -271,10 +271,10 @@ abstract class BigqueryTDWriteTest(configContents: String) :
 class StandardInsertRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = STANDARD_INSERT_CONFIG,
-                rawDatasetId = RAW_DATASET_OVERRIDE,
-                disableTypingDeduping = true,
-            ),
+            configFile = STANDARD_INSERT_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+            disableTypingDeduping = true,
+        ),
     ) {
     @Test
     override fun testBasicWrite() {
@@ -298,8 +298,7 @@ class StandardInsertRawOverride :
     }
 }
 
-class StandardInsert :
-    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
+class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
     @Test
     override fun testDedup() {
         super.testDedup()
@@ -309,10 +308,10 @@ class StandardInsert :
 class GcsRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = GCS_STAGING_CONFIG,
-                rawDatasetId = RAW_DATASET_OVERRIDE,
-                disableTypingDeduping = true,
-            ),
+            configFile = GCS_STAGING_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+            disableTypingDeduping = true,
+        ),
     ) {
     @Test
     override fun testBasicWrite() {
@@ -323,9 +322,9 @@ class GcsRawOverrideDisableTd :
 class GcsRawOverride :
     BigqueryTDWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = GCS_STAGING_CONFIG,
-                rawDatasetId = RAW_DATASET_OVERRIDE,
-            ),
+            configFile = GCS_STAGING_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+        ),
     ) {
     @Test
     override fun testBasicWrite() {
@@ -334,7 +333,9 @@ class GcsRawOverride :
 }
 
 class Gcs :
-    BigqueryTDWriteTest(BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)) {
+    BigqueryTDWriteTest(
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)
+    ) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
