@@ -27,12 +27,34 @@
 
 [tasks]
 
+# Universal Connector Tasks
+# These tasks are available in all connectors, regardless of the language.
+
+install = "echo 'No install step for this connector.'"
+test-all = "gradle check"
+test-fast = "test-all"  # TODO: Add a fast-fail unit test definition
+format-check = "gradle check -x test"
+lint-check = "echo 'No lint check step for this connector.'"
+
+fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
+get-language = "echo 'java'" # Use with -qq to get just the language name
+
+test-unit-tests = "gradle test"
+test-integration-tests.shell = '''
+if [ -d src/test-integration ]; then
+  echo "Found 'src/test-integration' directory, running integration tests..."
+  gradle integrationTestJava
+else
+  echo "No integration tests defined; skipping integration tests."
+fi
+'''
+
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
 shell = '''
 connector_name=$(basename "$PWD")
-echo "Running: gradle :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
-gradle :airbyte-integrations:connectors:${connector_name}:${task_and_args}
+echo "Running: ./gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
+${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}
 '''
 args = [
   { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }

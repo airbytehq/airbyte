@@ -63,7 +63,7 @@ class DefaultFailStreamTask(
                 }
             }
         }
-        taskLauncher.handleFailStreamComplete(stream, exception)
+        taskLauncher.handleFailStreamComplete(exception)
     }
 }
 
