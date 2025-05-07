@@ -70,8 +70,10 @@ abstract class DestinationConfiguration : Configuration {
 
     /** Memory queue settings */
     open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
-    open val estimatedRecordMemoryOverheadRatio: Double =
-        1.1 // 1.0 => No overhead, 2.0 => 100% overhead
+    // 1 (for the preserved serialized string)
+    // + 6.5 (approximate ratio of jackson tree to string)
+    // + 0.5 cushion
+    open val estimatedRecordMemoryOverheadRatio: Double = 8.0
 
     /**
      * The amount of time given to implementor tasks (e.g. open, processBatch) to complete their
