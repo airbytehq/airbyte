@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.destination.bigquery
+
+import io.airbyte.cdk.load.check.DestinationCheckerSync
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
+import io.airbyte.cdk.load.write.WriteOperation
+import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
+import io.micronaut.context.annotation.Factory
+import jakarta.inject.Named
+import jakarta.inject.Singleton
+import java.io.PipedOutputStream
+
+@Factory
+class BigqueryBeansFactory {
+    @Singleton
+    fun getChecker(
+        catalog: DestinationCatalog,
+        @Named("checkInputStreamPipe") pipe: PipedOutputStream,
+        taskLauncher: DestinationTaskLauncher,
+        syncManager: SyncManager,
+    ) =
+        DestinationCheckerSync(
+            catalog,
+            pipe,
+            WriteOperation(taskLauncher, syncManager),
+            BigqueryCheckCleaner(),
+        )
+}
