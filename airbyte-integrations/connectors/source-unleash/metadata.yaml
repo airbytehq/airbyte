@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f77914a1-442b-4195-9355-8810a1f4ed3f
-  dockerImageTag: 0.2.20
+  dockerImageTag: 0.2.21
   dockerRepository: airbyte/source-unleash
   githubIssueLabel: source-unleash
   icon: unleash.svg
@@ -35,5 +35,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.46.1@sha256:5e56569cab810e31e367b0667d846b324988fabd3d3bdc0bfa4c4afa3276d059
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
 metadataSpecVersion: "1.0"

@@ -3,7 +3,8 @@
 
 # Manifest-Only connector Dockerfile for Airbyte
 
-ARG BASE_IMAGE
+# Manifest-Only connector images are built on top of SDM connector image
+ARG BASE_IMAGE=airbyte/source-manifest-only:latest
 
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_SNAKE_NAME

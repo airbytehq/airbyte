@@ -16,26 +16,56 @@
 
 [tool.poe.tasks]
 
-# Installation and package updates
-lock = "poetry lock"
+# Universal Connector Tasks
+# These tasks are available in all connectors, regardless of the language.
+
 install = "poetry install --all-extras"
+test-all = ["test-unit-tests", "test-integration-tests"]
+test-integration-tests = ["pytest-integration-tests"]
+test-unit-tests = ["pytest-unit-tests"]
+test-fast = ["pytest-fast"]
+format-check = ["check-ruff-format"]
+lint-check = [
+    "check-ruff-lint",
+    "check-mypy",
+]
+
+fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
+get-language = "echo 'python'" # Use with -qq to get just the language name
+
+# Poetry Lock
+lock = "poetry lock"
 
 # Pytest
-pytest = "poetry run pytest"
-pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
+pytest-fast = "poetry run pytest --ff -m 'not slow and not requires_creds' --junitxml=build/test-results/pytest-fast-junit.xml unit_tests"
+pytest-unit-tests.shell = '''
+if [ -d unit_tests ]; then
+  poetry run pytest --junitxml=build/test-results/pytest-unit-tests-junit.xml unit_tests
+else
+  echo "No 'unit_tests' directory found; skipping unit tests."
+fi
+'''
+
+pytest-integration-tests.shell = '''
+if [ -d integration_tests ]; then
+  poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests
+else
+  echo "No 'integration_tests' directory found; skipping integration tests."
+fi
+'''
 
 # Coverage checks
-coverage = "pytest --cov=. --cov-report=term-missing"
-coverage-html = "pytest --cov=. --cov-report=html"
+coverage = "poetry run pytest --cov=. --cov-report=term-missing"
+coverage-html = "poetry run pytest --cov=. --cov-report=html"
 
 # Check commands
-check-ruff-lint = "ruff check ."
-check-ruff-format = "ruff format ."
+check-ruff-lint = "poetry run ruff check ."
+check-ruff-format = "poetry run ruff format ."
 check-ruff = [
     "check-ruff-lint",
     "check-ruff-format",
 ]
-check-mypy = "mypy ."
+check-mypy = "poetry run mypy ."
 
 check-all = [
     "check-ruff",
@@ -43,8 +73,8 @@ check-all = [
 ]
 
 # Fix commands
-fix-ruff-format = "ruff format --fix ."
-fix-ruff-lint = "ruff check --fix ."
+fix-ruff-format = "poetry run ruff format --fix ."
+fix-ruff-lint = "poetry run ruff check --fix ."
 fix-ruff = [
     "fix-ruff-format",
     "fix-ruff-lint",

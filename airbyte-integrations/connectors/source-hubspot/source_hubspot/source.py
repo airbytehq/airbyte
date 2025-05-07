@@ -20,7 +20,6 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     BaseStream,
-    Campaigns,
     Companies,
     CompaniesWebAnalytics,
     ContactLists,
@@ -72,6 +71,7 @@ we use start date 2006-01-01  as date of creation of Hubspot to retrieve all dat
 """
 DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
+    "campaigns": {"crm.lists.read"},
     "companies_property_history": {"crm.objects.companies.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
     "deals_property_history": {"crm.objects.deals.read"},
@@ -193,7 +193,6 @@ class SourceHubspot(YamlDeclarativeSource):
         common_params = self.get_common_params(config=config)
         streams = super().streams(config=config)
         streams += [
-            Campaigns(**common_params),
             Companies(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
