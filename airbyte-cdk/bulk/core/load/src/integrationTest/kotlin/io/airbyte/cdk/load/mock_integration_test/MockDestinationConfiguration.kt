@@ -10,15 +10,18 @@ import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
-class MockDestinationConfiguration : DestinationConfiguration() {
+data class MockDestinationConfiguration(val foo: Int) : DestinationConfiguration() {
     // Micro-batch for testing.
     override val recordBatchSizeBytes = 1L
 }
 
 @Singleton
 class MockDestinationSpecification : ConfigurationSpecification() {
+    val foo: Int = 0
+
     companion object {
-        const val CONFIG: String = "{}"
+        const val CONFIG: String = """{"foo": 0}"""
+        const val BAD_CONFIG: String = """{"foo": 1}"""
     }
 }
 
@@ -29,7 +32,7 @@ class MockDestinationConfigurationFactory :
     override fun makeWithoutExceptionHandling(
         pojo: MockDestinationSpecification
     ): MockDestinationConfiguration {
-        return MockDestinationConfiguration()
+        return MockDestinationConfiguration(foo = pojo.foo)
     }
 }
 

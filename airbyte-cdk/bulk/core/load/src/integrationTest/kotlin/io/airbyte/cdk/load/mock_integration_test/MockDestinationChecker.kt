@@ -9,5 +9,9 @@ import javax.inject.Singleton
 
 @Singleton
 class MockDestinationChecker : DestinationChecker<MockDestinationConfiguration> {
-    override fun check(config: MockDestinationConfiguration) {}
+    override fun check(config: MockDestinationConfiguration) {
+        if (config.foo != 0) {
+            throw IllegalArgumentException("Foo should be 0")
+        }
+    }
 }
