@@ -12,6 +12,46 @@
 
 [tasks]
 
-test-all = "uvx 'airbyte-cdk[dev]' connector test"
+get-language = "echo 'manifest-only'" # Use with -qq to get just the language name
+fetch-secrets = "airbyte-cdk secrets fetch ${POE_PWD}"
+
+install = [
+  "install-cdk-cli",
+  "install-unit-tests-project",
+]
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+install-unit-tests-project.shell = '''
+if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
+  echo "Found 'unit_tests/pyproject.toml' file, installing unit tests..."
+  cd ${POE_PWD}/unit_tests
+  poetry install --no-root --all-extras
+else
+  echo "No unit tests defined; skipping unit tests installation."
+fi
+'''
+test-all = [
+  "test-unit-tests",
+  "test-integration-tests",
+]
+test-unit-tests.shell = '''
+if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
+  echo "Found 'unit_tests/pyproject.toml' file, running unit tests..."
+  cd ${POE_PWD}/unit_tests
+  poetry install --no-root --all-extras
+  poetry run pytest --junitxml=build/test-results/pytest-unit-tests-junit.xml
+else
+  echo "No unit tests defined; skipping unit tests."
+fi
+'''
+test-integration-tests = "airbyte-cdk connector test ${POE_PWD}"
 format-check = "echo 'No format check step for this connector.'"
-install = "echo 'No install step for this connector.'"
+
+lock.shell = '''
+if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
+  echo "Found 'unit_tests/pyproject.toml' file, locking unit tests project..."
+  cd ${POE_PWD}/unit_tests
+  poetry lock
+else
+  echo "No unit tests defined; skipping unit tests locking."
+fi
+'''

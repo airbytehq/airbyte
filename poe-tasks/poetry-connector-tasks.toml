@@ -16,10 +16,11 @@
 
 [tool.poe.tasks]
 
-# Universal Connector Tasks
-# These tasks are available in all connectors, regardless of the language.
+get-language = "echo 'python'" # Use with -qq to get just the language name
+fetch-secrets = "airbyte-cdk secrets fetch"
 
-install = "poetry install --all-extras"
+install = ["install-project"]
+install-project = "poetry install --all-extras"
 test-all = ["test-unit-tests", "test-integration-tests"]
 test-integration-tests = ["pytest-integration-tests"]
 test-unit-tests = ["pytest-unit-tests"]
@@ -29,9 +30,6 @@ lint-check = [
     "check-ruff-lint",
     "check-mypy",
 ]
-
-fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
-get-language = "echo 'python'" # Use with -qq to get just the language name
 
 # Poetry Lock
 lock = "poetry lock"
