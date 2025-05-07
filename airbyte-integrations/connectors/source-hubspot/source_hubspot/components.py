@@ -9,9 +9,11 @@ import dpath
 import requests
 
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
@@ -137,3 +139,31 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
                             version["property"] = property_name
                             version[self.entity_primary_key] = primary_key
                             yield version | additional_keys
+
+
+@dataclass
+class AddFieldsFromEndpointTransformation(RecordTransformation):
+    """
+    Makes request to provided endpoint and updates record with retrieved data.
+
+    requester: Requester
+    record_selector: HttpSelector
+    """
+
+    requester: Requester
+    record_selector: HttpSelector
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        additional_data_response = self.requester.send_request(
+            stream_slice=StreamSlice(partition={"parent_id": record["id"]}, cursor_slice={})
+        )
+        additional_data = self.record_selector.select_records(response=additional_data_response, stream_state={}, records_schema={})
+
+        for data in additional_data:
+            record.update(data)

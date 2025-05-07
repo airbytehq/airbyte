@@ -108,3 +108,8 @@ def find_stream(stream_name, config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+@pytest.fixture(autouse=True)
+def patch_time(mocker):
+    mocker.patch("time.sleep")

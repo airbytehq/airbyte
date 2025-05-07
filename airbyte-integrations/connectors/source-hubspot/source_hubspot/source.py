@@ -20,7 +20,6 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     BaseStream,
-    Campaigns,
     Companies,
     CompaniesWebAnalytics,
     ContactLists,
@@ -97,6 +96,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "campaigns": {"crm.lists.read"},
 }
 
 
@@ -193,7 +193,6 @@ class SourceHubspot(YamlDeclarativeSource):
         common_params = self.get_common_params(config=config)
         streams = super().streams(config=config)
         streams += [
-            Campaigns(**common_params),
             Companies(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
