@@ -164,9 +164,6 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@v4
         with:
-          # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
-          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
-          ref: ${{ github.head_ref }}
           fetch-depth: 1
 
       # Python deps
