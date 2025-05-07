@@ -74,7 +74,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector
+    name: Test ${{ matrix.connector }} Connector ${{ matrix.connector && '' || ' (no JVM-based connectors modified)'  }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -158,7 +158,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector
+    name: Test ${{ matrix.connector }} Connector ${{ matrix.connector && '' || ' (no non-JVM-based connectors modified)'  }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -266,7 +266,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 10 # Limit number of parallel jobs
-    name: Lint ${{ matrix.connector }} Connector
+    name: Lint ${{ matrix.connector }} Connector ${{ matrix.connector && '' || ' (no connectors modified)'  }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
