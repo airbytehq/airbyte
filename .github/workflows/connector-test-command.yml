@@ -117,10 +117,7 @@ jobs:
       - name: Fetch connector secrets
         if: matrix.connector
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install pipx
-          uv tool run airbyte-cdk[dev] secrets fetch \
-            --connector-name=${{ matrix.connector }} \
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests
@@ -222,10 +219,7 @@ jobs:
       - name: Fetch connector secrets
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install pipx
-          pipx run airbyte-cdk[dev] secrets fetch \
-            --connector-name=${{ matrix.connector }} \
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests
