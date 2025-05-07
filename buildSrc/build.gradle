@@ -1,17 +1,14 @@
 plugins {
     id 'groovy-gradle-plugin'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
 }
 
 repositories {
     // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
     gradlePluginPortal()
-    mavenCentral()
 }
 
 dependencies {
     implementation 'org.yaml:snakeyaml:2.4'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
 }
 
 tasks.withType(Jar).configureEach {
