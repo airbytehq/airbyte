@@ -1,14 +1,4 @@
 # A shared set of tasks for Manifest-Only Airbyte connectors.
-#
-# This file should be included in connectors' `poe_tasks.toml` as follows:
-#
-# ```toml
-# `airbyte-integrations/connectors/<connector-name>/poe_tasks.toml`
-#
-# include = [
-#     "${POE_GIT_DIR}/poe-tasks/manifest-only-connector-tasks.toml",
-# ]
-# ```
 
 [tasks]
 
