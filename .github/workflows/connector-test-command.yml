@@ -8,17 +8,6 @@ on:
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
   workflow_call:
     inputs:
-      connector_name:
-        type: string
-        required: false
-        description: >
-          The name of the connector(s) to test.
-          To test multiple connectors, use a newline-delimited
-          or comma-separated list of connector names.
-
-          If not provided, the workflow will try to infer the
-          connector name from the PR title.
-
       repo:
         type: string
         required: false
@@ -39,17 +28,6 @@ on:
   # Available as a slash command and workflow dispatch
   workflow_dispatch:
     inputs:
-      # Custom inputs for the connector test command:
-      connector_name:
-        required: false
-        description: |
-          The name of the connector(s) to test.
-          To test multiple connectors, use a newline-delimited
-          or comma-separated list of connector names.
-
-          If not provided, the workflow will try to infer the
-          connector name from the PR title.
-
       # Static args from the slash command dispatch:
       repo:
         required: false
@@ -69,70 +47,23 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
-      - name: Get Connector List from Input
-        if: inputs.connector_name
-        run: |
-          # If input is newline-delimited, translate to comma-delimited
-          CONNECTORS=$(echo "${{ inputs.connector_name }}" | tr '\n' ',')
-          echo "Found connectors input:\n${CONNECTORS}"
-          echo "CONNECTORS=$CONNECTORS" >> $GITHUB_ENV
-
       - name: Checkout Current Branch
-        if: ${{ ! inputs.connector_name }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get Connector List from Changes
-        if: ${{ ! inputs.connector_name }}
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
         run: |
-          # Get modified connectors
-          CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
-          JVM_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --java)
-          NON_JVM_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --no-java)
-          echo -e "Found connectors with changes:\n${CONNECTORS}"
-          # Convert newlines → commas (and drop any trailing comma)
-          CONNECTORS=$(printf '%s\n' "$CONNECTORS" \
-            | tr '\n' ',' \
-            | sed 's/,$//')
-          JVM_CONNECTORS=$(printf '%s\n' "$JVM_CONNECTORS" \
-            | tr '\n' ',' \
-            | sed 's/,$//')
-          NON_JVM_CONNECTORS=$(printf '%s\n' "$NON_JVM_CONNECTORS" \
-            | tr '\n' ',' \
-            | sed 's/,$//')
-          echo CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
-          echo JVM_CONNECTORS=${JVM_CONNECTORS} >> $GITHUB_ENV
-          echo NON_JVM_CONNECTORS=${NON_JVM_CONNECTORS} >> $GITHUB_ENV
-
-      - name: Convert Connector Lists to JSON
-        id: convert-matrix
-        run: |
-          # Convert list to JSON in the format: {"connector":[...]}
-          to_json() {
-            local list="$1"
-            if [ -z "$list" ]; then
-              echo '{"connector":[]}'
-            else
-              printf '%s\n' "$list" \
-                | tr ',' '\n' \
-                | jq -R . \
-                | jq -cs '{connector: .}'
-            fi
-          }
-
-          connectors_matrix=$(to_json "$CONNECTORS")
-          jvm_connectors_matrix=$(to_json "$JVM_CONNECTORS")
-          non_jvm_connectors_matrix=$(to_json "$NON_JVM_CONNECTORS")
-
-          echo "connectors_matrix=$connectors_matrix" | tee -a $GITHUB_OUTPUT
-          echo "jvm_connectors_matrix=$jvm_connectors_matrix" | tee -a $GITHUB_OUTPUT
-          echo "non_jvm_connectors_matrix=$non_jvm_connectors_matrix" | tee -a $GITHUB_OUTPUT
+          # Get the list of modified connectors
+          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+          echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
 
     outputs:
-      connectors-matrix: ${{ steps.convert-matrix.outputs.connectors_matrix }}
-      jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.jvm_connectors_matrix }}
-      non-jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.non_jvm_connectors_matrix }}
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
+      non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
 
   jvm-connectors-test-matrix:
     needs: [generate-matrix]

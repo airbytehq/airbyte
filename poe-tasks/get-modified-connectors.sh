@@ -9,13 +9,24 @@ set -euo pipefail
 DEFAULT_BRANCH="master"
 JAVA=false
 NO_JAVA=false
+JSON=false
 
 # parse flags
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --java|java)      JAVA=true ;;
-    --no-java|no-java) NO_JAVA=true ;;
-    *) echo "Unknown argument: $1" >&2; exit 1 ;;
+    --java|java)
+      JAVA=true
+      ;;
+    --no-java|no-java)
+      NO_JAVA=true
+      ;;
+    --json|json)
+      JSON=true
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2;
+      exit 1
+      ;;
   esac
   shift
 done
@@ -60,9 +71,33 @@ if [ -n "$dirs" ]; then
   done <<< "$(printf '%s\n' "$dirs" | sort -u)"
 fi
 
+# 9) Define function to print either JSON or newline-delimited list.
+#    JSON will be in GitHub Actions Matrix format: {"connector":[...]}
+print_list() {
+  local list="$1"
+  if [ -z "$list" ]; then
+    # If the list is empty, return an empty string.
+    # Even if JSON is requested, we return an empty string when the list is empty.
+    # This is to avoid sending an empty JSON list to the GitHub Actions Matrix.
+    echo ''
+  elif [ "$JSON" != true ]; then
+    # If JSON is not requested, print the list as newline-delimited values.
+    echo "$list" | tr ',' '\n'
+    return
+  else
+    # If JSON is requested, convert the list to JSON format
+    # This is pre-formatted to send to a GitHub Actions Matrix
+    # with 'connector' as the matrix key.
+    printf '%s\n' "$list" \
+      | tr ',' '\n' \
+      | jq -R . \
+      | jq -cs '{connector: .}'
+  fi
+}
+
 # if no flags, output all and exit
 if ! $JAVA && ! $NO_JAVA; then
-  printf '%s\n' "${connectors[@]}"
+  print_list "$(IFS=,; echo "${connectors[*]}")"
   exit 0
 fi
 
@@ -81,7 +116,7 @@ for c in "${connectors[@]}"; do
 done
 
 if $JAVA; then
-  [ "${#java_connectors[@]}" -gt 0 ] && printf '%s\n' "${java_connectors[@]}"
+  [ "${#java_connectors[@]}" -gt 0 ] && print_list "$(IFS=,; echo "${java_connectors[*]}")"
   exit 0
 fi
 
@@ -94,7 +129,7 @@ for c in "${connectors[@]}"; do
 done
 
 if $NO_JAVA; then
-  [ "${#non_java_connectors[@]}" -gt 0 ] && printf '%s\n' "${non_java_connectors[@]}"
+  [ "${#non_java_connectors[@]}" -gt 0 ] && print_list "$(IFS=,; echo "${non_java_connectors[*]}")"
   exit 0
 fi
 
