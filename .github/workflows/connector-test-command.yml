@@ -88,17 +88,17 @@ jobs:
         run: |
           # Get modified connectors
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
-          JAVA_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --java)
-          NON_JAVA_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --no-java)
+          JVM_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --java)
+          NON_JVM_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --no-java)
           echo -e "Found connectors with changes:\n${CONNECTORS}"
           # Convert newlines → commas (and drop any trailing comma)
           CONNECTORS=$(printf '%s\n' "$CONNECTORS" \
             | tr '\n' ',' \
             | sed 's/,$//')
-          JAVA_CONNECTORS=$(printf '%s\n' "$JAVA_CONNECTORS" \
+          JVM_CONNECTORS=$(printf '%s\n' "$JVM_CONNECTORS" \
             | tr '\n' ',' \
             | sed 's/,$//')
-          NON_JVM_CONNECTORS=$(printf '%s\n' "$NON_JAVA_CONNECTORS" \
+          NON_JVM_CONNECTORS=$(printf '%s\n' "$NON_JVM_CONNECTORS" \
             | tr '\n' ',' \
             | sed 's/,$//')
           echo CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
@@ -123,7 +123,7 @@ jobs:
 
           connectors_matrix=$(to_json "$CONNECTORS")
           jvm_connectors_matrix=$(to_json "$JVM_CONNECTORS")
-          non_java_connectors_matrix=$(to_json "$NON_JVM_CONNECTORS")
+          non_jvm_connectors_matrix=$(to_json "$NON_JVM_CONNECTORS")
 
           echo "connectors_matrix=$connectors_matrix" >> $GITHUB_OUTPUT
           echo "jvm_connectors_matrix=$jvm_connectors_matrix" >> $GITHUB_OUTPUT
