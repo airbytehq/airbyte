@@ -251,7 +251,7 @@ jobs:
 
   non-jvm-connectors-test-summary:
     name: Non-JVM Connector Test Summary Check
-    needs: [jvm-connectors-test-matrix]
+    needs: [non-jvm-connectors-test-matrix]
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
