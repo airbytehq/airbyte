@@ -9,14 +9,10 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.WriteOperation
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.PipedOutputStream
 import java.io.PrintWriter
@@ -67,36 +63,18 @@ class DestinationCheckerSync<C : DestinationConfiguration>(
             launch { writeOperation.execute() }
 
             pipe.println(
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(
-                        AirbyteRecordMessage()
-                            .withEmittedAt(System.currentTimeMillis())
-                            .withStream(mockStream.descriptor.name)
-                            .withNamespace(mockStream.descriptor.namespace)
-                            .withData("""{"test": 42}""".deserializeToNode())
+                InputRecord(
+                        mockStream.descriptor.namespace,
+                        mockStream.descriptor.name,
+                        """{"test": 42}""",
+                        System.currentTimeMillis(),
                     )
+                    .asProtocolMessage()
                     .serializeToString()
             )
             pipe.println(
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withEmittedAt(System.currentTimeMillis().toDouble())
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    .withStreamDescriptor(
-                                        StreamDescriptor()
-                                            .withName(mockStream.descriptor.name)
-                                            .withNamespace(mockStream.descriptor.namespace)
-                                    )
-                                    .withStatus(
-                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                                    )
-                            )
-                    )
+                DestinationRecordStreamComplete(mockStream, System.currentTimeMillis())
+                    .asProtocolMessage()
                     .serializeToString()
             )
             pipe.close()
