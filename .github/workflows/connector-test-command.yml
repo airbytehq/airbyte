@@ -90,7 +90,7 @@ jobs:
           CONNECTORS=$(./poe-tasks/get-modified-connectors.sh)
           JAVA_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --java)
           NON_JAVA_CONNECTORS=$(./poe-tasks/get-modified-connectors.sh --no-java)
-          echo "Found connectors with changes:\n${CONNECTORS}"
+          echo -e "Found connectors with changes:\n${CONNECTORS}"
           # Convert newlines → commas (and drop any trailing comma)
           CONNECTORS=$(printf '%s\n' "$CONNECTORS" \
             | tr '\n' ',' \
@@ -108,7 +108,7 @@ jobs:
       - name: Convert Connector Lists to JSON
         id: convert-matrix
         run: |
-          # helper: turn comma-delimited list into a JSON array
+          # to_json helper: turn comma-delimited list into a JSON array
           to_json() {
             local list="$1"
             if [ -z "$list" ]; then
@@ -130,9 +130,9 @@ jobs:
           echo "non_jvm_connectors_matrix=$non_jvm_connectors_matrix" >> $GITHUB_OUTPUT
 
     outputs:
-      connectors-matrix: ${{ steps.convert-matrix.outputs.connectors-matrix }}
-      jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.jvm-connectors-matrix }}
-      non-jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.non-jvm-connectors-matrix }}
+      connectors-matrix: ${{ steps.convert-matrix.outputs.connectors_matrix }}
+      jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.jvm_connectors_matrix }}
+      non-jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.non_jvm_connectors_matrix }}
 
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
