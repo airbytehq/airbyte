@@ -322,7 +322,7 @@ jobs:
         run: echo "✅ All non-JVM connector tests completed successfully."
 
   non-jvm-connectors-test-summary-noop:
-    name: Connector Test Summary Check (Java)
+    name: Non-JVM Connector Test Summary Check
     needs: [generate-matrix]
     if: ${{ ! needs.generate-matrix.outputs.non-java-connectors-matrix }}
     runs-on: ubuntu-24.04
@@ -425,7 +425,7 @@ jobs:
         run: echo "✅ All connectors lint checks completed successfully."
 
   lint-summary-noop:
-    name: Connector Test Summary Check
+    name: Connector Lint Summary Check
     needs: [generate-matrix]
     if: ${{ ! needs.generate-matrix.outputs.connectors-matrix }}
     runs-on: ubuntu-24.04
