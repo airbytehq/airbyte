@@ -6,9 +6,10 @@ from typing import Any, Dict
 from unittest import TestCase
 
 import freezegun
+from conftest import _YAML_FILE_PATH
 
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
@@ -23,14 +24,11 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 
-from conftest import _YAML_FILE_PATH
 
 _STREAM_NAME = "issues"
 _API_TOKEN = "api_token"
 _DOMAIN = "airbyteio.atlassian.net"
 _NOW = datetime(2024, 1, 1, tzinfo=timezone.utc)
-
-
 
 
 def _create_config() -> ConfigBuilder:
