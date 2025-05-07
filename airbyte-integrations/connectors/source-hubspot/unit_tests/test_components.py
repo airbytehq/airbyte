@@ -6,7 +6,12 @@ from unittest.mock import Mock
 
 import pytest
 import requests
-from source_hubspot.components import HubspotRenamePropertiesTransformation, HubspotPropertyHistoryExtractor, MigrateEmptyStringState, NewtoLegacyFieldTransformation
+from source_hubspot.components import (
+    HubspotPropertyHistoryExtractor,
+    HubspotRenamePropertiesTransformation,
+    MigrateEmptyStringState,
+    NewtoLegacyFieldTransformation,
+)
 from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
 
 

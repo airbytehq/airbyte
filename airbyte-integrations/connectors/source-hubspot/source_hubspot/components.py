@@ -8,12 +8,6 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 import dpath
 import requests
 
-from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-import dpath
-import requests
-
 from airbyte_cdk import (
     BearerAuthenticator,
     CursorPaginationStrategy,
@@ -45,8 +39,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-
-
 
 
 @dataclass
