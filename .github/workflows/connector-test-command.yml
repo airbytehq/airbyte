@@ -99,6 +99,15 @@ jobs:
           cache-read-only: false
           cache-write-only: false
 
+      # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
+      - name: Set up Python (For Airbyte-CI)
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
       - name: Install the latest version of uv
         if: matrix.connector
         uses: astral-sh/setup-uv@v6
