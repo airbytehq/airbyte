@@ -115,6 +115,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("workflows", "", {"updatedAt": 1675121674226}),
     ],
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")

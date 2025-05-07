@@ -587,17 +587,8 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: "https://api.hubapi.com"
+        $ref: "#/definitions/base_requester"
         path: /automation/v3/workflows
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        http_method: GET
-        request_headers:
-          Content-Type: application/json
-          User-Agent: Airbyte
-        error_handler:
-          $ref: "#/definitions/base_error_handler"
       record_selector:
         type: RecordSelector
         transform_before_filtering: false
