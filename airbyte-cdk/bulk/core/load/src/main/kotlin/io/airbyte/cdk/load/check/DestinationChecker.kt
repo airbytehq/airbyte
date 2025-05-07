@@ -14,6 +14,8 @@ import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.WriteOperation
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.InputStream
+import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
 import kotlinx.coroutines.Dispatchers
@@ -50,11 +52,18 @@ interface DestinationChecker<C : DestinationConfiguration> {
 
 class DestinationCheckerSync<C : DestinationConfiguration>(
     val catalog: DestinationCatalog,
-    pipe: PipedOutputStream,
+    stdinPipe: InputStream,
     private val writeOperation: WriteOperation,
     private val cleaner: CheckCleaner<C>,
 ) : DestinationChecker<C> {
-    private val pipe = PrintWriter(pipe)
+    private val pipe: PrintWriter
+
+    init {
+        // See InputStreamProvider.make - in a CHECK operation, we swap the inputstream
+        // with a PipedInputStream.
+        val stdinPipeOutputStream = PipedOutputStream(stdinPipe as PipedInputStream)
+        pipe = PrintWriter(stdinPipeOutputStream)
+    }
 
     override fun check(config: C) {
         check(catalog.streams.size == 1) { "test catalog should have exactly 1 stream" }

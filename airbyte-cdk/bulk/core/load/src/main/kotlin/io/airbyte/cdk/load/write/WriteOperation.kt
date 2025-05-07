@@ -18,7 +18,6 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.InputStream
 import java.io.PipedInputStream
-import java.io.PipedOutputStream
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -78,20 +77,12 @@ class WriteOperation(
 class InputStreamProvider {
     @Singleton
     @Named("inputStream")
-    fun makeWrite(
+    fun make(
         @Value("\${${Operation.PROPERTY}}") operation: String,
-        @Named("checkInputStreamPipe") pipe: PipedOutputStream?,
     ): InputStream =
         if (operation == "check") {
-            PipedInputStream(pipe!!)
+            PipedInputStream()
         } else {
             System.`in`
         }
-
-    @Singleton
-    @Named("checkInputStreamPipe")
-    @Requires(property = Operation.PROPERTY, value = "check")
-    fun makeCheckPipe(): PipedOutputStream {
-        return PipedOutputStream()
-    }
 }
