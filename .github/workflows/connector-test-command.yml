@@ -115,7 +115,7 @@ jobs:
 
   connectors-test-matrix:
     needs: [generate-matrix]
-    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    runs-on: ubuntu-20.04-8core # Custom runner, defined in GitHub org settings
     timeout-minutes: 60 # 1 hour
     # bigger machine?
     # why are tests timing out and where?
