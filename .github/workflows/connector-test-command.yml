@@ -202,7 +202,7 @@ jobs:
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
-  jvm-test-summary:
+  jvm-connectors-test-summary:
     name: Connector Test Summary Check (Java)
     needs: [jvm-connectors-test-matrix]
     runs-on: ubuntu-24.04
@@ -210,7 +210,7 @@ jobs:
       - name: Report Test Summary
         run: echo "✅ All Java connector tests completed successfully."
 
-  jvm-test-summary-noop:
+  jvm-connectors-test-summary-noop:
     name: Connector Test Summary Check (Java)
     needs: [generate-matrix]
     if: ${{ ! needs.generate-matrix.outputs.non-java-connectors-matrix }}
@@ -314,7 +314,7 @@ jobs:
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
 
-  non-jvm-test-summary:
+  non-jvm-connectors-test-summary:
     name: Connector Test Summary Check (Java)
     needs: [jvm-connectors-test-matrix]
     runs-on: ubuntu-24.04
@@ -322,7 +322,7 @@ jobs:
       - name: Report Test Summary
         run: echo "✅ All non-Java connector tests completed successfully."
 
-  non-jvm-test-summary-noop:
+  non-jvm-connectors-test-summary-noop:
     name: Connector Test Summary Check (Java)
     needs: [generate-matrix]
     if: ${{ ! needs.generate-matrix.outputs.non-java-connectors-matrix }}
