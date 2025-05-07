@@ -67,7 +67,7 @@ jobs:
 
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
-    runs-on: ubuntu-latest-8core
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
     if: ${{ needs.generate-matrix.outputs.jvm-connectors-matrix != '' }}
