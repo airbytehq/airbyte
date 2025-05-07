@@ -2,21 +2,22 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.41.8"
+version = "6.45.10"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.41.8-py3-none-any.whl", hash = "sha256:0a06428464ea9adc21a7c4ad092ac3fd962afef72d0b30a2f6993f00c9e4fcfb"},
-    {file = "airbyte_cdk-6.41.8.tar.gz", hash = "sha256:e88ef8659b2de726b58f7f44fa1e9e261d091d07acdf22be6ef84a2a5e4292aa"},
+    {file = "airbyte_cdk-6.45.10-py3-none-any.whl", hash = "sha256:245bcbb859497ed4c70e7c33c135152b01d6437c7444dfbd536a7d053e569c70"},
+    {file = "airbyte_cdk-6.45.10.tar.gz", hash = "sha256:0d2d939bd6283ac286bb485158236d897619406d749acd9a78429cbe485990ee"},
 ]
 
 [package.dependencies]
-airbyte-protocol-models-dataclasses = ">=0.14,<0.15"
+airbyte-protocol-models-dataclasses = ">=0.15,<0.16"
 anyascii = ">=0.3.2,<0.4.0"
 avro = {version = ">=1.11.2,<1.13.0", optional = true, markers = "extra == \"file-based\""}
 backoff = "*"
+boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
 cryptography = ">=44.0.0,<45.0.0"
 dpath = ">=2.1.6,<3.0.0"
@@ -66,14 +67,14 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
-version = "0.14.2"
+version = "0.15.0"
 description = "Declares the Airbyte Protocol using Python Dataclasses. Dataclasses in Python have less performance overhead compared to Pydantic models, making them a more efficient choice for scenarios where speed and memory usage are critical"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "airbyte_protocol_models_dataclasses-0.14.2-py3-none-any.whl", hash = "sha256:ae06a406df031afa42f1156bacc587958197e5c7d9bbaf11893480903d4ded8b"},
-    {file = "airbyte_protocol_models_dataclasses-0.14.2.tar.gz", hash = "sha256:9279237156b722cdd54e7b9ec8f97d264bd96e3f3008bc5fc47c215288a2212a"},
+    {file = "airbyte_protocol_models_dataclasses-0.15.0-py3-none-any.whl", hash = "sha256:0fe8d7c2863c348b350efcf5f1af5872dc9071060408285e4708d97a9be5e2fb"},
+    {file = "airbyte_protocol_models_dataclasses-0.15.0.tar.gz", hash = "sha256:a5bad4ee7ae0a04f1436967b7afd3306d28e1cd2e5acedf0cce588f0c80ed001"},
 ]
 
 [[package]]
@@ -204,6 +205,18 @@ chardet = ["chardet"]
 charset-normalizer = ["charset-normalizer"]
 html5lib = ["html5lib"]
 lxml = ["lxml"]
+
+[[package]]
+name = "boltons"
+version = "25.0.0"
+description = "When they're not builtins, they're boltons."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "boltons-25.0.0-py3-none-any.whl", hash = "sha256:dc9fb38bf28985715497d1b54d00b62ea866eca3938938ea9043e254a3a6ca62"},
+    {file = "boltons-25.0.0.tar.gz", hash = "sha256:e110fbdc30b7b9868cb604e3f71d4722dd8f4dcb4a5ddd06028ba8f1ab0b5ace"},
+]
 
 [[package]]
 name = "bracex"

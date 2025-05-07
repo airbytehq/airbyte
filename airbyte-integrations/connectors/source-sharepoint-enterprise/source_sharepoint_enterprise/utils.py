@@ -33,6 +33,7 @@ class MicrosoftSharePointRemoteFile(RemoteFile):
     """
 
     download_url: str
+    created_at: datetime
     id: str
     drive_id: str
     from_shared_drive: bool

@@ -21,7 +21,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: c8e0fa7d-47a2-4f1f-b69b-03860f528263
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-sharepoint-enterprise
   githubIssueLabel: source-sharepoint-enterprise
   icon: microsoft-sharepoint.svg
