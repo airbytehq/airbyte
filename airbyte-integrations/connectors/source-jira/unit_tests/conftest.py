@@ -5,18 +5,32 @@
 import json
 import os
 from pathlib import Path
+import sys
 
 import responses
 from pytest import fixture
 from responses import matchers
 
 from airbyte_cdk.sources.streams import Stream
-
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
 os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
 def delete_cache_files(cache_directory):
@@ -552,7 +566,7 @@ def mock_sprints_response(config, sprints_response):
 
 
 def find_stream(stream_name, config):
-    for stream in SourceJira(config=config, catalog=None, state=None).streams(config=config):
+    for stream in YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)).streams(config=config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")

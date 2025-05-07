@@ -4,9 +4,7 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict
 from unittest import TestCase
-import sys
 
-from pathlib import Path
 import freezegun
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -25,6 +23,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 
+from conftest import _YAML_FILE_PATH
 
 _STREAM_NAME = "issues"
 _API_TOKEN = "api_token"
@@ -32,17 +31,7 @@ _DOMAIN = "airbyteio.atlassian.net"
 _NOW = datetime(2024, 1, 1, tzinfo=timezone.utc)
 
 
-def _get_manifest_path() -> Path:
-    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
-    if source_declarative_manifest_path.exists():
-        return source_declarative_manifest_path
-    return Path(__file__).parent.parent.parent
 
-
-_SOURCE_FOLDER_PATH = _get_manifest_path()
-_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
-
-sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 def _create_config() -> ConfigBuilder:
     return ConfigBuilder().with_api_token(_API_TOKEN).with_domain(_DOMAIN)

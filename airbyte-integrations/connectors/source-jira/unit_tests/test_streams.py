@@ -4,13 +4,13 @@
 
 import pytest
 import responses
-from conftest import find_stream, read_full_refresh
+from conftest import find_stream, read_full_refresh, _YAML_FILE_PATH
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
 
 @responses.activate
 def test_application_roles_stream_401_error(config, caplog):
@@ -375,7 +375,7 @@ def test_screen_tabs_stream(config, mock_screen_response, screen_tabs_response):
 @responses.activate
 def test_sprints_stream(config, mock_board_response, mock_sprints_response):
     output = read(
-        SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("sprints", SyncMode.full_refresh).build()
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)), config, CatalogBuilder().with_stream("sprints", SyncMode.full_refresh).build()
     )
 
     assert len(output.records) == 3
@@ -420,7 +420,7 @@ def test_sprint_issues_stream(config, mock_board_response, mock_fields_response,
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("sprint_issues", SyncMode.full_refresh).build(),
     )
@@ -647,7 +647,7 @@ def test_project_permissions_stream(config, mock_non_deleted_projects_responses,
 @responses.activate
 def test_project_email_stream(config, mock_non_deleted_projects_responses, mock_project_emails):
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("project_email", SyncMode.full_refresh).build(),
     )
@@ -665,7 +665,7 @@ def test_project_components_stream(config, mock_non_deleted_projects_responses, 
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("project_components", SyncMode.full_refresh).build(),
     )
@@ -683,7 +683,7 @@ def test_permissions_stream(config, permissions_response):
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("permissions", SyncMode.full_refresh).build(),
     )
@@ -706,7 +706,7 @@ def test_labels_stream(config, labels_response):
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("labels", SyncMode.full_refresh).build()
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)), config, CatalogBuilder().with_stream("labels", SyncMode.full_refresh).build()
     )
 
     assert len(output.records) == 2
@@ -841,7 +841,7 @@ def test_skip_slice(
 ):
     config["projects"] = config.get("projects", []) + ["Project3", "Project4"]
     output = read(
-        SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build()
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build()
     )
     assert len(output.records) == expected_records_number
 
