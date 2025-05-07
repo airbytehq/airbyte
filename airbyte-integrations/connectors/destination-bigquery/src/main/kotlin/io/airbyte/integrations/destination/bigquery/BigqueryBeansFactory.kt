@@ -9,6 +9,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingFinalTableOperations
@@ -23,8 +24,11 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryData
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.bigquery.write.BigqueryRawTableOperations
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
@@ -35,6 +39,12 @@ private val logger = KotlinLogging.logger {}
 
 @Factory
 class BigqueryBeansFactory {
+    @Singleton fun getConfig(config: DestinationConfiguration) = config as BigqueryConfiguration
+
+    @Singleton
+    @Requires(condition = BigqueryConfiguredForBulkLoad::class)
+    fun getBulkLoadConfig(config: BigqueryConfiguration) = BigqueryBulkLoadConfiguration(config)
+
     @Singleton
     fun getChecker(
         catalog: DestinationCatalog,

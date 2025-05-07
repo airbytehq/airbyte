@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.write.db.DbConstants
-import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 data class BigqueryConfiguration(
@@ -63,9 +62,4 @@ class BigqueryConfigurationFactory :
             disableTypingDeduping = pojo.disableTypingDeduping ?: false,
         )
     }
-}
-
-@Factory
-class BigqueryConfigurationProvider(private val config: DestinationConfiguration) {
-    @Singleton fun get() = config as BigqueryConfiguration
 }
