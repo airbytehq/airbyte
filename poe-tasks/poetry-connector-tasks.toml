@@ -46,7 +46,7 @@ fi
 '''
 
 pytest-integration-tests.shell = '''
-if [ -d integration_tests ]; then
+if ls integration_tests/test_*.py >/dev/null 2>&1; then
   poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests
 else
   echo "No 'integration_tests' directory found; skipping integration tests."
