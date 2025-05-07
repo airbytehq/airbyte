@@ -10,12 +10,17 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.pipeline.ByPrimaryKeyInputPartitioner
 import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 @Singleton
+@Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
 class MockDestinationWriter : DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return MockStreamLoader(stream)
@@ -49,20 +54,10 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
             )
         }
     }
-
-    companion object {
-        fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
-            getFilename(stream.namespace, stream.name, staging)
-        fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
-            if (staging) {
-                "(${namespace},${name},staging)"
-            } else {
-                "(${namespace},${name})"
-            }
-    }
 }
 
 @Factory
+@Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
 class MockDestinationPartitionerFactory {
     @Singleton fun get() = ByPrimaryKeyInputPartitioner()
 }
