@@ -8,10 +8,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.pipeline.ByPrimaryKeyInputPartitioner
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import javax.inject.Singleton
+import io.micronaut.context.annotation.Factory
+import jakarta.inject.Singleton
 
 @Singleton
 class MockDestinationWriter : DestinationWriter {
@@ -58,4 +60,9 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 "(${namespace},${name})"
             }
     }
+}
+
+@Factory
+class MockDestinationPartitionerFactory {
+    @Singleton fun get() = ByPrimaryKeyInputPartitioner()
 }
