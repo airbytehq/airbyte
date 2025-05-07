@@ -21,7 +21,7 @@ data:
   name: Jira
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-jira
   registryOverrides:
     cloud:
