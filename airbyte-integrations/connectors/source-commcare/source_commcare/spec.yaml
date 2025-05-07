@@ -51,6 +51,6 @@ connectionSpecification:
     import_all_cases:
       type: boolean
       title: Import All Cases
-      description: Import cases for all forms
+      description: Import cases from all applications
       default: false
       order: 5
