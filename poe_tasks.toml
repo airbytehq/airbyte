@@ -23,9 +23,13 @@ pnpm build
 '''
 
 [tasks.get-modified-connectors]
-help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files.
-"""
-shell = "./poe-tasks/get-modified-connectors.sh"
+help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files."""
+shell = '''
+./poe-tasks/get-modified-connectors.sh ${java_filter}
+'''
+args = [
+  { name = "java_filter", positional = true, multiple = true, help = "Optional. To filter Java connectors, pass either 'java-only' or 'no-java'" },
+]
 
 [tasks.connector]
 help = "Run a poe task in a connector's directory. Usage: poe connector <connector-name> <task> [args...]"
