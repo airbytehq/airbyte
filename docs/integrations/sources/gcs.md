@@ -236,6 +236,7 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.8.17 | 2025-05-03 | [59443](https://github.com/airbytehq/airbyte/pull/59443) | Update dependencies |
 | 0.8.16 | 2025-04-26 | [58915](https://github.com/airbytehq/airbyte/pull/58915) | Update dependencies |
 | 0.8.15 | 2025-04-19 | [58312](https://github.com/airbytehq/airbyte/pull/58312) | Update dependencies |
 | 0.8.14 | 2025-04-12 | [57772](https://github.com/airbytehq/airbyte/pull/57772) | Update dependencies |
