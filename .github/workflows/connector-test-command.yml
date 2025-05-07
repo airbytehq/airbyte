@@ -120,7 +120,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pipx
           uv tool run airbyte-cdk[dev] secrets fetch \
-            --connector-name=${{ matrix.connector }} \
+            ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests
@@ -225,7 +225,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pipx
           pipx run airbyte-cdk[dev] secrets fetch \
-            --connector-name=${{ matrix.connector }} \
+            ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests
