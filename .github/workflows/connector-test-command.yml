@@ -130,18 +130,18 @@ jobs:
           echo "non_java_connectors_matrix=$non_java_connectors_matrix" >> $GITHUB_OUTPUT
 
     outputs:
-      connectors_matrix: ${{ steps.convert-matrix.outputs.connectors_matrix }}
-      java_connectors_matrix: ${{ steps.convert-matrix.outputs.java_connectors_matrix }}
-      non_java_connectors_matrix: ${{ steps.convert-matrix.outputs.non_java_connectors_matrix }}
+      connectors-matrix: ${{ steps.convert-matrix.outputs.connectors-matrix }}
+      java-connectors-matrix: ${{ steps.convert-matrix.outputs.java-connectors-matrix }}
+      non-java-connectors-matrix: ${{ steps.convert-matrix.outputs.non-java-connectors-matrix }}
 
-  connectors-test-matrix:
+  jvm-connectors-test-matrix:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-    if: ${{ needs.generate-matrix.outputs.connector-matrix != '' }}
+    if: ${{ needs.generate-matrix.outputs.java-connectors-matrix != '' }}
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.java-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     name: Test ${{ matrix.connector }} Connector
@@ -166,6 +166,79 @@ jobs:
           cache-read-only: false
           cache-write-only: false
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Install connector dependencies
+        run: |
+          poe connector ${{ matrix.connector }} install
+
+      - name: Fetch connector secrets
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipx
+          uv tool run airbyte-cdk[dev] secrets fetch \
+            --connector-name=${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
+      - name: Run Unit Tests
+        run: |
+          poe connector ${{ matrix.connector }} test-unit-tests
+
+      - name: Run Integration Tests
+        run: |
+          poe connector ${{ matrix.connector }} test-integration-tests
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: "`${{ matrix.connector }}` Connector Test Results"
+          files: |
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+  jvm-test-summary:
+    name: Connector Test Summary Check (Java)
+    needs: [jvm-connectors-test-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All Java connector tests completed successfully."
+
+  jvm-test-summary-noop:
+    name: Connector Test Summary Check (Java)
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.non-java-connectors-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "🟦 No Java connectors updated. All good here."
+
+  non-jvm-connectors-test-matrix:
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+    if: ${{ needs.generate-matrix.outputs.non-java-connectors-matrix != '' }}
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.non-java-connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: Test ${{ matrix.connector }} Connector
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
+          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
       # Python deps
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -173,6 +246,7 @@ jobs:
           python-version: "3.11"
           check-latest: true
           update-environment: true
+
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
@@ -239,31 +313,32 @@ jobs:
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
-  test-summary:
-    name: Connector Test Summary Check
-    needs: [connectors-test-matrix]
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "✅ All connector tests completed successfully."
 
-  test-summary-noop:
-    name: Connector Test Summary Check
-    needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+  non-jvm-test-summary:
+    name: Connector Test Summary Check (Java)
+    needs: [jvm-connectors-test-matrix]
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
-        run: echo "🟦 No connectors updated. All good here."
+        run: echo "✅ All non-Java connector tests completed successfully."
+
+  non-jvm-test-summary-noop:
+    name: Connector Test Summary Check (Java)
+    needs: [generate-matrix]
+    if: ${{ ! needs.generate-matrix.outputs.non-java-connectors-matrix }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "🟦 No non-Java connectors updated. All good here."
 
   # Lint and format checks
 
   connectors-lint-matrix:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
-    if: ${{ needs.generate-matrix.outputs.connector-matrix }}
+    if: ${{ needs.generate-matrix.outputs.connectors-matrix }}
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.connector-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 10 # Limit number of parallel jobs
     name: Lint ${{ matrix.connector }} Connector
     steps:
@@ -353,7 +428,7 @@ jobs:
   lint-summary-noop:
     name: Connector Test Summary Check
     needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.connector-matrix }}
+    if: ${{ ! needs.generate-matrix.outputs.connectors-matrix }}
     runs-on: ubuntu-24.04
     steps:
       - name: Report Lint Summary
