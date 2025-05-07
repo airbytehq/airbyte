@@ -16,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 object MockDestinationBackend {
+    const val MOCK_TEST_MICRONAUT_ENVIRONMENT = "mock_test"
+
     private val files: ConcurrentHashMap<String, ConcurrentLinkedQueue<OutputRecord>> =
         ConcurrentHashMap()
 

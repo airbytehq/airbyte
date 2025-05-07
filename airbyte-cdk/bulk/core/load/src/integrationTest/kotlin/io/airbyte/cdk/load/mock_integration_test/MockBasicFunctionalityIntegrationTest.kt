@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import io.airbyte.cdk.load.mock_integration_test.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
@@ -31,6 +32,7 @@ class MockBasicFunctionalityIntegrationTest :
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        additionalMicronautEnvs = listOf(MOCK_TEST_MICRONAUT_ENVIRONMENT),
     ) {
     @Test
     override fun testBasicWrite() {
