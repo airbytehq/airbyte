@@ -94,7 +94,6 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
-    "contact_lists": {"crm.lists.read"},
     "email_events": {"content"},
     "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "subscription_changes": {"content"},
