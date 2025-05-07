@@ -120,8 +120,8 @@ jobs:
 
       - name: Install connector dependencies
         if: matrix.connector
-        run: |
-          poe connector ${{ matrix.connector }} install
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
 
       - name: Fetch connector secrets
         if: matrix.connector
@@ -131,13 +131,13 @@ jobs:
 
       - name: Run Unit Tests
         if: matrix.connector
-        run: |
-          poe connector ${{ matrix.connector }} test-unit-tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
-        run: |
-          poe connector ${{ matrix.connector }} test-integration-tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -217,13 +217,14 @@ jobs:
         if: matrix.connector
         id: get-language
         continue-on-error: true # Will fail for now (null output) for manifest-only connectors
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
+          echo "LANGUAGE=$(poe -qq get-language)" >> $GITHUB_OUTPUT
 
       - name: Install connector dependencies
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
-        run: |
-          poe connector ${{ matrix.connector }} install
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
 
       - name: Fetch connector secrets
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
@@ -233,13 +234,13 @@ jobs:
 
       - name: Run Unit Tests
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
-        run: |
-          poe connector ${{ matrix.connector }} test-unit-tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
-        run: |
-          poe connector ${{ matrix.connector }} test-integration-tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -332,23 +333,24 @@ jobs:
         if: matrix.connector
         id: get-language
         continue-on-error: true # Will fail for now (null output) for manifest-only connectors
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
+          echo "LANGUAGE=$(poe -qq get-language)" >> $GITHUB_OUTPUT
 
       - name: Install connector dependencies
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
-        run: |
-          poe connector ${{ matrix.connector }} install
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
 
       - name: Run format-check
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
-        run: |
-          poe connector ${{ matrix.connector }} format-check
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe format-check
 
       - name: Run lint check (info only)
         if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
-        run: |
-          poe connector ${{ matrix.connector }} lint-check
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe lint-check
         # Most connectors can't pass lint checks, so this is non-blocking for now
         continue-on-error: true
 
