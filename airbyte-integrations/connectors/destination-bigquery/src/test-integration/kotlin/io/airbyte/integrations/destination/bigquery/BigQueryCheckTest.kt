@@ -14,9 +14,7 @@ class BigQueryCheckTest :
     CheckIntegrationTest<BigquerySpecification>(
         successConfigFilenames =
             listOf(
-                CheckTestConfig(
-                    BigQueryDestinationTestUtils.standardInsertConfig.serializeToString()
-                ),
+                CheckTestConfig(BigQueryDestinationTestUtils.standardInsertConfig),
             ),
         failConfigFilenamesAndFailureReasons = mapOf(),
         additionalMicronautEnvs = additionalMicronautEnvs,

@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.bigquery
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
@@ -21,13 +23,11 @@ object BigQueryDestinationTestUtils {
     val standardInsertRawOverrideConfig =
         createConfig(
             configFile = STANDARD_INSERT_CONFIG,
-            datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
             rawDatasetId = RAW_DATASET_OVERRIDE,
         )
     val standardInsertConfig =
         createConfig(
             configFile = STANDARD_INSERT_CONFIG,
-            datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
         )
 
     /**
@@ -40,22 +40,21 @@ object BigQueryDestinationTestUtils {
     @Throws(IOException::class)
     fun createConfig(
         configFile: String,
-        datasetId: String?,
         rawDatasetId: String? = null,
         disableTypingDeduping: Boolean? = null,
-    ): ObjectNode {
+    ): String {
         val tmpConfigAsString = Files.readString(Path.of(configFile))
         val config = Jsons.readTree(tmpConfigAsString) as ObjectNode
-        config.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        config.put(BigQueryConsts.CONFIG_DATASET_ID, DEFAULT_NAMESPACE_PLACEHOLDER)
         rawDatasetId?.let { config.put(BigQueryConsts.RAW_DATA_DATASET, rawDatasetId) }
         disableTypingDeduping?.let {
             config.put(BigQueryConsts.DISABLE_TYPE_DEDUPE, disableTypingDeduping)
         }
-        return config
+        return config.serializeToString()
     }
 
-    fun parseConfig(config: JsonNode): BigqueryConfiguration {
-        val spec = Jsons.treeToValue(config, BigquerySpecification::class.java)
+    fun parseConfig(config: String): BigqueryConfiguration {
+        val spec = Jsons.treeToValue(config.deserializeToNode(), BigquerySpecification::class.java)
         return BigqueryConfigurationFactory().make(spec)
     }
 }

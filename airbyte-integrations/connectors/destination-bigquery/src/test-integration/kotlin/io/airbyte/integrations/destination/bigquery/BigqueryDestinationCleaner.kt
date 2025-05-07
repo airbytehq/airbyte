@@ -34,9 +34,9 @@ object BigqueryDestinationCleaner : DestinationCleaner {
     }
 }
 
-class BigqueryDestinationCleanerInstance(private val configJson: JsonNode) : DestinationCleaner {
+class BigqueryDestinationCleanerInstance(private val configString: String) : DestinationCleaner {
     override fun cleanup() {
-        val config = BigQueryDestinationTestUtils.parseConfig(configJson)
+        val config = BigQueryDestinationTestUtils.parseConfig(configString)
         val bigquery = BigqueryClientFactory(config).make()
 
         val oldThreshold = System.currentTimeMillis() - Duration.ofDays(RETENTION_DAYS).toMillis()
