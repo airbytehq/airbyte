@@ -98,12 +98,12 @@ jobs:
           JAVA_CONNECTORS=$(printf '%s\n' "$JAVA_CONNECTORS" \
             | tr '\n' ',' \
             | sed 's/,$//')
-          NON_JAVA_CONNECTORS=$(printf '%s\n' "$NON_JAVA_CONNECTORS" \
+          NON_JVM_CONNECTORS=$(printf '%s\n' "$NON_JAVA_CONNECTORS" \
             | tr '\n' ',' \
             | sed 's/,$//')
           echo CONNECTORS=${CONNECTORS} >> $GITHUB_ENV
-          echo JAVA_CONNECTORS=${JAVA_CONNECTORS} >> $GITHUB_ENV
-          echo NON_JAVA_CONNECTORS=${NON_JAVA_CONNECTORS} >> $GITHUB_ENV
+          echo JVM_CONNECTORS=${JVM_CONNECTORS} >> $GITHUB_ENV
+          echo NON_JVM_CONNECTORS=${NON_JVM_CONNECTORS} >> $GITHUB_ENV
 
       - name: Convert Connector Lists to JSON
         id: convert-matrix
@@ -122,26 +122,26 @@ jobs:
           }
 
           connectors_matrix=$(to_json "$CONNECTORS")
-          java_connectors_matrix=$(to_json "$JAVA_CONNECTORS")
-          non_java_connectors_matrix=$(to_json "$NON_JAVA_CONNECTORS")
+          jvm_connectors_matrix=$(to_json "$JVM_CONNECTORS")
+          non_java_connectors_matrix=$(to_json "$NON_JVM_CONNECTORS")
 
           echo "connectors_matrix=$connectors_matrix" >> $GITHUB_OUTPUT
-          echo "java_connectors_matrix=$java_connectors_matrix" >> $GITHUB_OUTPUT
-          echo "non_java_connectors_matrix=$non_java_connectors_matrix" >> $GITHUB_OUTPUT
+          echo "jvm_connectors_matrix=$jvm_connectors_matrix" >> $GITHUB_OUTPUT
+          echo "non_jvm_connectors_matrix=$non_jvm_connectors_matrix" >> $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.convert-matrix.outputs.connectors-matrix }}
-      java-connectors-matrix: ${{ steps.convert-matrix.outputs.java-connectors-matrix }}
-      non-java-connectors-matrix: ${{ steps.convert-matrix.outputs.non-java-connectors-matrix }}
+      jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.jvm-connectors-matrix }}
+      non-jvm-connectors-matrix: ${{ steps.convert-matrix.outputs.non-jvm-connectors-matrix }}
 
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
     runs-on: ubuntu-20.04-8core
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-    if: ${{ needs.generate-matrix.outputs.java-connectors-matrix != '' }}
+    if: ${{ needs.generate-matrix.outputs.jvm-connectors-matrix != '' }}
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.java-connectors-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     name: Test ${{ matrix.connector }} Connector
@@ -213,7 +213,7 @@ jobs:
   jvm-connectors-test-summary-noop:
     name: JVM Connector Test Summary Check
     needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.non-java-connectors-matrix }}
+    if: ${{ ! needs.generate-matrix.outputs.non-jvm-connectors-matrix }}
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
@@ -224,9 +224,9 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-    if: ${{ needs.generate-matrix.outputs.non-java-connectors-matrix != '' }}
+    if: ${{ needs.generate-matrix.outputs.non-jvm-connectors-matrix != '' }}
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.non-java-connectors-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     name: Test ${{ matrix.connector }} Connector
@@ -324,7 +324,7 @@ jobs:
   non-jvm-connectors-test-summary-noop:
     name: Non-JVM Connector Test Summary Check
     needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.non-java-connectors-matrix }}
+    if: ${{ ! needs.generate-matrix.outputs.non-jvm-connectors-matrix }}
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
