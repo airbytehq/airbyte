@@ -70,7 +70,6 @@ jobs:
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-    if: ${{ needs.generate-matrix.outputs.jvm-connectors-matrix != '' }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -78,6 +77,7 @@ jobs:
     name: Test ${{ matrix.connector }} Connector
     steps:
       - name: Checkout Airbyte
+        if: matrix.connector
         uses: actions/checkout@v4
         with:
           # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
@@ -87,29 +87,35 @@ jobs:
 
       # Java deps
       - uses: actions/setup-java@v4
+        if: matrix.connector
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
       - uses: gradle/actions/setup-gradle@v3
+        if: matrix.connector
         with:
           cache-read-only: false
           cache-write-only: false
 
       - name: Install the latest version of uv
+        if: matrix.connector
         uses: astral-sh/setup-uv@v6
 
       - name: Install Poe
+        if: matrix.connector
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
       - name: Install connector dependencies
+        if: matrix.connector
         run: |
           poe connector ${{ matrix.connector }} install
 
       - name: Fetch connector secrets
+        if: matrix.connector
         run: |
           python -m pip install --upgrade pip
           python -m pip install pipx
@@ -118,16 +124,18 @@ jobs:
             --print-ci-secrets-masks
 
       - name: Run Unit Tests
+        if: matrix.connector
         run: |
           poe connector ${{ matrix.connector }} test-unit-tests
 
       - name: Run Integration Tests
+        if: matrix.connector
         run: |
           poe connector ${{ matrix.connector }} test-integration-tests
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+        if: always() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           files: |
@@ -139,23 +147,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
-        run: echo "✅ All JVM connector tests completed successfully."
-
-  jvm-connectors-test-summary-noop:
-    name: JVM Connector Test Summary Check
-    needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.non-jvm-connectors-matrix }}
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "🟦 No Java connectors updated. All good here."
+        run: echo "✅ All JVM connector tests completed successfully (or nothing to test)."
 
   non-jvm-connectors-test-matrix:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-    if: ${{ needs.generate-matrix.outputs.non-jvm-connectors-matrix != '' }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -163,6 +161,7 @@ jobs:
     name: Test ${{ matrix.connector }} Connector
     steps:
       - name: Checkout Airbyte
+        if: matrix.connector
         uses: actions/checkout@v4
         with:
           # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
@@ -172,6 +171,7 @@ jobs:
 
       # Python deps
       - name: Set up Python
+        if: matrix.connector
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -179,14 +179,17 @@ jobs:
           update-environment: true
 
       - name: Install and configure Poetry
+        if: matrix.connector
         uses: snok/install-poetry@v1
         with:
           version: 1.8.5
 
       - name: Install the latest version of uv
+        if: matrix.connector
         uses: astral-sh/setup-uv@v6
 
       - name: Install system dependencies
+        if: matrix.connector
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -196,6 +199,7 @@ jobs:
             python3-dev
 
       - name: Install Poe and Dev Dependencies
+        if: matrix.connector
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
@@ -207,18 +211,19 @@ jobs:
           uv tool install mypy
 
       - name: Get Connector Language
+        if: matrix.connector
         id: get-language
         continue-on-error: true # Will fail for now (null output) for manifest-only connectors
         run: |
           echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
 
       - name: Install connector dependencies
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} install
 
       - name: Fetch connector secrets
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install pipx
@@ -227,18 +232,18 @@ jobs:
             --print-ci-secrets-masks
 
       - name: Run Unit Tests
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} test-unit-tests
 
       - name: Run Integration Tests
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} test-integration-tests
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+        if: always() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           files: |
@@ -250,16 +255,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Report Test Summary
-        run: echo "✅ All non-JVM connector tests completed successfully."
-
-  non-jvm-connectors-test-summary-noop:
-    name: Non-JVM Connector Test Summary Check
-    needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.non-jvm-connectors-matrix }}
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Test Summary
-        run: echo "🟦 No non-JVM connectors updated. All good here."
+        run: echo "✅ All non-JVM connector tests completed successfully (or nothing to test)."
 
   # Lint and format checks
 
@@ -273,38 +269,45 @@ jobs:
     name: Lint ${{ matrix.connector }} Connector
     steps:
       - name: Checkout Airbyte
+        if: matrix.connector
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
       # Java deps
       - uses: actions/setup-java@v4
+        if: matrix.connector
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
       - uses: gradle/actions/setup-gradle@v3
+        if: matrix.connector
         with:
           cache-read-only: false
           cache-write-only: false
 
       # Python deps
       - name: Set up Python
+        if: matrix.connector
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           check-latest: true
           update-environment: true
       - name: Install and configure Poetry
+        if: matrix.connector
         uses: snok/install-poetry@v1
         with:
           version: 1.8.5
 
       - name: Install the latest version of uv
+        if: matrix.connector
         uses: astral-sh/setup-uv@v6
 
       - name: Install system dependencies
+        if: matrix.connector
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -314,6 +317,7 @@ jobs:
             python3-dev
 
       - name: Install Poe and Dev Dependencies
+        if: matrix.connector
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
@@ -325,23 +329,24 @@ jobs:
           uv tool install mypy
 
       - name: Get Connector Language
+        if: matrix.connector
         id: get-language
         continue-on-error: true # Will fail for now (null output) for manifest-only connectors
         run: |
           echo "LANGUAGE=$(poe -qq connector ${{ matrix.connector }} '-qq get-language')" >> $GITHUB_OUTPUT
 
       - name: Install connector dependencies
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} install
 
       - name: Run format-check
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} format-check
 
       - name: Run lint check (info only)
-        if: ${{ steps.get-language.outputs.LANGUAGE }}
+        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
         run: |
           poe connector ${{ matrix.connector }} lint-check
         # Most connectors can't pass lint checks, so this is non-blocking for now
@@ -353,13 +358,4 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Report Lint Summary
-        run: echo "✅ All connectors lint checks completed successfully."
-
-  lint-summary-noop:
-    name: Connector Lint Summary Check
-    needs: [generate-matrix]
-    if: ${{ ! needs.generate-matrix.outputs.connectors-matrix }}
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Report Lint Summary
-        run: echo "🟦 No connectors updated. All good here."
+        run: echo "✅ All connectors lint checks completed successfully (or nothing to check)."

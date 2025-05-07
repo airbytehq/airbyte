@@ -75,21 +75,27 @@ fi
 #    JSON will be in GitHub Actions Matrix format: {"connector":[...]}
 print_list() {
   local list="$1"
-  if [ -z "$list" ]; then
-    # If the list is empty, return an empty string.
-    # Even if JSON is requested, we return an empty string when the list is empty.
-    # This is to avoid sending an empty JSON list to the GitHub Actions Matrix.
-    echo ''
-  elif [ "$JSON" != true ]; then
-    # If JSON is not requested, print the list as newline-delimited values.
-    echo "$list" | tr ',' '\n'
+  if [ "$JSON" != true ]; then
+    for item in "$@"; do
+      echo "$item"
+    done
     return
+  fi
+
+  # If JSON is requested, convert the list to JSON format.
+  # This is pre-formatted to send to a GitHub Actions Matrix
+  # with 'connector' as the matrix key.
+  # JSON mode: emit {"connector": […]}
+  if [ $# -eq 0 ]; then
+    # If the list is empty, send one item as empty string.
+    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
+    # of required checks.
+    printf '{"connector": [""]}'
   else
-    # If JSON is requested, convert the list to JSON format
+    # If the list is not empty, convert it to JSON format.
     # This is pre-formatted to send to a GitHub Actions Matrix
     # with 'connector' as the matrix key.
-    printf '%s\n' "$list" \
-      | tr ',' '\n' \
+    printf '%s\n' "$@" \
       | jq -R . \
       | jq -cs '{connector: .}'
   fi
@@ -97,7 +103,8 @@ print_list() {
 
 # if no flags, output all and exit
 if ! $JAVA && ! $NO_JAVA; then
-  print_list "$(IFS=,; echo "${connectors[*]}")"
+  set +u  # Allow empty array without 'unbound variable' error
+  print_list "${connectors[@]}"
   exit 0
 fi
 
@@ -116,7 +123,8 @@ for c in "${connectors[@]}"; do
 done
 
 if $JAVA; then
-  [ "${#java_connectors[@]}" -gt 0 ] && print_list "$(IFS=,; echo "${java_connectors[*]}")"
+  set +u  # Allow empty array without 'unbound variable' error
+  print_list "${java_connectors[@]}"
   exit 0
 fi
 
@@ -129,7 +137,8 @@ for c in "${connectors[@]}"; do
 done
 
 if $NO_JAVA; then
-  [ "${#non_java_connectors[@]}" -gt 0 ] && print_list "$(IFS=,; echo "${non_java_connectors[*]}")"
+  set +u  # Allow empty array without 'unbound variable' error
+  print_list "${non_java_connectors[@]}"
   exit 0
 fi
 
