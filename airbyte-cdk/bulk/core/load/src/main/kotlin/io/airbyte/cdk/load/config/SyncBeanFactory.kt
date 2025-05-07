@@ -4,14 +4,9 @@
 
 package io.airbyte.cdk.load.config
 
-import io.airbyte.cdk.Operation
-import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -27,18 +22,14 @@ import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.write.LoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.lang3.RandomStringUtils
 
 const val CHECK_STREAM_NAMESPACE = "airbyte_internal_test"
 
@@ -190,32 +181,4 @@ class SyncBeanFactory {
     @Singleton
     @Named("defaultDestinationTaskLauncherHasThrown")
     fun defaultDestinationTaskLauncherHasThrown(): AtomicBoolean = AtomicBoolean(false)
-
-    /* *****
-     * CHECK
-     * *****/
-
-    // TODO combine this with the actual catalog factory method? where even is that method
-    @Singleton
-    @Requires(property = Operation.PROPERTY, value = "check")
-    fun fakeCheckSyncCatalog(): DestinationCatalog {
-        // generate a string like "20240523"
-        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-        // generate 5 random characters
-        val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
-        return DestinationCatalog(
-            listOf(
-                DestinationStream(
-                    descriptor =
-                        DestinationStream.Descriptor(CHECK_STREAM_NAMESPACE, "test$date$random"),
-                    importType = Append,
-                    schema =
-                        ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                )
-            )
-        )
-    }
 }
