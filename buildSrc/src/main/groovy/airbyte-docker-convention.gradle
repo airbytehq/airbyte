@@ -1,0 +1,90 @@
+import io.airbyte.gradle.GenerateConnectorBuildArgs
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.tasks.Copy
+
+class AirbyteDockerConventionPlugin implements Plugin<Project> {
+    private static final String SHARED_DOCKERFILE = 'docker-images/Dockerfile.java-connector-non-airbyte-ci'
+
+    @Override
+    void apply(Project project) {
+        /*
+            We deliberately avoid importing classes from the published Airbyte Docker
+            plugin.  That keeps buildSrc free of a compile‑time dependency on a specific
+            plugin version and lets this convention plugin compile before external
+            plugins are resolved.
+
+            Because we don’t have the plugin’s types on the class‑path, we access
+            task properties dynamically:
+
+            if (task.hasProperty('dockerfile')) { … }
+
+            This adds a few guard lines, but Groovy is dynamic anyway and the extra
+            resilience means the code continues to work even if a future Airbyte plugin
+            version renames or drops those properties.
+         */
+
+        project.plugins.withId('io.airbyte.gradle.docker') {
+            /* ---------- 0. default imageName = project.name -------------- */
+            project.extensions.findByName('airbyte')?.docker?.with {
+                if (!imageName.present) {
+                    imageName.convention(project.name)
+                }
+            }
+
+            /* ---------- 1. build‑args generator ------------------------- */
+            def genProps = project.tasks.register('generateConnectorDockerBuildArgs',
+                    GenerateConnectorBuildArgs) {
+                metadata.set(project.layout.projectDirectory.file('metadata.yaml'))
+                output.set(project.layout.buildDirectory.file('docker/buildArgs.properties'))
+            }
+
+            /* ---------- 2. copy shared Dockerfile ----------------------- */
+            project.tasks.named('dockerCopyDockerfile', Copy).configure { Copy c ->
+                c.description = 'Copy shared Dockerfile into build/airbyte/docker'
+                c.from(project.rootProject.file(SHARED_DOCKERFILE)) {
+                    rename { 'Dockerfile' }
+                }
+                c.into(project.layout.buildDirectory.dir('airbyte/docker'))
+            }
+
+            /* ---------- 3. configure dockerBuildx dynamically ----------- */
+            project.tasks.named('dockerBuildx').configure { Task t ->
+                // ensure prerequisites
+                t.dependsOn(genProps)
+                t.dependsOn('dockerCopyDockerfile')
+
+                // incremental inputs
+                t.inputs.file(genProps.flatMap { it.output })
+                t.inputs.file(project.layout.buildDirectory.file('airbyte/docker/Dockerfile'))
+
+                // point to the copied Dockerfile, if the property exists
+                if (t.hasProperty('dockerfile')) {
+                    t.dockerfile.set(
+                            project.layout.buildDirectory.file('airbyte/docker/Dockerfile')
+                    )
+                }
+
+                /* lazy provider for buildArgs */
+                def propsText = project.providers
+                        .fileContents(genProps.flatMap { it.output })
+                        .asText.orElse('')
+
+                def propsMap = propsText.map { txt ->
+                    txt.readLines()
+                            .findAll { it.contains('=') }
+                            .collectEntries { line ->
+                                def (k, v) = line.split('=', 2)
+                                [(k.trim()): v.trim()]
+                            }
+                }
+
+                if (t.hasProperty('buildArgs')) {
+                    // Inject properties at Configuration time while buildArgs is still mutable.
+                    t.buildArgs.putAll(propsMap)
+                }
+            }
+        }
+    }
+}

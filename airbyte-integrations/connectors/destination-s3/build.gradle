@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-bulk-connector'
     id "io.airbyte.gradle.docker"
+    id 'airbyte-docker-convention'
 }
 
 airbyteBulkConnector {
@@ -39,50 +40,44 @@ configurations.all {
         exclude group: "org.slf4j", module: "slf4j-reload4j"
 }
 
-airbyte {
-    docker {
-        imageName.set("destination-s3")
-    }
-}
-
-import io.airbyte.gradle.GenerateConnectorBuildArgs
-
-def generateConnectorDockerBuildArgs = tasks.register('generateConnectorDockerBuildArgs', GenerateConnectorBuildArgs) {
-    metadata.set(layout.projectDirectory.file('metadata.yaml'))
-    output.set(layout.buildDirectory.file('docker/buildArgs.properties'))
-}
-
-/* Lazily read the generated buildArgs.properties file in the build/docker directory, and turns each PROP=VALUE line into a docker build arg. */
-tasks.named('dockerBuildx').configure { task ->
-    dependsOn generateConnectorDockerBuildArgs
-    inputs.file generateConnectorDockerBuildArgs.flatMap { it.output }
-
-    def propsText = providers.fileContents(generateConnectorDockerBuildArgs.flatMap { it.output } as Provider<RegularFile>)
-            .asText
-            .orElse('')                                 // handle missing file
-
-    def propsMap = propsText.map { txt ->
-        txt.readLines()
-                .findAll { it.contains('=') }
-                .collectEntries { line ->
-                    def (k, v) = line.split('=', 2)
-                    [(k.trim()): v.trim()]
-                }
-    }
-
-    /*  Inject the map *during configuration* while buildArgs are still mutable, but its contents are resolved
-        only when Gradle needs buildArgs (after the task graph is ready).      */
-    task.buildArgs.putAll(propsMap)
-
-    task.dependsOn 'dockerCopyDockerfile'
-    task.dockerfile.set(layout.buildDirectory.file('airbyte/docker/Dockerfile'))
-}
-
-/* Copy the top-level dockerfile into the build directory. */
-tasks.named('dockerCopyDockerfile', Copy).configure {
-    description = 'Copy shared Dockerfile into build/airbyte/docker'
-    from (rootProject.file('docker-images/Dockerfile.java-connector-non-airbyte-ci')) {
-        rename { 'Dockerfile' }
-    }
-    into layout.buildDirectory.dir('airbyte/docker')
-}
+//import io.airbyte.gradle.GenerateConnectorBuildArgs
+//
+//def generateConnectorDockerBuildArgs = tasks.register('generateConnectorDockerBuildArgs', GenerateConnectorBuildArgs) {
+//    metadata.set(layout.projectDirectory.file('metadata.yaml'))
+//    output.set(layout.buildDirectory.file('docker/buildArgs.properties'))
+//}
+//
+///* Lazily read the generated buildArgs.properties file in the build/docker directory, and turns each PROP=VALUE line into a docker build arg. */
+//tasks.named('dockerBuildx').configure { task ->
+//    dependsOn generateConnectorDockerBuildArgs
+//    inputs.file generateConnectorDockerBuildArgs.flatMap { it.output }
+//
+//    def propsText = providers.fileContents(generateConnectorDockerBuildArgs.flatMap { it.output } as Provider<RegularFile>)
+//            .asText
+//            .orElse('')                                 // handle missing file
+//
+//    def propsMap = propsText.map { txt ->
+//        txt.readLines()
+//                .findAll { it.contains('=') }
+//                .collectEntries { line ->
+//                    def (k, v) = line.split('=', 2)
+//                    [(k.trim()): v.trim()]
+//                }
+//    }
+//
+//    /*  Inject the map *during configuration* while buildArgs are still mutable, but its contents are resolved
+//        only when Gradle needs buildArgs (after the task graph is ready).      */
+//    task.buildArgs.putAll(propsMap)
+//
+//    task.dependsOn 'dockerCopyDockerfile'
+//    task.dockerfile.set(layout.buildDirectory.file('airbyte/docker/Dockerfile'))
+//}
+//
+///* Copy the top-level dockerfile into the build directory. */
+//tasks.named('dockerCopyDockerfile', Copy).configure {
+//    description = 'Copy shared Dockerfile into build/airbyte/docker'
+//    from (rootProject.file('docker-images/Dockerfile.java-connector-non-airbyte-ci')) {
+//        rename { 'Dockerfile' }
+//    }
+//    into layout.buildDirectory.dir('airbyte/docker')
+//}
