@@ -83,19 +83,21 @@ allprojects {
 
     // This allows us to slowly migrate connectors between dagger and the new plugins.
     // This can be deleted once we no longer use Dagger.
-    if (!plugins.hasPlugin('airbyte-docker-convention')) {
-        def buildConnectorImage = airbyteCIConnectorsTask(
-                'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
-        buildConnectorImage.configure {
-            // Images for java projects always rely on the distribution tarball.
-            dependsOn tasks.matching { it.name == 'distTar' }
-            // Ensure that all files exist beforehand.
-            dependsOn tasks.matching { it.name == 'generate' }
-        }
+    def buildConnectorImage = airbyteCIConnectorsTask(
+            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
+    buildConnectorImage.configure {
+        // Images for java projects always rely on the distribution tarball.
+        dependsOn tasks.matching { it.name == 'distTar' }
+        // Ensure that all files exist beforehand.
+        dependsOn tasks.matching { it.name == 'generate' }
+    }
 
-        tasks.named('assemble').configure {
-            // We may revisit the dependency on assemble but the dependency should always be on a base task.
-            dependsOn buildConnectorImage
+    afterEvaluate { Project p ->
+        if (!plugins.hasPlugin('airbyte-docker-convention')) {
+            tasks.named('assemble').configure {
+                // We may revisit the dependency on assemble but the dependency should always be on a base task.
+                dependsOn buildConnectorImage
+            }
         }
     }
 
