@@ -24,7 +24,7 @@ jobs:
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     if: >
       github.event.pull_request.head.repo.fork != true &&
-      github.event.pull_request.draft == false
+      github.event.pull_request.draft == true
     timeout-minutes: 22
     steps:
       - name: Checkout Airbyte
