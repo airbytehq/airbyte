@@ -56,7 +56,7 @@ all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untra
 filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}")
 
 # 6) keep only connector paths
-connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/[^/]+')
+connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)')
 
 # 7) extract just the connector directory name
 dirs=$(printf '%s\n' "$connectors_paths" \
