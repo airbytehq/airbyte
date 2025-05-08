@@ -2,14 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
 
-import pytest
 import responses
-
 from conftest import _YAML_FILE_PATH
 
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 
