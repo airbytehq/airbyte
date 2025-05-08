@@ -7,8 +7,10 @@ on:
       - "airbyte-integrations/connectors/**/*"
 
 jobs:
+
   generate-matrix:
-    name: Generate Connector Matrix
+    name: Generate Connectors Matrix
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Current Branch
@@ -16,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate Connector Matrix from Changes
+      - name: Generate Connectors Matrix from Changes
         id: generate-matrix
         run: |
           # Get the list of modified connectors
@@ -25,13 +27,14 @@ jobs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
 
   qa-checks:
+    name: QA Checks for ${{ matrix.connector || ' (no connectors modified)' }}
+    if: github.event.pull_request.draft == false
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: QA Checks for ${{ matrix.connector || ' (no connectors modified)' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -50,6 +53,7 @@ jobs:
 
   qa-checks-summary:
     name: QA Checks Summary
+    if: github.event.pull_request.draft == false
     needs: [qa-checks]
     runs-on: ubuntu-24.04
     steps:
