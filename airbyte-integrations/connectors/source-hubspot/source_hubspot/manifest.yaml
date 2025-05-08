@@ -161,6 +161,89 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_without_pagination"
 
+  base_dynamic_schema_loader:
+    type: DynamicSchemaLoader
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/deal/properties
+      decoder:
+        type: JsonDecoder
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotSchemaExtractor
+          field_path: [ ]
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+    schema_type_identifier:
+      type: SchemaTypeIdentifier
+      key_pointer:
+        - name
+      type_pointer:
+        - type
+      schema_pointer:
+        - properties
+      types_mapping:
+        - type: TypesMap
+          target_type: boolean
+          current_type: bool
+        - type: TypesMap
+          target_type: date
+          current_type: date
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: date-time
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: datetime
+        - type: TypesMap
+          target_type: string
+          current_type: enumeration
+        - type: TypesMap
+          target_type: string
+          current_type: json
+        - type: TypesMap
+          target_type: string
+          current_type: object_coordinates
+        - type: TypesMap
+          target_type: string
+          current_type: phone_number
+
+  deals_archived_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/deal/properties
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+
+  forms_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/form/properties
+
   # Stream Definitions
   companies_property_history_stream:
     $ref: "#/definitions/stream_base"
@@ -568,10 +651,15 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       cursor_field: archivedAt
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: archivedAt
     schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/deals_archived"
+      - $ref: "#/definitions/deals_archived_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals_archived"
 
   forms_stream:
     primary_key:
@@ -636,10 +724,15 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
     schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/forms"
+      - $ref: "#/definitions/forms_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
 
   form_submissions_stream:
     $ref: "#/definitions/stream_base"
@@ -690,6 +783,10 @@ definitions:
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -721,6 +818,10 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -754,6 +855,10 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:

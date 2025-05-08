@@ -167,3 +167,49 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
 
         for data in additional_data:
             record.update(data)
+
+
+@dataclass
+class HubspotSchemaExtractor(RecordExtractor):
+    """
+    Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
+    accepts the set of dynamic schema fields as a single record.
+    This might be doable with the existing DpathExtractor configuration.
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        yield {"properties": list(self.decoder.decode(response))}
+
+@dataclass
+class HubspotRenamePropertiesTransformation(RecordTransformation):
+    """
+    Custom transformation that takes in a record that represents a map of all dynamic properties retrieved
+    from the Hubspot properties endpoint. This mapping nests all of these fields under a sub-object called
+    `properties` and updates all the property field names at the top level to be prefixed with
+    `properties_<property_name>`.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        transformed_record = {
+            "properties": {
+                "type": "object",
+                "properties": {},
+            }
+        }
+        for key, value in record.items():
+            transformed_record["properties"]["properties"][key] = value
+            updated_key = f"properties_{key}"
+            transformed_record[updated_key] = value
+
+        record.clear()
+        record.update(transformed_record)
