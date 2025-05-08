@@ -132,20 +132,12 @@ jobs:
       - name: Run Unit Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          poe test-unit-tests
+        run: poe test-unit-tests
 
-      - name: Run Integration Tests
-        if: matrix.connector
-        run: |
-          cd airbyte-integrations/connectors/${{ matrix.connector }}
-          poe test-integration-tests
-
-      # TODO: Delete after testing:
       - name: Run Integration Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe error
+        run: poe test-integration-tests
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
