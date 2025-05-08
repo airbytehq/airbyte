@@ -8,20 +8,27 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.pipeline.ByPrimaryKeyInputPartitioner
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.test.mock.MockDestinationBackend
 import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.test.mock.MockDestinationConfiguration
 import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 @Singleton
 @Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
-class MockDestinationWriter : DestinationWriter {
+class MockDestinationWriter(
+    private val config: MockDestinationConfiguration,
+) : DestinationWriter {
+    override suspend fun setup() {
+        if (config.foo != 0) {
+            throw IllegalArgumentException("Foo should be 0")
+        }
+    }
+
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return MockStreamLoader(stream)
     }
@@ -54,10 +61,4 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
             )
         }
     }
-}
-
-@Factory
-@Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
-class MockDestinationPartitionerFactory {
-    @Singleton fun get() = ByPrimaryKeyInputPartitioner()
 }
