@@ -8,7 +8,6 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryException
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest
-import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.DayOfWeek
 import java.time.Duration
@@ -44,7 +43,7 @@ object BigqueryDestinationCleaner : DestinationCleaner {
 class BigqueryDestinationCleanerInstance(private val configString: String) : DestinationCleaner {
     override fun cleanup() {
         val config = BigQueryDestinationTestUtils.parseConfig(configString)
-        val bigquery = BigqueryClientFactory(config).make()
+        val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
 
         val oldThreshold = System.currentTimeMillis() - Duration.ofDays(RETENTION_DAYS).toMillis()
 
