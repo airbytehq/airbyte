@@ -138,7 +138,7 @@
     "yaml-loader": "^0.8.0"
   },
   "resolutions": {
-    "dompurify": "3.2.4",
+    "dompurify": "3.1.6",
     "jsonpath-plus": "10.3.0"
   },
   "browserslist": {
