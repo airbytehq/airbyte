@@ -86,18 +86,11 @@ class BigqueryDestinationCleanerInstance(private val configString: String) : Des
             var datasets = bigquery.listDatasets(config.projectId)
             while (true) {
                 launch {
-                    datasets.values.forEach { plainDataset ->
-                        val datasetName = plainDataset.datasetId.dataset
-                        // listDatasets doesn't fetch all the dataset information.
-                        // we have to manually load the creationTime field.
-                        val dataset =
-                            plainDataset.reload(
-                                BigQuery.DatasetOption.fields(BigQuery.DatasetField.CREATION_TIME)
-                            )
+                    datasets.values.forEach { dataset ->
                         if (
                             dataset != null &&
                                 IntegrationTest.isNamespaceOld(
-                                    datasetName,
+                                    dataset.datasetId.dataset,
                                     retentionDays = RETENTION_DAYS
                                 )
                         ) {
