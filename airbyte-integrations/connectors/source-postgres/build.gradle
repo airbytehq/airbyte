@@ -54,3 +54,7 @@ compileKotlin {
         generateJsonSchema2Pojo
     }
 }
+
+tasks.named('sourcesJar').configure {
+    dependsOn tasks.named('generateJsonSchema2Pojo')
+}
