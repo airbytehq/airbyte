@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestinationFa
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -272,12 +271,10 @@ abstract class BigqueryTDWriteTest(configContents: String) :
 class StandardInsertRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = STANDARD_INSERT_CONFIG,
-                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                rawDatasetId = RAW_DATASET_OVERRIDE,
-                disableTypingDeduping = true,
-            )
-            .serializeToString(),
+            configFile = STANDARD_INSERT_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+            disableTypingDeduping = true,
+        ),
     ) {
     @Test
     override fun testBasicWrite() {
@@ -290,9 +287,7 @@ class StandardInsertRawOverrideDisableTd :
 }
 
 class StandardInsertRawOverride :
-    BigqueryTDWriteTest(
-        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig.serializeToString()
-    ) {
+    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertRawOverrideConfig) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
@@ -303,8 +298,7 @@ class StandardInsertRawOverride :
     }
 }
 
-class StandardInsert :
-    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig.serializeToString()) {
+class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
     @Test
     override fun testDedup() {
         super.testDedup()
@@ -314,12 +308,10 @@ class StandardInsert :
 class GcsRawOverrideDisableTd :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = GCS_STAGING_CONFIG,
-                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                rawDatasetId = RAW_DATASET_OVERRIDE,
-                disableTypingDeduping = true,
-            )
-            .serializeToString(),
+            configFile = GCS_STAGING_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+            disableTypingDeduping = true,
+        ),
     ) {
     @Test
     override fun testBasicWrite() {
@@ -330,11 +322,9 @@ class GcsRawOverrideDisableTd :
 class GcsRawOverride :
     BigqueryTDWriteTest(
         BigQueryDestinationTestUtils.createConfig(
-                configFile = GCS_STAGING_CONFIG,
-                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-                rawDatasetId = RAW_DATASET_OVERRIDE,
-            )
-            .serializeToString(),
+            configFile = GCS_STAGING_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+        ),
     ) {
     @Test
     override fun testBasicWrite() {
@@ -344,11 +334,7 @@ class GcsRawOverride :
 
 class Gcs :
     BigqueryTDWriteTest(
-        BigQueryDestinationTestUtils.createConfig(
-                configFile = GCS_STAGING_CONFIG,
-                datasetId = DEFAULT_NAMESPACE_PLACEHOLDER,
-            )
-            .serializeToString(),
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)
     ) {
     @Test
     override fun testBasicWrite() {
