@@ -5,9 +5,17 @@
 package io.airbyte.cdk.load.mock_integration_test
 
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.test.mock.MockDestinationConfiguration
+import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
 
 @Singleton
+@Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
 class MockDestinationChecker : DestinationChecker<MockDestinationConfiguration> {
-    override fun check(config: MockDestinationConfiguration) {}
+    override fun check(config: MockDestinationConfiguration) {
+        if (config.foo != 0) {
+            throw IllegalArgumentException("Foo should be 0")
+        }
+    }
 }

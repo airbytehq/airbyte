@@ -58,8 +58,9 @@ definitions:
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
+            type: OffsetIncrement
             page_size: 1000
+            inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modifiedAt
@@ -341,8 +342,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: modifiedSince
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -440,6 +441,8 @@ definitions:
     companies:
       type: DeclarativeStream
       name: companies
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -481,6 +484,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 500
+            inject_on_first_request: true
             start_from_page: 1
       incremental_sync:
         type: DatetimeBasedCursor
@@ -1265,7 +1269,7 @@ metadata:
     smsCampaigns: true
   testedStreams:
     contacts:
-      streamHash: fa9e839c09b6fb949f9837bde56d8432e33b5bf6
+      streamHash: 2828507a390461ed45801e954d30b147696ced08
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1279,49 +1283,49 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     contacts_folders_lists:
+      hasRecords: true
       streamHash: 8712455091b8fd4830dd8025ec63db0c46b5ac1a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts_folders:
+      hasRecords: true
       streamHash: f2ba43d4b7ed98243967541a8de810ee9bcbfcfa
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts_segments:
+      hasRecords: true
       streamHash: e590face6ace78400f22272f0d810117172ac0b6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts_lists_contacts:
+      hasRecords: true
       streamHash: e230da95e8334f3b305a7ddce25aca44d7044fcd
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts_lists:
+      hasRecords: true
       streamHash: 5d919412ca890c5b23e42a19a43a6231dd87b86a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     senders:
+      hasRecords: true
       streamHash: 4679a5b572ce4bca2838555fe6e2e3f1a2cab361
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     companies:
-      streamHash: b1493b91e02e3e1a9c7ccad6db1472823a52984e
+      streamHash: fee6ad396129b34f76f812d1c46f10170ee47609
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1356,7 +1360,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     crm_deals:
-      streamHash: c167a44fbbddd2d7d121d230a3456e37031a878a
+      streamHash: 1665b14b43c4ed93321560e0f4c6e74e34bf5d82
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1370,19 +1374,19 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     crm_tasks:
+      hasRecords: true
       streamHash: 686b893af13d4701ef3ff058cb8ef3a41c107ece
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     crm_notes:
+      hasRecords: true
       streamHash: 5c07bbe53fbc3bbc7f7b8c466d62f10cf3ee6292
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     domains:
       hasRecords: true
       streamHash: 80c10b88e330d3f06b1720b1d9d6b71bed93b070
@@ -1391,12 +1395,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     webhooks:
+      hasRecords: true
       streamHash: a0a68907bff3556e642c54c9256ee90dd30234bf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     account:
       hasRecords: true
       streamHash: 99bad8d15f8ad4369cfe3f5b19f18d88962c8eee
@@ -1412,19 +1416,19 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     emailCampaigns:
+      hasRecords: true
       streamHash: 950459f995b54d26c3636b5ccbe67940a63eedca
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     smsCampaigns:
+      hasRecords: false
       streamHash: 0361456084e91bf912c0f2baa9c30e5bd37f0c57
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -1526,10 +1530,6 @@ schemas:
             type:
               - boolean
               - "null"
-          DE_DATAPRIVACY:
-            type:
-              - boolean
-              - "null"
           DOUBLE_OPT-IN:
             type:
               - string
@@ -1581,10 +1581,6 @@ schemas:
           ENT_GLOBAL_SCORE:
             type:
               - number
-              - "null"
-          ENT_HUBSPOT_ID:
-            type:
-              - string
               - "null"
           ENT_JOB_TITLE:
             type:
@@ -1850,10 +1846,6 @@ schemas:
             type:
               - string
               - "null"
-          LAST_EVENT_NAME:
-            type:
-              - string
-              - "null"
           LAST_INTEGRATION_CREATED_AT:
             type:
               - string
@@ -1954,10 +1946,6 @@ schemas:
             type:
               - number
               - "null"
-          MP_CURRENT_NURTURING_FLOW:
-            type:
-              - string
-              - "null"
           MP_HISTORICAL_NURTURING_FLOWS:
             type:
               - string
@@ -1965,10 +1953,6 @@ schemas:
           MP_MARKETING_OPTIN_2024:
             type:
               - boolean
-              - "null"
-          MP_NURTURING_STATUS:
-            type:
-              - string
               - "null"
           NB_CAMPAIGNS_SENT_MORE_100_CONTACTS:
             type:
@@ -3100,6 +3084,10 @@ schemas:
             type:
               - string
               - "null"
+          ent_account_fit_score:
+            type:
+              - number
+              - "null"
           ent_annual_revenue:
             type:
               - string
@@ -3201,9 +3189,7 @@ schemas:
           - string
           - "null"
       id:
-        type:
-          - string
-          - "null"
+        type: string
       last_updated_at:
         type: string
       linkedContactsIds:
@@ -3223,6 +3209,7 @@ schemas:
             - string
             - "null"
     required:
+      - id
       - last_updated_at
   companies_attributes:
     type: object
@@ -3377,6 +3364,10 @@ schemas:
             type:
               - string
               - "null"
+          closed_won_reason:
+            type:
+              - string
+              - "null"
           created_at:
             type:
               - string
@@ -3401,11 +3392,19 @@ schemas:
             type:
               - string
               - "null"
+          ent_anonymous_id:
+            type:
+              - string
+              - "null"
           ent_company_domain:
             type:
               - string
               - "null"
           ent_contract_details:
+            type:
+              - string
+              - "null"
+          ent_contract_start_date:
             type:
               - string
               - "null"
@@ -3494,6 +3493,10 @@ schemas:
             type:
               - string
               - "null"
+          ent_recycling_date:
+            type:
+              - string
+              - "null"
           ent_salesforce_opportunity_id:
             type:
               - string
@@ -3502,6 +3505,14 @@ schemas:
             type:
               - string
               - "null"
+          ent_se_owner:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
           ent_second_owner:
             type:
               - string
@@ -3514,11 +3525,23 @@ schemas:
             type:
               - string
               - "null"
+          ent_tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
           ent_tier_sales:
             type:
               - string
               - "null"
           ent_uid:
+            type:
+              - string
+              - "null"
+          ent_win_against:
             type:
               - string
               - "null"
@@ -3531,6 +3554,10 @@ schemas:
               - string
               - "null"
           last_activity_date:
+            type:
+              - string
+              - "null"
+          last_updated_at:
             type:
               - string
               - "null"

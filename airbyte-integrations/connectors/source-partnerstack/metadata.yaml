@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d30fb809-6456-484d-8e2c-ee12e0f6888d
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   dockerRepository: airbyte/source-partnerstack
   githubIssueLabel: source-partnerstack
   icon: partnerstack.svg
@@ -27,5 +27,5 @@ data:
     ql: 100
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.47.0@sha256:b78e7be5d27d96b4eebc99fb76ccd3bad6408b0cd3a2a4d668852a4b6b9209dc
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
 metadataSpecVersion: "1.0"
