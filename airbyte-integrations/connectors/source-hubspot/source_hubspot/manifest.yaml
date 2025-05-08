@@ -508,6 +508,148 @@ definitions:
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
 
+  goals_stream:
+    $ref: "#/definitions/stream_base"
+    name: goals
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/goal_targets
+        request_parameters:
+          archived: 'false'
+          startTimestamp: '{{ format_datetime(stream_partition["start_time"], "%ms") }}'
+          endTimestamp: '{{ format_datetime(stream_partition["end_time"], "%ms") }}'
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: [ "name" ]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.hubapi.com
+                  authenticator:
+                    $ref: "#/definitions/authenticator"
+                  path: /properties/v2/goal_targets/properties
+                  http_method: GET
+                  request_headers:
+                    Content-Type: "application/json"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: [ ]
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: property_count
+              property_limit: 50
+      record_selector:
+        $ref: "#/definitions/base_selector"
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: hs_lastmodifieddate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: DpathFlattenFields
+        field_path:
+          - properties
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+
+    schema_loader:
+      type: DynamicSchemaLoader
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /properties/v2/goal_targets/properties
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_hubspot.components.HubspotSchemaExtractor
+            field_path: []
+      schema_transformations:
+        - type: AddFields
+          fields:
+            - path: [ "properties" ]
+              value: "{{ record }}"
+        - type: CustomTransformation
+          class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+        - type: AddFields
+          fields:
+            - path: [ "id" ]
+              value: '{{ { "description": "Unique identifier for the goal.", "type": ["null", "string"] } }}'
+            - path: [ "properties_hs_created_by_user_id" ]
+              value: '{{ { "description": "ID of the user who created the goal.", "type": ["null", "string"] } if record.get("properties_hs_created_by_user_id") is none else record["properties_hs_created_by_user_id"] }}'
+            - path: [ "properties_hs_createdate" ]
+              value: '{{ {"description": "Date and time when the goal was created.", "type": ["null", "string"], "format": "date-time"} if record.get("properties_hs_createdate") is none else record["properties_hs_createdate"] }}'
+            - path: [ "properties_hs_start_datetime" ]
+              value: '{{ {"description": "Start date and time of the goal period.", "type": ["null", "string"], "format": "date-time"} if record.get("properties_hs_start_datetime") is none else record["properties_hs_start_datetime"] }}'
+            - path: [ "properties_hs_end_datetime" ]
+              value: '{{ {"description": "End date and time of the goal period.", "type": ["null", "string"], "format": "date-time"} if record.get("properties_hs_end_datetime") is none else record["properties_hs_end_datetime"] }}'
+            - path: [ "properties_hs_goal_name" ]
+              value: '{{ {"description": "Name of the goal.", "type": ["null", "string"]} if record.get("properties_hs_goal_name") is none else record["properties_hs_goal_name"] }}'
+            - path: [ "properties_hs_lastmodifieddate" ]
+              value: '{{ {"description": "Date and time when the goal was last modified.", "type": ["null", "string"], "format": "date-time"} if record.get("properties_hs_lastmodifieddate") is none else record["properties_hs_lastmodifieddate"] }}'
+            - path: [ "properties_hs_kpi_value_last_calculated_at" ]
+              value: '{{ {"description": "Date and time when the KPI value was last calculated.", "type": ["null", "string"], "format": "date-time"} if record.get("properties_hs_kpi_value_last_calculated_at") is none else record["properties_hs_kpi_value_last_calculated_at"] }}'
+            - path: [ "properties_hs_object_id" ]
+              value: '{{ {"description": "ID of the object associated with the goal.", "type": ["null", "string"]} if record.get("properties_hs_object_id") is none else record["properties_hs_object_id"] }}'
+            - path: [ "properties_hs_target_amount" ]
+              value: '{{ {"description": "Target amount set for the goal.", "type": ["null", "string"]} if record.get("properties_hs_target_amount") is none else record["properties_hs_target_amount"] }}'
+            - path: [ "createdAt" ]
+              value: '{{ {"description": "Date and time when the goal was created.", "type": ["null", "string"], "format": "date-time", "apply_cast_datetime": False} }}'
+            - path: [ "updatedAt" ]
+              value: '{{ {"description": "Date and time when the goal was last updated.", "type": ["null", "string"], "format": "date-time", "apply_cast_datetime": False} }}'
+            - path: [ "archived" ]
+              value: '{{ {"description": "Indicates if the goal is archived or not.", "type": ["null", "boolean"]} }}'
+      schema_type_identifier:
+        type: SchemaTypeIdentifier
+        key_pointer: ["name"]
+        type_pointer: ["type"]
+        schema_pointer: ["properties"]
+        types_mapping:
+          - type: TypesMap
+            target_type: string
+            current_type: enumeration
+          - type: TypesMap
+            target_type: timestamp_with_timezone
+            current_type: datetime
+          - type: TypesMap
+            target_type: timestamp_with_timezone
+            current_type: date-time
+          - type: TypesMap
+            target_type: boolean
+            current_type: bool
+          - type: TypesMap
+            target_type: date
+            current_type: date
+          - type: TypesMap
+            target_type: string
+            current_type: json
+          - type: TypesMap
+            target_type: string
+            current_type: phone_number
+
+
 streams:
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contacts_property_history_stream"
@@ -515,6 +657,7 @@ streams:
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
+  - "#/definitions/goals_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:

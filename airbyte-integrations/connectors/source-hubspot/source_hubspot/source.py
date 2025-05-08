@@ -97,6 +97,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "goals": {"crm.objects.goals.read"},
 }
 
 
@@ -213,7 +214,6 @@ class SourceHubspot(YamlDeclarativeSource):
             EngagementsTasks(**common_params),
             Forms(**common_params),
             FormSubmissions(**common_params),
-            Goals(**common_params),
             Leads(**common_params),
             LineItems(**common_params),
             Owners(**common_params),
