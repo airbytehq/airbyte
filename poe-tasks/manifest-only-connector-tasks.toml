@@ -1,4 +1,12 @@
 # A shared set of tasks for Manifest-Only Airbyte connectors.
+#
+# Referenced from `airbyte-integrations/connectors/poe_tasks.toml` to apply to
+# all non-Java and non-Python connectors. By process of elimination, this covers
+# the manifest-only connectors.
+# 
+# If you find this tasks file is picked up by a connector that is *not* a
+# manifest-only connector, simply add a `poe_tasks.toml` file in the connector's
+# directory, and this will override the connectors' tasks to not use this file.
 
 [tasks]
 
