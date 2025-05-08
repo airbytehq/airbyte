@@ -3,11 +3,12 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Union, MutableMapping
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
 import requests
 
+from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -15,8 +16,7 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse, ab_datetime_format
-from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 
 class NewtoLegacyFieldTransformation(RecordTransformation):
@@ -141,6 +141,7 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
                             version[self.entity_primary_key] = primary_key
                             yield version | additional_keys
 
+
 @dataclass
 class HubspotSchemaExtractor(RecordExtractor):
     """
@@ -190,8 +191,8 @@ class HubspotRenamePropertiesTransformation(RecordTransformation):
         record.clear()
         record.update(transformed_record)
 
-class EntitySchemaNormalization(TypeTransformer):
 
+class EntitySchemaNormalization(TypeTransformer):
     def __init__(self, *args, **kwargs):
         config = TransformConfig.CustomSchemaNormalization
         super().__init__(config)
