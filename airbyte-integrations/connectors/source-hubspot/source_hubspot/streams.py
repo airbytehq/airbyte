@@ -1578,20 +1578,6 @@ class DealsArchived(ClientSideIncrementalStream):
         return params
 
 
-class DealPipelines(ClientSideIncrementalStream):
-    """Deal pipelines, API v1,
-    This endpoint requires the contacts scope the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
-    """
-
-    url = "/crm-pipelines/v1/pipelines/deals"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "pipelineId"
-    scopes = {"crm.objects.contacts.read"}
-
-
 class DealSplits(CRMSearchStream):
     """Deal splits, API v3"""
 
@@ -1926,21 +1912,6 @@ class SubscriptionChanges(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "timestamp"
     scopes = {"content"}
-
-
-class Workflows(ClientSideIncrementalStream):
-    """Workflows, API v3
-    Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
-    """
-
-    url = "/automation/v3/workflows"
-    data_field = "workflows"
-    updated_at_field = "updatedAt"
-    created_at_field = "insertedAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "id"
-    scopes = {"automation"}
-    unnest_fields = ["contactListIds"]
 
 
 class Companies(CRMSearchStream):

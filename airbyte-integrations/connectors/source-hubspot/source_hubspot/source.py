@@ -29,7 +29,6 @@ from source_hubspot.streams import (
     ContactsMergedAudit,
     ContactsWebAnalytics,
     CustomObject,
-    DealPipelines,
     Deals,
     DealsArchived,
     DealSplits,
@@ -61,7 +60,6 @@ from source_hubspot.streams import (
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
-    Workflows,
 )
 
 
@@ -72,8 +70,10 @@ we use start date 2006-01-01  as date of creation of Hubspot to retrieve all dat
 """
 DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
+    "campaigns": {"crm.lists.read"},
     "companies_property_history": {"crm.objects.companies.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
+    "deal_pipelines": {"crm.objects.contacts.read"},
     "deals_property_history": {"crm.objects.deals.read"},
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
@@ -96,7 +96,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
-    "campaigns": {"crm.lists.read"},
+    "workflows": {"automation"},
 }
 
 
@@ -199,7 +199,6 @@ class SourceHubspot(YamlDeclarativeSource):
             ContactsFormSubmissions(**common_params),
             ContactsListMemberships(**common_params),
             ContactsMergedAudit(**common_params),
-            DealPipelines(**common_params),
             DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),
@@ -220,7 +219,6 @@ class SourceHubspot(YamlDeclarativeSource):
             Products(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
-            Workflows(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]

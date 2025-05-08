@@ -579,14 +579,108 @@ definitions:
           type: KeyTransformation
           prefix: counters_
 
+  deal_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: deal_pipelines
+    primary_key:
+      - pipelineId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm-pipelines/v1/pipelines/deals
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: true
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deal_pipelines"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+
+  workflows_stream:
+    type: DeclarativeStream
+    name: workflows
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /automation/v3/workflows
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: false
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - workflows
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['insertedAt'] }}"
+      - type: DpathFlattenFields
+        field_path:
+          - contactListIds
+        key_transformation:
+          type: KeyTransformation
+          prefix: contactListIds_
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/workflows"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+
 streams:
+  - "#/definitions/campaigns_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contacts_property_history_stream"
+  - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
-  - "#/definitions/campaigns_stream"
+  - "#/definitions/workflows_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -595,6 +689,111 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  deal_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the deal pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The ordering of the deal pipeline for display.
+        type:
+          - "null"
+          - integer
+      active:
+        description: Indicates if the deal pipeline is currently active or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description: List of deal stages within the pipeline.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the deal stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The ordering of the deal stage for display within the pipeline.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description: Additional information related to the deal stage.
+              type:
+                - "null"
+                - object
+              properties:
+                isClosed:
+                  description: Indicates if the deal stage is considered closed or not.
+                  type:
+                    - "null"
+                    - string
+                probability:
+                  description: The probability of closing a deal at this stage.
+                  type:
+                    - "null"
+                    - string
+            stageId:
+              description: The unique identifier of the deal stage.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: Timestamp for the creation date of the deal stage.
+              type:
+                - "null"
+                - integer
+            updatedAt:
+              description: Timestamp for the last update to the deal stage.
+              type:
+                - "null"
+                - integer
+            active:
+              description: Indicates if the deal stage is currently active or not.
+              type:
+                - "null"
+                - boolean
+      objectType:
+        description: The type of object this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      objectTypeId:
+        description: The ID of the object type this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      pipelineId:
+        description: The unique identifier of the deal pipeline.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp for the creation date of the deal pipeline.
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        description: Timestamp for the last update to the deal pipeline.
+        type:
+          - "null"
+          - integer
+      default:
+        description: Indicates if this pipeline is the default one in the system.
   companies_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
     type:
@@ -2320,6 +2519,292 @@ schemas:
           - string
       lastUpdatedTime:
         description: Timestamp indicating when the campaign data was last updated.
+        type:
+          - "null"
+          - integer
+
+  workflows:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      name:
+        description: Name of the workflow
+        type:
+          - "null"
+          - string
+      id:
+        description: Unique identifier of the workflow
+        type:
+          - "null"
+          - integer
+      type:
+        description: Type of the workflow
+        type:
+          - "null"
+          - string
+      enabled:
+        description: Flag indicating if the workflow is enabled
+        type:
+          - "null"
+          - boolean
+      insertedAt:
+        description: Timestamp when the workflow was inserted
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        description: Timestamp when the workflow was last updated
+        type:
+          - "null"
+          - integer
+      personaTagIds:
+        description: IDs of persona tags associated with the workflow
+        type:
+          - "null"
+          - array
+        items:
+          description: Individual persona tag ID
+          type:
+            - "null"
+            - integer
+      contactListIds:
+        description: IDs of contact lists associated with the workflow
+        type:
+          - "null"
+          - object
+        properties:
+          enrolled:
+            description: ID of the contact list containing enrolled contacts
+            type:
+              - "null"
+              - integer
+          active:
+            description: ID of the contact list containing active contacts
+            type:
+              - "null"
+              - integer
+          steps:
+            description: List of steps within the workflow
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual step details
+              type:
+                - "null"
+                - string
+          completed:
+            description: ID of the contact list containing completed contacts
+            type:
+              - "null"
+              - integer
+          succeeded:
+            description: ID of the contact list containing succeeded contacts
+            type:
+              - "null"
+              - integer
+      contactListIds_enrolled:
+        description: ID of the contact list containing enrolled contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_active:
+        description: ID of the contact list containing active contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_completed:
+        description: ID of the contact list containing completed contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_succeeded:
+        description: ID of the contact list containing succeeded contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_steps:
+        description: List of steps within the workflow
+        type:
+          - "null"
+          - array
+        items:
+          description: Individual step details
+          type:
+            - "null"
+            - string
+      lastUpdatedByUserId:
+        description: ID of the user who last updated the workflow
+        type:
+          - "null"
+          - integer
+      contactCounts:
+        description: Counts of contacts in various stages within the workflow
+        type:
+          - "null"
+          - object
+        properties:
+          active:
+            description: Count of contacts currently active in the workflow
+            type:
+              - "null"
+              - integer
+          enrolled:
+            description: Count of contacts enrolled in the workflow
+            type:
+              - "null"
+              - integer
+      description:
+        description: Description of the workflow
+        type:
+          - "null"
+          - string
+      originalAuthorUserId:
+        description: ID of the original author of the workflow
+        type:
+          - "null"
+          - integer
+      migrationStatus:
+        description: Status and details of workflow migration
+        type:
+          - "null"
+          - object
+        properties:
+          enrollmentMigrationStatus:
+            description: Enrollment migration status
+            type:
+              - "null"
+              - string
+          enrollmentMigrationTimestamp:
+            description: Timestamp of enrollment migration
+            type:
+              - "null"
+              - integer
+          flowId:
+            description: ID of the flow
+            type:
+              - "null"
+              - integer
+          lastSuccessfulMigrationTimestamp:
+            description: Timestamp of last successful migration
+            type:
+              - "null"
+              - integer
+          migrationStatus:
+            description: Overall migration status
+            type:
+              - "null"
+              - string
+          platformOwnsActions:
+            description: Flag indicating if the platform owns actions
+            type:
+              - "null"
+              - boolean
+          portalId:
+            description: ID of the portal
+            type:
+              - "null"
+              - integer
+          workflowId:
+            description: ID of the workflow
+            type:
+              - "null"
+              - integer
+      updateSource:
+        description: Details of the workflow update source
+        type:
+          - "null"
+          - object
+        properties:
+          sourceApplication:
+            description: Application details of the workflow update source
+            type:
+              - "null"
+              - object
+            properties:
+              serviceName:
+                description: Name of the service
+                type:
+                  - "null"
+                  - string
+              source:
+                description: Source details
+                type:
+                  - "null"
+                  - string
+          updatedAt:
+            description: Timestamp of workflow update
+            type:
+              - "null"
+              - integer
+          updatedByUser:
+            description: Details of the user who updated the workflow
+            type:
+              - "null"
+              - object
+            properties:
+              userEmail:
+                description: Email address of the user
+                type:
+                  - "null"
+                  - string
+              userId:
+                description: ID of the user
+                type:
+                  - "null"
+                  - integer
+      creationSource:
+        description: Details of the workflow creation source
+        type:
+          - "null"
+          - object
+        properties:
+          clonedFromWorkflowId:
+            description: ID of the workflow that was cloned
+            type:
+              - "null"
+              - integer
+          createdAt:
+            description: Timestamp of workflow creation
+            type:
+              - "null"
+              - integer
+          createdByUser:
+            description: Details of the user who created the workflow
+            type:
+              - "null"
+              - object
+            properties:
+              userEmail:
+                description: Email address of the user
+                type:
+                  - "null"
+                  - string
+              userId:
+                description: ID of the user
+                type:
+                  - "null"
+                  - integer
+          sourceApplication:
+            description: Application details of the workflow source
+            type:
+              - "null"
+              - object
+            properties:
+              serviceName:
+                description: Name of the service
+                type:
+                  - "null"
+                  - string
+              source:
+                description: Source details
+                type:
+                  - "null"
+                  - string
+      portalId:
+        description: ID of the portal associated with the workflow
         type:
           - "null"
           - integer

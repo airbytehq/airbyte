@@ -426,8 +426,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     @staticmethod
     def _parse_file_path_from_uri(file_uri: str) -> str:
         match = re.search(r"sharepoint\.com(?:/sites/[^/]+)?/Shared%20Documents(.*)", file_uri)
-        file_path = match.group(1)
-        return file_path
+        return match.group(1) if match else file_uri
 
     def _get_headers(self) -> Dict[str, str]:
         access_token = self.get_access_token()
