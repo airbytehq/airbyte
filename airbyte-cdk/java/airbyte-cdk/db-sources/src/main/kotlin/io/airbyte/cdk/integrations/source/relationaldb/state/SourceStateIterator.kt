@@ -27,7 +27,26 @@ open class SourceStateIterator<T>(
     private var lastCheckpoint: Instant = Instant.now()
 
     override fun computeNext(): AirbyteMessage? {
-        var iteratorHasNextValue: Boolean
+        var shouldForceUpdateState = shouldEmitStateMessage() &&
+            sourceStateMessageProducer.shouldEmitStateMessage(stream);
+        // check shouldForceUpdateState in case the sync is stuck; therefore we should send out
+        // state messages even if there is no records update. This could be useful to advance DBZ
+        // pointer on a less updated table.
+        if (shouldForceUpdateState) {
+            val stateMessage =
+                sourceStateMessageProducer.generateStateMessageAtCheckpoint(stream)
+            stateMessage!!.withSourceStats(
+                AirbyteStateStats().withRecordCount(recordCount.toDouble())
+            )
+            LOGGER.info { "sending state message, with count per stream: $streamRecordCount " }
+
+            recordCount = 0L
+            streamRecordCount.clear()
+
+            lastCheckpoint = Instant.now()
+            return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
+        }
+        val iteratorHasNextValue: Boolean
         try {
             iteratorHasNextValue = messageIterator.hasNext()
         } catch (ex: Exception) {
@@ -38,23 +57,6 @@ open class SourceStateIterator<T>(
             throw FailedRecordIteratorException(ex)
         }
         if (iteratorHasNextValue) {
-            if (
-                shouldEmitStateMessage() &&
-                    sourceStateMessageProducer.shouldEmitStateMessage(stream)
-            ) {
-                val stateMessage =
-                    sourceStateMessageProducer.generateStateMessageAtCheckpoint(stream)
-                stateMessage!!.withSourceStats(
-                    AirbyteStateStats().withRecordCount(recordCount.toDouble())
-                )
-                LOGGER.info { "sending state message, with count per stream: $streamRecordCount " }
-
-                recordCount = 0L
-                streamRecordCount.clear()
-
-                lastCheckpoint = Instant.now()
-                return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
-            }
             // Use try-catch to catch Exception that could occur when connection to the database
             // fails
             try {
