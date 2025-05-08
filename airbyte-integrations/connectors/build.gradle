@@ -1,6 +1,7 @@
 plugins {
     id 'base'
     id 'ru.vyarus.use-python' version '2.3.0'
+    id "com.github.eirnym.js2p" version "1.0" apply false
 }
 
 // Pyenv support.
