@@ -32,6 +32,14 @@ lint-check = [
     "check-mypy",
 ]
 
+# Todo: Delete after testing
+error.shell = '''
+if [ true ]; then
+  echo 'Raising error as requested.'
+  exit 1
+fi
+'''
+
 # Poetry Lock
 lock = "poetry lock"
 

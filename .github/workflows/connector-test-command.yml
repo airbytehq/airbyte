@@ -74,7 +74,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ matrix.connector && '' || ' (no JVM-based connectors modified)'  }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || '' }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -132,12 +132,20 @@ jobs:
       - name: Run Unit Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
+        run: |
+          poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
+        run: |
+          cd airbyte-integrations/connectors/${{ matrix.connector }}
+          poe test-integration-tests
+
+      # TODO: Delete after testing:
+      - name: Run Integration Tests
+        if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-integration-tests
+        run: poe error
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -164,7 +172,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ matrix.connector && '' || ' (no non-JVM-based connectors modified)'  }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || '' }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -259,7 +267,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 10 # Limit number of parallel jobs
-    name: Lint ${{ matrix.connector }} Connector ${{ matrix.connector && '' || ' (no connectors modified)'  }}
+    name: Lint ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no connectors modified)' || '' }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
