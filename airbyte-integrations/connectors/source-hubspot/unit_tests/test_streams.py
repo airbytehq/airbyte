@@ -50,7 +50,6 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     stream = find_stream("contact_lists", config)
     created_at = "2022-03-25T16:43:11Z"
-    expected_created_at = int(pendulum.parse(created_at).timestamp()) * 1000
     responses = [
         {
             "json": {
@@ -71,7 +70,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
 
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
     assert len(records) == 1
-    assert records[0]["updatedAt"] == expected_created_at
+    assert records[0]["updatedAt"] == created_at
 
 
 @pytest.mark.parametrize(
@@ -398,7 +397,7 @@ def test_contact_lists_transform(requests_mock, common_params, config, custom_ob
 
     assert len(records) > 0
     for record in records:
-        assert isinstance(record["updatedAt"], int)
+        assert isinstance(record["updatedAt"], str)
 
 
 def test_client_side_incremental_stream(requests_mock, common_params, fake_properties_list):
