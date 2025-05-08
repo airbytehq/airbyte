@@ -518,6 +518,9 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /crm/v3/lists/search
         http_method: POST
+      # current implementation doesn't include additionalProperties request param
+      # additionalProperties in response includes only default:
+      # hs_list_size, hs_last_record_added_at, hs_last_record_removed_at, hs_folder_name, and hs_list_reference_count
       record_selector:
         schema_normalization: Default
         extractor:
@@ -542,29 +545,23 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
-      datetime_format: "%ms"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
-        - "%ms"
+        - "%ms" # support previous state format
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%d %H:%M:%S%z"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%ms"
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     transformations:
       - type: AddFields
         fields:
           - path: [ "updatedAt" ]
             value: "{{ record.get('updatedAt') or record.get('createdAt') }}"
-          - path: [ "updatedAt" ]
-            value: "{{ format_datetime(record['updatedAt'], '%ms') }}"
-            value_type: integer
-          - path: [ "createdAt" ]
-            value: "{{ format_datetime(record['createdAt'], '%ms') }}"
-            value_type: integer
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2095,7 +2092,8 @@ schemas:
       createdAt:
         type:
           - "null"
-          - integer
+          - string
+        format: date-time
       processingStatus:
         type:
           - "null"
@@ -2146,4 +2144,5 @@ schemas:
       updatedAt:
         type:
           - "null"
-          - integer
+          - string
+        format: date-time
