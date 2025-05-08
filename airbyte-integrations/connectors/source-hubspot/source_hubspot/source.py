@@ -20,7 +20,6 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     BaseStream,
-    Campaigns,
     Companies,
     CompaniesWebAnalytics,
     ContactLists,
@@ -30,7 +29,6 @@ from source_hubspot.streams import (
     ContactsMergedAudit,
     ContactsWebAnalytics,
     CustomObject,
-    DealPipelines,
     Deals,
     DealsArchived,
     DealSplits,
@@ -75,6 +73,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "companies_property_history": {"crm.objects.companies.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
+    "deal_pipelines": {"crm.objects.contacts.read"},
     "deals_property_history": {"crm.objects.deals.read"},
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
@@ -97,6 +96,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "campaigns": {"crm.lists.read"},
 }
 
 
@@ -193,14 +193,12 @@ class SourceHubspot(YamlDeclarativeSource):
         common_params = self.get_common_params(config=config)
         streams = super().streams(config=config)
         streams += [
-            Campaigns(**common_params),
             Companies(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
             ContactsFormSubmissions(**common_params),
             ContactsListMemberships(**common_params),
             ContactsMergedAudit(**common_params),
-            DealPipelines(**common_params),
             DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),

@@ -508,9 +508,123 @@ definitions:
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
 
+  campaigns_stream:
+    $ref: "#/definitions/stream_base"
+    name: campaigns
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /email/public/v1/campaigns
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: false
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - campaigns
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 500
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdatedTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/campaigns"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.AddFieldsFromEndpointTransformation
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/email/public/v1/campaigns/{{ stream_slice['parent_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        $parameters:
+          # Requester and Selector require stream name as a param.
+          name: campaigns
+      - type: DpathFlattenFields
+        field_path:
+          - counters
+        key_transformation:
+          type: KeyTransformation
+          prefix: counters_
+
+  deal_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: deal_pipelines
+    primary_key:
+      - pipelineId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm-pipelines/v1/pipelines/deals
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: true
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deal_pipelines"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+
 streams:
+  - "#/definitions/campaigns_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contacts_property_history_stream"
+  - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/marketing_emails_stream"
@@ -523,6 +637,111 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  deal_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the deal pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The ordering of the deal pipeline for display.
+        type:
+          - "null"
+          - integer
+      active:
+        description: Indicates if the deal pipeline is currently active or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description: List of deal stages within the pipeline.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the deal stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The ordering of the deal stage for display within the pipeline.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description: Additional information related to the deal stage.
+              type:
+                - "null"
+                - object
+              properties:
+                isClosed:
+                  description: Indicates if the deal stage is considered closed or not.
+                  type:
+                    - "null"
+                    - string
+                probability:
+                  description: The probability of closing a deal at this stage.
+                  type:
+                    - "null"
+                    - string
+            stageId:
+              description: The unique identifier of the deal stage.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: Timestamp for the creation date of the deal stage.
+              type:
+                - "null"
+                - integer
+            updatedAt:
+              description: Timestamp for the last update to the deal stage.
+              type:
+                - "null"
+                - integer
+            active:
+              description: Indicates if the deal stage is currently active or not.
+              type:
+                - "null"
+                - boolean
+      objectType:
+        description: The type of object this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      objectTypeId:
+        description: The ID of the object type this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      pipelineId:
+        description: The unique identifier of the deal pipeline.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp for the creation date of the deal pipeline.
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        description: Timestamp for the last update to the deal pipeline.
+        type:
+          - "null"
+          - integer
+      default:
+        description: Indicates if this pipeline is the default one in the system.
   companies_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
     type:
@@ -2000,3 +2219,254 @@ schemas:
           - "null"
           - string
         format: date-time
+
+  campaigns:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      appId:
+        description:
+          The unique identifier of the application associated with the campaign
+          data.
+        type:
+          - "null"
+          - integer
+      appName:
+        description: The name of the application associated with the campaign data.
+        type:
+          - "null"
+          - string
+      contentId:
+        description: The unique identifier of the content associated with the campaign.
+        type:
+          - "null"
+          - integer
+      counters:
+        description: Object containing different counters related to the campaign's performance.
+        type:
+          - "null"
+          - object
+        properties:
+          open:
+            description: Number of email opens.
+            type:
+              - "null"
+              - integer
+          processed:
+            description: Number of emails processed by the campaign.
+            type:
+              - "null"
+              - integer
+          sent:
+            description: Number of emails sent.
+            type:
+              - "null"
+              - integer
+          deferred:
+            description: Number of deferred emails.
+            type:
+              - "null"
+              - integer
+          unsubscribed:
+            description: Number of recipients unsubscribed from the campaign.
+            type:
+              - "null"
+              - integer
+          statuschange:
+            description: Number of status changes related to the campaign.
+            type:
+              - "null"
+              - integer
+          bounce:
+            description: Number of bounced emails.
+            type:
+              - "null"
+              - integer
+          mta_dropped:
+            description: Number of emails dropped at the MTA level.
+            type:
+              - "null"
+              - integer
+          dropped:
+            description: Number of dropped emails.
+            type:
+              - "null"
+              - integer
+          suppressed:
+            description: Number of emails suppressed from sending.
+            type:
+              - "null"
+              - integer
+          click:
+            description: Number of clicks on the campaign.
+            type:
+              - "null"
+              - integer
+          delivered:
+            description: Number of successfully delivered emails.
+            type:
+              - "null"
+              - integer
+          forward:
+            description: Number of emails forwarded by recipients.
+            type:
+              - "null"
+              - integer
+          print:
+            description: Number of emails printed by recipients.
+            type:
+              - "null"
+              - integer
+          reply:
+            description: Number of replies received to the campaign.
+            type:
+              - "null"
+              - integer
+          spamreport:
+            description: Number of spam reports received for the campaign.
+            type:
+              - "null"
+              - integer
+      counters_open:
+        description: Alias for the open counter value.
+        type:
+          - "null"
+          - integer
+      counters_processed:
+        description: Alias for the processed counter value.
+        type:
+          - "null"
+          - integer
+      counters_sent:
+        description: Alias for the sent counter value.
+        type:
+          - "null"
+          - integer
+      counters_deferred:
+        description: Alias for the deferred counter value.
+        type:
+          - "null"
+          - integer
+      counters_unsubscribed:
+        description: Alias for the unsubscribed counter value.
+        type:
+          - "null"
+          - integer
+      counters_statuschange:
+        description: Alias for the status change counter value.
+        type:
+          - "null"
+          - integer
+      counters_bounce:
+        description: Alias for the bounce counter value.
+        type:
+          - "null"
+          - integer
+      counters_mta_dropped:
+        description: Alias for the MTA dropped counter value.
+        type:
+          - "null"
+          - integer
+      counters_dropped:
+        description: Alias for the dropped counter value.
+        type:
+          - "null"
+          - integer
+      counters_suppressed:
+        description: Alias for the suppressed counter value.
+        type:
+          - "null"
+          - integer
+      counters_click:
+        description: Alias for the click counter value.
+        type:
+          - "null"
+          - integer
+      counters_delivered:
+        description: Alias for the delivered counter value.
+        type:
+          - "null"
+          - integer
+      counters_forward:
+        description: Alias for the forward counter value.
+        type:
+          - "null"
+          - integer
+      counters_print:
+        description: Alias for the print counter value.
+        type:
+          - "null"
+          - integer
+      counters_reply:
+        description: Alias for the reply counter value.
+        type:
+          - "null"
+          - integer
+      counters_spamreport:
+        description: Alias for the spam report counter value.
+        type:
+          - "null"
+          - integer
+      id:
+        description: The unique identifier of the campaign.
+        type:
+          - "null"
+          - integer
+      lastProcessingFinishedAt:
+        description: Timestamp indicating when the last processing of the campaign was finished.
+        type:
+          - "null"
+          - integer
+      lastProcessingStateChangeAt:
+        description: Timestamp indicating the last state change time of the processing state.
+        type:
+          - "null"
+          - integer
+      lastProcessingStartedAt:
+        description: Timestamp indicating when the last processing of the campaign started.
+        type:
+          - "null"
+          - integer
+      processingState:
+        description: Current processing state of the campaign.
+        type:
+          - "null"
+          - string
+      name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      numIncluded:
+        description: Number of recipients included in the campaign.
+        type:
+          - "null"
+          - integer
+      numQueued:
+        description: Number of emails queued for sending.
+        type:
+          - "null"
+          - integer
+      subType:
+        description: Subtype of the campaign.
+        type:
+          - "null"
+          - string
+      subject:
+        description: The subject line of the campaign.
+        type:
+          - "null"
+          - string
+      type:
+        description: Type classification of the campaign.
+        type:
+          - "null"
+          - string
+      lastUpdatedTime:
+        description: Timestamp indicating when the campaign data was last updated.
+        type:
+          - "null"
+          - integer

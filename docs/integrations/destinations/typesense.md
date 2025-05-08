@@ -44,6 +44,7 @@ To connect a Typesense with HA, you can type multiple hosts on the host field us
 
 | Version | Date       | Pull Request                                             | Subject                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 0.1.50 | 2025-05-03 | [59331](https://github.com/airbytehq/airbyte/pull/59331) | Update dependencies |
 | 0.1.49 | 2025-04-26 | [58730](https://github.com/airbytehq/airbyte/pull/58730) | Update dependencies |
 | 0.1.48 | 2025-04-19 | [58250](https://github.com/airbytehq/airbyte/pull/58250) | Update dependencies |
 | 0.1.47 | 2025-04-12 | [57664](https://github.com/airbytehq/airbyte/pull/57664) | Update dependencies |
