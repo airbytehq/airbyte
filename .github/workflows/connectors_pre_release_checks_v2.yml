@@ -43,8 +43,7 @@ jobs:
           python -m pip install pipx
           pipx install airbyte-ci/connectors/connectors_qa
       - name: Run QA Checks
+        # remove strict-encrypt suffix if present for parity with previous checks
         run: |
           connector_name=${{ matrix.connector }}
-          echo "connector_name: $connector_name"
-          echo "modified_connector_name: ${connector_name%-strict-encrypt}"
-          connectors-qa run --name ${matrix.connector%-strict-encrypt}
+          connectors-qa run --name ${connector_name%-strict-encrypt} 
