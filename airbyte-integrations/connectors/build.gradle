@@ -94,7 +94,7 @@ allprojects {
     }
 
     afterEvaluate { Project p ->
-        if (!plugins.hasPlugin('airbyte-docker-convention')) {
+        if (!plugins.hasPlugin('airbyte-connector-docker-convention')) {
             tasks.named('assemble').configure {
                 // We may revisit the dependency on assemble but the dependency should always be on a base task.
                 dependsOn buildConnectorImage

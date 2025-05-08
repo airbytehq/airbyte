@@ -39,3 +39,9 @@ application {
 configurations.all {
         exclude group: "org.slf4j", module: "slf4j-reload4j"
 }
+
+airbyte {
+    docker {
+        dockerfile = project.file('Dockerfile')
+    }
+}

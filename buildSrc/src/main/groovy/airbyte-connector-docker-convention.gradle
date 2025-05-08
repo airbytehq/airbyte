@@ -35,11 +35,14 @@ class AirbyteConnectorDockerConventionPlugin implements Plugin<Project> {
             }
 
             /* ------------------------------------------------------------
-             * 2. Use shared Dockerfile
+             * 2. Use shared Dockerfile if not overridden. This allows
+             *    users to specify the Dockerfiles per connector.
              *    The core plugin’s dockerCopyDockerfile task will copy
              *    it into build/airbyte/docker/Dockerfile automatically.
              * ------------------------------------------------------------ */
-            dockerExt.dockerfile.set(project.rootProject.file(SHARED_DOCKERFILE))
+            if (!dockerExt.dockerfile.present) {
+                dockerExt.dockerfile.set(project.rootProject.file(SHARED_DOCKERFILE))
+            }
 
             /* ------------------------------------------------------------
              * 3. Task: generate buildArgs.properties from metadata.yaml
