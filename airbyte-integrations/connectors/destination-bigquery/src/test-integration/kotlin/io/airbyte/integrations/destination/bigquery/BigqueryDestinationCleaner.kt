@@ -9,9 +9,7 @@ import com.google.cloud.bigquery.BigQueryException
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.DayOfWeek
 import java.time.Duration
-import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -30,11 +28,12 @@ object BigqueryDestinationCleaner : DestinationCleaner {
             )
 
     override fun cleanup() {
-        // only run the cleaner once per week - our nightlies should do this.
+        // only run the cleaner sometimes - our nightlies will do this enough of the time
+        // that we have a reasonably clean destination.
         // bigquery sets pretty harsh rate limits on some of the stuff the cleaner does.
-        // (would be really nice if we stuck this in a cron somewhere, but this is
-        // fine for now)
-        if (DayOfWeek.from(Instant.now()) == DayOfWeek.SATURDAY) {
+        // (would be really nice if we stuck this in a cron somewhere + trigger it weekly,
+        // but this is fine for now)
+        if (Math.random() < 0.1) {
             actualCleaner.cleanup()
         }
     }
