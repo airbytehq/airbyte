@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping
 
+import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
@@ -49,3 +50,5 @@ class BigqueryColumnNameGenerator : ColumnNameGenerator {
         )
     }
 }
+
+fun TableName.toTableId() = TableId.of(this.namespace, this.name)
