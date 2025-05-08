@@ -33,6 +33,7 @@ class NonDockerizedDestination(
     useFileTransfer: Boolean,
     additionalMicronautEnvs: List<String>,
     micronautProperties: Map<Property, String>,
+    injectInputStream: Boolean,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -64,7 +65,12 @@ class NonDockerizedDestination(
                 command,
                 configContents = configContents,
                 catalog = catalog,
-                inputStream = destinationStdin,
+                inputStream =
+                    if (injectInputStream) {
+                        destinationStdin
+                    } else {
+                        null
+                    },
                 featureFlags = featureFlags,
                 additionalMicronautEnvs = additionalMicronautEnvs,
                 micronautProperties = micronautProperties.mapKeys { (k, _) -> k.micronautProperty },
@@ -119,6 +125,12 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory(
     private val additionalMicronautEnvs: List<String>,
 ) : DestinationProcessFactory() {
+    /**
+     * In `check` operations, we do some micronaut magic to redirect the input stream. This
+     * conflicts with the test bean injection, so we expose an option to disable the bean override.
+     */
+    var injectInputStream: Boolean = true
+
     override fun createDestinationProcess(
         command: String,
         configContents: String?,
@@ -135,6 +147,7 @@ class NonDockerizedDestinationFactory(
             useFileTransfer,
             additionalMicronautEnvs,
             micronautProperties,
+            injectInputStream = injectInputStream,
             *featureFlags
         )
     }
