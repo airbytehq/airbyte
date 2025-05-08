@@ -184,6 +184,7 @@ class HubspotSchemaExtractor(RecordExtractor):
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         yield {"properties": list(self.decoder.decode(response))}
 
+
 @dataclass
 class HubspotRenamePropertiesTransformation(RecordTransformation):
     """

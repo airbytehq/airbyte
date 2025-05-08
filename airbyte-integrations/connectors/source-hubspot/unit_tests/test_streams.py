@@ -141,18 +141,12 @@ def test_streams_read(
 
     if is_form_submission:
         forms_response = [
-        {
-            "json": {
-                data_field: [
-                    {
-                        "id": "test_id",
-                        "created": "2022-02-25T16:43:11Z",
-                        "updatedAt": "2022-02-25T16:43:11Z"
-                    }
-                ],
+            {
+                "json": {
+                    data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "updatedAt": "2022-02-25T16:43:11Z"}],
+                }
             }
-        }
-    ]
+        ]
 
     properties_response = [
         {

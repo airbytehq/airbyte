@@ -175,7 +175,7 @@ definitions:
         extractor:
           type: CustomRecordExtractor
           class_name: source_hubspot.components.HubspotSchemaExtractor
-          field_path: [ ]
+          field_path: []
     schema_transformations:
       - type: CustomTransformation
         class_name: source_hubspot.components.NewtoLegacyFieldTransformation
@@ -672,7 +672,8 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /marketing/v3/forms
         request_parameters:
-          formTypes: "['hubspot', 'captured', 'flow']"
+          formTypes:
+            "['hubspot', 'captured', 'flow']"
             # Not supported by `v1` api version used by the FormSubmissions stream
             # TODO: consider migrating FormSubmissions stream to use `/v3` api version
             # then uncomment the last 2 form types.
@@ -695,7 +696,7 @@ definitions:
                   type: RecordSelector
                   extractor:
                     type: DpathExtractor
-                    field_path: [ ]
+                    field_path: []
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -714,7 +715,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "updatedAt" ]
+          - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
       - type: DpathFlattenFields
         field_path: ["properties"]
@@ -741,7 +742,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path:  "/form-integrations/v1/submissions/forms/{{ stream_partition['form_id'][0] }}"
+        path: "/form-integrations/v1/submissions/forms/{{ stream_partition['form_id'][0] }}"
       partition_router:
         type: GroupingPartitionRouter
         group_size: 1
@@ -767,9 +768,9 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "updatedAt" ]
+          - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['submittedAt'] }}"
-          - path: [ "formId" ]
+          - path: ["formId"]
             value: "{{ stream_slice['form_id'][0] }}"
     incremental_sync:
       type: DatetimeBasedCursor
@@ -813,7 +814,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "updatedAt" ]
+          - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
@@ -850,7 +851,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "updatedAt" ]
+          - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
@@ -2251,362 +2252,363 @@ schemas:
   form_submissions:
     $schema: http://json-schema.org/schema#
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       conversionId:
         description: The unique identifier for the form submission
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       submittedAt:
         description: The timestamp when the form was submitted.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       updatedAt:
         description: The timestamp when the form submission data was last updated.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       values:
         description: An array of form field values submitted in the form.
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: object
           properties:
             name:
               description: The name or identifier of the form field.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             value:
               description: The actual value submitted for the form field.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             objectTypeId:
               description: The type identifier of the form field value.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       pageUrl:
         description: The URL of the web page where the form was submitted.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       formId:
         description: The unique identifier of the form associated with the submission.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
 
   forms:
     $schema: http://json-schema.org/schema#
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       id:
         description: Unique identifier for the form.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         description: Name of the form.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       formType:
         description: Type of the form.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       createdAt:
         description: Date and time when the form was created.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         description: Date and time when the form was last updated.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       archived:
         description: Indicates whether the form is archived.
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       deletedAt:
         description: Date and time when the form was deleted.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       fieldGroups:
         description: Groups containing fields of a form.
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           description: Field groups in the form.
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             fields:
               type:
-              - 'null'
-              - array
+                - "null"
+                - array
               items:
                 description: Properties of each field.
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   objectTypeId:
                     description: Object type ID for the field.
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   name:
                     description: Name of the field.
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   label:
                     description: Label for the field.
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   required:
                     description: Indicates whether the field is required.
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                   hidden:
                     description: Indicates whether the field is hidden.
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                   fieldType:
                     description: Type of the field.
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   validation:
                     description: Validation settings for the field.
                     type:
-                    - 'null'
-                    - object
+                      - "null"
+                      - object
                     properties:
                       blockedEmailDomains:
                         description: List of blocked email domains for validation.
                         type:
-                        - 'null'
-                        - array
+                          - "null"
+                          - array
                         items:
                           type:
-                          - 'null'
-                          - string
+                            - "null"
+                            - string
                       useDefaultBlockList:
-                        description: Indicates whether to use the default block list
+                        description:
+                          Indicates whether to use the default block list
                           for validation.
                         type:
-                        - 'null'
-                        - boolean
+                          - "null"
+                          - boolean
             groupType:
               description: Type of field group.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             richTextType:
               description: Type of rich text.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       configuration:
         description: Configuration settings for the form.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           language:
             description: Language setting for the form.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           cloneable:
             description: Indicates whether the form is cloneable.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           postSubmitAction:
             description: Action to be taken after form submission.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               type:
                 description: Type of post-submit action.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               value:
                 description: Value of post-submit action.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           editable:
             description: Indicates whether the form is editable.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           archivable:
             description: Indicates whether the form is archivable.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           recaptchaEnabled:
             description: Indicates whether reCAPTCHA is enabled.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           notifyContactOwner:
             description: Notification setting for contacting the owner.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           notifyRecipients:
             description: Notification setting for recipients.
             type:
-            - 'null'
-            - array
+              - "null"
+              - array
           createNewContactForNewEmail:
             description: Creates a new contact for a new email.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           prePopulateKnownValues:
             description: Pre-populates known values in the form.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           allowLinkToResetKnownValues:
             description: Allows resetting known values through a link.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           lifecycleStages:
             description: List of lifecycle stages.
             type:
-            - 'null'
-            - array
+              - "null"
+              - array
             items:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       displayOptions:
         description: Display options for the form.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           renderRawHtml:
             description: Indicates whether to render raw HTML.
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           theme:
             description: Theme setting for the form.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           submitButtonText:
             description: Text for the submit button.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           style:
             description: Style settings for the form.
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               fontFamily:
                 description: Font family style.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               backgroundWidth:
                 description: Background width style.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               labelTextColor:
                 description: Label text color style.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               labelTextSize:
                 description: Label text font size.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               helpTextColor:
                 description: Help text color style.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               helpTextSize:
                 description: Help text font size.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               legalConsentTextColor:
                 description: Legal consent text color style.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               legalConsentTextSize:
                 description: Legal consent text font size.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               submitColor:
                 description: Color of submit button.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               submitAlignment:
                 description: Alignment of submit button.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               submitFontColor:
                 description: Font color of submit button.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               submitSize:
                 description: Size of submit button.
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           cssClass:
             description: CSS class for styling the form.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       legalConsentOptions:
         description: Legal consent options for the form.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
     additionalProperties: true
 
   marketing_emails:
@@ -4088,157 +4090,159 @@ schemas:
   owners:
     $schema: http://json-schema.org/schema#
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     additionalProperties: true
     properties:
       id:
         description: The unique identifier of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       email:
         description: The email address of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       firstName:
         description: The first name of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       lastName:
         description: The last name of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       userId:
         description: The unique identifier of the user associated with the owner.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       userIdIncludingInactive:
-        description: The unique identifier of the user associated with the owner,
+        description:
+          The unique identifier of the user associated with the owner,
           including inactive users.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         description: The date and time when the owner was created.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         description: The date and time when the owner was last updated.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       archived:
         description: Indicates if the owner is archived or not.
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       teams:
         description: An array of teams the owner belongs to.
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: object
           properties:
             id:
               description: The unique identifier of the team.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               description: The name of the team.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             membership:
               description: The membership status of the owner in the team.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
 
   owners_archived:
     $schema: http://json-schema.org/schema#
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     additionalProperties: true
     properties:
       id:
         description: The unique identifier of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       email:
         description: The email address of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       firstName:
         description: The first name of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       lastName:
         description: The last name of the owner.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       userId:
         description: The user ID associated with the owner.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       userIdIncludingInactive:
-        description: The unique identifier of the user associated with the owner,
+        description:
+          The unique identifier of the user associated with the owner,
           including inactive users.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         description: The date and time the owner was created.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         description: The date and time the owner was last updated.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       archived:
         description: Indicates if the owner is archived or not.
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       teams:
         description: A list of teams the owner belongs to.
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: object
           properties:
             id:
               description: The unique identifier of the team.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               description: The name of the team.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             membership:
               description: The membership status of the owner within the team.
               type:
-              - 'null'
-              - string
+                - "null"
+                - string

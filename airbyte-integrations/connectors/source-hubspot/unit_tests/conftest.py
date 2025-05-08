@@ -9,6 +9,7 @@ from source_hubspot.streams import API
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
+
 NUMBER_OF_PROPERTIES = 2000
 
 
@@ -117,7 +118,5 @@ def patch_time(mocker):
     mocker.patch("time.sleep")
 
 
-def read_from_stream(
-    cfg, stream: str, sync_mode, state = None, expecting_exception: bool = False
-) -> EntrypointOutput:
+def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     return read(SourceHubspot(cfg, None, None), cfg, CatalogBuilder().with_stream(stream, sync_mode).build(), state, expecting_exception)
