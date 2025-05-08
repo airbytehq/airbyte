@@ -155,7 +155,7 @@ The HubSpot source connector supports the following streams:
 
 - [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
-- [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
+- [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 - [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
