@@ -25,9 +25,6 @@ def test_labels_record_extractor(json_response, expected_output, components_modu
 
     # Call the extract_records to process the mocked response
     extracted = extractor.extract_records(response_mock)
-
-    print(f"What is the extracted? {extracted}")
-
     # Assert to check if the output matches the expected result
     assert extracted == expected_output, "The extracted records do not match the expected output"
 
