@@ -24,7 +24,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-
 @Singleton class MSSQLInputPartitioner : RoundRobinInputPartitioner()
 
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
