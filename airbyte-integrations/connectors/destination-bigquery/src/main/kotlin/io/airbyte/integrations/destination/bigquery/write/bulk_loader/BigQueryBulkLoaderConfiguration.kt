@@ -26,9 +26,6 @@ import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
-import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Requires
-import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 
 data class BigqueryBulkLoadConfiguration(
@@ -80,10 +77,4 @@ data class BigqueryBulkLoadConfiguration(
                 fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
             )
     }
-}
-
-@Factory
-@Requires(condition = BigqueryConfiguredForBulkLoad::class)
-class BigqueryBLConfigurationProvider(private val config: BigqueryConfiguration) {
-    @Singleton fun get() = BigqueryBulkLoadConfiguration(config)
 }

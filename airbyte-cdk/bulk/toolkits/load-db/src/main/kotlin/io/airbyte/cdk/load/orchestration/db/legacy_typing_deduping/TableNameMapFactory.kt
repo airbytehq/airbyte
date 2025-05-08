@@ -30,14 +30,14 @@ data class TableCatalogByDescriptor(
 ) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog
 
 @Factory
-class TableCatalogFactory(
-    private val catalog: DestinationCatalog,
-    private val rawTableNameGenerator: RawTableNameGenerator,
-    private val finalTableNameGenerator: FinalTableNameGenerator,
-    private val finalTableColumnNameGenerator: ColumnNameGenerator,
-) {
+class TableCatalogFactory {
     @Singleton
-    fun get(): TableCatalog {
+    fun getTableCatalog(
+        catalog: DestinationCatalog,
+        rawTableNameGenerator: RawTableNameGenerator,
+        finalTableNameGenerator: FinalTableNameGenerator,
+        finalTableColumnNameGenerator: ColumnNameGenerator,
+    ): TableCatalog {
         val processedRawTableNames = mutableSetOf<TableName>()
         val processedFinalTableNames = mutableSetOf<TableName>()
 
@@ -79,7 +79,7 @@ class TableCatalogFactory(
             }
 
             // Create column name mapping with collision handling
-            val columnNameMapping = createColumnNameMapping(stream)
+            val columnNameMapping = createColumnNameMapping(stream, finalTableColumnNameGenerator)
 
             result[stream] =
                 TableNameInfo(
@@ -98,7 +98,10 @@ class TableCatalogFactory(
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
      */
-    private fun createColumnNameMapping(stream: DestinationStream): ColumnNameMapping {
+    private fun createColumnNameMapping(
+        stream: DestinationStream,
+        finalTableColumnNameGenerator: ColumnNameGenerator,
+    ): ColumnNameMapping {
         val processedColumnNames = mutableSetOf<ColumnNameGenerator.ColumnName>()
         val columnMappings = mutableMapOf<String, String>()
         // Map to track original column names by their truncated versions
@@ -112,7 +115,8 @@ class TableCatalogFactory(
                     stream,
                     processedColumnName,
                     existingNames = processedColumnNames,
-                    originalColumnName = columnName
+                    originalColumnName = columnName,
+                    finalTableColumnNameGenerator,
                 )
 
             processedColumnNames.add(finalColumnName)
@@ -135,6 +139,7 @@ class TableCatalogFactory(
         processedName: ColumnNameGenerator.ColumnName,
         existingNames: Set<ColumnNameGenerator.ColumnName>,
         originalColumnName: String,
+        finalTableColumnNameGenerator: ColumnNameGenerator,
     ): ColumnNameGenerator.ColumnName {
         // If processed name is unique, use it
         if (processedName !in existingNames) {
@@ -162,7 +167,8 @@ class TableCatalogFactory(
                 return superResolveColumnCollisions(
                     originalColumnName,
                     existingNames,
-                    processedName.canonicalName.length
+                    processedName.canonicalName.length,
+                    finalTableColumnNameGenerator,
                 )
             }
 
@@ -184,7 +190,8 @@ class TableCatalogFactory(
     private fun superResolveColumnCollisions(
         originalName: String,
         existingNames: Set<ColumnNameGenerator.ColumnName>,
-        maximumColumnNameLength: Int
+        maximumColumnNameLength: Int,
+        finalTableColumnNameGenerator: ColumnNameGenerator,
     ): ColumnNameGenerator.ColumnName {
         // Assume that the <length> portion can be expressed in at most 5 characters.
         // If someone is giving us a column name that's longer than 99999 characters,
@@ -216,14 +223,9 @@ class TableCatalogFactory(
 
         return newColumnName
     }
-}
 
-@Factory
-class TableCatalogByDescriptorFactory(
-    private val map: TableCatalog,
-) {
     @Singleton
-    fun get(): TableCatalogByDescriptor {
+    fun getTableCatalogByDescriptor(map: TableCatalog): TableCatalogByDescriptor {
         return TableCatalogByDescriptor(map.mapKeys { (k, _) -> k.descriptor })
     }
 }
