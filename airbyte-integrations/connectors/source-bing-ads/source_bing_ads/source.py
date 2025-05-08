@@ -38,10 +38,6 @@ from source_bing_ads.report_streams import (  # noqa: F401
     AdGroupPerformanceReportHourly,
     AdGroupPerformanceReportMonthly,
     AdGroupPerformanceReportWeekly,
-    AdPerformanceReportDaily,
-    AdPerformanceReportHourly,
-    AdPerformanceReportMonthly,
-    AdPerformanceReportWeekly,
     AgeGenderAudienceReportDaily,
     AgeGenderAudienceReportHourly,
     AgeGenderAudienceReportMonthly,
@@ -91,6 +87,12 @@ from source_bing_ads.report_streams import (  # noqa: F401
     UserLocationPerformanceReportWeekly,
 )
 
+from source_bing_ads.reports.ad_performance_report import  (
+    AdPerformanceReportHourly,
+    AdPerformanceReportDaily,
+    AdPerformanceReportWeekly,
+    AdPerformanceReportMonthly,
+)
 
 class SourceBingAds(YamlDeclarativeSource):
     """
