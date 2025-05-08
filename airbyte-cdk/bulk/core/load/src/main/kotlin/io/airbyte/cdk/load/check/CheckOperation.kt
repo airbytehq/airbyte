@@ -25,14 +25,26 @@ private val logger = KotlinLogging.logger {}
 class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguration>(
     val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
     val configFactory: DestinationConfigurationFactory<T, C>,
-    private val destinationChecker: DestinationChecker<C>,
+    val destinationChecker: DestinationChecker<C>,
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer,
 ) : Operation {
     override fun execute() {
+        val pojo =
+            try {
+                configJsonObjectSupplier.get()
+            } catch (e: Exception) {
+                handleException(e)
+                return
+            }
+        val config =
+            try {
+                configFactory.make(pojo)
+            } catch (e: Exception) {
+                handleException(e)
+                return
+            }
         try {
-            val pojo = configJsonObjectSupplier.get()
-            val config = configFactory.make(pojo)
             destinationChecker.check(config)
             val successMessage =
                 AirbyteMessage()
@@ -44,11 +56,15 @@ class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguratio
             outputConsumer.accept(successMessage)
         } catch (t: Throwable) {
             logger.warn(t) { "Caught throwable during CHECK" }
-            val (traceMessage, statusMessage) = exceptionHandler.handleCheckFailure(t)
-            outputConsumer.accept(traceMessage)
-            outputConsumer.accept(statusMessage)
+            handleException(t)
         } finally {
-            destinationChecker.cleanup()
+            destinationChecker.cleanup(config)
         }
+    }
+
+    private fun handleException(t: Throwable) {
+        val (traceMessage, statusMessage) = exceptionHandler.handleCheckFailure(t)
+        outputConsumer.accept(traceMessage)
+        outputConsumer.accept(statusMessage)
     }
 }
