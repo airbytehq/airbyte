@@ -49,7 +49,6 @@ from source_hubspot.streams import (
     EngagementsTasksWebAnalytics,
     Forms,
     FormSubmissions,
-    Goals,
     GoalsWebAnalytics,
     Leads,
     LineItems,

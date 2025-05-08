@@ -117,6 +117,20 @@ class HubspotTestCase:
         getattr(http_mocker, method)(request, responses)
 
     @classmethod
+    def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker):
+        for request_mock in http_mocker._get_matchers():
+            # check if dynamic stream was already mocked
+            if "goal_targets" in request_mock.request._parsed_url.path:
+                return
+
+        templates = [{"name": "hs__test_field", "type": "enumeration"}]
+        response_builder = RootHttpResponseBuilder(templates)
+        http_mocker.get(
+            PropertiesRequestBuilder().for_entity("goal_targets").build(),
+            response_builder.build()
+        )
+
+    @classmethod
     def record_builder(cls, stream: str, record_cursor_path):
         return create_record_builder(
             find_template(stream, __file__), records_path=FieldPath("results"), record_id_path=None, record_cursor_path=record_cursor_path

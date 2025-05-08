@@ -108,3 +108,20 @@ def find_stream(stream_name, config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+@pytest.fixture()
+def mock_dynamic_schema_requests(requests_mock):
+    requests_mock.get(
+        "https://api.hubapi.com/properties/v2/goal_targets/properties",
+        json=[
+            {
+                "name": "hs__migration_soft_delete",
+                "label": "migration_soft_delete_deprecated",
+                "description": "Describes if the goal target can be treated as deleted.",
+                "groupName": "goal_target_information",
+                "type": "enumeration"
+            }
+        ],
+        status_code=200
+    )
