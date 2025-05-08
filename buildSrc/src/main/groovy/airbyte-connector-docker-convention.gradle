@@ -6,7 +6,7 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 
-class AirbyteDockerConventionPlugin implements Plugin<Project> {
+class AirbyteConnectorDockerConventionPlugin implements Plugin<Project> {
     private static final String SHARED_DOCKERFILE = 'docker-images/Dockerfile.java-connector-non-airbyte-ci'
 
     @Override
