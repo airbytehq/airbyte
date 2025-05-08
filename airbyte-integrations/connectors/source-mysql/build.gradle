@@ -1,7 +1,5 @@
 plugins {
     id 'airbyte-bulk-connector'
-    id "io.airbyte.gradle.docker"
-    id 'airbyte-connector-docker-convention'
 }
 
 application {
