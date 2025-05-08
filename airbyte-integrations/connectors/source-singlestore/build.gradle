@@ -3,7 +3,7 @@ import org.jsonschema2pojo.SourceType
 plugins {
     id 'application'
     id 'airbyte-java-connector'
-    id 'org.jsonschema2pojo' version '1.2.1'
+    id "com.github.eirnym.js2p"
 }
 
 tasks.named('sourcesJar').configure {
@@ -47,4 +47,8 @@ jsonSchema2Pojo {
     generateBuilders = true
     includeConstructors = false
     includeSetters = true
+}
+
+tasks.named('sourcesJar').configure {
+    dependsOn tasks.named('generateJsonSchema2Pojo')
 }
