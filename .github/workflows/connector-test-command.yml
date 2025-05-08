@@ -213,32 +213,24 @@ jobs:
           uv tool install pytest
           uv tool install mypy
 
-      - name: Get Connector Language
-        if: matrix.connector
-        id: get-language
-        continue-on-error: true # Will fail for now (null output) for manifest-only connectors
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          echo "LANGUAGE=$(poe -qq get-language)" >> $GITHUB_OUTPUT
-
       - name: Install connector dependencies
-        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
+        if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
       - name: Fetch connector secrets
-        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
+        if: matrix.connector
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests
-        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
+        if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
       - name: Run Integration Tests
-        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
+        if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
@@ -329,26 +321,18 @@ jobs:
           uv tool install pytest
           uv tool install mypy
 
-      - name: Get Connector Language
-        if: matrix.connector
-        id: get-language
-        continue-on-error: true # Will fail for now (null output) for manifest-only connectors
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          echo "LANGUAGE=$(poe -qq get-language)" >> $GITHUB_OUTPUT
-
       - name: Install connector dependencies
-        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
+        if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
       - name: Run format-check
-        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
+        if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe format-check
 
       - name: Run lint check (info only)
-        if: ${{ matrix.connector && steps.get-language.outputs.LANGUAGE }}
+        if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe lint-check
         # Most connectors can't pass lint checks, so this is non-blocking for now
