@@ -31,7 +31,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: QA Checks for ${{ matrix.connector || ' (no connectors modified)' }} Connector 
+    name: QA Checks for ${{ matrix.connector || ' (no connectors modified)' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -43,5 +43,8 @@ jobs:
           python -m pip install pipx
           pipx install airbyte-ci/connectors/connectors_qa
       - name: Run QA Checks
-        run:
-          connectors-qa run --name ${{ matrix.connector }}
+        run: |
+          connector_name=${{ matrix.connector }}
+          echo "connector_name: $connector_name"
+          echo "modified_connector_name: ${connector_name%-strict-encrypt}"
+          connectors-qa run --name ${matrix.connector%-strict-encrypt}
