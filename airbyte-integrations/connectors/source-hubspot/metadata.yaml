@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 4.9.0
+  dockerImageTag: 5.0.0
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
@@ -37,17 +37,18 @@ data:
         message: >-
           This update deprecates the `contacts_form_submissions`, `contacts_list_memberships`, and
           `contacts_merged_audit` streams from the source because they are no longer supported in
-          Hubspot's V3 API and the V1 API is being deprecated on 2025-05-30, updates `contact_lists` stream to use V3 API,
-          which has new records' schema, old fields no longer exposed by API, users need to refresh the source schema and clear the stream.
+          Hubspot's V3 API and the V1 API is being deprecated on 2025-05-30. Updates the `contact_lists`
+          stream to use V3 API, which contains changes to the schema due to old fields no longer exposed by
+          the V3 API. Users will need to refresh the source schema and clear the stream.
         upgradeDeadline: 2025-05-30
         scopedImpact:
           - scopeType: stream
             impactedScopes:
               [
+                "contact_lists",
                 "contacts_form_submissions",
                 "contacts_list_memberships",
                 "contacts_merged_audit",
-                "contact_lists",
               ]
       4.0.0:
         message: >-
