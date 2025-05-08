@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -29,10 +30,8 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
-import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
@@ -106,7 +105,6 @@ class DestinationTaskLauncher(
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
-    private val processFileTaskFactory: ProcessFileTaskFactory,
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
@@ -121,7 +119,7 @@ class DestinationTaskLauncher(
 
     // File transfer
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
-    private val fileTransferEnabled: Boolean,
+    private val legacyFileTransfer: Boolean,
 
     // Input Consumer requirements
     private val inputFlow: ReservingDeserializingInputFlow,
@@ -228,8 +226,7 @@ class DestinationTaskLauncher(
             log.info { "Launching heartbeat task" }
             launch(heartbeatTask)
         } else {
-            // TODO: pluggable file transfer
-            if (!fileTransferEnabled) {
+            if (!legacyFileTransfer) {
                 // Start a spill-to-disk task for each record stream
                 catalog.streams.forEach { stream ->
                     log.info { "Starting spill-to-disk task for $stream" }
@@ -248,18 +245,7 @@ class DestinationTaskLauncher(
                     val task = processBatchTaskFactory.make(this)
                     launch(task)
                 }
-            } else {
-                repeat(config.numProcessRecordsWorkers) {
-                    log.info { "Launching process file task $it" }
-                    launch(processFileTaskFactory.make(this))
-                }
-
-                repeat(config.numProcessBatchWorkersForFileTransfer) {
-                    log.info { "Launching process batch task $it" }
-                    val task = processBatchTaskFactory.make(this)
-                    launch(task)
-                }
-            }
+            } // else legacy file transfer will be started by the load strategy
             // Start flush task
             log.info { "Starting timed file aggregate flush task " }
             launch(flushTickTask)

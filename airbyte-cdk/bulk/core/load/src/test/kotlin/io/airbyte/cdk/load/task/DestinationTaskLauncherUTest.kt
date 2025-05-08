@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -30,10 +31,8 @@ import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
-import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
@@ -71,7 +70,6 @@ class DestinationTaskLauncherUTest {
     private val setupTaskFactory: SetupTaskFactory = mockk(relaxed = true)
     private val openStreamTaskFactory: OpenStreamTaskFactory = mockk(relaxed = true)
     private val processRecordsTaskFactory: ProcessRecordsTaskFactory = mockk(relaxed = true)
-    private val processFileTaskFactory: ProcessFileTaskFactory = mockk(relaxed = true)
     private val processBatchTaskFactory: ProcessBatchTaskFactory = mockk(relaxed = true)
     private val closeStreamTaskFactory: CloseStreamTaskFactory = mockk(relaxed = true)
     private val teardownTaskFactory: TeardownTaskFactory = mockk(relaxed = true)
@@ -117,7 +115,6 @@ class DestinationTaskLauncherUTest {
             setupTaskFactory,
             openStreamTaskFactory,
             processRecordsTaskFactory,
-            processFileTaskFactory,
             processBatchTaskFactory,
             closeStreamTaskFactory,
             teardownTaskFactory,
