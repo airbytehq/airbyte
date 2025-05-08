@@ -37,14 +37,14 @@ class DefaultUpdateCheckpointsTask(
         checkpointMessageQueue.consume().collect {
             when (it.value) {
                 is StreamCheckpointWrapped -> {
-                    val (_, stream, index, message) = it.value
-                    log.info { "Updating checkpoint for stream $stream with index $index" }
-                    checkpointManager.addStreamCheckpoint(stream, index, it.replace(message))
+                    val (_, stream, checkpointId, message) = it.value
+                    log.info { "Updating checkpoint for stream $stream with id $checkpointId" }
+                    checkpointManager.addStreamCheckpoint(stream, checkpointId, it.replace(message))
                 }
                 is GlobalCheckpointWrapped -> {
-                    val (_, streamIndexes, message) = it.value
-                    log.info { "Updating global checkpoint for streams $streamIndexes" }
-                    checkpointManager.addGlobalCheckpoint(streamIndexes, it.replace(message))
+                    val (_, streamCheckpointIds, message) = it.value
+                    log.info { "Updating global checkpoint for streams $streamCheckpointIds" }
+                    checkpointManager.addGlobalCheckpoint(streamCheckpointIds, it.replace(message))
                 }
             }
         }
