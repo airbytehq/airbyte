@@ -87,12 +87,13 @@ from source_bing_ads.report_streams import (  # noqa: F401
     UserLocationPerformanceReportWeekly,
 )
 
-from source_bing_ads.reports.ad_performance_report import  (
+from source_bing_ads.reports.ad_performance_report import (  # noqa: F401
     AdPerformanceReportHourly,
     AdPerformanceReportDaily,
     AdPerformanceReportWeekly,
     AdPerformanceReportMonthly,
 )
+
 
 class SourceBingAds(YamlDeclarativeSource):
     """

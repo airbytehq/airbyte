@@ -1,6 +1,12 @@
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC
 
-from source_bing_ads.report_streams import BingAdsReportingServicePerformanceStream, HourlyReportTransformerMixin
+from .bing_ads_reporting_service_performance_stream import BingAdsReportingServicePerformanceStream
+from .hourly_report_transformer_mixin import HourlyReportTransformerMixin
+
 
 class AdPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "AdPerformanceReport"
