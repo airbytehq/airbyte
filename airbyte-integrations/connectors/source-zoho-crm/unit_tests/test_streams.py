@@ -98,7 +98,7 @@ def test_dynamic_attrs(stream_factory):
         pick_list_values=[],
     )
     stream = stream_factory(ModuleMeta(api_name="Leads", module_name="Leads", api_supported=True, fields=[field]))
-    assert stream.path() == "/crm/v2/Leads"
+    assert stream.path() == "/crm/v8/Leads"
     assert stream.get_json_schema() == {
         "additionalProperties": True,
         "description": "Leads",
