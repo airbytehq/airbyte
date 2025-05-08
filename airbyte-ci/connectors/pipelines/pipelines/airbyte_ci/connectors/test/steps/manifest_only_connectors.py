@@ -1,3 +1,9 @@
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
+"""This module groups steps made to run tests for a specific manifest only connector given a test context."""
+
 from typing import List, Sequence, Tuple
 
 from dagger import Container, File
@@ -8,8 +14,8 @@ from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, IncrementalAcceptanceTests, LiveTests
 from pipelines.airbyte_ci.connectors.test.steps.python_connectors import PytestStep
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.dagger.actions import secrets
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 
 
 def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
@@ -81,15 +87,12 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         if not user:
             user = "root"
 
-        self.logger.info(f"Using user {user} for test environment")
-
         # Set up base test environment with reset entrypoint
         test_environment = built_connector_container.with_entrypoint([])
 
         # Create test directories with proper permissions
         test_environment = (
-            test_environment
-            .with_user("root")  # Temporarily switch to root to create directories
+            test_environment.with_user("root")  # Temporarily switch to root to create directories
             .with_exec(["mkdir", "-p", test_dir, connector_base_path, connector_path, f"{connector_path}/{self.test_directory_name}"])
             .with_workdir(test_dir)
         )
@@ -102,48 +105,28 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         self.logger.info(f"Files in connector directory: {connector_entries}")
 
         # Mount the entire connector directory to ensure all files (especially components.py) are available
-        test_environment = (
-            test_environment
-            .with_mounted_directory(connector_path, connector_dir)
-        )
+        test_environment = test_environment.with_mounted_directory(connector_path, connector_dir)
 
         # Get and mount the unit_tests directory specifically
         unit_tests_dir = connector_dir.directory(self.test_directory_name)
         unit_tests_path = f"{connector_path}/{self.test_directory_name}"
 
-        # Mount secrets 
-        secret_mounting_function = await secrets.mounted_connector_secrets(
-            self.context, f"{test_dir}/secrets", self.secrets, owner=user
-        )
+        # Mount secrets
+        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, f"{test_dir}/secrets", self.secrets, owner=user)
 
         # Apply secrets and set up Python path
-        test_environment = (
-            test_environment
-            .with_(secret_mounting_function)
-            .with_env_variable("PYTHONPATH", f"{connector_base_path}:{connector_path}:{unit_tests_path}:{test_dir}")
+        test_environment = test_environment.with_(secret_mounting_function).with_env_variable(
+            "PYTHONPATH", f"{connector_base_path}:{connector_path}:{unit_tests_path}:{test_dir}"
         )
 
         # Create symlink to source-declarative-manifest
-        test_environment = test_environment.with_exec(
-            ["ln", "-s", "/source-declarative-manifest", connector_path]
-        )
-
-        # Debug: Check the connector structure
-        test_environment = test_environment.with_exec(
-            ["echo", "=== CHECKING IF COMPONENTS.PY EXISTS ==="]
-        ).with_exec(
-            ["ls", "-la", connector_path]
-        )
+        test_environment = test_environment.with_exec(["ln", "-s", "/source-declarative-manifest", connector_path])
 
         # Set working directory to unit tests path
         test_environment = test_environment.with_workdir(unit_tests_path)
 
         # Install Poetry
-        test_environment = test_environment.with_exec(
-            ["echo", "=== INSTALLING POETRY ==="]
-        ).with_exec(
-            ["pip", "install", "poetry==1.8.4"]  # Install specific Poetry version for stability
-        )
+        test_environment = test_environment.with_exec(["echo", "=== INSTALLING POETRY ==="]).with_exec(["pip", "install", "poetry"])
 
         # Install dependencies directly with Poetry
         test_environment = test_environment.with_exec(
@@ -152,41 +135,23 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
             ["poetry", "install", "--no-root"]  # Install dependencies without the root package
         )
 
-        # Install common test dependencies
+        # Install common test dependencies. This shouldn't be needed as we're now
+        # using the connector's pyproject.toml, but it's here to support MO connectors
+        # that might have dependencies not listed in the pyproject.toml.
         if self.common_test_dependencies:
-            test_environment = test_environment.with_exec(
-                ["echo", "=== INSTALLING COMMON TEST DEPENDENCIES ==="]
-            ).with_exec(
+            test_environment = test_environment.with_exec(["echo", "=== INSTALLING COMMON TEST DEPENDENCIES ==="]).with_exec(
                 ["pip", "install"] + self.common_test_dependencies
             )
 
-        # Add CDK tests utilities diagnostics
-        test_environment = test_environment.with_exec(
-            ["echo", "=== CHECKING CDK TEST UTILS ==="]
-        ).with_exec(
-            ["python", "-c", "try:\n    import airbyte_cdk.test.utils.manifest_only_fixtures\n    print(f'CDK manifest fixtures found at: {airbyte_cdk.test.utils.manifest_only_fixtures.__file__}')\nexcept ImportError as e:\n    print(f'Error importing CDK test utils: {e}')"]
-        )
-
         # Set ownership of all files to the proper user and switch to that user
-        test_environment = (
-            test_environment
-            .with_exec(["chown", "-R", f"{user}:{user}", test_dir])
-            .with_user(user)
-        )
-
-        # Add final environment check
-        test_environment = test_environment.with_exec(
-            ["echo", "=== FINAL PYTHON ENVIRONMENT ==="]
-        ).with_exec(
-            ["pip", "list"]
-        )
+        test_environment = test_environment.with_exec(["chown", "-R", f"{user}:{user}", test_dir]).with_user(user)
 
         return test_environment
 
     async def get_config_file_name_and_file(self) -> Tuple[str, File]:
         """
         Get the config file name and file to use for pytest.
-        For manifest-only connectors, we expect the poetry config to be found 
+        For manifest-only connectors, we expect the poetry config to be found
         in the unit_tests directory.
         """
         connector_name = self.context.connector.technical_name
@@ -204,4 +169,4 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
     def get_pytest_command(self, test_config_file_name: str) -> List[str]:
         """Get the pytest command to run."""
         cmd = ["pytest", "-v", ".", "-c", test_config_file_name] + self.params_as_cli_options
-        return ["python", "-m"] + cmd
+        return ["poetry", "run"] + cmd
