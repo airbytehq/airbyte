@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.5.15"
+version = "1.5.16-rc.1"
 name = "source-google-search-console"
 description = "Source implementation for Google Search Console."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,10 +16,11 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_google_search_console"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = ">=3.10,<3.12"
 google-api-python-client = "==2.105.0"
-airbyte-cdk = "^1"
+airbyte-cdk = "^6"
 google-auth = "==2.23.3"
+pendulum = "^3.1.0"
 
 [tool.poetry.scripts]
 source-google-search-console = "source_google_search_console.run:run"
@@ -27,7 +28,7 @@ source-google-search-console = "source_google_search_console.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"
 pytest-lazy-fixture = "^0.6.3"
-pytest = "^8.0.0"
+pytest = "^7.4.0"
 pytest-mock = "^3.6.1"
 
 
