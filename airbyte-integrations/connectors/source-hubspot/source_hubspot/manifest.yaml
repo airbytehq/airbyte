@@ -2124,11 +2124,11 @@ schemas:
           hs_last_record_added_at:
             type:
               - "null"
-              - string
+              - integer
           hs_last_record_removed_at:
             type:
               - "null"
-              - string
+              - integer
           hs_folder_name:
             type:
               - "null"
