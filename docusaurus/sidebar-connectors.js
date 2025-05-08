@@ -128,7 +128,7 @@ function groupConnectorsBySupportLevel(connectors) {
       type: "category",
       label: "Airbyte",
       collapsible: true,
-      collapsed: false,
+      collapsed: true,
       items: grouped.certified.sort((a, b) => a.label.localeCompare(b.label)),
     });
   }
@@ -138,7 +138,7 @@ function groupConnectorsBySupportLevel(connectors) {
       type: "category",
       label: "Marketplace",
       collapsible: true,
-      collapsed: false,
+      collapsed: true,
       items: grouped.community.sort((a, b) => a.label.localeCompare(b.label)),
     });
   }
