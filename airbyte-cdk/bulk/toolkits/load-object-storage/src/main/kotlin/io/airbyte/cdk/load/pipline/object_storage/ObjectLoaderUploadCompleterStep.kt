@@ -23,7 +23,7 @@ class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
         null,
     private val completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
     private val taskFactory: LoadPipelineStepTaskFactory,
-    private val taskId: String,
+    private val stepId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = objectLoader.numUploadCompleters
 
@@ -38,7 +38,7 @@ class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
                 completedUploadQueue,
                 partition,
                 numWorkers,
-                taskId = taskId,
+                stepId = stepId,
             )
         }
     }
