@@ -4,7 +4,7 @@ type: DeclarativeSource
 
 description: >-
   Calendly source syncs your organization members, groups, available event
-  types, and scheduled events from Calendly! blah
+  types, and scheduled events from Calendly!
 
 check:
   type: CheckStream

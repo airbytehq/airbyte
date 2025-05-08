@@ -52,7 +52,6 @@ spec:
         enum:
           - bulbasaur
           - ivysaur
-          - blah
           - venusaur
           - charmander
           - charmeleon

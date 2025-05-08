@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestinationStrictEncrypt.class);
-  private static final String CONNECTOR_NAME = "BLAH"; // remove this
 
   public MongodbDestinationStrictEncrypt() {
     super(MongodbDestination.sshWrappedDestination());
