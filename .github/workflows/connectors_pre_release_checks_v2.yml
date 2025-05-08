@@ -43,7 +43,15 @@ jobs:
           python -m pip install pipx
           pipx install airbyte-ci/connectors/connectors_qa
       - name: Run QA Checks
-        # remove strict-encrypt suffix if present for parity with previous checks
+        # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
         run: |
           connector_name=${{ matrix.connector }}
           connectors-qa run --name ${connector_name%-strict-encrypt} 
+
+  qa-checks-summary:
+    name: QA Checks Summary
+    needs: [qa-checks]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Summary
+        run: echo "✅ All Connector QA Checks completed successfully (or nothing to test)."
