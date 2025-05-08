@@ -16,12 +16,13 @@ RUN tar xf /tmp/${CONNECTOR_NAME}.tar --strip-components=1 -C /airbyte && \
     rm -rf /tmp/${CONNECTOR_NAME}.tar && \
     chown -R airbyte:airbyte /airbyte
 
+## -- This is the only different piece for S3 -- ##
 # Install S3-specific dependencies as root.
 USER root
 RUN yum install -y lzop lzo lzo-devel && yum clean all
-
 # Critically important to switch back to Airbyte later.
 USER airbyte
+## --------------------------------------------- ##
 
 # Set entrypoint
 ENTRYPOINT ["/airbyte/base.sh"]
