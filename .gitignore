@@ -1,3 +1,4 @@
+.tmp
 .gradle
 .idea
 *.iml
@@ -14,6 +15,8 @@ out
 **/gmon.out
 static_checker_reports/
 .tool-versions
+test-results
+
 # Logs
 acceptance_tests_logs/
 airbyte_ci_logs/

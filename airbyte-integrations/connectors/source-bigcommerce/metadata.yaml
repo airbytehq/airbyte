@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59c5501b-9f95-411e-9269-7143c939adbd
-  dockerImageTag: 0.3.18
+  dockerImageTag: 0.3.21
   dockerRepository: airbyte/source-bigcommerce
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
   githubIssueLabel: source-bigcommerce
@@ -47,5 +47,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.0@sha256:0508eca3b3193ba7883a80f0f739073f5bd99a8f565720c2f95286d5b4f48cb6
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
 metadataSpecVersion: "1.0"

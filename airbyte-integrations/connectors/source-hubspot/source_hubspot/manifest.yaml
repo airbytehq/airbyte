@@ -94,7 +94,7 @@ definitions:
     pagination_strategy:
       type: OffsetIncrement
       page_size: 100
-      
+
   cursor_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -162,6 +162,287 @@ definitions:
       $ref: "#/definitions/retriever_without_pagination"
 
   # Stream Definitions
+  companies_property_history_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key:
+      - companyId
+      - property
+      - timestamp
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          propertyMode: value_and_history
+          propertiesWithHistory:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: ["name"]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.hubapi.com
+                  authenticator:
+                    $ref: "#/definitions/authenticator"
+                  path: /properties/v2/companies/properties
+                  http_method: GET
+                  request_headers:
+                    Content-Type: "application/json"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          field_path: ["results"]
+          entity_primary_key: companyId
+          additional_keys: ["archived"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("paging", {}).get("next", {}).get("after") }}'
+          stop_condition: '{{ not response.get("paging", {}) }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
+      is_client_side_incremental: true
+    $parameters:
+      name: companies_property_history
+      path: /crm/v3/objects/companies
+      extractor_field_path: results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/companies_property_history"
+
+  contacts_property_history_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key:
+      - vid
+      - property
+      - timestamp
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          propertyMode: value_and_history
+          propertiesWithHistory:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: ["name"]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.hubapi.com
+                  authenticator:
+                    $ref: "#/definitions/authenticator"
+                  path: "/properties/v2/contacts/properties"
+                  http_method: GET
+                  request_headers:
+                    Content-Type: "application/json"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          field_path: ["results"]
+          entity_primary_key: vid
+          additional_keys: ["archived"] # The old additional_keys aren't valid for the Hubspot V3 endpoint
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("paging", {}).get("next", {}).get("after") }}'
+          stop_condition: '{{ not response.get("paging", {}) }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%ms"
+      is_client_side_incremental: true
+    $parameters:
+      name: contacts_property_history
+      path: /crm/v3/objects/contacts
+      extractor_field_path: results
+    # The Hubspot V3 API uses camel case. To retain backwards compatibility, we convert fields kebab case from V1
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["vid"]
+            value: "{{ record.get('vid') }}"
+            value_type: integer
+          - type: AddedFieldDefinition
+            path: ["source-id"]
+            value_type: string
+            value: "{{ record.get('sourceId') }}"
+          - type: AddedFieldDefinition
+            path: ["source-label"]
+            value: "{{ record.get('sourceLabel') }}"
+          - type: AddedFieldDefinition
+            path: ["source-type"]
+            value: "{{ record.get('sourceType') }}"
+          - type: AddedFieldDefinition
+            path: ["updated-by-user-id"]
+            value: "{{ record.get('updatedByUserId') }}"
+          - type: AddedFieldDefinition
+            path: ["timestamp"]
+            # The Hubspot v1 API returns time as a millisecond integer, but v3 returns a millisecond ISO8601
+            # string. This transformation retains backwards compatibility without loss of precision
+            value: "{{ format_datetime(record.get('timestamp'), '%ms') }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["sourceId"]
+          - ["sourceLabel"]
+          - ["sourceType"]
+          - ["updatedByUserId"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/contacts_property_history"
+
+  deals_property_history_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key:
+      - dealId
+      - property
+      - timestamp
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          propertyMode: value_and_history
+          propertiesWithHistory:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: ["name"]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.hubapi.com
+                  authenticator:
+                    $ref: "#/definitions/authenticator"
+                  path: /properties/v2/deals/properties
+                  http_method: GET
+                  request_headers:
+                    Content-Type: "application/json"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotPropertyHistoryExtractor
+          field_path: ["results"]
+          entity_primary_key: dealId
+          additional_keys: ["archived"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: '{{ response.get("paging", {}).get("next", {}).get("after") }}'
+          stop_condition: '{{ not response.get("paging", {}) }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
+      is_client_side_incremental: true
+    $parameters:
+      name: deals_property_history
+      path: /crm/v3/objects/deals
+      extractor_field_path: results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deals_property_history"
+
   marketing_emails_stream:
     primary_key:
       - id
@@ -478,14 +759,169 @@ definitions:
       schema:
         $ref: "#/schemas/owners_archived"
 
+  ticket_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: ticket_pipelines
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/pipelines/tickets
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record['createdAt'] }}"
+        condition: "{{ record.get('updatedAt') is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ticket_pipelines"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+
+  campaigns_stream:
+    $ref: "#/definitions/stream_base"
+    name: campaigns
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /email/public/v1/campaigns
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: false
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - campaigns
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 500
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdatedTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/campaigns"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.AddFieldsFromEndpointTransformation
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/email/public/v1/campaigns/{{ stream_slice['parent_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        $parameters:
+          # Requester and Selector require stream name as a param.
+          name: campaigns
+      - type: DpathFlattenFields
+        field_path:
+          - counters
+        key_transformation:
+          type: KeyTransformation
+          prefix: counters_
+
+  deal_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: deal_pipelines
+    primary_key:
+      - pipelineId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm-pipelines/v1/pipelines/deals
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: true
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deal_pipelines"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+
 streams:
-  - "#/definitions/marketing_emails_stream"
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/companies_property_history_stream"
+  - "#/definitions/contacts_property_history_stream"
+  - "#/definitions/deal_pipelines_stream"
+  - "#/definitions/deals_property_history_stream"
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/deals_archived_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/form_submissions_stream"
   - "#/definitions/owners_stream"
   - "#/definitions/owners_archived_stream"
+  - "#/definitions/marketing_emails_stream"
+  - "#/definitions/ticket_pipelines_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -494,6 +930,299 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  deal_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the deal pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The ordering of the deal pipeline for display.
+        type:
+          - "null"
+          - integer
+      active:
+        description: Indicates if the deal pipeline is currently active or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description: List of deal stages within the pipeline.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the deal stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The ordering of the deal stage for display within the pipeline.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description: Additional information related to the deal stage.
+              type:
+                - "null"
+                - object
+              properties:
+                isClosed:
+                  description: Indicates if the deal stage is considered closed or not.
+                  type:
+                    - "null"
+                    - string
+                probability:
+                  description: The probability of closing a deal at this stage.
+                  type:
+                    - "null"
+                    - string
+            stageId:
+              description: The unique identifier of the deal stage.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: Timestamp for the creation date of the deal stage.
+              type:
+                - "null"
+                - integer
+            updatedAt:
+              description: Timestamp for the last update to the deal stage.
+              type:
+                - "null"
+                - integer
+            active:
+              description: Indicates if the deal stage is currently active or not.
+              type:
+                - "null"
+                - boolean
+      objectType:
+        description: The type of object this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      objectTypeId:
+        description: The ID of the object type this deal pipeline is associated with.
+        type:
+          - "null"
+          - string
+      pipelineId:
+        description: The unique identifier of the deal pipeline.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp for the creation date of the deal pipeline.
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        description: Timestamp for the last update to the deal pipeline.
+        type:
+          - "null"
+          - integer
+      default:
+        description: Indicates if this pipeline is the default one in the system.
+  companies_property_history:
+    $schema: "http://json-schema.org/draft-07/schema"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      updatedByUserId:
+        description: The user ID of the user who initiated the property update.
+        type:
+          - "null"
+          - number
+      timestamp:
+        description: The date and time when the property update occurred.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      property:
+        description: The specific property that was updated in the company record.
+        type:
+          - "null"
+          - string
+      companyId:
+        description: >-
+          The unique identifier of the company to which the property history record
+          belongs.
+        type:
+          - "null"
+          - string
+      sourceType:
+        description: The type of the source that updated the property in the company record.
+        type:
+          - "null"
+          - string
+      sourceId:
+        description: >-
+          The identifier of the source that updated the property in the company
+          record.
+        type:
+          - "null"
+          - string
+      value:
+        description: The new value of the property after the update.
+        type:
+          - "null"
+          - string
+      archived:
+        description: Flag indicating if the company property history record is archived or not.
+        type:
+          - "null"
+          - boolean
+
+  contacts_property_history:
+    $schema: "http://json-schema.org/draft-07/schema"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      value:
+        description: The value of the property at the specified timestamp.
+        type:
+          - "null"
+          - string
+      source-type:
+        description: The type or category of the data source.
+        type:
+          - "null"
+          - string
+      source-id:
+        description: The identifier of the data source that generated this historical entry.
+        type:
+          - "null"
+          - string
+      source-label:
+        description: The label representing the source of the data.
+        type:
+          - "null"
+          - string
+      updated-by-user-id:
+        description: The identifier of the user who last updated the property value.
+        type:
+          - "null"
+          - integer
+      timestamp:
+        description: The timestamp when the property value was last updated.
+        type:
+          - "null"
+          - integer
+      selected:
+        description: Indicates whether this property is currently selected or not.
+        type:
+          - "null"
+          - boolean
+      is-contact:
+        description: Indicates whether the data is associated with a contact record.
+        type:
+          - "null"
+          - boolean
+      property:
+        description: The specific property whose history is being tracked.
+        type:
+          - "null"
+          - string
+      vid:
+        description: The unique identifier for this historical data entry.
+        type:
+          - "null"
+          - integer
+      canonical-vid:
+        description: >-
+          The unique identifier for the contact record that this historical data
+          belongs to.
+        type:
+          - "null"
+          - integer
+      portal-id:
+        description: The identifier for the HubSpot portal that the data belongs to.
+        type:
+          - "null"
+          - integer
+      source-vids:
+        description: List of unique identifiers of the sources associated with this historical data.
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - "null"
+            - integer
+      archived:
+        description: Indicates whether the data is associated with a contact record.
+        type:
+          - "null"
+          - boolean
+
+  deals_property_history:
+    $schema: "http://json-schema.org/draft-07/schema"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      updatedByUserId:
+        description: The unique identifier of the user who made the update
+        type:
+          - "null"
+          - number
+      timestamp:
+        description: The date and time when the property was updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      property:
+        description: The name of the property that was updated
+        type:
+          - "null"
+          - string
+      dealId:
+        description: The unique identifier of the deal associated with this property history
+        type:
+          - "null"
+          - string
+      sourceType:
+        description: The type of source that triggered this update
+        type:
+          - "null"
+          - string
+      sourceId:
+        description: The unique identifier of the source of this update
+        type:
+          - "null"
+          - string
+      value:
+        description: The new value of the property
+        type:
+          - "null"
+          - string
+      archived:
+        description: Indicates if the deal property history is archived
+        type:
+          - "null"
+          - boolean
+
   deals_archived:
     $schema: http://json-schema.org/schema#
     type:
@@ -2891,6 +3620,365 @@ schemas:
           type:
             - "null"
             - integer
+
+  ticket_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the ticket pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The order in which the ticket pipeline is displayed.
+        type:
+          - "null"
+          - integer
+      id:
+        description: The unique identifier of the ticket pipeline.
+        type:
+          - "null"
+          - string
+      archived:
+        description: Indicates if the ticket pipeline is archived or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description: List of stages within the ticket pipeline.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The order in which the stage is displayed.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description: Additional metadata related to the stage.
+              type:
+                - "null"
+                - object
+              properties:
+                ticketState:
+                  description: The state of the ticket within this stage.
+                  type:
+                    - "null"
+                    - string
+                isClosed:
+                  description: Indicates if the stage is closed or not.
+                  type:
+                    - "null"
+                    - string
+            id:
+              description: The unique identifier of the stage.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: The date and time when the stage was created.
+              type:
+                - "null"
+                - string
+              format: date-time
+            updatedAt:
+              description: The date and time when the stage was last updated.
+              type:
+                - "null"
+                - string
+              format: date-time
+            active:
+              description: Indicates if the stage is actively being used.
+              type:
+                - "null"
+                - boolean
+            archived:
+              description: Indicates if the stage is archived or not.
+              type:
+                - "null"
+                - boolean
+            writePermissions:
+              description: Permissions for writing/modifying the stage.
+              type:
+                - "null"
+                - string
+      createdAt:
+        description: The date and time when the ticket pipeline was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the ticket pipeline was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  campaigns:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      appId:
+        description:
+          The unique identifier of the application associated with the campaign
+          data.
+        type:
+          - "null"
+          - integer
+      appName:
+        description: The name of the application associated with the campaign data.
+        type:
+          - "null"
+          - string
+      contentId:
+        description: The unique identifier of the content associated with the campaign.
+        type:
+          - "null"
+          - integer
+      counters:
+        description: Object containing different counters related to the campaign's performance.
+        type:
+          - "null"
+          - object
+        properties:
+          open:
+            description: Number of email opens.
+            type:
+              - "null"
+              - integer
+          processed:
+            description: Number of emails processed by the campaign.
+            type:
+              - "null"
+              - integer
+          sent:
+            description: Number of emails sent.
+            type:
+              - "null"
+              - integer
+          deferred:
+            description: Number of deferred emails.
+            type:
+              - "null"
+              - integer
+          unsubscribed:
+            description: Number of recipients unsubscribed from the campaign.
+            type:
+              - "null"
+              - integer
+          statuschange:
+            description: Number of status changes related to the campaign.
+            type:
+              - "null"
+              - integer
+          bounce:
+            description: Number of bounced emails.
+            type:
+              - "null"
+              - integer
+          mta_dropped:
+            description: Number of emails dropped at the MTA level.
+            type:
+              - "null"
+              - integer
+          dropped:
+            description: Number of dropped emails.
+            type:
+              - "null"
+              - integer
+          suppressed:
+            description: Number of emails suppressed from sending.
+            type:
+              - "null"
+              - integer
+          click:
+            description: Number of clicks on the campaign.
+            type:
+              - "null"
+              - integer
+          delivered:
+            description: Number of successfully delivered emails.
+            type:
+              - "null"
+              - integer
+          forward:
+            description: Number of emails forwarded by recipients.
+            type:
+              - "null"
+              - integer
+          print:
+            description: Number of emails printed by recipients.
+            type:
+              - "null"
+              - integer
+          reply:
+            description: Number of replies received to the campaign.
+            type:
+              - "null"
+              - integer
+          spamreport:
+            description: Number of spam reports received for the campaign.
+            type:
+              - "null"
+              - integer
+      counters_open:
+        description: Alias for the open counter value.
+        type:
+          - "null"
+          - integer
+      counters_processed:
+        description: Alias for the processed counter value.
+        type:
+          - "null"
+          - integer
+      counters_sent:
+        description: Alias for the sent counter value.
+        type:
+          - "null"
+          - integer
+      counters_deferred:
+        description: Alias for the deferred counter value.
+        type:
+          - "null"
+          - integer
+      counters_unsubscribed:
+        description: Alias for the unsubscribed counter value.
+        type:
+          - "null"
+          - integer
+      counters_statuschange:
+        description: Alias for the status change counter value.
+        type:
+          - "null"
+          - integer
+      counters_bounce:
+        description: Alias for the bounce counter value.
+        type:
+          - "null"
+          - integer
+      counters_mta_dropped:
+        description: Alias for the MTA dropped counter value.
+        type:
+          - "null"
+          - integer
+      counters_dropped:
+        description: Alias for the dropped counter value.
+        type:
+          - "null"
+          - integer
+      counters_suppressed:
+        description: Alias for the suppressed counter value.
+        type:
+          - "null"
+          - integer
+      counters_click:
+        description: Alias for the click counter value.
+        type:
+          - "null"
+          - integer
+      counters_delivered:
+        description: Alias for the delivered counter value.
+        type:
+          - "null"
+          - integer
+      counters_forward:
+        description: Alias for the forward counter value.
+        type:
+          - "null"
+          - integer
+      counters_print:
+        description: Alias for the print counter value.
+        type:
+          - "null"
+          - integer
+      counters_reply:
+        description: Alias for the reply counter value.
+        type:
+          - "null"
+          - integer
+      counters_spamreport:
+        description: Alias for the spam report counter value.
+        type:
+          - "null"
+          - integer
+      id:
+        description: The unique identifier of the campaign.
+        type:
+          - "null"
+          - integer
+      lastProcessingFinishedAt:
+        description: Timestamp indicating when the last processing of the campaign was finished.
+        type:
+          - "null"
+          - integer
+      lastProcessingStateChangeAt:
+        description: Timestamp indicating the last state change time of the processing state.
+        type:
+          - "null"
+          - integer
+      lastProcessingStartedAt:
+        description: Timestamp indicating when the last processing of the campaign started.
+        type:
+          - "null"
+          - integer
+      processingState:
+        description: Current processing state of the campaign.
+        type:
+          - "null"
+          - string
+      name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      numIncluded:
+        description: Number of recipients included in the campaign.
+        type:
+          - "null"
+          - integer
+      numQueued:
+        description: Number of emails queued for sending.
+        type:
+          - "null"
+          - integer
+      subType:
+        description: Subtype of the campaign.
+        type:
+          - "null"
+          - string
+      subject:
+        description: The subject line of the campaign.
+        type:
+          - "null"
+          - string
+      type:
+        description: Type classification of the campaign.
+        type:
+          - "null"
+          - string
+      lastUpdatedTime:
+        description: Timestamp indicating when the campaign data was last updated.
+        type:
+          - "null"
+          - integer
 
   owners:
     $schema: http://json-schema.org/schema#

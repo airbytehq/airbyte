@@ -34,7 +34,6 @@ from source_hubspot.components import NewtoLegacyFieldTransformation
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import (
-    APIPropertiesWithHistory,
     APIv1Property,
     APIv2Property,
     APIv3Property,
@@ -1171,8 +1170,7 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     @property
     def url(self):
-        object_type_id = self.fully_qualified_name or self.entity
-        return f"/crm/v3/objects/{object_type_id}/search" if self.state else f"/crm/v3/objects/{object_type_id}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -1425,35 +1423,6 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         yield from self._flat_associations(records)
 
 
-class Campaigns(ClientSideIncrementalStream):
-    """Email campaigns, API v1
-    There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
-    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
-    """
-
-    url = "/email/public/v1/campaigns"
-    more_key = "hasMore"
-    data_field = "campaigns"
-    limit = 500
-    updated_at_field = "lastUpdatedTime"
-    cursor_field_datetime_format = "x"
-    primary_key = "id"
-    scopes = {"crm.lists.read"}
-    unnest_fields = ["counters"]
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
-            if self.filter_by_state(stream_state=stream_state, record=row):
-                yield from self.record_unnester.unnest([{**row, **record}])
-
-
 class ContactLists(IncrementalStream):
     """Contact lists, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
@@ -1609,20 +1578,6 @@ class DealsArchived(ClientSideIncrementalStream):
         return params
 
 
-class DealPipelines(ClientSideIncrementalStream):
-    """Deal pipelines, API v1,
-    This endpoint requires the contacts scope the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
-    """
-
-    url = "/crm-pipelines/v1/pipelines/deals"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "pipelineId"
-    scopes = {"crm.objects.contacts.read"}
-
-
 class DealSplits(CRMSearchStream):
     """Deal splits, API v3"""
 
@@ -1630,38 +1585,6 @@ class DealSplits(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     primary_key = "id"
     scopes = {"crm.objects.deals.read"}
-
-
-class TicketPipelines(ClientSideIncrementalStream):
-    """Ticket pipelines, API v1
-    This endpoint requires the tickets scope.
-    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
-    """
-
-    url = "/crm/v3/pipelines/tickets"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
-    primary_key = "id"
-    scopes = {
-        "media_bridge.read",
-        "tickets",
-        "crm.schemas.custom.read",
-        "e-commerce",
-        "timeline",
-        "contacts",
-        "crm.schemas.contacts.read",
-        "crm.objects.contacts.read",
-        "crm.objects.contacts.write",
-        "crm.objects.deals.read",
-        "crm.schemas.quotes.read",
-        "crm.objects.deals.write",
-        "crm.objects.companies.read",
-        "crm.schemas.companies.read",
-        "crm.schemas.deals.read",
-        "crm.schemas.line_items.read",
-        "crm.objects.companies.write",
-    }
 
 
 class EmailEvents(IncrementalStream):
@@ -2099,6 +2022,136 @@ class DealsPropertyHistory(PropertyHistoryV3):
     ) -> str:
         return f"{self.url}?{properties.as_url_param()}"
 
+class Forms(ClientSideIncrementalStream):
+    """Marketing Forms, API v3
+    by default non-marketing forms are filtered out of this endpoint
+    Docs: https://developers.hubspot.com/docs/api/marketing/forms
+    """
+
+    entity = "form"
+    url = "/marketing/v3/forms"
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"forms"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["formTypes"] = [
+            "hubspot",
+            "captured",
+            "flow",
+            # Not supported by `v1` api version used by the FormSubmissions stream
+            # TODO: consider migrating FormSubmissions stream to use `/v3` api version
+            # then uncomment the last 2 form types.
+            # "blog_comment",
+            # "all",
+        ]
+        return params
+
+
+class FormSubmissions(ClientSideIncrementalStream):
+    """Marketing Forms, API v1
+    This endpoint requires the forms scope.
+    Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
+    """
+
+    url = "/form-integrations/v1/submissions/forms"
+    limit = 50
+    updated_at_field = "updatedAt"
+    cursor_field_datetime_format = "x"
+    scopes = {"forms"}
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
+    ) -> str:
+        return f"{self.url}/{stream_slice['form_id']}"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.forms = Forms(**kwargs)
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            keys = record.keys()
+
+            # There's no updatedAt field in the submission however forms fetched by using this field,
+            # so it has to be added to the submissions otherwise it would fail when calling _filter_old_records
+            if "updatedAt" not in keys:
+                record["updatedAt"] = record["submittedAt"]
+
+            yield record
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        slices = []
+        seen = set()
+        # To get submissions for all forms date filtering has to be disabled
+        self.forms.filter_old_records = False
+        for form in self.forms.read_records(sync_mode):
+            if form["id"] not in seen:
+                seen.add(form["id"])
+                slices.append({"form_id": form["id"]})
+        return slices
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            if self.filter_by_state(stream_state=stream_state, record=record):
+                record["formId"] = stream_slice["form_id"]
+                yield record
+
+
+class Owners(ClientSideIncrementalStream):
+    """Owners, API v3
+    Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
+    """
+
+    url = "/crm/v3/owners"
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.owners.read"}
+
+
+class OwnersArchived(ClientSideIncrementalStream):
+    """Archived Owners, API v3"""
+
+    url = "/crm/v3/owners"
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.owners.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["archived"] = "true"
+        return params
+
 
 class SubscriptionChanges(IncrementalStream):
     """Subscriptions timeline for a portal, API v1
@@ -2238,6 +2291,11 @@ class CustomObject(CRMSearchStream, ABC):
         self.schema = schema
         self.fully_qualified_name = fully_qualified_name
         self.custom_properties = custom_properties
+
+    @property
+    def url(self):
+        object_type_id = self.fully_qualified_name or f"p_{self.entity}"
+        return f"/crm/v3/objects/{object_type_id}/search" if self.state else f"/crm/v3/objects/{object_type_id}"
 
     @property
     def name(self) -> str:

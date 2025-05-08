@@ -639,7 +639,7 @@ def get_rollback_pr_creation_arguments(
         "branch_id": f"{context.connector.technical_name}/rollback-{release_candidate_version}",
         "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
         "pr_title": f"🐙 {context.connector.technical_name}: Stop progressive rollout for {release_candidate_version}",
-        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout.",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout. This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
     }
 
 
@@ -674,7 +674,9 @@ async def run_connector_rollback_pipeline(context: PublishConnectorContext, sema
                 return connector_report
 
             # Open PR when all previous steps are successful
-            initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
+            initial_pr_creation = CreateOrUpdatePullRequest(
+                context, skip_ci=True, labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "rollback-rc"]
+            )
             pr_creation_args, pr_creation_kwargs = get_rollback_pr_creation_arguments(all_modified_files, context, results, current_version)
             initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
             results.append(initial_pr_creation_result)
@@ -694,7 +696,7 @@ def get_promotion_pr_creation_arguments(
         "branch_id": f"{context.connector.technical_name}/{promoted_version}",
         "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
         "pr_title": f"🐙 {context.connector.technical_name}: release {promoted_version}",
-        "pr_body": f"The release candidate version {release_candidate_version} has been deemed stable and is now ready to be promoted to an official release ({promoted_version}).",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed stable and is now ready to be promoted to an official release ({promoted_version}). This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
     }
 
 

@@ -34,6 +34,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
@@ -74,6 +75,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
+// TODO kill Untyped, rename StronglyTyped -> AllTypes, and use the
+//  SimpleTypeBehavior enum for all types.
+//  https://github.com/airbytehq/airbyte-internal-issues/issues/12715
 sealed interface AllTypesBehavior
 
 data class StronglyTyped(
@@ -89,9 +93,37 @@ data class StronglyTyped(
     val nestedFloatLosesPrecision: Boolean = true,
     /** Whether the destination supports integers larger than int64 */
     val integerCanBeLarge: Boolean = true,
+    /** Whether the destination supports numbers larger than 1e39-1 */
+    val numberCanBeLarge: Boolean = true,
+    /**
+     * In some strongly-typed destinations, timetz columns are actually weakly typed. For example,
+     * Bigquery writes timetz values into STRING columns, and doesn't actually validate that they
+     * are valid timetz values.
+     */
+    val timeWithTimezoneBehavior: SimpleValueBehavior = SimpleValueBehavior.STRONGLY_TYPE,
 ) : AllTypesBehavior
 
 data object Untyped : AllTypesBehavior
+
+enum class SimpleValueBehavior {
+    /**
+     * The destination doesn't support this data type, so we just write a JSON field. We also don't
+     * validate the value in any way.
+     *
+     * This is generally poor practice. Some older connectors use this behavior for legacy reasons,
+     * but newer connectors should prefer [VALIDATE_AND_PASS_THROUGH].
+     */
+    PASS_THROUGH,
+
+    /**
+     * The destination doesn't support this data type, so we just write a JSON field. However, we
+     * still validate that the value is valid before writing it to the destination.
+     */
+    VALIDATE_AND_PASS_THROUGH,
+
+    /** The destination supports this data type natively. */
+    STRONGLY_TYPE,
+}
 
 /**
  * Destinations may choose to handle nested objects/arrays in a few different ways.
@@ -1340,7 +1372,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
-                    emittedAtMs = 1234,
+                    emittedAtMs = 2345,
                 )
             )
         )
@@ -1359,7 +1391,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 2345,
                     generationId = 0,
                     data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
@@ -1798,7 +1830,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        fun makeRecord(cursorName: String) =
+        fun makeRecord(cursorName: String, emittedAtMs: Long) =
             InputRecord(
                 randomizedNamespace,
                 "test_stream",
@@ -1806,16 +1838,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 // this is unrealistic (extractedAt should always increase between syncs),
                 // but it lets us force the dedupe behavior to rely solely on the cursor column,
                 // instead of being able to fallback onto extractedAt.
-                emittedAtMs = 100,
+                emittedAtMs = emittedAtMs,
             )
-        runSync(updatedConfig, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        runSync(
+            updatedConfig,
+            makeStream("cursor1"),
+            listOf(makeRecord("cursor1", emittedAtMs = 100)),
+        )
         val stream2 = makeStream("cursor2")
-        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2")))
+        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2", emittedAtMs = 200)))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
                 OutputRecord(
-                    extractedAt = 100,
+                    extractedAt = 200,
                     generationId = 42,
                     data =
                         mapOf(
@@ -1963,13 +1999,16 @@ abstract class BasicFunctionalityIntegrationTest(
                 // 99999999999999999999999999999999 is out of range for int64.
                 // 50000.0000000000000001 can't be represented as a standard float64,
                 // and gets rounded off.
+                // 1e39 is greater than the typical max 1e39-1 for database/warehouse destinations
+                // (decimal points are to force jackson to recognize it as a decimal)
                 makeRecord(
                     """
                         {
                           "id": 4,
                           "struct": {"foo": 50000.0000000000000001},
                           "number": 50000.0000000000000001,
-                          "integer": 99999999999999999999999999999999
+                          "integer": 99999999999999999999999999999999,
+                          "number": 1.0000000000000000000000000000000000000000e39
                         }
                     """.trimIndent(),
                 ),
@@ -1992,10 +2031,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 ),
                 // Another record that verifies numeric behavior.
                 // -99999999999999999999999999999999 is out of range for int64.
+                // -1e39 is out of range for many database/warehouse destinations,
+                // where the maximum precision of a numeric type is 38.
                 makeRecord(
                     """
                         {
                           "id": 6,
+                          "number": -2.0000000000000000000000000000000000000000e39,
                           "integer": -99999999999999999999999999999999
                         }
                     """.trimIndent(),
@@ -2044,6 +2086,9 @@ abstract class BasicFunctionalityIntegrationTest(
         val positiveBigInt: BigInteger?
         val bigIntChanges: List<Change>
         val negativeBigInt: BigInteger?
+        val positiveBigNumber: BigDecimal?
+        val bigNumberChanges: List<Change>
+        val negativeBigNumber: BigDecimal?
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
@@ -2080,6 +2125,26 @@ abstract class BasicFunctionalityIntegrationTest(
                             )
                         )
                     }
+                if (allTypesBehavior.numberCanBeLarge) {
+                    positiveBigNumber = BigDecimal("1e39")
+                    negativeBigNumber = BigDecimal("-2e39")
+                } else {
+                    positiveBigNumber = null
+                    negativeBigNumber = null
+                }
+                bigNumberChanges =
+                    if (allTypesBehavior.numberCanBeLarge) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            Change(
+                                "number",
+                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            )
+                        )
+                    }
                 badValuesData =
                     mapOf(
                         "id" to 5,
@@ -2094,7 +2159,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "boolean" to null,
                         "timestamp_with_timezone" to null,
                         "timestamp_without_timezone" to null,
-                        "time_with_timezone" to null,
+                        "time_with_timezone" to
+                            timetz(
+                                "\"foo\"",
+                                null,
+                            ),
                         "time_without_timezone" to null,
                         "date" to null,
                     )
@@ -2102,17 +2171,27 @@ abstract class BasicFunctionalityIntegrationTest(
                     (stream.schema as ObjectType)
                         .properties
                         .keys
+                        .asSequence()
                         // id and struct don't have a bad value case here
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
                         .map { key ->
-                            Change(
-                                key,
-                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR,
-                            )
+                            val change =
+                                Change(
+                                    key,
+                                    AirbyteRecordMessageMetaChange.Change.NULLED,
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR,
+                                )
+                            // this is kind of dumb, see
+                            // https://github.com/airbytehq/airbyte-internal-issues/issues/12715
+                            if (key == "time_with_timezone") {
+                                timetzChange(change)
+                            } else {
+                                change
+                            }
                         }
+                        .filterNotNull()
                         .filter {
                             !allTypesBehavior.convertAllValuesToString || it.field != "string"
                         }
@@ -2124,6 +2203,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 positiveBigInt = BigInteger("99999999999999999999999999999999")
                 negativeBigInt = BigInteger("-99999999999999999999999999999999")
                 bigIntChanges = emptyList()
+                positiveBigNumber = BigDecimal("1e39")
+                negativeBigNumber = BigDecimal("-2e39")
+                bigNumberChanges = emptyList()
                 badValuesData =
                     // note that the values have different types than what's declared in the schema
                     mapOf(
@@ -2158,7 +2240,11 @@ abstract class BasicFunctionalityIntegrationTest(
                                 OffsetDateTime.parse("2023-01-23T11:34:56-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:56"),
-                            "time_with_timezone" to OffsetTime.parse("11:34:56-01:00"),
+                            "time_with_timezone" to
+                                timetz(
+                                    "\"11:34:56-01:00\"",
+                                    OffsetTime.parse("11:34:56-01:00"),
+                                ),
                             "time_without_timezone" to LocalTime.parse("12:34:56"),
                             "date" to LocalDate.parse("2023-01-23"),
                         ),
@@ -2197,8 +2283,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             "struct" to schematizedObject(linkedMapOf("foo" to nestedFloat)),
                             "number" to topLevelFloat,
                             "integer" to positiveBigInt,
+                            "number" to positiveBigNumber,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                    airbyteMeta =
+                        OutputRecord.Meta(syncId = 42, changes = bigNumberChanges + bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,
@@ -2213,8 +2301,10 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 6,
                             "integer" to negativeBigInt,
+                            "number" to negativeBigNumber,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                    airbyteMeta =
+                        OutputRecord.Meta(syncId = 42, changes = bigNumberChanges + bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,
@@ -2226,7 +2316,11 @@ abstract class BasicFunctionalityIntegrationTest(
                                 OffsetDateTime.parse("2023-01-23T11:34:00-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:00"),
-                            "time_with_timezone" to OffsetTime.parse("11:34:00-01:00"),
+                            "time_with_timezone" to
+                                timetz(
+                                    "\"11:34:00-01:00\"",
+                                    OffsetTime.parse("11:34:00-01:00"),
+                                ),
                             "time_without_timezone" to LocalTime.parse("12:34:00"),
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -2976,6 +3070,43 @@ abstract class BasicFunctionalityIntegrationTest(
             SchematizedNestedValueBehavior.STRINGIFY -> StringValue(fullObject.serializeToString())
         }
     }
+
+    private fun timetz(originalValue: String, parsedValue: Any?): Any? =
+        when (allTypesBehavior) {
+            is StronglyTyped ->
+                expect(originalValue, parsedValue, allTypesBehavior.timeWithTimezoneBehavior)
+            Untyped -> expect(originalValue, parsedValue, SimpleValueBehavior.PASS_THROUGH)
+        }
+    private fun timetzChange(change: Change?) =
+        when (allTypesBehavior) {
+            is StronglyTyped -> expectChange(change, allTypesBehavior.timeWithTimezoneBehavior)
+            Untyped -> expectChange(change, SimpleValueBehavior.PASS_THROUGH)
+        }
+
+    private fun expect(
+        originalValue: String,
+        parsedValue: Any?,
+        behavior: SimpleValueBehavior
+    ): Any? {
+        val passthroughValue = originalValue.deserializeToNode().toAirbyteValue()
+        return when (behavior) {
+            SimpleValueBehavior.PASS_THROUGH -> passthroughValue
+            SimpleValueBehavior.VALIDATE_AND_PASS_THROUGH -> {
+                if (parsedValue != null) {
+                    passthroughValue
+                } else {
+                    null
+                }
+            }
+            SimpleValueBehavior.STRONGLY_TYPE -> parsedValue
+        }
+    }
+    private fun expectChange(change: Change?, behavior: SimpleValueBehavior) =
+        when (behavior) {
+            SimpleValueBehavior.PASS_THROUGH -> null
+            SimpleValueBehavior.VALIDATE_AND_PASS_THROUGH,
+            SimpleValueBehavior.STRONGLY_TYPE -> change
+        }
 
     companion object {
         val intType = FieldType(IntegerType, nullable = true)

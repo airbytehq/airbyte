@@ -112,6 +112,11 @@ def find_stream(stream_name, config):
     raise ValueError(f"Stream {stream_name} not found")
 
 
+@pytest.fixture(autouse=True)
+def patch_time(mocker):
+    mocker.patch("time.sleep")
+
+
 def read_from_stream(
     cfg, stream: str, sync_mode, state = None, expecting_exception: bool = False
 ) -> EntrypointOutput:

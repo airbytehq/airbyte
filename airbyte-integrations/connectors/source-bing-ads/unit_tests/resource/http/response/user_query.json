@@ -1,0 +1,56 @@
+{
+  "User": {
+    "ContactInfo": {
+      "Address": {
+        "City": "San Pancho",
+        "CountryCode": "US",
+        "Id": "202200652",
+        "Line1": "2261 Fake Street, #1234",
+        "Line2": "4381",
+        "Line3": null,
+        "Line4": null,
+        "PostalCode": "94114",
+        "StateOrProvince": "CA",
+        "TimeStamp": "AAAAAIEIynM=",
+        "BusinessName": null
+      },
+      "ContactByPhone": false,
+      "ContactByPostalMail": false,
+      "Email": "user@domain.com",
+      "EmailFormat": null,
+      "Fax": null,
+      "HomePhone": null,
+      "Id": "138440787",
+      "Mobile": null,
+      "Phone1": "8665156175",
+      "Phone2": null
+    },
+    "CustomerId": "987654321",
+    "Id": "123456789",
+    "JobTitle": null,
+    "LastModifiedByUserId": "123456789",
+    "LastModifiedTime": "2025-04-14T15:30:21.223",
+    "Lcid": "EnglishUS",
+    "Name": {
+      "FirstName": "Fake",
+      "LastName": "Name",
+      "MiddleInitial": null
+    },
+    "Password": null,
+    "SecretAnswer": null,
+    "SecretQuestion": "None",
+    "UserLifeCycleStatus": "Active",
+    "TimeStamp": "AAAAAJOAurw=",
+    "UserName": "fake-test@fomain.io",
+    "ForwardCompatibilityMap": null
+  },
+  "CustomerRoles": [
+    {
+      "RoleId": 41,
+      "CustomerId": "987654321",
+      "AccountIds": null,
+      "LinkedAccountIds": null,
+      "CustomerLinkPermission": null
+    }
+  ]
+}
