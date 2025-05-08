@@ -6,9 +6,9 @@ from typing import Any, Iterable, List, Mapping, Optional
 from requests_cache import Response
 
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 
 
 @dataclass
@@ -23,7 +23,7 @@ class LabelsRecordExtractor(DpathExtractor):
     def extract_records(self, response: Response) -> List[Mapping[str, Any]]:
         data = response.json()
         # Check for values directly in the response first since that's faster
-        if (isinstance(data, dict) and "values" in data and isinstance(data["values"], list)):
+        if isinstance(data, dict) and "values" in data and isinstance(data["values"], list):
             values = data["values"]
             return [{"label": record} for record in values]
 

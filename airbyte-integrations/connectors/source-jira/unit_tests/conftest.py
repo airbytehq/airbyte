@@ -4,15 +4,16 @@
 
 import json
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import responses
 from pytest import fixture
 from responses import matchers
 
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams import Stream
+
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
