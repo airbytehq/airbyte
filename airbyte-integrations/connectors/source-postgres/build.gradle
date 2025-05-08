@@ -2,7 +2,7 @@ import org.jsonschema2pojo.SourceType
 
 plugins {
     id 'airbyte-java-connector'
-    id "com.github.eirnym.js2p"
+    id 'com.github.eirnym.js2p'
 }
 
 java {
