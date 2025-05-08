@@ -13,12 +13,14 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestinationFactory
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.util.regex.Pattern
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -43,6 +45,13 @@ abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
     ) {
+    @BeforeEach
+    fun setupProcessFactory() {
+        if (destinationProcessFactory is NonDockerizedDestinationFactory) {
+            destinationProcessFactory.injectInputStream = false
+        }
+    }
+
     @Test
     open fun testSuccessConfigs() {
         for (tc in successConfigFilenames) {
