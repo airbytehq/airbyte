@@ -128,7 +128,7 @@ definitions:
     primary_key: [ "TimePeriod", "Network", "DeviceType" ]
     schema_loader:
       type: JsonFileSchemaLoader
-      file_path: "./source_bing_ads/schemas/ad_performance_report.json"
+      file_path: "./source_bing_ads/schemas/ad_performance_report_hourly.json"
     retriever:
       type: AsyncRetriever
       partition_router:
@@ -196,6 +196,156 @@ definitions:
             ReturnOnlyCompleteData: false
             Type: AdPerformanceReportRequest
             Aggregation: Hourly
+            Columns:
+              - AccountId
+              - CampaignId
+              - AdGroupId
+              - AdId
+              - TimePeriod
+              - AbsoluteTopImpressionRatePercent
+              - TopImpressionRatePercent
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Language
+              - Network
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - DeliveredMatchType
+              - AccountName
+              - CampaignName
+              - CampaignType
+              - AdGroupName
+              - Impressions
+              - Clicks
+              - Ctr
+              - Spend
+              - CostPerConversion
+              - DestinationUrl
+              - Assists
+              - ReturnOnAdSpend
+              - CostPerAssist
+              - CustomParameters
+              - FinalAppUrl
+              - AdDescription
+              - AdDescription2
+              - ViewThroughConversions
+              - ViewThroughConversionsQualified
+              - AllCostPerConversion
+              - AllReturnOnAdSpend
+              - Conversions
+              - ConversionRate
+              - ConversionsQualified
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - AllConversions
+              - AllConversionRate
+              - AllRevenue
+              - AllRevenuePerConversion
+              - Revenue
+              - RevenuePerConversion
+              - RevenuePerAssist
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd: # FIXME there is a very small risk that `now_utc` is evaluated very close to the edge of the day (2024-01-31T23:59:59.999999 for example) and that Day has switched to 1 but month is still 1. The consequence seems mild except if this happens on December 31st where the user could be missing 1 year of data depending on which component is evaluated first. The mitigation step is to re-run the sync
+                Day: "{{ now_utc().day }}"
+                Month: "{{ now_utc().month }}"
+                Year: "{{ now_utc().year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+        authenticator: "#/definitions/authenticator"
+      download_requester:
+        type: HttpRequester
+        url_base: "{{download_target}}"
+        http_method: GET
+      download_decoder:
+        type: ZipfileDecoder
+        decoder:
+          type: CsvDecoder
+    # FIXME incremental_sync
+    # FIXME transformations/normalization
+  ad_performance_report_daily_stream:
+    type: DeclarativeStream
+    name: ad_performance_report_daily
+    primary_key: [ "TimePeriod", "Network", "DeviceType" ]
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/ad_performance_report.json"
+    retriever:
+      type: AsyncRetriever
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: Id
+            partition_field: account_id
+            stream:
+              $ref: "#/definitions/accounts_stream"
+      status_mapping:
+        failed:
+          - Error
+        running:
+          - Pending
+        completed:
+          - Success
+        timeout: [ ]
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - ReportRequestStatus
+          - ReportDownloadUrl
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [ ]
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - ReportRequestStatus
+          - Status
+      polling_requester:
+        type: HttpRequester
+        url_base: https://reporting.api.bingads.microsoft.com/
+        path: Reporting/v13/GenerateReport/Poll
+        http_method: POST
+        authenticator: "#/definitions/authenticator"
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerId: "'{{ stream_partition['customer_id'] }}'"
+          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        request_body_json:
+          ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+      creation_requester:
+        type: HttpRequester
+        url_base: https://reporting.api.bingads.microsoft.com/
+        path: Reporting/v13/GenerateReport/Submit
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerId: "'{{ stream_partition['customer_id'] }}'"
+          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of footers
+            ExcludeReportHeader: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of headers
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AdPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AdPerformanceReportRequest
+            Aggregation: Daily
             Columns:
               - AccountId
               - CampaignId
@@ -422,12 +572,163 @@ definitions:
           type: CsvDecoder
     # FIXME incremental_sync
     # FIXME transformations/normalization
+  ad_performance_report_monthly_stream:
+    type: DeclarativeStream
+    name: ad_performance_report_monthly
+    primary_key: [ "TimePeriod", "Network", "DeviceType" ]
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/ad_performance_report.json"
+    retriever:
+      type: AsyncRetriever
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: Id
+            partition_field: account_id
+            stream:
+              $ref: "#/definitions/accounts_stream"
+      status_mapping:
+        failed:
+          - Error
+        running:
+          - Pending
+        completed:
+          - Success
+        timeout: [ ]
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - ReportRequestStatus
+          - ReportDownloadUrl
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [ ]
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - ReportRequestStatus
+          - Status
+      polling_requester:
+        type: HttpRequester
+        url_base: https://reporting.api.bingads.microsoft.com/
+        path: Reporting/v13/GenerateReport/Poll
+        http_method: POST
+        authenticator: "#/definitions/authenticator"
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerId: "'{{ stream_partition['customer_id'] }}'"
+          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        request_body_json:
+          ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+      creation_requester:
+        type: HttpRequester
+        url_base: https://reporting.api.bingads.microsoft.com/
+        path: Reporting/v13/GenerateReport/Submit
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+          CustomerId: "'{{ stream_partition['customer_id'] }}'"
+          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of footers
+            ExcludeReportHeader: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of headers
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AdPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AdPerformanceReportRequest
+            Aggregation: Monthly
+            Columns:
+              - AccountId
+              - CampaignId
+              - AdGroupId
+              - AdId
+              - TimePeriod
+              - AbsoluteTopImpressionRatePercent
+              - TopImpressionRatePercent
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Language
+              - Network
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - DeliveredMatchType
+              - AccountName
+              - CampaignName
+              - CampaignType
+              - AdGroupName
+              - Impressions
+              - Clicks
+              - Ctr
+              - Spend
+              - CostPerConversion
+              - DestinationUrl
+              - Assists
+              - ReturnOnAdSpend
+              - CostPerAssist
+              - CustomParameters
+              - FinalAppUrl
+              - AdDescription
+              - AdDescription2
+              - ViewThroughConversions
+              - ViewThroughConversionsQualified
+              - AllCostPerConversion
+              - AllReturnOnAdSpend
+              - Conversions
+              - ConversionRate
+              - ConversionsQualified
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - AllConversions
+              - AllConversionRate
+              - AllRevenue
+              - AllRevenuePerConversion
+              - Revenue
+              - RevenuePerConversion
+              - RevenuePerAssist
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd: # FIXME there is a very small risk that `now_utc` is evaluated very close to the edge of the day (2024-01-31T23:59:59.999999 for example) and that Day has switched to 1 but month is still 1. The consequence seems mild except if this happens on December 31st where the user could be missing 1 year of data depending on which component is evaluated first. The mitigation step is to re-run the sync
+                Day: "{{ now_utc().day }}"
+                Month: "{{ now_utc().month }}"
+                Year: "{{ now_utc().year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+        authenticator: "#/definitions/authenticator"
+      download_requester:
+        type: HttpRequester
+        url_base: "{{download_target}}"
+        http_method: GET
+      download_decoder:
+        type: ZipfileDecoder
+        decoder:
+          type: CsvDecoder
+    # FIXME incremental_sync
+    # FIXME transformations/normalization
 
 streams:
   - $ref: "#/definitions/accounts_stream"
-#  - $ref: "#/definitions/ad_performance_report_weekly_stream"
-#  - $ref: "#/definitions/ad_performance_report_hourly_stream"
-
+  - $ref: "#/definitions/ad_performance_report_hourly_stream"
+  - $ref: "#/definitions/ad_performance_report_daily_stream"
+  - $ref: "#/definitions/ad_performance_report_weekly_stream"
+  - $ref: "#/definitions/ad_performance_report_monthly_stream"
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#
