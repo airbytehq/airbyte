@@ -2,7 +2,6 @@ import org.jsonschema2pojo.SourceType
 
 plugins {
     id 'airbyte-java-connector'
-//    id "org.jsonschema2pojo" version "1.2.1"
     id "io.airbyte.gradle.docker"
     id 'airbyte-docker-convention'
     id "com.github.eirnym.js2p"
