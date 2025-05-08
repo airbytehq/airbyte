@@ -120,3 +120,20 @@ def patch_time(mocker):
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     return read(SourceHubspot(cfg, None, None), cfg, CatalogBuilder().with_stream(stream, sync_mode).build(), state, expecting_exception)
+
+
+@pytest.fixture()
+def mock_dynamic_schema_requests(requests_mock):
+    requests_mock.get(
+        "https://api.hubapi.com/properties/v2/goal_targets/properties",
+        json=[
+            {
+                "name": "hs__migration_soft_delete",
+                "label": "migration_soft_delete_deprecated",
+                "description": "Describes if the goal target can be treated as deleted.",
+                "groupName": "goal_target_information",
+                "type": "enumeration"
+            }
+        ],
+        status_code=200
+    )

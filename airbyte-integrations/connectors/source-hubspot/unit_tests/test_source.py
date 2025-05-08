@@ -178,7 +178,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_stream_forbidden(requests_mock, config, caplog):
+def test_stream_forbidden(requests_mock, config, caplog, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -209,7 +209,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
     assert "The authenticated user does not have permissions to access the URL" in caplog.text
 
 
-def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list):
+def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
