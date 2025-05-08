@@ -242,6 +242,15 @@ Please be aware that some fields, such as `conversions` and `conversion_values`,
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
+### Attribution Spec Field
+
+The AdSets stream includes an `attribution_spec` field that provides information about the conversion attribution configuration for each ad set. This field contains an array of objects with the following properties:
+
+- `event_type`: The type of conversion event to which the attribution applies (e.g., "OFFSITE_CONVERSIONS")
+- `window_days`: The attribution window in days (common values: 1, 7, or 28 depending on the event type)
+
+This information allows you to see the configured attribution window per ad set, which can be useful for understanding how conversions are being attributed to your ads. Supported window lengths differ by optimization goal and campaign objective.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
