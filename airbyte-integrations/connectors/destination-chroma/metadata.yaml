@@ -26,5 +26,4 @@ data:
     - suite: unitTests
     - suite: integrationTests
 metadataSpecVersion: "1.0"
-
 # dummy change (revert-me)
