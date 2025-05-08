@@ -31,7 +31,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: QA Checks for ${{ matrix.connector }} Connector ${{ matrix.connector && '' || ' (no connectors modified)'  }}
+    name: QA Checks for ${{ matrix.connector || ' (no connectors modified)' }} Connector 
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
