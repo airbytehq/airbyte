@@ -1,4 +1,4 @@
-name: Connector Pre-Release Checks (Beta)
+name: Connector QA Checks
 
 on:
     pull_request:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Current Branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Generate Connectors Matrix from Changes
         id: generate-matrix
