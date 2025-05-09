@@ -118,31 +118,26 @@ Create an `index.html` file and paste in the following contents. This short webp
 
 
 ```html
-  <!doctype html>
-  <html lang="en">
-    <body>
-      <button id="open-widget">Open Airbyte Embedded</button>
+<!doctype html>
+<html lang="en">
+  <body>
+    <button id="open-widget">Open Airbyte Widget</button>
+    <script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget"></script>
+    
+    <script>
+      document.getElementById('open-widget').addEventListener('click', async () => {
+        const response = await fetch("http://localhost:3001/api/widget_token");
+        const data = await response.json();
 
-      <script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget"></script>
-      
-      <script>
-        document.getElementById('open-widget').addEventListener('click', async () => {
-          try {
-            const response = await fetch("http://localhost:3001/api/widget_token");
-            const data = await response.json();
-
-            const widget = new AirbyteEmbeddedWidget({
-              token: data.token,
-            });
-
-            widget.open();
-          } catch (err) {
-            console.error("Failed to load widget:", err);
-          }
+        const widget = new AirbyteEmbeddedWidget({
+          token: data.token,
         });
-      </script>
-    </body>
-  </html>
+
+        widget.open();
+      });
+    </script>
+  </body>
+</html>
 ```
 
 </details>
