@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Freshservice supports full refresh syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Freshservice connector supports both full refresh and incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
 
@@ -21,6 +21,7 @@ Several output streams are available from this source:
 - [PurchaseOrders](https://api.freshservice.com/v2/#purchase-order)
 - [Software](https://api.freshservice.com/v2/#software)
 - [Satisfaction Survey Responses](https://api.freshservice.com/#ticket_csat_attributes)
+- [Requested Items](https://api.freshservice.com/v2/#requested-items)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -30,12 +31,12 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
-| SSL connection    | No         |
+| SSL connection    | Yes        |
 | Namespaces        | No         |
 
 ### Performance considerations
 
-The Freshservice connector should not run into Freshservice API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Freshservice connector should not run into Freshservice API limitations under normal usage. The API implements rate limiting with a default limit of 50 requests per minute. The connector automatically handles rate limiting with backoff strategies. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
@@ -43,12 +44,27 @@ The Freshservice connector should not run into Freshservice API limitations unde
 
 - Freshservice Account
 - Freshservice API Key
-- Freshservice domain name
-- Replciation Start Date
+- Freshservice domain name (e.g., `your-domain.freshservice.com`)
+- Replication Start Date (in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`)
 
 ### Setup guide
 
-Please read [How to find your API key](https://api.freshservice.com/#authentication).
+#### Freshservice API Key
+
+1. Log in to your Freshservice account
+2. Navigate to your profile settings by clicking on your profile picture in the top right corner
+3. Under the API section, you will find your API key
+4. If you don't have an API key, you can generate a new one
+
+For more details, please read [How to find your API key](https://api.freshservice.com/#authentication).
+
+#### Domain Name
+
+Your Freshservice domain is the subdomain of your Freshservice account URL. For example, if you access Freshservice at `https://your-company.freshservice.com`, then your domain name is `your-company.freshservice.com`.
+
+## Reference
+
+This connector uses the [Freshservice REST API v2](https://api.freshservice.com/). All API requests must use HTTPS.
 
 ## Changelog
 
