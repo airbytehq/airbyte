@@ -740,7 +740,9 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list, config, mock_dynamic_schema_requests):
+def test_engagements_stream_since_recent_date_more_than_10k(
+    requests_mock, common_params, fake_properties_list, config, mock_dynamic_schema_requests
+):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,

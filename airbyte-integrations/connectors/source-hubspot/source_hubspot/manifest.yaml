@@ -895,12 +895,12 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /crm/v3/objects/goal_targets
         request_parameters:
-          archived: 'false'
+          archived: "false"
           properties:
             type: QueryProperties
             property_list:
               type: PropertiesFromEndpoint
-              property_field_path: [ "name" ]
+              property_field_path: ["name"]
               retriever:
                 type: SimpleRetriever
                 requester:
@@ -916,7 +916,7 @@ definitions:
                   type: RecordSelector
                   extractor:
                     type: DpathExtractor
-                    field_path: [ ]
+                    field_path: []
             property_chunking:
               type: PropertyChunking
               property_limit_type: property_count
@@ -964,7 +964,7 @@ definitions:
         schema_transformations:
           - type: AddFields
             fields:
-              - path: [ "properties" ]
+              - path: ["properties"]
                 value: "{{ record }}"
           - type: CustomTransformation
             class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
@@ -1002,9 +1002,7 @@ definitions:
       - type: CustomStateMigration
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
-        cursor_format:  "%Y-%m-%dT%H:%M:%S.%fZ"
-
-
+        cursor_format: "%Y-%m-%dT%H:%M:%S.%fZ"
 
 streams:
   - "#/definitions/campaigns_stream"
@@ -4771,24 +4769,24 @@ schemas:
       id:
         description: Unique identifier for the goal.
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         description: Date and time when the goal was created.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         __ab_apply_cast_datetime: false
       updatedAt:
         description: Date and time when the goal was last updated.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         __ab_apply_cast_datetime: false
       archived:
         description: Indicates if the goal is archived or not.
         type:
-          - 'null'
+          - "null"
           - boolean
