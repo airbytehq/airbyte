@@ -941,14 +941,6 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
         - "%Y-%m-%dT%H:%M:%SZ"
-      start_time_option:
-        type: RequestOption
-        field_name: startTimestamp
-        inject_into: request_parameter
-      end_time_option:
-        type: RequestOption
-        field_name: endTimestamp
-        inject_into: request_parameter
     transformations:
       - type: DpathFlattenFields
         field_path:
