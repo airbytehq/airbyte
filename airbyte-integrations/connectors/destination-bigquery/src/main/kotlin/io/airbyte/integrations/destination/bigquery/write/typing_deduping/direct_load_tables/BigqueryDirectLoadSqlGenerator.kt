@@ -92,10 +92,23 @@ class BigqueryDirectLoadSqlGenerator(private val projectId: String?) : DirectLoa
     ): Sql {
         val columnNames = columnNameMapping.map { (_, actualName) -> actualName }
         return Sql.of(
+            // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
             """
             INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
-            $columnNames
-            SELECT $columnNames FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
+            (
+                _airbyte_raw_id,
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id,
+                $columnNames
+            )
+            SELECT
+                _airbyte_raw_id,
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id,
+                $columnNames
+            FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
             """.trimIndent()
         )
     }
