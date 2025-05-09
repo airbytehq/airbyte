@@ -38,6 +38,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Create docker buildx builder
         id: create-buildx-builder
