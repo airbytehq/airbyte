@@ -22,7 +22,11 @@ class DirectLoadTableAppendStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
-        nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        if (initialStatus.realTable == null) {
+            sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
+        } else {
+            nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        }
         if (initialStatus.tempTable != null) {
             nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             sqlTableOperations.copyTable(
