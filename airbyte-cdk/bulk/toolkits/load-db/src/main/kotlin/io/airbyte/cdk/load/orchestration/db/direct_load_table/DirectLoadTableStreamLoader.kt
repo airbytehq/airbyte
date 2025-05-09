@@ -14,6 +14,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Stream loader implementation for append mode.
+ *
+ * This loader handles the simplest case of appending data to an existing target table. If a
+ * temporary table exists, it copies its data to the real table then drops the temp table. All
+ * processing writes directly to the real table, without any deduplication.
+ */
 class DirectLoadTableAppendStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: DirectLoadInitialStatus,
@@ -48,6 +55,14 @@ class DirectLoadTableAppendStreamLoader(
     }
 }
 
+/**
+ * Stream loader implementation for deduplication mode.
+ *
+ * This loader ensures uniqueness by writing to a temporary table first, then using an upsert
+ * operation to update the real table with deduplicated data. It handles cases where the temporary
+ * table may already exist from a previous run, and ensures that the schema of both tables is
+ * properly maintained.
+ */
 class DirectLoadTableDedupStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: DirectLoadInitialStatus,
@@ -83,6 +98,17 @@ class DirectLoadTableDedupStreamLoader(
     }
 }
 
+/**
+ * Stream loader implementation for append + truncate mode.
+ *
+ * This loader combines append and truncate behaviors, allowing for overwriting data in the target
+ * table. It conditionally uses either a temporary table or the real table depending on generation
+ * IDs and initial status. When using a temporary table, it overwrites the real table with the
+ * temporary table's data during close.
+ *
+ * Generation IDs are used to determine whether existing tables can be reused or need to be
+ * recreated to ensure data consistency.
+ */
 class DirectLoadTableAppendTruncateStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: DirectLoadInitialStatus,
@@ -170,6 +196,22 @@ class DirectLoadTableAppendTruncateStreamLoader(
     }
 }
 
+/**
+ * Stream loader implementation for deduplication + truncate mode.
+ *
+ * This loader provides the most complex functionality, combining both deduplication and table
+ * truncation. It writes to a temporary table first, then depending on generation IDs and table
+ * status, follows different strategies:
+ *
+ * 1. May upsert directly to the real table if appropriate
+ * 2. May create a real table and upsert into it
+ * 3. May use a temp-temp table approach to ensure proper deduplication before overwriting
+ * ```
+ *    the real table
+ * ```
+ * This strategy ensures optimal performance while maintaining data integrity across various
+ * scenarios, including interrupted syncs and schema changes.
+ */
 class DirectLoadTableDedupTruncateStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: DirectLoadInitialStatus,
@@ -189,7 +231,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
      * - false: Real table definitely has incorrect generation, will use temp-temp approach in
      * close()
      */
-    private var finalTableMaybeCorrectGeneration: Boolean = false
+    private var shouldCheckRealTableGeneration: Boolean = false
 
     override suspend fun start() {
         logger.info { "DedupTruncateStreamLoader starting for stream: ${stream.descriptor}" }
@@ -208,18 +250,18 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     replace = true
                 )
             }
-            finalTableMaybeCorrectGeneration = false
+            shouldCheckRealTableGeneration = false
         } else {
             logger.info { "Creating new temp table: $tempTableName" }
             sqlTableOperations.createTable(stream, tempTableName, columnNameMapping, replace = true)
-            finalTableMaybeCorrectGeneration = true
+            shouldCheckRealTableGeneration = true
         }
 
         streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (finalTableMaybeCorrectGeneration) {
+        if (shouldCheckRealTableGeneration) {
             if (initialStatus.realTable == null) {
                 logger.info { "Creating real table and upserting data" }
                 sqlTableOperations.createTable(
