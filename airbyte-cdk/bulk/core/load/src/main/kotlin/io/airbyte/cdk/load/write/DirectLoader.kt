@@ -46,6 +46,18 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
  * will ever be in progress at a time, so increased concurrency will only help if streams are
  * interleaved). To distribute the work differently, implement
  * [io.airbyte.cdk.load.pipeline.InputPartitioner].
+ *
+ * If the loaders share a fixed resource (eg, a connection pool), you can limit the number of
+ * concurrent loaders with [DirectLoaderFactory.maxNumOpenLoaders]. (These will be distributed over
+ * the number of input partitions, and the result must be at least 1 per partition.) This will be
+ * implemented by forcing a call to `finish()` any time data is seen for the Nth + 1 loader, before
+ * creating the new loader. Specifically, one loader will be created per unique key (default:
+ * stream) per partition. So for a loader using the default partitioner (by stream), this will
+ * result in at most num_streams unique loaders. For loaders partitioning by primary key/random/
+ * round-robin, this will result in at most num_streams * num_partitions unique loaders. In both
+ * cases, this will be clamped to the specified max. Meaning: syncs with a large number of inter-
+ * leaved streams risk generating pathologically small batches, but will never break the specified
+ * concurrency restrictions.
  */
 interface DirectLoader : AutoCloseable {
     sealed interface DirectLoadResult
@@ -67,5 +79,8 @@ interface DirectLoader : AutoCloseable {
 }
 
 interface DirectLoaderFactory<T : DirectLoader> : LoadStrategy {
+    val maxNumOpenLoaders: Int?
+        get() = null
+
     fun create(streamDescriptor: DestinationStream.Descriptor, part: Int): T
 }

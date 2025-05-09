@@ -1423,35 +1423,6 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         yield from self._flat_associations(records)
 
 
-class Campaigns(ClientSideIncrementalStream):
-    """Email campaigns, API v1
-    There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
-    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
-    """
-
-    url = "/email/public/v1/campaigns"
-    more_key = "hasMore"
-    data_field = "campaigns"
-    limit = 500
-    updated_at_field = "lastUpdatedTime"
-    cursor_field_datetime_format = "x"
-    primary_key = "id"
-    scopes = {"crm.lists.read"}
-    unnest_fields = ["counters"]
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
-            if self.filter_by_state(stream_state=stream_state, record=row):
-                yield from self.record_unnester.unnest([{**row, **record}])
-
-
 class ContactLists(IncrementalStream):
     """Contact lists, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
@@ -1605,20 +1576,6 @@ class DealsArchived(ClientSideIncrementalStream):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params.update({"archived": "true", "associations": self.associations})
         return params
-
-
-class DealPipelines(ClientSideIncrementalStream):
-    """Deal pipelines, API v1,
-    This endpoint requires the contacts scope the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
-    """
-
-    url = "/crm-pipelines/v1/pipelines/deals"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "pipelineId"
-    scopes = {"crm.objects.contacts.read"}
 
 
 class DealSplits(CRMSearchStream):
@@ -1955,21 +1912,6 @@ class SubscriptionChanges(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "timestamp"
     scopes = {"content"}
-
-
-class Workflows(ClientSideIncrementalStream):
-    """Workflows, API v3
-    Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
-    """
-
-    url = "/automation/v3/workflows"
-    data_field = "workflows"
-    updated_at_field = "updatedAt"
-    created_at_field = "insertedAt"
-    cursor_field_datetime_format = "x"
-    primary_key = "id"
-    scopes = {"automation"}
-    unnest_fields = ["contactListIds"]
 
 
 class Companies(CRMSearchStream):
