@@ -21,7 +21,7 @@ CONNECTORS_DIR="airbyte-integrations/connectors"
 
 # ------ Defaults & arg parsing -------
 publish_mode="main-release"
-declare -a connectors
+connectors=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
