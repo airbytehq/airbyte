@@ -36,7 +36,14 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Performance considerations
 
-The Freshservice connector should not run into Freshservice API limitations under normal usage. The API implements rate limiting with a default limit of 50 requests per minute. The connector automatically handles rate limiting with backoff strategies. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Freshservice connector should not run into Freshservice API limitations under normal usage. The API implements rate limiting that varies based on the Freshservice plan:
+
+- Starter: 100 requests/min overall limit
+- Growth: 200 requests/min overall limit
+- Pro: 400 requests/min overall limit
+- Enterprise: 500 requests/min overall limit
+
+There are also sublimits for specific operations (e.g., "View Ticket" which is 50 requests/min for the Starter plan). The connector automatically handles rate limiting with backoff strategies. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
