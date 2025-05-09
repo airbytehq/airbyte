@@ -38,7 +38,20 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
+
+      - name: Create docker buildx builder
+        id: create-buildx-builder
+        shell: bash
+        run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
+
+      - name: Build and publish JVM connectors images
+        id: build-and-publish-JVM-connectors-images
+        if: github.event_name == 'push'
+        shell: bash
+        run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json  --java | ./poe-tasks/build-and-publish-java-connectors-with-tag.sh
+
       - name: Publish modified connectors [On merge to master]
+        # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
         id: publish-modified-connectors
         if: github.event_name == 'push'
         uses: ./.github/actions/run-airbyte-ci
@@ -61,6 +74,10 @@ jobs:
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
 
+      # how do we reproduce --pre-release tagging?
+      # the current flow is to trigger --pre-release on the branch, and have airbyte-ci make up a dev tag.
+      # idea: modify the build-and-publish-java-connectors-with-tag.sh to generate a pre-release tag instead of just pulling it
+      # from the metadata.yaml.
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
