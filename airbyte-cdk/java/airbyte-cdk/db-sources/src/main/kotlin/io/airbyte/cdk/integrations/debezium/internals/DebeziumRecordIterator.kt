@@ -123,7 +123,7 @@ class DebeziumRecordIterator<T>(
                 ) {
                     requestClose(
                         "Closing the Debezium engine after no records received within ${waitTime.seconds} seconds timeout. Status: receivedFirstRecord=$receivedFirstRecord, " +
-                                    "hasSnapshotFinished=$hasSnapshotFinished, noRecordsAttempts=$maxInstanceOfNoRecordsFound",
+                            "hasSnapshotFinished=$hasSnapshotFinished, noRecordsAttempts=$maxInstanceOfNoRecordsFound",
                         DebeziumCloseReason.TIMEOUT
                     )
                 }
