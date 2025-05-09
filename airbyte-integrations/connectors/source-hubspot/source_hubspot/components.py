@@ -191,6 +191,7 @@ class EngagementsHttpRequester(HttpRequester):
 
     1. The stream is declared to use one stream slice from start date(default/config/state) to time.now(). It doesn't have step.
     Based on this we can use stream_slice["start_time"] and be sure that this is equal to value in initial state.
+    Stream Slice [start_time] is used to define _use_recent_api, concurrent processing of date windows is incompatible and therefore does not support using a step
     2.The stream is declared to use 250 as page size param in pagination.
     Recent Engagements API have 100 as max param but doesn't fail is bigger value was provided and returns to 100 as default.
     3. The stream has is_client_side_incremental=true to filter Engagements All response.
