@@ -701,14 +701,14 @@ definitions:
               AccountIds:
                 - "{{ stream_partition['account_id'] }}"
             Time:
-              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
-                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
-                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
-                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd: # FIXME there is a very small risk that `now_utc` is evaluated very close to the edge of the day (2024-01-31T23:59:59.999999 for example) and that Day has switched to 1 but month is still 1. The consequence seems mild except if this happens on December 31st where the user could be missing 1 year of data depending on which component is evaluated first. The mitigation step is to re-run the sync
-                Day: "{{ now_utc().day }}"
-                Month: "{{ now_utc().month }}"
-                Year: "{{ now_utc().year }}"
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
         authenticator: "#/definitions/authenticator"
@@ -720,7 +720,20 @@ definitions:
         type: ZipfileDecoder
         decoder:
           type: CsvDecoder
-    # FIXME incremental_sync
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: TimePeriod
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['reports_start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
     # FIXME transformations/normalization
 
 streams:
