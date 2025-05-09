@@ -7,7 +7,7 @@ data:
   githubIssueLabel: source-ashby
   icon: ashby.svg
   license: MIT
-  name: Ashby
+  name: AshbyBlah
   remoteRegistries:
     pypi:
       enabled: false
