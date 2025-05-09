@@ -612,7 +612,7 @@ definitions:
           type: CursorPagination
           page_size: 1000
           cursor_value: "{{ response.get('offset') }}"
-          stop_condition: "{{ not response.get('has-more') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
