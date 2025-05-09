@@ -147,7 +147,7 @@ jobs:
             --print-ci-secrets-masks
 
       - name: Setup tmate SSH session for JVM connectors
-        if: matrix.connector && github.event.inputs.enable-debug == 'true'
+        if: matrix.connector
         uses: mxschmitt/action-tmate@v3
         with:
           limit-access-to-actor: true
@@ -250,7 +250,7 @@ jobs:
             --print-ci-secrets-masks
 
       - name: Setup tmate SSH session for non-JVM connectors
-        if: matrix.connector && github.event.inputs.enable-debug == 'true'
+        if: matrix.connector
         uses: mxschmitt/action-tmate@v3
         with:
           limit-access-to-actor: true
