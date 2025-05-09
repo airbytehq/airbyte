@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadT
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWriter
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.migrations.DefaultDirectLoadTableTempTableNameMigration
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.NoopTypingDedupingSqlGenerator
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingFinalTableOperations
@@ -32,7 +33,6 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadTableExistenceChecker
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigQueryTypingDedupingSqlGenerator
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryRawTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -84,10 +84,7 @@ class BigqueryBeansFactory {
                 destinationHandler,
                 BigqueryRawTableOperations(bigquery),
                 TypingDedupingFinalTableOperations(
-                    BigQueryTypingDedupingSqlGenerator(
-                        config.projectId,
-                        config.datasetLocation.region,
-                    ),
+                    NoopTypingDedupingSqlGenerator,
                     destinationHandler,
                 ),
                 disableTypeDedupe = true,
