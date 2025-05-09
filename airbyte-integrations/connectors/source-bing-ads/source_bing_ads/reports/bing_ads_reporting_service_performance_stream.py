@@ -4,6 +4,7 @@
 
 from abc import ABC
 from typing import Any, Mapping
+
 from .bing_ads_reporting_service_stream import BingAdsReportingServiceStream
 
 

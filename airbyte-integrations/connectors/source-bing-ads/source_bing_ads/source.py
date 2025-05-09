@@ -86,12 +86,11 @@ from source_bing_ads.report_streams import (  # noqa: F401
     UserLocationPerformanceReportMonthly,
     UserLocationPerformanceReportWeekly,
 )
-
 from source_bing_ads.reports.ad_performance_report import (  # noqa: F401
-    AdPerformanceReportHourly,
     AdPerformanceReportDaily,
-    AdPerformanceReportWeekly,
+    AdPerformanceReportHourly,
     AdPerformanceReportMonthly,
+    AdPerformanceReportWeekly,
 )
 
 

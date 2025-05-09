@@ -46,7 +46,7 @@ from source_bing_ads.report_streams import (
     UserLocationPerformanceReportDaily,
     UserLocationPerformanceReportHourly,
 )
-from source_bing_ads.reports import BingAdsReportingServiceStream, BingAdsReportingServicePerformanceStream
+from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, BingAdsReportingServiceStream
 from source_bing_ads.reports.ad_performance_report import (
     AdPerformanceReportDaily,
     AdPerformanceReportHourly,

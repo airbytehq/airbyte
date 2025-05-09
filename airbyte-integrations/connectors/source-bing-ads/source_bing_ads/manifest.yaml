@@ -125,7 +125,7 @@ definitions:
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
-    primary_key: [ "TimePeriod", "Network", "DeviceType" ]
+    primary_key: ["TimePeriod", "Network", "DeviceType"]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report_hourly.json"
@@ -146,7 +146,7 @@ definitions:
           - Pending
         completed:
           - Success
-        timeout: [ ]
+        timeout: []
       download_target_extractor:
         type: DpathExtractor
         field_path:
@@ -156,7 +156,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ ]
+          field_path: []
       status_extractor:
         type: DpathExtractor
         field_path:
@@ -275,7 +275,7 @@ definitions:
   ad_performance_report_daily_stream:
     type: DeclarativeStream
     name: ad_performance_report_daily
-    primary_key: [ "TimePeriod", "Network", "DeviceType" ]
+    primary_key: ["TimePeriod", "Network", "DeviceType"]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
@@ -296,7 +296,7 @@ definitions:
           - Pending
         completed:
           - Success
-        timeout: [ ]
+        timeout: []
       download_target_extractor:
         type: DpathExtractor
         field_path:
@@ -306,7 +306,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ ]
+          field_path: []
       status_extractor:
         type: DpathExtractor
         field_path:
@@ -425,7 +425,7 @@ definitions:
   ad_performance_report_weekly_stream:
     type: DeclarativeStream
     name: ad_performance_report_weekly
-    primary_key: [ "TimePeriod", "Network", "DeviceType" ]
+    primary_key: ["TimePeriod", "Network", "DeviceType"]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
@@ -446,7 +446,7 @@ definitions:
           - Pending
         completed:
           - Success
-        timeout: [ ]
+        timeout: []
       download_target_extractor:
         type: DpathExtractor
         field_path:
@@ -456,7 +456,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ ]
+          field_path: []
       status_extractor:
         type: DpathExtractor
         field_path:
@@ -575,7 +575,7 @@ definitions:
   ad_performance_report_monthly_stream:
     type: DeclarativeStream
     name: ad_performance_report_monthly
-    primary_key: [ "TimePeriod", "Network", "DeviceType" ]
+    primary_key: ["TimePeriod", "Network", "DeviceType"]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
@@ -596,7 +596,7 @@ definitions:
           - Pending
         completed:
           - Success
-        timeout: [ ]
+        timeout: []
       download_target_extractor:
         type: DpathExtractor
         field_path:
@@ -606,7 +606,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ ]
+          field_path: []
       status_extractor:
         type: DpathExtractor
         field_path:

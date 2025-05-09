@@ -12,8 +12,8 @@ from bingads.v13.internal.reporting.row_report import _RowReport
 from suds import WebFault
 
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_bing_ads.reports import BingAdsReportingServicePerformanceStream, BingAdsReportingServiceStream, HourlyReportTransformerMixin
 from source_bing_ads.utils import transform_date_format_to_rfc_3339, transform_report_hourly_datetime_format_to_rfc_3339
-from source_bing_ads.reports import BingAdsReportingServiceStream, BingAdsReportingServicePerformanceStream, HourlyReportTransformerMixin
 
 
 class BudgetSummaryReport(BingAdsReportingServiceStream):
