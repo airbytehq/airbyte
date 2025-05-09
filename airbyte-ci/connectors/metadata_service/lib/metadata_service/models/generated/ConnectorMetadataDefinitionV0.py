@@ -419,6 +419,7 @@ class Data(BaseModel):
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     supportsFileTransfer: Optional[bool] = False
+    supportsDataActivation: Optional[bool] = False
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):
