@@ -149,6 +149,7 @@ const config = {
         ],
       },
     ],
+    require.resolve("./src/plugins/enterpriseConnectors"),
     () => ({
       name: "Yaml loader",
       configureWebpack() {
