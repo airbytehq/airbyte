@@ -578,6 +578,11 @@ definitions:
         key_transformation:
           type: KeyTransformation
           prefix: counters_
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: lastUpdatedTime
+        cursor_format: "%ms"
 
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
@@ -728,6 +733,11 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/email_events"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: created
+        cursor_format: "%ms"
 
   engagements_stream:
     $ref: "#/definitions/stream_base"
@@ -807,6 +817,11 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/engagements"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: lastUpdated
+        cursor_format: "%ms"
 
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
@@ -863,6 +878,11 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/subscription_changes"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
+        cursor_format: "%ms"
 
 streams:
   - "#/definitions/campaigns_stream"

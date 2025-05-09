@@ -19,7 +19,7 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 
 
 class NewtoLegacyFieldTransformation(RecordTransformation):
@@ -68,14 +68,21 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
 class MigrateEmptyStringState(StateMigration):
     cursor_field: str
     config: Config
+    cursor_format: Optional[str] = None
 
-    def __init__(self, cursor_field, config: Config):
+    def __init__(self, cursor_field, config: Config, cursor_format: Optional[str] = None):
         self.cursor_field = cursor_field
+        self.cursor_format = cursor_format
         self.config = config
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         # if start date wasn't provided in the config default date will be used
         start_date = self.config.get("start_date", "2006-06-01T00:00:00.000Z")
+        if self.cursor_format:
+            dt = ab_datetime_parse(start_date)
+            formatted_start_date = DatetimeParser().format(dt, self.cursor_format)
+            return {self.cursor_field: formatted_start_date}
+
         return {self.cursor_field: start_date}
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
