@@ -340,7 +340,7 @@ class EntitySchemaNormalization(TypeTransformer):
                     transformed_value = str(original_value).lower() == "true"
                     return transformed_value
                 if target_format:
-                    if field_schema.get("apply_cast_datetime") is False:
+                    if field_schema.get("__ab_apply_cast_datetime") is False:
                         return original_value
                     if "date" == target_format:
                         dt = ab_datetime_parse(original_value)
