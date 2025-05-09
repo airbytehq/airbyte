@@ -13,25 +13,24 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestinationFactory
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.regex.Pattern
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
 data class CheckTestConfig(
-    val configPath: Path,
+    val configContents: String,
     val featureFlags: Set<FeatureFlag> = emptySet(),
     val name: String? = null,
 )
 
-open class CheckIntegrationTest<T : ConfigurationSpecification>(
+abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
     additionalMicronautEnvs: List<String> = emptyList(),
@@ -46,14 +45,21 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
     ) {
+    @BeforeEach
+    fun setupProcessFactory() {
+        if (destinationProcessFactory is NonDockerizedDestinationFactory) {
+            destinationProcessFactory.injectInputStream = false
+        }
+    }
+
     @Test
     open fun testSuccessConfigs() {
         for (tc in successConfigFilenames) {
-            val config = updateConfig(Files.readString(tc.configPath, StandardCharsets.UTF_8))
+            val updatedConfig = updateConfig(tc.configContents)
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
-                    configContents = config,
+                    configContents = updatedConfig,
                     featureFlags = tc.featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
                 )
@@ -78,12 +84,12 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     @Test
     open fun testFailConfigs() {
         for ((checkTestConfig, failurePattern) in failConfigFilenamesAndFailureReasons) {
-            val (path, featureFlags) = checkTestConfig
-            val config = updateConfig(Files.readString(path))
+            val (configContents, featureFlags) = checkTestConfig
+            val updatedConfig = updateConfig(configContents)
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
-                    configContents = config,
+                    configContents = updatedConfig,
                     featureFlags = featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
                 )

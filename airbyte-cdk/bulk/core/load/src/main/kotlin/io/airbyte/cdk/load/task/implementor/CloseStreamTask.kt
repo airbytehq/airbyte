@@ -30,9 +30,11 @@ class DefaultCloseStreamTask(
 
     override suspend fun execute() {
         val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
-        streamLoader.close()
+        streamLoader.close(
+            hadNonzeroRecords = syncManager.getStreamManager(streamDescriptor).hadNonzeroRecords(),
+        )
         syncManager.getStreamManager(streamDescriptor).markProcessingSucceeded()
-        taskLauncher.handleStreamClosed(streamLoader.stream.descriptor)
+        taskLauncher.handleStreamClosed()
     }
 }
 

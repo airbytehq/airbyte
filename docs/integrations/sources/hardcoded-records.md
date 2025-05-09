@@ -149,6 +149,13 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.39 | 2025-05-03 | [58789](https://github.com/airbytehq/airbyte/pull/58789) | Update dependencies |
+| 0.0.38 | 2025-04-25 | [53640](https://github.com/airbytehq/airbyte/pull/53640) | tests(source-hardcoded-records): replace CAT with FAST Airbyte Standard Tests |
+| 0.0.37 | 2025-04-19 | [58217](https://github.com/airbytehq/airbyte/pull/58217) | Update dependencies |
+| 0.0.36 | 2025-04-12 | [57728](https://github.com/airbytehq/airbyte/pull/57728) | Update dependencies |
+| 0.0.35 | 2025-04-05 | [57091](https://github.com/airbytehq/airbyte/pull/57091) | Update dependencies |
+| 0.0.34 | 2025-03-29 | [56656](https://github.com/airbytehq/airbyte/pull/56656) | Update dependencies |
+| 0.0.33 | 2025-03-22 | [56044](https://github.com/airbytehq/airbyte/pull/56044) | Update dependencies |
 | 0.0.32 | 2025-03-08 | [55481](https://github.com/airbytehq/airbyte/pull/55481) | Update dependencies |
 | 0.0.31 | 2025-03-04 | [55196](https://github.com/airbytehq/airbyte/pull/55196) | fix(source-hardcoded-records): use latest CDK |
 | 0.0.30 | 2025-03-01 | [54814](https://github.com/airbytehq/airbyte/pull/54814) | Update dependencies |

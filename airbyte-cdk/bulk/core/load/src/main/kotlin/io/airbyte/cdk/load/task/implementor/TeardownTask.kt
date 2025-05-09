@@ -23,7 +23,7 @@ interface TeardownTask : Task
  * TODO: Report teardown-complete and let the task launcher decide what to do next.
  */
 class DefaultTeardownTask(
-    private val checkpointManager: CheckpointManager<*, *>,
+    private val checkpointManager: CheckpointManager<*>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
     private val taskLauncher: DestinationTaskLauncher,
@@ -41,6 +41,7 @@ class DefaultTeardownTask(
             return
         }
 
+        log.info { "All streams processed successfully, awaiting all checkpoints flushed" }
         checkpointManager.awaitAllCheckpointsFlushed()
         log.info { "Starting teardown task" }
         destination.teardown()
@@ -57,7 +58,7 @@ interface TeardownTaskFactory {
 @Singleton
 @Secondary
 class DefaultTeardownTaskFactory(
-    private val checkpointManager: CheckpointManager<*, *>,
+    private val checkpointManager: CheckpointManager<*>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
 ) : TeardownTaskFactory {

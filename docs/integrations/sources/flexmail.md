@@ -25,6 +25,13 @@ The Airbyte connector for [Flexmail](https://flexmail.be/) enables seamless data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-05-03 | [59387](https://github.com/airbytehq/airbyte/pull/59387) | Update dependencies |
+| 0.0.19 | 2025-04-26 | [58846](https://github.com/airbytehq/airbyte/pull/58846) | Update dependencies |
+| 0.0.18 | 2025-04-19 | [58354](https://github.com/airbytehq/airbyte/pull/58354) | Update dependencies |
+| 0.0.17 | 2025-04-12 | [57780](https://github.com/airbytehq/airbyte/pull/57780) | Update dependencies |
+| 0.0.16 | 2025-04-05 | [57249](https://github.com/airbytehq/airbyte/pull/57249) | Update dependencies |
+| 0.0.15 | 2025-03-29 | [56545](https://github.com/airbytehq/airbyte/pull/56545) | Update dependencies |
+| 0.0.14 | 2025-03-22 | [55967](https://github.com/airbytehq/airbyte/pull/55967) | Update dependencies |
 | 0.0.13 | 2025-03-08 | [55319](https://github.com/airbytehq/airbyte/pull/55319) | Update dependencies |
 | 0.0.12 | 2025-03-01 | [54956](https://github.com/airbytehq/airbyte/pull/54956) | Update dependencies |
 | 0.0.11 | 2025-02-22 | [54372](https://github.com/airbytehq/airbyte/pull/54372) | Update dependencies |

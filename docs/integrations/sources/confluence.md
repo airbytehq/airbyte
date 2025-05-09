@@ -39,10 +39,10 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 ## Supported streams
 
 - [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
-- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-blog-post/#api-blogposts-get)
 - [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
-- [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-- [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
+- [Pages](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get)
+- [Space](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-space/#api-spaces-get)
 
 :::note
 The `audit` stream requires a Standard or Premium plan.
@@ -63,6 +63,14 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.5 | 2025-05-03 | [59442](https://github.com/airbytehq/airbyte/pull/59442) | Update dependencies |
+| 1.0.4 | 2025-04-26 | [58851](https://github.com/airbytehq/airbyte/pull/58851) | Update dependencies |
+| 1.0.3 | 2025-04-19 | [58320](https://github.com/airbytehq/airbyte/pull/58320) | Update dependencies |
+| 1.0.2 | 2025-04-12 | [57774](https://github.com/airbytehq/airbyte/pull/57774) | Update dependencies |
+| 1.0.1 | 2025-04-05 | [57269](https://github.com/airbytehq/airbyte/pull/57269) | Update dependencies |
+| 1.0.0 | 2025-04-01 | [55876](https://github.com/airbytehq/airbyte/pull/55876) | Migrate API to V2 |
+| 0.3.16 | 2025-03-29 | [56506](https://github.com/airbytehq/airbyte/pull/56506) | Update dependencies |
+| 0.3.15 | 2025-03-22 | [55966](https://github.com/airbytehq/airbyte/pull/55966) | Update dependencies |
 | 0.3.14 | 2025-03-08 | [55335](https://github.com/airbytehq/airbyte/pull/55335) | Update dependencies |
 | 0.3.13 | 2025-03-01 | [54978](https://github.com/airbytehq/airbyte/pull/54978) | Update dependencies |
 | 0.3.12 | 2025-02-22 | [54431](https://github.com/airbytehq/airbyte/pull/54431) | Update dependencies |

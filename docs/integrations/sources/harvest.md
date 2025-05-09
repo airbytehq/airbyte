@@ -91,6 +91,14 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.16 | 2025-05-05 | [59215](https://github.com/airbytehq/airbyte/pull/59215) | Fix missing schema for `time_team`, `users`, `time_entries`, `company`, & `project_assignments` streams.   |
+| 1.2.15 | 2025-05-03 | [59254](https://github.com/airbytehq/airbyte/pull/59254) | Update dependencies |
+| 1.2.14 | 2025-04-26 | [58767](https://github.com/airbytehq/airbyte/pull/58767) | Update dependencies |
+| 1.2.13 | 2025-04-19 | [58170](https://github.com/airbytehq/airbyte/pull/58170) | Update dependencies |
+| 1.2.12 | 2025-04-12 | [57717](https://github.com/airbytehq/airbyte/pull/57717) | Update dependencies |
+| 1.2.11 | 2025-04-05 | [57034](https://github.com/airbytehq/airbyte/pull/57034) | Update dependencies |
+| 1.2.10 | 2025-03-29 | [56653](https://github.com/airbytehq/airbyte/pull/56653) | Update dependencies |
+| 1.2.9 | 2025-03-22 | [56066](https://github.com/airbytehq/airbyte/pull/56066) | Update dependencies |
 | 1.2.8 | 2025-03-08 | [55483](https://github.com/airbytehq/airbyte/pull/55483) | Update dependencies |
 | 1.2.7 | 2025-03-01 | [54796](https://github.com/airbytehq/airbyte/pull/54796) | Update dependencies |
 | 1.2.6 | 2025-02-22 | [54327](https://github.com/airbytehq/airbyte/pull/54327) | Update dependencies |

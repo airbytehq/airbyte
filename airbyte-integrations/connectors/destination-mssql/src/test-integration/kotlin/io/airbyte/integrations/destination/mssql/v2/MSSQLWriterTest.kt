@@ -23,6 +23,8 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
+import io.airbyte.integrations.destination.mssql.v2.BulkInsert.Companion.CONFIG_FILE
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.DataSourceFactory
@@ -36,12 +38,12 @@ import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 
 abstract class MSSQLWriterTest(
     configPath: Path,
@@ -63,8 +65,13 @@ abstract class MSSQLWriterTest(
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = true,
-        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
-        nullUnknownTypes = false,
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = false,
+                numberCanBeLarge = false,
+                nestedFloatLosesPrecision = false,
+            ),
+        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
         configUpdater = configUpdater,
     )
@@ -129,22 +136,21 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream,
-    ): List<String> {
+    ): Map<String, String> {
         throw UnsupportedOperationException("destination-mssql doesn't support file transfer")
     }
 }
 
-class MSSQLDataCleaner(
-    private val shouldCleanUp: Boolean,
-    private val mssqlSpecification: MSSQLSpecification?,
-    private val configProvider: (MSSQLSpecification) -> MSSQLConfiguration
-) : DestinationCleaner {
-
-    private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+object MSSQLDataCleaner : DestinationCleaner {
+    private val mssqlSpecification =
+        ValidatedJsonUtils.parseOne(
+            MSSQLSpecification::class.java,
+            Files.readString(Path.of(CONFIG_FILE))
+        )
+    private val config =
+        MSSQLConfigurationFactory().makeWithOverrides(mssqlSpecification, emptyMap())
 
     override fun cleanup() {
-        if (!shouldCleanUp || mssqlSpecification == null) return
-
         // Cleanup azure blobs if in BulkLoad configuration
         cleanupAzureBlobsIfNeeded()
 
@@ -154,7 +160,7 @@ class MSSQLDataCleaner(
 
     /** Cleans up blobs older than 1 hour if the load configuration is [BulkLoadConfiguration]. */
     private fun cleanupAzureBlobsIfNeeded() {
-        val loadConfig = mssqlSpecification!!.toLoadConfiguration().loadTypeConfiguration
+        val loadConfig = mssqlSpecification.toLoadConfiguration().loadTypeConfiguration
         if (loadConfig !is BulkLoadConfiguration) return
 
         val azureBlobClient = AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig)
@@ -163,13 +169,18 @@ class MSSQLDataCleaner(
             azureBlobClient.list("").toList(blobList)
 
             for (blobItem in blobList) {
-                val properties = azureBlobClient.getProperties(blobItem.key)
-                properties?.let { createdTime ->
-                    val hoursSinceCreation =
-                        ChronoUnit.HOURS.between(createdTime, OffsetDateTime.now())
-                    if (hoursSinceCreation >= 1) {
-                        azureBlobClient.delete(blobItem.key)
+                try {
+                    val properties = azureBlobClient.getProperties(blobItem.key)
+                    properties?.let { createdTime ->
+                        val hoursSinceCreation =
+                            ChronoUnit.HOURS.between(createdTime, OffsetDateTime.now())
+                        if (hoursSinceCreation >= 1) {
+                            azureBlobClient.delete(blobItem.key)
+                        }
                     }
+                } catch (e: Exception) {
+                    // ignore exception - presumably someone else deleted the blob
+                    // before we got to it
                 }
             }
         }
@@ -180,7 +191,6 @@ class MSSQLDataCleaner(
      * old (compared to the current local date).
      */
     private fun cleanupOldTestSchemas() {
-        val config = configProvider(mssqlSpecification!!)
         val dataSource = DataSourceFactory().dataSource(config)
 
         dataSource.connection.use { conn ->
@@ -250,15 +260,13 @@ internal class StandardInsert :
                 val configOverrides = buildOverridesForTestContainer()
                 MSSQLConfigurationFactory().makeWithOverrides(spec, configOverrides)
             },
-        dataCleaner =
-            MSSQLDataCleaner(
-                shouldCleanUp = false,
-                mssqlSpecification = null,
-            ) { spec ->
-                val configOverrides = buildOverridesForTestContainer()
-                MSSQLConfigurationFactory().makeWithOverrides(spec, configOverrides)
-            },
+        dataCleaner = MSSQLDataCleaner,
     ) {
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
 
     companion object {
         @JvmStatic
@@ -284,16 +292,12 @@ internal class BulkInsert :
             MSSQLDataDumper { spec ->
                 MSSQLConfigurationFactory().makeWithOverrides(spec, emptyMap())
             },
-        dataCleaner =
-            MSSQLDataCleaner(
-                shouldCleanUp = true,
-                mssqlSpecification =
-                    ValidatedJsonUtils.parseOne(
-                        MSSQLSpecification::class.java,
-                        Files.readString(Path.of(CONFIG_FILE))
-                    )
-            ) { spec -> MSSQLConfigurationFactory().makeWithOverrides(spec, emptyMap()) },
+        dataCleaner = MSSQLDataCleaner,
     ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
 
     companion object {
         const val CONFIG_FILE = "secrets/bulk_upload_config.json"

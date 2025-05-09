@@ -68,7 +68,7 @@ You can also copy the output file to your host machine, the following command wi
 docker cp airbyte-server:/tmp/airbyte_local/{destination_path} .
 ```
 
-Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
+Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination) for an alternative approach.
 
 ## Changelog
 
@@ -77,6 +77,13 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.2.8 | 2025-05-03 | [59348](https://github.com/airbytehq/airbyte/pull/59348) | Update dependencies |
+| 0.2.7 | 2025-04-26 | [58682](https://github.com/airbytehq/airbyte/pull/58682) | Update dependencies |
+| 0.2.6 | 2025-04-19 | [58261](https://github.com/airbytehq/airbyte/pull/58261) | Update dependencies |
+| 0.2.5 | 2025-04-12 | [57615](https://github.com/airbytehq/airbyte/pull/57615) | Update dependencies |
+| 0.2.4 | 2025-04-05 | [57113](https://github.com/airbytehq/airbyte/pull/57113) | Update dependencies |
+| 0.2.3 | 2025-03-29 | [56577](https://github.com/airbytehq/airbyte/pull/56577) | Update dependencies |
+| 0.2.2 | 2025-03-22 | [56104](https://github.com/airbytehq/airbyte/pull/56104) | Update dependencies |
 | 0.2.1 | 2025-03-08 | [43815](https://github.com/airbytehq/airbyte/pull/43815) | Update dependencies |
 | 0.2.0 | 2025-03-01 | [54897](https://github.com/airbytehq/airbyte/pull/54897) | Update to Airbyte CDK 6 and Python 3.11 |
 | 0.1.9 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |

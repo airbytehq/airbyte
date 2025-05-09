@@ -7,24 +7,31 @@ package io.airbyte.cdk.load.message
 import io.airbyte.cdk.load.util.CloseableCoroutine
 import kotlinx.coroutines.flow.Flow
 
-class PartitionedQueue<T>(private val queues: Array<MessageQueue<T>>) : CloseableCoroutine {
-    val partitions = queues.size
+interface PartitionedQueue<T> : CloseableCoroutine {
+    val partitions: Int
+    fun consume(partition: Int): Flow<T>
+    suspend fun publish(value: T, partition: Int)
+    suspend fun broadcast(value: T)
+}
 
-    fun consume(partition: Int): Flow<T> {
-        if (partition < 0 || partition >= queues.size) {
+class StrictPartitionedQueue<T>(private val queues: Array<MessageQueue<T>>) : PartitionedQueue<T> {
+    override val partitions = queues.size
+
+    override fun consume(partition: Int): Flow<T> {
+        if (partition < 0 || partition >= partitions) {
             throw IllegalArgumentException("Invalid partition: $partition")
         }
         return queues[partition].consume()
     }
 
-    suspend fun publish(value: T, partition: Int) {
-        if (partition < 0 || partition >= queues.size) {
+    override suspend fun publish(value: T, partition: Int) {
+        if (partition < 0 || partition >= partitions) {
             throw IllegalArgumentException("Invalid partition: $partition")
         }
         queues[partition].publish(value)
     }
 
-    suspend fun broadcast(value: T) = queues.forEach { it.publish(value) }
+    override suspend fun broadcast(value: T) = queues.forEach { it.publish(value) }
 
     override suspend fun close() {
         queues.forEach { it.close() }
