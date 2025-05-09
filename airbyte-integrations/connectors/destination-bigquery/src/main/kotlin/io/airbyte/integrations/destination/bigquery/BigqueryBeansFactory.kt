@@ -77,7 +77,7 @@ class BigqueryBeansFactory {
         typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
     ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
-        if (config.disableTypingDeduping) {
+        if (config.legacyRawTablesOnly) {
             return TypingDedupingWriter(
                 names,
                 BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),

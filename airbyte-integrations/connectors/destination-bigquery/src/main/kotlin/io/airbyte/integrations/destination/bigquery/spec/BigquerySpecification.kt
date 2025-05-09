@@ -83,23 +83,24 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 5}""")
     val transformationPriority: TransformationPriority? = null
 
-    @get:JsonSchemaTitle("Raw Table Dataset Name")
+    @get:JsonSchemaTitle(
+        """Legacy raw tables""",
+    )
     @get:JsonPropertyDescription(
-        """The dataset to write raw tables into (default: airbyte_internal)""",
+        """Write the legacy "raw tables" format, to enable backwards compatibility with older versions of this connector.""",
+    )
+    // for compatibility with existing actor configs, we keep the old property name.
+    @get:JsonProperty("disable_type_dedupe")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7, "default": false}""")
+    val legacyRawTablesOnly: Boolean? = null
+
+    @get:JsonSchemaTitle("Legacy Raw Table Dataset Name")
+    @get:JsonPropertyDescription(
+        """The dataset to write raw tables into (default: airbyte_internal). Only relevant if you enable legacy raw tables.""",
     )
     @get:JsonProperty("raw_data_dataset")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val rawTableDataset: String? = null
-
-    @get:JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
-    )
-    @get:JsonPropertyDescription(
-        """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
-    )
-    @get:JsonProperty("disable_type_dedupe")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8, "default": false}""")
-    val disableTypingDeduping: Boolean? = null
 }
 
 @JsonTypeInfo(
