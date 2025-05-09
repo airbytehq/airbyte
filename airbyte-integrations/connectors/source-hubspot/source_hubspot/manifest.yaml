@@ -896,8 +896,6 @@ definitions:
         path: /crm/v3/objects/goal_targets
         request_parameters:
           archived: 'false'
-          startTimestamp: '{{ format_datetime(stream_partition["start_time"], "%ms") }}'
-          endTimestamp: '{{ format_datetime(stream_partition["end_time"], "%ms") }}'
           properties:
             type: QueryProperties
             property_list:
@@ -933,14 +931,24 @@ definitions:
       cursor_field: updatedAt
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
       lookback_window: P{{ config.get('lookback_window', 0) }}D
+      is_client_side_incremental: true
       cursor_datetime_formats:
+        - "%ms"
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
         - "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: startTimestamp
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: endTimestamp
+        inject_into: request_parameter
     transformations:
       - type: DpathFlattenFields
         field_path:
@@ -998,6 +1006,11 @@ definitions:
       - type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/goals"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+        cursor_format:  "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 
