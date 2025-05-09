@@ -3014,7 +3014,8 @@ schemas:
     additionalProperties: true
     properties:
       appId:
-        description: The unique identifier of the application associated with the email
+        description:
+          The unique identifier of the application associated with the email
           event.
         type:
           - "null"
@@ -3727,55 +3728,55 @@ schemas:
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           attendeeOwnerIds:
             description: IDs of attendees' owners.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           guestEmails:
             description: Emails of guest attendees.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           ownerIdsBcc:
             description: IDs of BCC owners.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           ownerIdsCc:
             description: IDs of CC owners.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           ownerIdsFrom:
             description: IDs of 'from' owners.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           ownerIdsTo:
             description: IDs of 'to' owners.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           pendingInlineImageIds:
             description: IDs of pending inline image attachments.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           validationSkipped:
             description: Validation details skipped.
             type:
               - "null"
               - array
-            items: { }
+            items: {}
           from:
             description: Sender information.
             type:
@@ -4062,7 +4063,7 @@ schemas:
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_calendarEventHash:
         description: Hash value for calendar event
         type:
@@ -4119,7 +4120,7 @@ schemas:
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       ownerIdsCc:
         description: IDs of CC owners.
         type:
@@ -4134,7 +4135,7 @@ schemas:
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_iCalUid:
         description: Unique ID for iCal
         type:
@@ -4175,7 +4176,7 @@ schemas:
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_body:
         description: Engagement body content
         type:
@@ -4281,37 +4282,37 @@ schemas:
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_ownerIdsCc:
         description: IDs of CC owners in metadata.
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_ownerIdsFrom:
         description: IDs of 'from' owners in metadata.
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_ownerIdsTo:
         description: IDs of 'to' owners in metadata.
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_pendingInlineImageIds:
         description: IDs of pending inline image attachments in metadata.
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_validationSkipped:
         description: Validation details skipped in metadata.
         type:
           - "null"
           - array
-        items: { }
+        items: {}
       metadata_bcc:
         description: BCC recipients in metadata.
         type:
