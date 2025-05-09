@@ -48,10 +48,6 @@ ignore_patterns=(
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
 
 # 3) collect all file changes
-#committed=$(git diff --name-only origin/"$DEFAULT_BRANCH"...HEAD)
-#staged=$(git diff --cached --name-only)
-#unstaged=$(git diff --name-only)
-#untracked=$(git ls-files --others --exclude-standard)
 if $PREV_COMMIT; then
   # Compare only the last commit; diff-tree is faster and more precise.
   committed=$(git diff-tree --no-commit-id -r --name-only HEAD)
