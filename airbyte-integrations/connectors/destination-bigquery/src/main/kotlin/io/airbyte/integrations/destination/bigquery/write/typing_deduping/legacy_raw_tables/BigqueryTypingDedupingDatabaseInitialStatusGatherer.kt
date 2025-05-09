@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.typing_deduping
+package io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.Field
@@ -28,9 +28,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.FinalTableIni
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDatabaseInitialStatus
-import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
-import io.airbyte.cdk.util.CollectionUtils.containsIgnoreCase
-import io.airbyte.cdk.util.CollectionUtils.matchingKey
+import io.airbyte.cdk.util.CollectionUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigInteger
 import java.util.stream.Collectors
@@ -38,7 +36,7 @@ import java.util.stream.Stream
 
 private val logger = KotlinLogging.logger {}
 
-class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
+class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQuery) :
     DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus> {
     private fun findExistingTable(finalTableName: TableName): TableDefinition? {
         val table = bq.getTable(finalTableName.namespace, finalTableName.name)
@@ -177,7 +175,7 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
 
         val streamSchema: Map<String, StandardSQLTypeName> =
             (stream.schema as ObjectType).properties.entries.associate {
-                columnNameMapping[it.key]!! to BigQuerySqlGenerator.toDialectType(it.value.type)
+                columnNameMapping[it.key]!! to BigQueryTypingDedupingSqlGenerator.toDialectType(it.value.type)
             }
 
         val existingSchema =
@@ -187,7 +185,9 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
         val columnsToAdd =
             streamSchema.keys
                 .stream()
-                .filter { name: String -> !containsIgnoreCase(existingSchema.keys, name) }
+                .filter { name: String ->
+                    !CollectionUtils.containsIgnoreCase(existingSchema.keys, name)
+                }
                 .collect(Collectors.toSet())
 
         // Columns in the current schema that are no longer in the StreamConfig
@@ -195,8 +195,8 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
             existingSchema.keys
                 .stream()
                 .filter { name: String ->
-                    !containsIgnoreCase(streamSchema.keys, name) &&
-                        !containsIgnoreCase(Meta.COLUMN_NAMES, name)
+                    !CollectionUtils.containsIgnoreCase(streamSchema.keys, name) &&
+                        !CollectionUtils.containsIgnoreCase(Meta.COLUMN_NAMES, name)
                 }
                 .collect(Collectors.toSet())
 
@@ -207,7 +207,7 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
                         .stream() // If it's not in the existing schema, it should already be in the
                         // columnsToAdd Set
                         .filter { name: String ->
-                            matchingKey(
+                            CollectionUtils.matchingKey(
                                     existingSchema.keys,
                                     name
                                 ) // if it does exist, only include it in this set if the type (the
@@ -244,9 +244,9 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
             existingTable: StandardTableDefinition,
         ): Boolean {
             return (existingTable.clustering != null &&
-                containsAllIgnoreCase(
+                CollectionUtils.containsAllIgnoreCase(
                     HashSet<String>(existingTable.clustering!!.fields),
-                    BigQuerySqlGenerator.clusteringColumns(stream, columnNameMapping)
+                    BigQueryTypingDedupingSqlGenerator.clusteringColumns(stream, columnNameMapping)
                 ))
         }
 

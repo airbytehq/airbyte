@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.bigquery.typing_deduping
+package io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables
 
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.common.annotations.VisibleForTesting
@@ -31,6 +31,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingSqlGenerator
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
@@ -41,8 +42,10 @@ import org.apache.commons.lang3.StringUtils
  * @param datasetLocation This is technically redundant with [BigQueryDatabaseHandler] setting the
  * query execution location, but let's be explicit since this is typically a compliance requirement.
  */
-class BigQuerySqlGenerator(private val projectId: String?, private val datasetLocation: String?) :
-    TypingDedupingSqlGenerator {
+class BigQueryTypingDedupingSqlGenerator(
+    private val projectId: String?,
+    private val datasetLocation: String?
+) : TypingDedupingSqlGenerator {
     private fun extractAndCast(
         columnName: String,
         airbyteType: AirbyteType,

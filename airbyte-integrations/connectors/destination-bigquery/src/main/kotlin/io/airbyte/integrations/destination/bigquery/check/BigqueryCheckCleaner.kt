@@ -8,9 +8,9 @@ import io.airbyte.cdk.load.check.CheckCleaner
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.integrations.destination.bigquery.BigqueryBeansFactory
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryFinalTableNameGenerator
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryRawTableNameGenerator
-import io.airbyte.integrations.destination.bigquery.typing_deduping.toTableId
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryFinalTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryRawTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 
 class BigqueryCheckCleaner : CheckCleaner<BigqueryConfiguration> {
     override fun cleanup(config: BigqueryConfiguration, stream: DestinationStream) {
