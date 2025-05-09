@@ -867,6 +867,8 @@ definitions:
         $ref: "#/schemas/owners_archived"
 
   ticket_pipelines_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_base"
     name: ticket_pipelines
     retriever:
