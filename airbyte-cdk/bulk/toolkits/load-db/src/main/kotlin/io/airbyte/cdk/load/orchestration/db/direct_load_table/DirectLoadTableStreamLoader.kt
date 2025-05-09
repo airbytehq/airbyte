@@ -10,6 +10,9 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 class DirectLoadTableAppendStreamLoader(
     override val stream: DestinationStream,
@@ -22,8 +25,12 @@ class DirectLoadTableAppendStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
+        logger.info { "AppendStreamLoader starting for stream: ${stream.descriptor}" }
+
         nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+
         if (initialStatus.tempTable != null) {
+            logger.info { "Processing temp table data: $tempTableName -> $realTableName" }
             nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             sqlTableOperations.copyTable(
                 columnNameMapping,
@@ -32,6 +39,7 @@ class DirectLoadTableAppendStreamLoader(
             )
             sqlTableOperations.dropTable(tempTableName)
         }
+
         streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(realTableName))
     }
 
@@ -51,11 +59,15 @@ class DirectLoadTableDedupStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
+        logger.info { "DedupStreamLoader starting for stream: ${stream.descriptor}" }
+
         if (initialStatus.tempTable != null) {
             nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
         } else {
+            logger.info { "Creating new temp table: $tempTableName" }
             sqlTableOperations.createTable(stream, tempTableName, columnNameMapping, replace = true)
         }
+
         streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
     }
 
@@ -86,14 +98,15 @@ class DirectLoadTableAppendTruncateStreamLoader(
     private var writingToTempTable: Boolean = false
 
     override suspend fun start() {
+        logger.info { "AppendTruncateStreamLoader starting for stream: ${stream.descriptor}" }
+
         if (initialStatus.tempTable != null) {
-            if (
-                initialStatus.tempTable.isEmpty ||
-                    nativeTableOperations.getGenerationId(tempTableName) >=
-                        stream.minimumGenerationId
-            ) {
+            val generationId = nativeTableOperations.getGenerationId(tempTableName)
+
+            if (initialStatus.tempTable.isEmpty || generationId >= stream.minimumGenerationId) {
                 nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
+                logger.info { "Recreating temp table (old generation ID: $generationId)" }
                 sqlTableOperations.createTable(
                     stream,
                     tempTableName,
@@ -105,6 +118,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
             streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
         } else {
             if (initialStatus.realTable == null) {
+                logger.info { "Creating new real table: $realTableName" }
                 sqlTableOperations.createTable(
                     stream,
                     realTableName,
@@ -120,6 +134,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
                 writingToTempTable = false
             } else {
+                logger.info { "Creating temp table (real table has old generation ID)" }
                 sqlTableOperations.createTable(
                     stream,
                     tempTableName,
@@ -130,6 +145,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
             }
         }
 
+        logger.info { "Target table: ${if (writingToTempTable) tempTableName else realTableName}" }
         if (writingToTempTable) {
             streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
         } else {
@@ -162,14 +178,15 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private var finalTableMaybeCorrectGeneration: Boolean = false
 
     override suspend fun start() {
+        logger.info { "DedupTruncateStreamLoader starting for stream: ${stream.descriptor}" }
+
         if (initialStatus.tempTable != null) {
-            if (
-                initialStatus.tempTable.isEmpty ||
-                    nativeTableOperations.getGenerationId(tempTableName) >=
-                        stream.minimumGenerationId
-            ) {
+            val generationId = nativeTableOperations.getGenerationId(tempTableName)
+
+            if (initialStatus.tempTable.isEmpty || generationId >= stream.minimumGenerationId) {
                 nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
+                logger.info { "Recreating temp table (old generation ID: $generationId)" }
                 sqlTableOperations.createTable(
                     stream,
                     tempTableName,
@@ -179,27 +196,32 @@ class DirectLoadTableDedupTruncateStreamLoader(
             }
             finalTableMaybeCorrectGeneration = false
         } else {
+            logger.info { "Creating new temp table: $tempTableName" }
             sqlTableOperations.createTable(stream, tempTableName, columnNameMapping, replace = true)
             finalTableMaybeCorrectGeneration = true
         }
+
         streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (finalTableMaybeCorrectGeneration) {
             if (initialStatus.realTable == null) {
+                logger.info { "Creating real table and upserting data" }
                 sqlTableOperations.createTable(
                     stream,
                     realTableName,
                     columnNameMapping,
                     replace = true
                 )
+
                 sqlTableOperations.upsertTable(
                     stream,
                     columnNameMapping,
                     sourceTableName = tempTableName,
                     targetTableName = realTableName,
                 )
+
                 sqlTableOperations.dropTable(tempTableName)
                 return
             } else if (
@@ -207,12 +229,14 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     nativeTableOperations.getGenerationId(realTableName) >=
                         stream.minimumGenerationId
             ) {
+                logger.info { "Upserting to existing real table" }
                 sqlTableOperations.upsertTable(
                     stream,
                     columnNameMapping,
                     sourceTableName = tempTableName,
                     targetTableName = realTableName
                 )
+
                 sqlTableOperations.dropTable(tempTableName)
                 return
             }
