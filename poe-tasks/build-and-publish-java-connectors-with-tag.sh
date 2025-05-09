@@ -72,8 +72,9 @@ get_connectors() {
 
 generate_dev_tag() {
   local base="$1"
+  # force a 10-char short hash to match existing airbyte-ci behaviour.
   local hash
-  hash=$(git rev-parse --short HEAD)
+  hash=$(git rev-parse --short=10 HEAD)
   echo "${base}-dev.${hash}"
 }
 
