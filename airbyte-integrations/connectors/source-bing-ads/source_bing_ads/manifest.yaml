@@ -125,7 +125,8 @@ definitions:
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
-    primary_key: [
+    primary_key:
+      [
         "AccountId",
         "CampaignId",
         "AdGroupId",
@@ -140,7 +141,7 @@ definitions:
         "TopVsOther",
         "BidMatchType",
         "DeliveredMatchType",
-    ]
+      ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report_hourly.json"
@@ -224,13 +225,13 @@ definitions:
                 Year: "{{ now_utc().year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync:
-      "#/definitions/incremental_sync_report_datetime_cursor"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
   ad_performance_report_daily_stream:
     type: DeclarativeStream
     name: ad_performance_report_daily
-    primary_key: [
+    primary_key:
+      [
         "AccountId",
         "CampaignId",
         "AdGroupId",
@@ -245,7 +246,7 @@ definitions:
         "TopVsOther",
         "BidMatchType",
         "DeliveredMatchType",
-    ]
+      ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
@@ -329,13 +330,13 @@ definitions:
                 Year: "{{ now_utc().year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync:
-      "#/definitions/incremental_sync_report_datetime_cursor"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
   ad_performance_report_weekly_stream:
     type: DeclarativeStream
     name: ad_performance_report_weekly
-    primary_key: [
+    primary_key:
+      [
         "AccountId",
         "CampaignId",
         "AdGroupId",
@@ -350,7 +351,7 @@ definitions:
         "TopVsOther",
         "BidMatchType",
         "DeliveredMatchType",
-    ]
+      ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
@@ -434,13 +435,13 @@ definitions:
                 Year: "{{ now_utc().year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync:
-      "#/definitions/incremental_sync_report_datetime_cursor"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
   ad_performance_report_monthly_stream:
     type: DeclarativeStream
     name: ad_performance_report_monthly
-    primary_key: [
+    primary_key:
+      [
         "AccountId",
         "CampaignId",
         "AdGroupId",
@@ -455,7 +456,7 @@ definitions:
         "TopVsOther",
         "BidMatchType",
         "DeliveredMatchType",
-    ]
+      ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
@@ -539,8 +540,7 @@ definitions:
                 Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync:
-      "#/definitions/incremental_sync_report_datetime_cursor"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
   basic_async_retriever:
     type: AsyncRetriever
@@ -559,7 +559,7 @@ definitions:
         - Pending
       completed:
         - Success
-      timeout: [ ]
+      timeout: []
     download_target_extractor:
       type: DpathExtractor
       field_path:
@@ -569,7 +569,7 @@ definitions:
       type: RecordSelector
       extractor:
         type: DpathExtractor
-        field_path: [ ]
+        field_path: []
     status_extractor:
       type: DpathExtractor
       field_path:
