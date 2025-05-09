@@ -42,9 +42,9 @@ class MockDestinationConfigurationFactory :
 
 @Factory
 @Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
-class MockDestinationConfigurationProvider(private val config: DestinationConfiguration) {
+class MockDestinationConfigurationProvider {
     @Singleton
-    fun get(): MockDestinationConfiguration {
+    fun get(config: DestinationConfiguration): MockDestinationConfiguration {
         return config as MockDestinationConfiguration
     }
 }

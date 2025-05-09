@@ -3,8 +3,13 @@ plugins {
 }
 
 repositories {
-    // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+    // Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
     gradlePluginPortal()
+}
+
+dependencies {
+    // Note this dependency version needs to line up with the generateJsonSchema2Pojo plugin used in the project.
+    implementation 'org.yaml:snakeyaml:1.33'
 }
 
 tasks.withType(Jar).configureEach {

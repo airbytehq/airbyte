@@ -578,6 +578,11 @@ definitions:
         key_transformation:
           type: KeyTransformation
           prefix: counters_
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: lastUpdatedTime
+        cursor_format: "%ms"
 
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
@@ -620,6 +625,265 @@ definitions:
           - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
 
+  workflows_stream:
+    type: DeclarativeStream
+    name: workflows
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /automation/v3/workflows
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: false
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - workflows
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['insertedAt'] }}"
+      - type: DpathFlattenFields
+        field_path:
+          - contactListIds
+        key_transformation:
+          type: KeyTransformation
+          prefix: contactListIds_
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/workflows"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+
+  email_events_stream:
+    $ref: "#/definitions/stream_base"
+    name: email_events
+    primary_key: id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /email/public/v1/events
+      record_selector:
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - events
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      step: P30D
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%ms"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      start_time_option:
+        type: RequestOption
+        field_name: startTimestamp
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: endTimestamp
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/email_events"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: created
+        cursor_format: "%ms"
+
+  engagements_stream:
+    $ref: "#/definitions/stream_base"
+    name: engagements
+    primary_key: id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        type: CustomRequester
+        class_name: source_hubspot.components.EngagementsHttpRequester
+        url_base: https://api.hubapi.com
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        http_method: GET
+        request_headers:
+          Content-Type: application/json
+          User-Agent: Airbyte
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        transform_before_filtering: true
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: count
+        pagination_strategy:
+          type: CursorPagination
+          # set to 250 as max page size for All engagements API.
+          # if Recent engagements API is used API returns to 100 as default
+          page_size: 250
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdated
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      is_client_side_incremental: true
+      cursor_datetime_formats:
+        - "%ms"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+    transformations:
+      - type: DpathFlattenFields
+        delete_origin_value: true
+        field_path:
+          - engagement
+      - type: DpathFlattenFields
+        field_path:
+          - associations
+        key_transformation:
+          type: KeyTransformation
+          prefix: associations_
+      - type: DpathFlattenFields
+        field_path:
+          - metadata
+        key_transformation:
+          type: KeyTransformation
+          prefix: metadata_
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/engagements"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: lastUpdated
+        cursor_format: "%ms"
+
+  subscription_changes_stream:
+    $ref: "#/definitions/stream_base"
+    name: subscription_changes
+    primary_key: []
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /email/public/v1/subscriptions/timeline
+      record_selector:
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - timeline
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      step: P30D
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%ms"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%ms"
+      start_time_option:
+        type: RequestOption
+        field_name: startTimestamp
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: endTimestamp
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/subscription_changes"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
+        cursor_format: "%ms"
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_property_history_stream"
@@ -629,6 +893,10 @@ streams:
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
+  - "#/definitions/workflows_stream"
+  - "#/definitions/email_events_stream"
+  - "#/definitions/engagements_stream"
+  - "#/definitions/subscription_changes_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -742,6 +1010,7 @@ schemas:
           - integer
       default:
         description: Indicates if this pipeline is the default one in the system.
+
   companies_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
     type:
@@ -2470,3 +2739,1901 @@ schemas:
         type:
           - "null"
           - integer
+
+  workflows:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      name:
+        description: Name of the workflow
+        type:
+          - "null"
+          - string
+      id:
+        description: Unique identifier of the workflow
+        type:
+          - "null"
+          - integer
+      type:
+        description: Type of the workflow
+        type:
+          - "null"
+          - string
+      enabled:
+        description: Flag indicating if the workflow is enabled
+        type:
+          - "null"
+          - boolean
+      insertedAt:
+        description: Timestamp when the workflow was inserted
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        description: Timestamp when the workflow was last updated
+        type:
+          - "null"
+          - integer
+      personaTagIds:
+        description: IDs of persona tags associated with the workflow
+        type:
+          - "null"
+          - array
+        items:
+          description: Individual persona tag ID
+          type:
+            - "null"
+            - integer
+      contactListIds:
+        description: IDs of contact lists associated with the workflow
+        type:
+          - "null"
+          - object
+        properties:
+          enrolled:
+            description: ID of the contact list containing enrolled contacts
+            type:
+              - "null"
+              - integer
+          active:
+            description: ID of the contact list containing active contacts
+            type:
+              - "null"
+              - integer
+          steps:
+            description: List of steps within the workflow
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual step details
+              type:
+                - "null"
+                - string
+          completed:
+            description: ID of the contact list containing completed contacts
+            type:
+              - "null"
+              - integer
+          succeeded:
+            description: ID of the contact list containing succeeded contacts
+            type:
+              - "null"
+              - integer
+      contactListIds_enrolled:
+        description: ID of the contact list containing enrolled contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_active:
+        description: ID of the contact list containing active contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_completed:
+        description: ID of the contact list containing completed contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_succeeded:
+        description: ID of the contact list containing succeeded contacts
+        type:
+          - "null"
+          - integer
+      contactListIds_steps:
+        description: List of steps within the workflow
+        type:
+          - "null"
+          - array
+        items:
+          description: Individual step details
+          type:
+            - "null"
+            - string
+      lastUpdatedByUserId:
+        description: ID of the user who last updated the workflow
+        type:
+          - "null"
+          - integer
+      contactCounts:
+        description: Counts of contacts in various stages within the workflow
+        type:
+          - "null"
+          - object
+        properties:
+          active:
+            description: Count of contacts currently active in the workflow
+            type:
+              - "null"
+              - integer
+          enrolled:
+            description: Count of contacts enrolled in the workflow
+            type:
+              - "null"
+              - integer
+      description:
+        description: Description of the workflow
+        type:
+          - "null"
+          - string
+      originalAuthorUserId:
+        description: ID of the original author of the workflow
+        type:
+          - "null"
+          - integer
+      migrationStatus:
+        description: Status and details of workflow migration
+        type:
+          - "null"
+          - object
+        properties:
+          enrollmentMigrationStatus:
+            description: Enrollment migration status
+            type:
+              - "null"
+              - string
+          enrollmentMigrationTimestamp:
+            description: Timestamp of enrollment migration
+            type:
+              - "null"
+              - integer
+          flowId:
+            description: ID of the flow
+            type:
+              - "null"
+              - integer
+          lastSuccessfulMigrationTimestamp:
+            description: Timestamp of last successful migration
+            type:
+              - "null"
+              - integer
+          migrationStatus:
+            description: Overall migration status
+            type:
+              - "null"
+              - string
+          platformOwnsActions:
+            description: Flag indicating if the platform owns actions
+            type:
+              - "null"
+              - boolean
+          portalId:
+            description: ID of the portal
+            type:
+              - "null"
+              - integer
+          workflowId:
+            description: ID of the workflow
+            type:
+              - "null"
+              - integer
+      updateSource:
+        description: Details of the workflow update source
+        type:
+          - "null"
+          - object
+        properties:
+          sourceApplication:
+            description: Application details of the workflow update source
+            type:
+              - "null"
+              - object
+            properties:
+              serviceName:
+                description: Name of the service
+                type:
+                  - "null"
+                  - string
+              source:
+                description: Source details
+                type:
+                  - "null"
+                  - string
+          updatedAt:
+            description: Timestamp of workflow update
+            type:
+              - "null"
+              - integer
+          updatedByUser:
+            description: Details of the user who updated the workflow
+            type:
+              - "null"
+              - object
+            properties:
+              userEmail:
+                description: Email address of the user
+                type:
+                  - "null"
+                  - string
+              userId:
+                description: ID of the user
+                type:
+                  - "null"
+                  - integer
+      creationSource:
+        description: Details of the workflow creation source
+        type:
+          - "null"
+          - object
+        properties:
+          clonedFromWorkflowId:
+            description: ID of the workflow that was cloned
+            type:
+              - "null"
+              - integer
+          createdAt:
+            description: Timestamp of workflow creation
+            type:
+              - "null"
+              - integer
+          createdByUser:
+            description: Details of the user who created the workflow
+            type:
+              - "null"
+              - object
+            properties:
+              userEmail:
+                description: Email address of the user
+                type:
+                  - "null"
+                  - string
+              userId:
+                description: ID of the user
+                type:
+                  - "null"
+                  - integer
+          sourceApplication:
+            description: Application details of the workflow source
+            type:
+              - "null"
+              - object
+            properties:
+              serviceName:
+                description: Name of the service
+                type:
+                  - "null"
+                  - string
+              source:
+                description: Source details
+                type:
+                  - "null"
+                  - string
+      portalId:
+        description: ID of the portal associated with the workflow
+        type:
+          - "null"
+          - integer
+
+  email_events:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      appId:
+        description:
+          The unique identifier of the application associated with the email
+          event.
+        type:
+          - "null"
+          - integer
+      appName:
+        description: The name of the application associated with the email event.
+        type:
+          - "null"
+          - string
+      bcc:
+        description: The blind carbon copy recipients of the email.
+        type:
+          - "null"
+          - array
+      cc:
+        description: The carbon copy recipients of the email.
+        type:
+          - "null"
+          - array
+      attempt:
+        description: The number of attempts made to send the email.
+        type:
+          - "null"
+          - integer
+      bounced:
+        description: Indicates if the email bounced.
+        type:
+          - "null"
+          - boolean
+      browser:
+        description: Details about the email event recipient's browser.
+        type:
+          - "null"
+          - object
+        properties:
+          family:
+            description: The family of the browser used by the recipient.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the browser.
+            type:
+              - "null"
+              - string
+          producer:
+            description: The producer of the browser.
+            type:
+              - "null"
+              - string
+          producerUrl:
+            description: The URL of the producer's website.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of the browser.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL of the browser.
+            type:
+              - "null"
+              - string
+          version:
+            description: The version of the browser used by the recipient.
+            type:
+              - "null"
+              - array
+            items:
+              description: The version of the browser.
+              type:
+                - "null"
+                - string
+      category:
+        description: The category of the email event.
+        type:
+          - "null"
+          - string
+      causedBy:
+        description: Information about the action that caused the email event.
+        type:
+          - "null"
+          - object
+        properties:
+          created:
+            description: The timestamp of when the event was created.
+            type:
+              - "null"
+              - integer
+          id:
+            description: The unique identifier of the event causing this event.
+            type:
+              - "null"
+              - string
+      created:
+        description: The timestamp of when the email event was created.
+        type:
+          - "null"
+          - integer
+      deviceType:
+        description: The type of device used by the recipient.
+        type:
+          - "null"
+          - string
+      dropMessage:
+        description: The message associated with dropped email.
+        type:
+          - "null"
+          - string
+      dropReason:
+        description: The reason for dropping the email.
+        type:
+          - "null"
+          - string
+      duration:
+        description: The duration of the email event.
+        type:
+          - "null"
+          - integer
+      emailCampaignId:
+        description: The ID of the email campaign associated with the event.
+        type:
+          - "null"
+          - integer
+      emailCampaignGroupId:
+        description: The group ID of the email campaign associated with the event.
+        type:
+          - "null"
+          - integer
+      filteredEvent:
+        description: Indicates if the event is filtered.
+        type:
+          - "null"
+          - boolean
+      from:
+        description: The sender of the email.
+        type:
+          - "null"
+          - string
+      hmid:
+        description: The HubSpot Marketing ID.
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier of the email event.
+        type:
+          - "null"
+          - string
+      ipAddress:
+        description: The IP address of the recipient.
+        type:
+          - "null"
+          - string
+      linkId:
+        description: The ID of the link in the email.
+        type:
+          - "null"
+          - integer
+      location:
+        description: Details about the geographical location associated with the email event.
+        type:
+          - "null"
+          - object
+        properties:
+          city:
+            description: The city of the recipient's location.
+            type:
+              - "null"
+              - string
+          country:
+            description: The country of the recipient's location.
+            type:
+              - "null"
+              - string
+          latitude:
+            description: The latitude coordinate of the recipient's location.
+            type:
+              - "null"
+              - number
+          longitude:
+            description: The longitude coordinate of the recipient's location.
+            type:
+              - "null"
+              - number
+          state:
+            description: The state of the recipient's location.
+            type:
+              - "null"
+              - string
+          zipcode:
+            description: The zipcode of the recipient's location.
+            type:
+              - "null"
+              - string
+      obsoletedBy:
+        description: Information about any email event that this event has made obsolete.
+        type:
+          - "null"
+          - object
+        properties:
+          created:
+            description: The timestamp of when the event was obsoleted.
+            type:
+              - "null"
+              - integer
+          id:
+            description: The ID of the event that obsoleted this event.
+            type:
+              - "null"
+              - string
+      portalId:
+        description: The ID of the HubSpot portal.
+        type:
+          - "null"
+          - integer
+      portalSubscriptionStatus:
+        description: The subscription status of the portal.
+        type:
+          - "null"
+          - string
+      recipient:
+        description: The recipient of the email.
+        type:
+          - "null"
+          - string
+      referer:
+        description: The referer URL of the email.
+        type:
+          - "null"
+          - string
+      replyTo:
+        description: The email address to which replies should be directed.
+        type:
+          - "null"
+          - array
+        items:
+          description: The email address for replying to the email.
+          type:
+            - "null"
+            - string
+      requestedBy:
+        description: The entity that requested the email event.
+        type:
+          - "null"
+          - string
+      requestedByUserId:
+        description: The ID of the user who requested the email event.
+        type:
+          - "null"
+          - integer
+      response:
+        description: The response code related to the email event.
+        type:
+          - "null"
+          - string
+      sentBy:
+        description: Details about the entity that sent the email event.
+        type:
+          - "null"
+          - object
+        properties:
+          created:
+            description: The timestamp of when the email was sent.
+            type:
+              - "null"
+              - integer
+          id:
+            description: The ID of the sender of the email.
+            type:
+              - "null"
+              - string
+      smtpId:
+        description: The SMTP ID associated with email event.
+        type:
+          - "null"
+          - string
+      source:
+        description: The source of the email event.
+        type:
+          - "null"
+          - string
+      sourceId:
+        description: The unique identifier of the email event source.
+        type:
+          - "null"
+          - string
+      subscriptions:
+        description: Information about the subscriptions associated with the email event.
+        type:
+          - "null"
+          - array
+        items:
+          description: Details about a specific subscription.
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              description: The ID of the subscription.
+              type:
+                - "null"
+                - integer
+            legalBasisChange:
+              description: Information about any changes in legal basis related to the subscription.
+              type:
+                - "null"
+                - object
+              properties:
+                legalBasisExplanation:
+                  description: Explanation for legal basis change.
+                  type:
+                    - "null"
+                    - string
+                legalBasisType:
+                  description: The type of legal basis for subscription change.
+                  type:
+                    - "null"
+                    - string
+                optState:
+                  description: The state of opt-in.
+                  type:
+                    - "null"
+                    - string
+            status:
+              description: The status of the subscription.
+              type:
+                - "null"
+                - string
+      status:
+        description: The status of the email event.
+        type:
+          - "null"
+          - string
+      subject:
+        description: The subject of the email.
+        type:
+          - "null"
+          - string
+      type:
+        description: The type of email event.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL associated with the email event.
+        type:
+          - "null"
+          - string
+      userAgent:
+        description: The user agent of the recipient.
+        type:
+          - "null"
+          - string
+
+  engagements:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique ID of the engagement.
+        type:
+          - "null"
+          - integer
+      uid:
+        description: Unique identifier of the engagement.
+        type:
+          - "null"
+          - string
+      teamId:
+        description: ID of the team associated with the engagement.
+        type:
+          - "null"
+          - integer
+      portalId:
+        description: ID of the portal associated with the engagement.
+        type:
+          - "null"
+          - integer
+      queueMembershipIds:
+        description: IDs of queue memberships related to the engagement.
+        type:
+          - "null"
+          - array
+      scheduledTasks:
+        description: Scheduled tasks related to the engagement.
+        type:
+          - "null"
+          - array
+      active:
+        description: Indicates if the engagement is currently active or not.
+        type:
+          - "null"
+          - boolean
+      createdAt:
+        description: Timestamp indicating when the engagement was created.
+        type:
+          - "null"
+          - integer
+      createdBy:
+        description: ID of the user who created the engagement.
+        type:
+          - "null"
+          - integer
+      modifiedBy:
+        description: ID of the user who last modified the engagement.
+        type:
+          - "null"
+          - integer
+      lastUpdated:
+        description: Timestamp indicating when the engagement was last updated.
+        type:
+          - "null"
+          - integer
+      ownerId:
+        description: ID of the owner of the engagement.
+        type:
+          - "null"
+          - integer
+      type:
+        description: Type of the engagement.
+        type:
+          - "null"
+          - string
+      timestamp:
+        description: Timestamp related to the engagement.
+        type:
+          - "null"
+          - integer
+      bodyPreview:
+        description: Preview of the body content.
+        type:
+          - "null"
+          - string
+      bodyPreviewHtml:
+        description: HTML preview of the body content.
+        type:
+          - "null"
+          - string
+      bodyPreviewIsTruncated:
+        description: Indicates if the body preview is truncated.
+        type:
+          - "null"
+          - boolean
+      allAccessibleTeamIds:
+        description: IDs of all teams with access to this engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      activityType:
+        description: Type of activity associated with the engagement.
+        type:
+          - "null"
+          - string
+      gdprDeleted:
+        description: Indicates if the engagement is deleted due to GDPR compliance.
+        type:
+          - "null"
+          - boolean
+      source:
+        description: Source of the engagement data.
+        type:
+          - "null"
+          - string
+      sourceId:
+        description: ID of the source associated with the engagement.
+        type:
+          - "null"
+          - string
+      associations:
+        description: Associations related to the engagement.
+        type:
+          - "null"
+          - object
+        properties:
+          contactIds:
+            description: IDs of associated contacts.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          companyIds:
+            description: IDs of associated companies.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          dealIds:
+            description: IDs of associated deals.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          ownerIds:
+            description: IDs of owners associated with the engagement.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          workflowIds:
+            description: IDs of associated workflow.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          ticketIds:
+            description: IDs of associated tickets.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          contentIds:
+            description: IDs of associated content.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          quoteIds:
+            description: IDs of associated quotes.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          marketingEventIds:
+            description: IDs of associated marketing events.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+      associations_contactIds:
+        description: List of contact IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_contentIds:
+        description: List of content IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_companyIds:
+        description: List of company IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_dealIds:
+        description: List of deal IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_marketingEventIds:
+        description: List of marketing event IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_ownerIds:
+        description: List of owner IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_quoteIds:
+        description: List of quote IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_workflowIds:
+        description: List of workflow IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      associations_ticketIds:
+        description: List of ticket IDs associated with the engagement
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      attachments:
+        description: Attachments included in the engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              description: ID of the attachment.
+              type:
+                - "null"
+                - integer
+      metadata:
+        description: Metadata related to the engagement.
+        type:
+          - "null"
+          - object
+        properties:
+          body:
+            type:
+              - "null"
+              - string
+          meetingOutcome:
+            type:
+              - "null"
+              - string
+          calendarEventHash:
+            type:
+              - "null"
+              - string
+          createdFromLinkId:
+            type:
+              - "null"
+              - integer
+          meetingChangeId:
+            type:
+              - "null"
+              - string
+          locationType:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          internalMeetingNotes:
+            type:
+              - "null"
+              - string
+          includeDescriptionInReminder:
+            type:
+              - "null"
+              - boolean
+          iCalUid:
+            type:
+              - "null"
+              - string
+          preMeetingProspectReminders:
+            description: Reminders for pre-meeting prospects.
+            type:
+              - "null"
+              - array
+            items: {}
+          attendeeOwnerIds:
+            description: IDs of attendees' owners.
+            type:
+              - "null"
+              - array
+            items: {}
+          guestEmails:
+            description: Emails of guest attendees.
+            type:
+              - "null"
+              - array
+            items: {}
+          ownerIdsBcc:
+            description: IDs of BCC owners.
+            type:
+              - "null"
+              - array
+            items: {}
+          ownerIdsCc:
+            description: IDs of CC owners.
+            type:
+              - "null"
+              - array
+            items: {}
+          ownerIdsFrom:
+            description: IDs of 'from' owners.
+            type:
+              - "null"
+              - array
+            items: {}
+          ownerIdsTo:
+            description: IDs of 'to' owners.
+            type:
+              - "null"
+              - array
+            items: {}
+          pendingInlineImageIds:
+            description: IDs of pending inline image attachments.
+            type:
+              - "null"
+              - array
+            items: {}
+          validationSkipped:
+            description: Validation details skipped.
+            type:
+              - "null"
+              - array
+            items: {}
+          from:
+            description: Sender information.
+            type:
+              - "null"
+              - object
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+              firstName:
+                type:
+                  - "null"
+                  - string
+              lastName:
+                type:
+                  - "null"
+                  - string
+              raw:
+                type:
+                  - "null"
+                  - string
+          sender:
+            description: Sender's email information.
+            type:
+              - "null"
+              - object
+            properties:
+              email:
+                description: Email of the sender.
+                type:
+                  - "null"
+                  - string
+          to:
+            description: Recipient information.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                email:
+                  type:
+                    - "null"
+                    - string
+                firstName:
+                  type:
+                    - "null"
+                    - string
+                lastName:
+                  type:
+                    - "null"
+                    - string
+                raw:
+                  type:
+                    - "null"
+                    - string
+          cc:
+            description: CC recipients of the engagement.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                email:
+                  description: Email of the CC recipient.
+                  type:
+                    - "null"
+                    - string
+                firstName:
+                  description: First name of the CC recipient.
+                  type:
+                    - "null"
+                    - string
+                lastName:
+                  description: Last name of the CC recipient.
+                  type:
+                    - "null"
+                    - string
+                raw:
+                  description: Raw data of the CC recipient.
+                  type:
+                    - "null"
+                    - string
+          bcc:
+            description: BCC recipients of the engagement.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                email:
+                  description: Email of the BCC recipient.
+                  type:
+                    - "null"
+                    - string
+          subject:
+            type:
+              - "null"
+              - string
+          html:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          forObjectType:
+            type:
+              - "null"
+              - string
+          startTime:
+            type:
+              - "null"
+              - integer
+          endTime:
+            type:
+              - "null"
+              - integer
+          title:
+            type:
+              - "null"
+              - string
+          timezone:
+            type:
+              - "null"
+              - string
+          toNumber:
+            type:
+              - "null"
+              - string
+          fromNumber:
+            type:
+              - "null"
+              - string
+          externalId:
+            type:
+              - "null"
+              - string
+          durationMilliseconds:
+            type:
+              - "null"
+              - integer
+          externalAccountId:
+            type:
+              - "null"
+              - string
+          recordingUrl:
+            type:
+              - "null"
+              - string
+          disposition:
+            type:
+              - "null"
+              - string
+          completionDate:
+            type:
+              - "null"
+              - integer
+          taskType:
+            type:
+              - "null"
+              - string
+          reminders:
+            description: Reminders related to the engagement.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          threadId:
+            type:
+              - "null"
+              - string
+          messageId:
+            type:
+              - "null"
+              - string
+          loggedFrom:
+            type:
+              - "null"
+              - string
+          attachedVideoOpened:
+            type:
+              - "null"
+              - boolean
+          bounceErrorDetail:
+            type:
+              - "null"
+              - object
+          emailSendEventId:
+            type:
+              - "null"
+              - object
+          attachedVideoWatched:
+            type:
+              - "null"
+              - boolean
+          trackerKey:
+            type:
+              - "null"
+              - string
+          sendDefaultReminder:
+            type:
+              - "null"
+              - boolean
+          source:
+            type:
+              - "null"
+              - string
+          unknownVisitorConversation:
+            type:
+              - "null"
+              - boolean
+          facsimileSendId:
+            type:
+              - "null"
+              - string
+          sentVia:
+            type:
+              - "null"
+              - string
+          sequenceStepOrder:
+            type:
+              - "null"
+              - integer
+          externalUrl:
+            type:
+              - "null"
+              - string
+          postSendStatus:
+            type:
+              - "null"
+              - string
+          errorMessage:
+            type:
+              - "null"
+              - string
+          recipientDropReasons:
+            type:
+              - "null"
+              - string
+          calleeObjectId:
+            type:
+              - "null"
+              - integer
+          calleeObjectType:
+            type:
+              - "null"
+              - string
+          mediaProcessingStatus:
+            type:
+              - "null"
+              - string
+          sourceId:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - string
+          isAllDay:
+            type:
+              - "null"
+              - boolean
+      metadata_attendeeOwnerIds:
+        description: IDs of attendees' owners in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_calendarEventHash:
+        description: Hash value for calendar event
+        type:
+          - "null"
+          - string
+      metadata_createdFromLinkId:
+        description: ID from which engagement was created
+        type:
+          - "null"
+          - integer
+      metadata_meetingChangeId:
+        description: ID of the meeting change
+        type:
+          - "null"
+          - string
+      ownerIdsBcc:
+        description: IDs of BCC owners.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      ownerIdsFrom:
+        description: IDs of 'from' owners.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      ownerIdsTo:
+        description: IDs of 'to' owners.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      pendingInlineImageIds:
+        description: IDs of pending inline image attachments.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      validationSkipped:
+        description: Validation details skipped.
+        type:
+          - "null"
+          - array
+        items: {}
+      ownerIdsCc:
+        description: IDs of CC owners.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      metadata_guestEmails:
+        description: Guest attendee emails in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_iCalUid:
+        description: Unique ID for iCal
+        type:
+          - "null"
+          - string
+      metadata_includeDescriptionInReminder:
+        description: Flag indicating if description should be included in reminder
+        type:
+          - "null"
+          - boolean
+      metadata_internalMeetingNotes:
+        description: Internal meeting notes
+        type:
+          - "null"
+          - string
+      metadata_location:
+        description: Location of the engagement
+        type:
+          - "null"
+          - string
+      metadata_locationType:
+        description: Type of location for the engagement
+        type:
+          - "null"
+          - string
+      metadata_meetingOutcome:
+        description: Outcome of the meeting
+        type:
+          - "null"
+          - string
+      metadata_timezone:
+        description: Timezone of the engagement
+        type:
+          - "null"
+          - string
+      metadata_preMeetingProspectReminders:
+        description: Pre-meeting prospect reminders in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_body:
+        description: Engagement body content
+        type:
+          - "null"
+          - string
+      metadata_from:
+        description: Sender information in metadata.
+        type:
+          - "null"
+          - object
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          raw:
+            type:
+              - "null"
+              - string
+      metadata_sender:
+        description: Sender's email information in metadata.
+        type:
+          - "null"
+          - object
+        properties:
+          email:
+            description: Email of the sender in metadata.
+            type:
+              - "null"
+              - string
+      metadata_to:
+        description: Recipient information in metadata.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email:
+              type:
+                - "null"
+                - string
+            firstName:
+              type:
+                - "null"
+                - string
+            lastName:
+              type:
+                - "null"
+                - string
+            raw:
+              type:
+                - "null"
+                - string
+      metadata_cc:
+        description: CC recipients in metadata.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email:
+              type:
+                - "null"
+                - string
+            firstName:
+              type:
+                - "null"
+                - string
+            lastName:
+              type:
+                - "null"
+                - string
+            raw:
+              type:
+                - "null"
+                - string
+      metadata_bounceErrorDetail:
+        description: Details of bounce errors, if any
+        type:
+          - "null"
+          - object
+      metadata_emailSendEventId:
+        description: ID of the email send event
+        type:
+          - "null"
+          - object
+      metadata_ownerIdsBcc:
+        description: IDs of BCC owners in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_ownerIdsCc:
+        description: IDs of CC owners in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_ownerIdsFrom:
+        description: IDs of 'from' owners in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_ownerIdsTo:
+        description: IDs of 'to' owners in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_pendingInlineImageIds:
+        description: IDs of pending inline image attachments in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_validationSkipped:
+        description: Validation details skipped in metadata.
+        type:
+          - "null"
+          - array
+        items: {}
+      metadata_bcc:
+        description: BCC recipients in metadata.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email:
+              description: Email of the BCC recipient in metadata.
+              type:
+                - "null"
+                - string
+      metadata_subject:
+        description: Subject of the engagement
+        type:
+          - "null"
+          - string
+      metadata_html:
+        description: HTML content of the engagement
+        type:
+          - "null"
+          - string
+      metadata_text:
+        description: Text content of the engagement
+        type:
+          - "null"
+          - string
+      metadata_status:
+        description: Status of the engagement
+        type:
+          - "null"
+          - string
+      metadata_forObjectType:
+        description: Type of object for which engagement is associated
+        type:
+          - "null"
+          - string
+      metadata_startTime:
+        description: Start time of the engagement
+        type:
+          - "null"
+          - integer
+      metadata_endTime:
+        description: End time of the engagement
+        type:
+          - "null"
+          - integer
+      metadata_title:
+        description: Title of the engagement
+        type:
+          - "null"
+          - string
+      metadata_toNumber:
+        description: Number to which engagement was sent
+        type:
+          - "null"
+          - string
+      metadata_fromNumber:
+        description: Number from which engagement was sent
+        type:
+          - "null"
+          - string
+      metadata_externalId:
+        description: External ID of the engagement
+        type:
+          - "null"
+          - string
+      metadata_durationMilliseconds:
+        description: Duration of the engagement in milliseconds
+        type:
+          - "null"
+          - integer
+      metadata_externalAccountId:
+        description: External account ID associated with the engagement
+        type:
+          - "null"
+          - string
+      metadata_recordingUrl:
+        description: URL of the recording related to the engagement
+        type:
+          - "null"
+          - string
+      metadata_disposition:
+        description: Engagement disposition
+        type:
+          - "null"
+          - string
+      metadata_completionDate:
+        description: Date when engagement was completed
+        type:
+          - "null"
+          - integer
+      metadata_taskType:
+        description: Type of engagement task
+        type:
+          - "null"
+          - string
+      metadata_reminders:
+        description: Reminders in metadata.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      metadata_threadId:
+        description: ID of the thread
+        type:
+          - "null"
+          - string
+      metadata_messageId:
+        description: ID of the message
+        type:
+          - "null"
+          - string
+      metadata_loggedFrom:
+        description: Source from which the engagement was logged
+        type:
+          - "null"
+          - string
+      metadata_attachedVideoOpened:
+        description: Flag indicating if attached videos were opened
+        type:
+          - "null"
+          - boolean
+      metadata_attachedVideoWatched:
+        description: Flag indicating if attached videos were watched
+        type:
+          - "null"
+          - boolean
+      metadata_trackerKey:
+        description: Key for tracking engagement
+        type:
+          - "null"
+          - string
+      metadata_sendDefaultReminder:
+        description: Default reminder settings for the engagement
+        type:
+          - "null"
+          - boolean
+      metadata_source:
+        description: Source of the engagement
+        type:
+          - "null"
+          - string
+      metadata_unknownVisitorConversation:
+        description: Conversation with unknown visitor
+        type:
+          - "null"
+          - boolean
+      metadata_facsimileSendId:
+        description: ID of the facsimile send
+        type:
+          - "null"
+          - string
+      metadata_sentVia:
+        description: Medium through which engagement was sent
+        type:
+          - "null"
+          - string
+      metadata_sequenceStepOrder:
+        description: Order of sequence step
+        type:
+          - "null"
+          - integer
+      metadata_externalUrl:
+        description: External URL related to the engagement
+        type:
+          - "null"
+          - string
+      metadata_postSendStatus:
+        description: Status of post send operation
+        type:
+          - "null"
+          - string
+      metadata_errorMessage:
+        description: Error message associated with the engagement
+        type:
+          - "null"
+          - string
+      metadata_recipientDropReasons:
+        description: Reasons for recipient drop
+        type:
+          - "null"
+          - string
+      metadata_calleeObjectId:
+        description: ID of the callee object
+        type:
+          - "null"
+          - integer
+      metadata_calleeObjectType:
+        description: Type of the callee object
+        type:
+          - "null"
+          - string
+      metadata_mediaProcessingStatus:
+        description: Status of media processing for the engagement
+        type:
+          - "null"
+          - string
+      metadata_sourceId:
+        description: Source ID of the engagement
+        type:
+          - "null"
+          - string
+      metadata_priority:
+        description: Priority of the engagement
+        type:
+          - "null"
+          - string
+      metadata_isAllDay:
+        description: Flag indicating if engagement is for the whole day
+        type:
+          - "null"
+          - boolean
+
+  subscription_changes:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      timestamp:
+        description: Timestamp when the subscription change data was fetched
+        type:
+          - "null"
+          - integer
+      portalId:
+        description: ID of the portal related to the subscription changes
+        type:
+          - "null"
+          - integer
+      recipient:
+        description: Recipient of the subscription change notification
+        type:
+          - "null"
+          - string
+      normalizedEmailId:
+        description: Normalized email identifier associated with the subscription
+        type:
+          - "null"
+          - string
+      changes:
+        description: List of all subscription changes
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of each subscription change
+          type:
+            - "null"
+            - object
+          properties:
+            change:
+              description: Details of the change that occurred
+              type:
+                - "null"
+                - string
+            timestamp:
+              description: Timestamp when the subscription change occurred
+              type:
+                - "null"
+                - integer
+            source:
+              description: Source of the subscription change
+              type:
+                - "null"
+                - string
+            portalId:
+              description: ID of the portal associated with the subscription change
+              type:
+                - "null"
+                - integer
+            subscriptionId:
+              description: Unique identifier for the subscription affected by the change
+              type:
+                - "null"
+                - integer
+            changeType:
+              description: Type of change (e.g., add, remove, update)
+              type:
+                - "null"
+                - string
+            causedByEvent:
+              description: Event that triggered the subscription change
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the event that caused the change
+                  type:
+                    - "null"
+                    - string
+                created:
+                  description: Timestamp when the event that caused the change occurred
+                  type:
+                    - "null"
+                    - integer

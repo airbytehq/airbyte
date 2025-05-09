@@ -19,7 +19,6 @@ from source_hubspot.streams import (
     Deals,
     DealsArchived,
     DealSplits,
-    EmailEvents,
     EngagementsCalls,
     EngagementsEmails,
     EngagementsMeetings,
@@ -35,7 +34,6 @@ from source_hubspot.streams import (
     Products,
     RecordUnnester,
     Tickets,
-    Workflows,
 )
 
 from airbyte_cdk.models import SyncMode
@@ -97,7 +95,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
         (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -115,7 +113,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Workflows, "", {"updatedAt": 1675121674226}),
+        ("workflows", "", {"updatedAt": 1675121674226}),
     ],
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
