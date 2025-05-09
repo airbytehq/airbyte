@@ -4,14 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from components import (
-    CursorAwareSinglePartitionRouter,
-    CursorManager,
-    CursorManagerAwarePaginationStrategy,
-    IntercomErrorHandler,
-    IntercomScrollRetriever,
-)
-
+from components import IntercomErrorHandler, IntercomScrollRetriever, ResetCursorSignal
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import FailureType, ResponseAction
 
 
@@ -52,80 +46,57 @@ def test_rate_limiter(components_module, rate_limit_header, backoff_time):
 
 
 @pytest.fixture(autouse=True)
-def reset_cursor_manager():
-    """Reset CursorManager cursor before each test to isolate state"""
-    CursorManager().reset()
+def reset_signal(request):
+    """Reset ResetCursorSignal before and after each test to isolate state"""
+    signal = ResetCursorSignal()
+    signal.clear_reset()
+    def clear_signal():
+        signal.clear_reset()
+    request.addfinalizer(clear_signal)
 
-
-def test_cursor_manager():
+def test_reset_cursor_signal():
     # Get the singleton instance
-    manager = CursorManager()
+    signal = ResetCursorSignal()
 
     # Test initial state
-    assert manager.get_cursor() is None
+    assert signal.is_reset_triggered() is False
 
-    # Test updating cursor
-    manager.update_cursor("test_cursor")
-    assert manager.get_cursor() == "test_cursor"
+    # Test triggering reset
+    signal.trigger_reset()
+    assert signal.is_reset_triggered() is True
 
-    # Test resetting cursor
-    manager.reset()
-    assert manager.get_cursor() is None
+    # Test clearing reset
+    signal.clear_reset()
+    assert signal.is_reset_triggered() is False
 
     # Test singleton behavior
-    manager2 = CursorManager()
-    manager.update_cursor("another_cursor")
-    assert manager2.get_cursor() == "another_cursor"
-
+    signal2 = ResetCursorSignal()
+    signal.trigger_reset()
+    assert signal2.is_reset_triggered() is True
 
 def test_intercom_error_handler():
     handler = IntercomErrorHandler(config={}, parameters={})
 
-    # Test HTTP 500 error resets cursor and retries
+    # Test HTTP 500 error triggers reset and retries
     response_500 = requests.Response()
     response_500.status_code = 500
     resolution = handler.interpret_response(response_500)
     assert resolution.response_action == ResponseAction.RETRY
     assert resolution.failure_type == FailureType.transient_error
     assert "HTTP 500" in resolution.error_message
-    assert CursorManager().get_cursor() is None  # Cursor should be reset
+    assert ResetCursorSignal().is_reset_triggered() is True  # Reset should be triggered
 
-    # Test non-500 error uses default behavior
+    # Clear the reset signal for the next test case
+    ResetCursorSignal().clear_reset()
+
+    # Test non-500 error does not trigger reset and uses default behavior
     response_404 = requests.Response()
     response_404.status_code = 404
     resolution = handler.interpret_response(response_404)
     assert resolution.response_action == ResponseAction.FAIL  # Default behavior for 404
+    assert ResetCursorSignal().is_reset_triggered() is False  # Reset should not be triggered
 
-
-def test_cursor_manager_aware_pagination_strategy():
-    strategy = CursorManagerAwarePaginationStrategy(cursor_value="initial_cursor", stop_condition="", config={}, parameters={})
-
-    # Mock response
-    response = requests.Response()
-    response._content = b'{"scroll_param": "next_token"}'
-
-    # Test next_page_token updates cursor
-    token = strategy.next_page_token(response, 10, None)
-    assert token == "initial_cursor"  # Expected to return the cursor_value template result
-    assert CursorManager().get_cursor() == "initial_cursor"
-
-
-def test_cursor_aware_single_partition_router():
-    router = CursorAwareSinglePartitionRouter(parameters={})
-
-    # Test with no cursor
-    slices = list(router.stream_slices())
-    assert len(slices) == 1
-    assert slices[0].partition == {"scroll_param": None}
-
-    # Test with updated cursor
-    CursorManager().update_cursor("test_cursor")
-    slices = list(router.stream_slices())
-    assert len(slices) == 1
-    assert slices[0].partition == {"scroll_param": "test_cursor"}
-
-
-def test_intercom_scroll_retriever():
+def test_intercom_scroll_retriever_initialization():
     # Mock dependencies
     requester = MagicMock()
     paginator = MagicMock()
@@ -138,4 +109,36 @@ def test_intercom_scroll_retriever():
     )
 
     # Test stream_slicer is correctly initialized
-    assert isinstance(retriever.stream_slicer, CursorAwareSinglePartitionRouter)
+    assert isinstance(retriever.stream_slicer, SinglePartitionRouter)
+
+def test_intercom_scroll_retriever_next_page_token():
+    # Mock dependencies
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    config = {}
+    parameters = {}
+
+    # Create a fresh retriever instance for this test
+    retriever = IntercomScrollRetriever(
+        name="test_stream", requester=requester, paginator=paginator, record_selector=record_selector, config=config, parameters=parameters
+    )
+
+    # Mock response and paginator behavior
+    response = MagicMock()
+    paginator.next_page_token.return_value = {"next_page_token": "next_cursor"}
+
+    # Test when reset is not triggered
+    token = retriever._next_page_token(response, 10, None, None)
+    assert token == {"next_page_token": "next_cursor"}
+    assert retriever._current_cursor == "next_cursor"
+
+    # Reset the retriever state by creating a new instance for the reset test
+    retriever = IntercomScrollRetriever(
+        name="test_stream", requester=requester, paginator=paginator, record_selector=record_selector, config=config, parameters=parameters
+    )
+    ResetCursorSignal().trigger_reset()
+    token = retriever._next_page_token(response, 10, None, None)
+    assert token == IntercomScrollRetriever.RESET_TOKEN
+    assert retriever._current_cursor is None  # Cursor should be reset
+    assert ResetCursorSignal().is_reset_triggered() is False  # Reset should be cleared after use

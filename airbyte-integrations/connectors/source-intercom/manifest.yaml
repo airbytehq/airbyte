@@ -30,13 +30,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read admin activity logs" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -91,13 +91,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read admins" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -129,13 +129,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read tags" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -167,13 +167,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -205,13 +205,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -253,8 +253,15 @@ definitions:
           error_handler:
             type: CustomErrorHandler
             class_name: "source_declarative_manifest.components.IntercomErrorHandler"
-            $parameters:
-              next_page_token: "{{ response.get('scroll_param') }}"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 401
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         paginator:
           $parameters:
             url_base: "https://api.intercom.io/"
@@ -264,8 +271,7 @@ definitions:
             inject_into: "request_parameter"
             field_name: "scroll_param"
           pagination_strategy:
-            type: CustomPaginationStrategy
-            class_name: "source_declarative_manifest.components.CursorManagerAwarePaginationStrategy"
+            type: CursorPagination
             cursor_value: "{{ response.get('scroll_param') }}"
             stop_condition: "{{ not response.get('data') }}"
         record_selector:
@@ -276,6 +282,18 @@ definitions:
             type: DpathExtractor
             field_path:
               - "data"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        cursor_datetime_formats:
+          - "%s"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -303,13 +321,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -343,13 +361,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -383,12 +401,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -400,7 +419,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
             stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
           page_size_option:
             type: RequestOption
@@ -454,12 +473,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read conversations" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -471,7 +491,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
             stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
           page_size_option:
             type: RequestOption
@@ -522,6 +542,14 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 401
+                    action: FAIL
+                    failure_type: config_error
+                    error_message: >-
+                      Failed to perform request. Error: Permission Scope Error.
+                      Please validate you have "Read conversations" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -579,20 +607,19 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            #This API is only documented on version 2.11 as of today 3/19/25
             Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -658,12 +685,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
+                http_codes:
+                  - 401
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using API.
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read Tickets" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:
@@ -793,19 +821,19 @@ spec:
 
 metadata:
   autoImportSchema:
-    activity_logs: true
-    admins: true
-    tags: true
-    teams: true
-    segments: true
-    companies: true
-    company_attributes: true
-    contact_attributes: true
-    contacts: true
-    conversations: true
-    conversation_parts: true
-    company_segments: true
-    tickets: true
+    activity_logs: false
+    admins: false
+    tags: false
+    teams: false
+    segments: false
+    companies: false
+    company_attributes: false
+    contact_attributes: false
+    contacts: false
+    conversations: false
+    conversation_parts: false
+    company_segments: false
+    tickets: false
   yamlComponents:
     streams:
       activity_logs:

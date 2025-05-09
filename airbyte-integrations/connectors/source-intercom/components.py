@@ -5,18 +5,17 @@
 from dataclasses import dataclass
 from functools import wraps
 from time import sleep
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
 import requests
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
+from airbyte_cdk.sources.types import Record, StreamSlice
+
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
-from airbyte_cdk.sources.types import Record
 
 
 RequestInput = Union[str, Mapping[str, str]]
@@ -208,96 +207,137 @@ class SubstreamStateMigration(StateMigration):
         return {**stream_state, "parent_state": migrated_parent_state}
 
 
-class CursorManager:
+class ResetCursorSignal:
     """
-    Singleton class that manages the cursor state exclusively for Intercom's companies stream. It provides methods to get, update,
-    and reset the cursor, which tracks the scroll position for iterating over companies. The singleton pattern ensures a single,
-    shared cursor state across the sync process.
-
-    For the companies stream, we need to implement a custom retriever since we cannot simply retry on HTTP 500 errors.
-    Instead, the stream must restart from the beginning to ensure data integrity. See Docs:
-    https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
-
-    We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, which is tracked here:
-    https://github.com/airbytehq/airbyte-internal-issues/issues/12107. However, the team does not have the bandwidth
-    to implement this at the moment, so this custom component provides a workaround by resetting the cursor on errors.
+    Singleton class that manages a reset signal for Intercom's companies stream.
     """
-
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance.cursor = None
+            cls._instance.reset_signal = False
         return cls._instance
 
-    def get_cursor(self) -> Optional[str]:
-        return self.cursor
+    def is_reset_triggered(self) -> bool:
+        return self.reset_signal
 
-    def update_cursor(self, new_cursor: str) -> None:
-        self.cursor = new_cursor
+    def trigger_reset(self) -> None:
+        self.reset_signal = True
 
-    def reset(self) -> None:
-        self.cursor = None
+    def clear_reset(self) -> None:
+        self.reset_signal = False
 
 
 class IntercomErrorHandler(DefaultErrorHandler):
     """
-    Custom error handler that overrides the default behavior for HTTP 500 errors. When a 500 error occurs, it resets the cursor
-    using the CursorManager and triggers a retry, allowing the sync to restart from the beginning. For all other errors, it delegates
-    to the parent class’s handling logic.
+    Custom error handler that triggers a reset on HTTP 500 errors.
     """
-
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == 500:
-            cursor_manager = CursorManager()
-            cursor_manager.reset()
-            resolution = ErrorResolution(
+            reset_signal = ResetCursorSignal()
+            reset_signal.trigger_reset()
+            return ErrorResolution(
                 response_action=ResponseAction.RETRY,
                 failure_type=FailureType.transient_error,
-                error_message="The companies stream has faced an HTTP 500. Retrying from the first scroll...",
+                error_message="HTTP 500 encountered. Triggering reset to retry from the beginning...",
             )
-            return resolution
         return super().interpret_response(response_or_exception)
-
-
-class CursorManagerAwarePaginationStrategy(CursorPaginationStrategy):
-    """
-    Extends the standard cursor pagination strategy by integrating with the CursorManager. After determining the next page token
-    from the response, it updates the CursorManager with this token if it exists, ensuring the cursor state reflects the latest
-    pagination position for subsequent requests.
-    """
-
-    def next_page_token(self, response, last_page_size: int, last_record: Optional[Record], last_page_token_value: Optional[Any] = None):
-        next_token = super().next_page_token(response=response, last_page_size=last_page_size, last_record=last_record)
-        cursor_manager = CursorManager()
-        if next_token is not None:
-            cursor_manager.update_cursor(next_token)
-        return next_token
-
-
-class CursorAwareSinglePartitionRouter(SinglePartitionRouter):
-    """
-    Custom router that generates a single stream slice based on the current cursor state from the CursorManager. It includes the
-    cursor as a `scroll_param` in the partition, enabling the retriever to request the correct page of data during the sync process.
-    """
-
-    def __init__(self, parameters: Mapping[str, Any]):
-        super().__init__(parameters)
-        self.cursor_manager = CursorManager()
-
-    def stream_slices(self) -> Iterable[StreamSlice]:
-        cursor = self.cursor_manager.get_cursor()
-        slice = StreamSlice(partition={"scroll_param": cursor}, cursor_slice={})
-        yield slice
 
 
 class IntercomScrollRetriever(SimpleRetriever):
     """
-    Custom retriever that overrides the default stream slicer with a CursorAwareSinglePartitionRouter during initialization.
-    This ensures that pagination is driven by cursor-based stream slices, allowing the sync to progress based on the managed cursor state.
+    Custom retriever for Intercom's companies stream with reset handling.
+
+    For the companies stream, we need to implement a custom retriever since we cannot simply retry on HTTP 500 errors.
+    Instead, the stream must restart from the beginning to ensure data integrity. See Docs:
+    https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
+    We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, which is tracked here:
+    https://github.com/airbytehq/airbyte-internal-issues/issues/12107. However, the team does not have the bandwidth
+    to implement this at the moment, so this custom component provides a workaround by resetting the cursor on errors.
     """
+    RESET_TOKEN = {"reset": True}
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        self.stream_slicer = CursorAwareSinglePartitionRouter(parameters)
+        self.reset_signal = ResetCursorSignal()
+        self._current_cursor: Optional[str] = None
+        if not hasattr(self, 'stream_slicer') or self.stream_slicer is None:
+            self.stream_slicer = SinglePartitionRouter(parameters=parameters)
+
+    def _next_page_token(
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any],
+    ) -> Optional[Mapping[str, Any]]:
+        """
+        Determines the next page token or signals a reset.
+        """
+        if self.reset_signal.is_reset_triggered():
+            self.reset_signal.clear_reset()
+            return self.RESET_TOKEN
+
+        next_token = self._paginator.next_page_token(
+            response=response,
+            last_page_size=last_page_size,
+            last_record=last_record,
+            last_page_token_value=last_page_token_value,
+        )
+        if next_token and "next_page_token" in next_token:
+            self._current_cursor = next_token["next_page_token"]
+        else:
+            self._current_cursor = None
+        return next_token
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[requests.Response]], Iterable[Record]],
+        stream_state: Mapping[str, Any],
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        """
+        Reads pages with pagination and reset handling using _next_page_token.
+        """
+        pagination_complete = False
+        initial_token = self._paginator.get_initial_token()
+        next_page_token = (
+            {"next_page_token": initial_token} if initial_token is not None else None
+        )
+
+        while not pagination_complete:
+            #Needed for _next_page_token
+            response = self.requester.send_request(
+                path=self._paginator_path(next_page_token=next_page_token),
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                request_headers=self._request_headers(next_page_token=next_page_token),
+                request_params=self._request_params(next_page_token=next_page_token),
+                request_body_data=self._request_body_data(next_page_token=next_page_token),
+                request_body_json=self._request_body_json(next_page_token=next_page_token),
+            )
+
+            for record in records_generator_fn(response):
+                yield record
+
+            if not response:
+                pagination_complete = True
+            else:
+                next_page_token = self._next_page_token(
+                    response=response,
+                    last_page_size=0,  # Simplified, not tracking size here
+                    last_record=None,  # Not needed for reset logic
+                    last_page_token_value=(
+                        next_page_token.get("next_page_token") if next_page_token else None
+                    ),
+                )
+                if next_page_token == self.RESET_TOKEN:
+                    next_page_token = (
+                        {"next_page_token": initial_token} if initial_token is not None else None
+                    )
+                elif not next_page_token:
+                    pagination_complete = True
+
+        yield from []
