@@ -78,6 +78,15 @@ jobs:
       # the current flow is to trigger --pre-release on the branch, and have airbyte-ci make up a dev tag.
       # idea: modify the build-and-publish-java-connectors-with-tag.sh to generate a pre-release tag instead of just pulling it
       # from the metadata.yaml.
+      # publish-options: --pre-release or --main-release
+      # if --pre-release, this should generate an RC tag, if --main-release, this should republish the version.
+      # need to make sure --pre-release tags match.
+      - name: Build and publish JVM connectors images [manual]
+        id: build-and-publish-JVM-connectors-images
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        shell: bash
+        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} ${{ inputs.connectors-options }}
+
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
