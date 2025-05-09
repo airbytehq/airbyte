@@ -196,52 +196,63 @@ const AIRBYTE_CLIENT_ID = process.env.AIRBYTE_CLIENT_ID;
 const AIRBYTE_CLIENT_SECRET = process.env.AIRBYTE_CLIENT_SECRET;
 const ORGANIZATION_ID = process.env.AIRBYTE_ORGANIZATION_ID;
 const EXTERNAL_USER_ID = process.env.EXTERNAL_USER_ID;
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 ```
 
 4. Define an endpoint listening at `/api/widget_token`:
 
 ```js
 app.get("/api/widget_token", async (req, res) => {
-  try {
 });
 ```
 
 In the callback, submit a request to obtain an API access token:
 
 ```js
-const access_token_body = JSON.stringify({
-      client_id: AIRBYTE_CLIENT_ID,
-      client_secret: AIRBYTE_CLIENT_SECRET,
-      "grant-type": "client_credentials",
-    });
-const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
-  method: "POST",
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-  body: access_token_body,
+  const access_token_body = JSON.stringify({
+    client_id: AIRBYTE_CLIENT_ID,
+    client_secret: AIRBYTE_CLIENT_SECRET,
+    "grant-type": "client_credentials",
+  });
+  const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: access_token_body,
+  });
+
+  const access_token_response = await response.json();
+  const access_token = access_token_response.access_token;
 });
 ```
 
 Still in the callback, use the API access token in the response to request an Embedded token encoding your API access key and metadata.
 
 ```js
-const widget_token_response = await fetch(AIRBYTE_WIDGET_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${access_token}`,
-  },
-  body: JSON.stringify({
-    organizationId: AIRBYTE_ORGANIZATION_ID,
-    allowedOrigin: origin,
-    externalUserId: EXTERNAL_USER_ID,
-  }),
-});
+  // Determine the allowed origin from the request
+  const origin =
+    req.headers.origin ||
+    req.headers.referer?.replace(/\/$/, "") ||
+    ALLOWED_ORIGIN;
 
-const access_token_response = await response.json();
-const access_token = access_token_response.access_token;
+  const widget_token_response = await fetch(AIRBYTE_WIDGET_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+    body: JSON.stringify({
+      organizationId: ORGANIZATION_ID,
+      allowedOrigin: origin,
+      externalUserId: EXTERNAL_USER_ID,
+    }),
+  });
+
+  const widget_response = await widget_token_response.json();
+
+  res.json({ token: widget_response.token });
 ```
 
 5. Finally, start the express application.
@@ -283,63 +294,59 @@ app.use((req, res, next) => {
 });
 
 // Read config from environment variables
-const BASE_URL = process.env.BASE_URL || "https://api.airbyte.com";
+const BASE_URL = process.env.BASE_URL || "https://local.airbyte.dev/api/public";
 const AIRBYTE_WIDGET_URL = `${BASE_URL}/v1/embedded/widget_token`;
 const AIRBYTE_ACCESS_TOKEN_URL = `${BASE_URL}/v1/applications/token`;
 const AIRBYTE_CLIENT_ID = process.env.AIRBYTE_CLIENT_ID;
 const AIRBYTE_CLIENT_SECRET = process.env.AIRBYTE_CLIENT_SECRET;
 const ORGANIZATION_ID = process.env.AIRBYTE_ORGANIZATION_ID;
 const EXTERNAL_USER_ID = process.env.EXTERNAL_USER_ID;
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 
 // GET /api/widget → fetch widget token and return it
 app.get("/api/widget_token", async (req, res) => {
-  try {
-    // Determine the allowed origin from the request
-    const origin =
-      req.headers.origin ||
-      req.headers.referer?.replace(/\/$/, "") ||
-      process.env.ALLOWED_ORIGIN ||
-      "http://localhost:3000";
 
-    const access_token_body = JSON.stringify({
-      client_id: AIRBYTE_CLIENT_ID,
-      client_secret: AIRBYTE_CLIENT_SECRET,
-      "grant-type": "client_credentials",
-    });
-    const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: access_token_body,
-    });
 
-    const access_token_response = await response.json();
-    const access_token = access_token_response.access_token;
+  const access_token_body = JSON.stringify({
+    client_id: AIRBYTE_CLIENT_ID,
+    client_secret: AIRBYTE_CLIENT_SECRET,
+    "grant-type": "client_credentials",
+  });
+  const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: access_token_body,
+  });
 
-    const widget_token_response = await fetch(AIRBYTE_WIDGET_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${access_token}`,
-      },
-      body: JSON.stringify({
-        organizationId: ORGANIZATION_ID,
-        allowedOrigin: origin,
-        externalUserId: EXTERNAL_USER_ID,
-      }),
-    });
-    }
+  const access_token_response = await response.json();
+  const access_token = access_token_response.access_token;
 
-    const widget_response = await widget_token_response.json();
+  // Determine the allowed origin from the request
+  const origin =
+    req.headers.origin ||
+    req.headers.referer?.replace(/\/$/, "") ||
+    ALLOWED_ORIGIN;
 
-    res.json({ token: widget_response.token });
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-);
+  const widget_token_response = await fetch(AIRBYTE_WIDGET_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+    body: JSON.stringify({
+      organizationId: ORGANIZATION_ID,
+      allowedOrigin: origin,
+      externalUserId: EXTERNAL_USER_ID,
+    }),
+  });
+
+  const widget_response = await widget_token_response.json();
+
+  res.json({ token: widget_response.token });
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
