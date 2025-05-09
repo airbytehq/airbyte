@@ -125,66 +125,29 @@ definitions:
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
-    primary_key: ["TimePeriod", "Network", "DeviceType"]
+    primary_key: [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+    ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report_hourly.json"
     retriever:
-      type: AsyncRetriever
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: Id
-            partition_field: account_id
-            stream:
-              $ref: "#/definitions/accounts_stream"
-      status_mapping:
-        failed:
-          - Error
-        running:
-          - Pending
-        completed:
-          - Success
-        timeout: []
-      download_target_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - ReportDownloadUrl
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      status_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - Status
-      polling_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Poll
-        http_method: POST
-        authenticator: "#/definitions/authenticator"
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
-        request_body_json:
-          ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+      $ref: "#/definitions/basic_async_retriever"
       creation_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Submit
-        http_method: POST
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
@@ -261,80 +224,35 @@ definitions:
                 Year: "{{ now_utc().year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-        authenticator: "#/definitions/authenticator"
-      download_requester:
-        type: HttpRequester
-        url_base: "{{download_target}}"
-        http_method: GET
-      download_decoder:
-        type: ZipfileDecoder
-        decoder:
-          type: CsvDecoder
-    # FIXME incremental_sync
+    incremental_sync:
+      "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
   ad_performance_report_daily_stream:
     type: DeclarativeStream
     name: ad_performance_report_daily
-    primary_key: ["TimePeriod", "Network", "DeviceType"]
+    primary_key: [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+    ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
     retriever:
-      type: AsyncRetriever
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: Id
-            partition_field: account_id
-            stream:
-              $ref: "#/definitions/accounts_stream"
-      status_mapping:
-        failed:
-          - Error
-        running:
-          - Pending
-        completed:
-          - Success
-        timeout: []
-      download_target_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - ReportDownloadUrl
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      status_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - Status
-      polling_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Poll
-        http_method: POST
-        authenticator: "#/definitions/authenticator"
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
-        request_body_json:
-          ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+      $ref: "#/definitions/basic_async_retriever"
       creation_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Submit
-        http_method: POST
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
@@ -411,80 +329,35 @@ definitions:
                 Year: "{{ now_utc().year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-        authenticator: "#/definitions/authenticator"
-      download_requester:
-        type: HttpRequester
-        url_base: "{{download_target}}"
-        http_method: GET
-      download_decoder:
-        type: ZipfileDecoder
-        decoder:
-          type: CsvDecoder
-    # FIXME incremental_sync
+    incremental_sync:
+      "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
   ad_performance_report_weekly_stream:
     type: DeclarativeStream
     name: ad_performance_report_weekly
-    primary_key: ["TimePeriod", "Network", "DeviceType"]
+    primary_key: [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+    ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
     retriever:
-      type: AsyncRetriever
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: Id
-            partition_field: account_id
-            stream:
-              $ref: "#/definitions/accounts_stream"
-      status_mapping:
-        failed:
-          - Error
-        running:
-          - Pending
-        completed:
-          - Success
-        timeout: []
-      download_target_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - ReportDownloadUrl
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      status_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - Status
-      polling_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Poll
-        http_method: POST
-        authenticator: "#/definitions/authenticator"
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
-        request_body_json:
-          ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+      $ref: "#/definitions/basic_async_retriever"
       creation_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Submit
-        http_method: POST
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
@@ -561,80 +434,35 @@ definitions:
                 Year: "{{ now_utc().year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-        authenticator: "#/definitions/authenticator"
-      download_requester:
-        type: HttpRequester
-        url_base: "{{download_target}}"
-        http_method: GET
-      download_decoder:
-        type: ZipfileDecoder
-        decoder:
-          type: CsvDecoder
-    # FIXME incremental_sync
+    incremental_sync:
+      "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
   ad_performance_report_monthly_stream:
     type: DeclarativeStream
     name: ad_performance_report_monthly
-    primary_key: ["TimePeriod", "Network", "DeviceType"]
+    primary_key: [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+    ]
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_bing_ads/schemas/ad_performance_report.json"
     retriever:
-      type: AsyncRetriever
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: Id
-            partition_field: account_id
-            stream:
-              $ref: "#/definitions/accounts_stream"
-      status_mapping:
-        failed:
-          - Error
-        running:
-          - Pending
-        completed:
-          - Success
-        timeout: []
-      download_target_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - ReportDownloadUrl
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      status_extractor:
-        type: DpathExtractor
-        field_path:
-          - ReportRequestStatus
-          - Status
-      polling_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Poll
-        http_method: POST
-        authenticator: "#/definitions/authenticator"
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
-        request_body_json:
-          ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+      $ref: "#/definitions/basic_async_retriever"
       creation_requester:
-        type: HttpRequester
-        url_base: https://reporting.api.bingads.microsoft.com/
-        path: Reporting/v13/GenerateReport/Submit
-        http_method: POST
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-          CustomerId: "'{{ stream_partition['customer_id'] }}'"
-          CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
@@ -711,30 +539,88 @@ definitions:
                 Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-        authenticator: "#/definitions/authenticator"
-      download_requester:
-        type: HttpRequester
-        url_base: "{{download_target}}"
-        http_method: GET
-      download_decoder:
-        type: ZipfileDecoder
-        decoder:
-          type: CsvDecoder
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: TimePeriod
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-      datetime_format: "%Y-%m-%d"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['reports_start_date'] }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
-        datetime_format: "%Y-%m-%d"
+      "#/definitions/incremental_sync_report_datetime_cursor"
     # FIXME transformations/normalization
+  basic_async_retriever:
+    type: AsyncRetriever
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: Id
+          partition_field: account_id
+          stream:
+            $ref: "#/definitions/accounts_stream"
+    status_mapping:
+      failed:
+        - Error
+      running:
+        - Pending
+      completed:
+        - Success
+      timeout: [ ]
+    download_target_extractor:
+      type: DpathExtractor
+      field_path:
+        - ReportRequestStatus
+        - ReportDownloadUrl
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: [ ]
+    status_extractor:
+      type: DpathExtractor
+      field_path:
+        - ReportRequestStatus
+        - Status
+    polling_requester:
+      type: HttpRequester
+      url_base: https://reporting.api.bingads.microsoft.com/
+      path: Reporting/v13/GenerateReport/Poll
+      http_method: POST
+      authenticator: "#/definitions/authenticator"
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition['customer_id'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      request_body_json:
+        ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+    download_requester:
+      type: HttpRequester
+      url_base: "{{download_target}}"
+      http_method: GET
+    download_decoder:
+      type: ZipfileDecoder
+      decoder:
+        type: CsvDecoder
+    creation_requester:
+      type: HttpRequester
+      url_base: https://reporting.api.bingads.microsoft.com/
+      path: Reporting/v13/GenerateReport/Submit
+      http_method: POST
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition['customer_id'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      authenticator: "#/definitions/authenticator"
+  incremental_sync_report_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: TimePeriod
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['reports_start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
