@@ -152,8 +152,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of footers
-            ExcludeReportHeader: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of headers
+            ExcludeReportFooter: true 
+            ExcludeReportHeader: true 
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
@@ -219,10 +219,10 @@ definitions:
                 Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
                 Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
                 Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd: # FIXME there is a very small risk that `now_utc` is evaluated very close to the edge of the day (2024-01-31T23:59:59.999999 for example) and that Day has switched to 1 but month is still 1. The consequence seems mild except if this happens on December 31st where the user could be missing 1 year of data depending on which component is evaluated first. The mitigation step is to re-run the sync
-                Day: "{{ now_utc().day }}"
-                Month: "{{ now_utc().month }}"
-                Year: "{{ now_utc().year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
@@ -257,8 +257,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of footers
-            ExcludeReportHeader: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of headers
+            ExcludeReportFooter: true 
+            ExcludeReportHeader: true 
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
@@ -324,10 +324,10 @@ definitions:
                 Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
                 Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
                 Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd: # FIXME there is a very small risk that `now_utc` is evaluated very close to the edge of the day (2024-01-31T23:59:59.999999 for example) and that Day has switched to 1 but month is still 1. The consequence seems mild except if this happens on December 31st where the user could be missing 1 year of data depending on which component is evaluated first. The mitigation step is to re-run the sync
-                Day: "{{ now_utc().day }}"
-                Month: "{{ now_utc().month }}"
-                Year: "{{ now_utc().year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
@@ -362,8 +362,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of footers
-            ExcludeReportHeader: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of headers
+            ExcludeReportFooter: true 
+            ExcludeReportHeader: true 
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
@@ -429,10 +429,10 @@ definitions:
                 Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
                 Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
                 Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
-              CustomDateRangeEnd: # FIXME there is a very small risk that `now_utc` is evaluated very close to the edge of the day (2024-01-31T23:59:59.999999 for example) and that Day has switched to 1 but month is still 1. The consequence seems mild except if this happens on December 31st where the user could be missing 1 year of data depending on which component is evaluated first. The mitigation step is to re-run the sync
-                Day: "{{ now_utc().day }}"
-                Month: "{{ now_utc().month }}"
-                Year: "{{ now_utc().year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
@@ -467,8 +467,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of footers
-            ExcludeReportHeader: true # FIXME comment for PR: this is different from the soap lib but our CSV parser doesn't support those kind of headers
+            ExcludeReportFooter: true 
+            ExcludeReportHeader: true 
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
