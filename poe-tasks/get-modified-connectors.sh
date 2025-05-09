@@ -50,12 +50,14 @@ ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
 # 3) collect all file changes
 if $PREV_COMMIT; then
   # Compare only the last commit; diff-tree is faster and more precise.
+  # Intended for master, where we diff the current squashed commit against the previous squashed commit.
   committed=$(git diff-tree --no-commit-id -r --name-only HEAD)
   staged=""
   unstaged=""
   untracked=""
 else
   # Default behavior
+  # This is for a PR branch.
   git fetch --quiet origin "$DEFAULT_BRANCH"
   committed=$(git diff --name-only origin/"$DEFAULT_BRANCH"...HEAD)
   staged=$(git diff --cached --name-only)

@@ -3,24 +3,24 @@
 #   ./get-modified-connectors.sh --prev-commit --json | ./build-and-publish-java-connectors-with-tag.sh
 #
 # Specific to this script:
-#   1) Default (main-release) on a single connector
+#   1) Default (pre-release) on a single connector
 #   ./build-and-publish-java-connectors-with-tag.sh foo-conn
 #   ./build-and-publish-java-connectors-with-tag.sh --name=foo-conn
 #
 #   2) Explicit main-release with multiple connectors
-#   ./build-and-publish-java-connectors-with-tag.sh --publish-option=main-release foo-conn bar-conn
+#   ./build-and-publish-java-connectors-with-tag.sh --main-release foo-conn bar-conn
 #
 #   3) Pre-release (dev tag) via JSON pipe
-#   echo '{"connector":["foo-conn","bar-conn"]}' | ./build-and-publish-java-connectors-with-tag.sh --publish-option=pre-release
+#   echo '{"connector":["foo-conn","bar-conn"]}' | ./build-and-publish-java-connectors-with-tag.sh --pre-release
 #
 #   4) Mixed: positional + pre-release
-#   ./build-and-publish-java-connectors-with-tag.sh --publish-option=pre-release foo-conn
+#   ./build-and-publish-java-connectors-with-tag.sh --pre-release foo-conn
 set -euo pipefail
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
 
 # ------ Defaults & arg parsing -------
-publish_mode="main-release"
+publish_mode="pre-release"
 connectors=()
 
 while [[ $# -gt 0 ]]; do
