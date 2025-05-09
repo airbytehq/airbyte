@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.sendwithus.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-sendwithus
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.9@sha256:aceee096085f34c2abfccd06b0e78a6bbe9ff847f84fd80a817ff0865dd48908
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0e236957-cfce-4bc3-b10e-402c20eff8b8
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-sendwithus
+  githubIssueLabel: source-sendwithus
+  icon: icon.svg
+  license: MIT
+  name: sendwithus
+  releaseDate: 2025-05-09
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sendwithus
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

@@ -1,0 +1,197 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  With Sendwithus, teams can easily create, optimize, and personalize
+  transactional emails, without deploying code. Get agile and drive growth with
+  finely tuned, data-driven experiences.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Templates
+
+definitions:
+  streams:
+    Snippets:
+      type: DeclarativeStream
+      name: Snippets
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /snippets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Snippets"
+    Templates:
+      type: DeclarativeStream
+      name: Templates
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.sendwithus.com/api/v1
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Templates"
+  - $ref: "#/definitions/streams/Snippets"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Snippets:
+      hasRecords: true
+      streamHash: b1bf726fc1d23e3f2edde249bc794caaa2707221
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Templates:
+      hasRecords: true
+      streamHash: 08c37fd0d97f3f488300a6d542a64af0fe7e4ab5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Snippets: true
+    Templates: true
+
+schemas:
+  Snippets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      body:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - number
+          - "null"
+      modified:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - number
+          - "null"
+      versions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            created:
+              type:
+                - number
+                - "null"
+            modified:
+              type:
+                - number
+                - "null"
+            published:
+              type:
+                - boolean
+                - "null"
+    additionalProperties: true
