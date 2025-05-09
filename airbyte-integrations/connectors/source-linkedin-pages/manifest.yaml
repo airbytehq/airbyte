@@ -163,7 +163,7 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Linkedin-Version: "202403"
+          Linkedin-Version: "202503"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path:
@@ -259,7 +259,7 @@ streams:
           q: organizationalEntity
           organizationalEntity: urn:li:organization:{{ config['org_id'] }}
         request_headers:
-          Linkedin-Version: "202403"
+          Linkedin-Version: "202503"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path:
@@ -369,7 +369,7 @@ streams:
           q: organizationalEntity
           organizationalEntity: urn:li:organization:{{ config['org_id'] }}
         request_headers:
-          Linkedin-Version: "202403"
+          Linkedin-Version: "202503"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path:
@@ -437,7 +437,7 @@ streams:
         request_parameters:
           edgeType: COMPANY_FOLLOWED_BY_MEMBER
         request_headers:
-          Linkedin-Version: "202403"
+          Linkedin-Version: "202503"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path:
@@ -561,7 +561,7 @@ streams:
             "{{ config['time_granularity_type'] or
             'DAY' }}"
         request_headers:
-          Linkedin-Version: "202403"
+          Linkedin-Version: "202503"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path:
@@ -736,7 +736,7 @@ streams:
             "{{ config['time_granularity_type'] or
             'DAY' }}"
         request_headers:
-          Linkedin-Version: "202403"
+          Linkedin-Version: "202503"
         authenticator:
           type: SelectiveAuthenticator
           authenticator_selection_path:

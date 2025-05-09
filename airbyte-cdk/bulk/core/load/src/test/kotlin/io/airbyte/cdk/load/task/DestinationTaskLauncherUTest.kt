@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.task
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -50,6 +50,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -95,7 +96,7 @@ class DestinationTaskLauncherUTest {
     private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
 
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>> =
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> =
         mockk(relaxed = true)
     private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate> = mockk(relaxed = true)
     private val partitioner: InputPartitioner = mockk(relaxed = true)
@@ -104,8 +105,8 @@ class DestinationTaskLauncherUTest {
     private fun getDefaultDestinationTaskLauncher(
         useFileTransfer: Boolean,
         loadPipeline: LoadPipeline? = null
-    ): DefaultDestinationTaskLauncher<Nothing> {
-        return DefaultDestinationTaskLauncher(
+    ): DestinationTaskLauncher {
+        return DestinationTaskLauncher(
             taskScopeProvider,
             catalog,
             config,
@@ -136,7 +137,9 @@ class DestinationTaskLauncherUTest {
             batchUpdateQueue,
             loadPipeline,
             partitioner,
-            updateBatchTaskFactory
+            updateBatchTaskFactory,
+            hasThrown = AtomicBoolean(false),
+            heartbeatTask = mockk(relaxed = true)
         )
     }
 
@@ -181,24 +184,31 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleException(e)
         destinationTaskLauncher.handleTeardownComplete()
 
-        coVerify { failStreamTaskFactory.make(any(), e, any()) }
+        // mock stream manager always returns `false` from `setClosed()`, so we set
+        // shouldRunStreamLoaderClose = false.
+        coVerify { failStreamTaskFactory.make(any(), e, any(), shouldRunStreamLoaderClose = false) }
         coVerify { taskScopeProvider.launch(match { it is FailStreamTask }) }
     }
 
     @Test
     fun `run close stream no more than once per stream`() = runTest {
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-        val streamManager = mockk<StreamManager>(relaxed = true)
+        val streamManager =
+            mockk<StreamManager>(relaxed = true) {
+                // simulate more realistic behavior.
+                // The first call to setClosed returns true; subsequent calls return false.
+                every { setClosed() } returnsMany (listOf(true, false))
+            }
         coEvery { syncManager.getStreamManager(any()) } returns streamManager
         coEvery { streamManager.isBatchProcessingComplete() } returns true
         val descriptor = DestinationStream.Descriptor("namespace", "name")
         destinationTaskLauncher.handleNewBatch(
             descriptor,
-            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+            BatchEnvelope(SimpleBatch(BatchState.COMPLETE), null, descriptor)
         )
         destinationTaskLauncher.handleNewBatch(
             descriptor,
-            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+            BatchEnvelope(SimpleBatch(BatchState.COMPLETE), null, descriptor)
         )
         coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
     }
@@ -246,7 +256,10 @@ class DestinationTaskLauncherUTest {
             failStreamTaskFactory.make(
                 any(),
                 any(),
-                match { it.namespace == "namespace" && it.name == "name" }
+                match { it.namespace == "namespace" && it.name == "name" },
+                // mock stream manager always returns `false` from `setClosed()`, so we set
+                // shouldRunStreamLoaderClose = false.
+                shouldRunStreamLoaderClose = false,
             )
         }
     }

@@ -12,7 +12,7 @@ Read more about the [limitations](#limitations) of using Google Sheets below.
 
 ## Prerequisites
 
-- Google Account
+- Google Account or GCP Service Account for authentication
 - Google Spreadsheet URL
 
 ## Step 1: Set up Google Sheets
@@ -42,7 +42,9 @@ To create a Google account, visit [Google](https://support.google.com/accounts/a
 
 **For Airbyte Open Source:**
 
-Authentication to Google Sheets is only available using OAuth for authentication.
+Authentication to Google Sheets is available using OAuth or GCP Service Account token.
+
+**Using OAuth**
 
 1. Create a new [Google Cloud project](https://console.cloud.google.com/projectcreate).
 2. Enable the [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
@@ -53,6 +55,34 @@ Authentication to Google Sheets is only available using OAuth for authentication
 7. In the left sidebar, find and select `Google Sheets API v4`, then choose the `https://www.googleapis.com/auth/spreadsheets` scope. Click `Authorize APIs`.
 8. In **step 2**, click `Exchange authorization code for tokens`. Take note of the `Refresh token`.
 9. Set up a new destination in Airbyte, select `Google Sheets` and enter the `Client ID`, `Client Secret`, `Refresh Token` and `Spreadsheet Link` from the previous steps.
+
+**Using GCP Service Account:**
+
+1. In the Google Cloud console, go to the Service accounts page.
+2. Select a project.
+3. Click the email address of the service account that you want to create a key for.
+4. Click the Keys tab.
+5. Click the Add key drop-down menu, then select Create new key.
+6. Select JSON as the Key type and click Create.
+Clicking Create downloads a service account key file. After you download the key file, you cannot download it again.
+
+The key should look like:
+
+```json
+{
+  "type": "service_account",
+  "project_id": "PROJECT_ID",
+  "private_key_id": "KEY_ID",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nPRIVATE_KEY\n-----END PRIVATE KEY-----\n",
+  "client_email": "SERVICE_ACCOUNT_EMAIL",
+  "client_id": "CLIENT_ID",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/SERVICE_ACCOUNT_EMAIL"
+}
+```
+
 <!-- /env:oss -->
 
 ### Output schema
@@ -72,7 +102,7 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 ### <a name="limitations"></a>Limitations
 
-Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync will fail.
+Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync may fail or, in some cases, data will be truncated to comply with limits.
 
 **Maximum of 10 Million Cells**
 
@@ -81,7 +111,7 @@ If you already have reached the 10 million limit, it will not allow you to add m
 
 **Maximum of 50,000 characters per cell**
 
-There can be at most 50,000 characters per cell. Do not use Google Sheets if you have fields with long text in your source.
+There can be at most 50,000 characters in a single cell. Airbyte will automatically truncate any value exceeding this limit, appending `...[TRUNCATED]` to the end of the value. Do not use Google Sheets if you have fields with long text in your source.
 
 **Maximum of 18,278 Columns**
 
@@ -90,8 +120,6 @@ There can be at most 18,278 columns in Google Sheets in a worksheet.
 **Maximum of 200 Worksheets in a Spreadsheet**
 
 You cannot create more than 200 worksheets within single spreadsheet.
-
-Syncs will fail if any of these limits are reached.
 
 #### Note:
 
@@ -155,6 +183,13 @@ EXAMPLE:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |---------| ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.3.5 | 2025-04-30 | [59647](https://github.com/airbytehq/airbyte/pull/59647) | Truncate cell values exceeding 50,000 characters with warning |
+| 0.3.4 | 2025-04-26 | [58280](https://github.com/airbytehq/airbyte/pull/58280) | Update dependencies |
+| 0.3.3 | 2025-04-12 | [57636](https://github.com/airbytehq/airbyte/pull/57636) | Update dependencies |
+| 0.3.2 | 2025-04-05 | [57166](https://github.com/airbytehq/airbyte/pull/57166) | Update dependencies |
+| 0.3.1 | 2025-03-29 | [56600](https://github.com/airbytehq/airbyte/pull/56600) | Update dependencies |
+| 0.3.0 | 2025-02-27 | [54689](https://github.com/airbytehq/airbyte/pull/54689) | Support service account authentication |
+| 0.2.42 | 2025-03-22 | [56149](https://github.com/airbytehq/airbyte/pull/56149) | Update dependencies |
 | 0.2.41 | 2025-03-08 | [55374](https://github.com/airbytehq/airbyte/pull/55374) | Update dependencies |
 | 0.2.40 | 2025-03-01 | [54847](https://github.com/airbytehq/airbyte/pull/54847) | Update dependencies |
 | 0.2.39 | 2025-02-22 | [54248](https://github.com/airbytehq/airbyte/pull/54248) | Update dependencies |
@@ -202,3 +237,4 @@ EXAMPLE:
 | 0.1.0 | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release |
 
 </details>
+

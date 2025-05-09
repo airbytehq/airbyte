@@ -122,7 +122,6 @@ This connector outputs the following incremental streams:
 - [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
 - [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
 - [Sprint issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get)
-- [PullRequests](https://docs.airbyte.com/integrations/sources/jira#experimental-tables)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -148,7 +147,12 @@ While they will not cause a sync to fail, they may not be able to pull any data.
 Use the "Enable Experimental Streams" option when setting up the source to allow
 or disallow these tables to be selected when configuring a connection.
 
-- Pull Requests (currently only GitHub PRs are supported)
+- [Pull Requests](https://docs.airbyte.com/integrations/sources/jira#experimental-tables)
+
+:::note
+The experimental Pull Requests stream was removed in version 4.0.0 and is no longer available in the catalog.
+If you want to sync data using this stream, you must use version `<= 3.5.4`. This is only possible on self-deployed instances of Airbyte, and this stream is no longer supported on Airbyte Cloud.
+:::
 
 ## Troubleshooting
 
@@ -165,6 +169,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2025-05-05 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
+| 3.5.4 | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
 | 3.5.3 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
 | 3.5.2 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
 | 3.5.1 | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |

@@ -24,7 +24,6 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -92,10 +91,7 @@ class SpillToDiskTaskTest {
                     StreamRecordEvent(
                         3L,
                         2L,
-                        DestinationRecordSerialized(
-                            MockDestinationCatalogFactory.stream1.descriptor,
-                            ""
-                        )
+                        DestinationRecordSerialized(MockDestinationCatalogFactory.stream1, "")
                     )
                 // flush strategy returns true, so we flush
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns true
@@ -132,10 +128,7 @@ class SpillToDiskTaskTest {
                     StreamRecordEvent(
                         3L,
                         2L,
-                        DestinationRecordSerialized(
-                            MockDestinationCatalogFactory.stream1.descriptor,
-                            ""
-                        )
+                        DestinationRecordSerialized(MockDestinationCatalogFactory.stream1, "")
                     )
 
                 // must publish 1 record message so range isn't empty
@@ -158,7 +151,7 @@ class SpillToDiskTaskTest {
         private lateinit var memoryManager: ReservationManager
         private lateinit var diskManager: ReservationManager
         private lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
-        private lateinit var taskLauncher: MockTaskLauncher
+        private lateinit var taskLauncher: DestinationTaskLauncher
         private lateinit var fileAccumulatorFactory: FileAccumulatorFactory
         private val clock: Clock = mockk(relaxed = true)
         private val flushWindowMs = 60000L
@@ -177,7 +170,7 @@ class SpillToDiskTaskTest {
                     MockDestinationCatalogFactory().make(),
                 )
             fileAccumulatorFactory = FileAccumulatorFactory(flushWindowMs, spillFileProvider, clock)
-            taskLauncher = MockTaskLauncher()
+            taskLauncher = mockk<DestinationTaskLauncher>(relaxed = true)
             memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
             diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
             spillToDiskTaskFactory =
@@ -254,7 +247,7 @@ class SpillToDiskTaskTest {
                             sizeBytes = Fixtures.SERIALIZED_SIZE_BYTES,
                             payload =
                                 DestinationRecordSerialized(
-                                    MockDestinationCatalogFactory.stream1.descriptor,
+                                    MockDestinationCatalogFactory.stream1,
                                     "",
                                 ),
                         ),

@@ -16,7 +16,7 @@ on:
     inputs:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
-        default: "--modified"
+        default: "--modified --concurrency=10"
   pull_request:
     types:
       - opened
@@ -78,7 +78,7 @@ jobs:
     # If the condition is not met the job will be skipped (it will not fail)
     if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
     name: Connectors CI
-    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte

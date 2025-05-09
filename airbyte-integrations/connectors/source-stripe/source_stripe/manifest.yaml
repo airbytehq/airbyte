@@ -1,0 +1,1593 @@
+version: 6.42.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  # Base components
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/base_retriever"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+
+  base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+      transform_before_filtering: true
+      schema_normalization: Default
+    paginator:
+      $ref: "#/definitions/base_paginator"
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.stripe.com/v1
+    authenticator:
+      $ref: "#/definitions/bearer_authenticator"
+    http_method: GET
+    request_headers:
+      Stripe-Version: "2022-11-15"
+      Stripe-Account: '{{ config.get("account_id") }}'
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 403
+              error_message: >-
+                {{ response['error']['message'] }}
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 400
+              error_message: >-
+                {{ response['error']['message'] }}
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+              error_message: >-
+                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
+                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                you may safely ignore this warning.
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['client_secret'] }}"
+
+  base_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: starting_after
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: '{{ response["data"][-1]["id"] }}'
+      stop_condition: '{{ not response.get("has_more", False) }}'
+
+  base_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    step: P{{ config.get('slice_range', 365) }}D
+    cursor_granularity: PT1S
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "created[gte]"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "created[lte]"
+      inject_into: "request_parameter"
+
+  # Regular flow components
+  created_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/created_incremental_sync"
+
+  created_incremental_sync:
+    $ref: "#/definitions/base_incremental_sync"
+    cursor_field: created
+
+  # Entity flow components
+  entity_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/entity_with_slice_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated
+            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value_type: integer
+
+  entity_restricted_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/entity_single_slice_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated
+            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value_type: integer
+
+  entity_with_slice_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    step: P{{ config.get('slice_range', 365) }}D
+    cursor_granularity: PT1S
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "created[gte]"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "created[lte]"
+      inject_into: "request_parameter"
+
+  entity_single_slice_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  # Events flow components
+  events_based_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/events_read_slice_cursor"
+    retriever:
+      $ref: "#/definitions/events_objects_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - data
+              - object
+              - is_deleted
+            value: "{{ True }}"
+        condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - data
+              - object
+              - updated
+            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value_type: integer
+        condition: "{{ record.get('data', {}).get('object', False) }}"
+      - type: DpathFlattenFields
+        field_path:
+          - data
+          - object
+        replace_record: true
+
+  events_objects_retriever:
+    $ref: "#/definitions/base_retriever"
+    requester:
+      $ref: "#/definitions/base_requester"
+      path: events
+
+  events_read_slice_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    step: P{{ config.get('slice_range', 365) }}D
+    cursor_granularity: PT1S
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      min_datetime: "{{ (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "created[gte]"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "created[lte]"
+      inject_into: "request_parameter"
+
+  streams:
+    events:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        path: events
+        name: events
+    shipping_rates:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        path: shipping_rates
+        name: shipping_rates
+    balance_transactions:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        path: balance_transactions
+        name: balance_transactions
+    files:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        path: files
+        name: files
+    file_links:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        path: file_links
+        name: file_links
+
+    customers:
+      type: StateDelegatingStream
+      $parameters:
+        name: customers
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: customers
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+
+    subscriptions:
+      type: StateDelegatingStream
+      $parameters:
+        name: subscriptions
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: subscriptions
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              status: "all"
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["customer.subscription.created", "customer.subscription.paused", "customer.subscription.pending_update_applied", "customer.subscription.pending_update_expired", "customer.subscription.resumed", "customer.subscription.trial_will_end", "customer.subscription.updated", "customer.subscription.deleted"]}}'
+
+    invoices:
+      type: StateDelegatingStream
+      $parameters:
+        name: invoices
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: invoices
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.overdue", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.updated", "invoice.voided", "invoice.will_be_due"]}}'
+
+    transfers:
+      type: StateDelegatingStream
+      $parameters:
+        name: transfers
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: transfers
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["transfer.created", "transfer.reversed", "transfer.updated"]}}'
+
+    refunds:
+      type: StateDelegatingStream
+      $parameters:
+        name: refunds
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: refunds
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["refund.created", "refund.updated", "charge.refund.updated"]}}'
+
+    authorizations:
+      type: StateDelegatingStream
+      $parameters:
+        name: authorizations
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: issuing/authorizations
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"]}}'
+
+    cardholders:
+      type: StateDelegatingStream
+      $parameters:
+        name: cardholders
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: issuing/cardholders
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["issuing_cardholder.created", "issuing_cardholder.updated"]}}'
+
+    charges:
+      type: StateDelegatingStream
+      $parameters:
+        name: charges
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: charges
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              expand[]: '{{["data.refunds"]}}'
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["charge.captured", "charge.expired", "charge.failed", "charge.pending", "charge.refunded", "charge.refund.updated", "charge.succeeded", "charge.updated"]}}'
+
+    coupons:
+      type: StateDelegatingStream
+      $parameters:
+        name: coupons
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: coupons
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["coupon.created", "coupon.updated", "coupon.deleted"]}}'
+
+    disputes:
+      type: StateDelegatingStream
+      $parameters:
+        name: disputes
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: disputes
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["charge.dispute.closed", "charge.dispute.created", "charge.dispute.funds_reinstated", "charge.dispute.funds_withdrawn", "charge.dispute.updated"]}}'
+
+    application_fees:
+      type: StateDelegatingStream
+      $parameters:
+        name: application_fees
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: application_fees
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["application_fee.created", "application_fee.refunded"]}}'
+
+    invoice_items:
+      type: StateDelegatingStream
+      $parameters:
+        name: invoice_items
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: invoiceitems
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["invoiceitem.created", "invoiceitem.updated", "invoiceitem.deleted"]}}'
+
+    payouts:
+      type: StateDelegatingStream
+      $parameters:
+        name: payouts
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: payouts
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["payout.canceled", "payout.created", "payout.failed", "payout.paid", "payout.reconciliation_completed", "payout.updated"]}}'
+
+    plans:
+      type: StateDelegatingStream
+      $parameters:
+        name: plans
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: plans
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              expand[]: '{{["data.tiers"]}}'
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["plan.created", "plan.updated", "plan.deleted"]}}'
+
+    prices:
+      type: StateDelegatingStream
+      $parameters:
+        name: prices
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: prices
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["price.created", "price.updated", "price.deleted"]}}'
+
+    products:
+      type: StateDelegatingStream
+      $parameters:
+        name: products
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: products
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["product.created", "product.updated", "product.deleted"]}}'
+
+    reviews:
+      type: StateDelegatingStream
+      $parameters:
+        name: reviews
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: reviews
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["review.closed", "review.opened"]}}'
+
+    subscription_schedule:
+      type: StateDelegatingStream
+      $parameters:
+        name: subscription_schedule
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: subscription_schedules
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["subscription_schedule.aborted", "subscription_schedule.canceled", "subscription_schedule.completed", "subscription_schedule.created", "subscription_schedule.expiring", "subscription_schedule.released", "subscription_schedule.updated"]}}'
+
+    payment_intents:
+      type: StateDelegatingStream
+      $parameters:
+        name: payment_intents
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: payment_intents
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["payment_intent.amount_capturable_updated", "payment_intent.canceled", "payment_intent.created", "payment_intent.partially_funded", "payment_intent.payment_failed", "payment_intent.processing", "payment_intent.requires_action", "payment_intent.succeeded"]}}'
+
+    promotion_codes:
+      type: StateDelegatingStream
+      $parameters:
+        name: promotion_codes
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: promotion_codes
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["promotion_code.created", "promotion_code.updated"]}}'
+
+    setup_intents:
+      type: StateDelegatingStream
+      $parameters:
+        name: setup_intents
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: setup_intents
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["setup_intent.canceled", "setup_intent.created", "setup_intent.requires_action", "setup_intent.setup_failed", "setup_intent.succeeded"]}}'
+
+    cards:
+      type: StateDelegatingStream
+      $parameters:
+        name: cards
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: issuing/cards
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["issuing_card.created", "issuing_card.updated"]}}'
+
+    transactions:
+      type: StateDelegatingStream
+      $parameters:
+        name: transactions
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: issuing/transactions
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["issuing_transaction.created", "issuing_transaction.updated"]}}'
+
+    top_ups:
+      type: StateDelegatingStream
+      $parameters:
+        name: top_ups
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: topups
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"]}}'
+
+    accounts:
+      type: StateDelegatingStream
+      $parameters:
+        name: accounts
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: accounts
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["account.updated", "account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+
+    checkout_sessions:
+      type: StateDelegatingStream
+      $parameters:
+        name: checkout_sessions
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: checkout/sessions
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired"]}}'
+
+    external_account_cards:
+      type: StateDelegatingStream
+      $parameters:
+        name: external_account_cards
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: accounts/{{ config["account_id"] }}/external_accounts
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              object: "card"
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+            record_filter:
+              condition: "{{ record['object'] == 'card' }}"
+
+    external_account_bank_accounts:
+      type: StateDelegatingStream
+      $parameters:
+        name: external_account_bank_accounts
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: accounts/{{ config["account_id"] }}/external_accounts
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              object: "bank_account"
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+            record_filter:
+              condition: "{{ record['object'] == 'bank_account' }}"
+
+    credit_notes:
+      type: StateDelegatingStream
+      $parameters:
+        name: credit_notes
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: credit_notes
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["credit_note.created", "credit_note.updated", "credit_note.voided"]}}'
+
+    early_fraud_warnings:
+      type: StateDelegatingStream
+      $parameters:
+        name: early_fraud_warnings
+      full_refresh_stream:
+        $ref: "#/definitions/entity_restricted_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: radar/early_fraud_warnings
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
+
+    customer_balance_transactions:
+      $ref: "#/definitions/entity_stream"
+      $parameters:
+        name: customer_balance_transactions
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: customers/{{ stream_partition.customer_id }}/balance_transactions
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/streams/customers"
+              incremental_dependency: true
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
+      incremental_sync:
+        $ref: "#/definitions/entity_single_slice_cursor"
+        cursor_field: created
+        global_substream_cursor: true
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - updated # Remove field that added in entity_stream
+
+    payout_balance_transactions:
+      $ref: "#/definitions/entity_stream"
+      $parameters:
+        name: payout_balance_transactions
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        requester:
+          $ref: "#/definitions/base_requester"
+          request_parameters:
+            "payout": "{{ stream_partition.payout_id }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: payout_id
+              stream:
+                $ref: "#/definitions/streams/payouts"
+              incremental_dependency: true
+              extra_fields:
+                - ["updated"]
+        $parameters:
+          path: balance_transactions
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
+      incremental_sync:
+        $ref: "#/definitions/entity_single_slice_cursor"
+        cursor_field: updated
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - payout
+              value: "{{ stream_slice['payout_id'] }}"
+            - path:
+                - updated
+              value: "{{ stream_slice.extra_fields['updated'] }}"
+              value_type: integer
+
+    checkout_sessions_line_items:
+      $ref: "#/definitions/entity_stream"
+      $parameters:
+        name: checkout_sessions_line_items
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        requester:
+          $ref: "#/definitions/base_requester"
+          request_parameters:
+            expand[]: '{{["data.discounts", "data.taxes"]}}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: checkout_session_id
+              stream:
+                $ref: "#/definitions/streams/checkout_sessions"
+              incremental_dependency: true
+              extra_fields:
+                - ["updated"]
+                - ["created"]
+                - ["expires_at"]
+        $parameters:
+          path: checkout/sessions/{{ stream_partition.checkout_session_id }}/line_items
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
+      incremental_sync:
+        $ref: "#/definitions/entity_single_slice_cursor"
+        cursor_field: checkout_session_updated
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - checkout_session_id
+              value: "{{ stream_slice['checkout_session_id']}}"
+            - path:
+                - checkout_session_created
+              value: "{{ stream_slice.extra_fields['created'] | int}}"
+            - path:
+                - checkout_session_updated
+              value: "{{ stream_slice.extra_fields['updated'] | int}}"
+            - path:
+                - checkout_session_expires_at
+              value: "{{ stream_slice.extra_fields['expires_at'] | int}}"
+
+    transfer_reversals:
+      $ref: "#/definitions/entity_stream"
+      $parameters:
+        name: transfer_reversals
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: transfer_id
+              stream:
+                $ref: "#/definitions/streams/transfers"
+              incremental_dependency: true
+        $parameters:
+          path: transfers/{{ stream_partition.transfer_id }}/reversals
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
+      incremental_sync:
+        $ref: "#/definitions/entity_single_slice_cursor"
+        cursor_field: created
+        global_substream_cursor: true
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - updated # Remove field that added in entity_stream
+
+    payment_methods:
+      type: StateDelegatingStream
+      $parameters:
+        name: payment_methods
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+          $parameters:
+            path: customers/{{stream_partition.customer_id}}/payment_methods
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          global_substream_cursor: true
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          requester:
+            $ref: "#/definitions/events_objects_retriever/requester"
+            request_parameters: "{{ {'type': 'payment_method.*'} }}"
+
+    persons:
+      type: StateDelegatingStream
+      $parameters:
+        name: persons
+      full_refresh_stream:
+        $ref: "#/definitions/entity_stream"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: account_id
+                stream:
+                  $ref: "#/definitions/streams/accounts"
+          $parameters:
+            path: accounts/{{stream_partition.account_id}}/persons
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          global_substream_cursor: true
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["person.created", "person.updated", "person.deleted"]}}'
+
+    invoice_line_items:
+      type: StateDelegatingStream
+      $parameters:
+        name: invoice_line_items
+      full_refresh_stream:
+        type: DeclarativeStream
+        primary_key:
+          - id
+        schema_loader:
+          type: JsonFileSchemaLoader
+          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: invoices/{{stream_partition.invoice_id}}/lines
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+            transform_before_filtering: true
+            schema_normalization: Default
+          paginator:
+            $ref: "#/definitions/base_paginator"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: invoice_id
+                extra_fields:
+                  - ["id"]
+                  - ["created"]
+                  - ["updated"]
+                lazy_read_pointer: ["lines"]
+                stream:
+                  $ref: "#/definitions/streams/invoices"
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          cursor_field: invoice_updated
+          global_substream_cursor: true
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - invoice_id
+                value: "{{ stream_slice.extra_fields['id']}}"
+                value_type: integer
+          - type: AddFields
+            fields:
+              - path:
+                  - invoice_created
+                value: "{{ stream_slice.extra_fields['created'] | int}}"
+                value_type: integer
+          - type: AddFields
+            fields:
+              - path:
+                  - invoice_updated
+                value: "{{ stream_slice.extra_fields['updated'] | int}}"
+                value_type: integer
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          cursor_field: invoice_updated
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - is_deleted
+                value: "{{ True }}"
+            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - invoice_updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+            condition: "{{ record.get('data', {}).get('object', False) }}"
+          - type: DpathFlattenFields
+            field_path:
+              - data
+              - object
+            replace_record: true
+
+    application_fees_refunds:
+      type: StateDelegatingStream
+      $parameters:
+        name: application_fees_refunds
+      full_refresh_stream:
+        type: DeclarativeStream
+        primary_key:
+          - id
+        schema_loader:
+          type: JsonFileSchemaLoader
+          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: application_fees/{{ stream_partition.application_fee_id }}/refunds
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+            transform_before_filtering: true
+            schema_normalization: Default
+          paginator:
+            $ref: "#/definitions/base_paginator"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: application_fee_id
+                extra_fields:
+                  - ["id"]
+                lazy_read_pointer: ["refunds"]
+                stream:
+                  $ref: "#/definitions/streams/application_fees"
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          cursor_field: updated
+          global_substream_cursor: true
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters: "{{ {'type': 'application_fee.refund.updated'} }}"
+
+    subscription_items:
+      type: StateDelegatingStream
+      $parameters:
+        name: subscription_items
+      full_refresh_stream:
+        type: DeclarativeStream
+        primary_key:
+          - id
+        schema_loader:
+          type: JsonFileSchemaLoader
+          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: subscription_items
+            request_parameters:
+              subscription: "{{stream_partition.subscription_id}}"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+            transform_before_filtering: true
+            schema_normalization: Default
+          paginator:
+            $ref: "#/definitions/base_paginator"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: subscription_id
+                lazy_read_pointer: ["items"]
+                extra_fields:
+                  - ["updated"]
+                stream:
+                  $ref: "#/definitions/streams/subscriptions"
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          cursor_field: subscription_updated
+          global_substream_cursor: true
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - subscription_updated
+                value: "{{ stream_slice.extra_fields['updated'] | int}}"
+                value_type: integer
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        incremental_sync:
+          $ref: "#/definitions/events_read_slice_cursor"
+          cursor_field: subscription_updated
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["customer.subscription.created", "customer.subscription.updated"]}}'
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - is_deleted
+                value: "{{ True }}"
+            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                  - object
+                  - subscription_updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+            condition: "{{ record.get('data', {}).get('object', False) }}"
+          - type: DpathFlattenFields
+            field_path:
+              - data
+              - object
+            replace_record: true
+
+    bank_accounts:
+      type: StateDelegatingStream
+      $parameters:
+        name: bank_accounts
+      full_refresh_stream:
+        type: DeclarativeStream
+        primary_key:
+          - id
+        schema_loader:
+          type: JsonFileSchemaLoader
+          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: customers/{{ stream_partition.customer_id }}/bank_accounts
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+            record_filter:
+              condition: "{{ record['object'] == 'bank_account' }}"
+            transform_before_filtering: true
+            schema_normalization: Default
+          paginator:
+            $ref: "#/definitions/base_paginator"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                extra_fields:
+                  - ["id"]
+                lazy_read_pointer: ["sources"]
+                stream:
+                  type: StateDelegatingStream
+                  $parameters:
+                    name: customers
+                  full_refresh_stream:
+                    $ref: "#/definitions/entity_stream"
+                    retriever:
+                      $ref: "#/definitions/base_retriever"
+                      requester:
+                        $ref: "#/definitions/base_requester"
+                        request_parameters:
+                          expand[]: '{{["data.sources"]}}'
+                      $parameters:
+                        path: customers
+                  incremental_stream:
+                    $ref: "#/definitions/events_based_stream"
+                    retriever:
+                      $ref: "#/definitions/events_objects_retriever"
+                      $parameters:
+                        request_parameters:
+                          types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+        incremental_sync:
+          $ref: "#/definitions/entity_single_slice_cursor"
+          cursor_field: updated
+          global_substream_cursor: true
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - updated
+                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value_type: integer
+      incremental_stream:
+        $ref: "#/definitions/events_based_stream"
+        retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"]}}'
+            record_filter:
+              condition: "{{ record['object'] == 'bank_account' }}"
+
+    setup_attempts:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        path: setup_attempts
+        name: setup_attempts
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: setup_intent_id
+              stream:
+                $ref: "#/definitions/streams/setup_intents"
+              incremental_dependency: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          request_parameters:
+            setup_intent: "{{  stream_partition.setup_intent_id  }}"
+      # This stream is not truly incremental on the child level.
+      # We're configuring it this way to support incremental syncs on the parent only,
+      # which helps reduce the size of the state.
+      incremental_sync:
+        $ref: "#/definitions/entity_with_slice_cursor"
+        cursor_field: created
+
+    usage_records:
+      $ref: "#/definitions/base_stream"
+      $parameters:
+        name: usage_records
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: subscription_item_id
+              stream:
+                $ref: "#/definitions/streams/subscription_items"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: subscription_items/{{ stream_partition.subscription_item_id }}/usage_record_summaries
+
+streams:
+  # These streams are base incremental streams
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/shipping_rates"
+  - $ref: "#/definitions/streams/balance_transactions"
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/file_links"
+
+  ## These streams are state condition streams and have two behaviors depending on whether the state is set:
+  # - No State: Runs the base stream.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
+  - $ref: "#/definitions/streams/application_fees"
+  - $ref: "#/definitions/streams/authorizations"
+  - $ref: "#/definitions/streams/cardholders"
+  - $ref: "#/definitions/streams/cards"
+  - $ref: "#/definitions/streams/charges"
+  - $ref: "#/definitions/streams/coupons"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/disputes"
+  - $ref: "#/definitions/streams/invoice_items"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/payment_intents"
+  - $ref: "#/definitions/streams/payouts"
+  - $ref: "#/definitions/streams/plans"
+  - $ref: "#/definitions/streams/prices"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/promotion_codes"
+  - $ref: "#/definitions/streams/refunds"
+  - $ref: "#/definitions/streams/reviews"
+  - $ref: "#/definitions/streams/setup_intents"
+  - $ref: "#/definitions/streams/subscription_schedule"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/top_ups"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/transfers"
+
+  ## These streams are state condition streams with stricter behavior:
+  # - No State: Runs the base stream (endpoints strictly define allowed query params and return an error if unexpected params are present).
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/checkout_sessions"
+  - $ref: "#/definitions/streams/credit_notes"
+  - $ref: "#/definitions/streams/early_fraud_warnings"
+  - $ref: "#/definitions/streams/external_account_bank_accounts"
+  - $ref: "#/definitions/streams/external_account_cards"
+
+  # These streams are base incremental partition streams, with state condition streams as parents:
+  - $ref: "#/definitions/streams/checkout_sessions_line_items"
+  - $ref: "#/definitions/streams/customer_balance_transactions"
+  - $ref: "#/definitions/streams/payout_balance_transactions"
+  - $ref: "#/definitions/streams/setup_attempts"
+  - $ref: "#/definitions/streams/transfer_reversals"
+
+  ## These streams are state condition streams with partition behavior:
+  # - No State: Runs the partition stream that shares the same parent state condition stream.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
+  - $ref: "#/definitions/streams/payment_methods"
+  - $ref: "#/definitions/streams/persons"
+
+  ## These streams are state condition streams with lazy read logic:
+  # - No State: Runs lazy read logic where the first N records are fetched from the parent, and pagination continues with the original logic if needed.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
+  - $ref: "#/definitions/streams/application_fees_refunds"
+  - $ref: "#/definitions/streams/bank_accounts"
+  - $ref: "#/definitions/streams/invoice_line_items"
+  - $ref: "#/definitions/streams/subscription_items"
+
+  # These streams are base incremental partition streams with state condition streams as parents using lazy read logic:
+  - $ref: "#/definitions/streams/usage_records"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Stripe Source Spec
+    type: object
+    required:
+      - client_secret
+      - account_id
+    properties:
+      account_id:
+        type: string
+        title: Account ID
+        description: >-
+          Your Stripe account ID (starts with 'acct_', find yours <a
+          href="https://dashboard.stripe.com/settings/account">here</a>).
+        order: 0
+      client_secret:
+        type: string
+        title: Secret Key
+        description: >-
+          Stripe API key (usually starts with 'sk_live_'; find yours <a
+          href="https://dashboard.stripe.com/apikeys">here</a>).
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        title: Replication start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Only data generated
+          after this date will be replicated.
+        default: "2017-01-25T00:00:00Z"
+        examples:
+          - "2017-01-25T00:00:00Z"
+        format: date-time
+        order: 2
+      lookback_window_days:
+        type: integer
+        title: Lookback Window in days
+        default: 0
+        minimum: 0
+        description: >-
+          When set, the connector will always re-export data from the past N days,
+          where N is the value set here. This is useful if your data is frequently updated
+          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Events,
+          SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks, Refunds. More info <a
+          href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
+        order: 3
+      slice_range:
+        type: integer
+        title: Data request time increment in days
+        default: 365
+        minimum: 1
+        examples: [1, 3, 10, 30, 180, 360]
+        description: >-
+          The time increment used by the connector when requesting data from the Stripe API. The bigger the value is,
+          the less requests will be made and faster the sync will be. On the other hand, the more seldom
+          the state is persisted.
+        order: 4
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 20
+        default: 10
+        examples: [1, 2, 3]
+        description: >-
+          The number of worker thread to use for the sync.
+          The performance upper boundary depends on call_rate_limit setting and type of account.
+        order: 5
+      call_rate_limit:
+        type: integer
+        title: Max number of API calls per second
+        examples: [25, 100]
+        description: >-
+          The number of API calls per second that you allow connector to make. This value can not be bigger than real
+          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
+          calls per second for test and production tokens respectively.
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 20
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "^/v1/files($|/)" # matches '/files'
+        - method: GET
+          url_path_pattern: "^/v1/file_links($|/)" # matches '/file_links'
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ 100 if 'sk_test_' in config['client_secret'] else 25 }}"
+          interval: PT1S
+      matchers: []
