@@ -95,7 +95,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
 ) : StreamLoader {
     // can't use lateinit because of weird kotlin reasons.
     // this field is always overwritten in start().
-    private var writingToTempTable: Boolean = false
+    private var isWritingToTemporaryTable: Boolean = false
 
     override suspend fun start() {
         logger.info { "AppendTruncateStreamLoader starting for stream: ${stream.descriptor}" }
@@ -114,7 +114,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     replace = true
                 )
             }
-            writingToTempTable = true
+            isWritingToTemporaryTable = true
             streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
         } else {
             if (initialStatus.realTable == null) {
@@ -125,14 +125,14 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     columnNameMapping,
                     replace = true
                 )
-                writingToTempTable = false
+                isWritingToTemporaryTable = false
             } else if (
                 initialStatus.realTable.isEmpty ||
                     nativeTableOperations.getGenerationId(realTableName) >=
                         stream.minimumGenerationId
             ) {
                 nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
-                writingToTempTable = false
+                isWritingToTemporaryTable = false
             } else {
                 logger.info { "Creating temp table (real table has old generation ID)" }
                 sqlTableOperations.createTable(
@@ -141,12 +141,14 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     columnNameMapping,
                     replace = true
                 )
-                writingToTempTable = true
+                isWritingToTemporaryTable = true
             }
         }
 
-        logger.info { "Target table: ${if (writingToTempTable) tempTableName else realTableName}" }
-        if (writingToTempTable) {
+        logger.info {
+            "Target table: ${if (isWritingToTemporaryTable) tempTableName else realTableName}"
+        }
+        if (isWritingToTemporaryTable) {
             streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
         } else {
             streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(realTableName))
@@ -154,7 +156,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (streamFailure == null && writingToTempTable) {
+        if (streamFailure == null && isWritingToTemporaryTable) {
             sqlTableOperations.overwriteTable(
                 sourceTableName = tempTableName,
                 targetTableName = realTableName
