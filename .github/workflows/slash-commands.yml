@@ -44,7 +44,6 @@ jobs:
             gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
             pr=${{ github.event.issue.pull_request != null && github.event.issue.number || '' }}
-            enable-debug=${{ steps.getref.outputs.enable_debug }}
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
