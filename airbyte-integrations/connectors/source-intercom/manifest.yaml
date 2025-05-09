@@ -282,6 +282,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - "data"
+        partition_router: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at

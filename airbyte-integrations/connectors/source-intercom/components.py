@@ -258,14 +258,11 @@ class IntercomScrollRetriever(SimpleRetriever):
     to implement this at the moment, so this custom component provides a workaround by resetting the cursor on errors.
     """
 
-    RESET_TOKEN = {"reset": True}
+    RESET_TOKEN = {"_ab_reset": True}
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.reset_signal = ResetCursorSignal()
-        self._current_cursor: Optional[str] = None
-        if not hasattr(self, "stream_slicer") or self.stream_slicer is None:
-            self.stream_slicer = SinglePartitionRouter(parameters=parameters)
 
     def _next_page_token(
         self,
@@ -287,10 +284,7 @@ class IntercomScrollRetriever(SimpleRetriever):
             last_record=last_record,
             last_page_token_value=last_page_token_value,
         )
-        if next_token and "next_page_token" in next_token:
-            self._current_cursor = next_token["next_page_token"]
-        else:
-            self._current_cursor = None
+
         return next_token
 
     def _read_pages(

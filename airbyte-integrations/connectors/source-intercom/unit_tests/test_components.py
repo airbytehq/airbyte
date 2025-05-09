@@ -138,7 +138,6 @@ def test_intercom_scroll_retriever_next_page_token():
     # Test when reset is not triggered
     token = retriever._next_page_token(response, 10, None, None)
     assert token == {"next_page_token": "next_cursor"}
-    assert retriever._current_cursor == "next_cursor"
 
     # Reset the retriever state by creating a new instance for the reset test
     retriever = IntercomScrollRetriever(
@@ -147,5 +146,4 @@ def test_intercom_scroll_retriever_next_page_token():
     ResetCursorSignal().trigger_reset()
     token = retriever._next_page_token(response, 10, None, None)
     assert token == IntercomScrollRetriever.RESET_TOKEN
-    assert retriever._current_cursor is None  # Cursor should be reset
     assert ResetCursorSignal().is_reset_triggered() is False  # Reset should be cleared after use
