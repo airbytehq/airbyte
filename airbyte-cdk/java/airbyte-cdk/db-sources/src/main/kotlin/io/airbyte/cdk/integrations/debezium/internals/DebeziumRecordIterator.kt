@@ -55,10 +55,11 @@ class DebeziumRecordIterator<T>(
     private var numUnloggedPolls: Int = -1
     private var lastLoggedPoll: Instant = Instant.MIN
 
+    @VisibleForTesting
     fun formatDuration(duration: Duration): String {
         return when {
-            duration.toMillis() < 1000 -> String.format("%.3f ms", duration.toNanos() / 1_000_000.0)
-            duration.toSeconds() < 60 -> String.format("%.3f seconds", duration.toMillis() / 1000.0)
+            duration.toMillis() < 1000 -> String.format("%.2f ms", duration.toNanos() / 1_000_000.0)
+            duration.toSeconds() < 60 -> String.format("%.2f seconds", duration.toMillis() / 1000.0)
             duration.toMinutes() < 60 -> String.format("%.2f minutes", duration.toSeconds() / 60.0)
             else -> String.format("%.2f hours", duration.toMinutes() / 60.0)
         }
@@ -121,13 +122,8 @@ class DebeziumRecordIterator<T>(
                     !receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10
                 ) {
                     requestClose(
-                        String.format(
-                            "Closing the Debezium engine after no records received within %s seconds timeout. Status: [receivedFirstRecord=%s, hasSnapshotFinished=%s, noRecordsAttempts=%d]",
-                            waitTime.seconds,
-                            receivedFirstRecord,
-                            hasSnapshotFinished,
-                            maxInstanceOfNoRecordsFound
-                        ),
+                        "Closing the Debezium engine after no records received within ${waitTime.seconds} seconds timeout. Status: receivedFirstRecord=$receivedFirstRecord, " +
+                                    "hasSnapshotFinished=$hasSnapshotFinished, noRecordsAttempts=$maxInstanceOfNoRecordsFound",
                         DebeziumCloseReason.TIMEOUT
                     )
                 }
