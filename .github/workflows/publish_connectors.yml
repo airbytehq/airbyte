@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
 
-      - name: Build and publish JVM connectors images
+      - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images
         if: github.event_name == 'push'
         shell: bash
