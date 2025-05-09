@@ -135,8 +135,6 @@ jobs:
         run: poe test-unit-tests
 
       - name: Run Integration Tests
-        env:
-          LOG_LEVEL: WARN # Add this line to set the log level
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
