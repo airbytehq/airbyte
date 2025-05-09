@@ -248,7 +248,7 @@ class IntercomErrorHandler(DefaultErrorHandler):
 
 class IntercomScrollRetriever(SimpleRetriever):
     """
-    Custom retriever for Intercom's companies stream with reset handling. Only compatible with streams that sync using 
+    Custom retriever for Intercom's companies stream with reset handling. Only compatible with streams that sync using
     a single date time window instead of multiple windows when the step is defined. This is okay for the companies stream
     since it only allows for single-threaded processing.
 
