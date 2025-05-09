@@ -28,7 +28,7 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.RAW_DATASET_OVERRIDE
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.STANDARD_INSERT_CONFIG
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
