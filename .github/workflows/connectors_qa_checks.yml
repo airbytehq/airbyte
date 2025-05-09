@@ -26,7 +26,7 @@ jobs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
 
   qa-checks:
-    if: github.event.pull_request.draft == false && ${{ needs.generate-matrix.outputs.connectors-matrix }} != ''
+    if: github.event.pull_request.draft == false
     needs: [generate-matrix]
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
