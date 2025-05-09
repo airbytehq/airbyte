@@ -642,7 +642,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params, confi
     assert len(records) == 100
 
 
-def test_engagements_stream_since_old_date(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'All Engagements' API for old dates (more than 30 days)
     """
@@ -693,7 +693,7 @@ def test_engagements_stream_since_old_date(requests_mock, common_params, fake_pr
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
     """
@@ -740,7 +740,7 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_recent_date_more_than_10k(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,
