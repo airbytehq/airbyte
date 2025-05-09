@@ -49,6 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.22      | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710) | revert me                                                                                    |
 | 0.7.21      | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710) | CDK: bugfixes                                                                                |
 | 0.7.20      | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue               |
 | 0.7.19      | 2025-03-13 | [55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue               |
