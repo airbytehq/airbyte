@@ -86,7 +86,7 @@ class BigqueryBeansFactory {
                 TypingDedupingFinalTableOperations(
                     BigQueryTypingDedupingSqlGenerator(
                         config.projectId,
-                        config.datasetLocation.region
+                        config.datasetLocation.region,
                     ),
                     destinationHandler,
                 ),
@@ -96,19 +96,21 @@ class BigqueryBeansFactory {
         } else {
             val sqlTableOperations =
                 DefaultDirectLoadTableSqlOperations(
-                    BigqueryDirectLoadSqlGenerator(),
+                    BigqueryDirectLoadSqlGenerator(
+                        config.projectId,
+                    ),
                     destinationHandler,
                 )
             return DirectLoadTableWriter(
                 names = names,
-                stateGatherer = BigqueryDirectLoadDatabaseInitialStateGatherer(),
+                stateGatherer = BigqueryDirectLoadDatabaseInitialStateGatherer(bigquery),
                 destinationHandler = destinationHandler,
-                nativeTableOperations = BigqueryDirectLoadNativeTableOperations(),
+                nativeTableOperations = BigqueryDirectLoadNativeTableOperations(bigquery),
                 sqlTableOperations = sqlTableOperations,
                 streamStateStore = directLoadStreamStateStore!!,
                 directLoadTableTempTableNameMigration =
                     DefaultDirectLoadTableTempTableNameMigration(
-                        BigqueryDirectLoadTableExistenceChecker(),
+                        BigqueryDirectLoadTableExistenceChecker(bigquery),
                         sqlTableOperations,
                     ),
             )
