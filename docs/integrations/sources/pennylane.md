@@ -15,6 +15,7 @@
 | `plan_items` | `number` | DefaultPaginator | ✅ |  ❌  |
 | `customers` | `source_id` | DefaultPaginator | ✅ |  ✅  |
 | `customer_invoices` | `id` | DefaultPaginator | ✅ |  ✅  |
+| `customer_estimates` | `id` | DefaultPaginator | ✅ |  ✅  |
 | `products` | `source_id` | DefaultPaginator | ✅ |  ✅  |
 | `category_groups` | `id` | DefaultPaginator | ✅ |  ✅  |
 | `categories` | `source_id` | DefaultPaginator | ✅ |  ✅  |
@@ -27,6 +28,7 @@
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.0 | 2025-05-09 | [59679](https://github.com/airbytehq/airbyte/pull/59679) | Add  stream `customer_estimates` stream |
 | 0.2.9 | 2025-05-03 | [59078](https://github.com/airbytehq/airbyte/pull/59078) | Update dependencies |
 | 0.2.8 | 2025-04-19 | [57882](https://github.com/airbytehq/airbyte/pull/57882) | Update dependencies |
 | 0.2.7 | 2025-04-05 | [57347](https://github.com/airbytehq/airbyte/pull/57347) | Update dependencies |
