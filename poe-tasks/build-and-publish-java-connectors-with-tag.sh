@@ -80,6 +80,12 @@ generate_dev_tag() {
 
 # ---------- main loop ----------
 while read -r connector; do
+  # only publish destination-dev-null for now
+  if [[ "$connector" != "destination-dev-null" ]]; then
+    echo "ℹ️  Skipping '$connector'; only 'destination-dev-null' is being published"
+    continue
+  fi
+
   meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
   if [[ ! -f "$meta" ]]; then
     echo "Error: metadata.yaml not found for ${connector}" >&2
