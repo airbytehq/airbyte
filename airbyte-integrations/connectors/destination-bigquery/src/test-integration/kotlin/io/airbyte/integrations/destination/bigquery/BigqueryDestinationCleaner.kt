@@ -8,9 +8,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryException
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest
-import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -29,16 +27,21 @@ object BigqueryDestinationCleaner : DestinationCleaner {
             )
 
     override fun cleanup() {
-        actualCleaner.cleanup()
+        // only run the cleaner sometimes - our nightlies will do this enough of the time
+        // that we have a reasonably clean destination.
+        // bigquery sets pretty harsh rate limits on some of the stuff the cleaner does.
+        // (would be really nice if we stuck this in a cron somewhere + trigger it weekly,
+        // but this is fine for now)
+        if (Math.random() < 0.1) {
+            actualCleaner.cleanup()
+        }
     }
 }
 
 class BigqueryDestinationCleanerInstance(private val configString: String) : DestinationCleaner {
     override fun cleanup() {
         val config = BigQueryDestinationTestUtils.parseConfig(configString)
-        val bigquery = BigqueryClientFactory(config).make()
-
-        val oldThreshold = System.currentTimeMillis() - Duration.ofDays(RETENTION_DAYS).toMillis()
+        val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
 
         runBlocking(Dispatchers.IO) {
             logger.info { "Cleaning up old raw tables in ${config.rawTableDataset}" }
@@ -57,9 +60,7 @@ class BigqueryDestinationCleanerInstance(private val configString: String) : Des
                             IntegrationTest.isNamespaceOld(
                                 tableName,
                                 retentionDays = RETENTION_DAYS
-                            ) ||
-                                (tableNamePrefixesToDelete.any { tableName.startsWith(it) } &&
-                                    table.creationTime < oldThreshold)
+                            )
                         ) {
                             launch {
                                 logger.info { "Deleting table ${table.tableId}" }
@@ -85,22 +86,13 @@ class BigqueryDestinationCleanerInstance(private val configString: String) : Des
             var datasets = bigquery.listDatasets(config.projectId)
             while (true) {
                 launch {
-                    datasets.values.forEach { plainDataset ->
-                        val datasetName = plainDataset.datasetId.dataset
-                        // listDatasets doesn't fetch all the dataset information.
-                        // we have to manually load the creationTime field.
-                        val dataset =
-                            plainDataset.reload(
-                                BigQuery.DatasetOption.fields(BigQuery.DatasetField.CREATION_TIME)
-                            )
+                    datasets.values.forEach { dataset ->
                         if (
                             dataset != null &&
                                 IntegrationTest.isNamespaceOld(
-                                    datasetName,
+                                    dataset.datasetId.dataset,
                                     retentionDays = RETENTION_DAYS
-                                ) ||
-                                (datasetNamePrefixesToDelete.any { datasetName.startsWith(it) } &&
-                                    dataset.creationTime < oldThreshold)
+                                )
                         ) {
                             launch {
                                 logger.info { "Deleting dataset ${dataset.datasetId}" }
@@ -130,29 +122,5 @@ class BigqueryDestinationCleanerInstance(private val configString: String) : Des
         // set a more aggressive retention policy.
         // bigquery is _really_ slow at listing datasets/tables.
         const val RETENTION_DAYS = 7L
-
-        // some older tests used these table/dataset name prefixes.
-        // might as well clean them up while we're here.
-        private val datasetNamePrefixesToDelete =
-            listOf(
-                "99namespace",
-                "airbyte_source_namespace_",
-                "airbyte_tests_",
-                "bq_dest_integration_test_",
-                "dest_1001_namespace_",
-                "diff_sourcenamespace_",
-                "namespace_with_special_character",
-                "raw_namespace_",
-                "sourcenamespace_",
-                "sql_generator_test_",
-                "tdtest_",
-                "test_deleteme_",
-            )
-        private val tableNamePrefixesToDelete =
-            listOf(
-                "_99namespace",
-                "_airbyte_tmp",
-                "typing_deduping_test",
-            ) + datasetNamePrefixesToDelete
     }
 }

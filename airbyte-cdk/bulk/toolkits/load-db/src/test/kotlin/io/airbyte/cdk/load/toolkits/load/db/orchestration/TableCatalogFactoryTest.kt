@@ -49,14 +49,14 @@ class TableCatalogFactoryTest {
 
         val catalog = DestinationCatalog(listOf(stream1, stream2))
 
-        val factory =
-            TableCatalogFactory(
-                catalog,
-                rawTableNameGenerator,
-                finalTableNameGenerator,
-                columnNameGenerator
-            )
-        val tableCatalog = factory.get()
+        val tableCatalog =
+            TableCatalogFactory()
+                .getTableCatalog(
+                    catalog,
+                    rawTableNameGenerator,
+                    finalTableNameGenerator,
+                    columnNameGenerator
+                )
 
         // Get the final table names for both streams
         val stream1TableInfo = tableCatalog[stream1]!!
@@ -118,14 +118,14 @@ class TableCatalogFactoryTest {
             ColumnNameGenerator.ColumnName(truncated, truncated)
         }
 
-        val factory =
-            TableCatalogFactory(
-                catalog,
-                rawTableNameGenerator,
-                finalTableNameGenerator,
-                columnNameGenerator
-            )
-        val tableCatalog = factory.get()
+        val tableCatalog =
+            TableCatalogFactory()
+                .getTableCatalog(
+                    catalog,
+                    rawTableNameGenerator,
+                    finalTableNameGenerator,
+                    columnNameGenerator
+                )
 
         val columnMapping = tableCatalog[stream]!!.columnNameMapping
         val mappedNames =
@@ -167,14 +167,14 @@ class TableCatalogFactoryTest {
             ColumnNameGenerator.ColumnName(processedName, processedName)
         }
 
-        val factory =
-            TableCatalogFactory(
-                catalog,
-                rawTableNameGenerator,
-                finalTableNameGenerator,
-                columnNameGenerator
-            )
-        val tableCatalog = factory.get()
+        val tableCatalog =
+            TableCatalogFactory()
+                .getTableCatalog(
+                    catalog,
+                    rawTableNameGenerator,
+                    finalTableNameGenerator,
+                    columnNameGenerator
+                )
 
         val columnMapping = tableCatalog[stream]!!.columnNameMapping
         val mappedColumns = listOf(columnMapping["foobarfoo"]!!, columnMapping["foofoo"]!!)

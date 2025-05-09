@@ -32,13 +32,11 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfigurationFa
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryFinalTableNameGenerator
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryRawTableNameGenerator
-import io.airbyte.integrations.destination.bigquery.util.BigqueryClientFactory
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.time.ZoneOffset
-import java.util.LinkedHashMap
 
 private val logger = KotlinLogging.logger {}
 
@@ -48,7 +46,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
-        val bigquery = BigqueryClientFactory(config).make()
+        val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
 
         val (_, rawTableName) =
             BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
@@ -94,7 +92,7 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
-        val bigquery = BigqueryClientFactory(config).make()
+        val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
 
         val (datasetName, finalTableName) =
             BigqueryFinalTableNameGenerator(config).getTableName(stream.descriptor)
