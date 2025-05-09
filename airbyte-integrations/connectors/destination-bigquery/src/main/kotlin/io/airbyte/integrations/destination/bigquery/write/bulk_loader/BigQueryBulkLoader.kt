@@ -12,8 +12,8 @@ import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
@@ -31,11 +31,10 @@ class BigQueryBulkLoader(
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
-    private val rawTableName: TableName,
-    private val rawTableSuffix: String,
+    private val tableName: TableName,
 ) : BulkLoader<GcsBlob> {
     override suspend fun load(remoteObject: GcsBlob) {
-        val rawTableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
+        val rawTableId = TableId.of(tableName.namespace, tableName.name)
         val gcsUri = "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}"
 
         val csvOptions =
@@ -90,7 +89,7 @@ class BigQueryBulkLoaderFactory(
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
-    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
@@ -105,8 +104,7 @@ class BigQueryBulkLoaderFactory(
             storageClient,
             bigQueryClient,
             bigQueryConfiguration,
-            names[key.stream]!!.tableNames.rawTableName!!,
-            streamStateStore.get(key.stream)!!.rawTableSuffix,
+            streamStateStore.get(key.stream)!!.tableName,
         )
     }
 }

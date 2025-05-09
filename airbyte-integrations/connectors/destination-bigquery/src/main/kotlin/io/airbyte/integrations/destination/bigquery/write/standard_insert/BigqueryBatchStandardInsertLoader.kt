@@ -15,8 +15,7 @@ import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -69,19 +68,15 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 class BigqueryBatchStandardInsertsLoaderFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
-    private val names: TableCatalogByDescriptor,
-    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
-        val tableName = names[streamDescriptor]!!.tableNames.rawTableName!!
-        val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
+        val tableName = streamStateStore.get(streamDescriptor)!!.tableName
         val writeChannelConfiguration =
-            WriteChannelConfiguration.newBuilder(
-                    TableId.of(tableName.namespace, tableName.name + rawTableNameSuffix)
-                )
+            WriteChannelConfiguration.newBuilder(TableId.of(tableName.namespace, tableName.name))
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
                 .setFormatOptions(FormatOptions.json())

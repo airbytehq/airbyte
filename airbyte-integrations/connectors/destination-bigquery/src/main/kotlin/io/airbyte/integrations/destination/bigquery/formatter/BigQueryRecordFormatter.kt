@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit
  */
 class BigQueryRecordFormatter {
 
+    // TODO update this to write a typed record.
+    //   (in some way that's reusable for GCS mode also)
     fun formatRecord(record: DestinationRecordRaw): String {
         val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
 
