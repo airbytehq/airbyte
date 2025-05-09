@@ -58,7 +58,7 @@ jobs:
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
         run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json  --java | ./poe-tasks/build-and-publish-java-connectors-with-tag.sh
 
@@ -86,13 +86,6 @@ jobs:
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
 
-      # how do we reproduce --pre-release tagging?
-      # the current flow is to trigger --pre-release on the branch, and have airbyte-ci make up a dev tag.
-      # idea: modify the build-and-publish-java-connectors-with-tag.sh to generate a pre-release tag instead of just pulling it
-      # from the metadata.yaml.
-      # publish-options: --pre-release or --main-release
-      # if --pre-release, this should generate an RC tag, if --main-release, this should republish the version.
-      # need to make sure --pre-release tags match.
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
