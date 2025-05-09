@@ -8,10 +8,11 @@ import com.google.cloud.bigquery.*
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -22,6 +23,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -31,11 +33,10 @@ class BigQueryBulkLoader(
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
-    private val rawTableName: TableName,
-    private val rawTableSuffix: String,
+    private val tableId: TableId,
+    private val schema: Schema,
 ) : BulkLoader<GcsBlob> {
     override suspend fun load(remoteObject: GcsBlob) {
-        val rawTableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
         val gcsUri = "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}"
 
         val csvOptions =
@@ -46,9 +47,9 @@ class BigQueryBulkLoader(
                 .build()
 
         val configuration =
-            LoadJobConfiguration.builder(rawTableId, gcsUri)
+            LoadJobConfiguration.builder(tableId, gcsUri)
                 .setFormatOptions(csvOptions)
-                .setSchema(BigQueryRecordFormatter.CSV_SCHEMA)
+                .setSchema(schema)
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
                 .setJobTimeoutMs(600000L) // 10 min timeout
                 .build()
@@ -59,7 +60,7 @@ class BigQueryBulkLoader(
             BigQueryUtils.waitForJobFinish(loadJob)
         } catch (e: Exception) {
             throw RuntimeException(
-                "Failed to load CSV data from $gcsUri to table ${rawTableId.dataset}.${rawTableId.table}: ${e.message}",
+                "Failed to load CSV data from $gcsUri to table ${tableId.dataset}.${tableId.table}",
                 e
             )
         }
@@ -86,11 +87,14 @@ class BigqueryConfiguredForBulkLoad : Condition {
 @Singleton
 @Requires(condition = BigqueryConfiguredForBulkLoad::class)
 class BigQueryBulkLoaderFactory(
+    private val catalog: DestinationCatalog,
     private val names: TableCatalogByDescriptor,
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
-    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
+    private val typingDedupingExecutionConfigStreamStateStore:
+        StreamStateStore<TypingDedupingExecutionConfig>?,
+    private val directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
@@ -101,13 +105,29 @@ class BigQueryBulkLoaderFactory(
     override val maxMemoryRatioReservedForParts: Double = 0.6
 
     override fun create(key: StreamKey, partition: Int): BulkLoader<GcsBlob> {
+        val tableId: TableId
+        val schema: Schema
+        val tableNameInfo = names[key.stream]!!
+        if (bigQueryConfiguration.legacyRawTablesOnly) {
+            val rawTableName = tableNameInfo.tableNames.rawTableName!!
+            val rawTableSuffix =
+                typingDedupingExecutionConfigStreamStateStore!!.get(key.stream)!!.rawTableSuffix
+            tableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
+            schema = BigQueryRecordFormatter.CSV_SCHEMA
+        } else {
+            tableId = directLoadStreamStateStore!!.get(key.stream)!!.tableName.toTableId()
+            schema =
+                BigQueryRecordFormatter.getDirectLoadSchema(
+                    catalog.getStream(key.stream),
+                    tableNameInfo.columnNameMapping,
+                )
+        }
         return BigQueryBulkLoader(
             storageClient,
             bigQueryClient,
             bigQueryConfiguration,
-            names[key.stream]!!.tableNames.rawTableName!!,
-            // TODO use the T+D raw table vs direct-load table as needed
-            streamStateStore.get(key.stream)!!.rawTableSuffix,
+            tableId,
+            schema,
         )
     }
 }
