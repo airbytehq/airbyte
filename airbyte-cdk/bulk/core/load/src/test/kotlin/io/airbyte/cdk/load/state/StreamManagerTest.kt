@@ -4,14 +4,10 @@
 
 package io.airbyte.cdk.load.state
 
-import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
-import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.BatchState
-import io.airbyte.cdk.load.message.SimpleBatch
-import java.util.stream.Stream
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -19,11 +15,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
-import org.junit.jupiter.params.provider.ArgumentsSource
 
 class StreamManagerTest {
     @Test
@@ -108,149 +99,6 @@ class StreamManagerTest {
         Assertions.assertTrue(manager.awaitStreamResult() is StreamProcessingFailed)
     }
 
-    class TestUpdateBatchStateProvider : ArgumentsProvider {
-        override fun provideArguments(context: ExtensionContext): Stream<out Arguments> {
-            return listOf(
-                    TestCase(
-                        "Single stream, single batch",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddPersisted(0, 9)),
-                            Pair(stream1, ExpectPersistedUntil(9)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, ExpectPersistedUntil(11, false)),
-                            Pair(stream2, ExpectPersistedUntil(10, false)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddPersisted(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(4)),
-                            Pair(stream1, AddPersisted(5, 9)),
-                            Pair(stream1, ExpectPersistedUntil(9)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 9)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream1, ExpectPersistedUntil(11, false)),
-                            Pair(stream2, ExpectPersistedUntil(10, false)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches, out of order",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddPersisted(5, 9)),
-                            Pair(stream1, ExpectPersistedUntil(10, false)),
-                            Pair(stream1, AddPersisted(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches, complete also persists",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(5, true)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream1, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches, persist/complete out of order",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(
-                                stream1,
-                                AddComplete(5, 9)
-                            ), // complete a rangeset before the preceding rangeset is persisted
-                            Pair(stream1, AddPersisted(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(10, true)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "multiple streams",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream2, SetRecordCount(20)),
-                            Pair(stream2, AddPersisted(0, 9)),
-                            Pair(stream2, ExpectPersistedUntil(10, true)),
-                            Pair(stream1, ExpectPersistedUntil(10, false)),
-                            Pair(stream2, SetEndOfStream),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, AddPersisted(0, 9)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream2, AddComplete(10, 20)),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 9)),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream2, AddComplete(0, 9)),
-                            Pair(stream2, ExpectPersistedUntil(20, true)),
-                            Pair(stream2, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "mingle streams, multiple batches, complete also persists",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(5, true)),
-                            Pair(stream2, AddComplete(0, 4)),
-                            Pair(stream2, ExpectPersistedUntil(5, true)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream2, AddComplete(5, 9)),
-                            Pair(stream2, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream2, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "mingle streams, multiple batches, persist/complete out of order",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream1, ExpectPersistedUntil(10, false)),
-                            Pair(stream2, AddComplete(5, 9)),
-                            Pair(stream2, ExpectPersistedUntil(10, false)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream2, AddComplete(0, 4)),
-                            Pair(stream2, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream2, ExpectComplete(true)),
-                        )
-                    ),
-                )
-                .map { Arguments.of(it) }
-                .stream()
-        }
-    }
-
     // TODO: break these out into non-parameterized tests, factor out mixing streams.
     //  (It's irrelevant if testing at the single manager level.)
     sealed class TestEvent
@@ -265,51 +113,6 @@ class StreamManagerTest {
         val name: String,
         val events: List<Pair<DestinationStream, TestEvent>>,
     )
-
-    @ParameterizedTest
-    @ArgumentsSource(TestUpdateBatchStateProvider::class)
-    fun testUpdateBatchState(testCase: TestCase) {
-        val managers =
-            mapOf(
-                stream1.descriptor to StreamManager(stream1),
-                stream2.descriptor to StreamManager(stream2)
-            )
-        testCase.events.forEach { (stream, event) ->
-            val manager = managers[stream.descriptor]!!
-            when (event) {
-                is SetRecordCount -> repeat(event.count.toInt()) { manager.incrementReadCount() }
-                is SetEndOfStream -> manager.markEndOfStream(true)
-                is AddPersisted ->
-                    manager.updateBatchState(
-                        BatchEnvelope(
-                            SimpleBatch(BatchState.PERSISTED),
-                            Range.closed(event.firstIndex, event.lastIndex),
-                            stream.descriptor
-                        )
-                    )
-                is AddComplete ->
-                    manager.updateBatchState(
-                        BatchEnvelope(
-                            SimpleBatch(BatchState.COMPLETE),
-                            Range.closed(event.firstIndex, event.lastIndex),
-                            stream.descriptor
-                        )
-                    )
-                is ExpectPersistedUntil ->
-                    Assertions.assertEquals(
-                        event.expectation,
-                        manager.areRecordsPersistedUntil(event.end),
-                        "$stream: ${testCase.name}: ${event.end}"
-                    )
-                is ExpectComplete ->
-                    Assertions.assertEquals(
-                        event.expectation,
-                        manager.isBatchProcessingComplete(),
-                        "$stream: ${testCase.name}"
-                    )
-            }
-        }
-    }
 
     @Test
     fun testCannotUpdateOrCloseReadClosedStream() {
@@ -329,150 +132,6 @@ class StreamManagerTest {
 
         // Can close now
         Assertions.assertDoesNotThrow(manager::markProcessingSucceeded)
-    }
-
-    @Test
-    fun testEmptyCompletedStreamYieldsBatchProcessingComplete() {
-        val manager = StreamManager(stream1)
-        manager.markEndOfStream(true)
-        Assertions.assertTrue(manager.isBatchProcessingComplete())
-    }
-
-    @Test
-    fun `ranges with the same id conflate to latest state`() {
-        val manager = StreamManager(stream1)
-        val range1 = Range.closed(0L, 9L)
-        val batch1 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.STAGED, groupId = "foo"),
-                range1,
-                stream1.descriptor
-            )
-
-        val range2 = Range.closed(10, 19L)
-        val batch2 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.PERSISTED, groupId = "foo"),
-                range2,
-                stream1.descriptor
-            )
-
-        manager.updateBatchState(batch1)
-        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
-        manager.updateBatchState(batch2)
-        Assertions.assertTrue(manager.areRecordsPersistedUntil(10L), "later state propagates back")
-    }
-
-    @Test
-    fun `ranges with a different id conflate to latest state`() {
-        val manager = StreamManager(stream1)
-        val range1 = Range.closed(0L, 9L)
-        val batch1 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.STAGED, groupId = "foo"),
-                range1,
-                stream1.descriptor
-            )
-
-        val range2 = Range.closed(10, 19L)
-        val batch2 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.PERSISTED, groupId = "bar"),
-                range2,
-                stream1.descriptor
-            )
-
-        manager.updateBatchState(batch1)
-        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
-        manager.updateBatchState(batch2)
-        Assertions.assertFalse(
-            manager.areRecordsPersistedUntil(10L),
-            "state does not propagate to other ids"
-        )
-    }
-
-    @Test
-    fun `state does not conflate between id and no id`() {
-        val manager = StreamManager(stream1)
-        val range1 = Range.closed(0L, 9L)
-        val batch1 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.STAGED, groupId = null),
-                range1,
-                stream1.descriptor
-            )
-
-        val range2 = Range.closed(10, 19L)
-        val batch2 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.PERSISTED, groupId = "bar"),
-                range2,
-                stream1.descriptor
-            )
-
-        manager.updateBatchState(batch1)
-        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
-        manager.updateBatchState(batch2)
-        Assertions.assertFalse(
-            manager.areRecordsPersistedUntil(10L),
-            "state does not propagate to null ids"
-        )
-    }
-
-    @Test
-    fun `max of newer and older state is always used`() {
-        val manager = StreamManager(stream1)
-        val range1 = Range.closed(0L, 9L)
-        val batch1 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.PERSISTED, groupId = "foo"),
-                range1,
-                stream1.descriptor
-            )
-
-        val range2 = Range.closed(10, 19L)
-        val batch2 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.STAGED, groupId = "foo"),
-                range2,
-                stream1.descriptor
-            )
-
-        manager.updateBatchState(batch1)
-        Assertions.assertFalse(manager.areRecordsPersistedUntil(20L), "local < persisted")
-        manager.updateBatchState(batch2)
-        Assertions.assertTrue(
-            manager.areRecordsPersistedUntil(20L),
-            "max of newer and older state is used"
-        )
-    }
-
-    @Test
-    fun `max of older and newer state is always used`() {
-        val manager = StreamManager(stream1)
-        val range1 = Range.closed(0L, 9L)
-        val batch1 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.COMPLETE, groupId = "foo"),
-                range1,
-                stream1.descriptor
-            )
-
-        val range2 = Range.closed(10, 19L)
-        val batch2 =
-            BatchEnvelope(
-                SimpleBatch(BatchState.PERSISTED, groupId = "foo"),
-                range2,
-                stream1.descriptor
-            )
-        manager.markEndOfStream(true)
-
-        manager.updateBatchState(batch2)
-        manager.updateBatchState(batch1)
-        Assertions.assertTrue(
-            manager.isBatchProcessingComplete(),
-            "max of older and newer state is used"
-        )
     }
 
     @Test

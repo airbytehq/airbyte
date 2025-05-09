@@ -58,26 +58,7 @@ class CheckpointManagerUTest {
     private fun makeCheckpointManager(
         checkpointById: Boolean
     ): CheckpointManager<Reserved<CheckpointMessage>> {
-        return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider, checkpointById)
-    }
-
-    @Test
-    fun `test checkpoint manager does not ignore ready checkpoint after empty one`() = runTest {
-        val checkpointManager = makeCheckpointManager(checkpointById = false)
-
-        // Add a checkpoint for only the second stream
-        val message = mockk<Reserved<CheckpointMessage>>(relaxed = true)
-        checkpointManager.addStreamCheckpoint(stream2.descriptor, 1, message)
-
-        // Ensure second stream is data sufficient
-        val stream2Manager = mockk<StreamManager>(relaxed = true)
-        coEvery { stream2Manager.areRecordsPersistedUntil(any()) } returns true
-        coEvery { syncManager.getStreamManager(stream2.descriptor) } returns stream2Manager
-
-        // Ensure { first stream is empty } doesn't block sending the second stream
-        coEvery { outputConsumer.invoke(any()) } returns Unit
-        checkpointManager.flushReadyCheckpointMessages()
-        coVerify { outputConsumer.invoke(message) }
+        return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider)
     }
 
     @Test
@@ -87,15 +68,11 @@ class CheckpointManagerUTest {
         val message1 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
         val message2 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
 
-        checkpointManager.addStreamCheckpoint(stream1.descriptor, 10, message1)
-        checkpointManager.addStreamCheckpoint(stream2.descriptor, 10, message2)
+        checkpointManager.addStreamCheckpoint(stream1.descriptor, CheckpointId(10), message1)
+        checkpointManager.addStreamCheckpoint(stream2.descriptor, CheckpointId(10), message2)
 
-        // Make stream1 data sufficient by old method, stream2 data sufficient by new.
-        coEvery { streamManager1.areRecordsPersistedUntil(10) } returns true
         coEvery { streamManager1.areRecordsPersistedUntilCheckpoint(CheckpointId(10)) } returns
             false
-
-        coEvery { streamManager2.areRecordsPersistedUntil(10) } returns false
         coEvery { streamManager2.areRecordsPersistedUntilCheckpoint(CheckpointId(10)) } returns true
 
         // Only stream2 should be flushed.
