@@ -510,7 +510,7 @@ module.exports = {
           ],
         },
         sectionHeader("Airbyte Embedded"),
-        "embedded-setup/README",
+        airbyteEmbedded,
         sectionHeader("Community"),
         contributeToAirbyte,
         "community/getting-support",
