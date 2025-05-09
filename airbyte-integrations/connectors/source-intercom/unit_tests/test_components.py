@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 from components import IntercomErrorHandler, IntercomScrollRetriever, ResetCursorSignal
+
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import FailureType, ResponseAction
 
@@ -50,9 +51,12 @@ def reset_signal(request):
     """Reset ResetCursorSignal before and after each test to isolate state"""
     signal = ResetCursorSignal()
     signal.clear_reset()
+
     def clear_signal():
         signal.clear_reset()
+
     request.addfinalizer(clear_signal)
+
 
 def test_reset_cursor_signal():
     # Get the singleton instance
@@ -73,6 +77,7 @@ def test_reset_cursor_signal():
     signal2 = ResetCursorSignal()
     signal.trigger_reset()
     assert signal2.is_reset_triggered() is True
+
 
 def test_intercom_error_handler():
     handler = IntercomErrorHandler(config={}, parameters={})
@@ -96,6 +101,7 @@ def test_intercom_error_handler():
     assert resolution.response_action == ResponseAction.FAIL  # Default behavior for 404
     assert ResetCursorSignal().is_reset_triggered() is False  # Reset should not be triggered
 
+
 def test_intercom_scroll_retriever_initialization():
     # Mock dependencies
     requester = MagicMock()
@@ -110,6 +116,7 @@ def test_intercom_scroll_retriever_initialization():
 
     # Test stream_slicer is correctly initialized
     assert isinstance(retriever.stream_slicer, SinglePartitionRouter)
+
 
 def test_intercom_scroll_retriever_next_page_token():
     # Mock dependencies

@@ -10,12 +10,11 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Union
 import requests
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
-from airbyte_cdk.sources.types import Record, StreamSlice
-
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
+from airbyte_cdk.sources.types import Record, StreamSlice
 
 
 RequestInput = Union[str, Mapping[str, str]]
@@ -211,6 +210,7 @@ class ResetCursorSignal:
     """
     Singleton class that manages a reset signal for Intercom's companies stream.
     """
+
     _instance = None
 
     def __new__(cls):
@@ -233,6 +233,7 @@ class IntercomErrorHandler(DefaultErrorHandler):
     """
     Custom error handler that triggers a reset on HTTP 500 errors.
     """
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == 500:
             reset_signal = ResetCursorSignal()
@@ -256,13 +257,14 @@ class IntercomScrollRetriever(SimpleRetriever):
     https://github.com/airbytehq/airbyte-internal-issues/issues/12107. However, the team does not have the bandwidth
     to implement this at the moment, so this custom component provides a workaround by resetting the cursor on errors.
     """
+
     RESET_TOKEN = {"reset": True}
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.reset_signal = ResetCursorSignal()
         self._current_cursor: Optional[str] = None
-        if not hasattr(self, 'stream_slicer') or self.stream_slicer is None:
+        if not hasattr(self, "stream_slicer") or self.stream_slicer is None:
             self.stream_slicer = SinglePartitionRouter(parameters=parameters)
 
     def _next_page_token(
@@ -302,12 +304,10 @@ class IntercomScrollRetriever(SimpleRetriever):
         """
         pagination_complete = False
         initial_token = self._paginator.get_initial_token()
-        next_page_token = (
-            {"next_page_token": initial_token} if initial_token is not None else None
-        )
+        next_page_token = {"next_page_token": initial_token} if initial_token is not None else None
 
         while not pagination_complete:
-            #Needed for _next_page_token
+            # Needed for _next_page_token
             response = self.requester.send_request(
                 path=self._paginator_path(next_page_token=next_page_token),
                 stream_state=stream_state,
@@ -329,14 +329,10 @@ class IntercomScrollRetriever(SimpleRetriever):
                     response=response,
                     last_page_size=0,  # Simplified, not tracking size here
                     last_record=None,  # Not needed for reset logic
-                    last_page_token_value=(
-                        next_page_token.get("next_page_token") if next_page_token else None
-                    ),
+                    last_page_token_value=(next_page_token.get("next_page_token") if next_page_token else None),
                 )
                 if next_page_token == self.RESET_TOKEN:
-                    next_page_token = (
-                        {"next_page_token": initial_token} if initial_token is not None else None
-                    )
+                    next_page_token = {"next_page_token": initial_token} if initial_token is not None else None
                 elif not next_page_token:
                     pagination_complete = True
 
