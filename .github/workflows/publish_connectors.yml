@@ -39,7 +39,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
 
       - name: Create docker buildx builder
         id: create-buildx-builder
