@@ -1,0 +1,115 @@
+# Automatically update end-user documentation for Marketplace connectors each time those connectors are updated, then submit those changes for review.
+
+name: Autodoc
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  write-documentation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get files in this PR
+        id: pr-files
+        run: |
+          FILES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
+            jq -r '[.[].filename] | @json')
+          if [ -z "$FILES" ]; then
+            echo "Error: Failed to fetch or parse PR files."
+            exit 1
+          fi
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+      
+      # Install yq for YAML parsing
+      - name: Install yq
+        run: sudo apt-get update && sudo apt-get install -y yq
+
+      - name: Check for Community support level
+        id: check-support-level
+        run: |
+          # Find metadata.yaml in any folder
+          METADATA_FILE=$(find . -path "airbyte-integrations/connectors/*/metadata.yaml" | head -n 1)
+          if [ -z "$METADATA_FILE" ]; then
+            echo "No metadata.yaml file found in this PR."
+            exit 0
+          fi
+
+          # Check the supportLevel in metadata.yaml
+          SUPPORT_LEVEL=$(yq '.supportLevel' "$METADATA_FILE")
+          if [ "$SUPPORT_LEVEL" != "community" ]; then
+            echo "This PR does not contain a connector with supportLevel: community."
+            exit 0
+          fi
+
+          echo "Metadata file found: $METADATA_FILE"
+          echo "Support level: $SUPPORT_LEVEL"
+
+      - name: Update docs
+        if: steps.check-support-level.outcome == 'success'
+        id: update-docs
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          FILES_TO_REVIEW: ${{ steps.pr-files.outputs.files }}
+          
+          DOCS_PROMPT: |
+            You are Technical Writer Devin. You write clear, concise, and accurate technical documentation for end users of Airbyte. Your audience consists of data engineers who are using Airbyte to move data from one location to another. Some readers are less technicla and some are more technical. Assume they are less technical so the less technical people can still follow your instructions, but don't patronize or look down upon your readers.
+            
+            Your tasks:
+            1. Review the source code for the Airbyte connector described in pull request ${{ github.event.pull_request.number }}.
+            2. To improve your context, search the web for and read the official third-party API documentation that is used by this connector. Not all connectors have this, but most do.
+            3. If pull request ${{ github.event.pull_request.number }} is still open or merged, branch off of it and create a new branch. If it's closed, do nothing and end this session.
+            4. In your new branch, find the user documentation for this connector. It's in the airbyte repository, in the /docs/integrations folder. Review this documentation. Based on the research you did in steps 1 and 2, propose any necessary improvements to this documentation, using the process in the next step.
+            5. Perform these actions, unless you determine there is nothing to do: Fix information that is technically incorrect. Then add information that isn't documented, but is necessary or helpful when trying to operate the connector. Then remove information that is irrelevant or repeated. Then correct spelling and grammar mistakes. 
+            6. Build the Docusaurus site locally using `pnpm clear` and `pnpm build`. Ensure there are no broken links or errors and that the site builds correctly. Serve the site locally with pnpm serve. If you have problems, try to fix them. If you fail to fix them, end your session without creating a PR.
+            7. Create a pull request to merge the changes from your new branch into master. Make sure you provide a good description detailing everything you've done and why.
+            8. Tag the author of PR #${{ github.event.pull_request.number }}, ian-at-airbyte, and marcosmarxm as reviewers for your PR. In the comments, inform reviewers that you are an AI technical writer and have proposed documentation updates based on their changes. Inform reviewers that they can merge the PR, modify it, or close it if they disagree with it.
+            
+            Rules:
+            1. Never create or invent documentation that can't be substantiated by the connector's source code. If you're not sure about something, say nothing. It's better to say nothing than to be incorrect. Incorrect documentation is one of the worst things you can do.
+            2. Never update documentation for anything other than the connectors in PR #${{ github.event.pull_request.number }}.
+            3. Never create new files or delete existing ones. You are only permitted to edit an existing MarkDown documentation file.
+            4. For help authoring documentation, follow the instructions in https://docs.airbyte.com/platform/next/contributing-to-airbyte/writing-docs and https://docs.airbyte.com/platform/next/connector-development/writing-connector-docs.
+            5. Your style guide is https://developers.google.com/style where possible, but it's OK to not comply if ignoring those rules helps you be more clear and correct.
+            6. Do not explain the basic concepts of an Airbyte connector or Airbyte. Assume that is documented elsewhere on the site and focus on documenting the use of this one specific connector.
+            7. Reference information is automatically produced for you as part of a separate process, and you can ignore it here. For example, do not attempt to document every field in the connector.
+            8. Never wait for confirmation.
+            9. Never wait for users to respond to you.
+            10. If's OK to update no documentation and end the session if you determine you cannot make a meaningful contribution.
+            
+
+        run: |
+          # Convert multiline string to JSON-safe format
+          ESCAPED_PROMPT=$(echo "$DOCS_PROMPT" | jq -Rs .)
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"prompt\": $ESCAPED_PROMPT}" \
+            "https://api.devin.ai/v1/sessions")
+          # Check for errors in the response
+          ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error')
+          if [ "$ERROR_MSG" != "null" ]; then
+            echo "Error creating Devin session: $ERROR_MSG"
+            exit 1
+          fi
+          SESSION_ID=$(echo "$RESPONSE" | jq -r '.session_id')
+          SESSION_URL=$(echo "$RESPONSE" | jq -r '.url')
+          if [ -z "$SESSION_ID" ] || [ -z "$SESSION_URL" ]; then
+            echo "Error: Devin session details are missing from the response."
+            exit 1
+          fi
+          echo "session-id=$SESSION_ID" >> $GITHUB_OUTPUT
+          echo "session-url=$SESSION_URL" >> $GITHUB_OUTPUT
+          echo "Devin session created successfully: $RESPONSE"
