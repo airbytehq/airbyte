@@ -106,6 +106,7 @@ class BigQueryBulkLoaderFactory(
             bigQueryClient,
             bigQueryConfiguration,
             names[key.stream]!!.tableNames.rawTableName!!,
+            // TODO use the T+D raw table vs direct-load table as needed
             streamStateStore.get(key.stream)!!.rawTableSuffix,
         )
     }
