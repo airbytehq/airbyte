@@ -7,192 +7,364 @@ products: embedded
   <meta name="robots" content="noindex, nofollow" />
 </head>
 
-# Airbyte Embedded Operator Guide
+# Airbyte Embedded
 
-Last Updated: March 18th, 2025
+![Airbyte Embedded](./assets/embedded-overview.png)
 
-## Welcome!
+[Airbyte Embedded](https://airbyte.com/ai) enables you to add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining ELT pipelines.
 
-Welcome to Airbyte Embedded. This Airbyte product is made for operators of AI and Analytic tools who need to ingest data from their users at scale. This product is a way of “white labeling" and using Airbyte under the hood to configure and manage the data pipelines for your product at scale. This document is a high-level guide of the integration process and contains our recommendations and best-practices.
+# Setup
 
-This guide is meant to be used in conjunction with the “SongSync” example project @ [https://github.com/airbytehq/song-sync](https://github.com/airbytehq/song-sync) (⚠️ coming soon)
+## Prerequisites
 
-## Customer and Connection Architecture
+1. Receive the following values from your Airbyte account representative. If you do not have one, [please reach out to our team](https://airbyte.com/company/talk-to-sales). Then, create an env file with the following:
 
-This section references the [Airbyte Core Concepts](/platform/using-airbyte/core-concepts/)
+```yaml
+AIRBYTE_ORGANIZATION_ID=
+AIRBYTE_CLIENT_ID=
+AIRBYTE_CLIENT_SECRET=
+EXTERNAL_USER_ID=
+```
 
-![Airbyte Embedded Marketing Architecture](./assets/embedded-marketechture.png)
+The `EXTERNAL_USER_ID` is a unique identifier you create and assign when generating an Embedded Widget. It is the identifier used to differentiate between unique users. You should create one unique identifier for each of your users. For testing, you may set `EXTERNAL_USER_ID=0`.
 
-At the highest level, you will be creating:
+2. Configure or prepare an S3 bucket to load customer data to. Obtain the following values required to read from and write to the bucket to be used later during setup:
 
-- An **organization** to contain all of your syncs, for all of your customers.
-- Multiple **workspaces**, one for each of your customers.
-- A single **destination** per workspace.
-- Multiple **sources**, one for each integration a customer wants.
-- Multiple **connections**, one for each configured source by your customers.
+```yaml
+AWS_S3_ACCESS_KEY_ID=
+AWS_S3_SECRET_ACCESS_KEY=
+S3_BUCKET_NAME=
+S3_PATH_PREFIX=
+S3_BUCKET_REGION=
+```
 
-**Why a single Organization**
+## One-Time Setup
 
-- Organizations contain user, API token, and billing information.
+Before submitting requests to Airbyte, you’ll need to use your Client ID and Client Secret to generate the access key used for API request authentication. You can use the following [cURL to create an access key](https://reference.airbyte.com/reference/createaccesstoken#/):
 
-**Why multiple Workspaces**
+```sh
+curl --request POST \
+     --url https://api.airbyte.com/v1/applications/token \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
+      {
+        "client_id": "<client_id>",
+        "client_secret": "<client_secret>",
+        "grant-type": "<client_credentials>"
+      }'
+```
 
-- Workspaces are logical groupings of syncs which can be managed (e.g. deleted and monitored) as a unit.
-- Workspaces are where data sovereignty is set (e.g. USA vs EU data planes). This allows configuration per customer.
+Next, you’ll need to create a connection template. You only need to do this once. The template describes where your customer data will land, and at what frequency to sync customer data. By default, syncs will run every hour. Here’s an example cURL API request for creating an S3 destination using the values obtained earlier to connect to an S3 bucket:
 
-**Why a single Destination in each Workspace**
+```sh
+curl --location --request POST 'https://api.airbyte.com/v1/config_templates/connections' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <token>' \
+--data '{
+    "destinationName": "destination-s3", 
+    "organizationId": "<ORGANIZATION_ID>",
+    "destinationActorDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
+      "destinationConfiguration": {
+        "access_key_id": "<AWS_S3_ACCESS_KEY_ID>",
+        "secret_access_key": "<AWS_S3_SECRET_ACCESS_KEY>",
+        "s3_bucket_name": "<S3_BUCKET_NAME>",
+        "s3_bucket_path": "<S3_PATH_PREFIX>",
+        "s3_bucket_region": "<S3_BUCKET_REGION>",
+        "format": {
+          "format_type": "JSONL"
+          }
+        }
+      }
+    }'
+```
 
-- As you are loading data from your customer’s tools into your infrastructure, you’ll configure a single destination to receive data from all sources in the workspace
-- Having different destinations per customer (workspace) allows you to configure different destination settings per customer (e.g. schema/dataset/bucket)
+Once this succeeds, you are ready to send customer data through Airbyte.
 
-**Why multiple sources**
+## Developing your Application with Airbyte Embedded
 
-- A source connects to each individual API/dataset and stores each customer’s credentials.
+We illustrate how to integrate Airbyte Embedded into your app with an example. Feel free to follow along with our example app, or use the steps as indications of what's needed to be implemented into your own codebase.
 
-**Why multiple connections**
+### JavaScript Project Prerequisites
 
-- The joining of a source to a destination is called a connection, so each source produces at least one connection
-- Connections are where sync frequency, stream selection, column selection, and where mappings are configured.
+1. Create a JavaScript project in a new `airbyte-embedded-demo` directory.
 
-All of the above can be configured with the Airbyte API, described at [https://reference.airbyte.com](https://reference.airbyte.com). For commonly repeated tasks, use a template to speed up future configurations. For example, when a customer is onboarded, that would be a good time to both create the workspace and destination.
+```sh
+mkdir airbyte-embedded-demo
+cd airbyte-embedded-demo 
+npm init -y
+```
 
-(⚠️ draft)
+2. Copy the `.env` file you previously created in the `airbyte-embedded-demo` directory.
+3. Update your `package.json` with the following dependency:
+
+```yaml
+{
+  "dependencies": {
+      "express": "^5.1.0"
+  }
+}
+```
+
+### Frontend Application
+
+Create an `index.html` file and paste in the following contents. This short webpage does a few things:
+* It imports the Airbyte Embedded library.
+* It requests the server for the Embedded token to be used by the Airbyte Embedded Library. This token is only valid for 15 minutes.
+* It instantiates the widget with the access token, and renders a button.
+
+<details>
+<summary>index.html</summary>
+
+```html
+<!doctype html>
+<html lang="en">
+  <body>
+    <button id="open-widget">Open Airbyte Embedded</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget"></script>
+    
+    <script>
+      document.getElementById('open-widget').addEventListener('click', async () => {
+        try {
+          const response = await fetch("http://localhost:3001/api/widget_token");
+          const data = await response.json();
+
+          const widget = new AirbyteEmbeddedWidget({
+            token: data.token,
+          });
+
+          widget.open();
+        } catch (err) {
+          console.error("Failed to load widget:", err);
+        }
+      });
+    </script>
+  </body>
+</html>
+```
+
+### Backend Server
+
+Now, we outline step by step instructions for creating your `server.js` file. This server includes:
+* Exchanging Airbyte Client ID and Client Secret for an API access token.
+* Exchanging API access token in addition to metadata for an Airbyte Embedded token.
+* Boilerplate for running an Express application with error handling.
+
+You may follow step-by-step or jump to the end of this section for a full copy-pasteable example server to manage Airbyte Embedded.
+
+Step-by-step creation of backend application:
+
+1. Create your `server.js` file, import the express library and instantiate an app on port 3001.
 
 ```js
-async function createWorkspace(body: Workspace) {
-  const workspaceResponse = await createAirbyteWorkspace(body);
-  if ("error" in workspaceResponse) return workspaceResponse;
+const express = require("express");
 
-  const templatedBody = renderTemplate("destination-s3.mustache.json", {
-    name: `songsync-destination-${workspaceResponse.workspaceId}`,
-    workspaceId: workspaceResponse.workspaceId,
-    access_key_id: process.env.AWS_ACCESS_KEY_ID,
-    secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
-    s3_bucket_name: process.env.AWS_S3_BUCKET,
-    s3_bucket_region: process.env.AWS_REGION,
-  }) as Destination;
+// Disable SSL verification for development
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-  await createAirbyteDestination(templatedBody);
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-  return workspaceResponse;
-}
+// Middleware for parsing JSON requests
+app.use(express.json());
+```
 
-async function createDestination(body: Destination) {
-  const workspaceId = body.workspaceId;
+2. Add CORS middleware so you browser accepts responses from the server.
 
-  const existingDestinations = await getDestinations(workspaceId);
-  if (existingDestinations.data.length > 0) {
-    throw new Error(`Destination already exists for workspace ${workspaceId}`);
+```js
+// Add CORS middleware
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
   }
-
-  const vars = fillTemplateVarsFromBody(body, {
-    name: body.name,
-    workspaceId: workspaceId,
-  });
-
-  const templatedBody = renderTemplate(
-    `destination-${body.configuration.destinationType}.mustache.json`,
-    vars
-  ) as Destination;
-
-  const response = await createAirbyteDestination(templatedBody);
-  return response;
-}
+  next();
+});
 ```
 
-Furthermore, the creation of that common destination can also be templatized. In this example we use a [mustache](https://mustache.github.io/) config template for the configuration of a common S3 destination:
+3. Read from the `.env` file:
 
-```json
-{
-  "name": "{{{name}}}",
-  "definitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
-  "workspaceId": "{{{workspaceId}}}",
-  "configuration": {
-    "destinationType": "s3",
-    "access_key_id": "{{{access_key_id}}}",
-    "secret_access_key": "{{{secret_access_key}}}",
-    "s3_bucket_name": "{{{s3_bucket_name}}}",
-    "s3_bucket_path": "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_",
-    "s3_bucket_region": "{{{s3_bucket_region}}}",
-    "format": {
-      "format_type": "Parquet",
-      "page_size_kb": 1024,
-      "block_size_mb": 128,
-      "compression_codec": "UNCOMPRESSED",
-      "dictionary_page_size_kb": 1024,
-      "max_padding_size_mb": 8
-    }
-  }
-}
+```js
+// Read config from environment variables
+const BASE_URL = process.env.BASE_URL || "https://api.airbyte.com";
+const AIRBYTE_WIDGET_URL = `${BASE_URL}/v1/embedded/widget_token`;
+const AIRBYTE_ACCESS_TOKEN_URL = `${BASE_URL}/v1/applications/token`;
+const AIRBYTE_CLIENT_ID = process.env.AIRBYTE_CLIENT_ID;
+const AIRBYTE_CLIENT_SECRET = process.env.AIRBYTE_CLIENT_SECRET;
+const ORGANIZATION_ID = process.env.AIRBYTE_ORGANIZATION_ID;
+const EXTERNAL_USER_ID = process.env.EXTERNAL_USER_ID;
 ```
 
-## Configuration Widget
+</details>
 
-Airbyte Embedded provides a JavaScript library that enables you to host a modal on your website. This allows secure and easy configuration of your customer’s sources. This library works with `templates` that allow you to pre-configure various parts of the source and connection configuration to your specifications. This also will simplify the setup forms presented to your users.
+4. Define an endpoint listening at `/api/widget_token`:
 
-Sources will be validated at configuration time.
-
-### Updating PartialUserConfigs
-
-A “Teamplate” is how you configure the options that users are allowed to choose when setting up a source + connection pair. Any option can be `required`, `optional` or `hidden`, and you can pre-set values for any option.
-
-TODO
-
-### Configuring the Widget
-
-(⚠️ draft)
-
-```shell
-npm install @airbyte-embedded/airbyte-embedded-modal
+```js
+app.get("/api/widget_token", async (req, res) => {
+  try {
+});
 ```
 
-```ts
-// import the library
-import {
-  AirbyteEmbeddedModal,
-  getToken,
-} from "@airbyte-embedded/airbyte-embedded-modal";
+In the callback, submit a request to obtain an API access token:
 
-// get a token (in your backend)
-const token = await getToken(oauthKey, oauthSecret);
+```js
+const access_token_body = JSON.stringify({
+      client_id: AIRBYTE_CLIENT_ID,
+      client_secret: AIRBYTE_CLIENT_SECRET,
+      "grant-type": "client_credentials",
+    });
+    const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: access_token_body,
+    });
+```
 
-// Initialize the modal (in your frontend)
-const modal = new AirbyteEmbeddedModal({
-  token, // from your backend
-  workspaceId,
-  onFlowComplete: (source, configTemplate, partialConfig) => {
-    // create the connection on your backend
-    await createConnection(source, configTemplate, partialConfig);
+Still in the callback, use the API access token in the response to request an Embedded token encoding your API access key and metadata.
+
+```js
+const widget_token_response = await fetch(AIRBYTE_WIDGET_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${access_token}`,
   },
+  body: JSON.stringify({
+    organizationId: AIRBYTE_ORGANIZATION_ID,
+    allowedOrigin: origin,
+    externalUserId: EXTERNAL_USER_ID,
+  }),
 });
 
-await modal.open();
+const access_token_response = await response.json();
+const access_token = access_token_response.access_token;
 ```
 
-### Creating Connections with ConfigTemplate
+5. Finally, start the express application.
 
-When creating a connection, it is the responsibility of the Operator to merge the information provided by the user in the partialConfig with the preferences of the operator. For example, a user may have chosen to skip the syncing of a certain stream - when creating the connection, the Operator should not include that stream.
+```js
+app.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
+});
 
-TODO
+```
 
-### Updating Source Configurations with the Widget
+Here is the full `server.js` file for reference:
 
-TODO
+<details>
+<summary>server.js</summary>
 
-## Deliveries and Webhooks
+```js
+const express = require("express");
 
-Operators should subscribe to webhook notifications for their syncs. Learn more [here](/platform/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#configure-webhook-notification-settings)
+// Disable SSL verification for development
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-In this way, you will know when new data is available to process (successful syncs), or there has been an error which will need to be addressed on the next attempt (e.g. rate limit hit) or your users need to take action (e.g. password incorrect). Collecting and transmitting these errors to the proper party is the Operator’s responsibility.
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-At the moment, we do not notify Operators about file delivery within destinations, only the completion of the sync. With that in mind, if you are using a blob-storage destination like S3, you will need to also manage the bookkeeping of the files processed. A sync may deliver 0 or many files, partitioned appropriately for the destination (e.g. S3 prefers ~200mb files). It is recommended that when a sync concludes, all files in the destination folder be processed, and then moved or deleted. In this way your processing pipeline can be idempotent and retryable.
+// Middleware for parsing JSON requests
+app.use(express.json());
 
-Airbyte will never deliver partial record files / Airbyte will not append records to an existing file. If a file is present in your destination, it is appropriate to process.
+// Add CORS middleware
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
-## Telemetry and Observability
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
-There are 2 ways to keep tabs on your syncs at large.
+// Read config from environment variables
+const BASE_URL = process.env.BASE_URL || "https://api.airbyte.com";
+const AIRBYTE_WIDGET_URL = `${BASE_URL}/v1/embedded/widget_token`;
+const AIRBYTE_ACCESS_TOKEN_URL = `${BASE_URL}/v1/applications/token`;
+const AIRBYTE_CLIENT_ID = process.env.AIRBYTE_CLIENT_ID;
+const AIRBYTE_CLIENT_SECRET = process.env.AIRBYTE_CLIENT_SECRET;
+const ORGANIZATION_ID = process.env.AIRBYTE_ORGANIZATION_ID;
+const EXTERNAL_USER_ID = process.env.EXTERNAL_USER_ID;
 
-**Dashboard:** Airbyte will provide you with an Operator Dashboard showing high-level metrics like number and type of syncs, data volume moved, and an overview of the common problems addressing your syncs. For this feature to be enabled, self-hosted deployments will need to enable sending telemetry to Airbyte’s servers.
+// GET /api/widget → fetch widget token and return it
+app.get("/api/widget_token", async (req, res) => {
+  try {
+    // Determine the allowed origin from the request
+    const origin =
+      req.headers.origin ||
+      req.headers.referer?.replace(/\/$/, "") ||
+      process.env.ALLOWED_ORIGIN ||
+      "http://localhost:3000";
 
-**Telemetry:** For self-hosted Operators who wish to have realtime and system-level metrics exposed, we offer Open Telemetry ([operator-guides/collecting-metrics](/platform/operator-guides/collecting-metrics#otel)). This information is not available when using Airbyte Cloud.
+    const access_token_body = JSON.stringify({
+      client_id: AIRBYTE_CLIENT_ID,
+      client_secret: AIRBYTE_CLIENT_SECRET,
+      "grant-type": "client_credentials",
+    });
+    const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: access_token_body,
+    });
+
+    const access_token_response = await response.json();
+    const access_token = access_token_response.access_token;
+
+    const widget_token_response = await fetch(AIRBYTE_WIDGET_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+      body: JSON.stringify({
+        organizationId: ORGANIZATION_ID,
+        allowedOrigin: origin,
+        externalUserId: EXTERNAL_USER_ID,
+      }),
+    });
+    }
+
+    const widget_response = await widget_token_response.json();
+
+    res.json({ token: widget_response.token });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+);
+
+app.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
+});
+```
+
+</details>
+
+### Install and Run JavaScript Application
+
+1. Run `npm install`
+2. Start your backend server with `env $(cat .env | xargs) node server.js`
+3. Sever your frontend with `npx serve .`
+
+## Using Airbyte Embedded
+
+Once in your application, open Airbyte’s integration widget to see a catalog of available integrations. Choose one, and authenticate. Do not worry - if you want to show your own integration tiles, we support this flow as well.
+
+*Tip: If you do not have a source system available to you at this time, use source ‘Faker’.*
+
+![Airbyte Embedded](./assets/embedded-widget.png)
+
+Once you’ve configured your source, wait a few minutes, and you should see loaded data in a new file in your S3 destination. You are all done! If you’d like to see your pipelines from the Airbyte Operator UI, feel free to do so by logging in to [Airbyte Cloud](cloud.airbyte.com).
