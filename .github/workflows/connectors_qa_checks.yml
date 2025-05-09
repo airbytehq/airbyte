@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Current Branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Generate Connectors Matrix from Changes
         id: generate-matrix
