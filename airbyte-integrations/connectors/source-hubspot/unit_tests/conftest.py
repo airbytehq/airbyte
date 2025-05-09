@@ -133,8 +133,8 @@ def mock_dynamic_schema_requests(requests_mock):
                     "label": "migration_soft_delete_deprecated",
                     "description": "Describes if the goal target can be treated as deleted.",
                     "groupName": "goal_target_information",
-                    "type": "enumeration"
+                    "type": "enumeration",
                 }
             ],
-            status_code=200
+            status_code=200,
         )

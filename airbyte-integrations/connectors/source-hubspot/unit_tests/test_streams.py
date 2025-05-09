@@ -441,7 +441,9 @@ def test_contact_lists_transform(requests_mock, common_params):
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_client_side_incremental_stream(mock_get_custom_object_streams, mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
+def test_client_side_incremental_stream(
+    mock_get_custom_object_streams, mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config
+):
     stream = find_stream("forms", config)
     data_field = stream.retriever.record_selector.extractor.field_path[0]
     latest_cursor_value = "2024-01-30T23:46:36.287000Z"
