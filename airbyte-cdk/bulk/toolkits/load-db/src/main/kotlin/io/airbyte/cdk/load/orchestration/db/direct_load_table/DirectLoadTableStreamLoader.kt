@@ -94,7 +94,12 @@ class DirectLoadTableAppendTruncateStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     // can't use lateinit because of weird kotlin reasons.
-    // this field is always overwritten in start().
+    /**
+     * Indicates whether we're writing to the temporary table or directly to the real table. This is
+     * determined during start() based on table states and generation IDs.
+     * - true: Writing to temp table, will need to copy/overwrite to real table later
+     * - false: Writing directly to real table, no additional action needed at close
+     */
     private var isWritingToTemporaryTable: Boolean = false
 
     override suspend fun start() {
@@ -176,7 +181,14 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     // can't use lateinit because of weird kotlin reasons.
-    // this field is always overwritten in start().
+    /**
+     * Indicates whether the real table potentially has the correct generation ID. This is
+     * determined during start() based on whether we had a temp table initially.
+     * - true: Real table may have correct generation, will check in close() before deciding final
+     * approach
+     * - false: Real table definitely has incorrect generation, will use temp-temp approach in
+     * close()
+     */
     private var finalTableMaybeCorrectGeneration: Boolean = false
 
     override suspend fun start() {
