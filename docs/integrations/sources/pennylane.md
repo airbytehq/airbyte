@@ -15,6 +15,7 @@
 | `plan_items` | `number` | DefaultPaginator | ✅ |  ❌  |
 | `customers` | `source_id` | DefaultPaginator | ✅ |  ✅  |
 | `customer_invoices` | `id` | DefaultPaginator | ✅ |  ✅  |
+| `customer_estimates` | `id` | DefaultPaginator | ✅ |  ✅  |
 | `products` | `source_id` | DefaultPaginator | ✅ |  ✅  |
 | `category_groups` | `id` | DefaultPaginator | ✅ |  ✅  |
 | `categories` | `source_id` | DefaultPaginator | ✅ |  ✅  |
@@ -27,6 +28,7 @@
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.0 | 2025-05-09 | [59679](https://github.com/airbytehq/airbyte/pull/59679) | Add  stream `customer_estimates` stream |
 | 0.2.9 | 2025-05-03 | [59078](https://github.com/airbytehq/airbyte/pull/59078) | Update dependencies |
 | 0.2.8 | 2025-04-19 | [57882](https://github.com/airbytehq/airbyte/pull/57882) | Update dependencies |
 | 0.2.7 | 2025-04-05 | [57347](https://github.com/airbytehq/airbyte/pull/57347) | Update dependencies |
@@ -38,7 +40,6 @@
 | 0.2.1 | 2025-02-15 | [50686](https://github.com/airbytehq/airbyte/pull/50686) | Update dependencies |
 | 0.2.0 | 2025-01-29 | [52596](https://github.com/airbytehq/airbyte/pull/52596) | Fixes for category_groups and plan_items |
 | 0.1.1 | 2024-12-21 | [50294](https://github.com/airbytehq/airbyte/pull/50294) | Update dependencies |
-| 0.1.0 | 2025-05-08 | [59679](https://github.com/airbytehq/airbyte/pull/59679) | Add  stream |
 | 0.1.0 | 2024-12-10 | [48892](https://github.com/airbytehq/airbyte/pull/48892) | Add missing fields to `customer_invoices` stream |
 | 0.0.6 | 2024-12-14 | [49659](https://github.com/airbytehq/airbyte/pull/49659) | Update dependencies |
 | 0.0.5 | 2024-12-12 | [49322](https://github.com/airbytehq/airbyte/pull/49322) | Update dependencies |
