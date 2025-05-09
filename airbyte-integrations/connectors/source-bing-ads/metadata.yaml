@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.8.13
+  dockerImageTag: 2.9.0
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships
@@ -36,6 +36,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: Version 1.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect.
@@ -61,7 +63,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
@@ -78,11 +80,6 @@ data:
       testSecrets:
         - name: SECRET_SOURCE-BING-ADS_FULL_REFRESH__CREDS
           fileName: config_full_refresh.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-BING-ADS_NO_DATE_CREDS
-          fileName: config_no_date.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

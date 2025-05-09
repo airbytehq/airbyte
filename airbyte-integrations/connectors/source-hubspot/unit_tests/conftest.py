@@ -110,6 +110,11 @@ def find_stream(stream_name, config):
     raise ValueError(f"Stream {stream_name} not found")
 
 
+@pytest.fixture(autouse=True)
+def patch_time(mocker):
+    mocker.patch("time.sleep")
+
+
 @pytest.fixture()
 def mock_dynamic_schema_requests(requests_mock):
     requests_mock.get(
