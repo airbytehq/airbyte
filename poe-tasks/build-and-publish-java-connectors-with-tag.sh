@@ -19,6 +19,13 @@ set -euo pipefail
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
 
+# ── Rollout whitelist: only connectors listed here will be built/published
+declare -A rollout_map=(
+  [destination-dev-null]=1
+  [destination-bigquery]=1
+  [source-e2e-test]=1
+)
+
 # ------ Defaults & arg parsing -------
 publish_mode="pre-release"
 connectors=()
@@ -80,11 +87,11 @@ generate_dev_tag() {
 
 # ---------- main loop ----------
 while read -r connector; do
-  # only publish destination-dev-null for now
-  if [[ "$connector" != "destination-dev-null" ]]; then
-    echo "ℹ️  Skipping '$connector'; only 'destination-dev-null' is being published"
-    continue
-  fi
+    # only publish if connector is in rollout_map
+    if [[ -z ${rollout_map[$connector]:-} ]]; then
+      echo "ℹ️  Skipping '$connector'; not in rollout whitelist"
+      continue
+    fi
 
   meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
   if [[ ! -f "$meta" ]]; then
