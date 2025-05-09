@@ -41,14 +41,18 @@ fi
 # ---------- helper: collect connector names ----------
 get_connectors() {
   if [ "${#connectors[@]}" -gt 0 ]; then
-    printf "%s\n" "${connectors[@]}"
+      # only look at non-empty strings
+      for c in "${connectors[@]}"; do
+          [[ -n "$c" ]] && printf "%s\n" "$c"
+      done
   else
     # read JSON from stdin
     if [ -t 0 ]; then
       echo "Error:  No --name given and nothing piped to stdin." >&2
       exit 1
     fi
-    jq -r '.connector[]'
+    # select only non-empty strings out of the JSON array
+    jq -r '.connector[] | select(. != "")'
   fi
 }
 
@@ -79,10 +83,11 @@ while read -r connector; do
     docker_tag=$(generate_dev_tag "$base_tag")
   fi
 
-  echo "🔨  Building & publishing ${connector} with tag ${docker_tag}"
+  echo "Building & publishing ${connector} with tag ${docker_tag}"
 #  ./gradlew -Pdocker.publish \
 #            -DciMode=true \
 #            -Psbom=false \
 #            -Pdocker.tag="${docker_tag}" \
 #            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
 done < <(get_connectors)
+echo "Done building & publishing."
