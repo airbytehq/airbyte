@@ -33,9 +33,11 @@ class DirectLoadTableAppendStreamLoader(
 ) : StreamLoader {
     override suspend fun start() {
         logger.info { "AppendStreamLoader starting for stream: ${stream.descriptor}" }
-
-        nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
-
+        if (initialStatus.realTable == null) {
+            sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
+        } else {
+            nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        }
         if (initialStatus.tempTable != null) {
             logger.info { "Processing temp table data: $tempTableName -> $realTableName" }
             nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)

@@ -38,7 +38,7 @@ class BigqueryDirectLoadNativeTableOperations(private val bigquery: BigQuery) :
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        TODO("Not yet implemented")
+        //        TODO("Not yet implemented")
     }
 
     override fun getGenerationId(tableName: TableName): Long {

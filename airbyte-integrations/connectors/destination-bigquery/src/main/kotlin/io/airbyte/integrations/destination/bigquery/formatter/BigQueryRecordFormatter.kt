@@ -7,11 +7,14 @@ import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.QueryParameterValue
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import java.util.concurrent.TimeUnit
 
@@ -90,5 +93,35 @@ class BigQueryRecordFormatter {
                 Field.of(Meta.COLUMN_NAME_AB_GENERATION_ID, StandardSQLTypeName.INT64),
                 Field.of(Meta.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
             )
+
+        private val DIRECT_LOAD_SCHEMA =
+            listOf(
+                Field.newBuilder(Meta.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING)
+                    .setMode(Field.Mode.REQUIRED)
+                    .build(),
+                Field.newBuilder(Meta.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP)
+                    .setMode(Field.Mode.REQUIRED)
+                    .build(),
+                Field.newBuilder(Meta.COLUMN_NAME_AB_META, StandardSQLTypeName.JSON)
+                    .setMode(Field.Mode.REQUIRED)
+                    .build(),
+                Field.newBuilder(Meta.COLUMN_NAME_AB_GENERATION_ID, StandardSQLTypeName.INT64)
+                    .setMode(Field.Mode.NULLABLE)
+                    .build(),
+            )
+        fun getDirectLoadSchema(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping,
+        ): Schema {
+            val userDefinedFields: List<Field> =
+                stream.schema
+                    .asColumns()
+                    .mapKeys { (originalName, _) -> columnNameMapping[originalName]!! }
+                    .mapValues { (_, type) ->
+                        BigqueryDirectLoadSqlGenerator.toDialectType(type.type)
+                    }
+                    .map { (name, type) -> Field.of(name, type) }
+            return Schema.of(DIRECT_LOAD_SCHEMA + userDefinedFields)
+        }
     }
 }
