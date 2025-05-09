@@ -33,8 +33,6 @@ from source_hubspot.streams import (
     DealsArchived,
     DealSplits,
     DealsWebAnalytics,
-    EmailEvents,
-    Engagements,
     EngagementsCalls,
     EngagementsCallsWebAnalytics,
     EngagementsEmails,
@@ -56,7 +54,6 @@ from source_hubspot.streams import (
     OwnersArchived,
     Products,
     ProductsWebAnalytics,
-    SubscriptionChanges,
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
@@ -97,6 +94,9 @@ scopes = {
         "crm.objects.companies.write",
     },
     "workflows": {"automation"},
+    "email_events": {"content"},
+    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
+    "subscription_changes": {"content"},
 }
 
 
@@ -202,8 +202,6 @@ class SourceHubspot(YamlDeclarativeSource):
             DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),
-            EmailEvents(**common_params),
-            Engagements(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),
             EngagementsMeetings(**common_params),
@@ -217,7 +215,6 @@ class SourceHubspot(YamlDeclarativeSource):
             Owners(**common_params),
             OwnersArchived(**common_params),
             Products(**common_params),
-            SubscriptionChanges(**common_params),
             Tickets(**common_params),
         ]
 
