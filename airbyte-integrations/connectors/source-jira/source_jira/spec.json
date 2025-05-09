@@ -92,13 +92,6 @@
         "type": "integer",
         "order": 5
       },
-      "enable_experimental_streams": {
-        "type": "boolean",
-        "title": "Enable Experimental Streams",
-        "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
-        "default": false,
-        "order": 6
-      },
       "num_workers": {
         "type": "integer",
         "title": "Number of concurrent workers",
@@ -107,7 +100,7 @@
         "default": 3,
         "examples": [1, 2, 3],
         "description": "The number of worker threads to use for the sync.",
-        "order": 7
+        "order": 6
       }
     }
   }

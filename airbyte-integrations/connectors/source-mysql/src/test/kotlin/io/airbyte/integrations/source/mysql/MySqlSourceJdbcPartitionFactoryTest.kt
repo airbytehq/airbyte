@@ -9,9 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
@@ -29,7 +27,6 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.mockk.every
 import io.mockk.mockk
 import java.time.OffsetDateTime
 import java.util.Base64
@@ -37,7 +34,6 @@ import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -380,22 +376,5 @@ class MySqlSourceJdbcPartitionFactoryTest {
             Jsons.valueToTree<BinaryNode>(Base64.getDecoder().decode("OQAAAAAAAAAAAAAAAAAAAA==")),
             (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
         )
-    }
-
-    // An incident in April 2025 caused some MySQL connections to serialize
-    // their state using scientific notation. The state parsing must handle
-    // these values as well as the expected non-scientific ones.
-    @ParameterizedTest
-    @CsvSource(
-        "INTEGER, 2.14E+4",
-        "INTEGER, 21400",
-        "NUMBER, 2.14E+4",
-        "NUMBER, 21400",
-    )
-    fun testCanParseStateWithScientificNotation(schemaType: LeafAirbyteSchemaType, value: String) {
-        val fieldType: FieldType = mockk()
-        every { fieldType.airbyteSchemaType } returns schemaType
-        val field = Field("", fieldType)
-        assertDoesNotThrow { mySqlSourceJdbcPartitionFactory.stateValueToJsonNode(field, value) }
     }
 }

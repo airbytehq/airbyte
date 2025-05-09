@@ -83,8 +83,9 @@ class DestinationCatalogTest {
             DestinationStreamFactory(
                 JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT)
             )
-        val catalogFactory = DefaultDestinationCatalogFactory(originalCatalog, streamFactory)
-        val destinationCatalog = catalogFactory.make()
+        val catalogFactory = DefaultDestinationCatalogFactory()
+        val destinationCatalog =
+            catalogFactory.getDestinationCatalog(originalCatalog, streamFactory, "write")
         assertEquals(originalCatalog, destinationCatalog.asProtocolObject())
     }
 }

@@ -639,7 +639,7 @@ def get_rollback_pr_creation_arguments(
         "branch_id": f"{context.connector.technical_name}/rollback-{release_candidate_version}",
         "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
         "pr_title": f"🐙 {context.connector.technical_name}: Stop progressive rollout for {release_candidate_version}",
-        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout.",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed unstable. This PR stops its progressive rollout. This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
     }
 
 
@@ -696,7 +696,7 @@ def get_promotion_pr_creation_arguments(
         "branch_id": f"{context.connector.technical_name}/{promoted_version}",
         "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
         "pr_title": f"🐙 {context.connector.technical_name}: release {promoted_version}",
-        "pr_body": f"The release candidate version {release_candidate_version} has been deemed stable and is now ready to be promoted to an official release ({promoted_version}).",
+        "pr_body": f"The release candidate version {release_candidate_version} has been deemed stable and is now ready to be promoted to an official release ({promoted_version}). This PR will be automatically merged as part of the `auto-merge` workflow. This workflow runs every 2 hours.",
     }
 
 

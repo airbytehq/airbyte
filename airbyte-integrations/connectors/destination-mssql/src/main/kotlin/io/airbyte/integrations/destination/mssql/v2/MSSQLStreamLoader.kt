@@ -9,15 +9,25 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.write.StreamStateStore
 import javax.sql.DataSource
 
 class MSSQLStreamLoader(
     dataSource: DataSource,
     override val stream: DestinationStream,
     sqlBuilder: MSSQLQueryBuilder,
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     private val recordCommitBatchSize = 5_000
+
+    override suspend fun start() {
+        super.start()
+        streamStateStore.put(
+            stream.descriptor,
+            MSSQLDirectLoaderStreamState(dataSource, sqlBuilder)
+        )
+    }
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecordRaw>,

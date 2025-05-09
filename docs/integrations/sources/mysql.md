@@ -226,6 +226,8 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.17     | 2025-05-02 | [59683](https://github.com/airbytehq/airbyte/pull/59683)   | CDK version bump.                                                                                                                               |
+| 3.11.16     | 2025-05-02 | [59223](https://github.com/airbytehq/airbyte/pull/59223)   | Improve handling of big int and decimal values preventing it from represented with scientific notation                                          |
 | 3.11.15     | 2025-04-29 | [59150](https://github.com/airbytehq/airbyte/pull/59150)   | Mitigate issue where cursor state was serialized with scientific notation                                                                       |
 | 3.11.14     | 2025-04-29 | [59144](https://github.com/airbytehq/airbyte/pull/59144)   | Update default SSL mode.                                                                                                                        |
 | 3.11.13     | 2025-04-24 | [58646](https://github.com/airbytehq/airbyte/pull/58646)   | Fix vulnerabilities in dependencies.                                                                                                            |

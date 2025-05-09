@@ -14,7 +14,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 - Improved the Airbyte Cloud UI by displaying the **Credits** label in the sidebar and low-credit alerts on the Credits page. [#20595](https://github.com/airbytehq/airbyte/pull/20595)
 - Improved the Airbyte CI workflow by adding support to pull requests and limiting the CI runs to only occur on pushes to the master branch. This enhances collaboration with external contributors and reduces unnecessary runs. [#21266](https://github.com/airbytehq/airbyte/pull/21266)
 - Improved the connector form by using proper validation in the array section. [#20725](https://github.com/airbytehq/airbyte/pull/20725)
-- Ongoing improvements to the [Connector Builder UI](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui/?_ga=2.261393869.1948366377.1675105348-1616004530.1663010260) in alpha:
+- Ongoing improvements to the Connector Builder UI in alpha:
   - Added support for substream slicers and cartesian slicers, allowing the Connector Builder to create substreams and new streams from multiple existing streams. [#20861](https://github.com/airbytehq/airbyte/pull/20861)
   - Added support for in-schema specification and validation, including a manual schema option. [#20862](https://github.com/airbytehq/airbyte/pull/20862)
   - Added user inputs, request options, authentication, pagination, and slicing to the Connector Builder UI. [#20809](https://github.com/airbytehq/airbyte/pull/20809)

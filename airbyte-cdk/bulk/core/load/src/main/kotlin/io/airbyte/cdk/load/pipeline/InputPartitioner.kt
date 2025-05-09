@@ -23,6 +23,6 @@ interface InputPartitioner {
 @Secondary
 class ByStreamInputPartitioner : InputPartitioner {
     override fun getPartition(record: DestinationRecordRaw, numParts: Int): Int {
-        return Math.floorMod(record.stream.hashCode(), numParts)
+        return Math.floorMod(record.stream.descriptor.hashCode(), numParts)
     }
 }

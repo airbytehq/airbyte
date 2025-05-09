@@ -31,6 +31,8 @@ import kotlin.math.min
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 
+const val CHECK_STREAM_NAMESPACE = "airbyte_internal_test"
+
 /** Factory for instantiating beans necessary for the sync process. */
 @Factory
 class SyncBeanFactory {

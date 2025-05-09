@@ -31,6 +31,7 @@ const buildAConnector = {
             "connector-development/connector-builder-ui/partitioning",
             "connector-development/connector-builder-ui/error-handling",
             "connector-development/connector-builder-ui/async-streams",
+            "connector-development/connector-builder-ui/stream-templates",
           ],
         },
         {
@@ -268,6 +269,12 @@ const understandingAirbyte = {
   ],
 };
 
+const airbyteEmbedded = {
+  type: "doc",
+  label: "Getting Started",
+  id: "embedded-setup/README"
+}
+
 module.exports = {
   platform: [
     {
@@ -502,6 +509,8 @@ module.exports = {
             "developer-guides/licenses/examples",
           ],
         },
+        sectionHeader("Airbyte Embedded"),
+        airbyteEmbedded,
         sectionHeader("Community"),
         contributeToAirbyte,
         "community/getting-support",

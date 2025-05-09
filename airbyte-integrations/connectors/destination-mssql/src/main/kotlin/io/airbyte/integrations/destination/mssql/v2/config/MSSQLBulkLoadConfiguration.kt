@@ -24,6 +24,13 @@ class MSSQLIsConfiguredForBulkLoad : Condition {
     }
 }
 
+class MSSQLIsNotConfiguredForBulkLoad : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        val config = context.beanContext.getBean(MSSQLConfiguration::class.java)
+        return config.mssqlLoadTypeConfiguration.loadTypeConfiguration !is BulkLoadConfiguration
+    }
+}
+
 @Singleton
 @Requires(condition = MSSQLIsConfiguredForBulkLoad::class)
 class MSSQLBulkLoadConfiguration(

@@ -4,7 +4,7 @@
   "properties": {
     "Id": {
       "description": "ID of the account",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "AccountFinancialStatus": {
       "description": "The financial status of the account",
@@ -35,7 +35,6 @@
       "type": ["null", "string"]
     },
     "LinkedAgencies": {
-      "description": "The agencies linked to the account for management purposes.",
       "type": ["null", "object"],
       "properties": {
         "Id": {
@@ -74,7 +73,7 @@
         },
         "Id": {
           "description": "ID of the business address",
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "Line1": {
           "description": "Address line 1",
@@ -112,7 +111,7 @@
     },
     "BackUpPaymentInstrumentId": {
       "description": "ID of the backup payment instrument",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "BillingThresholdAmount": {
       "description": "The threshold amount for billing",
@@ -120,11 +119,11 @@
     },
     "BillToCustomerId": {
       "description": "Customer ID for billing",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "LastModifiedByUserId": {
       "description": "ID of the user who last modified the account",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "LastModifiedTime": {
       "description": "The date and time of the last modification",
@@ -142,27 +141,27 @@
     },
     "ParentCustomerId": {
       "description": "ID of the parent customer",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "PauseReason": {
       "description": "Reason for pausing the account",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "PaymentMethodId": {
       "description": "ID of the payment method",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "PrimaryUserId": {
       "description": "ID of the primary user",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "SalesHouseCustomerId": {
       "description": "Customer ID for sales house",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "SoldToPaymentInstrumentId": {
       "description": "ID of the payment instrument for sales",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "TimeStamp": {
       "description": "Timestamp of the account",

@@ -1,0 +1,372 @@
+version: 6.7.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body:
+      environment: "production"
+      oauth_scope: "msads.manage"
+      scope: "https://ads.microsoft.com/msads.manage offline_access"
+      tenant: "{{ config['tenant_id'] }}"
+    token_refresh_endpoint:
+      'https://login.microsoftonline.com/{{ config["tenant_id"]
+      }}/oauth2/v2.0/token'
+    grant_type: refresh_token
+    client_id: '{{ config["client_id"] }}'
+    client_secret: '{{ config["client_secret"] }}'
+    refresh_token: '{{ config["refresh_token"] }}'
+  users_stream:
+    type: DeclarativeStream
+    name: users
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: # this does not matter as we don't expose the stream as public
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/User/Query
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+        request_body_data: '{"UserId": null}'
+        authenticator: "#/definitions/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["User"]
+        schema_normalization: Default
+  accounts_stream:
+    type: DeclarativeStream
+    name: accounts
+    primary_key: Id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/accounts"
+
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          DeveloperToken: "{{ config['developer_token'] }}"
+        request_body_json:
+          PageInfo:
+            Index: "{{ next_page_token.next_page_token }}"
+            Size: 1000
+          Predicates:
+            - Field: UserId
+              Operator: Equals
+              Value: "'{{ stream_partition['user_id'] }}'"
+          ReturnAdditionalFields: TaxCertificate,AccountMode
+        authenticator: "#/definitions/authenticator"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          inject_on_first_request: true
+          page_size: 1000
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: Id
+            partition_field: user_id
+            stream:
+              $ref: "#/definitions/users_stream"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["Accounts"]
+        schema_normalization: Default
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - LinkedAgencies
+            value: |
+              {% set linked_agencies = [] %}
+              {% for agency in (record.get('LinkedAgencies') or []) %}
+              {% set _ = linked_agencies.append({ "Id": agency.Id|int, "Name": agency.Name }) %}
+              {% endfor %}
+              {{ linked_agencies }}
+          - type: AddedFieldDefinition
+            path:
+              - LinkedAgencies
+            value: '{{ { "CustomerInfo": record.LinkedAgencies } }}'
+          - type: AddedFieldDefinition
+            path:
+              - LastModifiedTime
+            value: '{{ format_datetime(record.LastModifiedTime, "%Y-%m-%dT%H:%M:%S.%f" ) }}'
+
+streams:
+  - $ref: "#/definitions/accounts_stream"
+
+schemas:
+  accounts:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      Id:
+        description: ID of the account
+        type:
+          - "null"
+          - integer
+      AccountFinancialStatus:
+        description: The financial status of the account
+        type:
+          - "null"
+          - string
+      AccountLifeCycleStatus:
+        description: The life cycle status of the account
+        type:
+          - "null"
+          - string
+      AutoTagType:
+        description: The type of auto-tagging
+        type:
+          - "null"
+          - string
+      AccountMode:
+        description: The mode of the account
+        type:
+          - "null"
+          - string
+      ForwardCompatibilityMap:
+        description: Map for forward compatibility
+        type:
+          - "null"
+          - string
+      PaymentMethodType:
+        description: Type of the payment method
+        type:
+          - "null"
+          - string
+      Language:
+        description: The language used in the account
+        type:
+          - "null"
+          - string
+      LinkedAgencies:
+        description: The agencies linked to the account for management purposes.
+        type:
+          - "null"
+          - object
+        properties:
+          Id:
+            description: ID of the linked agency
+            type:
+              - "null"
+              - integer
+          Name:
+            description: Name of the linked agency
+            type:
+              - "null"
+              - string
+      TaxInformation:
+        description: Tax information of the account
+        type:
+          - "null"
+          - string
+      CurrencyCode:
+        description: The currency code used by the account
+        type:
+          - "null"
+          - string
+      TimeZone:
+        description: The time zone of the account
+        type:
+          - "null"
+          - string
+      BusinessAddress:
+        description: The business address associated with the account.
+        type:
+          - "null"
+          - object
+        properties:
+          City:
+            description: The city of the business address
+            type:
+              - "null"
+              - string
+          CountryCode:
+            description: The country code of the business address
+            type:
+              - "null"
+              - string
+          Id:
+            description: ID of the business address
+            type:
+              - "null"
+              - integer
+          Line1:
+            description: Address line 1
+            type:
+              - "null"
+              - string
+          Line2:
+            description: Address line 2
+            type:
+              - "null"
+              - string
+          Line3:
+            description: Address line 3
+            type:
+              - "null"
+              - string
+          Line4:
+            description: Address line 4
+            type:
+              - "null"
+              - string
+          PostalCode:
+            description: The postal code of the business address
+            type:
+              - "null"
+              - string
+          StateOrProvince:
+            description: The state or province of the business address
+            type:
+              - "null"
+              - string
+          TimeStamp:
+            description: Timestamp of the business address
+            type:
+              - "null"
+              - string
+          BusinessName:
+            description: The business name
+            type:
+              - "null"
+              - string
+      BackUpPaymentInstrumentId:
+        description: ID of the backup payment instrument
+        type:
+          - "null"
+          - integer
+      BillingThresholdAmount:
+        description: The threshold amount for billing
+        type:
+          - "null"
+          - number
+      BillToCustomerId:
+        description: Customer ID for billing
+        type:
+          - "null"
+          - integer
+      LastModifiedByUserId:
+        description: ID of the user who last modified the account
+        type:
+          - "null"
+          - integer
+      LastModifiedTime:
+        description: The date and time of the last modification
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+      Name:
+        description: The name of the account
+        type:
+          - "null"
+          - string
+      Number:
+        description: The account number
+        type:
+          - "null"
+          - string
+      ParentCustomerId:
+        description: ID of the parent customer
+        type:
+          - "null"
+          - integer
+      PauseReason:
+        description: Reason for pausing the account
+        type:
+          - "null"
+          - integer
+      PaymentMethodId:
+        description: ID of the payment method
+        type:
+          - "null"
+          - integer
+      PrimaryUserId:
+        description: ID of the primary user
+        type:
+          - "null"
+          - integer
+      SalesHouseCustomerId:
+        description: Customer ID for sales house
+        type:
+          - "null"
+          - integer
+      SoldToPaymentInstrumentId:
+        description: ID of the payment instrument for sales
+        type:
+          - "null"
+          - integer
+      TimeStamp:
+        description: Timestamp of the account
+        type:
+          - "null"
+          - string
+      TaxCertificate:
+        type:
+          - "null"
+          - object
+        properties:
+          TaxCertificateBlobContainerName:
+            type:
+              - "null"
+              - string
+          Status:
+            type:
+              - "null"
+              - string
+            enum:
+              - Invalid
+              - Pending
+              - Valid
+          TaxCertificates:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                key:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+  max_concurrency: 10

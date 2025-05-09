@@ -135,11 +135,10 @@ class MSSQLBulkLoaderFactory(
                 bulkLoadConfig.dataSource,
                 MSSQLQueryBuilder(config.schema, stream)
             )
-        return MSSQLBulkLoader(
-            azureBlobClient,
-            stream,
-            mssqlBulkLoadHandler,
-            streamStateStore.get(key.stream)!!.formatFilePath
-        )
+        val state = streamStateStore.get(key.stream)
+        check(state != null && state is MSSQLBulkLoaderStreamState) {
+            "Stream state not properly initialized for stream ${key.stream}"
+        }
+        return MSSQLBulkLoader(azureBlobClient, stream, mssqlBulkLoadHandler, state.formatFilePath)
     }
 }

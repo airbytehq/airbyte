@@ -27,7 +27,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 
 @Factory
-class ObjectLoaderPartQueueFactory(
+class ObjectLoaderQueueBeanFactory(
     val loader: ObjectLoader,
 ) {
     val log = KotlinLogging.logger {}

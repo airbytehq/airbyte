@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.util.use
-import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.cdk.output.OutputConsumer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -278,7 +277,7 @@ class CheckpointManager<T>(
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 @Singleton
-class FreeingCheckpointConsumer(private val consumer: Consumer<AirbyteMessage>) :
+class FreeingCheckpointConsumer(private val consumer: OutputConsumer) :
     suspend (Reserved<CheckpointMessage>) -> Unit {
     override suspend fun invoke(message: Reserved<CheckpointMessage>) {
         message.use {
