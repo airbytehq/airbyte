@@ -1,0 +1,101 @@
+name: Debug Connector Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: "Connector to debug (e.g., source-postgres)"
+        required: true
+        type: string
+      wait-for-ssh:
+        description: "Wait for SSH connection before continuing"
+        required: false
+        default: "true"
+        type: boolean
+      timeout-minutes:
+        description: "SSH session timeout in minutes"
+        required: false
+        default: "30"
+        type: string
+      test-type:
+        description: "Type of test to run"
+        required: true
+        default: "integration"
+        type: choice
+        options:
+          - unit
+          - integration
+          - both
+
+jobs:
+  debug-connector:
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ fromJson(github.event.inputs.timeout-minutes) }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Setup environment similar to regular connector tests
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
+        run: |
+          uv tool install poethepoet
+          uv tool install ruff
+          uv tool install pytest
+          uv tool install mypy
+
+      - name: Install connector dependencies
+        working-directory: airbyte-integrations/connectors/${{ github.event.inputs.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+        run: |
+          airbyte-cdk secrets fetch ${{ github.event.inputs.connector }} \
+            --print-ci-secrets-masks
+
+      # Setup tmate session
+      - name: Setup tmate SSH session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          timeout-minutes: ${{ github.event.inputs.timeout-minutes }}
+          detached: ${{ github.event.inputs.wait-for-ssh == 'false' }}
+
+      # You can continue with running tests if needed
+      - name: Run Unit Tests
+        if: ${{ github.event.inputs.test-type == 'unit' || github.event.inputs.test-type == 'both' }}
+        working-directory: airbyte-integrations/connectors/${{ github.event.inputs.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests
+        if: ${{ github.event.inputs.test-type == 'integration' || github.event.inputs.test-type == 'both' }}
+        working-directory: airbyte-integrations/connectors/${{ github.event.inputs.connector }}
+        run: poe test-integration-tests
