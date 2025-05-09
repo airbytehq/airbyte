@@ -1,4 +1,5 @@
-version: 0.51.42
+version: 6.48.6
+
 type: DeclarativeSource
 
 definitions:
@@ -122,8 +123,6 @@ definitions:
       record_selector: "#/definitions/selector_base"
     $parameters:
       path: "applicationrole"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -215,6 +214,8 @@ definitions:
                   - string
         additionalProperties: true
         description: Details of an application role.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get
   avatars_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: avatars
@@ -231,8 +232,6 @@ definitions:
     $parameters:
       path: "avatar/{{ stream_slice.slice }}/system"
       extract_field: "system"
-
-  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -273,6 +272,8 @@ definitions:
             readOnly: true
         additionalProperties: true
         description: List of system avatars.
+
+  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
   boards_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: boards
@@ -296,8 +297,6 @@ definitions:
     $parameters:
       path: "board"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -385,6 +384,8 @@ definitions:
                 type:
                 - 'null'
                 - string
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get
   dashboards_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: dashboards
@@ -392,8 +393,6 @@ definitions:
     $parameters:
       path: "dashboard"
       extract_field: "dashboards"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2364,6 +2363,8 @@ definitions:
               - object
         additionalProperties: true
         description: Details of a dashboard.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
   filters_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: filters
@@ -2377,8 +2378,6 @@ definitions:
     $parameters:
       path: "filter/search"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-bulk-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4868,6 +4867,8 @@ definitions:
                       readOnly: true
         additionalProperties: true
         description: Details of a filter.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-bulk-get
   groups_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: groups
@@ -4875,8 +4876,6 @@ definitions:
     $parameters:
       path: "group/bulk"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4897,6 +4896,8 @@ definitions:
         additionalProperties: true
         description: The list of groups found in a search, including header text (Showing
           X of Y matching groups) and total of matched groups.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
   issue_fields_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_fields
@@ -4906,8 +4907,6 @@ definitions:
       record_selector: "#/definitions/selector_base"
     $parameters:
       path: "field"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5066,6 +5065,8 @@ definitions:
             - string
         additionalProperties: true
         description: Details about a field.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
   issue_field_configurations_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_field_configurations
@@ -5073,8 +5074,6 @@ definitions:
     $parameters:
       path: "fieldconfiguration"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5095,6 +5094,8 @@ definitions:
             type: boolean
         additionalProperties: true
         description: Details of a field configuration.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
   issue_link_types_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever: "#/definitions/retriever_no_pagination"
@@ -5103,8 +5104,6 @@ definitions:
     $parameters:
       path: "issueLinkType"
       extract_field: "issueLinkTypes"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5137,6 +5136,8 @@ definitions:
             readOnly: true
         additionalProperties: true
         description: A list of issue link type beans.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get
   issue_navigator_settings_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -5145,8 +5146,6 @@ definitions:
     name: issue_navigator_settings
     $parameters:
       path: "settings/columns"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5163,6 +5162,8 @@ definitions:
             type: string
         additionalProperties: true
         description: Details of an issue navigator column item.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get
   issue_notification_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_notification_schemes
@@ -5170,8 +5171,6 @@ definitions:
     $parameters:
       path: "notificationscheme"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5740,6 +5739,8 @@ definitions:
                         readOnly: true
         additionalProperties: true
         description: Details about a notification scheme.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-get
   issue_priorities_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_priorities
@@ -5747,8 +5748,6 @@ definitions:
     $parameters:
       path: "priority/search"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-search-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5780,6 +5779,8 @@ definitions:
             - boolean
         additionalProperties: true
         description: An issue priority.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-search-get
   issue_resolutions_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_resolutions
@@ -5787,8 +5788,6 @@ definitions:
     $parameters:
       path: "resolution/search"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5814,6 +5813,8 @@ definitions:
             - boolean
         additionalProperties: true
         description: Details of an issue resolution.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get
   issue_security_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever: "#/definitions/retriever_no_pagination"
@@ -5822,8 +5823,6 @@ definitions:
     $parameters:
       path: "issuesecurityschemes"
       extract_field: "issueSecuritySchemes"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5874,6 +5873,8 @@ definitions:
                   readOnly: true
         additionalProperties: true
         description: List of security schemes.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
   issue_types_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -5883,8 +5884,6 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "issuetype"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6102,6 +6101,8 @@ definitions:
             type: boolean
         additionalProperties: true
         description: Details of an issue type scheme.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get
   issue_type_screen_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_type_screen_schemes
@@ -6109,8 +6110,6 @@ definitions:
     $parameters:
       path: "issuetypescreenscheme"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6128,6 +6127,8 @@ definitions:
             type: string
         additionalProperties: true
         description: Details of an issue type screen scheme.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
   jira_settings_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -6137,8 +6138,6 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "application-properties"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6178,6 +6177,8 @@ definitions:
               type: string
         additionalProperties: true
         description: Details of an application property.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get
   labels_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -6192,8 +6193,6 @@ definitions:
     primary_key: "label"
     $parameters:
       path: "label"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-permissions-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6206,6 +6205,8 @@ definitions:
             type:
             - string
             - 'null'
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-permissions-get
   permissions_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -6221,8 +6222,6 @@ definitions:
     primary_key: "key"
     $parameters:
       path: "permissions"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6251,6 +6250,8 @@ definitions:
             - string
         additionalProperties: true
         description: Details about permissions.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-get
   permission_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever: "#/definitions/retriever_no_pagination"
@@ -6259,8 +6260,6 @@ definitions:
     $parameters:
       path: "permissionscheme"
       extract_field: "permissionSchemes"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6418,6 +6417,8 @@ definitions:
                   type: string
         additionalProperties: true
         description: List of all permission schemes.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
   projects_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -6437,7 +6438,6 @@ definitions:
     $parameters:
       path: "project/search"
       extract_field: "values"
-
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6628,8 +6628,6 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "projectCategory"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6654,6 +6652,8 @@ definitions:
             type: string
         additionalProperties: true
         description: A project category.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get
   project_roles_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -6663,8 +6663,6 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "role"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6891,6 +6889,8 @@ definitions:
             type:
             - 'null'
             - string
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get
   project_types_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -6899,8 +6899,6 @@ definitions:
     name: project_types
     $parameters:
       path: "project/type"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6929,6 +6927,8 @@ definitions:
             readOnly: true
         additionalProperties: true
         description: Details about a project type.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get
   screens_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: screens
@@ -6937,8 +6937,6 @@ definitions:
     $parameters:
       path: "screens"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7039,6 +7037,8 @@ definitions:
                         type: string
                         readOnly: true
         additionalProperties: true
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get
   screen_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: screen_schemes
@@ -7046,8 +7046,6 @@ definitions:
     $parameters:
       path: "screenscheme"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7086,6 +7084,8 @@ definitions:
             type: object
         additionalProperties: true
         description: A screen scheme.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get
   time_tracking_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -7095,8 +7095,6 @@ definitions:
     primary_key: "key"
     $parameters:
       path: "configuration/timetracking/list"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-search-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7119,6 +7117,8 @@ definitions:
             readOnly: true
         additionalProperties: true
         description: Details about the time tracking provider.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-search-get
   users_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: users
@@ -7133,8 +7133,6 @@ definitions:
       record_selector: "#/definitions/selector_base"
     $parameters:
       path: "users/search"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7334,6 +7332,8 @@ definitions:
           case, all parameters have fallback values."
         xml:
           name: user
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
   workflows_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: workflows
@@ -7350,8 +7350,6 @@ definitions:
       - path: ["name"]
         value_type: string
         value: "{{ record.id.name }}"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7491,6 +7489,8 @@ definitions:
             - string
             format: date-time
         readOnly: true
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
   workflow_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: workflow_schemes
@@ -7498,8 +7498,6 @@ definitions:
     $parameters:
       path: "workflowscheme"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7765,6 +7763,8 @@ definitions:
             type: object
             readOnly: true
         readOnly: true
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
   workflow_statuses_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -7774,8 +7774,6 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "status"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7839,6 +7837,8 @@ definitions:
             - string
         additionalProperties: true
         description: A status.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get
   workflow_status_categories_stream:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
@@ -7848,10 +7848,6 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "statuscategory"
-
-  # Substream Based Fullrefresh Streams
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7880,6 +7876,10 @@ definitions:
             readOnly: true
         additionalProperties: true
         description: A status category.
+
+  # Substream Based Fullrefresh Streams
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
   filter_sharing_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: filter_sharing
@@ -9908,8 +9908,6 @@ definitions:
     $parameters:
       path: "field/{{ stream_slice.field_id }}/context"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -9952,6 +9950,8 @@ definitions:
             type:
             - 'null'
             - string
+
+    # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get
   __issue_custom_field_contexts_substream:
     $ref: "#/definitions/issue_custom_field_contexts_stream"
     retriever:
@@ -9996,8 +9996,6 @@ definitions:
       path: "field/{{ stream_slice.parent_slice.field_id }}/context/{{ stream_slice.context_id
         }}/option"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10036,6 +10034,8 @@ definitions:
             type:
             - 'null'
             - string
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get
   __issue_property_keys_substream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_property_keys
@@ -10088,8 +10088,6 @@ definitions:
     $parameters:
       path: "issue/{{ stream_slice.parent_slice.issue_property_key }}/properties/{{
         stream_slice.property_key }}"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10114,6 +10112,8 @@ definitions:
             - boolean
         description: An entity property, for more information see [Entity 
           properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
   issue_remote_links_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_remote_links
@@ -10136,8 +10136,6 @@ definitions:
         value: "{{ stream_slice.issue_property_key }}"
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/remotelink"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10250,6 +10248,8 @@ definitions:
                         type: string
         additionalProperties: true
         description: Details of an issue remote link.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
   issue_transitions_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_transitions
@@ -10274,8 +10274,6 @@ definitions:
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/transitions"
       extract_field: "transitions"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10395,6 +10393,8 @@ definitions:
                     type:
                     - 'null'
                     - string
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
   issue_votes_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_votes
@@ -10420,8 +10420,6 @@ definitions:
         value: "{{ stream_slice.issue_property_key }}"
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/votes"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10646,6 +10644,8 @@ definitions:
                     attribute: true
         additionalProperties: true
         description: The details of votes on an issue.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
   issue_watchers_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_watchers
@@ -10678,8 +10678,6 @@ definitions:
         value: "{{ stream_slice.issue_property_key }}"
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/watchers"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10773,6 +10771,8 @@ definitions:
                   readOnly: true
         additionalProperties: true
         description: The details of watchers on an issue.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
   project_avatars_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: project_avatars
@@ -10807,8 +10807,6 @@ definitions:
     $parameters:
       path: "project/{{ stream_slice.project_id }}/avatars"
       extract_field: "*/*"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-project-projectidorkey-component-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -10853,6 +10851,8 @@ definitions:
             readOnly: true
         additionalProperties: true
         description: List of project avatars.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-project-projectidorkey-component-get
   project_components_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: project_components
@@ -10869,8 +10869,6 @@ definitions:
     $parameters:
       path: "project/{{ stream_slice.project_key }}/component"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11361,6 +11359,8 @@ definitions:
         description: Details about a project component.
         xml:
           name: component
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
   project_email_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: project_email
@@ -11395,8 +11395,6 @@ definitions:
     $parameters:
       path: "project/{{ stream_slice.project_id }}/email"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11411,6 +11409,8 @@ definitions:
             type: string
         additionalProperties: true
         description: A project's sender email address.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
   project_permission_schemes_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: project_permission_schemes
@@ -11433,8 +11433,6 @@ definitions:
     $parameters:
       path: "project/{{ stream_slice.project_key }}/securitylevel"
       extract_field: "levels"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11468,6 +11466,8 @@ definitions:
             - string
         additionalProperties: true
         description: Details about a security scheme.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get
   project_versions_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: project_versions
@@ -11484,8 +11484,6 @@ definitions:
     $parameters:
       path: "project/{{ stream_slice.project_key }}/version"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11617,6 +11615,8 @@ definitions:
                 type: integer
                 readOnly: true
         readOnly: true
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get
   screen_tabs_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: screen_tabs
@@ -11648,8 +11648,6 @@ definitions:
         value: "{{ stream_slice.screen_id }}"
     $parameters:
       path: "screens/{{ stream_slice.screen_id }}/tabs"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11672,6 +11670,8 @@ definitions:
             - integer
         additionalProperties: true
         description: A screen tab.
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
   screen_tab_fields_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: screen_tab_fields
@@ -11698,7 +11698,6 @@ definitions:
     $parameters:
       path: "screens/{{ stream_slice.parent_slice.screen_id }}/tabs/{{ stream_slice.tab_id
         }}/fields"
-
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11725,6 +11724,7 @@ definitions:
             - integer
         additionalProperties: true
         description: A screen tab field.
+
   __boards_substream:
     $ref: "#/definitions/boards_stream"
     retriever:
@@ -11774,8 +11774,6 @@ definitions:
     $parameters:
       path: "board/{{ stream_slice.board_id }}/sprint"
       extract_field: "values"
-
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -11822,6 +11820,8 @@ definitions:
             - 'null'
             - string
             format: date-time
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get
   users_groups_detailed_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: users_groups_detailed
@@ -14459,7 +14459,6 @@ check:
   type: CheckStream
   stream_names:
   - application_roles
-  - avatars
   - boards
   - dashboards
   - filters
@@ -14478,10 +14477,8 @@ check:
   - jira_settings
   - labels
   - permissions
-  - permission_schemes
   - projects
   - project_categories
-  - project_roles
   - project_types
   - screens
   - screen_schemes
@@ -14491,26 +14488,7 @@ check:
   - workflow_schemes
   - workflow_statuses
   - workflow_status_categories
-  - filter_sharing
-  - issue_custom_field_contexts
-  - issue_custom_field_options
-  - issue_properties
-  - issue_remote_links
-  - issue_transitions
-  - issue_votes
-  - issue_watchers
-  - project_avatars
-  - project_components
-  - project_email
-  - project_permission_schemes
-  - project_versions
-  - screen_tabs
-  - screen_tab_fields
-  - sprints
-  - users_groups_detailed
-  - board_issues
   - issues
-  - sprint_issues
 
 # Defining a value here is difficult because the Jira API documentation mentions "REST API rate limits are not published because the computation logic is evolving continuously to maximize reliability and performance for customers" regarding the API budget. Hence, we will need to empirically validate the values that are set here.
 concurrency_level:

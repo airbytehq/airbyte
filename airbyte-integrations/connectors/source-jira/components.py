@@ -83,6 +83,23 @@ class SubstreamOrSinglePartitionRouter(SubstreamPartitionRouter):
 
 @dataclass
 class RemoveEmptyFields(RecordTransformation):
+    """
+    Removes key-value pairs with None values from specified nested dictionaries in a record.
+
+    This transformation is used in the issues stream to clean up record data
+    by eliminating empty fields that don't provide any useful information.
+    It iterates through the specified field pointers and,
+    for each dictionary found at those locations, filters out
+    any entries where the value is None.
+
+    Args:
+        field_pointers: List of paths to dictionaries in the record that should be cleaned.
+        parameters: Additional parameters for the transformation (unused).
+
+    Returns:
+        The record with None values removed from the specified dictionaries.
+    """
+
     field_pointers: FieldPointer
     parameters: InitVar[Mapping[str, Any]]
 
