@@ -152,8 +152,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true 
-            ExcludeReportHeader: true 
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
@@ -257,8 +257,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true 
-            ExcludeReportHeader: true 
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
@@ -362,8 +362,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true 
-            ExcludeReportHeader: true 
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
@@ -467,8 +467,8 @@ definitions:
         request_body_json:
           ReportRequest:
             ExcludeColumnHeaders: false
-            ExcludeReportFooter: true 
-            ExcludeReportHeader: true 
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
             Format: Csv
             FormatVersion: "'2.0'"
             ReportName: AdPerformanceReport
