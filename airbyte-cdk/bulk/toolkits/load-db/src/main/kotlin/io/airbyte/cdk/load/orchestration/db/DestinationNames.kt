@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.orchestration.db
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
+import org.apache.commons.codec.digest.DigestUtils
 
 data class TableNames(
     // this is pretty dumb, but in theory we could have:
@@ -38,6 +40,18 @@ data class TableNames(
 data class TableName(val namespace: String, val name: String) {
     fun toPrettyString(quote: String = "", suffix: String = "") =
         "$quote$namespace$quote.$quote$name$suffix$quote"
+
+    /**
+     * better handling for temp table names - e.g. postgres has a 64-char table name limit, so we
+     * want to avoid running into that
+     *
+     * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
+     * [asOldStyleTempTable] instead
+     */
+    fun asTempTable(length: Int = 32) =
+        copy(name = DigestUtils.sha256Hex(name + TMP_TABLE_SUFFIX).substring(length))
+
+    fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
 }
 
 fun TableName?.hasNamingConflictWith(other: TableName?): Boolean {
