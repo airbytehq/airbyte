@@ -45,7 +45,7 @@ jobs:
         run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
 
       - name: Build and publish JVM connectors images [On merge to master]
-        id: build-and-publish-JVM-connectors-images
+        id: build-and-publish-JVM-connectors-images-master
         if: github.event_name == 'push'
         shell: bash
         run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json  --java | ./poe-tasks/build-and-publish-java-connectors-with-tag.sh
@@ -82,7 +82,7 @@ jobs:
       # if --pre-release, this should generate an RC tag, if --main-release, this should republish the version.
       # need to make sure --pre-release tags match.
       - name: Build and publish JVM connectors images [manual]
-        id: build-and-publish-JVM-connectors-images
+        id: build-and-publish-JVM-connectors-images-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} ${{ inputs.connectors-options }}
