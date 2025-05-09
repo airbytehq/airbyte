@@ -15,9 +15,11 @@ import pytest
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, BaseStream, Companies, Deals, Engagements, Products
+from source_hubspot.streams import API, BaseStream, Companies, Deals, Products
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .conftest import find_stream
@@ -143,7 +145,7 @@ def test_cast_datetime(common_params, caplog):
             # if you find some diff locally try using "Ex: argument of type 'DateTime' is not iterable in the message". There could be a
             # difference in local environment when pendulum.parsing.__init__.py importing parse_iso8601. Anyway below is working fine
             # in container for now and I am not sure if this diff was just a problem with my setup.
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: expected string or bytes-like object",
+            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}",
         },
     }
     assert expected_warning_message["log"]["message"] in caplog.text
@@ -558,11 +560,13 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, common
     assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
 
 
-def test_engagements_stream_pagination_works(requests_mock, common_params):
+def test_engagements_stream_pagination_works(requests_mock, common_params, config):
     """
     Tests the engagements stream handles pagination correctly, for both
     full_refresh and incremental sync modes.
     """
+
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
     # Mocking Request
     requests_mock.register_uri(
@@ -597,7 +601,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
 
     requests_mock.register_uri(
         "GET",
-        "/engagements/v1/engagements/recent/modified?count=100",
+        "/engagements/v1/engagements/recent/modified?count=250",
         [
             {
                 "json": {
@@ -626,29 +630,30 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     )
 
     # Create test_stream instance for full refresh.
-    test_stream = Engagements(**common_params)
+    test_stream = find_stream("engagements", config)
 
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
-    test_stream = Engagements(**common_params)
+    test_stream = find_stream("engagements", config)
     records, _ = read_incremental(test_stream, {})
     # The stream should handle pagination correctly and output 250 records.
     assert len(records) == 100
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
-def test_engagements_stream_since_old_date(requests_mock, common_params, fake_properties_list):
+def test_engagements_stream_since_old_date(requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'All Engagements' API for old dates (more than 30 days)
     """
-    old_date = 1614038400000  # Tuesday, 23 February 2021 г., 0:00:00
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    old_date = 1614038400000  # Tuesday, 23 February 2021, 0:00:00
+    recent_date = 1645315200000
     responses = [
         {
             "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": old_date}} for y in range(100)],
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
                 "total": 100,
@@ -657,21 +662,43 @@ def test_engagements_stream_since_old_date(requests_mock, common_params, fake_pr
         }
     ]
 
-    # Create test_stream instance with some state
-    test_stream = Engagements(**common_params)
-    test_stream.state = {"lastUpdated": old_date}
     # Mocking Request
     requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
-    records, _ = read_incremental(test_stream, {})
-    # The stream should not attempt to get more than 10K records.
-    assert len(records) == 100
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "engagements",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                    },
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "engagements",
+            {"lastUpdated": old_date},
+        )
+        .build()
+    )
+    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+
+    assert len(output.records) == 100
+    assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date(requests_mock, common_params, fake_properties_list):
+def test_engagements_stream_since_recent_date(requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     recent_date = pendulum.now() - timedelta(days=10)  # 10 days ago
     recent_date = int(recent_date.timestamp() * 1000)
     responses = [
@@ -687,22 +714,40 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
     ]
 
     # Create test_stream instance with some state
-    test_stream = Engagements(**common_params)
-    test_stream.state = {"lastUpdated": recent_date}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "engagements",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                    },
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "overwrite",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
+
     # Mocking Request
-    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=100&since={recent_date}", responses)
-    records, _ = read_incremental(test_stream, {"lastUpdated": recent_date})
+    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}", responses)
+
+    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
     # The stream should not attempt to get more than 10K records.
-    assert len(records) == 100
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+    assert len(output.records) == 100
+    assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list):
+def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,
     so 'All Engagements' API should be used.
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     recent_date = pendulum.now() - timedelta(days=10)  # 10 days ago
     recent_date = int(recent_date.timestamp() * 1000)
     responses = [
@@ -718,14 +763,30 @@ def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, commo
     ]
 
     # Create test_stream instance with some state
-    test_stream = Engagements(**common_params)
-    test_stream.state = {"lastUpdated": recent_date}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "engagements",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                    },
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "overwrite",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
+
     # Mocking Request
-    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=100&since={recent_date}", responses)
+    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}", responses)
     requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
-    records, _ = read_incremental(test_stream, {"lastUpdated": recent_date})
-    assert len(records) == 100
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+
+    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+    assert len(output.records) == 100
+    assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")

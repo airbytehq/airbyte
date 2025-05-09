@@ -320,12 +320,9 @@ class MySqlSourceJdbcPartitionFactory(
     fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
-                // An incident in April 2025 caused some MySQL connections to serialize
-                // their state using scientific notation. The conversion here must handle
-                // these values as well as the expected non-scientific ones.
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
                     LeafAirbyteSchemaType.INTEGER -> {
-                        Jsons.valueToTree(stateValue?.toBigDecimal()?.toBigInteger())
+                        Jsons.valueToTree(stateValue?.toBigInteger())
                     }
                     LeafAirbyteSchemaType.NUMBER -> {
                         Jsons.valueToTree(stateValue?.toDouble())

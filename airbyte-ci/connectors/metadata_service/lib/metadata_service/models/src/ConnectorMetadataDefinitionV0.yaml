@@ -128,3 +128,6 @@ properties:
       supportsFileTransfer:
         type: boolean
         default: false
+      supportsDataActivation:
+        type: boolean
+        default: false

@@ -16,7 +16,17 @@ airbyteBulkConnector {
 application {
     mainClass = "io.airbyte.integrations.destination.mssql.v2.MSSQLDestination"
 
-    applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0")
+    applicationDefaultJvmArgs = listOf(
+        "-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0",
+        // Uncomment to attach a live profiler.
+//        "-Djava.rmi.server.hostname=localhost",
+//            "-Dcom.sun.management.jmxremote=true",
+//            "-Dcom.sun.management.jmxremote.port=6000",
+//            "-Dcom.sun.management.jmxremote.rmi.port=6000",
+//            "-Dcom.sun.management.jmxremote.local.only=false",
+//            "-Dcom.sun.management.jmxremote.authenticate=false",
+//            "-Dcom.sun.management.jmxremote.ssl=false",
+    )
 
     // Uncomment and replace to run locally
     //applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "java.base/sun.security.action=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED")
