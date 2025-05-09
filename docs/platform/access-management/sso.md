@@ -11,6 +11,8 @@ Single Sign-On (SSO) allows you to enable logging into Airbyte using your existi
 
 SSO is available in Airbyte Enterprise and on Cloud with the Teams add-on. [Talk to us](https://airbyte.com/company/talk-to-sales) if you are interested in setting up SSO for your organization.
 
+If you are an existing Cloud Teams customer and want to enable SSO for your Organization, please [submit a Support Ticket](https://support.airbyte.com/hc/en-us/requests/new) to begin the process.
+
 ## Set up
 
 You can find setup explanations for all our supported Identity Providers on the following subpages:
