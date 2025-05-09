@@ -269,6 +269,12 @@ const understandingAirbyte = {
   ],
 };
 
+const airbyteEmbedded = {
+  type: "doc",
+  label: "Getting Started",
+  id: "embedded-setup/README"
+}
+
 module.exports = {
   platform: [
     {
@@ -503,6 +509,8 @@ module.exports = {
             "developer-guides/licenses/examples",
           ],
         },
+        sectionHeader("Airbyte Embedded"),
+        airbyteEmbedded,
         sectionHeader("Community"),
         contributeToAirbyte,
         "community/getting-support",
