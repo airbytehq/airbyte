@@ -70,6 +70,13 @@ jobs:
           echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
 
+          # Echo debug status for visibility
+          if [[ "${{ github.event.inputs.enable-debug }}" == "true" ]]; then
+            echo "🔍 DEBUG MODE ENABLED 🔍"
+          else
+            echo "Debug mode not enabled"
+          fi
+
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
@@ -140,7 +147,7 @@ jobs:
             --print-ci-secrets-masks
 
       - name: Setup tmate SSH session for JVM connectors
-        if: matrix.connector && inputs.enable-debug
+        if: matrix.connector && github.event.inputs.enable-debug == 'true'
         uses: mxschmitt/action-tmate@v3
         with:
           limit-access-to-actor: true
@@ -243,7 +250,7 @@ jobs:
             --print-ci-secrets-masks
 
       - name: Setup tmate SSH session for non-JVM connectors
-        if: matrix.connector && inputs.enable-debug
+        if: matrix.connector && github.event.inputs.enable-debug == 'true'
         uses: mxschmitt/action-tmate@v3
         with:
           limit-access-to-actor: true
