@@ -225,7 +225,6 @@ In the callback, submit a request to obtain an API access token:
 
   const access_token_response = await response.json();
   const access_token = access_token_response.access_token;
-});
 ```
 
 Still in the callback, use the API access token in the response to request an Embedded token encoding your API access key and metadata.
