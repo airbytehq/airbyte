@@ -25,18 +25,32 @@ declare -a connectors
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --publish-option=*) publish_mode="${1#*=}"; shift ;;
-    --publish-option)   publish_mode="$2"; shift 2 ;;
-    --name=*)           connectors=("${1#*=}"); shift ;;
-    --name)             connectors=("$2"); shift 2 ;;
-    *)                  connectors+=("$1"); shift ;;
+    -h|--help)
+      sed -n '1,20p' "$0"
+      exit 0
+      ;;
+    --main-release)
+      publish_mode="main-release"
+      shift
+      ;;
+    --pre-release)
+      publish_mode="pre-release"
+      shift
+      ;;
+    --name=*)
+      connectors=("${1#*=}")
+      shift
+      ;;
+    --name)
+      connectors=("$2")
+      shift 2
+      ;;
+    *)
+      connectors+=("$1")
+      shift
+      ;;
   esac
 done
-
-if [[ "$publish_mode" != "main-release" && "$publish_mode" != "pre-release" ]]; then
-  echo "Error: Invalid --publish-option: '$publish_mode'. Use main-release or pre-release." >&2
-  exit 1
-fi
 
 # ---------- helper: collect connector names ----------
 get_connectors() {
