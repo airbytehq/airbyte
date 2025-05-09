@@ -24,6 +24,11 @@ on:
         type: number
         required: false
         description: "The pull request number, if applicable"
+      enable-debug:
+        type: boolean
+        required: false
+        description: "Enable SSH debugging with tmate"
+        default: false
 
   # Available as a slash command and workflow dispatch
   workflow_dispatch:
@@ -41,6 +46,11 @@ on:
       pr:
         required: false
         description: "The pull request number, if applicable"
+      enable-debug:
+        type: boolean
+        required: false
+        description: "Enable SSH debugging with tmate"
+        default: false
 
 jobs:
   generate-matrix:
@@ -128,6 +138,14 @@ jobs:
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
+
+      - name: Setup tmate SSH session for JVM connectors
+        if: matrix.connector && inputs.enable-debug
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          detached: false
 
       - name: Run Unit Tests
         if: matrix.connector
@@ -223,6 +241,14 @@ jobs:
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
+
+      - name: Setup tmate SSH session for non-JVM connectors
+        if: matrix.connector && inputs.enable-debug
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          detached: false
 
       - name: Run Unit Tests
         if: matrix.connector
