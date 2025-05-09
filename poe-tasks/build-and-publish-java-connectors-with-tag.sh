@@ -99,10 +99,10 @@ while read -r connector; do
   fi
 
   echo "Building & publishing ${connector} with tag ${docker_tag}"
-#  ./gradlew -Pdocker.publish \
-#            -DciMode=true \
-#            -Psbom=false \
-#            -Pdocker.tag="${docker_tag}" \
-#            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+  ./gradlew -Pdocker.publish \
+            -DciMode=true \
+            -Psbom=false \
+            -Pdocker.tag="${docker_tag}" \
+            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
 done < <(get_connectors)
 echo "Done building & publishing."
