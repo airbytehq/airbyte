@@ -9,30 +9,23 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.BatchUpdate
-import io.airbyte.cdk.load.pipeline.InputPartitioner
 import io.airbyte.cdk.load.pipeline.LoadPipeline
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.StreamManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
-import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
+import io.airbyte.cdk.load.task.implementor.OpenStreamTask
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
-import io.airbyte.cdk.load.task.internal.DefaultInputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
-import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
+import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -51,11 +44,11 @@ class DestinationTaskLauncherUTest {
     private val syncManager: SyncManager = mockk(relaxed = true)
 
     // Internal Tasks
-    private val inputConsumerTaskFactory: DefaultInputConsumerTaskFactory = mockk(relaxed = true)
+    private val inputConsumerTask: InputConsumerTask = mockk(relaxed = true)
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory = mockk(relaxed = true)
-    private val openStreamTaskFactory: OpenStreamTaskFactory = mockk(relaxed = true)
+    private val openStreamTask: OpenStreamTask = mockk(relaxed = true)
     private val closeStreamTaskFactory: CloseStreamTaskFactory = mockk(relaxed = true)
     private val teardownTaskFactory: TeardownTaskFactory = mockk(relaxed = true)
 
@@ -67,19 +60,13 @@ class DestinationTaskLauncherUTest {
     private val failStreamTaskFactory: FailStreamTaskFactory = mockk(relaxed = true)
     private val failSyncTaskFactory: FailSyncTaskFactory = mockk(relaxed = true)
 
-    // Input Comsumer requirements
-    private val inputFlow: ReservingDeserializingInputFlow = mockk(relaxed = true)
-    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
-        mockk(relaxed = true)
-    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
+    // Queues
     private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
-
     private val recordQueueForPipeline:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> =
         mockk(relaxed = true)
     private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate> = mockk(relaxed = true)
-    private val partitioner: InputPartitioner = mockk(relaxed = true)
-    private val updateBatchTaskFactory: UpdateBatchStateTaskFactory = mockk(relaxed = true)
+
     private val loadPipeline: LoadPipeline = mockk(relaxed = true)
 
     private fun getDefaultDestinationTaskLauncher(): DestinationTaskLauncher {
@@ -88,33 +75,31 @@ class DestinationTaskLauncherUTest {
             catalog,
             config,
             syncManager,
-            inputConsumerTaskFactory,
+            inputConsumerTask,
+            heartbeatTask = mockk(relaxed = true),
+            updateBatchTask = mockk(relaxed = true),
             setupTaskFactory,
-            openStreamTaskFactory,
+            openStreamTask,
             closeStreamTaskFactory,
             teardownTaskFactory,
+            loadPipeline,
             updateCheckpointsTask,
             failStreamTaskFactory,
             failSyncTaskFactory,
-            inputFlow,
-            checkpointQueue,
-            fileTransferQueue,
             openStreamQueue,
-
-            // New interface shim
             recordQueueForPipeline,
             batchUpdateQueue,
-            loadPipeline,
-            partitioner,
-            updateBatchTaskFactory,
             hasThrown = AtomicBoolean(false),
-            heartbeatTask = mockk(relaxed = true)
         )
     }
 
     @BeforeEach
     fun init() {
-        coEvery { taskScopeProvider.launch(any()) } returns Unit
+        coEvery { taskScopeProvider.launch(any()) } coAnswers
+            {
+                val task = firstArg<Task>()
+                task.execute()
+            }
 
         val stream = mockk<DestinationStream>(relaxed = true)
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
@@ -203,7 +188,7 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleTeardownComplete()
         job.join()
 
-        coVerify(exactly = numOpenStreamWorkers) { openStreamTaskFactory.make() }
+        coVerify(exactly = numOpenStreamWorkers) { openStreamTask.execute() }
 
         coVerify(exactly = 0) { openStreamQueue.publish(any()) }
     }
@@ -226,5 +211,39 @@ class DestinationTaskLauncherUTest {
         job.join()
         coVerify { loadPipeline.start(any()) }
         job.cancel()
+    }
+
+    @Test
+    fun testRun() = runTest {
+        val taskLauncher = getDefaultDestinationTaskLauncher()
+        val job = launch { taskLauncher.run() }
+        taskLauncher.handleTeardownComplete()
+        job.join()
+
+        coVerify(exactly = 1) { inputConsumerTask.execute() }
+        coVerify(exactly = 1) { setupTaskFactory.make(any()) }
+        coVerify(exactly = 1) { updateCheckpointsTask.execute() }
+
+        job.cancel()
+    }
+
+    @Test
+    fun testHandleStreamClosed() = runTest {
+        val taskLauncher = getDefaultDestinationTaskLauncher()
+        // This should run teardown unconditionally.
+        taskLauncher.handleStreamClosed()
+        coVerify(exactly = 1) { teardownTaskFactory.make(any()) }
+    }
+
+    @Test
+    fun `test sync failure after stream failure`() = runTest {
+        val taskLauncher = getDefaultDestinationTaskLauncher()
+        val job = launch { taskLauncher.run() }
+        taskLauncher.handleFailStreamComplete(Exception())
+        taskLauncher.handleFailStreamComplete(Exception())
+        taskLauncher.handleTeardownComplete()
+        job.join()
+
+        coVerify(exactly = 1) { failSyncTaskFactory.make(any(), any()) }
     }
 }

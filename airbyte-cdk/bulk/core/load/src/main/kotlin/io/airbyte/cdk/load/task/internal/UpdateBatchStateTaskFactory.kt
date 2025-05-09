@@ -74,11 +74,11 @@ class UpdateBatchStateTask(
 
 @Singleton
 class UpdateBatchStateTaskFactory(
-    @Named("batchStateUpdateQueue") val inputQueue: QueueReader<BatchUpdate>,
+    @Named("batchStateUpdateQueue") private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*>
+    private val checkpointManager: CheckpointManager<*>,
 ) {
-    fun make(launcher: DestinationTaskLauncher): Task {
-        return UpdateBatchStateTask(inputQueue, syncManager, checkpointManager, launcher)
+    fun make(taskLauncher: DestinationTaskLauncher): UpdateBatchStateTask {
+        return UpdateBatchStateTask(inputQueue, syncManager, checkpointManager, taskLauncher)
     }
 }
