@@ -526,7 +526,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
             # We also need to upload the spec to the spec cache bucket.
             # For pre-releases, rebuild all the time.
-            if check_connector_image_results.status is StepStatus.SKIPPED:
+            if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
                 context.logger.info(
                     "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
@@ -545,7 +545,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 results.append(metadata_upload_results)
 
             # Exit early if the connector image already exists
-            if check_connector_image_results.status is not StepStatus.SUCCESS:
+            if check_connector_image_results.status is not StepStatus.SUCCESS and not context.pre_release:
                 return create_connector_report(results, context)
 
             build_connector_results = await steps.run_connector_build(context)
