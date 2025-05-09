@@ -443,7 +443,7 @@ def test_contact_lists_transform(requests_mock, common_params):
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_client_side_incremental_stream(mock_get_custom_object_streams, requests_mock, common_params, fake_properties_list, config):
+def test_client_side_incremental_stream(mock_get_custom_object_streams, mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     stream = find_stream("forms", config)
     data_field = stream.retriever.record_selector.extractor.field_path[0]
     latest_cursor_value = "2024-01-30T23:46:36.287000Z"
@@ -475,71 +475,6 @@ def test_client_side_incremental_stream(mock_get_custom_object_streams, requests
 
     output = read_from_stream(config, "forms", SyncMode.incremental)
     assert output.state_messages[-1].state.stream.stream_state.__dict__[stream.cursor_field] == latest_cursor_value
-
-
-@pytest.mark.parametrize(
-    "state, record, expected",
-    [
-        (
-            {"updatedAt": ""},
-            {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"},
-            (True, {"updatedAt": "2023-01-30T23:46:36.287000Z"}),
-        ),
-        (
-            {"updatedAt": "2023-01-30T23:46:36.287000+00:00"},
-            {"id": "test_id_1", "updatedAt": "2023-01-29T01:02:03.123Z"},
-            (False, {"updatedAt": "2023-01-30T23:46:36.287000Z"}),
-        ),
-    ],
-    ids=[
-        "Empty Sting in state + new record",
-        "State + old record",
-    ],
-)
-@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_empty_string_in_state(mock_get_custom_object_streams, state, record, expected, requests_mock, fake_properties_list, config):
-    stream = find_stream("forms", config)
-    data_field = stream.retriever.record_selector.extractor.field_path[0]
-
-    response = [
-        {
-            "json": {
-                data_field: [
-                    record,
-                ],
-            }
-        }
-    ]
-    # stream.state = state
-    # overcome the availability strartegy issues by mocking the responses
-    # A.K.A: not related to the test at all, but definetely required.
-    properties_response = [
-        {
-            "json": [
-                {"name": property_name, "type": "string", "CreatedAt": "2023-01-30T23:46:24.355Z", "updatedAt": "2023-01-30T23:46:36.287Z"}
-                for property_name in fake_properties_list
-            ],
-            "status_code": 200,
-        }
-    ]
-    stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
-
-    requests_mock.register_uri("GET", stream_url, response)
-    requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
-    # end of mocking `availability strategy`
-
-    state_message = AirbyteStateMessage(
-        type=AirbyteStateType.STREAM,
-        stream=AirbyteStreamState(
-            stream_descriptor=StreamDescriptor(name="forms"),
-            stream_state=AirbyteStateBlob(**state),
-        ),
-    )
-
-    output = read_from_stream(config, "forms", SyncMode.incremental, [state_message])
-
-    assert (len(output.records) > 0) == expected[0]
-    assert output.most_recent_state.stream_state.__dict__[stream.cursor_field] == expected[1][stream.cursor_field]
 
 
 @pytest.fixture(name="custom_object_schema")

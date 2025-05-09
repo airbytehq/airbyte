@@ -124,16 +124,17 @@ def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exceptio
 
 @pytest.fixture()
 def mock_dynamic_schema_requests(requests_mock):
-    requests_mock.get(
-        "https://api.hubapi.com/properties/v2/goal_targets/properties",
-        json=[
-            {
-                "name": "hs__migration_soft_delete",
-                "label": "migration_soft_delete_deprecated",
-                "description": "Describes if the goal target can be treated as deleted.",
-                "groupName": "goal_target_information",
-                "type": "enumeration"
-            }
-        ],
-        status_code=200
-    )
+    for entity in ["deal", "form"]:
+        requests_mock.get(
+            f"https://api.hubapi.com/properties/v2/{entity}/properties",
+            json=[
+                {
+                    "name": "hs__migration_soft_delete",
+                    "label": "migration_soft_delete_deprecated",
+                    "description": "Describes if the goal target can be treated as deleted.",
+                    "groupName": "goal_target_information",
+                    "type": "enumeration"
+                }
+            ],
+            status_code=200
+        )
