@@ -30,7 +30,7 @@ class BigqueryDirectLoadTableNativeOperations(private val bigquery: BigQuery) :
                 ),
             )
         val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
-        return if (value == null || value.isNull) {
+        return if (value.isNull) {
             0
         } else {
             value.longValue
