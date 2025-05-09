@@ -9,6 +9,7 @@ import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -22,43 +23,56 @@ import java.util.concurrent.TimeUnit
  * The class formats incoming JsonSchema and AirbyteRecord in order to be inline with a
  * corresponding uploader.
  */
-class BigQueryRecordFormatter {
+class BigQueryRecordFormatter(private val legacyRawTablesOnly: Boolean) {
 
     fun formatRecord(record: DestinationRecordRaw): String {
         val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
 
         val outputRecord = mutableMapOf<String, Any?>()
-        enrichedRecord.airbyteMetaFields.forEach { (key, value) ->
+        val enrichedFieldsToIterate =
+            if (legacyRawTablesOnly) {
+                // in legacy raw tables mode, we only need to look at the airbyte fields.
+                // and we just dump the actual data fields into the output record
+                // as a JSON blob.
+                outputRecord[Meta.COLUMN_NAME_DATA] = record.asRawJson().serializeToString()
+                enrichedRecord.airbyteMetaFields
+            } else {
+                // but in direct-load mode, we do actually need to look at all the fields.
+                enrichedRecord.allTypedFields
+            }
+        enrichedFieldsToIterate.forEach { (key, value) ->
             when (key) {
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT -> {
                     val extractedAtMillis = (value.abValue as IntegerValue).value.longValueExact()
                     outputRecord[key] = getExtractedAt(extractedAtMillis)
                 }
                 Meta.COLUMN_NAME_AB_META -> {
-                    // TODO this is a hack for T+D, we should remove it for direct-load tables
-                    //   we're completely ignoring the enrichedRecord's meta value, because that
-                    //   includes changes in-connector type coercion
-                    //   and for raw tables, we only want changes that originated from the source
-                    if (record.rawData.record.meta == null) {
-                        record.rawData.record.meta = AirbyteRecordMessageMeta()
-                        record.rawData.record.meta.changes = emptyList()
+                    if (legacyRawTablesOnly) {
+                        // this is a hack - in legacy mode, we don't do any in-connector validation
+                        // so we just need to pass through the original record's airbyte_meta.
+                        // so we completely ignore `value.abValue` here.
+                        if (record.rawData.record.meta == null) {
+                            record.rawData.record.meta = AirbyteRecordMessageMeta()
+                            record.rawData.record.meta.changes = emptyList()
+                        }
+                        record.rawData.record.meta.additionalProperties["sync_id"] =
+                            record.stream.syncId
+                        outputRecord[key] = record.rawData.record.meta.serializeToString()
+                    } else {
+                        outputRecord[key] = (value.abValue as ObjectValue).values
                     }
-                    record.rawData.record.meta.additionalProperties["sync_id"] =
-                        record.stream.syncId
-                    outputRecord[key] = record.rawData.record.meta.serializeToString()
-                    // TODO we should do this for direct-load tables
-                    // val serializedAirbyteMeta = (value.abValue as
-                    // ObjectValue).serializeToString()
-                    // outputRecord[key] = serializedAirbyteMeta
                 }
                 Meta.COLUMN_NAME_AB_RAW_ID ->
                     outputRecord[key] = (value.abValue as StringValue).value
                 Meta.COLUMN_NAME_AB_GENERATION_ID ->
                     outputRecord[key] = (value.abValue as IntegerValue).value
+                else -> {
+                    if (!legacyRawTablesOnly) {
+                        outputRecord[key] = value.abValue
+                    }
+                }
             }
         }
-
-        outputRecord[Meta.COLUMN_NAME_DATA] = record.asRawJson().serializeToString()
 
         return outputRecord.serializeToString()
     }

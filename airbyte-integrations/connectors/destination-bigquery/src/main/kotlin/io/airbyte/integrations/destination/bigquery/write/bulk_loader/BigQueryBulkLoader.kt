@@ -92,8 +92,7 @@ class BigQueryBulkLoaderFactory(
     private val storageClient: GcsClient,
     private val bigQueryClient: BigQuery,
     private val bigQueryConfiguration: BigqueryConfiguration,
-    private val typingDedupingExecutionConfigStreamStateStore:
-        StreamStateStore<TypingDedupingExecutionConfig>?,
+    private val typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
     private val directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
@@ -110,8 +109,7 @@ class BigQueryBulkLoaderFactory(
         val tableNameInfo = names[key.stream]!!
         if (bigQueryConfiguration.legacyRawTablesOnly) {
             val rawTableName = tableNameInfo.tableNames.rawTableName!!
-            val rawTableSuffix =
-                typingDedupingExecutionConfigStreamStateStore!!.get(key.stream)!!.rawTableSuffix
+            val rawTableSuffix = typingDedupingStreamStateStore!!.get(key.stream)!!.rawTableSuffix
             tableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
             schema = BigQueryRecordFormatter.CSV_SCHEMA
         } else {
