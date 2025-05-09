@@ -9,7 +9,6 @@ import mock
 import pendulum
 import pytest
 from source_hubspot.streams import (
-    Campaigns,
     Companies,
     ContactLists,
     Contacts,
@@ -17,7 +16,6 @@ from source_hubspot.streams import (
     ContactsMergedAudit,
     ContactsWebAnalytics,
     CustomObject,
-    DealPipelines,
     Deals,
     DealsArchived,
     DealSplits,
@@ -36,7 +34,6 @@ from source_hubspot.streams import (
     Products,
     RecordUnnester,
     Tickets,
-    Workflows,
 )
 
 from airbyte_cdk.models import SyncMode
@@ -89,14 +86,14 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value",
     [
-        (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
+        ("campaigns", "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
-        (DealPipelines, "deal", {"updatedAt": 1675121674226}),
+        ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
         (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -116,7 +113,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Workflows, "", {"updatedAt": 1675121674226}),
+        ("workflows", "", {"updatedAt": 1675121674226}),
     ],
 )
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
@@ -125,23 +122,22 @@ def test_streams_read(
 ):
     if isinstance(stream_class, str):
         stream = find_stream(stream_class, config)
-        data_field = stream.retriever.record_selector.extractor.field_path[0]
+        data_field = (
+            stream.retriever.record_selector.extractor.field_path[0]
+            if len(stream.retriever.record_selector.extractor.field_path) > 0
+            else None
+        )
     else:
         stream = stream_class(**common_params)
         data_field = stream.data_field
-    responses = [
+    list_entities = [
         {
-            "json": {
-                data_field: [
-                    {
-                        "id": "test_id",
-                        "created": "2022-02-25T16:43:11Z",
-                    }
-                    | cursor_value
-                ],
-            }
+            "id": "test_id",
+            "created": "2022-02-25T16:43:11Z",
         }
+        | cursor_value
     ]
+    responses = [{"json": {data_field: list_entities} if data_field else list_entities}]
 
     properties_response = [
         {
@@ -194,6 +190,7 @@ def test_streams_read(
     requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
+    requests_mock.register_uri("GET", "/email/public/v1/campaigns?count=500", [{"json": {"campaigns": list_entities}}])
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
 

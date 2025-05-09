@@ -145,7 +145,7 @@ def test_cast_datetime(common_params, caplog):
             # if you find some diff locally try using "Ex: argument of type 'DateTime' is not iterable in the message". There could be a
             # difference in local environment when pendulum.parsing.__init__.py importing parse_iso8601. Anyway below is working fine
             # in container for now and I am not sure if this diff was just a problem with my setup.
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: expected string or bytes-like object",
+            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}",
         },
     }
     assert expected_warning_message["log"]["message"] in caplog.text
