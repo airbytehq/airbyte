@@ -33,8 +33,6 @@ from source_hubspot.streams import (
     DealsArchived,
     DealSplits,
     DealsWebAnalytics,
-    EmailEvents,
-    Engagements,
     EngagementsCalls,
     EngagementsCallsWebAnalytics,
     EngagementsEmails,
@@ -56,11 +54,9 @@ from source_hubspot.streams import (
     OwnersArchived,
     Products,
     ProductsWebAnalytics,
-    SubscriptionChanges,
     Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
-    Workflows,
 )
 
 
@@ -71,6 +67,7 @@ we use start date 2006-01-01  as date of creation of Hubspot to retrieve all dat
 """
 DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
+    "campaigns": {"crm.lists.read"},
     "companies_property_history": {"crm.objects.companies.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
     "deal_pipelines": {"crm.objects.contacts.read"},
@@ -96,7 +93,10 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
-    "campaigns": {"crm.lists.read"},
+    "workflows": {"automation"},
+    "email_events": {"content"},
+    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
+    "subscription_changes": {"content"},
 }
 
 
@@ -202,8 +202,6 @@ class SourceHubspot(YamlDeclarativeSource):
             DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),
-            EmailEvents(**common_params),
-            Engagements(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),
             EngagementsMeetings(**common_params),
@@ -217,9 +215,7 @@ class SourceHubspot(YamlDeclarativeSource):
             Owners(**common_params),
             OwnersArchived(**common_params),
             Products(**common_params),
-            SubscriptionChanges(**common_params),
             Tickets(**common_params),
-            Workflows(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
