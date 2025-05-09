@@ -1,13 +1,12 @@
 name: Connector QA Checks
 
 on:
-    pull_request:
-      types: [opened, synchronize, reopened]
-      paths:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
       - "airbyte-integrations/connectors/**/*"
 
 jobs:
-
   generate-matrix:
     name: Generate Connectors Matrix
     if: github.event.pull_request.draft == false
@@ -43,13 +42,13 @@ jobs:
       - name: Install QA Checks
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pipx
-          pipx install airbyte-ci/connectors/connectors_qa
+          python -m pip install uv
+          uv tool install airbyte-ci/connectors/connectors_qa
       - name: Run QA Checks
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
         run: |
           connector_name=${{ matrix.connector }}
-          connectors-qa run --name ${connector_name%-strict-encrypt} 
+          connectors-qa run --name ${connector_name%-strict-encrypt}
 
   qa-checks-summary:
     name: QA Checks Summary
