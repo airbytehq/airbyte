@@ -14,14 +14,6 @@ jobs:
           echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
           echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
-          # Check for debug flag
-          if [[ "${{ github.event.comment.body }}" == *"--enable-debug"* ]]; then
-            echo "enable_debug=true" >> $GITHUB_OUTPUT
-            echo "🔍 Debug mode detected in command!"
-          else
-            echo "enable_debug=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Slash Command Dispatch (Workflow)
         id: scd
         uses: peter-evans/slash-command-dispatch@v3
@@ -53,15 +45,6 @@ jobs:
             comment-id=${{ github.event.comment.id }}
             pr=${{ github.event.issue.pull_request != null && github.event.issue.number || '' }}
             enable-debug=${{ steps.getref.outputs.enable_debug }}
-
-      - name: Add reaction if debug enabled
-        if: steps.getref.outputs.enable_debug == 'true'
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.comment.id }}
-          reactions: eyes
-          body: |
-            > 🔍 Debug mode enabled! You will get SSH access when the connector tests run.
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
