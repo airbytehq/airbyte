@@ -9,9 +9,9 @@ products: embedded
 
 # Airbyte Embedded
 
-![Airbyte Embedded](./assets/embedded-overview.png)
-
 [Airbyte Embedded](https://airbyte.com/ai) enables you to add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining ELT pipelines.
+
+![Airbyte Embedded](./assets/embedded-overview.png)
 
 # Setup
 
@@ -116,33 +116,36 @@ Create an `index.html` file and paste in the following contents. This short webp
 <details>
 <summary>index.html</summary>
 
+
 ```html
-<!doctype html>
-<html lang="en">
-  <body>
-    <button id="open-widget">Open Airbyte Embedded</button>
+  <!doctype html>
+  <html lang="en">
+    <body>
+      <button id="open-widget">Open Airbyte Embedded</button>
 
-    <script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget"></script>
-    
-    <script>
-      document.getElementById('open-widget').addEventListener('click', async () => {
-        try {
-          const response = await fetch("http://localhost:3001/api/widget_token");
-          const data = await response.json();
+      <script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget"></script>
+      
+      <script>
+        document.getElementById('open-widget').addEventListener('click', async () => {
+          try {
+            const response = await fetch("http://localhost:3001/api/widget_token");
+            const data = await response.json();
 
-          const widget = new AirbyteEmbeddedWidget({
-            token: data.token,
-          });
+            const widget = new AirbyteEmbeddedWidget({
+              token: data.token,
+            });
 
-          widget.open();
-        } catch (err) {
-          console.error("Failed to load widget:", err);
-        }
-      });
-    </script>
-  </body>
-</html>
+            widget.open();
+          } catch (err) {
+            console.error("Failed to load widget:", err);
+          }
+        });
+      </script>
+    </body>
+  </html>
 ```
+
+</details>
 
 ### Backend Server
 
@@ -200,8 +203,6 @@ const ORGANIZATION_ID = process.env.AIRBYTE_ORGANIZATION_ID;
 const EXTERNAL_USER_ID = process.env.EXTERNAL_USER_ID;
 ```
 
-</details>
-
 4. Define an endpoint listening at `/api/widget_token`:
 
 ```js
@@ -218,14 +219,14 @@ const access_token_body = JSON.stringify({
       client_secret: AIRBYTE_CLIENT_SECRET,
       "grant-type": "client_credentials",
     });
-    const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: access_token_body,
-    });
+const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
+  method: "POST",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
+  body: access_token_body,
+});
 ```
 
 Still in the callback, use the API access token in the response to request an Embedded token encoding your API access key and metadata.
@@ -254,7 +255,6 @@ const access_token = access_token_response.access_token;
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
-
 ```
 
 Here is the full `server.js` file for reference:
@@ -357,7 +357,7 @@ app.listen(PORT, () => {
 
 1. Run `npm install`
 2. Start your backend server with `env $(cat .env | xargs) node server.js`
-3. Sever your frontend with `npx serve .`
+3. Serve your frontend with `npx serve .`
 
 ## Using Airbyte Embedded
 
