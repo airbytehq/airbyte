@@ -87,11 +87,11 @@ generate_dev_tag() {
 
 # ---------- main loop ----------
 while read -r connector; do
-    # only publish if connector is in rollout_map
-    if [[ -z ${rollout_map[$connector]:-} ]]; then
-      echo "ℹ️  Skipping '$connector'; not in rollout whitelist"
-      continue
-    fi
+  # only publish if connector is in rollout_map
+  if [[ -z ${rollout_map[$connector]:-} ]]; then
+    echo "ℹ️  Skipping '$connector'; not in rollout whitelist"
+    continue
+  fi
 
   meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
   if [[ ! -f "$meta" ]]; then
