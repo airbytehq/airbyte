@@ -220,11 +220,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @AfterEach
     protected open fun tearDown() {
-        // try {
-        testdb.close()
-        // } catch (e: Throwable) {
-        //    LOGGER.error("exception during teardown", e)
-        // }
+        try {
+            testdb.close()
+        } catch (e: Throwable) {
+            LOGGER.error("exception during teardown", e)
+        }
     }
 
     protected open fun columnClause(
