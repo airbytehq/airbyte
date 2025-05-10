@@ -12,16 +12,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
           check-latest: true
           update-environment: true
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          # Todo: Update to latest (2.x) Poetry version
+          version: ${{ steps.tool-versions.outputs.poetry-1 }}
       - name: Run auto merge
         shell: bash
         working-directory: airbyte-ci/connectors/auto_merge

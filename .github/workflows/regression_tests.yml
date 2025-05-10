@@ -51,11 +51,14 @@ jobs:
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: Install Python
         id: install_python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
           check-latest: true
           update-environment: true
 
@@ -76,7 +79,8 @@ jobs:
         id: install_poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          # Todo: Update to latest (2.x) Poetry version
+          version: ${{ steps.tool-versions.outputs.poetry-1 }}
 
       - name: Make poetry venv in project
         id: poetry_venv

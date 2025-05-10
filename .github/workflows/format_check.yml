@@ -14,15 +14,18 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "21"
+          java-version: ${{ steps.tool-versions.outputs.java }}
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ steps.tool-versions.outputs.python }}
           cache: "pip"
           check-latest: true
           update-environment: true

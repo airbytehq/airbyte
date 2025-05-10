@@ -55,10 +55,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
+      - name: Get tool versions
+        uses: marocchino/tool-versions-action@v1
+        id: tool-versions
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "21"
+          java-version: ${{ steps.tool-versions.outputs.java }}
       - name: Docker login
         # We login to benefit from increased rate limits for docker pulls
         # We can't do it on forks as pull_requests events on forks do not have access to GH secrets

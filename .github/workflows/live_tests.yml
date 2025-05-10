@@ -68,7 +68,8 @@ jobs:
         id: install_poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          # Todo: Update to latest (2.x) Poetry version
+          version: ${{ steps.tool-versions.outputs.poetry-1 }}
 
       - name: Make poetry venv in project
         id: poetry_venv
