@@ -45,7 +45,6 @@ from source_hubspot.streams import (
     EngagementsTasksWebAnalytics,
     Forms,
     FormSubmissions,
-    Goals,
     GoalsWebAnalytics,
     Leads,
     LineItems,
@@ -97,6 +96,7 @@ scopes = {
     "email_events": {"content"},
     "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "subscription_changes": {"content"},
+    "goals": {"crm.objects.goals.read"},
 }
 
 
@@ -209,7 +209,6 @@ class SourceHubspot(YamlDeclarativeSource):
             EngagementsTasks(**common_params),
             Forms(**common_params),
             FormSubmissions(**common_params),
-            Goals(**common_params),
             Leads(**common_params),
             LineItems(**common_params),
             Owners(**common_params),

@@ -19,7 +19,8 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_now, ab_datetime_parse
 
 
 class NewtoLegacyFieldTransformation(RecordTransformation):
@@ -262,3 +263,94 @@ class EngagementsHttpRequester(HttpRequester):
         if self.should_use_recent_api(stream_slice):
             request_params.update({"since": stream_slice["start_time"]})
         return request_params
+
+
+@dataclass
+class HubspotSchemaExtractor(RecordExtractor):
+    """
+    Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
+    accepts the set of dynamic schema fields as a single record.
+    This might be doable with the existing DpathExtractor configuration.
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        yield {"properties": list(self.decoder.decode(response))}
+
+
+@dataclass
+class HubspotRenamePropertiesTransformation(RecordTransformation):
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        transformed_record = {}
+        for key, value in record.items():
+            if key == "properties":
+                # Transforms properties object so that it adheres to JSON schema format
+                # This could also be replaced with this in the manifest:
+                #   type: AddFields
+                #   fields:
+                #     - path: [ "properties", "properties" ]
+                #       value: "{{ record }}"
+                #     - path: [ "properties" ]
+                #       value: "{{ {'type': 'object'} }}"
+                transformed_record[key] = {
+                    "type": "object",
+                    "properties": value,
+                }
+            else:
+                # We need to rename all the properties at the top level to include the properties_
+                # prefix and I didn't think of a way to do that w/o a custom transformation
+                updated_key = f"properties_{key}"
+                transformed_record[updated_key] = value
+
+        record.clear()
+        record.update(transformed_record)
+
+
+class EntitySchemaNormalization(TypeTransformer):
+    def __init__(self, *args, **kwargs):
+        config = TransformConfig.CustomSchemaNormalization
+        super().__init__(config)
+        self.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
+            target_type = field_schema.get("type")
+            target_format = field_schema.get("format")
+            if isinstance(original_value, str):
+                if original_value == "":
+                    # do not cast empty strings, return None instead to be properly cast.
+                    transformed_value = None
+                    return transformed_value
+                if "number" in target_type:
+                    # do not cast numeric IDs into float, use integer instead
+                    target_type = int if original_value.isnumeric() else float
+                    transformed_value = target_type(original_value.replace(",", ""))
+                    return transformed_value
+                if "boolean" in target_type and original_value.lower() in ["true", "false"]:
+                    transformed_value = str(original_value).lower() == "true"
+                    return transformed_value
+                if target_format:
+                    if field_schema.get("__ab_apply_cast_datetime") is False:
+                        return original_value
+                    if "date" == target_format:
+                        dt = ab_datetime_parse(original_value)
+                        transformed_value = DatetimeParser().format(dt, "%Y-%m-%d")
+                        return transformed_value
+                    if "date-time" == target_format:
+                        dt = ab_datetime_parse(original_value)
+                        transformed_value = ab_datetime_format(dt)
+                        return transformed_value
+
+            return original_value
+
+        return transform_function

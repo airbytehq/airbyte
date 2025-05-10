@@ -145,6 +145,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
@@ -164,6 +165,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
@@ -188,6 +190,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker,
             [self.OBJECT_ID],
@@ -228,6 +231,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         date_ranges = self.extended_dt_ranges()
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         start_to_end = (date_ranges[0][0], date_ranges[-1][-1])
         self.mock_parent_object(
             http_mocker,
@@ -281,6 +285,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
@@ -335,6 +340,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
@@ -358,6 +364,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         # validate that no filter is applied on the record set received from the API response
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
@@ -377,6 +384,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
@@ -401,6 +409,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
@@ -434,6 +443,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
