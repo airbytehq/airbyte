@@ -85,6 +85,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 1.0.33 | 2025-05-10 | [59851](https://github.com/airbytehq/airbyte/pull/59851) | Update dependencies |
 | 1.0.32 | 2025-05-03 | [59280](https://github.com/airbytehq/airbyte/pull/59280) | Update dependencies |
 | 1.0.31 | 2025-04-26 | [58807](https://github.com/airbytehq/airbyte/pull/58807) | Update dependencies |
 | 1.0.30 | 2025-04-12 | [57745](https://github.com/airbytehq/airbyte/pull/57745) | Update dependencies |
