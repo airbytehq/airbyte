@@ -53,6 +53,7 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 | Version | Date       | Pull Request                                                   | Subject                              |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------- |
+| 0.3.9 | 2025-05-10 | [60123](https://github.com/airbytehq/airbyte/pull/60123) | Update dependencies |
 | 0.3.8 | 2025-05-03 | [59469](https://github.com/airbytehq/airbyte/pull/59469) | Update dependencies |
 | 0.3.7 | 2025-04-27 | [59103](https://github.com/airbytehq/airbyte/pull/59103) | Update dependencies |
 | 0.3.6 | 2025-04-19 | [58486](https://github.com/airbytehq/airbyte/pull/58486) | Update dependencies |
