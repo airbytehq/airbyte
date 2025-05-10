@@ -22,11 +22,7 @@ from source_hubspot.streams import (
     BaseStream,
     Companies,
     CompaniesWebAnalytics,
-    ContactLists,
     Contacts,
-    ContactsFormSubmissions,
-    ContactsListMemberships,
-    ContactsMergedAudit,
     ContactsWebAnalytics,
     CustomObject,
     Deals,
@@ -69,6 +65,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "campaigns": {"crm.lists.read"},
     "companies_property_history": {"crm.objects.companies.read"},
+    "contact_lists": {"crm.lists.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
     "deal_pipelines": {"crm.objects.contacts.read"},
     "deals_property_history": {"crm.objects.deals.read"},
@@ -194,11 +191,7 @@ class SourceHubspot(YamlDeclarativeSource):
         streams = super().streams(config=config)
         streams += [
             Companies(**common_params),
-            ContactLists(**common_params),
             Contacts(**common_params),
-            ContactsFormSubmissions(**common_params),
-            ContactsListMemberships(**common_params),
-            ContactsMergedAudit(**common_params),
             DealSplits(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),
