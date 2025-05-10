@@ -70,6 +70,7 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.43 | 2025-05-10 | [59799](https://github.com/airbytehq/airbyte/pull/59799) | Update dependencies |
 | 0.2.42 | 2025-05-03 | [59264](https://github.com/airbytehq/airbyte/pull/59264) | Update dependencies |
 | 0.2.41 | 2025-04-26 | [58792](https://github.com/airbytehq/airbyte/pull/58792) | Update dependencies |
 | 0.2.40 | 2025-04-19 | [58186](https://github.com/airbytehq/airbyte/pull/58186) | Update dependencies |
