@@ -62,6 +62,7 @@ Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting y
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.16 | 2025-05-10 | [59920](https://github.com/airbytehq/airbyte/pull/59920) | Update dependencies |
 | 0.0.15 | 2025-05-03 | [59422](https://github.com/airbytehq/airbyte/pull/59422) | Update dependencies |
 | 0.0.14 | 2025-04-26 | [58309](https://github.com/airbytehq/airbyte/pull/58309) | Update dependencies |
 | 0.0.13 | 2025-04-12 | [57819](https://github.com/airbytehq/airbyte/pull/57819) | Update dependencies |
