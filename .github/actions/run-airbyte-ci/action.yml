@@ -158,6 +158,7 @@ runs:
         PRODUCTION: ${{ inputs.production }}
         PYTHON_REGISTRY_TOKEN: ${{ inputs.python_registry_token }}
         PYTHON_REGISTRY_URL: ${{ inputs.python_registry_url }}
+        RUN_IN_AIRBYTE_CI: "True"
         S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ inputs.s3_build_cache_access_key_id }}
         S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
         SENTRY_DSN: ${{ inputs.sentry_dsn }}
