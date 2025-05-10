@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ccd3901d-edf3-4e58-900c-942d6990aa59
-  dockerImageTag: 0.3.21
+  dockerImageTag: 0.3.22
   dockerRepository: airbyte/source-qonto
   githubIssueLabel: source-qonto
   icon: qonto.svg
@@ -27,7 +27,7 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
   remoteRegistries:
     pypi:
       enabled: false
