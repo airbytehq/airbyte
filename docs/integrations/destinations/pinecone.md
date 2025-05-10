@@ -72,6 +72,14 @@ To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/q
 
 OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
 
+## Troubleshooting
+
+### Error: `Namespace not found` when using Pinecone "starter" environments
+
+Starter accounts do not support namespaces, which is required by the Pinecone connector. To resolve this issue, you can create a new environment in Pinecone and use it instead of the "starter" environment. Since free tier accounts are limited to one environment, you may need to delete the "starter" environment before you are able to create a new one.
+
+For more information, please see this related [StackOverflow topic](https://stackoverflow.com/a/77217675).
+
 ## Changelog
 
 <details>
