@@ -675,6 +675,7 @@ definitions:
       - type: CustomStateMigration
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
+        cursor_format: "%ms"
 
   email_events_stream:
     $ref: "#/definitions/stream_base"
