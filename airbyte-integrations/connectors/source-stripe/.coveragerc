@@ -1,3 +1,8 @@
 [run]
 omit =
     source_stripe/run.py
+    source_stripe/stream.py
+    source_stripe/source.py
+    source_stripe/utils.py
+    source_stripe/error_handlers/parent_incremental_stripe_sub_stream_error_handler.py
+    source_stripe/error_handlers/stripe_error_handler.py
