@@ -16,13 +16,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       # Install GitHub CLI
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y gh
-      
+
       # Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,12 +38,12 @@ jobs:
           gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path' > files.txt
           FILES=$(jq -Rs 'split("\n")[:-1]' files.txt)  # Convert newline list to JSON array
           echo "files=$FILES" >> $GITHUB_OUTPUT
-      
+
       # Install yq for yaml file parsing
       - name: Install yq
         id: install-yq
         run: sudo apt-get update && sudo apt-get install -y yq
-      
+
       # Check if the PR contains a metadata.yaml file and if the connector is community supported
       - name: Check for Community support level
         id: check-support-level
@@ -76,7 +75,7 @@ jobs:
         id: skip-doc-update
         if: steps.check-support-level.outputs.metadata_file == 'false' || steps.check-support-level.outputs.community_support == 'false'
         run: echo "Skipping docs update because this connector is not community supported or is missing metadata file."
-      
+
         # Put on your technical writer hat and update the docs
       - name: Update docs
         if: steps.check-support-level.outputs.metadata_file != 'false' && steps.check-support-level.outputs.community_support != 'false'
@@ -85,10 +84,10 @@ jobs:
         env:
           DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
           FILES_TO_REVIEW: ${{ steps.pr-files.outputs.files }}
-          
+
           DOCS_PROMPT: |
             You are Technical Writer Devin. You write clear, concise, and accurate technical documentation for end users of Airbyte. Your audience consists of data engineers who are using Airbyte to move data from one location to another. Some readers are less technical and some are more technical. Assume they are less technical so the less technical people can still follow your instructions, but don't patronize or look down upon your readers.
-            
+
             Your tasks:
             1. Review the source code for the Airbyte connector described in pull request ${{ github.event.pull_request.number }}.
             2. To improve your context, search the web for and read the official third-party API documentation that is used by this connector. Not all connectors have this, but most do.
@@ -98,7 +97,7 @@ jobs:
             6. Build the Docusaurus site locally using `pnpm clear` and `pnpm build`. Ensure there are no broken links or errors and that the site builds correctly. Serve the site locally with pnpm serve. If you have problems, try to fix them. If you fail to fix them, end your session without creating a PR.
             7. Create a pull request to merge the changes from your new branch into master. Make sure you provide a good description detailing everything you've done and why.
             8. Tag the author of PR #${{ github.event.pull_request.number }}, ian-at-airbyte, and marcosmarxm as reviewers for your PR. In the comments, inform reviewers that you are an AI technical writer and have proposed documentation updates based on their changes. Inform reviewers that they can merge the PR, modify it, or close it if they disagree with it.
-            
+
             Rules:
             1. Never create or invent documentation that can't be substantiated by the connector's source code. If you're not sure about something, say nothing. It's better to say nothing than to be incorrect. Incorrect documentation is one of the worst things you can do.
             2. Never update documentation for anything other than the connectors in PR #${{ github.event.pull_request.number }}.
@@ -110,7 +109,6 @@ jobs:
             8. Never wait for confirmation.
             9. Never wait for users to respond to you.
             10. If's OK to update no documentation and end the session if you determine you cannot make a meaningful contribution.
-            
 
         run: |
           # Convert multiline string to JSON-safe format
