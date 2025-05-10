@@ -38,6 +38,7 @@ Visit `https://buildkite.com/user/api-access-tokens` for getting your bearer tok
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.21 | 2025-05-10 | [59807](https://github.com/airbytehq/airbyte/pull/59807) | Update dependencies |
 | 0.0.20 | 2025-05-03 | [59307](https://github.com/airbytehq/airbyte/pull/59307) | Update dependencies |
 | 0.0.19 | 2025-04-26 | [57642](https://github.com/airbytehq/airbyte/pull/57642) | Update dependencies |
 | 0.0.18 | 2025-04-05 | [57139](https://github.com/airbytehq/airbyte/pull/57139) | Update dependencies |
