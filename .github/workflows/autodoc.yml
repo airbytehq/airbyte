@@ -16,56 +16,78 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # Install GitHub CLI
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+      
+      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # Get the list of files changed in the PR
       - name: Get files in this PR
         id: pr-files
+        continue-on-error: false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FILES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
-            jq -r '[.[].filename] | @json')
-          if [ -z "$FILES" ]; then
-            echo "Error: Failed to fetch or parse PR files."
-            exit 1
-          fi
+          gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path' > files.txt
+          FILES=$(jq -Rs 'split("\n")[:-1]' files.txt)  # Convert newline list to JSON array
           echo "files=$FILES" >> $GITHUB_OUTPUT
       
-      # Install yq for YAML parsing
+      # Install yq for yaml file parsing
       - name: Install yq
+        id: install-yq
         run: sudo apt-get update && sudo apt-get install -y yq
-
+      
+      # Check if the PR contains a metadata.yaml file and if the connector is community supported
       - name: Check for Community support level
         id: check-support-level
+        continue-on-error: false
         run: |
           # Find metadata.yaml in any folder
           METADATA_FILE=$(find . -path "airbyte-integrations/connectors/*/metadata.yaml" | head -n 1)
           if [ -z "$METADATA_FILE" ]; then
-            echo "No metadata.yaml file found in this PR."
+          echo "No metadata.yaml file found in the connector directories."  
+          echo "metadata_file=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           # Check the supportLevel in metadata.yaml
           SUPPORT_LEVEL=$(yq '.supportLevel' "$METADATA_FILE")
           if [ "$SUPPORT_LEVEL" != "community" ]; then
-            echo "This PR does not contain a connector with supportLevel: community."
+            echo "This PR does not contain a Community/Marketplace connector."
+            echo "community_support=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
+          echo "metadata_file=true" >> $GITHUB_OUTPUT
+          echo "community_support=true" >> $GITHUB_OUTPUT
           echo "Metadata file found: $METADATA_FILE"
           echo "Support level: $SUPPORT_LEVEL"
 
+      # If this isn't a community connector, skip the doc update
+      - name: Skip doc update
+        id: skip-doc-update
+        if: steps.check-support-level.outputs.metadata_file == 'false' || steps.check-support-level.outputs.community_support == 'false'
+        run: echo "Skipping docs update because this connector is not community supported or is missing metadata file."
+      
+        # Put on your technical writer hat and update the docs
       - name: Update docs
-        if: steps.check-support-level.outcome == 'success'
+        if: steps.check-support-level.outputs.metadata_file != 'false' && steps.check-support-level.outputs.community_support != 'false'
         id: update-docs
+        continue-on-error: false
         env:
           DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
           FILES_TO_REVIEW: ${{ steps.pr-files.outputs.files }}
           
           DOCS_PROMPT: |
-            You are Technical Writer Devin. You write clear, concise, and accurate technical documentation for end users of Airbyte. Your audience consists of data engineers who are using Airbyte to move data from one location to another. Some readers are less technicla and some are more technical. Assume they are less technical so the less technical people can still follow your instructions, but don't patronize or look down upon your readers.
+            You are Technical Writer Devin. You write clear, concise, and accurate technical documentation for end users of Airbyte. Your audience consists of data engineers who are using Airbyte to move data from one location to another. Some readers are less technical and some are more technical. Assume they are less technical so the less technical people can still follow your instructions, but don't patronize or look down upon your readers.
             
             Your tasks:
             1. Review the source code for the Airbyte connector described in pull request ${{ github.event.pull_request.number }}.
