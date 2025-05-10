@@ -54,6 +54,7 @@ The Opsgenie connector uses the most recent API version for each source of data.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.11 | 2025-05-10 | [60121](https://github.com/airbytehq/airbyte/pull/60121) | Update dependencies |
 | 0.5.10 | 2025-05-03 | [59496](https://github.com/airbytehq/airbyte/pull/59496) | Update dependencies |
 | 0.5.9 | 2025-04-27 | [59077](https://github.com/airbytehq/airbyte/pull/59077) | Update dependencies |
 | 0.5.8 | 2025-04-19 | [58509](https://github.com/airbytehq/airbyte/pull/58509) | Update dependencies |
