@@ -20,6 +20,7 @@ Connector for customerly.io
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-05-10 | [59995](https://github.com/airbytehq/airbyte/pull/59995) | Update dependencies |
 | 0.0.8 | 2025-05-03 | [59409](https://github.com/airbytehq/airbyte/pull/59409) | Update dependencies |
 | 0.0.7 | 2025-04-26 | [58839](https://github.com/airbytehq/airbyte/pull/58839) | Update dependencies |
 | 0.0.6 | 2025-04-19 | [58358](https://github.com/airbytehq/airbyte/pull/58358) | Update dependencies |
