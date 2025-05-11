@@ -587,7 +587,7 @@ definitions:
         CustomerId: "'{{ stream_partition['customer_id'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       request_body_json:
-        ReportRequestId: "'{{ stream_slice.extra_fields['creation_response']['ReportRequestId'] }}'" # FIXME this is odd, I don't know why I can't just reference creation_response
+        ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
     download_requester:
       type: HttpRequester
       url_base: "{{download_target}}"
