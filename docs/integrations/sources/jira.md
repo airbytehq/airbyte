@@ -169,6 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.1 | 2025-05-10 | [52790](https://github.com/airbytehq/airbyte/pull/52790) | Update dependencies |
 | 4.0.0 | 2025-05-05 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
 | 3.5.4 | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
 | 3.5.3 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
