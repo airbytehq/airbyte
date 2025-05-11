@@ -24,6 +24,8 @@ declare -A rollout_map=(
   [destination-dev-null]=1
   [destination-bigquery]=1
   [source-e2e-test]=1
+  [source-postgres]=1
+  [source-mysql]=1
 )
 
 # ------ Defaults & arg parsing -------
