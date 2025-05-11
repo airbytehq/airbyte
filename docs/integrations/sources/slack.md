@@ -164,6 +164,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------|
+| 1.3.3 | 2025-05-10 | [51965](https://github.com/airbytehq/airbyte/pull/51965) | Update dependencies |
 | 1.3.2 | 2025-01-11 | [43812](https://github.com/airbytehq/airbyte/pull/43812) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.3.1 | 2024-07-24 | [42485](https://github.com/airbytehq/airbyte/pull/42485) | Fix MRO error for `IncrementalMessageStream` |
 | 1.3.0 | 2024-07-17 | [41994](https://github.com/airbytehq/airbyte/pull/41994) | Migrate to CDK v3.5.1 |
