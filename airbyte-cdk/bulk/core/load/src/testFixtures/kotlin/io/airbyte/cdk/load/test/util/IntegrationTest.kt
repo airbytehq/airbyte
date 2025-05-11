@@ -177,13 +177,15 @@ abstract class IntegrationTest(
         messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
     ): List<AirbyteMessage> =
         runSync(
             configContents,
             DestinationCatalog(listOf(stream)),
             messages,
             streamStatus,
-            useFileTransfer,
+            useFileTransfer = useFileTransfer,
+            destinationProcessFactory,
         )
 
     /**
@@ -218,7 +220,9 @@ abstract class IntegrationTest(
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
     ): List<AirbyteMessage> {
+        destinationProcessFactory.testName = testPrettyName
         val fileTransferProperty =
             if (useFileTransfer) {
                 mapOf(EnvVarConstants.FILE_TRANSFER_ENABLED to "true")

@@ -1801,6 +1801,58 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testDedupNoCursor() {
+        assumeTrue(verifyDataWriting && supportsDedup)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    namespace = randomizedNamespace,
+                    name = "test_stream",
+                    data = """{"id": 1234, "name": "a"}""",
+                    emittedAtMs = 1234,
+                ),
+            ),
+        )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    namespace = randomizedNamespace,
+                    name = "test_stream",
+                    data = """{"id": 1234, "name": "b"}""",
+                    emittedAtMs = 5678,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 0,
+                    data = mapOf("id" to 1234, "name" to "b"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
+                ),
+            ),
+            stream,
+            listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
     /**
      * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
      * Verify that we overwrite everything correctly.

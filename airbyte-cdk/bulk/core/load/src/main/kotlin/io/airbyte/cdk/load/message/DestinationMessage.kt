@@ -128,6 +128,12 @@ data class Meta(
                 COLUMN_NAME_AB_GENERATION_ID,
             )
 
+        /**
+         * A legacy column name. Destinations with "typing and deduping" used this in the raw tables
+         * to indicate when a record went through T+D.
+         */
+        const val COLUMN_NAME_AB_LOADED_AT: String = "_airbyte_loaded_at"
+
         fun getMetaValue(metaColumnName: String, value: String): AirbyteValue {
             if (!COLUMN_NAMES.contains(metaColumnName)) {
                 throw IllegalArgumentException("Invalid meta column name: $metaColumnName")
@@ -307,9 +313,9 @@ data class FileReference(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream,
-    private val rawData: AirbyteMessage,
-    private val serialized: String,
-    private val schema: AirbyteType,
+    val rawData: AirbyteMessage,
+    val serialized: String,
+    val schema: AirbyteType,
 ) {
     val fileReference: FileReference? =
         rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }

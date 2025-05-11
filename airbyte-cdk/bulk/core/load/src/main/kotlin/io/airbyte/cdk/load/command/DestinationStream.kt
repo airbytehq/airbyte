@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.command
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -136,6 +137,9 @@ data class Dedupe(
     /**
      * theoretically, the path to the cursor. In practice, most destinations only support cursors at
      * the root level, i.e. `listOf(cursorField)`.
+     *
+     * If this is set to an empty list, then the destination should use
+     * [DestinationRecord.message.record.emittedAt] as the cursor.
      */
     val cursor: List<String>,
 ) : ImportType

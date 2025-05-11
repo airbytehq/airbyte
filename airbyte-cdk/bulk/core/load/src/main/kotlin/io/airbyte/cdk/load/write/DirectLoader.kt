@@ -32,6 +32,9 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
  * always forward whatever work is in progress in [finish], as [accept] will not be called again for
  * the same batch.
  *
+ * After [accept] returns a [DirectLoader.Complete] status, or after [finish] returns, the
+ * DirectLoader MUST have committed all data durably to the destination.
+ *
  * [close] will be called once at the end of the batch, after the last call to [accept] or [finish],
  * or if the sync fails. Afterward the loader will be discarded and a new one will be created for
  * the next batch if more data arrives. (Note: close should only be used to do cleanup that must
