@@ -153,6 +153,7 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
 - [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
+- [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 <!-- env:oss -->
 - [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
@@ -248,7 +249,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
+| 4.7.0 | 2025-04-08 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
 | 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537)     |Fix Extend Minimum Date Range|
 | 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
 | 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
