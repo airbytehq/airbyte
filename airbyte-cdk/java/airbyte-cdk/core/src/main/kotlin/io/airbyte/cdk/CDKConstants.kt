@@ -8,6 +8,7 @@ import java.util.*
 
 object CDKConstants {
     val VERSION: String = version
+    // Revert me.
 
     private val version: String
         get() {
