@@ -232,10 +232,19 @@ definitions:
         replace_record: true
 
   events_objects_retriever:
-    $ref: "#/definitions/base_retriever"
+    type: SimpleRetriever
     requester:
       $ref: "#/definitions/base_requester"
       path: events
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+      transform_before_filtering: true
+    paginator:
+      $ref: "#/definitions/base_paginator"
 
   events_read_slice_cursor:
     type: DatetimeBasedCursor
@@ -1129,7 +1138,7 @@ definitions:
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         incremental_sync:
-          $ref: "#/definitions/entity_single_slice_cursor"
+          $ref: "#/definitions/events_read_slice_cursor"
           cursor_field: invoice_updated
         retriever:
           $ref: "#/definitions/events_objects_retriever"
