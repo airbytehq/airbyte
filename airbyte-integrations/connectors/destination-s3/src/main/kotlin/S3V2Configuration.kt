@@ -37,7 +37,6 @@ data class S3V2Configuration<T : OutputStream>(
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration(),
     override val numProcessRecordsWorkers: Int = 1,
-    override val estimatedRecordMemoryOverheadRatio: Double = 5.0,
     override val processEmptyFiles: Boolean = true,
 
     // ObjectLoader-specific configuration

@@ -57,15 +57,19 @@ data object CliRunner {
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
-        inputStream: InputStream,
+        inputStream: InputStream?,
         additionalMicronautEnvs: List<String> = emptyList(),
         micronautProperties: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): CliRunnable {
-        val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
-            RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
-                .singleton(true)
-                .build()
+        val inputBeanDefinition: RuntimeBeanDefinition<InputStream>? =
+            inputStream?.let {
+                RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
+                    .singleton(true)
+                    .named("inputStream")
+                    .replaces(InputStream::class.java)
+                    .build()
+            }
         val out = CliRunnerOutputStream()
         val configPath: Path? = inputFileFromString(configContents)
         val runnable: Runnable =
@@ -75,8 +79,12 @@ data object CliRunner {
                     additionalMicronautEnvs = additionalMicronautEnvs,
                     featureFlags.systemEnv,
                     micronautProperties,
-                    inputBeanDefinition,
-                    out.beanDefinition,
+                    *arrayOf(
+                            inputBeanDefinition,
+                            out.beanDefinition,
+                        )
+                        .filterNotNull()
+                        .toTypedArray()
                 )
             }
         return CliRunnable(runnable, out.results)

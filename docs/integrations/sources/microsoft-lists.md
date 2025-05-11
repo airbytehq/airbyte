@@ -61,6 +61,7 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.27 | 2025-05-10 | [60125](https://github.com/airbytehq/airbyte/pull/60125) | Update dependencies |
 | 0.0.26 | 2025-05-04 | [59520](https://github.com/airbytehq/airbyte/pull/59520) | Update dependencies |
 | 0.0.25 | 2025-04-26 | [58756](https://github.com/airbytehq/airbyte/pull/58756) | Update dependencies |
 | 0.0.24 | 2025-04-30 | [58575](https://github.com/airbytehq/airbyte/pull/58575) | Fix ListItems and ColumnValues streams |
