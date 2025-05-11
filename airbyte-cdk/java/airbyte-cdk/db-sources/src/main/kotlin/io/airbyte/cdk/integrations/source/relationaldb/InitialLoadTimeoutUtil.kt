@@ -13,7 +13,7 @@ private val LOGGER = KotlinLogging.logger {}
 
 object InitialLoadTimeoutUtil {
 
-    val MIN_INITIAL_LOAD_TIMEOUT: Duration = Duration.ofHours(4)
+    val MIN_INITIAL_LOAD_TIMEOUT: Duration = Duration.ofHours(1)
     val MAX_INITIAL_LOAD_TIMEOUT: Duration = Duration.ofHours(24)
     val DEFAULT_INITIAL_LOAD_TIMEOUT: Duration = Duration.ofHours(8)
 
