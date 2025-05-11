@@ -269,6 +269,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.9 | 2025-05-10 | [60025](https://github.com/airbytehq/airbyte/pull/60025) | Update dependencies |
 | 3.4.8 | 2025-05-03 | [58889](https://github.com/airbytehq/airbyte/pull/58889) | Update dependencies |
 | 3.4.7 | 2025-04-19 | [58296](https://github.com/airbytehq/airbyte/pull/58296) | Update dependencies |
 | 3.4.6 | 2025-04-12 | [57827](https://github.com/airbytehq/airbyte/pull/57827) | Update dependencies |
