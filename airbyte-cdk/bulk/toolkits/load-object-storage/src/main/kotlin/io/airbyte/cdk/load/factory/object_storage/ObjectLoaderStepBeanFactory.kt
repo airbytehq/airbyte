@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.factory.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoaderStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleterStep
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
+import io.airbyte.cdk.load.write.object_storage.FilePartAccumulatorFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
@@ -163,4 +165,15 @@ class ObjectLoaderStepBeanFactory {
             taskFactory,
             "file-record-part-formatter-step",
         )
+
+    @Singleton
+    fun legacyFilePartAccumulatorFactory(
+        pathFactory: ObjectStoragePathFactory,
+        @Named("objectLoaderPartQueue")
+        outputQueue:
+            PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+        loadStrategy: ObjectLoader
+    ): FilePartAccumulatorFactory {
+        return FilePartAccumulatorFactory(pathFactory, outputQueue, loadStrategy)
+    }
 }
