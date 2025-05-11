@@ -202,6 +202,7 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.5.1 | 2025-05-10 | [56025](https://github.com/airbytehq/airbyte/pull/56025) | Update dependencies |
 | 5.5.0 | 2025-04-28 | [59116](https://github.com/airbytehq/airbyte/pull/59116) | Promoting release candidate 5.5.0-rc.1 to a main version. |
 | 5.5.0-rc.1 | 2025-04-25 | [58628](https://github.com/airbytehq/airbyte/pull/58628)     | Convert to manifest-only format                                                                                                                                        |
 | 5.4.1      | 2025-04-23 | [58134](https://github.com/airbytehq/airbyte/pull/58134) | Fix to properly retrieve `approximateMemberReach` for `adAnalytics` streams following `v5.3.3`.                                                                        |
