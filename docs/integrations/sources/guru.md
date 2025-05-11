@@ -50,6 +50,7 @@ To set up the Guru source connector, you'll need the [Guru Auth keys](https://de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.25 | 2025-05-10 | [59820](https://github.com/airbytehq/airbyte/pull/59820) | Update dependencies |
 | 0.0.24 | 2025-05-03 | [59284](https://github.com/airbytehq/airbyte/pull/59284) | Update dependencies |
 | 0.0.23 | 2025-04-26 | [58828](https://github.com/airbytehq/airbyte/pull/58828) | Update dependencies |
 | 0.0.22 | 2025-04-19 | [58199](https://github.com/airbytehq/airbyte/pull/58199) | Update dependencies |
