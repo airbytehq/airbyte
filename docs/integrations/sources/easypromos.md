@@ -25,6 +25,7 @@ Airbyte connector for [Easypromos](https://www.easypromosapp.com/) enables seaml
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-05-10 | [59996](https://github.com/airbytehq/airbyte/pull/59996) | Update dependencies |
 | 0.0.22 | 2025-05-03 | [59381](https://github.com/airbytehq/airbyte/pull/59381) | Update dependencies |
 | 0.0.21 | 2025-04-26 | [58893](https://github.com/airbytehq/airbyte/pull/58893) | Update dependencies |
 | 0.0.20 | 2025-04-19 | [58364](https://github.com/airbytehq/airbyte/pull/58364) | Update dependencies |
