@@ -246,6 +246,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.6 | 2025-05-10 | [59015](https://github.com/airbytehq/airbyte/pull/59015) | Update dependencies |
 | 3.0.5 | 2025-04-23 | [58598](https://github.com/airbytehq/airbyte/pull/58598) | Fix AttributeError with Null `measurement_weight` fields for `product_variants` streams |
 | 3.0.4 | 2025-04-19 | [58431](https://github.com/airbytehq/airbyte/pull/58431) | Update dependencies |
 | 3.0.3 | 2025-04-12 | [57984](https://github.com/airbytehq/airbyte/pull/57984) | Update dependencies |
