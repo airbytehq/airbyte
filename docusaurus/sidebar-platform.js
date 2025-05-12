@@ -272,7 +272,7 @@ const understandingAirbyte = {
 const airbyteEmbedded = {
   type: "doc",
   label: "Getting Started",
-  id: "embedded-setup/README"
+  id: "embedded-setup/getting-started"
 }
 
 module.exports = {
