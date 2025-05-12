@@ -149,6 +149,7 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.40 | 2025-05-10 | [59811](https://github.com/airbytehq/airbyte/pull/59811) | Update dependencies |
 | 0.0.39 | 2025-05-03 | [58789](https://github.com/airbytehq/airbyte/pull/58789) | Update dependencies |
 | 0.0.38 | 2025-04-25 | [53640](https://github.com/airbytehq/airbyte/pull/53640) | tests(source-hardcoded-records): replace CAT with FAST Airbyte Standard Tests |
 | 0.0.37 | 2025-04-19 | [58217](https://github.com/airbytehq/airbyte/pull/58217) | Update dependencies |
