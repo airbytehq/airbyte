@@ -36,7 +36,6 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectColumnMaxValue
 import io.airbyte.cdk.read.SelectColumns
-import io.airbyte.cdk.read.SelectNode
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
@@ -414,6 +413,7 @@ class MySqlJdbcConcurrentPartitionsCreator<
       partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
+    val tableEstimateQuery = "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
 
     override suspend fun run(): List<PartitionReader> {
         // Ensure that the cursor upper bound is known, if required.
@@ -447,30 +447,34 @@ class MySqlJdbcConcurrentPartitionsCreator<
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
-//        val expectedTableByteSize: Long = rowByteSizeSample.sampledValues.sum() * sample.valueWeight
-        val expectedTableByteSize: Long = findTableSizeEstimate(stream, partitionFactory.sharedState)
-        log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
-        if (partition !is JdbcSplittablePartition<*>) {
+        if (partition !is JdbcSplittablePartition<*> ) {
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be split."
             }
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
-        // Happy path.
+        val tableByteSizeEstimate: Long = findTableSizeEstimate(stream, partitionFactory.sharedState)
+
+        if (tableByteSizeEstimate == 0L) {
+            log.info { "Unable to get table estimate size" }
+            return listOf(JdbcNonResumablePartitionReader(partition))
+        }
+
+        log.info { "Table memory size estimated at ${tableByteSizeEstimate shr 20} MiB." }
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
         val secondarySamplingRate: Double =
-            if (expectedTableByteSize <= sharedState.targetPartitionByteSize) {
+            if (tableByteSizeEstimate <= sharedState.targetPartitionByteSize) {
                 0.0
             } else {
                 val expectedPartitionByteSize: Long =
-                    expectedTableByteSize / sharedState.maxSampleSize
+                    tableByteSizeEstimate / sharedState.maxSampleSize
                 if (expectedPartitionByteSize < sharedState.targetPartitionByteSize) {
                     expectedPartitionByteSize.toDouble() / sharedState.targetPartitionByteSize
                 } else {
                     1.0
                 }
             }
-        val random = Random(expectedTableByteSize) // RNG output is repeatable.
+        val random = Random(tableByteSizeEstimate) // RNG output is repeatable.
         val splitBoundaries: List<OpaqueStateValue> =
             sample.sampledValues
                 .filter { random.nextDouble() < secondarySamplingRate }
@@ -483,18 +487,17 @@ class MySqlJdbcConcurrentPartitionsCreator<
 
     private fun findTableSizeEstimate(stream: Stream, sharedState: JdbcSharedState): Long {
         val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
-//        val from = From("TABLES", "information_schema")
         jdbcConnectionFactory.get().use { connection ->
             val stmt = connection.prepareStatement(
-                "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '${stream.namespace}' AND TABLE_NAME = '${stream.name}'"
+                tableEstimateQuery.format(stream.namespace, stream.name)
             )
             val rs = stmt.executeQuery()
             if (rs.next()) {
-                val a = rs.getLong(1)
-                return a
+                val tableSize: Long = rs.getLong(1)
+                return tableSize
             }
         }
-        return 0 //TEMP
+        return 0
     }
     override fun <T> collectSample(recordMapper: (ObjectNode) -> T): Sample<T> {
         return super.collectSample(recordMapper)
