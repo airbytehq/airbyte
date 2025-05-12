@@ -338,7 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.13.0     | 2025-05-12 | [59727](https://github.com/airbytehq/airbyte/pull/59727) | Migrate CRM object streams: goals                                                                                                                                                                                            |
+| 4.13.0-rc.1| 2025-05-12 | [59727](https://github.com/airbytehq/airbyte/pull/59727) | Migrate CRM object streams: goals, products                                                                                                                                                                                  |
 | 4.12.1 | 2025-05-10 | [59810](https://github.com/airbytehq/airbyte/pull/59810) | Update dependencies |
 | 4.12.0 | 2025-05-09 | [58592](https://github.com/airbytehq/airbyte/pull/58592) | Migrate incremental streams: email_events, engagements, subscription_changes |
 | 4.11.0 | 2025-05-07 | [59216](https://github.com/airbytehq/airbyte/pull/59216) | Migrate workflows to low code |
