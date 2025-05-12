@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
 from unittest.mock import MagicMock
 
 import pytest
@@ -17,16 +18,16 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
     ],
 )
 def test_labels_record_extractor(json_response, expected_output, components_module):
-    # Create the extractor instance directly in the test function
     extractor = components_module.LabelsRecordExtractor(["values"], {}, {})
-    # Set up the mocked response
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.json.return_value = json_response  # Parameterized JSON response
 
-    # Call the extract_records to process the mocked response
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.json.return_value = json_response
+    response_mock.content = json.dumps(json_response).encode("utf-8")
+    response_mock.text = json.dumps(json_response)
+    response_mock.status_code = 200
+
     extracted = extractor.extract_records(response_mock)
-    # Assert to check if the output matches the expected result
-    assert extracted == expected_output, "The extracted records do not match the expected output"
+    assert extracted == expected_output
 
 
 @pytest.mark.parametrize(

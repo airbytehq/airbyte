@@ -56,6 +56,8 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["board_issues"]
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - issues

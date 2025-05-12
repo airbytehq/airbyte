@@ -14458,36 +14458,8 @@ streams:
 check:
   type: CheckStream
   stream_names:
-  - application_roles
-  - boards
-  - dashboards
-  - filters
-  - groups
-  - issue_fields
-  - issue_field_configurations
-  - issue_link_types
-  - issue_navigator_settings
-  - issue_notification_schemes
-  - issue_priorities
-  - issue_resolutions
-  - issue_security_schemes
-  - issue_types
-  - issue_type_schemes
-  - issue_type_screen_schemes
-  - jira_settings
-  - labels
-  - permissions
   - projects
-  - project_categories
-  - project_types
-  - screens
-  - screen_schemes
-  - time_tracking
   - users
-  - workflows
-  - workflow_schemes
-  - workflow_statuses
-  - workflow_status_categories
   - issues
 
 # Defining a value here is difficult because the Jira API documentation mentions "REST API rate limits are not published because the computation logic is evolving continuously to maximize reliability and performance for customers" regarding the API budget. Hence, we will need to empirically validate the values that are set here.
