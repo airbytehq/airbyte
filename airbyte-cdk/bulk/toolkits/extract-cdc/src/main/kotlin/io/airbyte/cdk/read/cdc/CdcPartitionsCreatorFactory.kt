@@ -56,6 +56,6 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
 }
 
 @Singleton
-class CdcPartitionsCreatorFactorySupplier<T: PartitionsCreatorFactory, C: Comparable<C>>(val factory: CdcPartitionsCreatorFactory<C>) : PartitionCreatorFactorySupplier<T> {
-    override fun get(): T = factory as T
+class CdcPartitionsCreatorFactorySupplier<T: CdcPartitionsCreatorFactory<C>, C: Comparable<C>>(val factory: T) : PartitionCreatorFactorySupplier<T> {
+    override fun get(): T = factory
 }

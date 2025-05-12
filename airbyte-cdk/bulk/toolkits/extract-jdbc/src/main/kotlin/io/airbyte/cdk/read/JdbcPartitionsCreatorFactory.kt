@@ -60,10 +60,10 @@ class JdbcConcurrentPartitionsCreatorFactory<
 }
 
 @Singleton
-class JdbcPartitionCreatorFactorySupplier<T: PartitionsCreatorFactory, A : JdbcSharedState,
+class JdbcPartitionCreatorFactorySupplier<T: JdbcPartitionsCreatorFactory<A, S, P>, A : JdbcSharedState,
     S : JdbcStreamState<A>,
-    P : JdbcPartition<S>>(val factory: JdbcPartitionsCreatorFactory<A, S, P>) : PartitionCreatorFactorySupplier<T> {
-    override fun get(): T = factory as T
+    P : JdbcPartition<S>>(val factory: T) : PartitionCreatorFactorySupplier<T> {
+    override fun get(): T = factory
 }
 
 const val MODE_PROPERTY = "${JDBC_PROPERTY_PREFIX}.mode"
