@@ -83,14 +83,43 @@ function loadConnectorRegistry() {
 
 function addSupportLevelToConnectors(connectors, registry) {
   return connectors.map((item) => {
-    if (item.type !== "doc" || !item.id) {
+    // Get the ID from either doc-type or category-type items
+    const id = item.type === "doc" ? item.id : (item.link && item.link.id);
+    
+    if (!id) {
       return item;
     }
 
-    const idParts = item.id.split("/");
+    const idParts = id.split("/");
     const connectorName = idParts[idParts.length - 1];
-
-    const connectorInfo = registry.find((c) => c && c.id === connectorName);
+    
+    // Determine if this is a source or destination based on the ID path
+    const isSource = id.includes('sources/');
+    const expectedType = isSource ? 'source' : 'destination';
+    
+    // First try exact match
+    let connectorInfo = registry.find(
+      (c) => c && c.id === connectorName && c.type === expectedType
+    );
+    
+    // If no exact match, try partial match for special cases
+    if (!connectorInfo) {
+      // Handle known ID mismatches
+      if (connectorName === 'databricks' && expectedType === 'destination') {
+        connectorInfo = registry.find(
+          (c) => c && c.id === 'databricks-lakehouse' && c.type === expectedType
+        );
+      } else if (connectorName === 'mssql' && expectedType === 'destination') {
+        connectorInfo = registry.find(
+          (c) => c && c.id === 'ms-sql-server' && c.type === expectedType
+        );
+      } else {
+        // Try partial match for other potential mismatches
+        connectorInfo = registry.find(
+          (c) => c && c.id.includes(connectorName) && c.type === expectedType
+        );
+      }
+    }
 
     if (connectorInfo) {
       return {
