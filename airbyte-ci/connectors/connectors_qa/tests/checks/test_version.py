@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-import semver
+import semver  # type: ignore
 from connector_ops.utils import Connector
 
 from connectors_qa.checks.version import VersionIncrementCheck
