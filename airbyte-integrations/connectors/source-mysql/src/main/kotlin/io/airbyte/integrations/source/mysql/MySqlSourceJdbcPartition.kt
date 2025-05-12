@@ -348,7 +348,20 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
         )
 
     override val completeState: OpaqueStateValue
-        get() = TODO("Not yet implemented")
+        get() =
+            when (upperBound) {
+                null -> MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                    cursor,
+                    cursorUpperBound,
+                    stream,
+                )
+                else -> MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                    checkpointColumns,
+                    primaryKeyCheckpoint = upperBound,
+                    cursor,
+                    stream
+                )
+            }
 }
 
 /**
