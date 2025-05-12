@@ -248,7 +248,7 @@ class BigqueryDirectLoadSqlGenerator(private val projectId: String?) : DirectLoa
                 ""
             } else if (importType.cursor.size == 1) {
                 val columnName = importType.cursor.first()
-                "`$columnName` DESC NULLS LAST"
+                "`$columnName` DESC NULLS LAST,"
             } else {
                 throw UnsupportedOperationException(
                     "Only top-level cursors are supported, got ${importType.cursor}"
