@@ -89,7 +89,11 @@ class DirectLoadTableDedupStreamLoader(
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        if (initialStatus.realTable != null) {
+            nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        } else {
+            sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
+        }
         sqlTableOperations.upsertTable(
             stream,
             columnNameMapping,
@@ -258,35 +262,44 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (shouldCheckRealTableGeneration) {
+            val shouldUpsertUnconditionally: Boolean
             if (initialStatus.realTable == null) {
                 logger.info { "Creating real table and upserting data" }
+                // the real table doesn't yet exist.
+                // we should create it now, and upsert this sync's records into it.
+                // this won't cause downtime, because there was no data to begin with.
                 sqlTableOperations.createTable(
                     stream,
                     realTableName,
                     columnNameMapping,
-                    replace = true
+                    replace = true,
                 )
-
-                sqlTableOperations.upsertTable(
-                    stream,
-                    columnNameMapping,
-                    sourceTableName = tempTableName,
-                    targetTableName = realTableName,
-                )
-
-                sqlTableOperations.dropTable(tempTableName)
-                return
+                shouldUpsertUnconditionally = true
             } else if (
                 initialStatus.realTable.isEmpty ||
                     nativeTableOperations.getGenerationId(realTableName) >=
                         stream.minimumGenerationId
             ) {
                 logger.info { "Upserting to existing real table" }
+                // the real table exists, but is empty.
+                // we should enforce its schema, and upsert this sync's records.
+                // again: this won't cause downtime, because there was no data to begin with.
+                nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+                shouldUpsertUnconditionally = true
+            } else {
+                logger.info { "Real table exists and is nonempty. Need to do further checks before choosing what to do." }
+                // the real table exists and has data. we should do more stringent checks
+                // before upserting, because we might need to truncate this table
+                // before upserting.
+                shouldUpsertUnconditionally = false
+            }
+
+            if (shouldUpsertUnconditionally) {
                 sqlTableOperations.upsertTable(
                     stream,
                     columnNameMapping,
                     sourceTableName = tempTableName,
-                    targetTableName = realTableName
+                    targetTableName = realTableName,
                 )
 
                 sqlTableOperations.dropTable(tempTableName)
