@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 /** Base class for JDBC implementations of [PartitionsCreator]. */
-sealed class JdbcPartitionsCreator<
+abstract class JdbcPartitionsCreator<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
@@ -88,7 +88,7 @@ sealed class JdbcPartitionsCreator<
     }
 
     /** Collects a sample of rows in the unsplit partition. */
-    fun <T> collectSample(
+    open fun <T> collectSample(
         recordMapper: (ObjectNode) -> T,
     ): Sample<T> {
         val values = mutableListOf<T>()

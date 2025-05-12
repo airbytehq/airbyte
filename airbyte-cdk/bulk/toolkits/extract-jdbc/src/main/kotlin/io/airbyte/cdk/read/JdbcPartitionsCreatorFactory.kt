@@ -6,10 +6,12 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.jdbc.JDBC_PROPERTY_PREFIX
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.util.function.Supplier
 
 /** Base class for JDBC implementations of [PartitionsCreatorFactory]. */
-sealed class JdbcPartitionsCreatorFactory<
+abstract class JdbcPartitionsCreatorFactory<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
@@ -43,6 +45,7 @@ class JdbcSequentialPartitionsCreatorFactory<
 
 /** Concurrent JDBC implementation of [PartitionsCreatorFactory]. */
 @Singleton
+@Secondary
 @Requires(property = MODE_PROPERTY, value = "concurrent")
 class JdbcConcurrentPartitionsCreatorFactory<
     A : JdbcSharedState,
@@ -56,4 +59,11 @@ class JdbcConcurrentPartitionsCreatorFactory<
         JdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }
 
-private const val MODE_PROPERTY = "${JDBC_PROPERTY_PREFIX}.mode"
+@Singleton
+class JdbcPartitionCreatorFactorySupplier<T: PartitionsCreatorFactory, A : JdbcSharedState,
+    S : JdbcStreamState<A>,
+    P : JdbcPartition<S>>(val factory: JdbcPartitionsCreatorFactory<A, S, P>) : PartitionCreatorFactorySupplier<T> {
+    override fun get(): T = factory as T
+}
+
+const val MODE_PROPERTY = "${JDBC_PROPERTY_PREFIX}.mode"

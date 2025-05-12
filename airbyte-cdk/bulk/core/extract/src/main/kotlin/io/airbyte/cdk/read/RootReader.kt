@@ -33,9 +33,13 @@ class RootReader(
     val timeout: Duration,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val supp: List<PartitionCreatorFactorySupplier<PartitionsCreatorFactory>>,
 ) {
     private val log = KotlinLogging.logger {}
+
+    val partitionsCreatorFactories: List<PartitionsCreatorFactory>
+        get() =
+            supp.map { it -> it.get() }
 
     /** [Mutex] ensuring that resource acquisition always happens serially. */
     val resourceAcquisitionMutex: Mutex = Mutex()
@@ -58,6 +62,7 @@ class RootReader(
 
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
+        log.info { "${supp.size}" }
         readFeeds<Global>(listener)
         readFeeds<Stream>(listener)
     }
