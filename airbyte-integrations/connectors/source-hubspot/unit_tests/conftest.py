@@ -8,6 +8,7 @@ from source_hubspot.streams import API
 
 
 NUMBER_OF_PROPERTIES = 2000
+OBJECTS_WITH_DYNAMIC_SCHEMA = ["goal_targets", "product"]
 
 
 @pytest.fixture(name="oauth_config")
@@ -117,16 +118,20 @@ def patch_time(mocker):
 
 @pytest.fixture()
 def mock_dynamic_schema_requests(requests_mock):
-    requests_mock.get(
-        "https://api.hubapi.com/properties/v2/goal_targets/properties",
-        json=[
-            {
-                "name": "hs__migration_soft_delete",
-                "label": "migration_soft_delete_deprecated",
-                "description": "Describes if the goal target can be treated as deleted.",
-                "groupName": "goal_target_information",
-                "type": "enumeration",
-            }
-        ],
-        status_code=200,
-    )
+    for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
+        requests_mock.get(
+            f"https://api.hubapi.com/properties/v2/{object_name}/properties",
+            json=[{"name": "hs__test_field", "type": "enumeration"}],
+            status_code=200,
+        )
+
+
+def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
+    for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
+        if object_name in object_to_skip:
+            continue
+        requests_mock.get(
+            f"https://api.hubapi.com/properties/v2/{object_name}/properties",
+            json=[{"name": "hs__test_field", "type": "enumeration"}],
+            status_code=200,
+        )

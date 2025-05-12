@@ -126,6 +126,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_scopes(http_mocker, self.ACCESS_TOKEN, self.SCOPES)
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_dynamic_schema_requests(http_mocker)
         self.mock_parent_object(
             http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
         )
