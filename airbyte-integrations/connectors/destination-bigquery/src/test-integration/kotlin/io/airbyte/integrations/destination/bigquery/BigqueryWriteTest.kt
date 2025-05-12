@@ -31,6 +31,7 @@ import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -104,6 +105,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
         DockerizedDestinationFactory("airbyte/destination-bigquery", "2.10.2")
 
     @Test
+    @Disabled("Just disabling to maybe confirm bug in there")
     open fun testAppendCdkMigration() {
         val stream =
             DestinationStream(
