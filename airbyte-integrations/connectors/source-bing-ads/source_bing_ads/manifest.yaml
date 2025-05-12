@@ -232,8 +232,8 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - TimePeriod
-#            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
-#            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+            #            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+            #            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
             value: |
               {%- set parts = record.TimePeriod.split('|') -%}
               {%- set time_period = record.TimePeriod -%}
