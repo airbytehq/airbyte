@@ -34,7 +34,7 @@ abstract class DevNullDirectLoader(
     }
 
     override fun close() {
-        /* do nothing */
+        /* do even more nothing */
     }
 }
 
