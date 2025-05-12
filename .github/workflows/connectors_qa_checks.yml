@@ -3,8 +3,8 @@ name: Connector QA Checks
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - "airbyte-integrations/connectors/**/*"
+    # paths:
+    #   - "airbyte-integrations/connectors/**/*"
 
 jobs:
   generate-matrix:
@@ -36,15 +36,19 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
+        if: matrix.connector
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Install uv
+        if: matrix.connector
         uses: astral-sh/setup-uv@v6
       - name: Install QA Checks
+        if: matrix.connector
         run: |
           uv tool install airbyte-ci/connectors/connectors_qa
       - name: Run QA Checks
+        if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
         run: |
           connector_name=${{ matrix.connector }}
