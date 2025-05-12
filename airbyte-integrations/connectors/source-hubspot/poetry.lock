@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.48.9"
+version = "6.48.10"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.48.9-py3-none-any.whl", hash = "sha256:de82c7c9e5e0eed0e1763242f05925c021ee93cbe23052ee32ab43fd567b7e42"},
-    {file = "airbyte_cdk-6.48.9.tar.gz", hash = "sha256:ee6568755542691cefe3631c669e76dade2fb2577f0a2d88e01fbbf04addb00e"},
+    {file = "airbyte_cdk-6.48.10-py3-none-any.whl", hash = "sha256:118d553080ba453781bd0f595ec90f77d7bcb5651a7fc97ebf06f5c5c481f62b"},
+    {file = "airbyte_cdk-6.48.10.tar.gz", hash = "sha256:5f5bc8f68c8a56c22f12fa634c5cb3400d2eb9276e17a5d5157df351307c9259"},
 ]
 
 [package.dependencies]
@@ -501,13 +501,13 @@ files = [
 
 [[package]]
 name = "dunamai"
-version = "1.24.0"
+version = "1.24.1"
 description = "Dynamic version generation"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "dunamai-1.24.0-py3-none-any.whl", hash = "sha256:4f4367a74450c70b2d6b8469449cb0ed57db0040a9b463afb11c44ac18f58dff"},
-    {file = "dunamai-1.24.0.tar.gz", hash = "sha256:c2d1a9f7359033c04dfc1865481d890acc5be4ac02596ad3275b854aba342294"},
+    {file = "dunamai-1.24.1-py3-none-any.whl", hash = "sha256:4370e406d8ce195fc4b066b5c326bfa9adb269c4b8719b4e4fd90b63a2144bf7"},
+    {file = "dunamai-1.24.1.tar.gz", hash = "sha256:3aa3348f77242da8628b23f11e89569343440f0f912bcef32a1fa891cf8e7215"},
 ]
 
 [package.dependencies]
