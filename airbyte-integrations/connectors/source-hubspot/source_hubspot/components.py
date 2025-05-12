@@ -351,6 +351,14 @@ class HubspotAssociationsExtractor(RecordExtractor):
             if isinstance(self.field_path[path_index], str):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
+        self._entity_primary_key = InterpolatedString.create(self.entity_primary_key, parameters=parameters)
+
+        self._associations_retriever = build_associations_retriever(
+            associations_list=self.associations_list,
+            parent_entity=self._entity_primary_key.eval(config=self.config),
+            config=self.config,
+        )
+
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         for body in self.decoder.decode(response):
             if len(self._field_path) == 0:
@@ -367,39 +375,36 @@ class HubspotAssociationsExtractor(RecordExtractor):
                 raise ValueError(f"field_path should always point towards a list field in the response body")
 
             records_by_pk = {record["id"]: record for record in records}
-            identifiers = list(map(lambda x: x["id"], records))
+            record_ids = [{"id": record["id"]} for record in records]
 
-            assoc_retriever = build_associations_retriever(
-                associations_list=self.associations_list,
-                ids=identifiers,
-                parent_entity=self.entity_primary_key,
-                config=self.config,
-            )
-
-            slices = assoc_retriever.stream_slices()
+            slices = self._associations_retriever.stream_slices()
 
             for _slice in slices:
-                logger.debug(f"Reading {_slice} associations of {self.entity_primary_key}")
-                associations = assoc_retriever.read_records({}, stream_slice=_slice)
+                # Append the list of extracted records so they are usable during interpolation of the JSON request body
+                stream_slice = StreamSlice(
+                    cursor_slice=_slice.cursor_slice, partition=_slice.partition, extra_fields={"record_ids": record_ids}
+                )
+                logger.debug(f"Reading {_slice} associations of {self._entity_primary_key.eval(config=self.config)}")
+                associations = self._associations_retriever.read_records({}, stream_slice=stream_slice)
                 for group in associations:
-                    slice_value = _slice["association_name"]
+                    slice_value = stream_slice["association_name"]
                     current_record = records_by_pk[group["from"]["id"]]
                     associations_list = current_record.get(slice_value, [])
                     associations_list.extend(association["toObjectId"] for association in group["to"])
-                    current_record[slice_value] = associations_list
+                    # Associations are defined in the schema as string ids but come in the API response as integer ids
+                    current_record[slice_value] = [str(association) for association in associations_list]
             yield from records_by_pk.values()
 
 
 def build_associations_retriever(
     *,
     associations_list: List[str],
-    ids: List[str],
     parent_entity: str,
     config: Config,
 ) -> SimpleRetriever:
     """
     Returns a SimpleRetriever that hits
-      POST /crm/v4/associations/{self.parent_stream.entity}/{stream_slice.association}/batch/read
+    POST /crm/v4/associations/{self.parent_stream.entity}/{stream_slice.association}/batch/read
     """
 
     parameters: Mapping[str, Any] = {}
@@ -431,16 +436,17 @@ def build_associations_retriever(
         authenticators={"Private App Credentials": bearer_authenticator, "OAuth Credentials": oauth_authenticator},
         authenticator_selection_path=["credentials", "credentials_title"],
     )
-    # HTTP requester
+
     requester = HttpRequester(
         name="associations",
         url_base="https://api.hubapi.com",
-        path=f"/crm/v4/associations/{parent_entity}/" + "{{ stream_slice['association_name'] }}/batch/read",
+        path=f"/crm/v4/associations/{parent_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
             request_body_json={
-                "inputs": [{"id": id} for id in ids],
+                # "inputs": [{"id": id} for id in ids],
+                "inputs": "{{ stream_slice.extra_fields['record_ids'] }}"
             },
             config=config,
             parameters=parameters,
@@ -452,7 +458,6 @@ def build_associations_retriever(
     # Slice over IDs emitted by the parent stream
     slicer = ListPartitionRouter(values=associations_list, cursor_field="association_name", config=config, parameters=parameters)
 
-    # Record selector
     selector = RecordSelector(
         extractor=DpathExtractor(field_path=["results"], config=config, parameters=parameters),
         schema_normalization=TypeTransformer(TransformConfig.NoTransform),
@@ -462,9 +467,9 @@ def build_associations_retriever(
         parameters=parameters,
     )
 
-    # The retriever
     return SimpleRetriever(
         name="associations",
+        primary_key=None,
         requester=requester,
         record_selector=selector,
         paginator=None,  # batch/read never paginates
@@ -477,12 +482,14 @@ def build_associations_retriever(
 @dataclass
 class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
     """
-    This pagination strategy will return latest record cursor for the next_page_token after hitting records count limit
+    This pagination strategy functioning similarly to the default cursor pagination strategy. The custom
+    behavior accounts for Hubspot's /search API limitation that only allows for a max of 10,000 total results
+    for a query. Once we reach 10,000 records, we start a new query using the latest id collected.
     """
 
     page_size: int
     primary_key: str = "id"
-    RECORDS_LIMIT = 20
+    RECORDS_LIMIT = 10000
 
     @property
     def initial_token(self) -> Optional[Any]:
@@ -495,6 +502,10 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         last_record: Optional[Record],
         last_page_token_value: Optional[Any] = None,
     ) -> Optional[Any]:
+        # Hubspot documentation states that the search endpoints are limited to 10,000 total results
+        # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+        # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
+        # start a new search query with the latest id that has been collected.
         if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size > self.RECORDS_LIMIT:
             return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
 

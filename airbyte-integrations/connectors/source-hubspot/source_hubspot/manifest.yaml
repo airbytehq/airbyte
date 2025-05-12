@@ -574,6 +574,58 @@ definitions:
       schema:
         $ref: "#/schemas/email_subscriptions"
 
+  deals_dynamic_schema_loader:
+    type: DynamicSchemaLoader
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/properties/v2/deals/properties"
+      decoder:
+        type: JsonDecoder
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotSchemaExtractor
+          field_path: []
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+    schema_type_identifier:
+      type: SchemaTypeIdentifier
+      key_pointer:
+        - name
+      type_pointer:
+        - type
+      schema_pointer:
+        - properties
+      types_mapping:
+        - type: TypesMap
+          target_type: boolean
+          current_type: bool
+        - type: TypesMap
+          target_type: date
+          current_type: date
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: date-time
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: datetime
+        - type: TypesMap
+          target_type: string
+          current_type: enumeration
+        - type: TypesMap
+          target_type: string
+          current_type: json
+        - type: TypesMap
+          target_type: string
+          current_type: object_coordinates
+        - type: TypesMap
+          target_type: string
+          current_type: phone_number
+
   deals_full_refresh_stream:
     primary_key:
       - id
@@ -642,7 +694,10 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     schema_loader:
-      $ref: "#/definitions/deals_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/deals_dynamic_schema_loader"
 
   deals_incremental_stream:
     primary_key:
@@ -672,7 +727,7 @@ definitions:
                 type: DpathExtractor
                 field_path: []
         request_body_json:
-          limit: 100
+          limit: 200
           sorts:
             - propertyName: hs_object_id
               direction: ASCENDING
@@ -695,7 +750,7 @@ definitions:
         pagination_strategy:
           type: CustomPaginationStrategy
           class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
-          page_size: 100
+          page_size: 200
       record_selector:
         type: RecordSelector
         extractor:
@@ -724,7 +779,10 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     schema_loader:
-      $ref: "#/definitions/deals_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/deals_dynamic_schema_loader"
 
   deals_stream:
     type: StateDelegatingStream
@@ -1399,6 +1457,62 @@ schemas:
         type:
           - "null"
           - boolean
+
+  deals:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the deal
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the deal was created
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the deal was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the deal is archived
+        type:
+          - "null"
+          - boolean
+      companies:
+        description: Information about companies associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      contacts:
+        description: Information about contacts associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      line_items:
+        description: Details of line items associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
 
   deals_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
