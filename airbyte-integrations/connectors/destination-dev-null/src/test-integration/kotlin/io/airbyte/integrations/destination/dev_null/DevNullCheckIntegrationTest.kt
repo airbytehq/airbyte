@@ -23,7 +23,8 @@ class DevNullCheckIntegrationTest :
                 CheckTestConfig(
                     DevNullTestUtils.loggingConfigPath.toFile().readText(),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
-                ) to Pattern.compile("Value 'LOGGING' is not defined in the schema")
+                ) to
+                    Pattern.compile("failed to map valid json to class .*DevNullSpecificationCloud")
             ),
     ) {
 
