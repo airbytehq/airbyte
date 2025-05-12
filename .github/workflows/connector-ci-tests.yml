@@ -1,4 +1,4 @@
-name: Connector CI (Beta)
+name: Connector CI Tests
 
 on:
   pull_request:
@@ -275,7 +275,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v3  # TODO: Bump to v4 and re-test
         if: matrix.connector
         with:
           cache-read-only: false
