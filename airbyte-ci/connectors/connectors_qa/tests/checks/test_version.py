@@ -6,7 +6,7 @@ import pytest
 import semver  # type: ignore
 from connector_ops.utils import Connector
 
-from connectors_qa.checks.version import VersionIncrementCheck
+from connectors_qa.checks.version import CheckVersionIncrement
 from connectors_qa.models import CheckStatus
 
 
@@ -21,7 +21,7 @@ def connector():
 
 @pytest.fixture
 def version_increment_check():
-    return VersionIncrementCheck()
+    return CheckVersionIncrement()
 
 
 class TestVersionIncrementCheck:

@@ -4,7 +4,7 @@ import pytest
 import semver
 from connector_ops.utils import METADATA_FILE_NAME
 
-from connectors_qa.checks.version import VersionIncrementCheck
+from connectors_qa.checks.version import CheckVersionIncrement
 
 
 class TestVersionIncrementCheck:
@@ -25,16 +25,16 @@ class TestVersionIncrementCheck:
             return_value=semver.Version.parse(current_version),
         )
 
-        return VersionIncrementCheck(connector)
+        return CheckVersionIncrement(connector)
 
     def test_should_run(self, connector):
         connector.modified_files = ["some_file"]
-        assert VersionIncrementCheck(connector).should_run
+        assert CheckVersionIncrement(connector).should_run
 
     def test_should_not_run(self, context):
-        for bypassed_file in VersionIncrementCheck.BYPASS_CHECK_FOR:
+        for bypassed_file in CheckVersionIncrement.BYPASS_CHECK_FOR:
             context.modified_files = [bypassed_file]
-            assert not VersionIncrementCheck(context).should_run
+            assert not CheckVersionIncrement(context).should_run
 
     def test_validate_success_no_rc_increment(self, mocker, context):
         version_increment_check = self._get_version_increment_check(mocker, context, master_version="1.0.0", current_version="1.0.1")

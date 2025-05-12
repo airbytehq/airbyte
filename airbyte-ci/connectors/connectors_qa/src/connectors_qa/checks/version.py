@@ -10,7 +10,7 @@ from connector_ops.utils import Connector  # type: ignore
 from connectors_qa.models import Check, CheckCategory, CheckResult
 
 
-class VersionIncrementCheck(Check):
+class CheckVersionIncrement(Check):
     """Check that the connector version was incremented if files were modified."""
 
     category = CheckCategory.VERSION
@@ -115,4 +115,4 @@ class VersionIncrementCheck(Check):
             return self.fail(connector, str(e))
 
 
-ENABLED_CHECKS = [VersionIncrementCheck()]
+ENABLED_CHECKS = [CheckVersionIncrement()]
