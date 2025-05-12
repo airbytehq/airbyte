@@ -21,6 +21,7 @@ data class BigqueryConfiguration(
     val disableTypingDeduping: Boolean,
 ) : DestinationConfiguration() {
     override val estimatedRecordMemoryOverheadRatio: Double = 16.0
+    override val numOpenStreamWorkers: Int = 10
 }
 
 sealed interface LoadingMethodConfiguration
