@@ -55,14 +55,10 @@ class CheckpointManagerUTest {
         coEvery { syncManager.getStreamManager(stream2.descriptor) } returns streamManager2
     }
 
-    private fun makeCheckpointManager(checkpointById: Boolean): DefaultCheckpointManager {
-        return DefaultCheckpointManager(
-            catalog,
-            syncManager,
-            outputConsumer,
-            timeProvider,
-            checkpointById
-        )
+    private fun makeCheckpointManager(
+        checkpointById: Boolean
+    ): CheckpointManager<Reserved<CheckpointMessage>> {
+        return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider, checkpointById)
     }
 
     @Test

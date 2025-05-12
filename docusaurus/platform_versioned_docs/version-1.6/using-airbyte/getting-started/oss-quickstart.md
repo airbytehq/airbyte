@@ -38,7 +38,7 @@ Before running this quickstart, complete the following prerequisites:
 
 ### Suggested resources {#suggested-resources}
 
-For best performance, run Airbyte on a machine with 4 or more CPUs and at least 8GB of memory. We also support running Airbyte with 2 CPUs and 8GM of memory in low-resource mode. This guide explains how to do both. Follow this [Github discussion](https://github.com/airbytehq/airbyte/discussions/44391) to upvote and track progress toward supporting lower resource environments.
+For best performance, run Airbyte on a machine with 4 or more CPUs and at least 8GB of memory. We also support running Airbyte with 2 CPUs and 8GB of memory in low-resource mode. This guide explains how to do both. Follow this [Github discussion](https://github.com/airbytehq/airbyte/discussions/44391) to upvote and track progress toward supporting lower resource environments.
 
 ## Part 1: Install abctl
 

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.pipeline.BatchEndOfStream
@@ -23,7 +22,7 @@ import jakarta.inject.Singleton
 class UpdateBatchStateTask(
     private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<DestinationStream.Descriptor, *>,
+    private val checkpointManager: CheckpointManager<*>,
     private val launcher: DestinationTaskLauncher
 ) : Task {
     private val log = KotlinLogging.logger {}
@@ -77,7 +76,7 @@ class UpdateBatchStateTask(
 class UpdateBatchStateTaskFactory(
     @Named("batchStateUpdateQueue") val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<DestinationStream.Descriptor, *>
+    private val checkpointManager: CheckpointManager<*>
 ) {
     fun make(launcher: DestinationTaskLauncher): Task {
         return UpdateBatchStateTask(inputQueue, syncManager, checkpointManager, launcher)

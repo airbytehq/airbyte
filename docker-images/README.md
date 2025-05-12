@@ -26,26 +26,40 @@ For example:
 ./gradlew :airbyte-integrations:connectors:source-mysql:distTar
 ```
 
-### Building a Connector Image
+### Testing the Base Image Build
+
+The `test-base-image-build.sh` script can be used to build the base image.
+
+`./test-base-image-build.sh CONNECTOR_TYPE [NEW_TAG]`
+
+- `CONNECTOR_TYPE` should be `python` or `java`.
+- `NEW_TAG` is the new tag to create, defaults to `dev`.
 
 ```bash
-cd airbyte-integrations/connectors/source-mysql
+# These are identical, building the java base image with the 'dev' tag:
+./test-base-image-build.sh java
+./test-base-image-build.sh java dev
 
-DOCKER_BUILDKIT=1
-ARCH=amd64
+# These are identical, building the pyhton base image with the 'dev' tag:
+./test-base-image-build.sh python
+./test-base-image-build.sh python dev
+```
 
-docker build \
-    --platform linux/${ARCH} \
-    --label io.airbyte.version=3.11.15\
-    --label io.airbyte.name=airbyte/source-mysql \
-    --file ../../../docker-images/Dockerfile.java-connector \
-    --build-arg=BASE_IMAGE=docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3 \
-    --build-arg=CONNECTOR_NAME=source-mysql \
-    --build-arg=EXTRA_BUILD_SCRIPT= \
-    -t airbyte/source-mysql:dev-${ARCH} .
+### Testing a Connector Image Build
+
+`./test-base-image-build.sh CONNECTOR_TYPE CONNECTOR_NAME`
+
+- `CONNECTOR_TYPE` should be `python` or `java`.
+- `CONNECTOR_NAME` is the name of the connector image to build.
+
+```bash
+./test-connector-image-build.sh java source-mysql
+./test-connector-image-build.sh python source-hubspot
 ```
 
 ## Common Build Args
+
+These are used within the `Dockerfile` definitions and within the image build test scripts.
 
 - `BASE_IMAGE` - The image tag to use when building the connector.
 - `CONNECTOR_NAME`: The connector name, in kebab format: `source-mysql`
@@ -53,11 +67,11 @@ docker build \
 
 ## FAQ
 
-### Why is `DOCKER_BUILDKIT=1` needed?
+### Why is `DOCKER_BUILDKIT=1` used in the build scripts?
 
 This uses Buildkit in Docker, which allows us to use custom `.dockerignore` files, which is normally not allowed. With this env var set, docker will accept a `{Dockerfile-name}.dockerignore` in the same directory as the Dockerfile. This eliminates the need for us to store `.dockerignore` files redundantly in each connector directory.
 
-### Why don't the base image definitions have a `.dockerignore` file
+### Why don't the base image definitions have a `.dockerignore` file?
 
 The base images don't need to copy in any files from the host computer. That is why they don't require a dockerfile, since nothing is copied in, nothing is needed to be ignored.
 

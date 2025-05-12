@@ -1,0 +1,347 @@
+name: Connector CI (Beta)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+  # Available as a reusable workflow
+  # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
+  workflow_call:
+    inputs:
+      repo:
+        type: string
+        required: false
+        description: "The repository name"
+      gitref:
+        type: string
+        required: false
+        description: "The git reference (branch or tag)"
+      comment-id:
+        type: number
+        required: false
+        description: "The ID of the comment triggering the workflow"
+      pr:
+        type: number
+        required: false
+        description: "The pull request number, if applicable"
+
+  # Available as a slash command and workflow dispatch
+  workflow_dispatch:
+    inputs:
+      # Static args from the slash command dispatch:
+      repo:
+        required: false
+        description: "The repository name"
+      gitref:
+        required: false
+        description: "The git reference (branch or tag)"
+      comment-id:
+        required: false
+        description: "The ID of the comment triggering the workflow"
+      pr:
+        required: false
+        description: "The pull request number, if applicable"
+
+jobs:
+  generate-matrix:
+    name: Generate Connector Matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Current Branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
+        run: |
+          # Get the list of modified connectors
+          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+          echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
+      non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
+
+  jvm-connectors-test-matrix:
+    needs: [generate-matrix]
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || '' }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@v4
+        with:
+          # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
+          # TODO: Remove the Airbyte-CI dependency for running java integration tests.
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v3
+        if: matrix.connector
+        with:
+          cache-read-only: false
+          cache-write-only: false
+
+      # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
+      - name: Set up Python (For Airbyte-CI)
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        if: matrix.connector
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always() && matrix.connector
+        with:
+          check_name: "`${{ matrix.connector }}` Connector Test Results"
+          files: |
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+  jvm-connectors-test-summary:
+    name: JVM Connector Test Summary Check
+    needs: [jvm-connectors-test-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All JVM connector tests completed successfully (or nothing to test)."
+
+  non-jvm-connectors-test-matrix:
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || '' }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Python deps
+      - name: Set up Python
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        if: matrix.connector
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        if: matrix.connector
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+          # These should be included as dev dependencies in the connector, but
+          # for many connectors they are undeclared:
+          uv tool install ruff
+          uv tool install pytest
+          uv tool install mypy
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        if: matrix.connector
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always() && matrix.connector
+        with:
+          check_name: "`${{ matrix.connector }}` Connector Test Results"
+          files: |
+            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+  non-jvm-connectors-test-summary:
+    name: Non-JVM Connector Test Summary Check
+    needs: [non-jvm-connectors-test-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All non-JVM connector tests completed successfully (or nothing to test)."
+
+  # Lint and format checks
+
+  connectors-lint-matrix:
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    if: ${{ needs.generate-matrix.outputs.connectors-matrix }}
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10 # Limit number of parallel jobs
+    name: Lint ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no connectors modified)' || '' }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v3
+        if: matrix.connector
+        with:
+          cache-read-only: false
+          cache-write-only: false
+
+      # Python deps
+      - name: Set up Python
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        if: matrix.connector
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install system dependencies
+        if: matrix.connector
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+          # These should be included as dev dependencies in the connector, but
+          # for many connectors they are undeclared:
+          uv tool install ruff
+          uv tool install pytest
+          uv tool install mypy
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Run format-check
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe format-check
+
+      - name: Run lint check (info only)
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe lint-check
+        # Most connectors can't pass lint checks, so this is non-blocking for now
+        continue-on-error: true
+
+  lint-summary:
+    name: Connector Lint Summary Check
+    needs: [connectors-lint-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Lint Summary
+        run: echo "✅ All connectors lint checks completed successfully (or nothing to check)."

@@ -10,32 +10,17 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.util.use
-import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.cdk.output.OutputConsumer
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-
-/**
- * Interface for checkpoint management. Should accept stream and global checkpoints, as well as
- * requests to flush all data-sufficient checkpoints.
- */
-interface CheckpointManager<K, T> {
-    suspend fun addStreamCheckpoint(key: K, indexOrId: Long, checkpointMessage: T)
-    suspend fun addGlobalCheckpoint(keyIndexes: List<Pair<K, Long>>, checkpointMessage: T)
-    suspend fun flushReadyCheckpointMessages()
-    suspend fun getLastSuccessfulFlushTimeMs(): Long
-    suspend fun getNextCheckpointIndexes(): Map<K, Long>
-    suspend fun awaitAllCheckpointsFlushed()
-}
 
 /**
  * Message-type agnostic streams checkpoint manager.
@@ -49,24 +34,23 @@ interface CheckpointManager<K, T> {
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
  * before the destination can succeed.
  */
-abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream.Descriptor, T> {
-
-    private val log = KotlinLogging.logger {}
-    private val flushLock = Mutex()
-    protected val lastFlushTimeMs = AtomicLong(0L)
-
-    abstract val catalog: DestinationCatalog
-    abstract val syncManager: SyncManager
-    abstract val outputConsumer: suspend (T) -> Unit
-    abstract val timeProvider: TimeProvider
-
+@Singleton
+class CheckpointManager<T>(
+    val catalog: DestinationCatalog,
+    val syncManager: SyncManager,
+    val outputConsumer: suspend (T) -> Unit,
+    val timeProvider: TimeProvider,
     /**
      * Whether or not we are using the new style checkpoint-by-id or the old style
      * checkpoint-by-range.
      *
      * TODO: Remove this once everything is using the new interface.
      */
-    abstract val checkpointById: Boolean
+    @Named("checkpointById") val checkpointById: Boolean
+) {
+    private val log = KotlinLogging.logger {}
+    private val flushLock = Mutex()
+    protected val lastFlushTimeMs = AtomicLong(0L)
 
     data class GlobalCheckpoint<T>(
         val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
@@ -81,7 +65,12 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         ConcurrentLinkedQueue()
     private val lastIndexEmitted = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
 
-    override suspend fun addStreamCheckpoint(
+    init {
+        lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+        log.info { "Checkpoint manager initialized with checkpointById: $checkpointById" }
+    }
+
+    suspend fun addStreamCheckpoint(
         key: DestinationStream.Descriptor,
         indexOrId: Long,
         checkpointMessage: T
@@ -111,7 +100,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     }
 
     // TODO: Is it an error if we don't get all the streams every time?
-    override suspend fun addGlobalCheckpoint(
+    suspend fun addGlobalCheckpoint(
         keyIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         checkpointMessage: T
     ) {
@@ -139,7 +128,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         }
     }
 
-    override suspend fun flushReadyCheckpointMessages() {
+    suspend fun flushReadyCheckpointMessages() {
         flushLock.withLock {
             /*
                Iterate over the checkpoints in order, evicting each that passes
@@ -240,11 +229,11 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         outputConsumer.invoke(checkpointMessage)
     }
 
-    override suspend fun getLastSuccessfulFlushTimeMs(): Long =
+    suspend fun getLastSuccessfulFlushTimeMs(): Long =
         // Return inside the lock to ensure the value reflects flushes in progress
         flushLock.withLock { lastFlushTimeMs.get() }
 
-    override suspend fun getNextCheckpointIndexes(): Map<DestinationStream.Descriptor, Long> {
+    suspend fun getNextCheckpointIndexes(): Map<DestinationStream.Descriptor, Long> {
         flushLock.withLock {
             return when (checkpointsAreGlobal.get()) {
                 null -> {
@@ -264,7 +253,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         }
     }
 
-    override suspend fun awaitAllCheckpointsFlushed() {
+    suspend fun awaitAllCheckpointsFlushed() {
         while (true) {
             val allCheckpointsFlushed =
                 flushLock.withLock {
@@ -283,30 +272,12 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     }
 }
 
-@Singleton
-@Secondary
-class DefaultCheckpointManager(
-    override val catalog: DestinationCatalog,
-    override val syncManager: SyncManager,
-    override val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
-    override val timeProvider: TimeProvider,
-    @Named("checkpointById") override val checkpointById: Boolean = false,
-) : StreamsCheckpointManager<Reserved<CheckpointMessage>>() {
-    private val log = KotlinLogging.logger {}
-
-    init {
-        lastFlushTimeMs.set(timeProvider.currentTimeMillis())
-        log.info { "Checkpoint manager initialized with checkpointById: $checkpointById" }
-    }
-}
-
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 @Singleton
-@Secondary
-class FreeingCheckpointConsumer(private val consumer: Consumer<AirbyteMessage>) :
+class FreeingCheckpointConsumer(private val consumer: OutputConsumer) :
     suspend (Reserved<CheckpointMessage>) -> Unit {
     override suspend fun invoke(message: Reserved<CheckpointMessage>) {
         message.use {

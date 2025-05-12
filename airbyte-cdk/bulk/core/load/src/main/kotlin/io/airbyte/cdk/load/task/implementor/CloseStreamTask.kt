@@ -34,7 +34,7 @@ class DefaultCloseStreamTask(
             hadNonzeroRecords = syncManager.getStreamManager(streamDescriptor).hadNonzeroRecords(),
         )
         syncManager.getStreamManager(streamDescriptor).markProcessingSucceeded()
-        taskLauncher.handleStreamClosed(streamLoader.stream.descriptor)
+        taskLauncher.handleStreamClosed()
     }
 }
 
