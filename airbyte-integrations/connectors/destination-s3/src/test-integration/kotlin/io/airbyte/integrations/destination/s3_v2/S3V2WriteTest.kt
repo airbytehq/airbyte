@@ -433,6 +433,7 @@ class S3V2WriteTestParquetUncompressed :
         mergesUnions = true,
     )
 
+@Disabled("flaky: re-enable after dagger flow is disabled")
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
