@@ -904,7 +904,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ ]
+          field_path: []
     record_selector:
       $ref: "#/definitions/base_selector"
       schema_normalization:
@@ -935,15 +935,15 @@ definitions:
     schema_transformations:
       - type: AddFields
         fields:
-          - path: [ "properties" ]
+          - path: ["properties"]
             value: "{{ record }}"
       - type: CustomTransformation
         class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
     schema_type_identifier:
       type: SchemaTypeIdentifier
-      key_pointer: [ "name" ]
-      type_pointer: [ "type" ]
-      schema_pointer: [ "properties" ]
+      key_pointer: ["name"]
+      type_pointer: ["type"]
+      schema_pointer: ["properties"]
       types_mapping:
         - type: TypesMap
           target_type: string
@@ -1043,7 +1043,7 @@ definitions:
             type: QueryProperties
             property_list:
               type: PropertiesFromEndpoint
-              property_field_path: [ "name" ]
+              property_field_path: ["name"]
               retriever:
                 $ref: "#/definitions/crm_objects/properties_retriever"
                 requester:
