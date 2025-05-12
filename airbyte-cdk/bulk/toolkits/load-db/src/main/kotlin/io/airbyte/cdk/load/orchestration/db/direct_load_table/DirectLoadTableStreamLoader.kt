@@ -64,7 +64,11 @@ class DirectLoadTableDedupStreamLoader(
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        if (initialStatus.realTable != null) {
+            nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        } else {
+            sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
+        }
         sqlTableOperations.upsertTable(
             stream,
             columnNameMapping,
