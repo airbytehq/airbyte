@@ -209,6 +209,10 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
     $parameters:
       name: companies_property_history
       path: /crm/v3/objects/companies
@@ -292,6 +296,10 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%ms"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
     $parameters:
       name: contacts_property_history
       path: /crm/v3/objects/contacts
@@ -407,6 +415,10 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
     $parameters:
       name: deals_property_history
       path: /crm/v3/objects/deals
@@ -615,6 +627,11 @@ definitions:
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+        cursor_format: "%ms"
     schema_loader:
       type: InlineSchemaLoader
       schema:
