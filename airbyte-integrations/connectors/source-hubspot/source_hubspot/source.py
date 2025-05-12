@@ -51,7 +51,6 @@ from source_hubspot.streams import (
     LineItemsWebAnalytics,
     Owners,
     OwnersArchived,
-    Products,
     ProductsWebAnalytics,
     Tickets,
     TicketsWebAnalytics,
@@ -97,6 +96,7 @@ scopes = {
     "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "subscription_changes": {"content"},
     "goals": {"crm.objects.goals.read"},
+    "products": {"e-commerce"},
 }
 
 
@@ -213,7 +213,6 @@ class SourceHubspot(YamlDeclarativeSource):
             LineItems(**common_params),
             Owners(**common_params),
             OwnersArchived(**common_params),
-            Products(**common_params),
             Tickets(**common_params),
         ]
 
