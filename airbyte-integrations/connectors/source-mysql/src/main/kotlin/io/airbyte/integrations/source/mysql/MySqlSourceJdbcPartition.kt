@@ -512,8 +512,5 @@ class MySqlJdbcConcurrentPartitionsCreator<
         }
         return 0
     }
-    override fun <T> collectSample(recordMapper: (ObjectNode) -> T): Sample<T> {
-        return super.collectSample(recordMapper)
-    }
 }
 

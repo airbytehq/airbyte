@@ -88,7 +88,7 @@ abstract class JdbcPartitionsCreator<
     }
 
     /** Collects a sample of rows in the unsplit partition. */
-    open fun <T> collectSample(
+    fun <T> collectSample(
         recordMapper: (ObjectNode) -> T,
     ): Sample<T> {
         val values = mutableListOf<T>()
