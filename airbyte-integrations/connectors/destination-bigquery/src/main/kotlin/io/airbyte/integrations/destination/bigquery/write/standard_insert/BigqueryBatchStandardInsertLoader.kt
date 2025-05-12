@@ -24,6 +24,9 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.CONFIG_ERROR_MSG
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_FORBIDDEN
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_NOT_FOUND
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -32,9 +35,25 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 class BigqueryBatchStandardInsertsLoader(
-    private val writer: TableDataWriteChannel,
+    bigquery: BigQuery,
+    writeChannelConfiguration: WriteChannelConfiguration,
+    job: JobId,
 ) : DirectLoader {
     private val recordFormatter = BigQueryRecordFormatter()
+    // this object holds a 15MB buffer in memory.
+    // we shouldn't initialize that until we actually need it,
+    // so use lazy init here.
+    private val writer: TableDataWriteChannel by lazy {
+        try {
+            bigquery.writer(job, writeChannelConfiguration)
+        } catch (e: BigQueryException) {
+            if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
+                throw ConfigErrorException(CONFIG_ERROR_MSG + e)
+            } else {
+                throw BigQueryException(e.code, e.message)
+            }
+        }
+    }
 
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         // TODO there was a RateLimiter here for some reason...?
@@ -76,36 +95,31 @@ class BigqueryBatchStandardInsertsLoaderFactory(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
-        val tableName = names[streamDescriptor]!!.tableNames.rawTableName!!
+        val rawTableName = names[streamDescriptor]!!.tableNames.rawTableName!!
         val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
+
         val writeChannelConfiguration =
             WriteChannelConfiguration.newBuilder(
-                    TableId.of(tableName.namespace, tableName.name + rawTableNameSuffix)
+                    TableId.of(rawTableName.namespace, rawTableName.name + rawTableNameSuffix)
                 )
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                 .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
+                // new-line delimited json.
                 .setFormatOptions(FormatOptions.json())
-                .build() // new-line delimited json.
+                .build()
 
-        val job =
+        val jobId =
             JobId.newBuilder()
                 .setRandomJob()
                 .setLocation(config.datasetLocation.region)
                 .setProject(bigquery.options.projectId)
                 .build()
 
-        val writer =
-            try {
-                bigquery.writer(job, writeChannelConfiguration)
-            } catch (e: BigQueryException) {
-                if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
-                    throw ConfigErrorException(CONFIG_ERROR_MSG + e)
-                } else {
-                    throw BigQueryException(e.code, e.message)
-                }
-            }
-
-        return BigqueryBatchStandardInsertsLoader(writer)
+        return BigqueryBatchStandardInsertsLoader(
+            bigquery,
+            writeChannelConfiguration,
+            jobId,
+        )
     }
 
     companion object {
