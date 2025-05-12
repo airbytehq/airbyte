@@ -117,12 +117,7 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # Unit and integration tests are moved to the new connector-ci workflows,
           # along with pre-release checks (qa_checks, version_inc_check)
-          subcommand: >
-            connectors ${{ github.event.inputs.test-connectors-options }} test
-            --skip-step=unit
-            --skip-step=integration
-            --skip-step=qa_checks
-            --skip-step=version_inc_check
+          subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test --skip-step=unit --skip-step=integration --skip-step=qa_checks --skip-step=version_inc_check"
 
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
@@ -143,9 +138,4 @@ jobs:
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
           # Unit and integration tests are moved to the new connector-ci workflows,
           # along with pre-release checks (qa_checks, version_inc_check)
-          subcommand: >
-            connectors --execute-timeout=18000 --modified test
-            --skip-step=unit
-            --skip-step=integration
-            --skip-step=qa_checks
-            --skip-step=version_inc_check
+          subcommand: "connectors --execute-timeout=18000 --modified test --skip-step=unit --skip-step=integration --skip-step=qa_checks --skip-step=version_inc_check"
