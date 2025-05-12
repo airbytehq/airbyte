@@ -225,8 +225,26 @@ definitions:
                 Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
-    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
-    # FIXME transformations/normalization
+    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - TimePeriod
+#            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+#            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+            value: |
+              {%- set parts = record.TimePeriod.split('|') -%}
+              {%- set time_period = record.TimePeriod -%}
+              {%- set date_part = '' -%}
+              {%- set hour_part = 0 -%}
+              {%- if parts|length > 1 -%}
+                {%- set date_part = parts[0] -%}
+                {%- set hour_part = parts[1]|int -%}
+                {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
+              {%- endif -%}
+              {{ time_period }}
   ad_performance_report_daily_stream:
     type: DeclarativeStream
     name: ad_performance_report_daily
@@ -621,7 +639,20 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
-
+  incremental_sync_report_hourly_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: TimePeriod
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['reports_start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/ad_performance_report_hourly_stream"
