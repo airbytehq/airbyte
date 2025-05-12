@@ -31,49 +31,53 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 class BigqueryBatchStandardInsertsLoader(
-    bigquery: BigQuery,
-    writeChannelConfiguration: WriteChannelConfiguration,
-    job: JobId,
+    private val bigquery: BigQuery,
+    private val writeChannelConfiguration: WriteChannelConfiguration,
+    private val job: JobId,
 ) : DirectLoader {
     private val recordFormatter = BigQueryRecordFormatter()
-    // this object holds a 15MB buffer in memory.
-    // we shouldn't initialize that until we actually need it,
-    // so use lazy init here.
-    private val writer: TableDataWriteChannel by lazy {
-        try {
-            bigquery.writer(job, writeChannelConfiguration)
-        } catch (e: BigQueryException) {
-            if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
-                throw ConfigErrorException(CONFIG_ERROR_MSG + e)
-            } else {
-                throw BigQueryException(e.code, e.message)
-            }
-        }
-    }
+    private val baos = ByteArrayOutputStream()
 
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
-        // TODO there was a RateLimiter here for some reason...?
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
-        writer.write(ByteBuffer.wrap(byteArray))
-        return DirectLoader.Incomplete
+        baos.write(byteArray)
+        // the default chunk size on the TableDataWriteChannel is 15MB,
+        // so just terminate when we get there.
+        if (baos.size() > 15 * 1024 * 1024) {
+            finish()
+            return DirectLoader.Complete
+        } else {
+            return DirectLoader.Incomplete
+        }
     }
 
     override fun finish() {
-        writer.close()
+        // this object holds a 15MB buffer in memory.
+        // we shouldn't initialize that until we actually need it,
+        // so just do it in finish.
+        // this minimizes the time we're occupying that chunk of memory.
+        val writer: TableDataWriteChannel =
+            try {
+                bigquery.writer(job, writeChannelConfiguration)
+            } catch (e: BigQueryException) {
+                if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
+                    throw ConfigErrorException(CONFIG_ERROR_MSG + e)
+                } else {
+                    throw BigQueryException(e.code, e.message)
+                }
+            }
+        writer.use { writer.write(ByteBuffer.wrap(baos.toByteArray())) }
         BigQueryUtils.waitForJobFinish(writer.job)
     }
 
-    override fun close() {
-        if (writer.isOpen) {
-            writer.close()
-        }
-    }
+    override fun close() {}
 }
 
 class BigqueryConfiguredForBatchStandardInserts : Condition {
