@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.orchestration.db
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import org.apache.commons.codec.digest.DigestUtils
 
 data class TableNames(
@@ -49,7 +50,10 @@ data class TableName(val namespace: String, val name: String) {
      * [asOldStyleTempTable] instead
      */
     fun asTempTable(length: Int = 32) =
-        copy(name = DigestUtils.sha256Hex(name + TMP_TABLE_SUFFIX).substring(length))
+        copy(
+            name = DigestUtils.sha256Hex(name + TMP_TABLE_SUFFIX).substring(length),
+            namespace = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+        )
 
     fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
 }
