@@ -7,7 +7,7 @@ package io.airbyte.cdk.read.cdc
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.FeedBootstrap
 import io.airbyte.cdk.read.GlobalFeedBootstrap
-import io.airbyte.cdk.read.PartitionCreatorFactorySupplier
+import io.airbyte.cdk.read.PartitionsCreatorFactorySupplier
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.micronaut.core.annotation.Order
@@ -56,6 +56,6 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
 }
 
 @Singleton
-class CdcPartitionsCreatorFactorySupplier<T: CdcPartitionsCreatorFactory<C>, C: Comparable<C>>(val factory: T) : PartitionCreatorFactorySupplier<T> {
+class CdcPartitionsCreatorFactorySupplier<T: CdcPartitionsCreatorFactory<C>, C: Comparable<C>>(val factory: T) : PartitionsCreatorFactorySupplier<T> {
     override fun get(): T = factory
 }

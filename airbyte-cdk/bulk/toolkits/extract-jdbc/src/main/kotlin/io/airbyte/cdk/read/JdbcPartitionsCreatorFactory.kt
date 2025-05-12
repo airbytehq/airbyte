@@ -8,7 +8,6 @@ import io.airbyte.cdk.jdbc.JDBC_PROPERTY_PREFIX
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.util.function.Supplier
 
 /** Base class for JDBC implementations of [PartitionsCreatorFactory]. */
 abstract class JdbcPartitionsCreatorFactory<
@@ -62,7 +61,7 @@ class JdbcConcurrentPartitionsCreatorFactory<
 @Singleton
 class JdbcPartitionCreatorFactorySupplier<T: JdbcPartitionsCreatorFactory<A, S, P>, A : JdbcSharedState,
     S : JdbcStreamState<A>,
-    P : JdbcPartition<S>>(val factory: T) : PartitionCreatorFactorySupplier<T> {
+    P : JdbcPartition<S>>(val factory: T) : PartitionsCreatorFactorySupplier<T> {
     override fun get(): T = factory
 }
 

@@ -34,7 +34,7 @@ class ReadOperation(
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: OutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
-    val supp: List<PartitionCreatorFactorySupplier<PartitionsCreatorFactory>>,
+    val partitionsCreatorFactoriesSupplier: List<PartitionsCreatorFactorySupplier<PartitionsCreatorFactory>>,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -48,7 +48,7 @@ class ReadOperation(
                 config.checkpointTargetInterval,
                 outputConsumer,
                 metaFieldDecorator,
-                supp
+                partitionsCreatorFactoriesSupplier.map { it -> it.get() }
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->
