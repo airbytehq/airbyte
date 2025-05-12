@@ -141,7 +141,7 @@ jobs:
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always() && matrix.connector
+        if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           files: |
@@ -236,7 +236,7 @@ jobs:
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always() && matrix.connector
+        if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           files: |
