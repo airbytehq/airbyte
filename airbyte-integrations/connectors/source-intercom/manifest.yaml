@@ -704,7 +704,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
             stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
           page_size_option:
             type: RequestOption
