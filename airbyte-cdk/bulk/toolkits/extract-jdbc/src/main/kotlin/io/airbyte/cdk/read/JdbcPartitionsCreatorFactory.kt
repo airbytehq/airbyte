@@ -29,6 +29,7 @@ abstract class JdbcPartitionsCreatorFactory<
 
 /** Sequential JDBC implementation of [PartitionsCreatorFactory]. */
 @Singleton
+@Secondary
 @Requires(property = MODE_PROPERTY, value = "sequential")
 class JdbcSequentialPartitionsCreatorFactory<
     A : JdbcSharedState,
