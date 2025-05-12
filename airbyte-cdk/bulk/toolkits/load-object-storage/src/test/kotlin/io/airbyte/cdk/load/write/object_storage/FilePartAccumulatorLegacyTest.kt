@@ -7,9 +7,13 @@ package io.airbyte.cdk.load.write.object_storage
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
-import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.MultiProducerChannel
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEvent
+import io.airbyte.cdk.load.message.PipelineMessage
+import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
+import io.airbyte.cdk.load.state.CheckpointId
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -18,12 +22,16 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class FilePartAccumulatorTest {
+class FilePartAccumulatorLegacyTest {
     private val pathFactory: ObjectStoragePathFactory = mockk(relaxed = true)
     private val stream: DestinationStream = mockk(relaxed = true)
-    private val outputQueue: MultiProducerChannel<BatchEnvelope<*>> = mockk(relaxed = true)
+    private val outputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> =
+        mockk(relaxed = true)
+    private val loadStrategy: ObjectLoader = mockk(relaxed = true)
 
-    private val filePartAccumulator = FilePartAccumulator(pathFactory, stream, outputQueue)
+    private val filePartAccumulatorLegacy =
+        FilePartAccumulatorLegacy(pathFactory, stream, outputQueue, loadStrategy)
 
     private val fileRelativePath = "relativePath"
     private val descriptor = DestinationStream.Descriptor("namespace", "name")
@@ -31,6 +39,7 @@ class FilePartAccumulatorTest {
     @BeforeEach
     fun init() {
         every { stream.descriptor } returns descriptor
+        every { loadStrategy.numUploadWorkers } returns 1
     }
 
     @Test
@@ -41,9 +50,14 @@ class FilePartAccumulatorTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulator.processFilePart(fileMessage, index)
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
 
-        coVerify(exactly = 1) { outputQueue.publish(any()) }
+        coVerify(exactly = 1) {
+            outputQueue.publish(
+                match { (it as PipelineMessage).checkpointCounts == mapOf(CheckpointId(0) to 1L) },
+                0
+            )
+        }
     }
 
     @Test
@@ -54,9 +68,9 @@ class FilePartAccumulatorTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulator.processFilePart(fileMessage, index)
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
 
-        coVerify(exactly = 2) { outputQueue.publish(any()) }
+        coVerify(exactly = 2) { outputQueue.publish(any(), 0) }
     }
 
     @Test
@@ -68,9 +82,9 @@ class FilePartAccumulatorTest {
         val index = 21L
         val fileMessage = createFileMessage(file)
 
-        filePartAccumulator.processFilePart(fileMessage, index)
+        filePartAccumulatorLegacy.handleFileMessage(fileMessage, index, CheckpointId(0))
 
-        coVerify(exactly = 2) { outputQueue.publish(any()) }
+        coVerify(exactly = 2) { outputQueue.publish(any(), 0) }
     }
 
     private fun createFile(sizeInBytes: Int): File {
