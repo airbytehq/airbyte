@@ -53,4 +53,4 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --modified test --only-step=version_inc_check --global-status-check-context='Connectors Version Increment Check' --global-status-check-description='Checking if connectors modified in this PR are ready for release'"
+          subcommand: "connectors --modified qa --check=VersionIncrementCheck --global-status-check-context='Connectors Version Increment Check' --global-status-check-description='Checking if connectors modified in this PR are ready for release'"
