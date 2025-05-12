@@ -93,7 +93,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
         if: matrix.connector
         with:
           cache-read-only: false
@@ -275,7 +275,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@v3  # TODO: Bump to v4 and re-test
+      - uses: gradle/actions/setup-gradle@v4
         if: matrix.connector
         with:
           cache-read-only: false
