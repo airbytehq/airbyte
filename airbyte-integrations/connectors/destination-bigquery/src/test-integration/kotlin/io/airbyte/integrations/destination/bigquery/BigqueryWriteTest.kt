@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery
 
-import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
@@ -31,7 +30,6 @@ import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -103,92 +101,6 @@ abstract class BigqueryTDWriteTest(configContents: String) :
     ) {
     private val oldCdkDestinationFactory =
         DockerizedDestinationFactory("airbyte/destination-bigquery", "2.10.2")
-
-    @Test
-    @Disabled("Just disabling to maybe confirm bug in there")
-    open fun testAppendCdkMigration() {
-        val stream =
-            DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-            )
-        // Run a sync on the old CDK
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 1234,
-                ),
-            ),
-            destinationProcessFactory = oldCdkDestinationFactory,
-        )
-        // Grab the loaded_at value from this sync
-        val firstSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream).first().loadedAt!!
-
-        // Run a sync with the current destination
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 5678,
-                ),
-            ),
-        )
-        val secondSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream)
-                .map { it.loadedAt!! }
-                .toSet()
-        // verify that we didn't execute a soft reset
-        assertAll(
-            {
-                assertEquals(
-                    2,
-                    secondSyncLoadedAt.size,
-                    "Expected two unique values for loaded_at after two syncs. If there is only 1 value, then we likely executed a soft reset.",
-                )
-            },
-            {
-                assertTrue(
-                    secondSyncLoadedAt.contains(firstSyncLoadedAt),
-                    "Expected the first sync's loaded_at value to exist after the second sync. If this is not true, then we likely executed a soft reset.",
-                )
-            },
-        )
-
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 1234,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-                OutputRecord(
-                    extractedAt = 5678,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-            ),
-            stream,
-            listOf(listOf("id")),
-            cursor = null,
-        )
-    }
 
     @Test
     open fun testDedupCdkMigration() {
