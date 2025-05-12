@@ -173,5 +173,71 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5981"),
             ),
         )
+
+        add(
+            ConnectorErrorProfile(
+                errorClass = "Postgres SQL Exception",
+                regexMatchingPattern = "(?i).*This connection has been closed.*",
+                failureType = FailureType.TRANSIENT,
+                externalMessage =
+                    "The connection to the Postgres server was unexpectedly closed, will retry.",
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: This connection has been closed.",
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/7016"),
+            ),
+        )
+
+        add(
+            ConnectorErrorProfile(
+                errorClass = "Postgres Debezium Connection Error",
+                regexMatchingPattern = "(?i).*Connection or outbound has closed.*",
+                failureType = FailureType.TRANSIENT,
+                externalMessage = "The connection to the Postgres server was lost, will retry.",
+                sampleInternalMessage =
+                    "java.net.SocketException: Connection or outbound has closed",
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5871"),
+            ),
+        )
+
+        add(
+            ConnectorErrorProfile(
+                errorClass = "Postgres SQL Exception",
+                regexMatchingPattern = "(?i).*recovery is in progress.*",
+                failureType = FailureType.TRANSIENT,
+                externalMessage = "Postgres server is currently in recovery mode, will retry.",
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: ERROR: recovery is in progress",
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6033"),
+            ),
+        )
+
+        add(
+            ConnectorErrorProfile(
+                errorClass = "Postgres SQL Exception",
+                regexMatchingPattern =
+                    "(?i).*terminating connection due to conflict with recovery.*",
+                failureType = FailureType.TRANSIENT,
+                externalMessage =
+                    "Postgres server closed the connection due to an internal conflict, will retry.",
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery",
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6296"),
+            ),
+        )
+
+        add(
+            ConnectorErrorProfile(
+                errorClass = "Postgres SQL Exception",
+                regexMatchingPattern =
+                    "(?i).*terminating connection due to idle-in-transaction timeout.*",
+                failureType = FailureType.CONFIG,
+                externalMessage =
+                    "Postgres server closed the connection due to an idle-in-transaction timeout. Please review your server's timeout configuration " +
+                        "and increase the timeout if needed",
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: FATAL: terminating connection due to idle-in-transaction timeout",
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5893"),
+            ),
+        )
     }
 }
