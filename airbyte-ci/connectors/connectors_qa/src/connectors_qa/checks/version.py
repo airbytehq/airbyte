@@ -3,7 +3,7 @@
 from typing import Any, Dict, Optional
 
 import requests
-import semver
+import semver  # type: ignore
 import yaml
 from connector_ops.utils import Connector  # type: ignore
 
