@@ -72,7 +72,8 @@ curl --location --request POST 'https://api.airbyte.com/v1/config_templates/conn
         "s3_bucket_path": "<S3_PATH_PREFIX>",
         "s3_bucket_region": "<S3_BUCKET_REGION>",
         "format": {
-          "format_type": "CSV"
+          "format_type": "CSV",
+          "flattening": "Root level flattening"
           }
         }
       }
