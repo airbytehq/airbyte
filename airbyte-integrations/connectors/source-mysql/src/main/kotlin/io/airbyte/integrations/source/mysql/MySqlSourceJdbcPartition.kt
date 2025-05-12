@@ -398,8 +398,8 @@ class MySqlJdbcConcurrentPartitionsCreatorFactory<
     A: JdbcSharedState,
     S: JdbcStreamState<A>,
     P: JdbcPartition<S>,>(
-    partitionFactory: MySqlSourceJdbcPartitionFactory,
-): JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory as JdbcPartitionFactory<A, S, P>) {
+    partitionFactory: JdbcPartitionFactory<A, S, P>,
+): JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         MySqlJdbcConcurrentPartitionsCreator(partition, partitionFactory)
 
