@@ -341,7 +341,7 @@ class InputConsumerTaskTest {
                     destinationTaskLauncher = mockk(relaxed = true),
                     fileTransferQueue = mockk(relaxed = true),
                     pipelineInputQueue = mockk(relaxed = true),
-                    loadPipeline = null,
+                    loadPipeline = mockk(relaxed = true),
                     partitioner = mockk(relaxed = true),
                     openStreamQueue = mockk(relaxed = true),
                 )

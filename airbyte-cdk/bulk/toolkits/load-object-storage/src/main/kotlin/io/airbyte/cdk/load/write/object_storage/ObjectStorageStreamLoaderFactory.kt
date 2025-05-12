@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
-import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
@@ -16,19 +15,15 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.write.BatchAccumulator
-import io.airbyte.cdk.load.write.FileBatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
-import java.io.File
 import java.io.OutputStream
 
 @Singleton
@@ -94,12 +89,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             state.ensureUnique(name)
         }
     }
-
-    override suspend fun createFileBatchAccumulator(
-        outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
-    ): FileBatchAccumulator = FilePartAccumulator(pathFactory, stream, outputQueue)
-
-    @VisibleForTesting fun createFile(url: String) = File(url)
 
     override suspend fun processBatch(batch: Batch): Batch = objectAccumulator.processBatch(batch)
 
