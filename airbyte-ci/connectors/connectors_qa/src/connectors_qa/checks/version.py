@@ -7,6 +7,7 @@ import semver  # type: ignore
 import yaml
 from connector_ops.utils import Connector  # type: ignore
 
+from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
 
 
@@ -17,9 +18,8 @@ class CheckVersionIncrement(Check):
     name = "Connector Version Increment Check"
     description = "Validates that the connector version was incremented if files were modified."
 
-    _METADATA_FILE_NAME = "metadata.yaml"
     # _BYPASS_CHECK_FOR = [
-    #     _METADATA_FILE_NAME,
+    #     consts.METADATA_FILE_NAME,
     #     "acceptance-test-config.yml",
     #     "README.md",
     #     "bootstrap.md",
@@ -37,7 +37,7 @@ class CheckVersionIncrement(Check):
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
         github_url_prefix = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
-        master_metadata_url = f"{github_url_prefix}/{connector.technical_name}/{self._METADATA_FILE_NAME}"
+        master_metadata_url = f"{github_url_prefix}/{connector.technical_name}/{consts.METADATA_FILE_NAME}"
         response = requests.get(master_metadata_url)
 
         # New connectors will not have a metadata file in master

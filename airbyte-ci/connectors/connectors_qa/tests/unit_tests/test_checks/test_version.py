@@ -2,8 +2,8 @@
 
 import pytest
 import semver
-from connector_ops.utils import METADATA_FILE_NAME
 
+from connectors_qa import consts
 from connectors_qa.checks.version import CheckVersionIncrement
 from connectors_qa.models import CheckStatus
 
@@ -37,7 +37,7 @@ class TestVersionIncrementCheck:
         assert result.status == CheckStatus.FAILED
         assert (
             result.message
-            == f"The dockerImageTag in {METADATA_FILE_NAME} was not incremented. Master version is 1.0.0, current version is 1.0.0"
+            == f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. Master version is 1.0.0, current version is 1.0.0"
         )
 
     def test_validate_success_rc_increment(self, mock_connector, mocker):
