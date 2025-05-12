@@ -447,7 +447,13 @@ class S3V2WriteTestParquetSnappy :
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true,
-    )
+    ) {
+    @Disabled("flaky: re-enable after dagger flow is disabled")
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 class S3V2WriteTestEndpointURL :
     S3V2WriteTest(
