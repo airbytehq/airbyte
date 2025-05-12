@@ -19,7 +19,9 @@ data class BigqueryConfiguration(
     val transformationPriority: TransformationPriority,
     val rawTableDataset: String,
     val disableTypingDeduping: Boolean,
-) : DestinationConfiguration()
+) : DestinationConfiguration() {
+    override val numOpenStreamWorkers: Int = 10
+}
 
 sealed interface LoadingMethodConfiguration
 
