@@ -293,7 +293,7 @@ app.use((req, res, next) => {
 });
 
 // Read config from environment variables
-const BASE_URL = process.env.BASE_URL || "https://local.airbyte.dev/api/public";
+const BASE_URL = process.env.BASE_URL || "https://api.airbyte.com";
 const AIRBYTE_WIDGET_URL = `${BASE_URL}/v1/embedded/widget_token`;
 const AIRBYTE_ACCESS_TOKEN_URL = `${BASE_URL}/v1/applications/token`;
 const AIRBYTE_CLIENT_ID = process.env.AIRBYTE_CLIENT_ID;
