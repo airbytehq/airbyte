@@ -631,6 +631,9 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
     transformations:
       - type: AddFields
         fields:
@@ -2417,11 +2420,13 @@ schemas:
           - "null"
           - string
         format: date-time
+        __ab_apply_cast_datetime: false
       updatedAt:
         type:
           - "null"
           - string
         format: date-time
+        __ab_apply_cast_datetime: false
       archived:
         type:
           - "null"
@@ -2432,6 +2437,7 @@ schemas:
           - "null"
           - string
         format: date-time
+        __ab_apply_cast_datetime: false
       companies:
         type:
           - "null"
