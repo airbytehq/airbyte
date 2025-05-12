@@ -37,7 +37,7 @@ is retried.
 
 ## Implementing Resumable Full Refresh streams
 
-### `StateMixin`
+### `CheckpointMixin`
 
 This class mixin adds property `state` with abstract setter and getter.
 The `state` attribute helps the CDK figure out the current state of sync at any moment.
@@ -88,5 +88,5 @@ in between sync attempts, but deleted at the beginning of new sync jobs.
 
 In summary, a resumable full refresh stream requires:
 
-- to be inherited from `StateMixin` and state methods implemented
+- to be inherited from `CheckpointMixin` and state methods implemented
 - implementing `Stream.read_records()` to get the Stream's current state, request a single page of records, and update the Stream's state with the next page to fetch or `{}`.

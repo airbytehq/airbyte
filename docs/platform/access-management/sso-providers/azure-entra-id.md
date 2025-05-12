@@ -52,14 +52,12 @@ Copy the **Value** (the Client Secret itself) immediately after creation. You wo
 
 ### Setup information needed
 
-You'll need to pass your Airbyte contact the following information of the created application.
+You'll need to **securely** share the following information from the newly created application with your Airbyte contact. After that we'll setup SSO for you and let you know once it's ready.
 
 - **Client Secret**: as copied above
 - **Application (client) ID**: You'll find this in the **Essentials** section on the **Overview** page of the application you created
 - **OpenID Connect metadata document**: You'll find this in the **Endpoints** panel, that you can open from the top bar on the **Overview** page
 - **Email Domain**: Users signing in from this domain will be required to sign in via SSO.
-
-Once we've received this information from you, We'll setup SSO for you and let you know once it's ready to be used.
 
 :::warning
 For security purposes, existing [Applications](https://reference.airbyte.com/reference/authentication) used to access the Airbyte API that were created before enabling SSO **will be disabled** once the user that owns the Application signs in via SSO for the first time. After enabling SSO, please make sure to replace any Application secrets that were previously in use.

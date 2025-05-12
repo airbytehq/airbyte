@@ -338,11 +338,12 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.12.0     | 2025-05-09 | [58592](https://github.com/airbytehq/airbyte/pull/58592) | Migrate incremental streams: email_events, engagements, subscription_changes                                                                                                                                                      |
-| 4.11.0     | 2025-05-07 | [59216](https://github.com/airbytehq/airbyte/pull/59216)     | Migrate workflows to low code                                                                        |
-| 4.10.0     | 2025-05-07 | [59195](https://github.com/airbytehq/airbyte/pull/59195)     | Migrate deal_pipelines to low code                                                                                                                      |
-| 4.9.0      | 2025-05-07 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code |
-| 4.8.0      | 2025-05-06 | [59693](https://github.com/airbytehq/airbyte/pull/59693) | Promoting release candidate 4.8.0-rc.1 to a main version. |
+| 4.12.1 | 2025-05-10 | [59810](https://github.com/airbytehq/airbyte/pull/59810) | Update dependencies |
+| 4.12.0 | 2025-05-09 | [58592](https://github.com/airbytehq/airbyte/pull/58592) | Migrate incremental streams: email_events, engagements, subscription_changes |
+| 4.11.0 | 2025-05-07 | [59216](https://github.com/airbytehq/airbyte/pull/59216) | Migrate workflows to low code |
+| 4.10.0 | 2025-05-07 | [59195](https://github.com/airbytehq/airbyte/pull/59195) | Migrate deal_pipelines to low code |
+| 4.9.0 | 2025-05-07 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code |
+| 4.8.0 | 2025-05-06 | [59693](https://github.com/airbytehq/airbyte/pull/59693) | Promoting release candidate 4.8.0-rc.1 to a main version. |
 | 4.8.0-rc.1 | 2025-04-30 | [58092](https://github.com/airbytehq/airbyte/pull/58092)     | Migrate companies_property_history, contacts_property_history and deals_property_history to low code                                                                                                                         |
 | 4.7.0      | 2025-04-30 | [59165](https://github.com/airbytehq/airbyte/pull/59165)     | Promoting release candidate 4.7.0-rc.2 to a main version. |
 | 4.7.0-rc.2 | 2025-04-28 | [59118](https://github.com/airbytehq/airbyte/pull/59118) | Add empty string state migration                                                                                                                                                 |

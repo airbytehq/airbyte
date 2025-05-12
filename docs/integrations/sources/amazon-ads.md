@@ -157,8 +157,9 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.2.2 | 2025-05-10 | [59332](https://github.com/airbytehq/airbyte/pull/59332) | Update dependencies |
 | 7.2.1 | 2025-04-28 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability |
-| 7.2.0 | 2025-04-28 | [59121](https://github.com/airbytehq/airbyte/pull/59121) | Promoting release candidate 7.2.0-rc.2 to a main version & 7.2.0-rc.1 since they were merged at the same time.|
+| 7.2.0 | 2025-04-28 | [59121](https://github.com/airbytehq/airbyte/pull/59121) | Promoting release candidate 7.2.0-rc.2 to a main version & 7.2.0-rc.1 since they were merged at the same time. |
 | 7.2.0-rc.2 | 2025-04-23 | [58610](https://github.com/airbytehq/airbyte/pull/58610) | Used latest version of Python cdk (6.45.10) |
 | 7.2.0-rc.1 | 2025-04-22 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams & Auto-update start_date if past lookback window|
 | 7.1.7 | 2025-04-12 | [57591](https://github.com/airbytehq/airbyte/pull/57591) | Update dependencies |

@@ -33,6 +33,7 @@ The Akeneo Airbyte connector enables seamless data synchronization between Akene
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-05-10 | [59887](https://github.com/airbytehq/airbyte/pull/59887) | Update dependencies |
 | 0.0.22 | 2025-05-03 | [59341](https://github.com/airbytehq/airbyte/pull/59341) | Update dependencies |
 | 0.0.21 | 2025-04-26 | [58731](https://github.com/airbytehq/airbyte/pull/58731) | Update dependencies |
 | 0.0.20 | 2025-04-19 | [58289](https://github.com/airbytehq/airbyte/pull/58289) | Update dependencies |

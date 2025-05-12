@@ -76,7 +76,7 @@ class SegmentsTest(TestCase):
     @HttpMocker()
     def test_when_read_then_extract_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            HttpRequest("https://api.intercom.io/segments", query_params={"per_page": "150"}),
+            HttpRequest("https://api.intercom.io/segments"),
             _response().with_record(_record()).with_record(_record()).build(),
         )
         output = read(ConfigBuilder(), StateBuilder())

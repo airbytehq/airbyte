@@ -206,7 +206,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkVal == Jsons.writeValueAsString(upperBound)) {
+                if (sv.pkVal == upperBound.asText()) {
                     return null
                 }
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkVal)
@@ -233,7 +233,7 @@ class MySqlSourceJdbcPartitionFactory(
 
                 if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                     val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                    if (sv.pkVal == Jsons.writeValueAsString(upperBound)) {
+                    if (sv.pkVal == upperBound.asText()) {
                         return null
                     }
                     return MySqlSourceJdbcCdcRfrSnapshotPartition(
@@ -257,7 +257,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkValue == Jsons.writeValueAsString(upperBound)) {
+                if (sv.pkValue == upperBound.asText()) {
                     return null
                 }
                 val pkLowerBound: JsonNode =

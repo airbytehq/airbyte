@@ -31,6 +31,7 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2025-05-10 | [60046](https://github.com/airbytehq/airbyte/pull/60046) | Update dependencies |
 | 0.0.23 | 2025-05-03 | [59448](https://github.com/airbytehq/airbyte/pull/59448) | Update dependencies |
 | 0.0.22 | 2025-04-26 | [58892](https://github.com/airbytehq/airbyte/pull/58892) | Update dependencies |
 | 0.0.21 | 2025-04-19 | [58322](https://github.com/airbytehq/airbyte/pull/58322) | Update dependencies |

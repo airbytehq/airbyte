@@ -343,6 +343,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         None, description="The language the connector is written in"
     )
     supportsFileTransfer: Optional[bool] = False
+    supportsDataActivation: Optional[bool] = False
 
 
 class ConnectorRegistryDestinationDefinition(BaseModel):
@@ -392,6 +393,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     ab_internal: Optional[AirbyteInternal] = None
     supportsRefreshes: Optional[bool] = False
     supportsFileTransfer: Optional[bool] = False
+    supportsDataActivation: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
     language: Optional[str] = Field(

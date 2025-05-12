@@ -37,6 +37,7 @@ A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.23 | 2025-05-10 | [59943](https://github.com/airbytehq/airbyte/pull/59943) | Update dependencies |
 | 0.0.22 | 2025-05-03 | [58867](https://github.com/airbytehq/airbyte/pull/58867) | Update dependencies |
 | 0.0.21 | 2025-04-19 | [58368](https://github.com/airbytehq/airbyte/pull/58368) | Update dependencies |
 | 0.0.20 | 2025-04-12 | [57789](https://github.com/airbytehq/airbyte/pull/57789) | Update dependencies |
