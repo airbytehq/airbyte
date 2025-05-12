@@ -2,9 +2,9 @@
 
 from typing import Any, Dict
 
-import requests
+import requests  # type: ignore
 import semver  # type: ignore
-import yaml
+import yaml  # type: ignore
 from connector_ops.utils import Connector  # type: ignore
 
 from connectors_qa import consts
