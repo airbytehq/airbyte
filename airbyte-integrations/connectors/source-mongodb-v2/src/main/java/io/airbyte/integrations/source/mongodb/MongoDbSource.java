@@ -60,13 +60,13 @@ public class MongoDbSource extends BaseConnector implements Source {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         final List<String> databaseNames = sourceConfig.getDatabaseNames();
-        
+
         if (databaseNames.isEmpty()) {
           return new AirbyteConnectionStatus()
               .withMessage("No databases specified in the configuration.")
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
-        
+
         /*
          * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
          * needs to actually execute a command in order to fetch the cluster description. Querying for the
@@ -74,7 +74,7 @@ public class MongoDbSource extends BaseConnector implements Source {
          */
         boolean hasAuthorizedCollections = false;
         List<String> databasesWithoutPermission = new ArrayList<>();
-        
+
         for (String databaseName : databaseNames) {
           if (!MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
             hasAuthorizedCollections = true;
@@ -84,18 +84,18 @@ public class MongoDbSource extends BaseConnector implements Source {
             LOGGER.warn("No authorized collections found in database: {}", databaseName);
           }
         }
-        
+
         if (!databasesWithoutPermission.isEmpty()) {
           LOGGER.warn("The following databases have no authorized collections: {}", String.join(", ", databasesWithoutPermission));
         }
-        
+
         if (!hasAuthorizedCollections) {
           return new AirbyteConnectionStatus()
-              .withMessage("Target MongoDB databases do not contain any authorized collections. Databases without permissions: " 
+              .withMessage("Target MongoDB databases do not contain any authorized collections. Databases without permissions: "
                   + String.join(", ", databasesWithoutPermission))
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
-        
+
         if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
           LOGGER.error("Target MongoDB instance is not a replica set cluster.");
           return new AirbyteConnectionStatus()
@@ -132,14 +132,14 @@ public class MongoDbSource extends BaseConnector implements Source {
         final Integer sampleSize = sourceConfig.getSampleSize();
         final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
         final Integer discoverTimeout = sourceConfig.getStreamDiscoveryTimeoutSeconds();
-        
+
         List<AirbyteStream> allStreams = new ArrayList<>();
         for (String databaseName : databaseNames) {
           LOGGER.info("Discovering collections in database: {}", databaseName);
           List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout);
           allStreams.addAll(streams);
         }
-        
+
         return new AirbyteCatalog().withStreams(allStreams);
       }
     } catch (final IllegalArgumentException e) {
@@ -206,14 +206,14 @@ public class MongoDbSource extends BaseConnector implements Source {
     if (stateManager.getCdcState() == null) {
       stateManager.updateCdcState(new MongoDbCdcState(null, sourceConfig.getEnforceSchema()));
     }
-    
+
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators = new ArrayList<>();
-    
+
     for (String databaseName : sourceConfig.getDatabaseNames()) {
       List<ConfiguredAirbyteStream> databaseStreams = streams.stream()
           .filter(stream -> stream.getStream().getName().startsWith(databaseName + "."))
           .toList();
-      
+
       if (!databaseStreams.isEmpty()) {
         LOGGER.info("Processing full refresh for database: {} with {} streams", databaseName, databaseStreams.size());
         fullRefreshIterators.addAll(initialSnapshotHandler.getIterators(
