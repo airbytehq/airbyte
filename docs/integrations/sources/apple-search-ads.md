@@ -6,11 +6,8 @@ This page contains the setup guide and reference information for the Apple Ads s
 
 ### Step 1: Set up Apple Ads
 
-1. With an administrator
-   account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)
-   from the Apple Ads UI.
-2.
-Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)
+1. With an administrator account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) from the Apple Ads UI.
+2. Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)
 in order to the required Client Secret and Client Id.
 
 ### Step 2: Set up the source connector in Airbyte
