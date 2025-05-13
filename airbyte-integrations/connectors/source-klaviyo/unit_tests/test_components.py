@@ -78,7 +78,7 @@ def test_transform_not_campaign_messages(components_module):
 
     transformator.transform(input_record)
 
-    assert "campaign___messages" in input_record
+    assert "campaign_messages" in input_record
     assert "estimated_recipient_count" in input_record
 
 
