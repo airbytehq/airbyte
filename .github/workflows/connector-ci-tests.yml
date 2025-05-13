@@ -68,8 +68,19 @@ jobs:
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    services:
+      datadog-agent:
+        image: datadog/agent:latest
+        env:
+          DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          DD_APM_ENABLED: "true"
+        ports:
+          - 8126:8126
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      DD_ENV: ci
+      DD_TRACE_AGENT_HOSTNAME: datadog-agent
+      DD_TRACE_AGENT_PORT: 8126
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -129,14 +140,32 @@ jobs:
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
+      - name: Download Datadog Java tracer
+        if: matrix.connector
+        run: curl -Lo dd-java-agent.jar https://dtdg.co/latest-java-tracer
+
       - name: Run Unit Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          JAVA_TOOL_OPTIONS: >-
+            -javaagent=$PWD/dd-java-agent.jar
+            -Ddd.service=${{ matrix.connector }}-unit
+            -Ddd.env=${{ env.DD_ENV }}
+            -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
+            -Ddd.trace.agent.port=${{ env.DD_TRACE_AGENT_PORT }}
         run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          JAVA_TOOL_OPTIONS: >-
+            -javaagent=$PWD/dd-java-agent.jar
+            -Ddd.service=${{ matrix.connector }}-unit
+            -Ddd.env=${{ env.DD_ENV }}
+            -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
+            -Ddd.trace.agent.port=${{ env.DD_TRACE_AGENT_PORT }}
         run: poe test-integration-tests
 
       - name: Publish Test Results
