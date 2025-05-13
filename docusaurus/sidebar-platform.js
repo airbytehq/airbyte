@@ -373,6 +373,7 @@ module.exports = {
             "enterprise-setup/implementation-guide",
             "enterprise-setup/api-access-config",
             "enterprise-setup/multi-region",
+            "enterprise-setup/audit-logging",
             "enterprise-setup/scaling-airbyte",
             "enterprise-setup/upgrade-service-account",
             "enterprise-setup/upgrading-from-community",
