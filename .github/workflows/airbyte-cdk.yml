@@ -57,7 +57,7 @@ jobs:
           distribution: "zulu"
           java-version: "21"
       - name: Run Gradle Check
-        uses: burrunan/gradle-cache-action@v1
+        uses: burrunan/gradle-cache-action@v3
         env:
           CI: true
         with:
