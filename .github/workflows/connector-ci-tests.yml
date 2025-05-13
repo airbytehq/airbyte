@@ -144,6 +144,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
@@ -239,6 +240,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
