@@ -30,7 +30,6 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.username", value = "FOO")
     @Property(name = "airbyte.connector.config.password", value = "BAR")
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
-    @Property(name = "airbyte.connector.config.ssl_mode.mode", value = "required")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
         value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
@@ -54,6 +53,8 @@ class MySqlSourceConfigurationTest {
 
         Assertions.assertEquals(config.jdbcProperties["theAnswerToLiveAndEverything"], "42")
         Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
+        // test default value
+        Assertions.assertEquals(config.jdbcProperties["sslMode"], "required")
     }
 
     @Test
@@ -62,14 +63,6 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.username", value = "FOO")
     @Property(name = "airbyte.connector.config.password", value = "BAR")
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
-    fun testAirbyteCloudDeployment() {
-        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
-        Assertions.assertThrows(ConfigErrorException::class.java) {
-            factory.makeWithoutExceptionHandling(pojo)
-        }
-    }
-
-    @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_V1)
     fun testParseConfigFromV1() {
         val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
@@ -96,6 +89,28 @@ class MySqlSourceConfigurationTest {
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
 
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_V2)
+    fun testCloudRequirements() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        try {
+            factory.makeWithoutExceptionHandling(pojo)
+            // If we reach here, no exception was thrown - test should fail
+            Assertions.fail("Expected ConfigErrorException, but no exception was thrown")
+        } catch (e: ConfigErrorException) {
+            // Here we verify that the caught exception has the expected message
+            Assertions.assertEquals(
+                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.",
+                e.message
+            )
+        }
+    }
     companion object {
 
         const val CONFIG_V1: String =
@@ -107,6 +122,28 @@ class MySqlSourceConfigurationTest {
   "password": "BAR",
   "ssl_mode": {
     "mode": "required"
+  },
+  "username": "FOO",
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": {
+    "method": "CDC",
+    "initial_waiting_seconds": 301,
+    "initial_load_timeout_hours": 9,
+    "invalid_cdc_cursor_position_behavior": "Re-sync data"
+  }
+}
+"""
+        const val CONFIG_V2: String =
+            """
+{
+  "host": "localhost",
+  "port": 12345,
+  "database": "SYSTEM",
+  "password": "BAR",
+  "ssl_mode": {
+    "mode": "preferred"
   },
   "username": "FOO",
   "tunnel_method": {

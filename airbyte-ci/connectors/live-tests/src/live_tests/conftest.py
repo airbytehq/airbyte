@@ -642,5 +642,5 @@ def pytest_generate_tests(metafunc):
         requested_fixtures,
         [[c] * len(requested_fixtures) for c in all_connection_objects],
         indirect=requested_fixtures,
-        ids=[f"CONNECTION {hashlib.sha256(c.connection_id.encode()).hexdigest()[:7]}" for c in all_connection_objects],
+        ids=[f"CONNECTION {c.connection_id[:8]}" for c in all_connection_objects],
     )

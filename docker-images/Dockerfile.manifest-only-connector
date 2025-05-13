@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
+# Manifest-Only connector Dockerfile for Airbyte
+
+# Manifest-Only connector images are built on top of SDM connector image
+ARG BASE_IMAGE=airbyte/source-manifest-only:latest
+
+FROM ${BASE_IMAGE}
+ARG CONNECTOR_SNAKE_NAME
+ARG CONNECTOR_NAME
+
+WORKDIR /airbyte/integration_code
+
+COPY . ./
+
+ENV AIRBYTE_ENTRYPOINT="python ./main.py"
+ENTRYPOINT ["python", "./main.py"]

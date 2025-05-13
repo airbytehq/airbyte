@@ -6,8 +6,8 @@
 
 Spree Commerce can run on the MySQL or Postgres databases. You can use Airbyte to sync your Spree Commerce instance by connecting to the underlying database using the appropriate Airbyte connector:
 
-- [MySQL](mysql.md)
-- [Postgres](postgres.md)
+- [MySQL](mysql)
+- [Postgres](postgres)
 
 :::info
 

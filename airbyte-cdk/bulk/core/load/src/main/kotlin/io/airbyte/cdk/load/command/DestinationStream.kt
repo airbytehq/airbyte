@@ -28,6 +28,10 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
+    // whether the stream corresponds to a series of files and their metadata
+    val isFileBased: Boolean = false,
+    // whether we will move the file (in addition to the metadata)
+    val includeFiles: Boolean = false,
 ) {
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -59,10 +63,12 @@ data class DestinationStream(
                     .withNamespace(descriptor.namespace)
                     .withName(descriptor.name)
                     .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
+                    .withIsFileBased(isFileBased)
             )
             .withGenerationId(generationId)
             .withMinimumGenerationId(minimumGenerationId)
             .withSyncId(syncId)
+            .withIncludeFiles(includeFiles)
             .apply {
                 when (importType) {
                     is Append -> {
@@ -89,7 +95,9 @@ data class DestinationStream(
 }
 
 @Singleton
-class DestinationStreamFactory {
+class DestinationStreamFactory(
+    private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
+) {
     fun make(stream: ConfiguredAirbyteStream): DestinationStream {
         return DestinationStream(
             descriptor =
@@ -108,7 +116,9 @@ class DestinationStreamFactory {
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
-            schema = JsonSchemaToAirbyteType().convert(stream.stream.jsonSchema)
+            schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
+            isFileBased = stream.stream.isFileBased ?: false,
+            includeFiles = stream.includeFiles ?: false,
         )
     }
 }

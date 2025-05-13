@@ -4,6 +4,9 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper
+import io.airbyte.cdk.load.test.mock.MockDestinationSpecification
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
@@ -11,7 +14,6 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
@@ -32,6 +34,7 @@ class MockBasicFunctionalityIntegrationTest :
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        additionalMicronautEnvs = listOf(MOCK_TEST_MICRONAUT_ENVIRONMENT),
     ) {
     @Test
     override fun testBasicWrite() {
@@ -78,10 +81,14 @@ class MockBasicFunctionalityIntegrationTest :
         super.testAppendSchemaEvolution()
     }
 
-    @Disabled("flaky")
     @Test
     override fun testDedup() {
         super.testDedup()
+    }
+
+    @Test
+    override fun testDedupWithStringKey() {
+        super.testDedupWithStringKey()
     }
 
     @Test

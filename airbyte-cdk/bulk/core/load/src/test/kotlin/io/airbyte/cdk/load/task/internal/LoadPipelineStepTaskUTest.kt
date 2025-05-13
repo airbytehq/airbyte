@@ -6,9 +6,12 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineContext
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
+import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
@@ -20,14 +23,17 @@ import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.NoOutput
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
+import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertDoesNotThrow
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertThrows
 import io.airbyte.cdk.load.util.setOnce
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import io.mockk.slot
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -36,6 +42,8 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -48,6 +56,7 @@ class LoadPipelineStepTaskUTest {
         BatchAccumulator<AutoCloseable, StreamKey, String, MyBatch>
     @MockK lateinit var inputFlow: Flow<PipelineEvent<StreamKey, String>>
     @MockK lateinit var batchUpdateQueue: QueueWriter<BatchUpdate>
+    @MockK lateinit var flushStrategy: PipelineFlushStrategy
 
     data class Closeable(val id: Int = 0) : AutoCloseable {
         override fun close() {}
@@ -55,26 +64,44 @@ class LoadPipelineStepTaskUTest {
 
     data class MyBatch(override val state: BatchState) : WithBatchState
 
+    data class TestKey(val output: Boolean, override val stream: DestinationStream.Descriptor) :
+        WithStream
+
+    class TestOutputPartitioner : OutputPartitioner<StreamKey, String, TestKey, Boolean> {
+        override fun getOutputKey(inputKey: StreamKey, output: Boolean): TestKey {
+            return TestKey(output, inputKey.stream)
+        }
+
+        override fun getPart(outputKey: TestKey, inputPart: Int, numParts: Int): Int {
+            if (outputKey.output) return 1
+            return 0
+        }
+    }
+
+    val taskId = "test-step"
+
     @BeforeEach
     fun setup() {
         coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
+        every { flushStrategy.shouldFlush(any(), any()) } returns false
     }
 
     private fun <T : Any> createTask(
         part: Int,
         batchAccumulator: BatchAccumulator<AutoCloseable, StreamKey, String, T>,
+        flushStrategy: PipelineFlushStrategy = this.flushStrategy,
     ): LoadPipelineStepTask<AutoCloseable, StreamKey, String, StreamKey, T> =
         LoadPipelineStepTask(
             batchAccumulator,
             inputFlow,
             batchUpdateQueue,
-            // TODO: test output partitioner, queue, and flush strategy when actually used
+            // TODO: Test output partitioner & queue
             null,
             null,
-            null,
+            flushStrategy,
             part,
             part,
-            1,
+            taskId,
             ConcurrentHashMap()
         )
 
@@ -384,7 +411,7 @@ class LoadPipelineStepTaskUTest {
                 key1.stream,
                 mapOf(CheckpointId(0) to 15L, CheckpointId(1) to 51L),
                 BatchState.COMPLETE,
-                batchAccumulatorNoUpdate::class.java.simpleName,
+                taskId,
                 part,
                 inputCount = 12L
             )
@@ -393,7 +420,7 @@ class LoadPipelineStepTaskUTest {
                 key2.stream,
                 mapOf(CheckpointId(1) to 6L, CheckpointId(2) to 22L, CheckpointId(3) to 38L),
                 BatchState.PERSISTED,
-                batchAccumulatorNoUpdate::class.java.simpleName,
+                taskId,
                 part,
                 inputCount = 12L
             )
@@ -402,11 +429,9 @@ class LoadPipelineStepTaskUTest {
     }
 
     private fun runEndOfStreamTest(sendBoth: Boolean) = runTest {
-        data class TestKey(val output: Boolean, override val stream: DestinationStream.Descriptor) :
-            WithStream
         val outputQueue = mockk<PartitionedQueue<PipelineEvent<TestKey, Boolean>>>()
         val completionMap =
-            ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>()
+            ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>()
         val inputFlows =
             arrayOf<Flow<PipelineEvent<StreamKey, String>>>(
                 mockk(relaxed = true),
@@ -418,21 +443,12 @@ class LoadPipelineStepTaskUTest {
                     batchAccumulatorNoUpdate,
                     inputFlows[it],
                     batchUpdateQueue,
-                    object : OutputPartitioner<StreamKey, String, TestKey, Boolean> {
-                        override fun getOutputKey(inputKey: StreamKey, output: Boolean): TestKey {
-                            return TestKey(output, inputKey.stream)
-                        }
-
-                        override fun getPart(outputKey: TestKey, numParts: Int): Int {
-                            if (outputKey.output) return 1
-                            return 0
-                        }
-                    },
+                    TestOutputPartitioner(),
                     outputQueue,
                     null,
                     it,
                     2,
-                    1,
+                    taskId,
                     completionMap
                 )
             }
@@ -507,5 +523,128 @@ class LoadPipelineStepTaskUTest {
             }
 
         assertDoesNotThrow { task.execute() }
+    }
+
+    @Test
+    fun `accumulators are finished when flush strategy returns true`() = runTest {
+        val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
+        val part = 7
+        val flushEveryOther = mockk<PipelineFlushStrategy>()
+        val task = createTask(part, batchAccumulatorNoUpdate, flushEveryOther)
+
+        coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
+        coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+        coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
+        every { flushEveryOther.shouldFlush(any(), any()) } answers
+            {
+                val inputCount = firstArg<Long>()
+                inputCount == 2L
+            }
+
+        coEvery { inputFlow.collect(any()) } coAnswers
+            {
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                repeat(10) { collector.emit(messageEvent(key, "value", emptyMap())) }
+            }
+
+        task.execute()
+
+        // We should start and finish 5 times since we flush every other record
+        coVerify(exactly = 5) { batchAccumulatorNoUpdate.start(any(), any()) }
+        coVerify(exactly = 10) { batchAccumulatorNoUpdate.accept("value", any()) }
+        coVerify(exactly = 5) { batchAccumulatorNoUpdate.finish(any()) }
+    }
+
+    @Test
+    fun `accumulators are finished on heartbeat when flush returns true`() = runTest {
+        val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
+        val part = 7
+        val flushAlways = mockk<PipelineFlushStrategy>()
+        val task = createTask(part, batchAccumulatorNoUpdate, flushAlways)
+
+        coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
+        coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+        coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
+        every { flushAlways.shouldFlush(any(), any()) } returns true
+
+        coEvery { inputFlow.collect(any()) } coAnswers
+            {
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                collector.emit(messageEvent(key, "value", emptyMap()))
+                collector.emit(PipelineHeartbeat())
+            }
+
+        task.execute()
+
+        // We should start and finish 5 times since we flush every other record
+        coVerify(exactly = 1) { batchAccumulatorNoUpdate.start(any(), any()) }
+        coVerify(exactly = 1) { batchAccumulatorNoUpdate.accept("value", any()) }
+        coVerify(exactly = 1) { batchAccumulatorNoUpdate.finish(any()) }
+    }
+
+    @Test
+    fun `heartbeat is ignored when flush strategy returns false`() = runTest {
+        val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
+        val part = 7
+        val task = createTask(part, batchAccumulatorNoUpdate)
+
+        coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
+        coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+        coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
+
+        coEvery { inputFlow.collect(any()) } coAnswers
+            {
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                collector.emit(messageEvent(key, "value", emptyMap()))
+                collector.emit(PipelineHeartbeat())
+            }
+
+        task.execute()
+
+        coVerify(exactly = 1) { batchAccumulatorNoUpdate.start(any(), any()) }
+        coVerify(exactly = 1) { batchAccumulatorNoUpdate.accept("value", any()) }
+        coVerify(exactly = 0) { batchAccumulatorNoUpdate.finish(any()) }
+    }
+
+    @Test
+    fun `input context is forwarded on output if present`() = runTest {
+        val outputQueue = mockk<PartitionedQueue<PipelineEvent<TestKey, Boolean>>>()
+        every { outputQueue.partitions } returns 1
+        coEvery { outputQueue.publish(any(), any()) } returns Unit
+
+        val task =
+            LoadPipelineStepTask(
+                batchAccumulatorNoUpdate,
+                inputFlow,
+                batchUpdateQueue,
+                TestOutputPartitioner(),
+                outputQueue,
+                flushStrategy,
+                1,
+                1,
+                taskId,
+                ConcurrentHashMap()
+            )
+
+        val streamKey = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
+
+        val context =
+            PipelineContext(
+                parentCheckpointCounts = mapOf(),
+                parentRecord =
+                    DestinationRecordRaw(mockk(), mockk(relaxed = true), "serialized", mockk()),
+            )
+
+        task.handleOutput(
+            streamKey,
+            mapOf(),
+            true,
+            1,
+            context,
+        )
+
+        val msgSlot = slot<PipelineMessage<TestKey, Boolean>>()
+        coVerify { outputQueue.publish(capture(msgSlot), any()) }
+        Assertions.assertEquals(context, msgSlot.captured.context)
     }
 }

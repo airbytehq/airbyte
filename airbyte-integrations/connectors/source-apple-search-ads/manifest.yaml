@@ -555,8 +555,7 @@ definitions:
       client_id: "{{ config.client_id }}"
       grant_type: client_credentials
       client_secret: "{{ config.client_secret }}"
-      token_refresh_endpoint: >-
-        https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
+      token_refresh_endpoint: "{{ config.get('token_refresh_endpoint', 'https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg') }}"
       refresh_request_body: {}
 
 streams:
@@ -578,6 +577,7 @@ spec:
       - start_date
       - client_secret
       - timezone
+      - token_refresh_endpoint
     properties:
       org_id:
         type: integer
@@ -652,6 +652,15 @@ spec:
           - UTC
         order: 7
         title: Time Zone
+      token_refresh_endpoint:
+        type: string
+        description: >-
+          Token Refresh Endpoint. You should override the default value in scenarios 
+          where it's required to proxy requests to Apple's token endpoint
+        title: Token Refresh Endpoint
+        default: >-
+          https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
+        order: 8
     additionalProperties: true
 
 metadata:

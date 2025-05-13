@@ -4,27 +4,23 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTask
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
-import io.micronaut.context.annotation.Requires
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 
-@Singleton
-@Requires(bean = ObjectLoader::class)
-class ObjectLoaderPartLoaderStep(
-    val loader: ObjectLoader,
-    val partLoader: ObjectLoaderPartLoader,
-    @Named("objectLoaderPartQueue")
-    val inputQueue:
+class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
+    loader: ObjectLoader,
+    private val partLoader: ObjectLoaderPartLoader<T>,
+    private val inputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    @Named("objectLoaderLoadedPartQueue")
-    val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>>,
-    val taskFactory: LoadPipelineStepTaskFactory,
+    private val outputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
+    private val taskFactory: LoadPipelineStepTaskFactory,
+    private val stepId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
 
@@ -32,11 +28,11 @@ class ObjectLoaderPartLoaderStep(
         return taskFactory.createIntermediateStep(
             partLoader,
             inputQueue,
-            ObjectLoaderLoadedPartPartitioner(),
+            outputPartitioner = ObjectLoaderLoadedPartPartitioner(),
             outputQueue,
             partition,
             numWorkers,
-            taskIndex = 2
+            stepId = stepId,
         )
     }
 }

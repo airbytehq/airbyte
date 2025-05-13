@@ -94,8 +94,11 @@ The Intercom connector should not run into Intercom API limitations under normal
 <details>
   <summary>Expand to review</summary>
 
+
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.0-rc.3 | 2025-05-09| [55829](https://github.com/airbytehq/airbyte/pull/55829) |  Fix pagination for `conversations`, `tickets`, `companies` & `contacts` and cleanup manifest|
+| 0.13.0-rc.2 | 2025-04-08 | [57524](https://github.com/airbytehq/airbyte/pull/57524) | Use global state and pass state to parent streams for conversation_parts and company_segments                                    |
 | 0.13.0-rc.1 | 2025-02-22 | [53187](https://github.com/airbytehq/airbyte/pull/53187) | Update with latest CDK features, remove custom incremental sync components, update schema for conversation_parts  |
 | 0.12.2 | 2025-02-15 | [53835](https://github.com/airbytehq/airbyte/pull/53835) | Update dependencies |
 | 0.12.1 | 2025-02-08 | [53257](https://github.com/airbytehq/airbyte/pull/53257) | Update dependencies |
@@ -180,5 +183,4 @@ The Intercom connector should not run into Intercom API limitations under normal
 | 0.1.2      | 2021-08-19 | [5531](https://github.com/airbytehq/airbyte/pull/5531)   | Corrected pagination                                                                                                             |
 | 0.1.1      | 2021-07-31 | [5123](https://github.com/airbytehq/airbyte/pull/5123)   | Corrected rate limit                                                                                                             |
 | 0.1.0      | 2021-07-19 | [4676](https://github.com/airbytehq/airbyte/pull/4676)   | Release Intercom CDK Connector                                                                                                   |
-
 </details>

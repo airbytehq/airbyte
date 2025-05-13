@@ -18,9 +18,15 @@ class S3V2JsonNoFrillsPerformanceTest :
         numFilesForFileTransfer = 5,
         fileSizeMbForFileTransfer = 1024,
     ) {
+
     @Test
-    override fun testFileTransfer() {
-        super.testFileTransfer()
+    override fun testFileTransferOld() {
+        super.testFileTransferOld()
+    }
+
+    @Test
+    override fun testFileTransferNew() {
+        super.testFileTransferNew()
     }
 }
 

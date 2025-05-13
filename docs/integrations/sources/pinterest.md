@@ -205,7 +205,12 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.0 | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) |Added Account Id filter to allow retrieving data for a specific ad account |
+| 2.1.5 | 2025-05-04 | [59069](https://github.com/airbytehq/airbyte/pull/59069) | Update dependencies |
+| 2.1.4 | 2025-04-19 | [58524](https://github.com/airbytehq/airbyte/pull/58524) | Update dependencies |
+| 2.1.3 | 2025-04-12 | [57926](https://github.com/airbytehq/airbyte/pull/57926) | Update dependencies |
+| 2.1.2 | 2025-04-05 | [57337](https://github.com/airbytehq/airbyte/pull/57337) | Update dependencies |
+| 2.1.1 | 2025-03-29 | [56721](https://github.com/airbytehq/airbyte/pull/56721) | Update dependencies |
+| 2.1.0 | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) | Added Account Id filter to allow retrieving data for a specific ad account |
 | 2.0.32 | 2025-03-22 | [55055](https://github.com/airbytehq/airbyte/pull/55055) | Update dependencies |
 | 2.0.31 | 2025-02-23 | [54581](https://github.com/airbytehq/airbyte/pull/54581) | Update dependencies |
 | 2.0.30 | 2025-02-15 | [53977](https://github.com/airbytehq/airbyte/pull/53977) | Update dependencies |
