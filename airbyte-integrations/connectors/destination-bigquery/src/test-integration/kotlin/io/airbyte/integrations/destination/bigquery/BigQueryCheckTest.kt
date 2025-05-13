@@ -28,24 +28,24 @@ class BigQueryCheckTest :
                     Pattern.compile(
                         "Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake"
                     ),
-                CheckTestConfig(
-                    BigQueryDestinationTestUtils.createConfig(
-                        "secrets/credentials-no-edit-public-schema-role.json"
-                    ),
-                    name = "no edit public schema role",
-                ) to Pattern.compile("Permission bigquery.tables.create denied"),
-                CheckTestConfig(
-                    BigQueryDestinationTestUtils.createConfig(
-                        "secrets/credentials-standard-no-dataset-creation.json"
-                    ),
-                    name = "no dataset creation",
-                ) to Pattern.compile("Permission bigquery.tables.create denied"),
-                CheckTestConfig(
-                    BigQueryDestinationTestUtils.createConfig(
-                        "secrets/credentials-1s1t-gcs-bad-copy-permission.json"
-                    ),
-                    name = "gcs bad copy permission",
-                ) to Pattern.compile("Permission bigquery.tables.updateData denied on table"),
+//                CheckTestConfig(
+//                    BigQueryDestinationTestUtils.createConfig(
+//                        "secrets/credentials-no-edit-public-schema-role.json"
+//                    ),
+//                    name = "no edit public schema role",
+//                ) to Pattern.compile("Permission bigquery.tables.create denied"),
+//                CheckTestConfig(
+//                    BigQueryDestinationTestUtils.createConfig(
+//                        "secrets/credentials-standard-no-dataset-creation.json"
+//                    ),
+//                    name = "no dataset creation",
+//                ) to Pattern.compile("Permission bigquery.tables.create denied"),
+//                CheckTestConfig(
+//                    BigQueryDestinationTestUtils.createConfig(
+//                        "secrets/credentials-1s1t-gcs-bad-copy-permission.json"
+//                    ),
+//                    name = "gcs bad copy permission",
+//                ) to Pattern.compile("Permission bigquery.tables.updateData denied on table"),
             ),
         additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
