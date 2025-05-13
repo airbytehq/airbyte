@@ -110,7 +110,7 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertEquals("Target MongoDB database does not contain any authorized collections.", airbyteConnectionStatus.getMessage());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("Target MongoDB databases do not contain any authorized collections"));
   }
 
   @Test
