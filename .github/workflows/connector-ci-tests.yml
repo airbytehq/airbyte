@@ -79,7 +79,7 @@ jobs:
           - 8126:8126
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      DD_ENV: ci
+      DD_ENV: connectors-ci
       DD_TRACE_AGENT_HOSTNAME: datadog-agent
       DD_TRACE_AGENT_PORT: 8126
     strategy:
@@ -151,7 +151,7 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: >-
             -javaagent:${{ github.workspace }}/dd-java-agent.jar
-            -Ddd.service=${{ matrix.connector }}-unit
+            -Ddd.service=${{ matrix.connector }}
             -Ddd.env=${{ env.DD_ENV }}
             -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
             -Ddd.trace.agent.port=${{ env.DD_TRACE_AGENT_PORT }}
@@ -163,7 +163,7 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: >-
             -javaagent:${{ github.workspace }}/dd-java-agent.jar
-            -Ddd.service=${{ matrix.connector }}-unit
+            -Ddd.service=${{ matrix.connector }}
             -Ddd.env=${{ env.DD_ENV }}
             -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
             -Ddd.trace.agent.port=${{ env.DD_TRACE_AGENT_PORT }}
