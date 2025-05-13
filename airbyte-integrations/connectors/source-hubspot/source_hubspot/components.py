@@ -313,6 +313,17 @@ class EngagementsHttpRequester(HttpRequester):
 
 
 class EntitySchemaNormalization(TypeTransformer):
+    """
+    For CRM object and CRM Search streams, which have dynamic schemas, custom normalization should be applied.
+    Convert record's received value according to its declared catalog dynamic schema type and format.
+
+    Empty strings for fields that have non string type converts to None.
+    Numeric strings for fields that have number type converts to integer type, otherwise to number.
+    Strings like "true"/"false" with boolean type converts to boolean.
+    Date and Datime fields converts to format datetime string. Set __ab_apply_cast_datetime: false in field definition, if you don't need to format datetime strings.
+
+    """
+
     def __init__(self, *args, **kwargs):
         config = TransformConfig.CustomSchemaNormalization
         super().__init__(config)
