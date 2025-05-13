@@ -743,8 +743,6 @@ definitions:
               value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
           properties: "{{ stream_slice.extra_fields['query_properties'] }}"
           after: "{{ next_page_token['next_page_token']['after'] }}"
-        request_parameters:
-          archived: "false"
       paginator:
         type: DefaultPaginator
         pagination_strategy:

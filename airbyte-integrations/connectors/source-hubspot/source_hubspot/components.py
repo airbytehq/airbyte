@@ -444,10 +444,7 @@ def build_associations_retriever(
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
-            request_body_json={
-                # "inputs": [{"id": id} for id in ids],
-                "inputs": "{{ stream_slice.extra_fields['record_ids'] }}"
-            },
+            request_body_json={"inputs": "{{ stream_slice.extra_fields['record_ids'] }}"},
             config=config,
             parameters=parameters,
         ),
@@ -524,7 +521,6 @@ class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
     accepts the set of dynamic schema fields as a single record.
-    This might be doable with the existing DpathExtractor configuration.
     """
 
     config: Config
