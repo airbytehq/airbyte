@@ -17,16 +17,14 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
-import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.cdk.load.write.db.InsertLoader
+import io.airbyte.cdk.load.write.db.InsertLoaderRequest
+import io.airbyte.cdk.load.write.db.InsertLoaderRequestBuilder
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.CONFIG_ERROR_MSG
-import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_FORBIDDEN
-import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_NOT_FOUND
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -35,49 +33,82 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
-class BigqueryBatchStandardInsertsLoader(
+// the default chunk size on the TableDataWriteChannel is 15MB.
+private const val DEFAULT_CHUNK_SIZE: Long = 15 * 1024 * 1024
+
+class BigqueryStandardInsertsRequest(
+    private val baos: ByteArrayOutputStream,
+    // TableDataWriteChannel holds a 15MB buffer in memory,
+    // so we try to avoid instantiating it for as long as possible.
+    // so accept it as a supplier here, and don't invoke the supplier
+    // until the CDK tells us we're ready to actually submit the request.
+    private val tableWriteChannelSupplier: () -> TableDataWriteChannel,
+) : InsertLoaderRequest {
+    override suspend fun submit() {
+        val writer = tableWriteChannelSupplier()
+        writer.use { writer.write(ByteBuffer.wrap(baos.toByteArray())) }
+        BigQueryUtils.waitForJobFinish(writer.job)
+    }
+}
+
+class BigqueryStandardInsertsRequestBuilder(
     private val bigquery: BigQuery,
     private val writeChannelConfiguration: WriteChannelConfiguration,
     private val job: JobId,
-) : DirectLoader {
+) : InsertLoaderRequestBuilder<BigqueryStandardInsertsRequest> {
     private val recordFormatter = BigQueryRecordFormatter()
     private val baos = ByteArrayOutputStream()
 
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    override fun accept(
+        record: DestinationRecordRaw,
+        maxRequestSizeBytes: Long
+    ): InsertLoaderRequestBuilder.InsertAcceptResult<BigqueryStandardInsertsRequest> {
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
         baos.write(byteArray)
-        // the default chunk size on the TableDataWriteChannel is 15MB,
-        // so just terminate when we get there.
-        if (baos.size() > 15 * 1024 * 1024) {
+        return if (baos.size() > maxRequestSizeBytes) {
             finish()
-            return DirectLoader.Complete
         } else {
-            return DirectLoader.Incomplete
+            InsertLoaderRequestBuilder.NoOutput()
         }
     }
 
-    override fun finish() {
-        // this object holds a 15MB buffer in memory.
-        // we shouldn't initialize that until we actually need it,
-        // so just do it in finish.
-        // this minimizes the time we're occupying that chunk of memory.
-        val writer: TableDataWriteChannel =
-            try {
-                bigquery.writer(job, writeChannelConfiguration)
-            } catch (e: BigQueryException) {
-                if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
-                    throw ConfigErrorException(CONFIG_ERROR_MSG + e)
-                } else {
-                    throw BigQueryException(e.code, e.message)
+    override fun finish(): InsertLoaderRequestBuilder.Request<BigqueryStandardInsertsRequest> {
+        return InsertLoaderRequestBuilder.Request(
+            BigqueryStandardInsertsRequest(baos) {
+                try {
+                    bigquery.writer(job, writeChannelConfiguration)
+                } catch (e: BigQueryException) {
+                    if (
+                        e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND
+                    ) {
+                        throw ConfigErrorException(CONFIG_ERROR_MSG + e)
+                    } else {
+                        throw BigQueryException(e.code, e.message)
+                    }
                 }
             }
-        writer.use { writer.write(ByteBuffer.wrap(baos.toByteArray())) }
-        BigQueryUtils.waitForJobFinish(writer.job)
+        )
     }
 
-    override fun close() {}
+    override fun close() {
+        // do nothing
+    }
+
+    companion object {
+        const val HTTP_STATUS_CODE_FORBIDDEN = 403
+        const val HTTP_STATUS_CODE_NOT_FOUND = 404
+
+        val CONFIG_ERROR_MSG =
+            """
+            |Failed to write to destination schema.
+            |   1. Make sure you have all required permissions for writing to the schema.
+            |   2. Make sure that the actual destination schema's location corresponds to location provided in connector's config.
+            |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the "Destination Default" option.
+            |More details:
+            |""".trimMargin()
+    }
 }
 
 class BigqueryConfiguredForBatchStandardInserts : Condition {
@@ -89,16 +120,18 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 
 @Requires(condition = BigqueryConfiguredForBatchStandardInserts::class)
 @Singleton
-class BigqueryBatchStandardInsertsLoaderFactory(
+class BigqueryBatchStandardInsertsLoader(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
     private val names: TableCatalogByDescriptor,
     private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
-) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
-    override fun create(
+) : InsertLoader<BigqueryStandardInsertsRequest> {
+    override val estimatedByteSizePerRequest: Long = DEFAULT_CHUNK_SIZE
+
+    override fun createAccumulator(
         streamDescriptor: DestinationStream.Descriptor,
-        part: Int,
-    ): BigqueryBatchStandardInsertsLoader {
+        partition: Int,
+    ): InsertLoaderRequestBuilder<BigqueryStandardInsertsRequest> {
         val rawTableName = names[streamDescriptor]!!.tableNames.rawTableName!!
         val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
 
@@ -119,24 +152,10 @@ class BigqueryBatchStandardInsertsLoaderFactory(
                 .setProject(bigquery.options.projectId)
                 .build()
 
-        return BigqueryBatchStandardInsertsLoader(
+        return BigqueryStandardInsertsRequestBuilder(
             bigquery,
             writeChannelConfiguration,
             jobId,
         )
-    }
-
-    companion object {
-        const val HTTP_STATUS_CODE_FORBIDDEN = 403
-        const val HTTP_STATUS_CODE_NOT_FOUND = 404
-
-        val CONFIG_ERROR_MSG =
-            """
-            |Failed to write to destination schema.
-            |   1. Make sure you have all required permissions for writing to the schema.
-            |   2. Make sure that the actual destination schema's location corresponds to location provided in connector's config.
-            |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the "Destination Default" option.
-            |More details:
-            |""".trimMargin()
     }
 }
