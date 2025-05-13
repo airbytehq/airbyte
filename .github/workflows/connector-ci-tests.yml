@@ -74,6 +74,7 @@ jobs:
         env:
           DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
           DD_APM_ENABLED: "true"
+          DD_HOSTNAME: datadog-agent
         ports:
           - 8126:8126
     env:
