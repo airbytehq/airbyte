@@ -13,7 +13,9 @@ import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import jakarta.inject.Singleton
+import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -30,22 +32,23 @@ class OpenStreamTask(
     override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
-        val results =
-            openStreamQueue
-                .consume()
-                .map { stream ->
-                    val streamLoader = destinationWriter.createStreamLoader(stream)
-                    val result = runCatching {
-                        streamLoader.start()
-                        streamLoader
-                    }
-                    syncManager.registerStartedStreamLoader(
-                        stream.descriptor,
-                        result
-                    ) // throw after registering the failure
-                    result
+        openStreamQueue
+            .consume()
+            .fold(mutableSetOf<DestinationStream.Descriptor>()) { streamsSeen, stream ->
+                val streamLoader = destinationWriter.createStreamLoader(stream)
+                val result = runCatching {
+                    streamLoader.start()
+                    streamLoader
                 }
-                .toList()
-        results.forEach { it.getOrThrow() }
+                syncManager.registerStartedStreamLoader(
+                    stream.descriptor,
+                    result
+                )
+                // Register before throwing
+                result.getOrThrow()
+                streamsSeen.add(stream.descriptor)
+                streamsSeen
+            }
+            .toList()
     }
 }
