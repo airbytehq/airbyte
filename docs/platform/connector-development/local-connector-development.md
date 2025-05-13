@@ -63,7 +63,7 @@ Using this syntax you can avoid the long task prefixes such as typing `gradle :i
 Airbyte CI `(airbyte-ci`) is a Dagger-based tool for accomplishing specific tasks. See `airbyte-ci --help` for a list of commands you can run.
 
 :::warning
-The Airbyte CI tool is now deprecated and will be phased out shortly. Most airbyte-ci commands have a simpler equivalent in Poe, which you can discover using using `poe --help`.
+The Airbyte CI tool is now deprecated and will be phased out shortly. Most airbyte-ci commands have a simpler equivalent in Poe, which you can discover using `poe --help`.
 :::
 
 ## Common Development Tasks
