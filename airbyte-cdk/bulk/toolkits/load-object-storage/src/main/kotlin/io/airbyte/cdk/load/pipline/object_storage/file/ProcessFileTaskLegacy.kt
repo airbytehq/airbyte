@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
 class ProcessFileTaskLegacy(
-    @Named("fileMessageQueue") private val inputQueue: MessageQueue<FileTransferQueueMessage>,
+    @Named("fileMessageQueueLegacy") private val inputQueue: MessageQueue<FileTransferQueueMessage>,
     @Named("objectLoaderPartQueue")
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,

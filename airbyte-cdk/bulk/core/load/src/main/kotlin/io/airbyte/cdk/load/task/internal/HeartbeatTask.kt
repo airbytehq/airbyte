@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.config.InputEventType
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
@@ -17,10 +18,9 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.delay
 
-@Singleton
-class HeartbeatTask<K : WithStream, V>(
+class HeartbeatTask(
     private val config: DestinationConfiguration,
-    @Named("pipelineInputQueue") private val inputQueue: PartitionedQueue<PipelineEvent<K, V>>
+    private val inputQueue: PartitionedQueue<InputEventType>
 ) : Task {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 

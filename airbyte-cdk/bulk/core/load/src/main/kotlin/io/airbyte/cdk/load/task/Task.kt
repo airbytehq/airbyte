@@ -17,3 +17,7 @@ interface Task {
 
     suspend fun execute()
 }
+
+interface TaskGroup {
+    suspend fun start(launcher: suspend (Task) -> Unit)
+}

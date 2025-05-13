@@ -18,7 +18,7 @@ class ForwardFileRecordStep<T>(
     @Named("fileCompletedQueue")
     private val inputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>,
-    @Named("recordQueue")
+    @Named("objectLoaderRecordQueue")
     private val outputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
 ) : LoadPipelineStep {
     override val numWorkers: Int = 1

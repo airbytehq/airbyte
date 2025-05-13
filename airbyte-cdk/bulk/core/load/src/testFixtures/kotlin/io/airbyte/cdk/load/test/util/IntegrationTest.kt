@@ -334,7 +334,10 @@ abstract class IntegrationTest(
          * allows tests which depend on state acks to run quickly.
          */
         val micronautPropertyEnableMicrobatching: Map<Property, String> =
-            mapOf(EnvVarConstants.RECORD_BATCH_SIZE to "1")
+            mapOf(
+                EnvVarConstants.RECORD_BATCH_SIZE to "1",
+                EnvVarConstants.DATA_CHANNEL_MEDIUM to "STDOUT"
+            )
 
         /**
          * Given a randomizedNamespace (such as `test20241216abcd`), return whether the namespace

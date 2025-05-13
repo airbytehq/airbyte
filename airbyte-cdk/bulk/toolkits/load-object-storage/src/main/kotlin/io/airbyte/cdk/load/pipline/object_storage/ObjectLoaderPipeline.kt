@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.pipline.object_storage.file.FileChunkStep
 import io.airbyte.cdk.load.pipline.object_storage.file.ForwardFileRecordStep
 import io.airbyte.cdk.load.pipline.object_storage.file.ProcessFileTaskLegacyStep
-import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventStep
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
@@ -52,7 +51,6 @@ import jakarta.inject.Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     catalog: DestinationCatalog,
-    routeEventStep: RouteEventStep,
     fileChunkStep: FileChunkStep<T>,
     @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
     @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
@@ -67,7 +65,6 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     LoadPipeline(
         selectPipelineSteps(
             catalog,
-            routeEventStep,
             fileChunkStep,
             fileChunkUploader,
             fileCompleterStep,
@@ -86,7 +83,6 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
 
         fun <K : WithStream, T : RemoteObject<*>> selectPipelineSteps(
             catalog: DestinationCatalog,
-            routeEventStep: RouteEventStep,
             fileChunkStep: FileChunkStep<T>,
             fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
             fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
@@ -100,7 +96,6 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
         ): List<LoadPipelineStep> {
             return if (hasFileTransfer(catalog)) {
                 listOf(
-                    routeEventStep,
                     fileChunkStep,
                     fileChunkUploader,
                     fileCompleterStep,

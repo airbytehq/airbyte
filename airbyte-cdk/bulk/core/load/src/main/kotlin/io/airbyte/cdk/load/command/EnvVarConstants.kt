@@ -31,4 +31,9 @@ object EnvVarConstants {
             "airbyte.destination.core.record-batch-size-override",
             "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE",
         )
+    val DATA_CHANNEL_MEDIUM =
+        Property(
+            "airbyte.destination.core.data-channel-medium",
+            "DATA_CHANNEL_MEDIUM",
+        )
 }

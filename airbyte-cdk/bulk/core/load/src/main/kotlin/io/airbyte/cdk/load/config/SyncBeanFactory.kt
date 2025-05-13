@@ -62,12 +62,25 @@ class SyncBeanFactory {
 
     // DEPRECATED: Legacy file transfer.
     @Singleton
-    @Named("fileMessageQueue")
-    fun fileMessageQueue(
+    @Named("fileMessageQueueLegacy")
+    fun fileMessageQueueLegacy(
         config: DestinationConfiguration,
     ): MultiProducerChannel<FileTransferQueueMessage> {
         val channel = Channel<FileTransferQueueMessage>(config.batchQueueDepth)
-        return MultiProducerChannel(1, channel, "fileMessageQueue")
+        return MultiProducerChannel(1, channel, "fileMessageQueueLegacy")
+    }
+
+    /** A separate queue for records with file references for file uploading. */
+    @Singleton
+    @Named("recordsWithFilesQueue")
+    fun fileQueue(
+        loadStrategy: LoadStrategy? = null,
+    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
+        return StrictPartitionedQueue(
+            Array(loadStrategy?.inputPartitions ?: 1) {
+                ChannelMessageQueue(Channel(Channel.UNLIMITED))
+            }
+        )
     }
 
     /**
@@ -77,24 +90,6 @@ class SyncBeanFactory {
     @Singleton
     @Named("openStreamQueue")
     class OpenStreamQueue : ChannelMessageQueue<DestinationStream>(Channel(Channel.UNLIMITED))
-
-    /**
-     * A single record queue for the whole sync, containing all streams, optionally partitioned by a
-     * configurable number of partitions. Number of partitions is controlled by the specified
-     * LoadStrategy, if any.
-     */
-    @Singleton
-    @Named("pipelineInputQueue")
-    fun pipelineInputQueue(
-        loadStrategy: LoadStrategy? = null,
-        @Named("isFileTransfer") isFileTransfer: Boolean = false,
-    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
-        return StrictPartitionedQueue(
-            Array(if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
-        )
-    }
 
     /** A queue for updating batch states, which is not partitioned. */
     @Singleton
