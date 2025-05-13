@@ -4,6 +4,8 @@ from test_report_stream import TestSuiteReportStream
 
 
 FIRST_STATE = {"180535609": {"TimePeriod": "2023-11-12T00:00:00+00:00"}}
+
+
 def get_state_after_migration(time_period: str, account_id: str) -> dict:
     return {
         "lookback_window": 0,
@@ -18,6 +20,7 @@ def get_state_after_migration(time_period: str, account_id: str) -> dict:
         "use_global_cursor": False,
     }
 
+
 SECOND_STATE = {"180535609": {"TimePeriod": "2023-11-13T00:00:00+00:00"}}
 
 
@@ -27,18 +30,27 @@ class HourlyReportsTest(TestSuiteReportStream):
 
 
 class HourlyReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
-    first_read_state = get_state_after_migration(time_period=f"{TestSuiteReportStream.start_date}T00:00:00+0000", account_id=TestSuiteReportStream.account_id)
-    first_read_state_for_records_further_start_date = get_state_after_migration(time_period=f"2024-05-06T01:00:00+0000", account_id=TestSuiteReportStream.account_id)
+    first_read_state = get_state_after_migration(
+        time_period=f"{TestSuiteReportStream.start_date}T00:00:00+0000", account_id=TestSuiteReportStream.account_id
+    )
+    first_read_state_for_records_further_start_date = get_state_after_migration(
+        time_period=f"2024-05-06T01:00:00+0000", account_id=TestSuiteReportStream.account_id
+    )
     second_read_state = SECOND_STATE
-    second_read_state_for_records_before_start_date = get_state_after_migration(time_period=f"{TestSuiteReportStream.start_date}T00:00:00+0000",
-                                                                                        account_id=TestSuiteReportStream.account_id)
-    second_read_state_for_records_further_start_date = get_state_after_migration(time_period="2024-05-07T01:00:00+0000",
-                                                                                        account_id=TestSuiteReportStream.account_id)
+    second_read_state_for_records_before_start_date = get_state_after_migration(
+        time_period=f"{TestSuiteReportStream.start_date}T00:00:00+0000", account_id=TestSuiteReportStream.account_id
+    )
+    second_read_state_for_records_further_start_date = get_state_after_migration(
+        time_period="2024-05-07T01:00:00+0000", account_id=TestSuiteReportStream.account_id
+    )
     report_file_with_records_further_start_date = "ad_performance_report_hourly_with_records_further_config_start_date"
     state_file_after_migration = "hourly_reports_state_after_migration"
-    state_file_after_migration_with_cursor_further_config_start_date = "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
     # records should above the state_file_after_migration_with_cursor_further_config_start_date cursor
     incremental_report_file_with_records_further_cursor = "ad_performance_report_hourly_incremental_with_records_further_cursor"
+
 
 class TestAgeGenderAudienceReportHourlyStream(HourlyReportsTest):
     stream_name = "age_gender_audience_report_hourly"

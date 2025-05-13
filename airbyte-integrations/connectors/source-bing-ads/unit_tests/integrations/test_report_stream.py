@@ -1,7 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import re
-
-from freezegun import freeze_time
 from pathlib import Path
 from typing import Any, Optional
 
@@ -9,16 +7,19 @@ import pendulum
 from base_test import BaseTest
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from config_builder import ConfigBuilder
+from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
+
 
 # TODO: Remove this list when all streams are migrated to the manifest
 MIGRATED_STREAMS = [
     "ad_performance_report_hourly",
     "ad_performance_report_daily",
     "ad_performance_report_weekly",
-    "ad_performance_report_monthly"
+    "ad_performance_report_monthly",
 ]
+
 
 class TestReportStream(BaseTest):
     start_date = "2024-01-01"
@@ -155,6 +156,10 @@ class TestSuiteReportStream(TestReportStream):
     def test_incremental_read_with_state_returns_records_after_migration_with_records_further_state_cursor(self):
         """
         For this test we get records with TimePeriod further the config start date and the state TimePeriod cursor.
+        The provide state is taken from a previous run; with stream manifest; so, is in the new state format, and
+        where the resultant cursor was further the config start date.
+        So we validate that the cursor in the output.most_recent_state is moved to the value of the latest record read.
+        The state format before migration IS NOT involved in this test.
         """
         if self.stream_name not in MIGRATED_STREAMS:
             self.skipTest("Skipping for NOT migrated to manifest streams")
@@ -202,14 +207,14 @@ class TestSuiteReportStream(TestReportStream):
         job_end_time = end_time_match.group(1) if end_time_match else None
 
         # here the provided state cursor is further the config start date
-        assert provided_state[0].stream.stream_state.state[self.cursor_field] == '2024-05-06T07:00:00+0000'
+        assert provided_state[0].stream.stream_state.state[self.cursor_field] == "2024-05-06T07:00:00+0000"
         # here the cursor in the output.most_recent_state moved to the value of the latest record read
-        assert actual_cursor[self.cursor_field] == '2024-05-07T01:00:00+0000'
-        #todo: FIXME, start_time of the job is the config start date rather the cursor state start date in the provided state
+        assert actual_cursor[self.cursor_field] == "2024-05-07T01:00:00+0000"
+        # todo: FIXME, start_time of the job is the config start date rather the cursor state start date in the provided state
         # I am not sure if it is a bug or not
-        assert job_start_time == '2024-01-01T00:00:00+0000'
-        assert job_end_time == '2024-05-08T00:00:00+0000'
+        assert job_start_time == "2024-01-01T00:00:00+0000"
+        assert job_end_time == "2024-05-08T00:00:00+0000"
         # todo: remove hardcoded asserts after figure out the issue with job start_time
 
-    #todo: We need to add a test to validate that the previous state format can be reused during first sync after migration and that
+    # todo: We need to add a test to validate that the previous state format can be reused during first sync after migration and that
     # consequently we can create jobs with new state format, but need to figure out if above test statement is correct or not

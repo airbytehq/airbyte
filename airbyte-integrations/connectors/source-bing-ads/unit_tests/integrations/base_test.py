@@ -1,5 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import json
+import zipfile
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 from unittest import TestCase
@@ -10,46 +12,43 @@ from bingads.v13.reporting.reporting_service_manager import ReportingServiceMana
 from client_builder import build_request, build_request_2, response_with_status
 from config_builder import ConfigBuilder
 from protocol_helpers import read_helper
+from request_builder import RequestBuilder
 from suds.transport.https import HttpAuthenticated
 from suds_response_mock import mock_http_authenticated_send
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStateMessage, Level, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
 
-from request_builder import RequestBuilder
-from airbyte_cdk.test.mock_http import HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import find_template
-
-import zipfile
-from io import BytesIO
 
 def create_zip_from_csv(filename: str) -> bytes:
     """
     Creates a zip file containing a CSV file from the resource/response folder.
     The CSV is stored directly in the zip without additional gzip compression.
-    
+
     Args:
         filename: The name of the CSV file without extension
-        
+
     Returns:
         The zip file content as bytes
     """
     # Build path to the CSV file in resource/response folder
     csv_path = Path(__file__).parent.parent / f"resource/response/{filename}.csv"
-    
+
     # Read the CSV content
     with open(csv_path, "r") as csv_file:
         csv_content = csv_file.read()
-    
+
     # Create a zip file containing the CSV file directly (without gzip compression)
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, mode="w") as zip_file:
         zip_file.writestr(f"{filename}.csv", csv_content)
-    
+
     return zip_buffer.getvalue()
+
 
 class BaseTest(TestCase):
     def setUp(self) -> None:
@@ -92,18 +91,14 @@ class BaseTest(TestCase):
     def mock_accounts_search_api(self, body: bytes, response_template: str) -> None:
         http_mocker = self.http_mocker
         http_mocker.post(
-            RequestBuilder(resource="Accounts/Search")
-            .with_body(body)
-            .build(),
+            RequestBuilder(resource="Accounts/Search").with_body(body).build(),
             HttpResponse(json.dumps(find_template(resource=response_template, execution_folder=__file__)), 200),
         )
 
     def mock_generate_report_api(self, endpoint: str, body: bytes, response_template: str) -> None:
         http_mocker = self.http_mocker
         http_mocker.post(
-            RequestBuilder(resource=f"GenerateReport/{endpoint}", api="reporting")
-            .with_body(body)
-            .build(),
+            RequestBuilder(resource=f"GenerateReport/{endpoint}", api="reporting").with_body(body).build(),
             HttpResponse(json.dumps(find_template(resource=response_template, execution_folder=__file__)), 200),
         )
 
@@ -145,4 +140,3 @@ class BaseTest(TestCase):
                 message=log_message,
             ),
         )
-
