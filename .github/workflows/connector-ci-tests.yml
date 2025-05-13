@@ -150,7 +150,7 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
           JAVA_TOOL_OPTIONS: >-
-            -javaagent=$PWD/dd-java-agent.jar
+            -javaagent:${{ github.workspace }}/dd-java-agent.jar
             -Ddd.service=${{ matrix.connector }}-unit
             -Ddd.env=${{ env.DD_ENV }}
             -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
@@ -162,7 +162,7 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
           JAVA_TOOL_OPTIONS: >-
-            -javaagent=$PWD/dd-java-agent.jar
+            -javaagent:${{ github.workspace }}/dd-java-agent.jar
             -Ddd.service=${{ matrix.connector }}-unit
             -Ddd.env=${{ env.DD_ENV }}
             -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
