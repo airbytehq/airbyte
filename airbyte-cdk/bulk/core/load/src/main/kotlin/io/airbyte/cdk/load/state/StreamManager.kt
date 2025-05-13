@@ -38,6 +38,7 @@ value class CheckpointValue(
 /** Manages the state of a single stream. */
 class StreamManager(
     val stream: DestinationStream,
+    private val requireCheckpointKeyOnState: Boolean = false,
 ) {
     private val streamResult = CompletableDeferred<StreamResult>()
 
@@ -115,6 +116,10 @@ class StreamManager(
      * synchronized.
      */
     fun markCheckpoint(): Pair<Long, Long> {
+        check(!requireCheckpointKeyOnState) {
+            "Cannot force mark a checkpoint when requireCheckpointKeyOnState is true"
+        }
+
         val recordIndex = recordCount.get()
         val count = recordIndex - lastCheckpointRecordIndex.getAndSet(recordIndex)
 
@@ -171,6 +176,9 @@ class StreamManager(
      * The underlying value will be incremented each time `markCheckpoint` is called.
      */
     fun inferNextCheckpointKey(): CheckpointKey {
+        check(!requireCheckpointKeyOnState) {
+            "Cannot infer CheckpointKey when requireCheckpointKeyOnState is true"
+        }
         val indexValue = nextInferredCheckpointIndex.get()
         return CheckpointKey(
             checkpointIndex = CheckpointIndex(indexValue),
