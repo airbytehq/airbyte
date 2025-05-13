@@ -884,32 +884,41 @@ definitions:
         cursor_field: timestamp
         cursor_format: "%ms"
 
-  crm_objects:
-    property_chunking:
-      type: PropertyChunking
-      property_limit_type: property_count
-      property_limit: 50
-    properties_retriever:
-      type: SimpleRetriever
+  base_crm_object_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
       requester:
-        type: HttpRequester
-        url_base: https://api.hubapi.com
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        path: /properties/v2/goal_targets/properties
-        http_method: GET
-        request_headers:
-          Content-Type: "application/json"
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/{{ parameters.crm_object_name }}
+        request_parameters:
+          archived: 'false'
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path: [ "name" ]
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/{{ parameters.crm_object_name }}/properties
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: [ ]
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: property_count
+              property_limit: 50
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-    record_selector:
-      $ref: "#/definitions/base_selector"
-      schema_normalization:
-        type: CustomSchemaNormalization
-        class_name: source_hubspot.components.EntitySchemaNormalization
+        $ref: "#/definitions/base_selector"
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -932,149 +941,77 @@ definitions:
         key_transformation:
           type: KeyTransformation
           prefix: properties_
-    schema_transformations:
-      - type: AddFields
-        fields:
-          - path: ["properties"]
-            value: "{{ record }}"
-      - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
-    schema_type_identifier:
-      type: SchemaTypeIdentifier
-      key_pointer: ["name"]
-      type_pointer: ["type"]
-      schema_pointer: ["properties"]
-      types_mapping:
-        - type: TypesMap
-          target_type: string
-          current_type: enumeration
-        - type: TypesMap
-          target_type: timestamp_with_timezone
-          current_type: datetime
-        - type: TypesMap
-          target_type: timestamp_with_timezone
-          current_type: date-time
-        - type: TypesMap
-          target_type: boolean
-          current_type: bool
-        - type: TypesMap
-          target_type: date
-          current_type: date
-        - type: TypesMap
-          target_type: string
-          current_type: json
-        - type: TypesMap
-          target_type: string
-          current_type: phone_number
-    schema_record_selector:
-      type: RecordSelector
-      extractor:
-        type: CustomRecordExtractor
-        class_name: source_hubspot.components.HubspotSchemaExtractor
-        field_path: []
+    schema_loader:
+      type: DynamicSchemaLoader
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /properties/v2/{{ parameters.crm_object_name }}/properties
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_hubspot.components.HubspotSchemaExtractor
+            field_path: [ ]
+      schema_transformations:
+        - type: CustomTransformation
+          class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+      schema_type_identifier:
+          type: SchemaTypeIdentifier
+          key_pointer: [ "name" ]
+          type_pointer: [ "type" ]
+          schema_pointer: [ "properties" ]
+          types_mapping:
+            - type: TypesMap
+              target_type: string
+              current_type: enumeration
+            - type: TypesMap
+              target_type: timestamp_with_timezone
+              current_type: datetime
+            - type: TypesMap
+              target_type: timestamp_with_timezone
+              current_type: date-time
+            - type: TypesMap
+              target_type: boolean
+              current_type: bool
+            - type: TypesMap
+              target_type: date
+              current_type: date
+            - type: TypesMap
+              target_type: string
+              current_type: json
+            - type: TypesMap
+              target_type: string
+              current_type: phone_number
     state_migrations:
       - type: CustomStateMigration
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
         cursor_format: "%Y-%m-%dT%H:%M:%S.%fZ"
 
+
   goals_stream:
-    $ref: "#/definitions/stream_base"
+    $ref: "#/definitions/base_crm_object_stream"
     name: goals
-    primary_key:
-      - id
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: /crm/v3/objects/goal_targets
-        request_parameters:
-          archived: "false"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path: ["name"]
-              retriever:
-                $ref: "#/definitions/crm_objects/properties_retriever"
-                requester:
-                  $ref: "#/definitions/crm_objects/properties_retriever/requester"
-                  path: /properties/v2/goal_targets/properties
-            property_chunking:
-              $ref: "#/definitions/crm_objects/property_chunking"
-      record_selector:
-        $ref: "#/definitions/crm_objects/record_selector"
-    incremental_sync:
-      $ref: "#/definitions/crm_objects/incremental_sync"
-    transformations:
-      $ref: "#/definitions/crm_objects/transformations"
+    $parameters:
+      crm_object_name: goal_targets
     schema_loader:
-      - type: DynamicSchemaLoader
-        retriever:
-          type: SimpleRetriever
-          requester:
-            $ref: "#/definitions/base_requester"
-            path: /properties/v2/goal_targets/properties
-          record_selector:
-            $ref: "#/definitions/crm_objects/schema_record_selector"
-        schema_transformations:
-          $ref: "#/definitions/crm_objects/schema_transformations"
-        schema_type_identifier:
-          $ref: "#/definitions/crm_objects/schema_type_identifier"
+      - $ref: "#/definitions/base_crm_object_stream/schema_loader"
       - type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/goals"
-    state_migrations:
-      $ref: "#/definitions/crm_objects/state_migrations"
 
   products_stream:
-    $ref: "#/definitions/stream_base"
+    $ref: "#/definitions/base_crm_object_stream"
     name: products
-    primary_key:
-      - id
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: /crm/v3/objects/product
-        request_parameters:
-          archived: "false"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path: ["name"]
-              retriever:
-                $ref: "#/definitions/crm_objects/properties_retriever"
-                requester:
-                  $ref: "#/definitions/crm_objects/properties_retriever/requester"
-                  path: /properties/v2/product/properties
-            property_chunking:
-              $ref: "#/definitions/crm_objects/property_chunking"
-      record_selector:
-        $ref: "#/definitions/crm_objects/record_selector"
-    incremental_sync:
-      $ref: "#/definitions/crm_objects/incremental_sync"
-    transformations:
-      $ref: "#/definitions/crm_objects/transformations"
+    $parameters:
+      crm_object_name: product
     schema_loader:
-      - type: DynamicSchemaLoader
-        retriever:
-          type: SimpleRetriever
-          requester:
-            $ref: "#/definitions/base_requester"
-            path: /properties/v2/product/properties
-          record_selector:
-            $ref: "#/definitions/crm_objects/schema_record_selector"
-        schema_transformations:
-          $ref: "#/definitions/crm_objects/schema_transformations"
-        schema_type_identifier:
-          $ref: "#/definitions/crm_objects/schema_type_identifier"
+      - $ref: "#/definitions/base_crm_object_stream/schema_loader"
       - type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/products"
-    state_migrations:
-      $ref: "#/definitions/crm_objects/state_migrations"
 
 streams:
   - "#/definitions/campaigns_stream"
