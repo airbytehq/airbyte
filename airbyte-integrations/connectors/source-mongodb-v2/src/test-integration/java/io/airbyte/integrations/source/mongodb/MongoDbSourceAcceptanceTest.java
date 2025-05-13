@@ -112,7 +112,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
     final ObjectNode databaseConfig = (ObjectNode) config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
-    databaseConfig.put(MongoConstants.DATABASE_CONFIGURATION_KEY, databaseName);
+    databaseConfig.putArray("databases").add(databaseName);
     databaseConfig.put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
     databaseConfig.put(MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
     ((ObjectNode) config).put(DATABASE_CONFIG_CONFIGURATION_KEY, databaseConfig);
