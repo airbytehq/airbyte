@@ -176,14 +176,9 @@ class DirectLoadTableAppendTruncateStreamLoader(
             }
         }
 
-        logger.info {
-            "Target table: ${if (isWritingToTemporaryTable) tempTableName else realTableName}"
-        }
-        if (isWritingToTemporaryTable) {
-            streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(tempTableName))
-        } else {
-            streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(realTableName))
-        }
+        val targetTableName = if (isWritingToTemporaryTable) tempTableName else realTableName
+        logger.info { "Target table: $targetTableName" }
+        streamStateStore.put(stream.descriptor, DirectLoadTableExecutionConfig(targetTableName))
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
