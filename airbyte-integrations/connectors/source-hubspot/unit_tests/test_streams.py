@@ -10,10 +10,7 @@ import pendulum
 import pytest
 from source_hubspot.streams import (
     Companies,
-    ContactLists,
     Contacts,
-    ContactsListMemberships,
-    ContactsMergedAudit,
     ContactsWebAnalytics,
     CustomObject,
     Deals,
@@ -44,39 +41,31 @@ def time_sleep_mock(mocker):
     yield time_mock
 
 
-def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):
-    stream = ContactLists(**common_params)
-
+def test_updated_at_field_non_exist_handler(requests_mock, config, common_params, fake_properties_list, custom_object_schema):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    stream = find_stream("contact_lists", config)
+    created_at = "2022-03-25T16:43:11Z"
     responses = [
         {
             "json": {
-                stream.data_field: [
+                "lists": [
                     {
                         "id": "test_id",
-                        "createdAt": "2022-03-25T16:43:11Z",
+                        "createdAt": created_at,
                     },
                 ],
             }
         }
     ]
-    properties_response = [
-        {
-            "json": [
-                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-                for property_name in fake_properties_list
-            ],
-            "status_code": 200,
-        }
-    ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", properties_response)
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", responses)
 
-    _, stream_state = read_incremental(stream, {})
+    stream_slices = list(stream.retriever.stream_slicer.stream_slices())
+    assert len(stream_slices) == 1
 
-    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
-
-    assert stream_state[stream.updated_at_field] == expected
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
+    assert len(records) == 1
+    assert records[0]["updatedAt"] == created_at
 
 
 @pytest.mark.parametrize(
@@ -84,9 +73,8 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
     [
         ("campaigns", "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contact_lists", "contact", {"createdAt": "2021-02-25T16:43:11Z", "updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
@@ -201,6 +189,7 @@ def test_streams_read(
     requests_mock.register_uri("GET", "/email/public/v1/campaigns?count=500", [{"json": {"campaigns": list_entities}}])
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
+    requests_mock.register_uri("POST", "/crm/v3/lists/search", responses)
 
     records = read_full_refresh(stream)
     assert records
@@ -404,40 +393,37 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
     assert len(requests_mock.request_history) > 1
 
 
-def test_contact_lists_transform(requests_mock, common_params):
-    stream = ContactLists(**common_params)
+def test_contact_lists_transform(requests_mock, common_params, config, custom_object_schema):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    stream = find_stream("contact_lists", config)
 
     responses = [
         {
             "json": {
-                stream.data_field: [
+                "lists": [
                     {
                         "listId": 1,
-                        "createdAt": 1654117200000,
-                        "filters": [[{"value": "@hubspot"}]],
+                        "createdAt": "2022-02-25T16:43:11Z",
                     },
                     {
                         "listId": 2,
-                        "createdAt": 1654117200001,
-                        "filters": [[{"value": True}, {"value": "FORM_ABUSE"}]],
+                        "createdAt": "2022-02-25T16:43:11Z",
                     },
                     {
                         "listId": 3,
-                        "createdAt": 1654117200002,
-                        "filters": [[{"value": 1000}]],
+                        "createdAt": "2022-02-25T16:43:11Z",
                     },
                 ]
             }
         }
     ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", responses)
     records = read_full_refresh(stream)
 
-    assert records[0]["filters"][0][0]["value"] == "@hubspot"
-    assert records[1]["filters"][0][0]["value"] == "True"
-    assert records[1]["filters"][0][1]["value"] == "FORM_ABUSE"
-    assert records[2]["filters"][0][0]["value"] == "1000"
+    assert len(records) > 0
+    for record in records:
+        assert isinstance(record["updatedAt"], str)
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
@@ -549,29 +535,6 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     json_schema = stream.get_json_schema()
 
     assert json_schema == expected_custom_object_json_schema
-    assert not adapter.called
-
-
-def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(requests_mock, common_params):
-    stream = ContactsMergedAudit(**common_params)
-
-    adapter = requests_mock.register_uri(
-        "GET",
-        f"/properties/v2/{stream.entity}/properties",
-        [
-            {
-                "json": [
-                    {
-                        "name": "hs_object_id",
-                        "label": "Record ID",
-                        "type": "number",
-                    }
-                ]
-            }
-        ],
-    )
-    _ = stream.get_json_schema()
-
     assert not adapter.called
 
 
@@ -701,23 +664,6 @@ def test_web_analytics_latest_state(common_params, mocker):
     assert len(records[0]) == 1
     assert records[0][0]["objectId"] == "1"
     assert stream.state["1"]["occurredAt"] == "2021-01-02T00:00:00Z"
-
-
-def test_contacts_membership_transform(common_params):
-    stream = ContactsListMemberships(**common_params)
-    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
-    memberships = [{"membership": 1}]
-    records = [
-        {
-            "vid": 1,
-            "canonical-vid": 1,
-            "portal-id": 1,
-            "is-contact": True,
-            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
-            "list-memberships": memberships,
-        }
-    ]
-    assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))
 
 
 @pytest.mark.parametrize(

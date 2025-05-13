@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 4.13.0-rc.1
+  dockerImageTag: 5.1.0-rc.1
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
@@ -33,12 +33,30 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: true
     breakingChanges:
+      5.0.0:
+        message: >-
+          This update deprecates the `contacts_form_submissions`, `contacts_list_memberships`, and
+          `contacts_merged_audit` streams from the source because they are no longer supported in
+          Hubspot's V3 API and the V1 API is being deprecated on 2025-09-30. Updates the `contact_lists`
+          stream to use V3 API, which contains changes to the schema due to old fields no longer exposed by
+          the V3 API. Users will need to refresh the source schema and clear the stream.
+        upgradeDeadline: "2025-09-30"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "contact_lists",
+                "contacts_form_submissions",
+                "contacts_list_memberships",
+                "contacts_merged_audit",
+              ]
       4.0.0:
         message: >-
           This update brings extended schema with data type changes for the streams
           `Deals Property History` and `Companies Property History`. Users will need
           to refresh their schema and reset their streams after upgrading.
-        upgradeDeadline: 2024-03-10
+        upgradeDeadline: "2024-03-10"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
@@ -48,7 +66,7 @@ data:
           This update brings extended schema with data type changes for the Marketing
           Emails stream.
           Users will need to refresh it and reset this stream after upgrading.
-        upgradeDeadline: 2024-02-12
+        upgradeDeadline: "2024-02-12"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["marketing_emails"]
@@ -60,7 +78,7 @@ data:
           It will affect only users who use `Property History` stream, who will need
           to fix schema conflicts and sync `Contacts Property History` stream instead
           of `Property History`.
-        upgradeDeadline: 2024-01-15
+        upgradeDeadline: "2024-01-15"
   suggestedStreams:
     streams:
       - contacts
