@@ -177,7 +177,7 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
 
         val streamSchema: Map<String, StandardSQLTypeName> =
             (stream.schema as ObjectType).properties.entries.associate {
-                it.key to BigQuerySqlGenerator.toDialectType(it.value.type)
+                columnNameMapping[it.key]!! to BigQuerySqlGenerator.toDialectType(it.value.type)
             }
 
         val existingSchema =
