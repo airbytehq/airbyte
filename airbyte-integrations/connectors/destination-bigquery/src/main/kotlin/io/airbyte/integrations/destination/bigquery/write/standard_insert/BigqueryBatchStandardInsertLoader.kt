@@ -41,16 +41,16 @@ class BigqueryBatchStandardInsertsLoader(
     private val job: JobId,
 ) : DirectLoader {
     private val recordFormatter = BigQueryRecordFormatter()
-    private val baos = ByteArrayOutputStream()
+    private val buffer = ByteArrayOutputStream()
 
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
-        baos.write(byteArray)
+        buffer.write(byteArray)
         // the default chunk size on the TableDataWriteChannel is 15MB,
         // so just terminate when we get there.
-        if (baos.size() > 15 * 1024 * 1024) {
+        if (buffer.size() > 15 * 1024 * 1024) {
             finish()
             return DirectLoader.Complete
         } else {
@@ -73,7 +73,7 @@ class BigqueryBatchStandardInsertsLoader(
                     throw BigQueryException(e.code, e.message)
                 }
             }
-        writer.use { writer.write(ByteBuffer.wrap(baos.toByteArray())) }
+        writer.use { writer.write(ByteBuffer.wrap(buffer.toByteArray())) }
         BigQueryUtils.waitForJobFinish(writer.job)
     }
 
@@ -92,14 +92,14 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 class BigqueryBatchStandardInsertsLoaderFactory(
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
-    private val names: TableCatalogByDescriptor,
+    private val tableCatalog: TableCatalogByDescriptor,
     private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
-        val rawTableName = names[streamDescriptor]!!.tableNames.rawTableName!!
+        val rawTableName = tableCatalog[streamDescriptor]!!.tableNames.rawTableName!!
         val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
 
         val writeChannelConfiguration =
@@ -134,8 +134,8 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             """
             |Failed to write to destination schema.
             |   1. Make sure you have all required permissions for writing to the schema.
-            |   2. Make sure that the actual destination schema's location corresponds to location provided in connector's config.
-            |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the "Destination Default" option.
+            |   2. Make sure that the actual destination schema's location corresponds to the location provided in the connector's config.
+            |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) to the "Destination Default" option.
             |More details:
             |""".trimMargin()
     }
