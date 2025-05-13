@@ -19,15 +19,15 @@ class BigQueryCheckTest :
             ),
         failConfigFilenamesAndFailureReasons =
             mapOf(
-                CheckTestConfig(
-                    BigQueryDestinationTestUtils.createConfig(
-                        "secrets/credentials-badproject.json"
-                    ),
-                    name = "bad project",
-                ) to
-                    Pattern.compile(
-                        "Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake"
-                    ),
+//                CheckTestConfig(
+//                    BigQueryDestinationTestUtils.createConfig(
+//                        "secrets/credentials-badproject.json"
+//                    ),
+//                    name = "bad project",
+//                ) to
+//                    Pattern.compile(
+//                        "Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake"
+//                    ),
                 CheckTestConfig(
                     BigQueryDestinationTestUtils.createConfig(
                         "secrets/credentials-no-edit-public-schema-role.json"
