@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.48.14    | 2025-05-15  | [\#]()  | Improve logging by reducing redundant log statements.                                                                                                                                      |
 | 0.48.13    | 2025-05-06 | [\#59682](https://github.com/airbytehq/airbyte/pull/59682)  | Reduce initial load timeout and improve logging.                                                                                                               |
 | 0.48.9     | 2025-04-17 | [\#58132](https://github.com/airbytehq/airbyte/pull/58132)  | Fix vulnerability in dependencies.                                                                                                                             | 
 | 0.48.8     | 2025-03-11 | [\#55709](https://github.com/airbytehq/airbyte/pull/55709)  | Filter unwanted tables in discover to prevent null table issues                                                                                                |

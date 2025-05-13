@@ -45,6 +45,9 @@ class DebeziumRecordIterator<T>(
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
     private val subsequentRecordWaitTime: Duration = firstRecordWaitTime.dividedBy(2)
+    init {
+        LOGGER.info {"Starting CDC Process"}
+    }
 
     private var receivedFirstRecord = false
     private var hasSnapshotFinished = true
@@ -76,7 +79,6 @@ class DebeziumRecordIterator<T>(
         // keep trying until the publisher is closed or until the queue is empty. the latter case is
         // possible when the publisher has shutdown but the consumer has not yet processed all
         // messages it emitted.
-        LOGGER.info { "Starting CDC Process" }
         val instantBeforeSync = Instant.now()
         while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
             val next: ChangeEvent<String?, String?>?
