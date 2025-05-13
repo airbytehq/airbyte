@@ -10,7 +10,6 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class DataChannelBeanFactoryTest {
     @Test
@@ -33,6 +32,7 @@ class DataChannelBeanFactoryTest {
                 .numInputPartitions(
                     loadStrategy = loadStrategy,
                     isFileTransfer = false,
+                    dataChannelMedium = DataChannelMedium.STDIO,
                 )
 
         assertEquals(2, numInputPartitions)
@@ -47,8 +47,23 @@ class DataChannelBeanFactoryTest {
                 .numInputPartitions(
                     loadStrategy = loadStrategy,
                     isFileTransfer = true,
+                    dataChannelMedium = DataChannelMedium.STDIO,
                 )
 
+        assertEquals(1, numInputPartitions)
+    }
+
+    @Test
+    fun `num input partitions is 1 if sockets enabled`() {
+        val loadStrategy: LoadStrategy = mockk(relaxed = true)
+        every { loadStrategy.inputPartitions } returns 2
+        val numInputPartitions =
+            DataChannelBeanFactory()
+                .numInputPartitions(
+                    loadStrategy = loadStrategy,
+                    isFileTransfer = false,
+                    dataChannelMedium = DataChannelMedium.SOCKETS,
+                )
         assertEquals(1, numInputPartitions)
     }
 
@@ -57,17 +72,20 @@ class DataChannelBeanFactoryTest {
         val queue: PartitionedQueue<PipelineInputEvent> = mockk(relaxed = true)
         every { queue.asOrderedFlows() } returns
             arrayOf(mockk(relaxed = true), mockk(relaxed = true))
-        val flows = DataChannelBeanFactory().dataChannelInputFlows(queue, DataChannelMedium.STDIO)
+        val flows =
+            DataChannelBeanFactory()
+                .dataChannelInputFlows(
+                    mockk(relaxed = true),
+                    mockk(relaxed = true),
+                    queue,
+                    DataChannelMedium.STDIO,
+                    mockk(relaxed = true),
+                    mockk(relaxed = true),
+                    mockk(relaxed = true),
+                    mockk(relaxed = true),
+                    mockk(relaxed = true),
+                    mockk(relaxed = true),
+                )
         assertEquals(2, flows.size)
-    }
-
-    @Test
-    fun `socket input flows throws`() {
-        val queue: PartitionedQueue<PipelineInputEvent> = mockk(relaxed = true)
-        every { queue.asOrderedFlows() } returns
-            arrayOf(mockk(relaxed = true), mockk(relaxed = true))
-        assertThrows<NotImplementedError> {
-            DataChannelBeanFactory().dataChannelInputFlows(queue, DataChannelMedium.SOCKETS)
-        }
     }
 }
