@@ -22,7 +22,7 @@
             "required": [
               "cluster_type",
               "connection_string",
-              "database",
+              "databases",
               "username",
               "password",
               "auth_source"
@@ -41,12 +41,7 @@
                 "examples": ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
                 "order": 2
               },
-              "database": {
-                "title": "Database Name",
-                "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate. For backward compatibility. If both 'database' and 'databases' are provided, 'databases' will take precedence.",
-                "order": 3
-              },
+
               "databases": {
                 "title": "Database Names",
                 "type": "array",
@@ -90,7 +85,7 @@
           {
             "title": "Self-Managed Replica Set",
             "description": "MongoDB self-hosted cluster configured as a replica set",
-            "required": ["cluster_type", "connection_string", "database"],
+            "required": ["cluster_type", "connection_string", "databases"],
             "additionalProperties": true,
             "properties": {
               "cluster_type": {
@@ -108,12 +103,7 @@
                 ],
                 "order": 2
               },
-              "database": {
-                "title": "Database Name",
-                "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate. For backward compatibility. If both 'database' and 'databases' are provided, 'databases' will take precedence.",
-                "order": 3
-              },
+
               "databases": {
                 "title": "Database Names",
                 "type": "array",
