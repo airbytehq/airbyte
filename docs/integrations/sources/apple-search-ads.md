@@ -6,8 +6,12 @@ This page contains the setup guide and reference information for the Apple Ads s
 
 ### Step 1: Set up Apple Ads
 
-1. With an administrator account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) from the Apple Ads UI.
-2. Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) in order to the required Client Secret and Client Id.
+1. With an administrator
+   account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)
+   from the Apple Ads UI.
+2.
+Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)
+in order to the required Client Secret and Client Id.
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -29,7 +33,8 @@ This page contains the setup guide and reference information for the Apple Ads s
 
 ## Supported sync modes
 
-The Apple Ads source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
+The Apple Ads source connector supports the
+following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
@@ -38,7 +43,8 @@ The Apple Ads source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-The Apple Ads source connector supports the following streams. For more information, see the [Apple Ads API](https://developer.apple.com/documentation/apple_search_ads).
+The Apple Ads source connector supports the following streams. For more information, see
+the [Apple Ads API](https://developer.apple.com/documentation/apple_search_ads).
 
 ### Base streams
 
@@ -60,7 +66,9 @@ One example is `countryOrRegion`.
 
 ### Report aggregation
 
-The Apple Ads currently offers [aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at hourly, daily, weekly, or monthly level.
+The Apple Ads currently
+offers [aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at hourly, daily,
+weekly, or monthly level.
 
 However, at this moment and as indicated in the stream names, the connector only offers data with daily aggregation.
 
@@ -71,7 +79,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
-| 0.8.0   | 2025-05-13 | ...                                                      | Add token refresh endpoint override configuration override                                  |
+| 0.8.0   | 2025-05-13 | [60241](https://github.com/airbytehq/airbyte/pull/59888) | Add token refresh endpoint override configuration override                           |
 | 0.7.9   | 2025-05-10 | [59888](https://github.com/airbytehq/airbyte/pull/59888) | Update dependencies                                                                  |
 | 0.7.8   | 2025-05-03 | [59308](https://github.com/airbytehq/airbyte/pull/59308) | Update dependencies                                                                  |
 | 0.7.7   | 2025-04-26 | [58712](https://github.com/airbytehq/airbyte/pull/58712) | Update dependencies                                                                  |
