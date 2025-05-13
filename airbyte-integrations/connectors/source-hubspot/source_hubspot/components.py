@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -20,7 +20,10 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
+
+
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -351,14 +354,43 @@ class EntitySchemaNormalization(TypeTransformer):
                     if field_schema.get("__ab_apply_cast_datetime") is False:
                         return original_value
                     if "date" == target_format:
-                        dt = ab_datetime_parse(original_value)
-                        transformed_value = DatetimeParser().format(dt, "%Y-%m-%d")
-                        return transformed_value
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
+                        if dt:
+                            transformed_value = DatetimeParser().format(dt, "%Y-%m-%d")
+                            return transformed_value
+                        else:
+                            return original_value
                     if "date-time" == target_format:
-                        dt = ab_datetime_parse(original_value)
-                        transformed_value = ab_datetime_format(dt)
-                        return transformed_value
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
+                        if dt:
+                            transformed_value = ab_datetime_format(dt)
+                            return transformed_value
+                        else:
+                            return original_value
 
             return original_value
 
         return transform_function
+
+    @staticmethod
+    def convert_datetime_string_to_ab_datetime(datetime_str: str) -> Optional[AirbyteDateTime]:
+        """
+        Implements the existing source-hubspot behavior where the API response can return either a timestamp
+        with seconds or milliseconds precision. We first attempt to parse in seconds, then millisecond, or
+        if unparsable we log a warning and emit the original value. Returns None if the string could not
+        be parsed into a datetime object because the existing source emits the original value and logs warning.
+        """
+        if not datetime_str:
+            return None
+
+        try:
+            return ab_datetime_parse(datetime_str)
+        except (ValueError, TypeError) as ex:
+            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+
+        try:
+            return ab_datetime_parse(int(datetime_str) // 1000)
+        except (ValueError, TypeError) as ex:
+            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+
+        return None
