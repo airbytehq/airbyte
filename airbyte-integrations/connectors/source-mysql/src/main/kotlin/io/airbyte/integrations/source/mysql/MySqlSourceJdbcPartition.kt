@@ -477,7 +477,7 @@ class MySqlJdbcConcurrentPartitionsCreator<
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
         val secondarySamplingRate: Double =
             if (tableByteSizeEstimate <= sharedState.targetPartitionByteSize) {
-                0.0
+                return listOf(JdbcNonResumablePartitionReader(partition))
             } else {
                 val expectedPartitionByteSize: Long =
                     tableByteSizeEstimate / sharedState.maxSampleSize
