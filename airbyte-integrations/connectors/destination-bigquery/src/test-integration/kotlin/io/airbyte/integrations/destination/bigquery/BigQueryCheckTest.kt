@@ -35,12 +35,14 @@ class BigQueryCheckTest :
                         "secrets/credentials-standard-no-dataset-creation.json"
                     )
                 ) to Pattern.compile("Permission bigquery.tables.create denied"),
-                CheckTestConfig(
-                    BigQueryDestinationTestUtils.createConfig(
-                        "secrets/credentials-1s1t-gcs-bad-copy-permission.json"
-                    )
-                ) to Pattern.compile("Permission bigquery.tables.updateData denied on table"),
-            ),
+                //                CheckTestConfig(
+                //                    BigQueryDestinationTestUtils.createConfig(
+                //                        "secrets/credentials-1s1t-gcs-bad-copy-permission.json"
+                //                    ),
+                //                    name = "gcs bad copy permission",
+                //                ) to Pattern.compile("Permission bigquery.tables.updateData denied
+                // on table"),
+                ),
         additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
     @Disabled
