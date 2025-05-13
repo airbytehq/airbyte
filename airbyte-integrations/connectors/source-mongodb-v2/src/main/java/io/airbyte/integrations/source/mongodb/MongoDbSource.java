@@ -73,16 +73,26 @@ public class MongoDbSource extends BaseConnector implements Source {
          * authorized collections guarantees that the cluster description will be available to the driver.
          */
         boolean hasAuthorizedCollections = false;
+        List<String> databasesWithoutPermission = new ArrayList<>();
+        
         for (String databaseName : databaseNames) {
           if (!MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
             hasAuthorizedCollections = true;
-            break;
+            LOGGER.info("Found authorized collections in database: {}", databaseName);
+          } else {
+            databasesWithoutPermission.add(databaseName);
+            LOGGER.warn("No authorized collections found in database: {}", databaseName);
           }
+        }
+        
+        if (!databasesWithoutPermission.isEmpty()) {
+          LOGGER.warn("The following databases have no authorized collections: {}", String.join(", ", databasesWithoutPermission));
         }
         
         if (!hasAuthorizedCollections) {
           return new AirbyteConnectionStatus()
-              .withMessage("Target MongoDB databases do not contain any authorized collections.")
+              .withMessage("Target MongoDB databases do not contain any authorized collections. Databases without permissions: " 
+                  + String.join(", ", databasesWithoutPermission))
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
         
