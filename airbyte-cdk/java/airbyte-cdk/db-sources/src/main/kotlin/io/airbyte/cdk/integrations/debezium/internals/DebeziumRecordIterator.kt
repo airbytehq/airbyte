@@ -46,7 +46,7 @@ class DebeziumRecordIterator<T>(
         HashMap(1)
     private val subsequentRecordWaitTime: Duration = firstRecordWaitTime.dividedBy(2)
     init {
-        LOGGER.info {"Starting CDC Process"}
+        LOGGER.info { "Starting CDC Process" }
     }
 
     private var receivedFirstRecord = false
