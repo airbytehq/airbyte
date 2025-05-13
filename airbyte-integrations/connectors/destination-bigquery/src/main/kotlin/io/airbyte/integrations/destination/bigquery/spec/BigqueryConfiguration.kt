@@ -19,7 +19,6 @@ data class BigqueryConfiguration(
     val transformationPriority: TransformationPriority,
     val rawTableDataset: String,
     val disableTypingDeduping: Boolean,
-    override val numOpenStreamWorkers: Int,
 ) : DestinationConfiguration()
 
 sealed interface LoadingMethodConfiguration
@@ -61,7 +60,6 @@ class BigqueryConfigurationFactory :
                     pojo.rawTableDataset!!
                 },
             disableTypingDeduping = pojo.disableTypingDeduping ?: false,
-            numOpenStreamWorkers = pojo.numOpenStreamWorkers ?: 10,
         )
     }
 }
