@@ -46,9 +46,6 @@ function enterpriseConnectorsPlugin(context, options) {
       setGlobalData({
         enterpriseConnectors: content,
       });
-
-      console.log(`Enterprise Connectors Plugin: ${dataPath}`);
-      console.log(`Enterprise Connectors Plugin: ${content}`);
     },
   };
 }

@@ -39,7 +39,7 @@ function ConnectorTable({ connectors, connectorSupportLevel }) {
           <th>Links</th>
           <th>Self-managed</th>
           <th>Cloud</th>
-          <th>Docker Image</th>
+          {connectorSupportLevel !== "enterprise" && <th>Docker Image</th>}
         </tr>
       </thead>
       <tbody>
@@ -92,14 +92,16 @@ function ConnectorTable({ connectors, connectorSupportLevel }) {
                 </td>
                 <td>{connector.is_oss ? "✅" : "❌"}</td>
                 <td>{connector.is_cloud ? "✅" : "❌"}</td>
-                <td>
-                  <small>
-                    <code>
-                      {connector.dockerRepository_oss}:
+                {connectorSupportLevel !== "enterprise" && (
+                  <td>
+                    <small>
+                      <code>
+                        {connector.dockerRepository_oss}:
                       {connector.dockerImageTag_oss}
                     </code>
-                  </small>
-                </td>
+                    </small>
+                  </td>
+                )}
               </tr>
             );
           })}
