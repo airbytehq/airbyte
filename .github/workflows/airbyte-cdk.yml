@@ -56,14 +56,6 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
-      - name: Docker login
-        # We login to benefit from increased rate limits for docker pulls
-        # We can't do it on forks as pull_requests events on forks do not have access to GH secrets
-        if: github.event.pull_request.head.repo.fork != true
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Run Gradle Check
         uses: burrunan/gradle-cache-action@v1
         env:
@@ -74,7 +66,7 @@ jobs:
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
           # TODO: be able to remove the skipSlowTests property
-          arguments: --scan check -DskipSlowTests=true
+          arguments: --scan :airbyte-cdk:check -DskipSlowTests=true
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
