@@ -1,4 +1,4 @@
-name: Connector Ops CI - Gradle Check
+name: CDK Tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,9 +35,6 @@ jobs:
           # Note: expressions within a filter are OR'ed
           filters: |
             java:
-              - '**/*.java'
-              - '**/*.gradle'
-              - '**/*.kt'
               - 'airbyte-cdk/java/**/*'
               - 'airbyte-cdk/bulk/**/*'
 
@@ -78,32 +75,6 @@ jobs:
           concurrent: true
           # TODO: be able to remove the skipSlowTests property
           arguments: --scan check -DskipSlowTests=true
-
-  set-instatus-incident-on-failure:
-    name: Create Instatus Incident on Failure
-    runs-on: ubuntu-24.04
-    needs:
-      - run-check
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Call Instatus Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-          body: '{ "trigger": "down", "status": "HASISSUES" }'
-
-  set-instatus-incident-on-success:
-    name: Create Instatus Incident on Success
-    runs-on: ubuntu-24.04
-    needs:
-      - run-check
-    if: ${{ success() && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Call Instatus Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-          body: '{ "trigger": "up" }'
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
