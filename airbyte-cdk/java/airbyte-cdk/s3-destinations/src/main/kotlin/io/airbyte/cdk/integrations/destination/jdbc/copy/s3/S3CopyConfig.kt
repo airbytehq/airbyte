@@ -23,6 +23,8 @@ class S3CopyConfig(val purgeStagingData: Boolean, val s3Config: S3DestinationCon
             }
         }
 
+
+        // REVERT ME
         fun getS3CopyConfig(config: JsonNode): S3CopyConfig {
             return S3CopyConfig(
                 shouldPurgeStagingData(config),
