@@ -77,4 +77,4 @@ Choose a new blob storage bucket with your chosen cloud provider (for example, A
 
 ### Cloud
 
-At your request, the Airbyte team can enable audit logging on your Airbyte organization. This allows Airbyte to monitor your environment and support your security initiatives. You don't have access to these logs.
+Airbyte implements audit logging on all Airbyte Cloud instances. You don't have access to these logs, but the Airbyte team can reference them if you need assistance with a security investigation.
