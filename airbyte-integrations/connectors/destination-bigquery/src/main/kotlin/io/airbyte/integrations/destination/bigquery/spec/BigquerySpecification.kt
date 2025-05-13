@@ -31,6 +31,8 @@ import java.io.IOException
 
 @Singleton
 class BigquerySpecification : ConfigurationSpecification() {
+    val numOpenStreamWorkers: Int? = null
+
     @get:JsonSchemaTitle("Project ID")
     @get:JsonPropertyDescription(
         """The GCP project ID for the project containing the target BigQuery dataset. Read more <a href="https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects">here</a>.""",
