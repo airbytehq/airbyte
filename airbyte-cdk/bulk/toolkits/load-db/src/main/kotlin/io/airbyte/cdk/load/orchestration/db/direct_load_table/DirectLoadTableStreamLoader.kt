@@ -261,19 +261,15 @@ class DirectLoadTableDedupTruncateStreamLoader(
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        // Early return if there's a stream failure - no data operations needed
-        if (streamFailure != null) {
-            return
+        if (streamFailure == null) {
+            if (shouldCheckRealTableGeneration && shouldUpsertDirectly()) {
+                // Direct upsert path for simpler cases
+                performDirectUpsert()
+            } else {
+                // Needs temp table and overwrite approach
+                performUpsertWithTemporaryTable()
+            }
         }
-
-        if (shouldCheckRealTableGeneration && shouldUpsertDirectly()) {
-            // Direct upsert path for simpler cases
-            performDirectUpsert()
-            return
-        }
-
-        // Needs temp table and overwrite approach
-        performUpsertWithTemporaryTable()
     }
 
     /** Determines if we can directly upsert without additional processing */
