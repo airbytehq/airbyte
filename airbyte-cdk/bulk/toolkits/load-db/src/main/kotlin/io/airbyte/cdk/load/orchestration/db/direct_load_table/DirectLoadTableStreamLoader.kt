@@ -266,7 +266,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
             return
         }
 
-        if (shouldCheckRealTableGeneration && shouldUpsertUnconditionally()) {
+        if (shouldCheckRealTableGeneration && shouldUpsertDirectly()) {
             // Direct upsert path for simpler cases
             performDirectUpsert()
             return
@@ -277,7 +277,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     }
 
     /** Determines if we can directly upsert without additional processing */
-    private fun shouldUpsertUnconditionally(): Boolean {
+    private fun shouldUpsertDirectly(): Boolean {
         return when {
             // Case 1: Real table doesn't exist yet
             initialStatus.realTable == null -> true
