@@ -44,8 +44,17 @@
               "database": {
                 "title": "Database Name",
                 "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
+                "description": "The name of the MongoDB database that contains the collection(s) to replicate. For backward compatibility. If both 'database' and 'databases' are provided, 'databases' will take precedence.",
                 "order": 3
+              },
+              "databases": {
+                "title": "Database Names",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
+                "order": 4
               },
               "username": {
                 "title": "Username",
@@ -102,8 +111,17 @@
               "database": {
                 "title": "Database Name",
                 "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
+                "description": "The name of the MongoDB database that contains the collection(s) to replicate. For backward compatibility. If both 'database' and 'databases' are provided, 'databases' will take precedence.",
                 "order": 3
+              },
+              "databases": {
+                "title": "Database Names",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
+                "order": 4
               },
               "username": {
                 "title": "Username",

@@ -50,6 +50,17 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   public String getDatabaseName() {
     return getDatabaseConfig().has(DATABASE_CONFIGURATION_KEY) ? getDatabaseConfig().get(DATABASE_CONFIGURATION_KEY).asText() : null;
   }
+  
+  public java.util.List<String> getDatabaseNames() {
+    if (getDatabaseConfig().has("databases") && getDatabaseConfig().get("databases").isArray()) {
+      java.util.List<String> databases = new java.util.ArrayList<>();
+      getDatabaseConfig().get("databases").forEach(db -> databases.add(db.asText()));
+      return databases;
+    }
+    
+    String singleDb = getDatabaseName();
+    return singleDb != null ? java.util.List.of(singleDb) : java.util.List.of();
+  }
 
   public OptionalInt getQueueSize() {
     return rawConfig.has(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY)
