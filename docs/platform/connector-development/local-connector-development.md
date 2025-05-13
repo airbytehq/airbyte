@@ -2,14 +2,17 @@
 
 This document outlines the tools needed to develop connectors locally, and how to use each tool.
 
+## Tooling
+
 When developing connectors locally, you'll want to ensure the following tools are installed:
 
 1. [**Poe the Poet**](#poe-the-poet) - Used as a common task interface for defining and running development tasks.
+1. [`uv`](#uv) - Used for installing Python-based CLI apps, such as `Poe`.
 1. [`docker`](#docker) - Used when building and running connector container images.
-1. [`airbyte-ci`](#airbyte-ci) - Used for a large number of tasks such as building and publishing.
 1. [`gradle`](#gradle) - Required when working with Java and Kotlin connectors.
+1. [`airbyte-ci` (deprecated)](#airbyte-ci-deprecated) - Used for a large number of tasks such as building and publishing.
 
-## Poe the Poet
+### Poe the Poet
 
 [Poe the Poet](https://poethepoet.natn.io/installation.html#) - This tool allows you to perform common connector tasks from a single entrypoint.
 
@@ -27,17 +30,23 @@ You can find the global Poe task definitions for any connector in the `poe_tasks
 
 :::
 
-## Docker
+### UV
+
+UV is a tool for installing and managing Python applications. It replaces `pip`, `pipx`, and a number of other tools. It is also the recommended way to install Python CLI apps like `poe`.
+
+To install or upgrade `uv`:
+
+```bash
+brew install uv
+```
+
+### Docker
 
 We recommend Docker Desktop but other container runtimes might be available. A full discussion of how to install and use docker is outside the scope of this guide.
 
 See [Debugging Docker](./debugging-docker.md) for common tips and tricks.
 
-## airbyte-ci
-
-Airbyte CI `(airbyte-ci`) is a Dagger-based tool for accomplishing specific tasks. See `airbyte-ci --help` for a list of commands you can run.
-
-## Gradle
+### Gradle
 
 Gradle is used in Java and Kotlin development.  A full discussion of how to install and use docker is outside the scope of this guide. Similar to running `poe`, you can run `gradle tasks` to view a list of available Gradle development tasks.
 
@@ -48,3 +57,57 @@ You can also use `poe` to execute Gradle tasks, often with less typing. From wit
 Using this syntax you can avoid the long task prefixes such as typing `gradle :integration-tests:connectors:source-mysource:unitTest` and instead run `poe gradle unitTest` within the connector directory.
 
 :::
+
+### airbyte-ci (deprecated)
+
+Airbyte CI `(airbyte-ci`) is a Dagger-based tool for accomplishing specific tasks. See `airbyte-ci --help` for a list of commands you can run.
+
+:::warning
+The Airbyte CI tool is now deprecated and will be phased out shortly. Most airbyte-ci commands have a simpler equivalent in Poe, which you can discover using using `poe --help`.
+:::
+
+## Common Development Tasks
+
+### Installing Connector Dependencies
+
+If a connector has any prerequisites or dependencies to install, you can install them using `poe install`. The `install` task is a generic interface for all connectors - for instance, in Python `install` runs `poetry install --all-extras` and for Gradle, it warms the Gradle cache and builds dependencies.
+
+### Running Tests
+
+Regardless of connector type, you can always run connector tests using the `poe` CLI:
+
+```bash
+# Run a fast-fail set of tests:
+poe test-fast
+
+# Run all unit tests:
+poe test-unit-tests
+
+#  Run all integration tests:
+poe test-integration-tests
+```
+
+:::tip
+
+- You _do not_ have to run tests with Poe. In fact, we recommend running tests directly from your IDE whenever it makes sense to do so.
+- For more information on what each step does, feel free to inspect the respective poe task files in `poe-tasks` directory at the root of the `airbyte` repo.
+- For other task definitions, run `poe --help` from any connector directory.
+
+:::
+
+### Listing and Fetching Secrets
+
+You can use either Poe or `airbyte-cdk` to fetch secrets. These are equivalent:
+
+```bash
+airbyte-cdk secrets fetch
+poe secrets-fetch
+```
+
+Using the `airbyte-cdk` you can also list the available secrets (if any) for the given connector:
+
+```bash
+airbyte-cdk secrets list
+```
+
+The `list` command also provides you with a URL which you can use to quickly navigate to the Google Secrets Manager interface. (GCP login will be required.)
