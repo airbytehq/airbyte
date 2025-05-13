@@ -56,9 +56,7 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
-      - name: Dry-run CDK check
-        run: ./gradlew --dry-run --console=plain :airbyte-cdk:check
-      - name: Run Gradle Check
+      - name: Run CDK Tests
         uses: burrunan/gradle-cache-action@v3
         env:
           CI: true
@@ -68,10 +66,7 @@ jobs:
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
           # TODO: be able to remove the skipSlowTests property
-          arguments:  |
-            --dry-run
-            --console=plain
-            :airbyte-cdk:check
+          arguments:  --scan :airbyte-cdk:check -DskipSlowTests=true
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
