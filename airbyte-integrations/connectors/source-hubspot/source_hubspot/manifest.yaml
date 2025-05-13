@@ -167,7 +167,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
-        path: /properties/v2/deal/properties
+        path: "/properties/v2/{{ parameters['entity'] }}/properties"
       decoder:
         type: JsonDecoder
       record_selector:
@@ -177,12 +177,6 @@ definitions:
           class_name: source_hubspot.components.HubspotSchemaExtractor
           field_path: []
     schema_transformations:
-      - type: CustomTransformation
-        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
-        field_mapping:
-          hs_date_entered_: "hs_v2_date_entered_"
-          hs_date_exited_: "hs_v2_date_exited_"
-          hs_time_in_: "hs_v2_latest_time_in_"
       - type: CustomTransformation
         class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
     schema_type_identifier:
@@ -598,56 +592,21 @@ definitions:
         $ref: "#/schemas/email_subscriptions"
 
   deals_dynamic_schema_loader:
-    type: DynamicSchemaLoader
+    $ref: "#/definitions/base_dynamic_schema_loader"
     retriever:
-      type: SimpleRetriever
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: "/properties/v2/deals/properties"
-      decoder:
-        type: JsonDecoder
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotSchemaExtractor
-          field_path: []
+        path: /properties/v2/deal/properties
     schema_transformations:
       - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
         class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
-    schema_type_identifier:
-      type: SchemaTypeIdentifier
-      key_pointer:
-        - name
-      type_pointer:
-        - type
-      schema_pointer:
-        - properties
-      types_mapping:
-        - type: TypesMap
-          target_type: boolean
-          current_type: bool
-        - type: TypesMap
-          target_type: date
-          current_type: date
-        - type: TypesMap
-          target_type: timestamp_with_timezone
-          current_type: date-time
-        - type: TypesMap
-          target_type: timestamp_with_timezone
-          current_type: datetime
-        - type: TypesMap
-          target_type: string
-          current_type: enumeration
-        - type: TypesMap
-          target_type: string
-          current_type: json
-        - type: TypesMap
-          target_type: string
-          current_type: object_coordinates
-        - type: TypesMap
-          target_type: string
-          current_type: phone_number
 
   deals_full_refresh_stream:
     primary_key:
@@ -686,15 +645,14 @@ definitions:
               record_merge_strategy:
                 type: GroupByKeyMergeStrategy
                 key: id
-          paginator:
-            $ref: "#/definitions/cursor_paginator"
-          record_selector:
-            type: RecordSelector
-            extractor:
-              type: DpathExtractor
-              field_path:
-                - results
-
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
     transformations:
       - type: AddFields
         fields:
