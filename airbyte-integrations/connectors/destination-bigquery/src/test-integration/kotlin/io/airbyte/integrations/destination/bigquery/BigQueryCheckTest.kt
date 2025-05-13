@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import java.util.regex.Pattern
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class BigQueryCheckTest :
@@ -52,7 +51,6 @@ class BigQueryCheckTest :
                 ),
         additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
-    @Disabled
     @Test
     override fun testSuccessConfigs() {
         super.testSuccessConfigs()
