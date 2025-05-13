@@ -68,20 +68,33 @@ jobs:
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
-    services:
-      datadog-agent:
-        image: datadog/agent:latest
-        env:
-          DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-          DD_APM_ENABLED: "true"
-          DD_HOSTNAME: datadog-agent
-        ports:
-          - 8126:8126
+#    services:
+#      datadog-agent:
+#        image: datadog/agent:latest
+#        env:
+#          DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+#          DD_APM_ENABLED: "true"
+#          DD_HOSTNAME: datadog-agent
+#        ports:
+#          - 8126:8126
+#      DD_TRACE_AGENT_HOSTNAME: datadog-agent
+#      DD_TRACE_AGENT_PORT: 8126
+
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       DD_ENV: connectors-ci
-      DD_TRACE_AGENT_HOSTNAME: datadog-agent
-      DD_TRACE_AGENT_PORT: 8126
+      DD_CIVISIBILITY_ENABLED: true
+      DD_CIVISIBILITY_AGENTLESS_ENABLED: true
+      DD_AGENTLESS_LOG_SUBMISSION_ENABLED: true
+      DD_LOGS_INJECTION: true
+
+      DD_API_KEY: ${{ secrets.DD_API_KEY }}
+      DD_SITE: datadoghq.com
+
+      # Agentless APM
+      DD_TRACE_AGENT_URL: https://trace.agent.datadoghq.com
+      DD_TRACE_SAMPLE_RATE: 1.0
+
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -149,24 +162,18 @@ jobs:
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
+          DD_SERVICE: ${{ matrix.connector }}-unit
           JAVA_TOOL_OPTIONS: >-
             -javaagent:${{ github.workspace }}/dd-java-agent.jar
-            -Ddd.service=${{ matrix.connector }}
-            -Ddd.env=${{ env.DD_ENV }}
-            -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
-            -Ddd.trace.agent.port=${{ env.DD_TRACE_AGENT_PORT }}
         run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
+          DD_SERVICE: ${{ matrix.connector }}-unit
           JAVA_TOOL_OPTIONS: >-
             -javaagent:${{ github.workspace }}/dd-java-agent.jar
-            -Ddd.service=${{ matrix.connector }}
-            -Ddd.env=${{ env.DD_ENV }}
-            -Ddd.trace.agent.host=${{ env.DD_TRACE_AGENT_HOSTNAME }}
-            -Ddd.trace.agent.port=${{ env.DD_TRACE_AGENT_PORT }}
         run: poe test-integration-tests
 
       - name: Publish Test Results
