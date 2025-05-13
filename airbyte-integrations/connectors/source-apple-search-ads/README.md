@@ -1,4 +1,4 @@
-# Apple search ads source connector
+# Apple Ads (Apple Search Ads) source connector
 
 This directory contains the manifest-only connector for `source-apple-search-ads`.
 This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.

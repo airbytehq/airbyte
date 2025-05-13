@@ -6,9 +6,9 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 ## ✨ Highlights
 
-Airbyte has made improvements to our certified database sources to ensure they stay resilient when incoming data is inconsistent. Previously, syncs could fail if one record had mistyped data. Rather than fail the sync, we'll continue syncing and inform you of the record-level error in the destination field `_airbyte_meta.errrors`. Read more in our [typing & deduping documentation](/using-airbyte/core-concepts/typing-deduping#_airbyte_meta-errors).
+Airbyte has made improvements to our certified database sources to ensure they stay resilient when incoming data is inconsistent. Previously, syncs could fail if one record had mistyped data. Rather than fail the sync, we'll continue syncing and inform you of the record-level error in the destination field `_airbyte_meta.errrors`. Read more in our [typing & deduping documentation](/platform/using-airbyte/core-concepts/typing-deduping).
 
-We've also improved our schema discovery to ensure you can sync more data within a single connection. The new [environment variable](/operator-guides/configuring-airbyte#connections) `MAX_FIELDS_PER_CONNECTION` controls the maximum allowable fields per connection per deployment and can be configured at runtime. By default, the platform defaults to 20,000 fields across enabled streams. When using Airbyte Cloud, our Technical Support team can assist with modifying your configuration.
+We've also improved our schema discovery to ensure you can sync more data within a single connection. The new [environment variable](/platform/operator-guides/configuring-airbyte#connections) `MAX_FIELDS_PER_CONNECTION` controls the maximum allowable fields per connection per deployment and can be configured at runtime. By default, the platform defaults to 20,000 fields across enabled streams. When using Airbyte Cloud, our Technical Support team can assist with modifying your configuration.
 
 ## Platform Releases
 
@@ -19,11 +19,11 @@ In addition to our improved schema discovery, we also released:
 ![Connection Header](./assets/connection-header-ui-dark.png)
 
 - `Clear` as a replacement to `Reset` to reduce confusion about the functionality. Previously, a `Reset` would remove a connection's state and sometimes trigger a sync afterwards. `Clear` performs the same removal of the state, but does not trigger a sync afterwards.
-  Read more in our [Clear documentation](/operator-guides/clear).
+  Read more in our [Clear documentation](/platform/operator-guides/clear).
 
 - Reduced friction for large records. Airbyte's platform no longer limits how large a record from the source can be. Instead, each destination has their own unique limit constraints. When a destination receives a large record, the primary key and cursor will be retained, but all other data in the record will be nulled. Any modifications to the record will be stored within `airbyte_meta.changes` for your review within the destination.
 
-- A new OSS [Quickstart](/using-airbyte/getting-started/oss-quickstart) that automatically manages all install steps for you. Mac users can also use Brew to install the `abctl` command.
+- A new OSS [Quickstart](/platform/using-airbyte/getting-started/oss-quickstart) that automatically manages all install steps for you. Mac users can also use Brew to install the `abctl` command.
 
 - (Self-Managed Enterprise only) Improvements to connection migrations. Any changes to authentication or ingress URL configurations can be saved without deleting state. The improvement also includes a backwards-compatible alternative to setting the webapp-url property through the airbyte.yml file.
 
@@ -35,7 +35,7 @@ In addition to our database source improvements, we also released a few notable 
 
 - Added support for [JWT authentication](https://github.com/airbytehq/airbyte/pull/37005) in the low-code CDK, which opens up access to connectors that require this type of authentication.
 
-- Improved the [Connector Builder](/connector-development/connector-builder-ui/overview) experience around user inputs. Auto-created inputs now always use a unique ID. IDs and titles can now be edited independently to avoid breaking changes. Extra validations on user inputs are now enforced when loading a YAML manifest in the UI to ensure that all of the desired properties for auto-created inputs are properly set on the imported spec. The UI also now supports importing user input references using dot-notation, e.g. `{{ config.id }}`, instead of only supporting bracket notation like`{{ config['id'] }}`
+- Improved the [Connector Builder](/platform/connector-development/connector-builder-ui/overview/) experience around user inputs. Auto-created inputs now always use a unique ID. IDs and titles can now be edited independently to avoid breaking changes. Extra validations on user inputs are now enforced when loading a YAML manifest in the UI to ensure that all of the desired properties for auto-created inputs are properly set on the imported spec. The UI also now supports importing user input references using dot-notation, e.g. `{{ config.id }}`, instead of only supporting bracket notation like`{{ config['id'] }}`
 
 - Improved the performance of destination [DuckDB](https://github.com/airbytehq/airbyte/pull/36715) to move data 100x faster. Thanks to DuckDB for contributing the enhancement!
 

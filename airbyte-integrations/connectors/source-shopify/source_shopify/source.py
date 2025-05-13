@@ -57,6 +57,7 @@ from .streams.streams import (
     ProductImages,
     Products,
     ProductVariants,
+    ProfileLocationGroups,
     Shop,
     SmartCollections,
     TenderTransactions,
@@ -216,7 +217,7 @@ class SourceShopify(AbstractSource):
             TenderTransactions(config),
             self.select_transactions_stream(config),
             CustomerAddress(config),
-            Countries(config),
+            Countries(config=config, parent=ProfileLocationGroups(config)),
         ]
 
         return [

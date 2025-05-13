@@ -784,8 +784,8 @@ class TestDiscovery(BaseTest):
             additional_properties_values = list(find_all_values_for_key_in_schema(stream.json_schema, "additionalProperties"))
             if additional_properties_values:
                 assert all(
-                    [additional_properties_value is True for additional_properties_value in additional_properties_values]
-                ), "When set, additionalProperties field value must be true for backward compatibility."
+                    [additional_properties_value is not False for additional_properties_value in additional_properties_values]
+                ), "When set, additionalProperties field value must not be false for backward compatibility. It can also be another object."
 
     @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility

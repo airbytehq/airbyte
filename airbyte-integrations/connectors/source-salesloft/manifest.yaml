@@ -3405,9 +3405,8 @@ schemas:
               - number
               - "null"
       created_at:
-        type:
-          - string
-          - "null"
+        type: string
+        format: date-time
       crm_activity:
         type:
           - object
@@ -3419,14 +3418,14 @@ schemas:
               - "null"
           id:
             type:
-              - number
+              - integer
               - "null"
       headers:
         type:
           - object
           - "null"
       id:
-        type: number
+        type: integer
       mailing:
         type:
           - object
@@ -3434,7 +3433,7 @@ schemas:
         properties:
           id:
             type:
-              - number
+              - integer
               - "null"
       personalization:
         type:
@@ -3451,7 +3450,7 @@ schemas:
               - "null"
           id:
             type:
-              - number
+              - integer
               - "null"
       recipient_email_address:
         type:
@@ -3461,10 +3460,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       sent_at:
         type:
           - string
           - "null"
+        format: date-time
       status:
         type:
           - string
@@ -3475,6 +3476,7 @@ schemas:
           - "null"
       updated_at:
         type: string
+        format: date-time
       user:
         type:
           - object
@@ -3486,7 +3488,7 @@ schemas:
               - "null"
           id:
             type:
-              - number
+              - integer
               - "null"
       view_tracking:
         type:

@@ -156,14 +156,13 @@ class S3KotlinClient(
 
 /**
  * [assumeRoleCredentials] is required if [keyConfig] does not have an access key, _and_ [arnRole]
- * includes a nonnull role ARN. Otherwise it is ignored.
+ * includes a nonnull role ARN. Otherwise, it is ignored.
  */
 @Factory
 class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
-    private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
     private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
     private val s3ClientConfig: S3ClientConfigurationProvider? = null,
 ) {
@@ -177,7 +176,7 @@ class S3ClientFactory(
         T : AWSAccessKeyConfigurationProvider,
         T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config, config, assumeRoleCredentials).make()
+            S3ClientFactory(config, config, config, assumeRoleCredentials).make()
     }
 
     @Singleton
@@ -233,7 +232,7 @@ class S3ClientFactory(
 
         val s3SdkClient =
             aws.sdk.kotlin.services.s3.S3Client {
-                region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+                region = bucketConfig.s3BucketConfiguration.s3BucketRegion
                 credentialsProvider = credsProvider
                 endpointUrl =
                     bucketConfig.s3BucketConfiguration.s3Endpoint?.let {

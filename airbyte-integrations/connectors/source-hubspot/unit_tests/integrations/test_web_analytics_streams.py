@@ -9,9 +9,9 @@ import mock
 import pytest
 import pytz
 
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
-from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
@@ -136,6 +136,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         )
         output = self.read_from_stream(self.oauth_config(), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 1
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -154,6 +155,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 1
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -177,6 +179,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 2
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -215,6 +218,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 2
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -246,6 +250,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         config_start_dt = date_ranges[0][0]
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN, config_start_dt), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 4  # 2 parent objects * 2 datetime slices
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -267,6 +272,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         assert len(output.records) == 0
         assert len(output.trace_messages) > 0
         assert len(output.errors) > 0
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -288,6 +294,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         assert len(output.records) == 1
         assert len(output.trace_messages) > 0
         assert len(output.errors) == 0
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -297,6 +304,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
         self.mock_scopes(http_mocker, self.ACCESS_TOKEN, [])
         self.read_from_stream(self.oauth_config(), stream_name, SyncMode.full_refresh, expecting_exception=True)
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -318,6 +326,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         assert len(output.records) == 0
         assert len(output.trace_messages) > 0
         assert len(output.errors) > 0
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -339,6 +348,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         assert "properties" not in record
         prop_fields = len([f for f in record if f.startswith("properties_")])
         assert prop_fields > 0
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -358,6 +368,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 1
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -377,9 +388,11 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental)
         assert len(output.state_messages) == 1
 
-        cursor_value_from_state_message = output.most_recent_state.stream_state.dict().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
         cursor_value_from_latest_record = output.records[-1].record.data.get(self.CURSOR_FIELD)
-        assert cursor_value_from_state_message == cursor_value_from_latest_record
+        object_id_dict = getattr(output.most_recent_state.stream_state, self.OBJECT_ID)
+        cursor_value_from_most_recent_state = object_id_dict.get(self.CURSOR_FIELD)
+        assert cursor_value_from_most_recent_state == cursor_value_from_latest_record
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -408,8 +421,11 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
         )
         assert len(output.state_messages) == 1
-        assert output.most_recent_state.stream_state.dict().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
-        assert output.most_recent_state.stream_state.dict().get(another_object_id, {}).get(self.CURSOR_FIELD)
+        first_object_id_dict = getattr(output.most_recent_state.stream_state, self.OBJECT_ID)
+        another_object_id_dict = getattr(output.most_recent_state.stream_state, another_object_id)
+        assert first_object_id_dict.get(self.CURSOR_FIELD)
+        assert another_object_id_dict.get(self.CURSOR_FIELD)
+        http_mocker.clear_all_matchers()
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -437,7 +453,9 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
         )
         assert len(output.state_messages) == 1
-        assert output.most_recent_state.stream_state.dict().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD) == self.dt_str(self.updated_at())
+        object_id_dict = getattr(output.most_recent_state.stream_state, self.OBJECT_ID)
+        assert object_id_dict.get(self.CURSOR_FIELD) == self.dt_str(self.updated_at())
+        http_mocker.clear_all_matchers()
 
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")

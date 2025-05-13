@@ -124,6 +124,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         }
         val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
         jdbcProperties.putAll(sslJdbcProperties)
+        log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }
 
         // Configure cursor.
         val incremental: IncrementalConfiguration = fromIncrementalSpec(pojo.getIncrementalValue())

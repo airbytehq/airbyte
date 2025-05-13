@@ -1,0 +1,13 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-gcp')
+    // This is because we are building a client wrapper around S3.
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-s3')
+
+    api 'com.google.cloud:google-cloud-storage'
+
+    testImplementation 'io.mockk:mockk:1.13.17'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+}

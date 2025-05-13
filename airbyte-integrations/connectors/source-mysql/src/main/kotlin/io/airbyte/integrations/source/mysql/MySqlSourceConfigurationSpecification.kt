@@ -98,10 +98,9 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("ssl_mode")
     @JsonSchemaTitle("Encryption")
     @JsonPropertyDescription(
-        "The encryption method with is used when communicating with the database.",
+        "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8}""")
-    @JsonSchemaDefault("required")
+    @JsonSchemaInject(json = """{"order":8,"default":"required"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore

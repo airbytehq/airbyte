@@ -1,0 +1,29 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.13"
+name = "source-box-data-extract"
+description = "Source implementation for Box File Text Extraction."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/box-files-text"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [{ include = "source_box_data_extract" }, { include = "main.py" }]
+
+[tool.poetry.dependencies]
+python = "^3.11,<3.12"
+airbyte-cdk = "^6"
+box-sdk-gen = "^1.11.1"
+
+[tool.poetry.scripts]
+source-box-data-extract = "source_box_data_extract.run:run"
+
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"

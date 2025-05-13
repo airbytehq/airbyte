@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.DatasetId
 import com.google.cloud.bigquery.QueryJobConfiguration
+import com.google.cloud.bigquery.RangePartitioning
+import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.commons.json.Jsons
@@ -25,6 +27,7 @@ import java.io.IOException
 import java.nio.file.Path
 import java.util.function.Function
 import java.util.stream.Collectors
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -348,6 +351,74 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
+    /**
+     * In 2.10.0, we updated the default raw table partitioning to be a daily partition against
+     * `_airbyte_extracted_at`. Verify that we didn't do anything weird. Additionally, verify that
+     * we didn't repartition existing raw tables.
+     */
+    @Test
+    fun testRawTablePartitioningChange() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncId(42L)
+                            .withGenerationId(42L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
+                )
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(
+            catalog,
+            messages1,
+            "airbyte/destination-bigquery:2.9.3",
+        )
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        // check that we have the correct data (i.e. a combination of sync1 + sync2)
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
+        fixGenerationId(expectedRawRecords2, expectedFinalRecords2, 42L)
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+
+        // check that we still have the old generation_id partitioning
+        val table =
+            bq!!.getTable(
+                rawDataset,
+                StreamId.concatenateRawTableName(
+                    streamNamespace ?: getDatasetId(config!!),
+                    streamName
+                )
+            )
+        assertEquals(
+            RangePartitioning.newBuilder()
+                .setField(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+                .setRange(
+                    RangePartitioning.Range.newBuilder()
+                        .setStart(0L) // Bigquery allows a table to have up to 10_000 partitions.
+                        .setEnd(
+                            10000L
+                        ) // Somewhat conservative estimate. This should avoid issues with
+                        // users running many merge refreshes.
+                        .setInterval(5L)
+                        .build()
+                )
+                .build(),
+            table.getDefinition<StandardTableDefinition>().rangePartitioning,
+        )
     }
 
     // Disabling until we can safely fetch generation ID
