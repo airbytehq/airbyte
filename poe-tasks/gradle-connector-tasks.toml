@@ -27,17 +27,23 @@
 
 [tasks]
 
-# Universal Connector Tasks
-# These tasks are available in all connectors, regardless of the language.
+get-language = "echo 'java'" # Use with -qq to get just the language name
+fetch-secrets = "airbyte-cdk secrets fetch"
 
-install = "echo 'No install step for this connector.'"
+install = [
+  "gradle-warmup",
+  "install-cdk-cli",
+]
+
+gradle-warmup.help = "Warm up the Gradle daemon and cache by listing available tasks (no build)"
+gradle-warmup.cmd = "${POE_GIT_ROOT}/gradlew --no-daemon tasks --quiet"
+install-cdk-cli.help = "Install the CDK CLI for things like secrets and testing"
+install-cdk-cli.cmd = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+
 test-all = "gradle check"
 test-fast = "test-all"  # TODO: Add a fast-fail unit test definition
 format-check = "gradle check -x test"
 lint-check = "echo 'No lint check step for this connector.'"
-
-fetch-secrets = "uv tool run airbyte-cdk[dev] secrets fetch"
-get-language = "echo 'java'" # Use with -qq to get just the language name
 
 test-unit-tests = "gradle test"
 test-integration-tests.shell = '''
