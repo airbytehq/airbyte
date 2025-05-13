@@ -100,7 +100,7 @@ class FileChunkTask<T>(
                 parts.forEach {
                     log.info { "Read ${it.bytes?.size ?: 0} bytes from ${file.stagingFileUrl}" }
 
-                    publishPart(objectKey, it, event.context!!)
+                    publishPart(objectKey, it, event.context!!, event.postProcessingCallback)
                 }
 
                 fileInputStream.close()
@@ -113,13 +113,20 @@ class FileChunkTask<T>(
         outputKey: ObjectKey,
         part: Part,
         pipelineContext: PipelineContext,
+        callback: (suspend () -> Unit)?,
     ) {
         val partition = partitioner.getPart(outputKey, partition, partQueue.partitions)
 
         val formattedPart = ObjectLoaderPartFormatter.FormattedPart(part)
 
         val outputMessage =
-            PipelineMessage(emptyMap(), outputKey, formattedPart, context = pipelineContext)
+            PipelineMessage(
+                emptyMap(),
+                outputKey,
+                formattedPart,
+                context = pipelineContext,
+                postProcessingCallback = callback,
+            )
 
         partQueue.publish(outputMessage, partition)
     }
