@@ -87,9 +87,9 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
             bq.query(
                     QueryJobConfiguration.of(
                         """
-                            SELECT MAX(_airbyte_extracted_at)
-                            FROM $rawTableIdQuoted
-                            """.trimIndent()
+                    SELECT MAX(_airbyte_extracted_at)
+                    FROM $rawTableIdQuoted
+                    """.trimIndent()
                     )
                 )
                 .iterateAll()
@@ -168,7 +168,7 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
         return alterTableReport.isNoOp && tableClusteringMatches && tablePartitioningMatches
     }
 
-    private fun buildAlterTableReport(
+    internal fun buildAlterTableReport(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         existingTable: TableDefinition,
@@ -236,40 +236,42 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
         )
     }
 
-    @VisibleForTesting
-    fun clusteringMatches(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping,
-        existingTable: StandardTableDefinition,
-    ): Boolean {
-        return (existingTable.clustering != null &&
-            containsAllIgnoreCase(
-                HashSet<String>(existingTable.clustering!!.fields),
-                BigQuerySqlGenerator.clusteringColumns(stream, columnNameMapping)
-            ))
-    }
+    companion object {
+        @VisibleForTesting
+        fun clusteringMatches(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping,
+            existingTable: StandardTableDefinition,
+        ): Boolean {
+            return (existingTable.clustering != null &&
+                containsAllIgnoreCase(
+                    HashSet<String>(existingTable.clustering!!.fields),
+                    BigQuerySqlGenerator.clusteringColumns(stream, columnNameMapping)
+                ))
+        }
 
-    @VisibleForTesting
-    fun partitioningMatches(existingTable: StandardTableDefinition): Boolean {
-        return existingTable.timePartitioning != null &&
-            existingTable.timePartitioning!!
-                .field
-                .equals("_airbyte_extracted_at", ignoreCase = true) &&
-            TimePartitioning.Type.DAY == existingTable.timePartitioning!!.type
-    }
+        @VisibleForTesting
+        fun partitioningMatches(existingTable: StandardTableDefinition): Boolean {
+            return existingTable.timePartitioning != null &&
+                existingTable.timePartitioning!!
+                    .field
+                    .equals("_airbyte_extracted_at", ignoreCase = true) &&
+                TimePartitioning.Type.DAY == existingTable.timePartitioning!!.type
+        }
 
-    private fun getPks(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): Set<String> {
-        return when (stream.importType) {
-            Append,
-            Overwrite -> emptySet()
-            is Dedupe ->
-                (stream.importType as Dedupe)
-                    .primaryKey
-                    .map { pk -> columnNameMapping[pk.first()]!! }
-                    .toSet()
+        private fun getPks(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping
+        ): Set<String> {
+            return when (stream.importType) {
+                Append,
+                Overwrite -> emptySet()
+                is Dedupe ->
+                    (stream.importType as Dedupe)
+                        .primaryKey
+                        .map { pk -> columnNameMapping[pk.first()]!! }
+                        .toSet()
+            }
         }
     }
 }
