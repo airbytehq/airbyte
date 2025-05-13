@@ -101,7 +101,7 @@ You can use either Poe or `airbyte-cdk` to fetch secrets. These are equivalent:
 
 ```bash
 airbyte-cdk secrets fetch
-poe secrets-fetch
+poe fetch-secrets
 ```
 
 Using the `airbyte-cdk` you can also list the available secrets (if any) for the given connector:
