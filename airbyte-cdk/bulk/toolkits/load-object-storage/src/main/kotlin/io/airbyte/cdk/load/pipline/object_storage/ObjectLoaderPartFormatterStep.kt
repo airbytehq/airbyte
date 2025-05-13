@@ -12,11 +12,12 @@ import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTask
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import kotlinx.coroutines.flow.Flow
 
 class ObjectLoaderPartFormatterStep(
     objectLoader: ObjectLoader,
     private val partFormatter: ObjectLoaderPartFormatter<*>,
-    private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    private val inputFlows: Array<Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     private val taskFactory: LoadPipelineStepTaskFactory,
@@ -27,7 +28,7 @@ class ObjectLoaderPartFormatterStep(
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return taskFactory.createIntermediateStep(
             partFormatter,
-            inputQueue,
+            inputFlows[partition],
             ObjectLoaderFormattedPartPartitioner(),
             outputQueue,
             partition,
