@@ -95,6 +95,22 @@ definitions:
       type: OffsetIncrement
       page_size: 100
 
+  # Delete later once anatolii's changes are merged
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
+
   base_selector:
     type: RecordSelector
     extractor:
@@ -112,6 +128,21 @@ definitions:
       $ref: "#/definitions/base_paginator"
     decoder:
       type: JsonDecoder
+
+  # Delete later once anatolii's changes are merged
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updatedAt
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%SZ"
 
   retriever_without_pagination:
     type: SimpleRetriever
@@ -900,6 +931,389 @@ definitions:
         cursor_field: lastUpdated
         cursor_format: "%ms"
 
+  engagements_dynamic_schema_loader:
+    type: DynamicSchemaLoader
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/properties/v2/{{ parameters['entity'] }}/properties"
+      decoder:
+        type: JsonDecoder
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotSchemaExtractor
+          field_path: []
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+    schema_type_identifier:
+      type: SchemaTypeIdentifier
+      key_pointer:
+        - name
+      type_pointer:
+        - type
+      schema_pointer:
+        - properties
+      types_mapping:
+        - type: TypesMap
+          target_type: boolean
+          current_type: bool
+        - type: TypesMap
+          target_type: date
+          current_type: date
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: date-time
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: datetime
+        - type: TypesMap
+          target_type: string
+          current_type: enumeration
+        - type: TypesMap
+          target_type: string
+          current_type: json
+        - type: TypesMap
+          target_type: string
+          current_type: object_coordinates
+        - type: TypesMap
+          target_type: string
+          current_type: phone_number
+
+  engagements_full_refresh_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        $ref: "#/definitions/base_selector"
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+      - type: DpathFlattenFields
+        field_path:
+          - properties
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+
+  engagements_incremental_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+        http_method: POST
+        fetch_properties_from_endpoint:
+          type: PropertiesFromEndpoint
+          property_field_path:
+            - name
+          retriever:
+            type: SimpleRetriever
+            requester:
+              $ref: "#/definitions/base_requester"
+              path: "/properties/v2/{{ parameters['entity'] }}/properties"
+            decoder:
+              type: JsonDecoder
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+        request_body_json:
+          limit: 100
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          filters:
+            - propertyName: hs_lastmodifieddate
+              operator: GTE
+              value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+            - propertyName: hs_lastmodifieddate
+              operator: LTE
+              value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+            - propertyName: hs_object_id
+              operator: GTE
+              value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+          properties: "{{ stream_slice.extra_fields['query_properties'] }}"
+          after: "{{ next_page_token['next_page_token']['after'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
+          page_size: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotAssociationsExtractor
+          field_path:
+            - results
+          entity_primary_key: "{{ parameters['entity'] }}"
+          associations_list:
+            - companies
+            - contacts
+            - deals
+            - tickets
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+
+  engagements_calls_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/engagements_full_refresh_stream"
+      $parameters:
+        # I don't like that the entire request_parameters object must be passed via $parameters when
+        # ideally it should to use interpolation on /properties/v2/{{ parameters['entity'] }}/properties.
+        # However, there is a bug where $parameters is not propagated beyond non-components and
+        # because request_parameters is just an object and not a component, the underlying QueryProperties
+        # component does not inherit from the parent $parameters which contains entity=calls
+        request_parameters:
+          associations: "['companies', 'contacts', 'deals', 'tickets']"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: "/properties/v2/calls/properties" # This should be replaced with {{ parameters['entity'] }}
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+    incremental_stream: "#/definitions/engagements_incremental_stream"
+    $parameters:
+      name: engagements_calls
+      entity: calls
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_calls"
+        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+
+  engagements_emails_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/engagements_full_refresh_stream"
+      $parameters:
+        # See the above note related to why the request_parameters is defined here in $parameters
+        # instead of {{ parameters['entity'] }}
+        request_parameters:
+          associations: "['companies', 'contacts', 'deals', 'tickets']"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: "/properties/v2/emails/properties" # This should be replaced with {{ parameters['entity'] }}
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+    incremental_stream: "#/definitions/engagements_incremental_stream"
+    $parameters:
+      name: engagements_emails
+      entity: emails
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+
+  engagements_meetings_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/engagements_full_refresh_stream"
+      $parameters:
+        # See the above note related to why the request_parameters is defined here in $parameters
+        # instead of {{ parameters['entity'] }}
+        request_parameters:
+          associations: "['companies', 'contacts', 'deals', 'tickets']"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: "/properties/v2/meetings/properties" # This should be replaced with {{ parameters['entity'] }}
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+    incremental_stream: "#/definitions/engagements_incremental_stream"
+    $parameters:
+      name: engagements_meetings
+      entity: meetings
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+
+  engagements_notes_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/engagements_full_refresh_stream"
+      $parameters:
+        # See the above note related to why the request_parameters is defined here in $parameters
+        # instead of {{ parameters['entity'] }}
+        request_parameters:
+          associations: "['companies', 'contacts', 'deals', 'tickets']"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: "/properties/v2/notes/properties" # This should be replaced with {{ parameters['entity'] }}
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+    incremental_stream: "#/definitions/engagements_incremental_stream"
+    $parameters:
+      name: engagements_notes
+      entity: notes
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+
+  engagements_tasks_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/engagements_full_refresh_stream"
+      $parameters:
+        # See the above note related to why the request_parameters is defined here in $parameters
+        # instead of {{ parameters['entity'] }}
+        request_parameters:
+          associations: "['companies', 'contacts', 'deals', 'tickets']"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: "/properties/v2/tasks/properties" # This should be replaced with {{ parameters['entity'] }}
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+    incremental_stream: "#/definitions/engagements_incremental_stream"
+    $parameters:
+      name: engagements_tasks
+      entity: tasks
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
@@ -969,6 +1383,11 @@ streams:
   - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/email_subscriptions_stream"
+  - "#/definitions/engagements_calls_stream"
+  - "#/definitions/engagements_emails_stream"
+  - "#/definitions/engagements_meetings_stream"
+  - "#/definitions/engagements_notes_stream"
+  - "#/definitions/engagements_tasks_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/workflows_stream"
@@ -1427,6 +1846,330 @@ schemas:
         type:
           - "null"
           - string
+
+  engagements_calls:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the call engagement.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the call engagement was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Date and time when the call engagement was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the call engagement is archived or not.
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Contacts associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: Deals associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: Companies associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: Tickets associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  engagements_emails:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the engagement email
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the engagement email was created
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Date and time when the engagement email was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the engagement email is archived or not
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: List of contacts associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: List of deals associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: List of companies associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: List of tickets associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+  engagements_meetings:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the meeting engagement.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp indicating when the meeting engagement was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Timestamp indicating when the meeting engagement was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates whether the meeting engagement is archived or not.
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Information about the contacts associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: Information about the deals associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: Information about the companies associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: Information about the tickets associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  engagements_notes:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the engagement note
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the note was created
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Date and time when the note was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the note has been archived
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Contacts associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: Deals associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: Companies associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: Tickets associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  engagements_tasks:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the task
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the task was created
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the task was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the task has been archived
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: List of contacts associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: List of deals associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: List of companies associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: List of tickets associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
 
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#
