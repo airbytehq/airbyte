@@ -555,7 +555,7 @@ definitions:
       client_id: "{{ config.client_id }}"
       grant_type: client_credentials
       client_secret: "{{ config.client_secret }}"
-      token_refresh_endpoint: "{{ config.token_refresh_endpoint }}"
+      token_refresh_endpoint: "{{ config.get('token_refresh_endpoint', 'https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg') }}"
       refresh_request_body: {}
 
 streams:
