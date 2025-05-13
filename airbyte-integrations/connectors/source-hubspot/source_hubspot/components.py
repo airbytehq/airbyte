@@ -19,7 +19,6 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_now, ab_datetime_parse
 
@@ -325,7 +324,7 @@ class EntitySchemaNormalization(TypeTransformer):
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
             if isinstance(original_value, str):
-                if original_value == "":
+                if "string" not in target_type and original_value == "":
                     # do not cast empty strings, return None instead to be properly cast.
                     transformed_value = None
                     return transformed_value
