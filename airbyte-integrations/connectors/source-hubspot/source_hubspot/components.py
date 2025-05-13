@@ -270,7 +270,6 @@ class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
     accepts the set of dynamic schema fields as a single record.
-    This might be doable with the existing DpathExtractor configuration.
     """
 
     config: Config
@@ -283,6 +282,13 @@ class HubspotSchemaExtractor(RecordExtractor):
 
 @dataclass
 class HubspotRenamePropertiesTransformation(RecordTransformation):
+    """
+    Custom transformation that takes in a record that represents a map of all dynamic properties retrieved
+    from the Hubspot properties endpoint. This mapping nests all of these fields under a sub-object called
+    `properties` and updates all the property field names at the top level to be prefixed with
+    `properties_<property_name>`.
+    """
+
     def transform(
         self,
         record: Dict[str, Any],
@@ -290,32 +296,32 @@ class HubspotRenamePropertiesTransformation(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        transformed_record = {}
+        transformed_record = {
+            "properties": {
+                "type": "object",
+                "properties": {},
+            }
+        }
         for key, value in record.items():
-            if key == "properties":
-                # Transforms properties object so that it adheres to JSON schema format
-                # This could also be replaced with this in the manifest:
-                #   type: AddFields
-                #   fields:
-                #     - path: [ "properties", "properties" ]
-                #       value: "{{ record }}"
-                #     - path: [ "properties" ]
-                #       value: "{{ {'type': 'object'} }}"
-                transformed_record[key] = {
-                    "type": "object",
-                    "properties": value,
-                }
-            else:
-                # We need to rename all the properties at the top level to include the properties_
-                # prefix and I didn't think of a way to do that w/o a custom transformation
-                updated_key = f"properties_{key}"
-                transformed_record[updated_key] = value
+            transformed_record["properties"]["properties"][key] = value
+            updated_key = f"properties_{key}"
+            transformed_record[updated_key] = value
 
         record.clear()
         record.update(transformed_record)
 
 
 class EntitySchemaNormalization(TypeTransformer):
+    """
+    For CRM object and CRM Search streams, which have dynamic schemas, custom normalization should be applied.
+    Convert record's received value according to its declared catalog dynamic schema type and format.
+    Empty strings for fields that have non string type converts to None.
+    Numeric strings for fields that have number type converts to integer type, otherwise to number.
+    Strings like "true"/"false" with boolean type converts to boolean.
+    Date and Datime fields converts to format datetime string. Set __ab_apply_cast_datetime: false in field definition, if you don't need to format datetime strings.
+
+    """
+
     def __init__(self, *args, **kwargs):
         config = TransformConfig.CustomSchemaNormalization
         super().__init__(config)
@@ -327,7 +333,7 @@ class EntitySchemaNormalization(TypeTransformer):
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
             if isinstance(original_value, str):
-                if original_value == "":
+                if "string" not in target_type and original_value == "":
                     # do not cast empty strings, return None instead to be properly cast.
                     transformed_value = None
                     return transformed_value
