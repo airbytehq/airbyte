@@ -261,65 +261,77 @@ class DirectLoadTableDedupTruncateStreamLoader(
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (shouldCheckRealTableGeneration) {
-            val shouldUpsertUnconditionally: Boolean
-            if (initialStatus.realTable == null) {
-                logger.info { "Creating real table and upserting data" }
-                // the real table doesn't yet exist.
-                // we should create it now, and upsert this sync's records into it.
-                // this won't cause downtime, because there was no data to begin with.
-                sqlTableOperations.createTable(
-                    stream,
-                    realTableName,
-                    columnNameMapping,
-                    replace = true,
-                )
-                shouldUpsertUnconditionally = true
-            } else if (
-                initialStatus.realTable.isEmpty ||
-                    nativeTableOperations.getGenerationId(realTableName) >=
-                        stream.minimumGenerationId
-            ) {
-                logger.info { "Upserting to existing real table" }
-                // the real table exists, but is empty.
-                // we should enforce its schema, and upsert this sync's records.
-                // again: this won't cause downtime, because there was no data to begin with.
-                nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
-                shouldUpsertUnconditionally = true
-            } else {
-                logger.info { "Real table exists and is nonempty. Need to do further checks before choosing what to do." }
-                // the real table exists and has data. we should do more stringent checks
-                // before upserting, because we might need to truncate this table
-                // before upserting.
-                shouldUpsertUnconditionally = false
-            }
-
-            if (shouldUpsertUnconditionally) {
-                sqlTableOperations.upsertTable(
-                    stream,
-                    columnNameMapping,
-                    sourceTableName = tempTableName,
-                    targetTableName = realTableName,
-                )
-
-                sqlTableOperations.dropTable(tempTableName)
-                return
-            }
+        // Early return if there's a stream failure - no data operations needed
+        if (streamFailure != null) {
+            return
         }
 
-        if (streamFailure == null) {
-            val tempTempTable = tempTableName.asTempTable()
-            sqlTableOperations.createTable(stream, tempTempTable, columnNameMapping, replace = true)
-            sqlTableOperations.upsertTable(
-                stream,
-                columnNameMapping,
-                sourceTableName = tempTableName,
-                targetTableName = tempTempTable
-            )
-            sqlTableOperations.overwriteTable(
-                sourceTableName = tempTempTable,
-                targetTableName = realTableName
-            )
+        if (shouldCheckRealTableGeneration && shouldUpsertUnconditionally()) {
+            // Direct upsert path for simpler cases
+            performDirectUpsert()
+            return
         }
+
+        // Needs temp table and overwrite approach
+        performUpsertWithTemporaryTable()
+    }
+
+    /** Determines if we can directly upsert without additional processing */
+    private fun shouldUpsertUnconditionally(): Boolean {
+        return when {
+            // Case 1: Real table doesn't exist yet
+            initialStatus.realTable == null -> true
+
+            // Case 2: Real table exists but is empty or has correct generation ID
+            initialStatus.realTable.isEmpty ||
+                nativeTableOperations.getGenerationId(realTableName) >=
+                    stream.minimumGenerationId -> true
+
+            // Case 3: Real table exists with data - needs more stringent approach
+            else -> false
+        }
+    }
+
+    /** Performs direct upsert from temp table to real table */
+    private fun performDirectUpsert() {
+        // Create or ensure schema of real table
+        if (initialStatus.realTable == null) {
+            sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
+        } else {
+            nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
+        }
+
+        // Upsert data from temp to real table
+        sqlTableOperations.upsertTable(
+            stream,
+            columnNameMapping,
+            sourceTableName = tempTableName,
+            targetTableName = realTableName
+        )
+
+        // Clean up temporary table
+        sqlTableOperations.dropTable(tempTableName)
+    }
+
+    /** Performs upsert using an additional temporary table for safer operation */
+    private fun performUpsertWithTemporaryTable() {
+        val tempTempTable = tempTableName.asTempTable()
+
+        // Create temporary table for intermediate operations
+        sqlTableOperations.createTable(stream, tempTempTable, columnNameMapping, replace = true)
+
+        // Upsert from temp to temp-temp table
+        sqlTableOperations.upsertTable(
+            stream,
+            columnNameMapping,
+            sourceTableName = tempTableName,
+            targetTableName = tempTempTable
+        )
+
+        // Overwrite real table with final data
+        sqlTableOperations.overwriteTable(
+            sourceTableName = tempTempTable,
+            targetTableName = realTableName
+        )
     }
 }
