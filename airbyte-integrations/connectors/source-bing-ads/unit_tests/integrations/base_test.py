@@ -19,6 +19,37 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
+from request_builder import RequestBuilder
+from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
+
+import zipfile
+from io import BytesIO
+
+def create_zip_from_csv(filename: str) -> bytes:
+    """
+    Creates a zip file containing a CSV file from the resource/response folder.
+    The CSV is stored directly in the zip without additional gzip compression.
+    
+    Args:
+        filename: The name of the CSV file without extension
+        
+    Returns:
+        The zip file content as bytes
+    """
+    # Build path to the CSV file in resource/response folder
+    csv_path = Path(__file__).parent.parent / f"resource/response/{filename}.csv"
+    
+    # Read the CSV content
+    with open(csv_path, "r") as csv_file:
+        csv_content = csv_file.read()
+    
+    # Create a zip file containing the CSV file directly (without gzip compression)
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, mode="w") as zip_file:
+        zip_file.writestr(f"{filename}.csv", csv_content)
+    
+    return zip_buffer.getvalue()
 
 class BaseTest(TestCase):
     def setUp(self) -> None:
@@ -51,6 +82,39 @@ class BaseTest(TestCase):
         http_mocker.post(request=build_request(self._config), responses=response_with_status("oauth", 200))
         http_mocker.post(request=build_request_2(self._config), responses=response_with_status("oauth", 200))
 
+    def mock_user_query_api(self, response_template: str) -> None:
+        http_mocker = self.http_mocker
+        http_mocker.post(
+            RequestBuilder(resource="User/Query").with_body('{"UserId": null}').build(),
+            HttpResponse(json.dumps(find_template(response_template, __file__)), 200),
+        )
+
+    def mock_accounts_search_api(self, body: bytes, response_template: str) -> None:
+        http_mocker = self.http_mocker
+        http_mocker.post(
+            RequestBuilder(resource="Accounts/Search")
+            .with_body(body)
+            .build(),
+            HttpResponse(json.dumps(find_template(resource=response_template, execution_folder=__file__)), 200),
+        )
+
+    def mock_generate_report_api(self, endpoint: str, body: bytes, response_template: str) -> None:
+        http_mocker = self.http_mocker
+        http_mocker.post(
+            RequestBuilder(resource=f"GenerateReport/{endpoint}", api="reporting")
+            .with_body(body)
+            .build(),
+            HttpResponse(json.dumps(find_template(resource=response_template, execution_folder=__file__)), 200),
+        )
+
+    def mock_get_report_request_api(self, file_name) -> None:
+        zipped_data = create_zip_from_csv(file_name)
+        http_mocker = self.http_mocker
+        http_mocker.get(
+            RequestBuilder(resource="").build_report_url(),
+            HttpResponse(zipped_data),
+        )
+
     def read_stream(
         self,
         stream_name: str,
@@ -64,6 +128,7 @@ class BaseTest(TestCase):
             with patch.object(
                 self.service_manager, "download_file", return_value=self._download_file(stream_data_file)
             ) as service_call_mock:
+                self.mock_get_report_request_api(stream_data_file)
                 catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
                 return read_helper(config, catalog, state, expecting_exception), service_call_mock
 
@@ -80,3 +145,4 @@ class BaseTest(TestCase):
                 message=log_message,
             ),
         )
+
