@@ -71,6 +71,10 @@ Expand to see details about Sendgrid connector limitations and troubleshooting.
 
 ### Connector limitations
 
+#### Rate limiting
+
+The connector is restricted by normal Sendgrid [requests limitation](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits).
+
 #### Messages Stream: Only the Most Recent 1000 Messages Are Retained Between Syncs
 
 The Messages Stream can capture up to 1000 new messages between syncs
@@ -80,10 +84,6 @@ If more than 1000 messages are received before the next sync, the oldest message
 To avoid data loss, ensure your sync runs frequently enough to stay within this 1000-message limit.
 Alternatively, you can use the Bulk Export API, which returns data in CSV format.
 Note: parsing CSV in the Connector Builder requires the use of custom components, which is currently an experimental feature.
-
-#### Rate limiting
-
-The connector is restricted by normal Sendgrid [requests limitation](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits).
 
 ### Troubleshooting
 
