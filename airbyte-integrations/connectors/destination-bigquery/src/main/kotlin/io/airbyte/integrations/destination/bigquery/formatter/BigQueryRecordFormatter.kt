@@ -23,7 +23,10 @@ import java.util.concurrent.TimeUnit
  * The class formats incoming JsonSchema and AirbyteRecord in order to be inline with a
  * corresponding uploader.
  */
-class BigQueryRecordFormatter(private val legacyRawTablesOnly: Boolean) {
+class BigQueryRecordFormatter(
+    private val columnNameMapping: ColumnNameMapping,
+    private val legacyRawTablesOnly: Boolean,
+) {
 
     fun formatRecord(record: DestinationRecordRaw): String {
         val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
@@ -68,7 +71,7 @@ class BigQueryRecordFormatter(private val legacyRawTablesOnly: Boolean) {
                     outputRecord[key] = (value.abValue as IntegerValue).value
                 else -> {
                     if (!legacyRawTablesOnly) {
-                        outputRecord[key] = value.abValue
+                        outputRecord[columnNameMapping[key]!!] = value.abValue
                     }
                 }
             }

@@ -124,8 +124,8 @@ class StandardInsertRawOverride :
 
 class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
     @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 }
 
