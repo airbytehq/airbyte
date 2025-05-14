@@ -1389,10 +1389,8 @@ definitions:
                     field_path: [ ]
             property_chunking:
               type: PropertyChunking
-              # for crm object streams (goals, product, etc.) the limit is 50 properties.
-              # with 15000 characters it fails with 400 bad request error
-              property_limit_type: property_count
-              property_limit: 50
+              property_limit_type: characters
+              property_limit: 15000
       record_selector:
         $ref: "#/definitions/base_selector"
         schema_normalization:
