@@ -81,7 +81,7 @@ Note:
 
 - This method is _not_ using the Dockerfile images in this directory. Instead it is using custom Dagger code, which is currently at its end-of-life (EOL) and will no longer be supported going forward.
 - You need to be careful about which platform(s) you are building for in this method. Use `--help` for info on how to build `arm64` images vs `amd64` images, etc.
-
+- This is not guaranteed to work for JVM connectors that have migrated over to the new gradle flow. Gradle commands are recommended instead.
 ### `airbyte-cdk`-based Builds
 
 This new method is faster, easier to type, and builds using the Dockerfiles in this directory, using the connector directory that is active:
