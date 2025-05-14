@@ -49,7 +49,7 @@ brew install uv
 
 ### Docker
 
-We recommend using Docker Desktop and/or Orbstack, although other container runtimes might work as well. A full discussion of how to install and use docker is outside the scope of this guide.
+We recommend using Docker Desktop or Orbstack, although other container runtimes might work as well. A full discussion of how to install and use docker is outside the scope of this guide.
 
 See [Debugging Docker](./debugging-docker.md) for common tips and tricks.
 
