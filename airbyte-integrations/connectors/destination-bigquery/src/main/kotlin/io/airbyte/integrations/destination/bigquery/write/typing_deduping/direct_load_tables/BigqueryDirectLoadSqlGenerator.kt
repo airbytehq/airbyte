@@ -77,11 +77,8 @@ class BigqueryDirectLoadSqlGenerator(private val projectId: String?) : DirectLoa
     }
 
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
-        val targetTableId = targetTableName.toPrettyString(QUOTE)
-        val sourceTableId = sourceTableName.toPrettyString(QUOTE)
-        return Sql.separately(
-            "DROP TABLE IF EXISTS `$projectId`.$targetTableId;",
-            "ALTER TABLE `$projectId`.$sourceTableId RENAME TO `${targetTableName.name}`;"
+        throw NotImplementedError(
+            "This method is implemented using a native bigquery API call in BigqueryDirectLoadSqlTableOperations"
         )
     }
 
