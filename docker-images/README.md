@@ -69,6 +69,7 @@ Note:
 
 - While connectors are being migrating from `airbyte-ci` to the new Dockerfile images here in this directory, some connectors will build using the legacy `airbyte-ci` method and some will build using the new `Dockerfile`-based method.
 - _This is the preferred and recommended method of building Docker files for all JVM-based connectors._
+- By default, this builds an image matching your local architecture (`arm64` on M-series Macs).
 
 ### `airbyte-ci`-based Image Builds
 
