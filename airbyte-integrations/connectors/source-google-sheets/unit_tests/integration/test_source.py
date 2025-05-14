@@ -161,11 +161,16 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_discover_empty_column_return_expected_schema(self, http_mocker: HttpMocker) -> None:
         """
-        The response from headers (first row) has columns "name | age | | address | address2"  so everything after empty cell will be
-        discarded, in this case address and address2 shouldn't be part of the schema.
+        The response from headers (first row) has columns 'name | age | | address | address2'.
+        The system skips empty headers and includes all non-empty headers in the schema, so 'name', 'age', 'address', and 'address2' will be part of the schema."
         """
         expected_schemas_properties = {
-            _STREAM_NAME: {"name": {"type": ["null", "string"]}, "age": {"type": ["null", "string"]}},
+            "a_stream_name": {
+                "name": {"type": ["null", "string"]},
+                "age": {"type": ["null", "string"]},
+                "address": {"type": ["null", "string"]},
+                "address2": {"type": ["null", "string"]},
+            },
         }
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "discover_with_empty_column_spreadsheet_info_and_sheets", 200)
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"discover_with_empty_column_get_sheet_first_row", 200)
@@ -303,24 +308,22 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_when_read_empty_column_then_return_records(self, http_mocker: HttpMocker) -> None:
         """
-        The response from headers (first row) has columns "header_1 | header_2 | | address | address2"  so everything after empty cell will be
-        discarded, in this case address and address2 shouldn't be part of the schema in records.
+        The response from headers (first row) has columns "header_1 | header_2 | | address | address2". The connector skips empty headers
+        and includes all non-empty headers in the schema and records.
         """
         test_file_base_name = "read_with_empty_column"
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
         GoogleSheetsBaseTest.get_stream_data(http_mocker, f"{test_file_base_name}_{GET_STREAM_DATA}")
-        first_property = "header_1"
-        second_property = "header_2"
+        properties = {
+            "header_1": {"type": ["null", "string"]},
+            "header_2": {"type": ["null", "string"]},
+            "address": {"type": ["null", "string"]},
+            "address2": {"type": ["null", "string"]},
+        }
         configured_catalog = (
             CatalogBuilder()
-            .with_stream(
-                ConfiguredAirbyteStreamBuilder()
-                .with_name(_STREAM_NAME)
-                .with_json_schema(
-                    {"properties": {first_property: {"type": ["null", "string"]}, second_property: {"type": ["null", "string"]}}}
-                )
-            )
+            .with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": properties}))
             .build()
         )
 
@@ -329,13 +332,17 @@ class TestSourceRead(GoogleSheetsBaseTest):
             AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    emitted_at=ANY, stream=_STREAM_NAME, data={first_property: "value_11", second_property: "value_12"}
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={"header_1": "value_11", "header_2": "value_12", "address": "main", "address2": "main st"},
                 ),
             ),
             AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    emitted_at=ANY, stream=_STREAM_NAME, data={first_property: "value_21", second_property: "value_22"}
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={"header_1": "value_21", "header_2": "value_22", "address": "washington 3", "address2": "colonial"},
                 ),
             ),
         ]

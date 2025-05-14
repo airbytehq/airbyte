@@ -82,7 +82,7 @@ _SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema
                     {"data": [{"rowData": [{"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}]}]}
                 ]
             },
-            [{"values": [{"formattedValue": "h1"}]}],
+            [{"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}]}],
         ),
         (
             {"sheets": [{"data": [{"rowData": [{"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}]}]}]},
@@ -93,7 +93,7 @@ _SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema
         "test_headers",
         "test_duplicate_headers_retrieved",
         "test_duplicate_headers_retrieved_not_first_position",
-        "test_blank_values_terminate_row",
+        "test_skip_blank_values",
         "test_is_row_empty_with_empty_row",
     ],
 )
@@ -115,15 +115,51 @@ def test_dpath_schema_extractor(body, expected_records: List):
         ),
         ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]}, [(2, "h3", {"formattedValue": "h3"})]),
         ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (2, "h3", {"formattedValue": "h3"})],
+        ),
         ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, []),
+        (
+            {"values": [{"formattedValue": " "}, {"formattedValue": "header1"}, {"formattedValue": "   "}, {"formattedValue": "header2"}]},
+            [(1, "header1", {"formattedValue": "header1"}), (3, "header2", {"formattedValue": "header2"})],
+        ),
+        (
+            {"values": [{"formattedValue": " header1 "}, {"formattedValue": "header2"}, {"formattedValue": " header3 "}]},
+            [
+                (0, " header1 ", {"formattedValue": " header1 "}),
+                (1, "header2", {"formattedValue": "header2"}),
+                (2, " header3 ", {"formattedValue": " header3 "}),
+            ],
+        ),
+        (
+            {"values": [{"formattedValue": "\t\n"}, {"formattedValue": "header1"}, {"formattedValue": " "}]},
+            [(1, "header1", {"formattedValue": "header1"})],
+        ),
+        (
+            {
+                "values": [
+                    {"formattedValue": "header1"},
+                    {"formattedValue": ""},
+                    {"formattedValue": "header1"},
+                    {"formattedValue": "header2"},
+                ]
+            },
+            [(3, "header2", {"formattedValue": "header2"})],
+        ),
+        ({"values": [{"formattedValue": "header1"}, {"formattedValue": "header1"}, {"formattedValue": " "}]}, []),
     ],
     ids=[
         "test_headers",
         "test_duplicate_headers_retrieved",
         "test_duplicate_headers_retrieved_not_first_position",
-        "test_blank_values_terminate_row",
+        "test_skip_blank_values",
         "test_is_row_empty_with_empty_row",
+        "test_whitespace_only_headers",
+        "test_headers_with_leading_trailing_spaces",
+        "test_non_space_whitespace_headers",
+        "test_mixed_valid_invalid_with_duplicates",
+        "test_all_duplicates_or_invalid",
     ],
 )
 def test_parse_raw_schema_value(raw_schema_data, expected_data):

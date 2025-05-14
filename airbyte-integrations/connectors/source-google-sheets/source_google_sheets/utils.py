@@ -38,7 +38,7 @@ def name_conversion(text: str) -> str:
 
 
 def safe_name_conversion(text: str) -> str:
-    if not text or text.isspace():
+    if not text:
         return text
     new = name_conversion(text)
     if not new:
