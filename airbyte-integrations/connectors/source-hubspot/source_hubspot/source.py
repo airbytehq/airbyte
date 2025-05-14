@@ -25,6 +25,7 @@ from source_hubspot.streams import (
     Contacts,
     ContactsWebAnalytics,
     CustomObject,
+    Deals,
     DealsArchived,
     DealSplits,
     DealsWebAnalytics,
@@ -194,6 +195,7 @@ class SourceHubspot(YamlDeclarativeSource):
         streams += [
             Companies(**common_params),
             Contacts(**common_params),
+            # Deals(**common_params),
             DealSplits(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),

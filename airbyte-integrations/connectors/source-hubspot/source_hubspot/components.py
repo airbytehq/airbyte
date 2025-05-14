@@ -465,12 +465,12 @@ class HubspotAssociationsExtractor(RecordExtractor):
     - Merges associated object IDs back into each entity's record under the corresponding association name.
     Attributes:
         field_path: Path to the list of records in the API response.
-        entity_primary_key: The field used for associations retriever endpoint.
+        entity: The field used for associations retriever endpoint.
         associations_list: List of associations to fetch (e.g., ["contacts", "companies"]).
     """
 
     field_path: List[Union[InterpolatedString, str]]
-    entity_primary_key: str
+    entity: str
     associations_list: List[str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -482,11 +482,11 @@ class HubspotAssociationsExtractor(RecordExtractor):
             if isinstance(self.field_path[path_index], str):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
-        self._entity_primary_key = InterpolatedString.create(self.entity_primary_key, parameters=parameters)
+        self._entity = InterpolatedString.create(self.entity, parameters=parameters)
 
         self._associations_retriever = build_associations_retriever(
             associations_list=self.associations_list,
-            parent_entity=self._entity_primary_key.eval(config=self.config),
+            parent_entity=self._entity.eval(config=self.config),
             config=self.config,
         )
 
@@ -515,7 +515,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
                 stream_slice = StreamSlice(
                     cursor_slice=_slice.cursor_slice, partition=_slice.partition, extra_fields={"record_ids": record_ids}
                 )
-                logger.debug(f"Reading {_slice} associations of {self._entity_primary_key.eval(config=self.config)}")
+                logger.debug(f"Reading {_slice} associations of {self._entity.eval(config=self.config)}")
                 associations = self._associations_retriever.read_records({}, stream_slice=stream_slice)
                 for group in associations:
                     slice_value = stream_slice["association_name"]
@@ -534,16 +534,24 @@ def build_associations_retriever(
     config: Config,
 ) -> SimpleRetriever:
     """
-    Returns a SimpleRetriever that hits
-    POST /crm/v4/associations/{self.parent_stream.entity}/{stream_slice.association}/batch/read
+    Instantiates a SimpleRetriever that makes requests against:
+    POST /crm/v4/associations/{self.parent_entity}/{stream_slice.association}/batch/read
+
+    The current architecture of the low-code framework makes it difficult to instantiate components
+    in arbitrary locations within the manifest.yaml. For example, the only place where a SimpleRetriever
+    can be instantiated is as a field of DeclarativeStream because the `model_to_component_factory.py.create_simple_retriever()`
+    constructor takes incoming parameters from values of the DeclarativeStream.
+
+    So we are unable to build the associations_retriever, from within this custom HubspotAssociationsExtractor
+    because we will be missing required parameters that are not supplied by the SimpleRetrieverModel.
+    And we're left with the workaround of building the runtime components in this method.
     """
 
     parameters: Mapping[str, Any] = {}
 
-    access_token = config["credentials"]["access_token"]
     bearer_authenticator = BearerAuthenticator(
         token_provider=InterpolatedStringTokenProvider(
-            api_token=access_token,
+            api_token=config.get("credentials", {}).get("access_token", ""),
             config=config,
             parameters=parameters,
         ),
@@ -556,9 +564,9 @@ def build_associations_retriever(
     oauth_authenticator = DeclarativeOauth2Authenticator(
         config=config,
         parameters=parameters,
-        client_id=config["credentials"].get("client_id", "client_id"),
-        client_secret=config["credentials"].get("client_secret", "client_secret"),
-        refresh_token=config["credentials"].get("refresh_token", "refresh_token"),
+        client_id=config.get("credentials", {}).get("client_id", "client_id"),
+        client_secret=config.get("credentials", {}).get("client_secret", "client_secret"),
+        refresh_token=config.get("credentials", {}).get("refresh_token", "refresh_token"),
         token_refresh_endpoint="https://api.hubapi.com/oauth/v1/token",
     )
 

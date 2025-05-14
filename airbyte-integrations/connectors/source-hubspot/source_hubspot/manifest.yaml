@@ -653,6 +653,9 @@ definitions:
           type: DpathExtractor
           field_path:
             - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
     transformations:
       - type: AddFields
         fields:
@@ -738,11 +741,14 @@ definitions:
           class_name: source_hubspot.components.HubspotAssociationsExtractor
           field_path:
             - results
-          entity_primary_key: deal
+          entity: deal
           associations_list:
             - contacts
             - companies
             - line_items
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
     transformations:
       - type: CustomTransformation
         class_name: source_hubspot.components.NewtoLegacyFieldTransformation
