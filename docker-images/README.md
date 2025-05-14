@@ -57,6 +57,33 @@ The `test-base-image-build.sh` script can be used to build the base image.
 ./test-connector-image-build.sh python source-hubspot
 ```
 
+## Tools for Local Connector Builds
+
+You have a few options as of now:
+
+### `airbyte-ci`-based Image Builds
+
+We are in the process of phasing this out, but for now it is still primary:
+
+`airbyte-ci connectors --connector-name=source-foo build`
+
+Note:
+
+- This method is _not_ using the Dockerfile images in this directory. Instead it is using custom Dagger code, which is currently at its end-of-life (EOL) and will no longer be supported going forward.
+- You need to be careful about which platform(s) you are building for in this method. Use `--help` for info on how to build `arm64` images vs `amd64` images, etc.
+
+### `airbyte-cdk`-based Builds
+
+This new method is faster, easier to type, and builds using the Dockerfiles in this directory, using the connector directory that is active:
+
+```
+cd airbyte-integrations/connectors/source-mysql
+airbyte-cdk image build
+```
+
+Note:
+- Until `airybte-ci` is phased out, the images created this way will not exactly match the ones that would be built by the connector publish flow.
+
 ## Common Build Args
 
 These are used within the `Dockerfile` definitions and within the image build test scripts.
@@ -78,3 +105,4 @@ The base images don't need to copy in any files from the host computer. That is 
 ### Where should I source the build args?
 
 The build args should be scraped from the connector's `metadata.yml` file.
+
