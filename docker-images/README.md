@@ -63,7 +63,7 @@ You have a few options as of now:
 
 ### `airbyte-ci`-based Image Builds
 
-We are in the process of phasing this out, but for now it is still primary:
+We are in the process of phasing this out, but for now it is still the official method of building connector images:
 
 `airbyte-ci connectors --connector-name=source-foo build`
 
@@ -83,6 +83,7 @@ airbyte-cdk image build
 
 Note:
 - Until `airybte-ci` is phased out, the images created this way will not exactly match the ones that would be built by the connector publish flow.
+- This method will automatically build arm64 and amd64 images - defaulting your `dev` image to `arm64` (since Mac M-series laptops are standard at Airbyte), while still providing an `amd64` based image, which you will need if uploading to `amd64`-based Platform instances.
 
 ## Common Build Args
 
