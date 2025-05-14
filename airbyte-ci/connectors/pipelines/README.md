@@ -821,6 +821,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                          | Description                                                                                                                  |
+| 5.2.4   | [#59724](https://github.com/airbytehq/airbyte/pull/59724)  | Fix components mounting and test dependencies for manifest-only unit tests |
 | 5.1.0   | [#53238](https://github.com/airbytehq/airbyte/pull/53238)  | Add ability to opt out of version increment checks via metadata flag                                                         |
 | 5.0.1   | [#52664](https://github.com/airbytehq/airbyte/pull/52664)  | Update Python version requirement from 3.10 to 3.11.                                                                         |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |

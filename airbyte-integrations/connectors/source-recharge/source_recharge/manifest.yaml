@@ -145,6 +145,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%dT%H:%M:%S"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      lookback_window: P{{ config.get('lookback_window_days', 0) }}D
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"

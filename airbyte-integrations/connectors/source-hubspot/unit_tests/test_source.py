@@ -91,14 +91,14 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
 def test_streams(requests_mock, config):
     streams = SourceHubspot(config, None, None).streams(config)
 
-    assert len(streams) == 35
+    assert len(streams) == 32
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams_incremental(requests_mock, config_experimental):
     streams = SourceHubspot(config_experimental, None, None).streams(config_experimental)
 
-    assert len(streams) == 47
+    assert len(streams) == 44
 
 
 def test_custom_streams(config_experimental):
@@ -180,7 +180,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_stream_forbidden(requests_mock, config, caplog):
+def test_stream_forbidden(requests_mock, config, caplog, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -211,7 +211,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
     assert "The authenticated user does not have permissions to access the URL" in caplog.text
 
 
-def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list):
+def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -642,7 +642,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params, confi
     assert len(records) == 100
 
 
-def test_engagements_stream_since_old_date(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'All Engagements' API for old dates (more than 30 days)
     """
@@ -693,7 +693,7 @@ def test_engagements_stream_since_old_date(requests_mock, common_params, fake_pr
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
     """
@@ -740,7 +740,9 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_recent_date_more_than_10k(
+    mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config
+):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,

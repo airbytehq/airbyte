@@ -48,6 +48,8 @@ function getSupportLevelDisplay(rawSupportLevel) {
       return "Airbyte";
     case "community":
       return "Marketplace";
+    case "enterprise":
+      return "Enterprise";
     case "archived":
       return "Archived";
     default:

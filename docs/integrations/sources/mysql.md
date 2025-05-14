@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.19     | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214) | Migrate to new Gradle flow.
 | 3.11.18     | 2025-05-02 | [59732](https://github.com/airbytehq/airbyte/pull/59732)   | Fix a bug that caused the sync to go into a loop in some cases.                                                                                 |
 | 3.11.17     | 2025-05-02 | [59683](https://github.com/airbytehq/airbyte/pull/59683)   | CDK version bump.                                                                                                                               |
 | 3.11.16     | 2025-05-02 | [59223](https://github.com/airbytehq/airbyte/pull/59223)   | Improve handling of big int and decimal values preventing it from represented with scientific notation                                          |

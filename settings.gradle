@@ -171,6 +171,8 @@ void includeCdkProjects(String dir, String gradlePathPrefix, String projectNameP
     }
 }
 
+// Include convenience aggregator.
+include ":airbyte-cdk"
 // Include all java CDK modules.
 includeCdkProjects("airbyte-cdk/java/airbyte-cdk", ":airbyte-cdk:java:airbyte-cdk:", "airbyte-cdk-")
 includeCdkProjects("airbyte-cdk/bulk/core", ":airbyte-cdk:bulk:core:", "bulk-cdk-core-")

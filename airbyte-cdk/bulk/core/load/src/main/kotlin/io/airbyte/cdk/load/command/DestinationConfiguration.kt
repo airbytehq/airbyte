@@ -9,7 +9,6 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
-import java.nio.file.Path
 
 /**
  * To implement a [DestinationConfiguration]:
@@ -92,12 +91,13 @@ abstract class DestinationConfiguration : Configuration {
         const val DEFAULT_GENERATION_ID_METADATA_KEY = "ab-generation-id"
     }
 
-    // DEPRECATED: Old interface config. TODO: Drop when we're totally migrated.
+    // This is technically old interface config, but a couple of destinations
+    // are still using these values to convey new interface concepts.
+    // TODO: Drop that in another PR that won't disrupt connector code.
     open val recordBatchSizeBytes: Long = DEFAULT_RECORD_BATCH_SIZE_BYTES
-    open val processEmptyFiles: Boolean = false
-    open val tmpFileDirectory: Path = Path.of("airbyte-cdk-load")
     open val numProcessRecordsWorkers: Int = 2
-    open val numProcessBatchWorkers: Int = 5
+
+    // DEPRECATED: Legacy file transfer.
     open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
 

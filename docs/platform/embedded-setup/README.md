@@ -72,7 +72,8 @@ curl --location --request POST 'https://api.airbyte.com/v1/config_templates/conn
         "s3_bucket_path": "<S3_PATH_PREFIX>",
         "s3_bucket_region": "<S3_BUCKET_REGION>",
         "format": {
-          "format_type": "JSONL"
+          "format_type": "CSV",
+          "flattening": "Root level flattening"
           }
         }
       }
@@ -157,6 +158,7 @@ Step-by-step creation of backend application:
 
 ```js
 const express = require("express");
+const path = require("path");
 
 // Disable SSL verification for development
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -168,24 +170,7 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 ```
 
-2. Add CORS middleware so you browser accepts responses from the server.
-
-```js
-// Add CORS middleware
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
-```
-
-3. Read from the `.env` file:
+2. Read from the `.env` file:
 
 ```js
 // Read config from environment variables
@@ -197,6 +182,14 @@ const AIRBYTE_CLIENT_SECRET = process.env.AIRBYTE_CLIENT_SECRET;
 const ORGANIZATION_ID = process.env.AIRBYTE_ORGANIZATION_ID;
 const EXTERNAL_USER_ID = process.env.EXTERNAL_USER_ID;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
+```
+
+3. Add a route for the root path
+```js
+// Route for the root path
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, './index.html'));
+});
 ```
 
 4. Define an endpoint listening at `/api/widget_token`:
@@ -269,6 +262,7 @@ Here is the full `server.js` file for reference:
 
 ```js
 const express = require("express");
+const path = require("path");
 
 // Disable SSL verification for development
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -279,18 +273,6 @@ const PORT = process.env.PORT || 3001;
 // Middleware for parsing JSON requests
 app.use(express.json());
 
-// Add CORS middleware
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
 
 // Read config from environment variables
 const BASE_URL = process.env.BASE_URL || "https://api.airbyte.com";
@@ -302,6 +284,11 @@ const ORGANIZATION_ID = process.env.AIRBYTE_ORGANIZATION_ID;
 const EXTERNAL_USER_ID = process.env.EXTERNAL_USER_ID;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 
+// Route for the root path
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, './index.html'));
+});
+
 // GET /api/widget → fetch widget token and return it
 app.get("/api/widget_token", async (req, res) => {
 
@@ -311,6 +298,7 @@ app.get("/api/widget_token", async (req, res) => {
     client_secret: AIRBYTE_CLIENT_SECRET,
     "grant-type": "client_credentials",
   });
+  console.log(access_token_body);
   const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
     method: "POST",
     headers: {
@@ -321,6 +309,7 @@ app.get("/api/widget_token", async (req, res) => {
   });
 
   const access_token_response = await response.json();
+  console.log(access_token_response);
   const access_token = access_token_response.access_token;
 
   // Determine the allowed origin from the request
