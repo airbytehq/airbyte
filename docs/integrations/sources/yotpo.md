@@ -35,7 +35,7 @@ To set up the Yotpo source connector, you need:
 #### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **New Source**
 3. On the Set up the source page, enter the name for the Yotpo connector and select **Yotpo** from the Source type dropdown
 4. Enter the following required parameters:
    - `access_token`: The access token generated in Step 1
