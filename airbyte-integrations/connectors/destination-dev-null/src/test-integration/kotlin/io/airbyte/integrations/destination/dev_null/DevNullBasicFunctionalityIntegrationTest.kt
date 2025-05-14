@@ -22,7 +22,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         NoopExpectedRecordMapper,
         verifyDataWriting = false,
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
