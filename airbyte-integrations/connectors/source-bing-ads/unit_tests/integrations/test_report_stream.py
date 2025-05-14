@@ -20,6 +20,8 @@ MIGRATED_STREAMS = [
     "ad_performance_report_monthly",
 ]
 
+SECOND_READ_FREEZE_TIME = "2024-05-08"
+
 
 class TestReportStream(BaseTest):
     start_date = "2024-01-01"
@@ -152,7 +154,7 @@ class TestSuiteReportStream(TestReportStream):
             assert False, f"Expected state is empty for account_id: {self.account_id}"
         assert actual_cursor == expected_cursor
 
-    @freeze_time("2024-05-08")
+    @freeze_time(SECOND_READ_FREEZE_TIME)
     def test_incremental_read_with_state_returns_records_after_migration_with_records_further_state_cursor(self):
         """
         For this test we get records with TimePeriod further the config start date and the state TimePeriod cursor.
@@ -183,6 +185,7 @@ class TestSuiteReportStream(TestReportStream):
                 expected_cursor = state["cursor"]
         if not expected_cursor or not actual_cursor:
             assert False, f"Expected state is empty for account_id: {self.account_id}"
+        # here the cursor moved to expected that is the latest record read
         assert actual_cursor == expected_cursor
 
         # Let's check in the logs what was the start_time and end_time values of the Job
@@ -206,15 +209,9 @@ class TestSuiteReportStream(TestReportStream):
         job_start_time = start_time_match.group(1) if start_time_match else None
         job_end_time = end_time_match.group(1) if end_time_match else None
 
-        # here the provided state cursor is further the config start date
-        assert provided_state[0].stream.stream_state.state[self.cursor_field] == "2024-05-06T07:00:00+0000"
-        # here the cursor in the output.most_recent_state moved to the value of the latest record read
-        assert actual_cursor[self.cursor_field] == "2024-05-07T01:00:00+0000"
-        # todo: FIXME, start_time of the job is the config start date rather the cursor state start date in the provided state
-        # I am not sure if it is a bug or not
-        assert job_start_time == "2024-01-01T00:00:00+0000"
-        assert job_end_time == "2024-05-08T00:00:00+0000"
-        # todo: remove hardcoded asserts after figure out the issue with job start_time
+        last_successful_sync_cursor_value =  provided_state[0].stream.stream_state.state[self.cursor_field]
+        assert job_start_time == last_successful_sync_cursor_value
+        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+0000"
 
     # todo: We need to add a test to validate that the previous state format can be reused during first sync after migration and that
     # consequently we can create jobs with new state format, but need to figure out if above test statement is correct or not
