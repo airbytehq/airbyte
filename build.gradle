@@ -9,7 +9,6 @@ plugins {
     id 'com.github.spotbugs' version '6.0.7'
     id 'org.jetbrains.kotlin.jvm' version '2.0.0'
     id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
-    id 'project-report'
 }
 
 allprojects {
