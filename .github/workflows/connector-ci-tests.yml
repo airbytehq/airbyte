@@ -86,6 +86,8 @@ jobs:
       DD_CIVISIBILITY_ENABLED: true
       DD_CIVISIBILITY_AGENTLESS_ENABLED: true
       DD_GIT_BRANCH: ${{ github.ref_name }}
+      DD_GIT_COMMIT_SHA: ${{ github.sha }}
+      DD_GIT_REPOSITORY_URL: "https://github.com/${{ github.repository }}"
       DD_CIVISIBILITY_GIT_COMMIT_SHA: ${{ github.sha }}
       DD_CIVISIBILITY_GIT_REPOSITORY_URL: "https://github.com/${{ github.repository }}"
       DD_AGENTLESS_LOG_SUBMISSION_ENABLED: true
