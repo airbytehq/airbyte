@@ -26,7 +26,6 @@ from source_hubspot.streams import (
     ContactsWebAnalytics,
     CustomObject,
     Deals,
-    DealsArchived,
     DealSplits,
     DealsWebAnalytics,
     EngagementsCalls,
@@ -39,15 +38,11 @@ from source_hubspot.streams import (
     EngagementsNotesWebAnalytics,
     EngagementsTasks,
     EngagementsTasksWebAnalytics,
-    Forms,
-    FormSubmissions,
     Goals,
     GoalsWebAnalytics,
     Leads,
     LineItems,
     LineItemsWebAnalytics,
-    Owners,
-    OwnersArchived,
     Products,
     ProductsWebAnalytics,
     Tickets,
@@ -71,6 +66,11 @@ scopes = {
     "deals_property_history": {"crm.objects.deals.read"},
     "email_subscriptions": {"content"},
     "marketing_emails": {"content"},
+    "deals_archived": {"contacts", "crm.objects.deals.read"},
+    "forms": {"forms"},
+    "form_submissions": {"forms"},
+    "owners": {"crm.objects.owners.read"},
+    "owners_archived": {"crm.objects.owners.read"},
     "ticket_pipelines": {
         "media_bridge.read",
         "tickets",
@@ -188,25 +188,21 @@ class SourceHubspot(YamlDeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
+        # Temporarily using `ConcurrentDeclarativeSource.streams()` to validate granted scopes.
         streams = super().streams(config=config)
         streams += [
             Companies(**common_params),
             Contacts(**common_params),
             DealSplits(**common_params),
             Deals(**common_params),
-            DealsArchived(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),
             EngagementsMeetings(**common_params),
             EngagementsNotes(**common_params),
             EngagementsTasks(**common_params),
-            Forms(**common_params),
-            FormSubmissions(**common_params),
             Goals(**common_params),
             Leads(**common_params),
             LineItems(**common_params),
-            Owners(**common_params),
-            OwnersArchived(**common_params),
             Products(**common_params),
             Tickets(**common_params),
         ]

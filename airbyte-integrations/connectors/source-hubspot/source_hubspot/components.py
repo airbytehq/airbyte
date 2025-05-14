@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -19,9 +19,14 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
 
 
+logger = logging.getLogger("airbyte")
+
+
+@dataclass
 class NewtoLegacyFieldTransformation(RecordTransformation):
     """
     Implements a custom transformation which adds the legacy field equivalent of v2 fields for streams which contain Deals and Contacts entities.
@@ -32,8 +37,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
     hs_v2_date_exited_{stage_id} -> hs_date_exited_{stage_id} where {stage_id} is a user-generated value
     """
 
-    def __init__(self, field_mapping: Dict[str, str]) -> None:
-        self._field_mapping = field_mapping
+    field_mapping: Mapping[str, str]
 
     def transform(
         self,
@@ -50,7 +54,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
         is_record = record_or_schema.get("properties") is not None
 
         for field, value in list(record_or_schema.get("properties", record_or_schema).items()):
-            for legacy_field, new_field in self._field_mapping.items():
+            for legacy_field, new_field in self.field_mapping.items():
                 if new_field in field:
                     transformed_field = field.replace(new_field, legacy_field)
 
@@ -180,6 +184,53 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
             record.update(data)
 
 
+@dataclass
+class HubspotSchemaExtractor(RecordExtractor):
+    """
+    Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
+    accepts the set of dynamic schema fields as a single record.
+    This might be doable with the existing DpathExtractor configuration.
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        yield {"properties": list(self.decoder.decode(response))}
+
+
+@dataclass
+class HubspotRenamePropertiesTransformation(RecordTransformation):
+    """
+    Custom transformation that takes in a record that represents a map of all dynamic properties retrieved
+    from the Hubspot properties endpoint. This mapping nests all of these fields under a sub-object called
+    `properties` and updates all the property field names at the top level to be prefixed with
+    `properties_<property_name>`.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        transformed_record = {
+            "properties": {
+                "type": "object",
+                "properties": {},
+            }
+        }
+        for key, value in record.items():
+            transformed_record["properties"]["properties"][key] = value
+            updated_key = f"properties_{key}"
+            transformed_record[updated_key] = value
+
+        record.clear()
+        record.update(transformed_record)
+
+
 class EngagementsHttpRequester(HttpRequester):
     """
     Engagements stream uses different endpoints:
@@ -262,3 +313,84 @@ class EngagementsHttpRequester(HttpRequester):
         if self.should_use_recent_api(stream_slice):
             request_params.update({"since": stream_slice["start_time"]})
         return request_params
+
+
+class EntitySchemaNormalization(TypeTransformer):
+    """
+    For CRM object and CRM Search streams, which have dynamic schemas, custom normalization should be applied.
+    Convert record's received value according to its declared catalog dynamic schema type and format.
+
+    Empty strings for fields that have non string type converts to None.
+    Numeric strings for fields that have number type converts to integer type, otherwise to number.
+    Strings like "true"/"false" with boolean type converts to boolean.
+    Date and Datime fields converts to format datetime string. Set __ab_apply_cast_datetime: false in field definition, if you don't need to format datetime strings.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        config = TransformConfig.CustomSchemaNormalization
+        super().__init__(config)
+        self.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
+            target_type = field_schema.get("type")
+            target_format = field_schema.get("format")
+            if isinstance(original_value, str):
+                if "string" not in target_type and original_value == "":
+                    # do not cast empty strings, return None instead to be properly cast.
+                    transformed_value = None
+                    return transformed_value
+                if "number" in target_type:
+                    # do not cast numeric IDs into float, use integer instead
+                    target_type = int if original_value.isnumeric() else float
+                    transformed_value = target_type(original_value.replace(",", ""))
+                    return transformed_value
+                if "boolean" in target_type and original_value.lower() in ["true", "false"]:
+                    transformed_value = str(original_value).lower() == "true"
+                    return transformed_value
+                if target_format:
+                    if field_schema.get("__ab_apply_cast_datetime") is False:
+                        return original_value
+                    if "date" == target_format:
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
+                        if dt:
+                            transformed_value = DatetimeParser().format(dt, "%Y-%m-%d")
+                            return transformed_value
+                        else:
+                            return original_value
+                    if "date-time" == target_format:
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
+                        if dt:
+                            transformed_value = ab_datetime_format(dt)
+                            return transformed_value
+                        else:
+                            return original_value
+
+            return original_value
+
+        return transform_function
+
+    @staticmethod
+    def convert_datetime_string_to_ab_datetime(datetime_str: str) -> Optional[AirbyteDateTime]:
+        """
+        Implements the existing source-hubspot behavior where the API response can return either a timestamp
+        with seconds or milliseconds precision. We first attempt to parse in seconds, then millisecond, or
+        if unparsable we log a warning and emit the original value. Returns None if the string could not
+        be parsed into a datetime object because the existing source emits the original value and logs warning.
+        """
+        if not datetime_str:
+            return None
+
+        try:
+            return ab_datetime_parse(datetime_str)
+        except (ValueError, TypeError) as ex:
+            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+
+        try:
+            return ab_datetime_parse(int(datetime_str) // 1000)
+        except (ValueError, TypeError) as ex:
+            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+
+        return None
