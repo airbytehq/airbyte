@@ -61,6 +61,15 @@ The `test-base-image-build.sh` script can be used to build the base image.
 
 You have a few options as of now:
 
+### Gradle-based Image Builds
+
+For Docker containers, you can run the `assemble` task to build the docker image for your connector.
+
+Note:
+
+- While connectors are being migrating from `airbyte-ci` to the new Dockerfile images here in this directory, some connectors will build using the legacy `airbyte-ci` method and some will build using the new `Dockerfile`-based method.
+- _This is the preferred and recommended method of building Docker files for all JVM-based connectors._
+
 ### `airbyte-ci`-based Image Builds
 
 We are in the process of phasing this out, but for now it is still the official method of building connector images:
@@ -84,6 +93,7 @@ airbyte-cdk image build
 Note:
 - Until `airybte-ci` is phased out, the images created this way will not exactly match the ones that would be built by the connector publish flow.
 - This method will automatically build arm64 and amd64 images - defaulting your `dev` image to `arm64` (since Mac M-series laptops are standard at Airbyte), while still providing an `amd64` based image, which you will need if uploading to `amd64`-based Platform instances.
+- All connector types are supported using this method, since the code is only thin wrapper around the `Dockerfile`-based build process.
 
 ## Common Build Args
 
