@@ -74,9 +74,12 @@ class BigQueryRecordFormatter(
                 else -> {
                     if (!legacyRawTablesOnly) {
                         val bigqueryType = BigqueryDirectLoadSqlGenerator.toDialectType(value.type)
-                        if (value.abValue == NullValue) {
-                            outputRecord[columnNameMapping[key]!!] = NullValue
-                        } else {
+                        // if we're null, then just don't write a value into the output JSON,
+                        // so that bigquery will load a NULL value.
+                        // Otherwise, do all the type validation stuff, then write a value into
+                        // the output JSON.
+                        if (value.abValue != NullValue) {
+                            // first, validate the value.
                             when (bigqueryType) {
                                 StandardSQLTypeName.INT64 -> {
                                     (value.abValue as IntegerValue).value.let {
@@ -128,6 +131,9 @@ class BigQueryRecordFormatter(
                                 StandardSQLTypeName.INTERVAL,
                                 StandardSQLTypeName.RANGE -> throw NotImplementedError()
                             }
+                            // then, populate the record.
+                            // Bigquery has some strict requirements for datetime / time formatting,
+                            // so handle that here.
                             when (bigqueryType) {
                                 StandardSQLTypeName.DATETIME ->
                                     outputRecord[columnNameMapping[key]!!] =
