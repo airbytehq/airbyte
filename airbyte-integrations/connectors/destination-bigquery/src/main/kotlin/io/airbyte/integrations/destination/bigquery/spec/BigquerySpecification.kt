@@ -75,12 +75,23 @@ class BigquerySpecification : ConfigurationSpecification() {
     )
     val credentialsJson: String? = null
 
+    @get:JsonSchemaTitle("CDC hard deletes")
+    @get:JsonPropertyDescription(
+        """Whether to execute CDC deletions as hard deletes (i.e. actually delete the record from the destination), or soft deletes (i.e. leave a tombstone record).""",
+    )
+    // default hard delete for backwards compatibility
+    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
+    @get:JsonSchemaInject(
+        json = """{"group": "sync_behavior", "order": 5, "always_show": true}""",
+    )
+    val cdcDeletionMode: CdcDeletionMode? = null
+
     @get:JsonSchemaTitle("Transformation Query Run Type")
     @get:JsonPropertyDescription(
         """Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">here</a>. The default "interactive" value is used if not set explicitly.""",
     )
     @get:JsonProperty("transformation_priority", defaultValue = "interactive")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 5}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 6}""")
     val transformationPriority: TransformationPriority? = null
 
     @get:JsonSchemaTitle(
@@ -205,6 +216,11 @@ enum class TransformationPriority(@get:JsonValue val transformationPriority: Str
     BATCH("batch")
 }
 
+enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
+    HARD_DELETE("Hard delete"),
+    SOFT_DELETE("Soft delete"),
+}
+
 @Singleton
 class BigquerySpecificationExtension : DestinationSpecificationExtension {
     override val supportedSyncModes =
@@ -217,6 +233,7 @@ class BigquerySpecificationExtension : DestinationSpecificationExtension {
     override val groups =
         listOf(
             DestinationSpecificationExtension.Group("connection", "Connection"),
+            DestinationSpecificationExtension.Group("sync_behavior", "Sync Behavior"),
             DestinationSpecificationExtension.Group("advanced", "Advanced"),
         )
 }
