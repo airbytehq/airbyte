@@ -66,7 +66,7 @@ interface DirectLoadTableSqlOperations {
     fun dropTable(tableName: TableName)
 }
 
-class DefaultDirectLoadTableSqlOperations(
+open class DefaultDirectLoadTableSqlOperations(
     private val generator: DirectLoadSqlGenerator,
     private val handler: DatabaseHandler,
 ) : DirectLoadTableSqlOperations {
