@@ -209,7 +209,7 @@ class TestSuiteReportStream(TestReportStream):
         job_start_time = start_time_match.group(1) if start_time_match else None
         job_end_time = end_time_match.group(1) if end_time_match else None
 
-        last_successful_sync_cursor_value =  provided_state[0].stream.stream_state.state[self.cursor_field]
+        last_successful_sync_cursor_value = provided_state[0].stream.stream_state.state[self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
         assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+0000"
 
