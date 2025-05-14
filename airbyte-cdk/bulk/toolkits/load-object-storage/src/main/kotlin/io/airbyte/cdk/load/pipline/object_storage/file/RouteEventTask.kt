@@ -32,13 +32,20 @@ class RouteEventTask(
 
     @VisibleForTesting
     suspend fun handleEvent(event: PipelineEvent<StreamKey, DestinationRecordRaw>) {
+        if (event is PipelineHeartbeat) {
+            recordQueue.broadcast(event)
+            return
+        }
+
         val streamDesc =
             when (event) {
                 is PipelineMessage -> event.key.stream
                 is PipelineEndOfStream<*, *> -> event.stream
-                is PipelineHeartbeat<*, *> -> null
+                is PipelineHeartbeat<*, *> -> null // unreachable
             }
         val stream = streamDesc?.let { catalog.getStream(it) }
+
+
 
         if (stream?.includeFiles == true) {
             if (event is PipelineMessage) {
@@ -51,7 +58,6 @@ class RouteEventTask(
 
             fileQueue.publish(event, partition)
         } else {
-            // all heartbeat events go straight to the record queue
             recordQueue.publish(event, partition)
         }
     }
