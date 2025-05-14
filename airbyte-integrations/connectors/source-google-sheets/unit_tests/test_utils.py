@@ -18,7 +18,11 @@ def test_name_conversion():
     assert name_conversion("1MyName") == "_1_my_name"
     assert name_conversion("!MyName") == "_my_name"
     assert name_conversion("прівит світ") == "privit_svit"
-
+    assert name_conversion(" test") == "_test"
+    assert name_conversion(" test ") == "_test_"
+    assert name_conversion(" test  ") == "_test_"
+    assert name_conversion(" ") == ""
+    assert name_conversion("       ") == ""
 
 def test_safe_name_conversion():
     with pytest.raises(Exception) as exc_info:
