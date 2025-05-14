@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-brex
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.1@sha256:101da55e5201e9ce0ba5f3ebc7528e700f75a2a1d9afe76a34573d0311fe7a98
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
   connectorSubtype: api
   connectorType: source
   definitionId: 7d605ca7-f2b8-41c4-96a7-3d5637e58d6d
-  dockerImageTag: 0.0.19
+  dockerImageTag: 0.0.22
   dockerRepository: airbyte/source-brex
   githubIssueLabel: source-brex
   icon: icon.svg

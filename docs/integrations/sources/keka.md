@@ -29,6 +29,8 @@ The Keka Connector for Airbyte allows seamless integration with the Keka platfor
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2025-05-03 | [59247](https://github.com/airbytehq/airbyte/pull/59247) | Update dependencies |
+| 0.0.11 | 2025-04-26 | [58796](https://github.com/airbytehq/airbyte/pull/58796) | Update dependencies |
 | 0.0.10 | 2025-04-19 | [58156](https://github.com/airbytehq/airbyte/pull/58156) | Update dependencies |
 | 0.0.9 | 2025-04-12 | [57690](https://github.com/airbytehq/airbyte/pull/57690) | Update dependencies |
 | 0.0.8 | 2025-04-05 | [57093](https://github.com/airbytehq/airbyte/pull/57093) | Update dependencies |

@@ -75,6 +75,9 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.2.22 | 2025-05-10 | [60164](https://github.com/airbytehq/airbyte/pull/60164) | Update dependencies |
+| 0.2.21 | 2025-05-04 | [59612](https://github.com/airbytehq/airbyte/pull/59612) | Update dependencies |
+| 0.2.20 | 2025-04-27 | [59001](https://github.com/airbytehq/airbyte/pull/59001) | Update dependencies |
 | 0.2.19 | 2025-04-19 | [58377](https://github.com/airbytehq/airbyte/pull/58377) | Update dependencies |
 | 0.2.18 | 2025-04-12 | [57958](https://github.com/airbytehq/airbyte/pull/57958) | Update dependencies |
 | 0.2.17 | 2025-04-05 | [57482](https://github.com/airbytehq/airbyte/pull/57482) | Update dependencies |

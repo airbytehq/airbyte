@@ -81,7 +81,12 @@ class JsonSchemaToAirbyteType(
             // {"oneOf": [...], ...} or {"anyOf": [...], ...} or {"allOf": [...], ...}
             val options = schema.get("oneOf") ?: schema.get("anyOf") ?: schema.get("allOf")
             return if (options != null) {
-                unionOf(options.mapNotNull { convertInner(it as ObjectNode) })
+                // intentionally don't use the `unionOf()` utility method.
+                // We know this is a non-legacy union.
+                UnionType.of(
+                    options.mapNotNull { convertInner(it as ObjectNode) },
+                    isLegacyUnion = false,
+                )
             } else {
                 // Default to object if no type and not a union type
                 convertInner((schema as ObjectNode).put("type", "object"))

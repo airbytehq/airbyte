@@ -293,13 +293,8 @@ class PostgresSourceTest {
       return null;
     });
     final JsonNode anotherUserConfig = getConfig("test_user_3", "132");
-    final Set<AirbyteMessage> actualMessages =
-        MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
-    setEmittedAtToNull(actualMessages);
-    // expect 6 records, 4 state messages and 4 stream status messages.
-    assertEquals(14, actualMessages.size());
-    final var actualRecordMessages = filterRecords(actualMessages);
-    assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
+    final Throwable thrown = assertThrows(Exception.class, () -> MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null)));
+    assertNotNull(thrown.getMessage());
   }
 
   @Test

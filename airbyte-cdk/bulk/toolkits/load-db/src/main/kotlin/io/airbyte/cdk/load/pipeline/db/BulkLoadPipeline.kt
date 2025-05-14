@@ -14,14 +14,15 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleterSte
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
 @Requires(bean = BulkLoaderFactory::class)
 @Replaces(ObjectLoaderPipeline::class)
 class BulkLoadPipeline<K : WithStream, T : RemoteObject<*>>(
-    formatterStep: ObjectLoaderPartFormatterStep,
-    loaderStep: ObjectLoaderPartLoaderStep<T>,
-    completerStep: ObjectLoaderUploadCompleterStep<K, T>,
+    @Named("recordPartFormatterStep") formatterStep: ObjectLoaderPartFormatterStep,
+    @Named("recordPartLoaderStep") loaderStep: ObjectLoaderPartLoaderStep<T>,
+    @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
     loadIntoTableStep: BulkLoaderLoadIntoTableStep<K, T>,
 ) : LoadPipeline(listOf(formatterStep, loaderStep, completerStep, loadIntoTableStep))

@@ -129,7 +129,7 @@ The raw table contains these fields:
 - `_airbyte_meta`
 - `_airbyte_data`
 
-`_airbyte_data` is a JSON blob with the event data. See [here](/understanding-airbyte/airbyte-metadata-fields)
+`_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
 for more information about the other fields.
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
@@ -143,7 +143,7 @@ The final table contains these fields, in addition to the columns declared in yo
 - `airbyte_extracted_at`
 - `_airbyte_meta`
 
-Again, see [here](/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
+Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a
 daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions
@@ -213,6 +213,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.2  | 2025-04-29 | [59142](https://github.com/airbytehq/airbyte/pull/59142)   | Add `europe-north2` region. |
 | 2.10.1  | 2025-04-14 | [57569](https://github.com/airbytehq/airbyte/pull/57569)   | Remove StringSubstitutor usage                                                                                                                                                   |
 | 2.10.0  | 2025-04-02 | [56982](https://github.com/airbytehq/airbyte/pull/56982)   | Change default raw table partitioning scheme to be on `_airbyte_extracted_at`; upgrade CDK                                                                                       |
 | 2.9.3   | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                |
@@ -230,7 +231,7 @@ tutorials:
 | 2.8.1   | 2024-06-25 | [39379](https://github.com/airbytehq/airbyte/pull/39379)   | Removing requirement of a redundant permission bigquery.datasets.create permission                                                                                               |
 | 2.8.0   | 2024-06-21 | [39904](https://github.com/airbytehq/airbyte/pull/39904)   | Convert all production code to kotlin                                                                                                                                            |
 | 2.7.1   | 2024-06-17 | [39526](https://github.com/airbytehq/airbyte/pull/39526)   | Internal code change for improved error reporting in case of source/platform failure (`INCOMPLETE` stream status / empty ConfiguredCatalog).                                     |
-| 2.7.0   | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713)   | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
+| 2.7.0   | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713)   | Support for [refreshes](/platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
 | 2.6.3   | 2024-06-10 | [38331](https://github.com/airbytehq/airbyte/pull/38331)   | Internal code changes in preparation for future feature release                                                                                                                  |
 | 2.6.2   | 2024-06-07 | [38764](https://github.com/airbytehq/airbyte/pull/38764)   | Increase message length limit to 50MiB                                                                                                                                           |
 | 2.6.1   | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770)   | Internal code change (switch to CDK artifact)                                                                                                                                    |

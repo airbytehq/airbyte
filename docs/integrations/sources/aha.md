@@ -42,6 +42,9 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.4.24 | 2025-05-10 | [59855](https://github.com/airbytehq/airbyte/pull/59855) | Update dependencies |
+| 0.4.23 | 2025-05-03 | [59356](https://github.com/airbytehq/airbyte/pull/59356) | Update dependencies |
+| 0.4.22 | 2025-04-26 | [58723](https://github.com/airbytehq/airbyte/pull/58723) | Update dependencies |
 | 0.4.21 | 2025-04-19 | [57608](https://github.com/airbytehq/airbyte/pull/57608) | Update dependencies |
 | 0.4.20 | 2025-04-05 | [57119](https://github.com/airbytehq/airbyte/pull/57119) | Update dependencies |
 | 0.4.19 | 2025-03-29 | [56597](https://github.com/airbytehq/airbyte/pull/56597) | Update dependencies |
