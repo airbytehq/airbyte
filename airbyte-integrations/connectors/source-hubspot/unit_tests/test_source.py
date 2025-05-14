@@ -338,7 +338,7 @@ class TestSplittingPropertiesFunctionality:
 
         test_stream = find_stream("products", config)
 
-        property_slices = [fake_properties_list[i : i + 50] for i in range(0, len(fake_properties_list), 50)]
+        property_slices = (fake_properties_list[:686], fake_properties_list[686:1351], fake_properties_list[1351:])
 
         for property_slice in property_slices:
             data = {p: "fake_data" for p in property_slice}
@@ -361,7 +361,7 @@ class TestSplittingPropertiesFunctionality:
             }
             requests_mock.register_uri(
                 "GET",
-                f"{test_stream.retriever.requester.url_base}{test_stream.retriever.requester.path}?{urlencode(params)}",
+                f"{test_stream.retriever.requester.url_base}/{test_stream.retriever.requester.get_path()}?{urlencode(params)}",
                 record_responses,
             )
 
@@ -369,25 +369,14 @@ class TestSplittingPropertiesFunctionality:
             {
                 "streams": [
                     {
-                        "stream": {
-                            "name": "products",
-                            "json_schema": {},
-                            "supported_sync_modes": ["full_refresh", "incremental"],
-                        },
+                        "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"],},
                         "sync_mode": "incremental",
                         "destination_sync_mode": "append",
                     }
                 ]
             }
         )
-        state = (
-            StateBuilder()
-            .with_stream_state(
-                "products",
-                {"updatedAt": "2006-01-01T00:03:18.336Z"},
-            )
-            .build()
-        )
+        state = (StateBuilder().with_stream_state("products", {"updatedAt": "2006-01-01T00:03:18.336Z"},).build())
 
         stream_records = read(
             SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state

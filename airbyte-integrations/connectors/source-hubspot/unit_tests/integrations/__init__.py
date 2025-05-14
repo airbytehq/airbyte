@@ -24,7 +24,8 @@ OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "goal_targets",
     "product",
     "deal",
-    "form"
+    "form",
+    "line_item",
 ]
 
 

@@ -21,7 +21,6 @@ from source_hubspot.streams import (
     EngagementsNotes,
     EngagementsTasks,
     Leads,
-    LineItems,
     RecordUnnester,
     Tickets,
 )
@@ -88,7 +87,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
         ("form_submissions", "form", {"updatedAt": 1675121674227}),
         ("goals", "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Leads, "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("line_items", "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("marketing_emails", "", {"updated": "1634050455543"}),
         ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -172,9 +171,10 @@ def test_streams_read(
 
     stream._sync_mode = SyncMode.full_refresh
     if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+        stream_slice = {}
         if is_form_submission:
-            stream_url = stream_url.replace("{{ stream_partition['form_id'][0] }}", "test_id")
+            stream_slice = {"form_id": ["test_id"]}
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path(stream_slice=stream_slice)
     else:
         stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
