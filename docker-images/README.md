@@ -67,12 +67,12 @@ For Docker containers, you can run the `assemble` task to build the docker image
 
 Here are some convenient commands:
 
-\`\`\`bash
+```bash
 ./gradlew :airbyte-integrations:connectors:<connector-name>:assemble to just output the Java artifact and docker image.
 ./gradlew :airbyte-integrations:connectors:<connector-name>:test to unit test.
 ./gradlew :airbyte-integrations:connectors:<connector-name>:build to unit test, integration test and assemble.
 ./gradlew :airbyte-integrations:connectors:<connector-name>:integrationTestJava to run integration test, which also runs assemble.
-\`\`\`
+```
 
 Note:
 
