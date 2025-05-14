@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.RAW_DATASET_OVERRIDE
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.STANDARD_INSERT_CONFIG
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
+import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
 import org.junit.jupiter.api.Test
 
@@ -123,8 +124,21 @@ class StandardInsertRawOverride :
 
 class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
     @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
+    override fun testDedup() {
+        super.testDedup()
+    }
+}
+
+class StandardInsertCdcSoftDeletes :
+    BigqueryTDWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = STANDARD_INSERT_CONFIG,
+            cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
+        )
+    ) {
+    @Test
+    override fun testDedup() {
+        super.testDedup()
     }
 }
 
