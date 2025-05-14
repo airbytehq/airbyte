@@ -1,39 +1,55 @@
 # Yotpo
 
-This page contains the setup guide and reference information for the [Yotpo](https://apidocs.yotpo.com/reference/welcome) source
+This page contains the setup guide and reference information for the [Yotpo](https://apidocs.yotpo.com/reference/welcome) source connector.
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) is mandate for this connector to work, It could be generated from the auth token call (ref - https://apidocs.yotpo.com/reference/yotpo-authentication).
+To set up the Yotpo source connector, you need:
+
+1. A Yotpo account with API access
+2. Your Yotpo App Key (found in your Yotpo account settings)
+3. An Access Token generated from the Yotpo API
 
 ## Setup guide
 
-### Step 1: Set up Yotpo connection
+### Step 1: Generate an Access Token
 
-- Generate an Yotpo access token via auth endpoint (ref - https://apidocs.yotpo.com/reference/yotpo-authentication)
-- Setup params (All params are required)
-- Available params
-  - access_token: The generated access token
-  - app_key: Seen at the yotpo settings (ref - https://settings.yotpo.com/#/general_settings)
-  - start_date: Date filter for eligible streams, enter
-  - email: Registered email address
+1. You need your App Key and API Secret to generate an access token
+2. Find your App Key and API Secret in your [Yotpo account settings](https://settings.yotpo.com/#/general_settings)
+3. Generate an access token using the [Yotpo authentication endpoint](https://apidocs.yotpo.com/reference/yotpo-authentication):
+   ```
+   POST https://api.yotpo.com/oauth/token
+   ```
+   with the following parameters:
+   ```json
+   {
+     "client_id": "YOUR_APP_KEY",
+     "client_secret": "YOUR_API_SECRET",
+     "grant_type": "client_credentials"
+   }
+   ```
+4. Store the returned access token securely as it will be used for all API calls
 
-## Step 2: Set up the Yotpo connector in Airbyte
+### Step 2: Set up the Yotpo connector in Airbyte
 
-### For Airbyte Cloud:
+#### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Yotpo connector and select **Yotpo** from the Source type dropdown.
-4. Enter your `access_token, app_key, start_date and email`.
-5. Click **Set up source**.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**
+3. On the Set up the source page, enter the name for the Yotpo connector and select **Yotpo** from the Source type dropdown
+4. Enter the following required parameters:
+   - `access_token`: The access token generated in Step 1
+   - `app_key`: Your Yotpo App Key
+   - `start_date`: The date from which you want to start syncing data (format: YYYY-MM-DDT00:00:00.000Z)
+   - `email`: Your registered email address with Yotpo
+5. Click **Set up source**
 
-### For Airbyte OSS:
+#### For Airbyte OSS:
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `access_token, app_key, start_date and email`.
-4. Click **Set up source**.
+1. Navigate to the Airbyte Open Source dashboard
+2. Set the name for your source
+3. Enter the required parameters as described above
+4. Click **Set up source**
 
 ## Supported sync modes
 
@@ -49,20 +65,33 @@ The Yotpo source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-- email_analytics
-- raw_data
-- reviews
-- unsubscribers
-- webhooks
-- webhook_events
-
-## API method example
-
-GET https://api.yotpo.com/v1/apps/APPAAAAAATTTTTTDDDDDD/reviews?utoken=abcdefghikjlimls
+| Stream Name      | Description                                                  | Incremental | Notes |
+|------------------|--------------------------------------------------------------|-------------|-------|
+| email_analytics  | Retrieves aggregated data for email metrics                  | No          | Data is grouped by metrics and can be filtered by date range |
+| raw_data         | Returns detailed data about every email sent from Yotpo      | No          | Includes email recipient, delivery status, open/click events |
+| reviews          | Retrieves product reviews                                    | Yes         | Uses `created_at` as cursor field with a lookback window of 31 days |
+| unsubscribers    | Lists users who have unsubscribed from emails                | No          | Limited to 5000 responses per request, requires pagination for larger datasets |
+| webhooks         | Lists all webhooks created for the account                   | No          | Includes webhook URL and event type information |
+| webhook_events   | Lists available webhook event types                          | No          | Includes event names and descriptions |
 
 ## Performance considerations
 
-Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connector as default uses v1 and changed according to different endpoints.
+### Rate Limits
+
+- The Reviews endpoint is limited to 5,000 requests per minute per app key
+- For Reviews, it's recommended to query up to 100 reviews per request (default is 10)
+- Review data is retrieved with a delay of 1 hour
+
+### Pagination
+
+- For the Reviews stream, pagination is handled automatically using page and count parameters
+- For the Unsubscribers stream, if your list exceeds 5000 email addresses, you must use the count and page parameters for pagination
+
+## API method example
+
+```
+GET https://api.yotpo.com/v1/apps/{app_key}/reviews?utoken={access_token}
+```
 
 ## Changelog
 
