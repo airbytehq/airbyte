@@ -87,7 +87,7 @@ class BigqueryDirectLoadSqlGenerator(private val projectId: String?) : DirectLoa
         sourceTableName: TableName,
         targetTableName: TableName
     ): Sql {
-        val columnNames = columnNameMapping.map { (_, actualName) -> actualName }
+        val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
         return Sql.of(
             // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
             """
