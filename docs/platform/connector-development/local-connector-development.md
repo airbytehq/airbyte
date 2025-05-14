@@ -14,7 +14,14 @@ When developing connectors locally, you'll want to ensure the following tools ar
 
 ### Poe the Poet
 
-[Poe the Poet](https://poethepoet.natn.io/installation.html#) - This tool allows you to perform common connector tasks from a single entrypoint.
+[Poe the Poet](https://poethepoet.natn.io) - This tool allows you to perform common connector tasks from a single entrypoint.
+
+You can install using `brew` (recommended) or with [another package manager](https://poethepoet.natn.io/installation.html#):
+
+```bash
+brew tap nat-n/poethepoet
+brew install nat-n/poethepoet/poethepoet
+```
 
 To see a list of available tasks, run `poe` from any directory in the `airbyte` repo.
 
@@ -42,7 +49,7 @@ brew install uv
 
 ### Docker
 
-We recommend Docker Desktop but other container runtimes might be available. A full discussion of how to install and use docker is outside the scope of this guide.
+We recommend using Docker Desktop and/or Orbstack, although other container runtimes might work as well. A full discussion of how to install and use docker is outside the scope of this guide.
 
 See [Debugging Docker](./debugging-docker.md) for common tips and tricks.
 
