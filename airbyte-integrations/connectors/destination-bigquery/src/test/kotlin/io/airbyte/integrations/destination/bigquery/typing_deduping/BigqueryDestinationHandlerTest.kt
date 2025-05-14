@@ -21,9 +21,10 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator.Companion.toDialectType
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryDatabaseInitialStatusGatherer.Companion.clusteringMatches
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryDatabaseInitialStatusGatherer.Companion.partitioningMatches
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -67,7 +68,7 @@ class BigqueryDestinationHandlerTest {
         Mockito.`when`(existingTable.schema!!.fields)
             .thenReturn(FieldList.of(Field.of("a2", StandardSQLTypeName.INT64)))
         val alterTableReport =
-            BigqueryDatabaseInitialStatusGatherer(Mockito.mock())
+            BigqueryDirectLoadNativeTableOperations(Mockito.mock())
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         Assertions.assertAll(
             { Assertions.assertEquals(emptySet<String>(), alterTableReport.columnsToAdd) },
@@ -104,7 +105,7 @@ class BigqueryDestinationHandlerTest {
                 )
             )
         val alterTableReport =
-            BigqueryDatabaseInitialStatusGatherer(Mockito.mock())
+            BigqueryDirectLoadNativeTableOperations(Mockito.mock())
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         Assertions.assertAll(
             { Assertions.assertEquals(setOf("c2"), alterTableReport.columnsToAdd) },
