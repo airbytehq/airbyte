@@ -61,8 +61,6 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
 | `contact_lists`             | `crm.lists.read`                                                                                             |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
-| `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
-| `contacts_form_submissions` | `crm.objects.contacts.read`                                                                                  |
 | `contacts_web_analytics`    | `crm.objects.contacts.read`, `business-intelligence`                                                         |
 | Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
 | `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
@@ -157,11 +155,8 @@ The HubSpot source connector supports the following streams:
 
 - [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
-- [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
+- [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
-- [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
-- [Contacts Form Submissions](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
-- [Contacts Merged Audit](https://legacydocs.hubspot.com/docs/methods/contacts/get_batch_by_vid)
 - [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
   - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
@@ -338,13 +333,16 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.13.0-rc.1| 2025-05-12 | [59727](https://github.com/airbytehq/airbyte/pull/59727) | Migrate CRM object streams: goals, products                                                                                                                                                                                  |
-| 4.12.1 | 2025-05-10 | [59810](https://github.com/airbytehq/airbyte/pull/59810) | Update dependencies |
-| 4.12.0 | 2025-05-09 | [58592](https://github.com/airbytehq/airbyte/pull/58592) | Migrate incremental streams: email_events, engagements, subscription_changes |
-| 4.11.0 | 2025-05-07 | [59216](https://github.com/airbytehq/airbyte/pull/59216) | Migrate workflows to low code |
-| 4.10.0 | 2025-05-07 | [59195](https://github.com/airbytehq/airbyte/pull/59195) | Migrate deal_pipelines to low code |
-| 4.9.0 | 2025-05-07 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code |
-| 4.8.0 | 2025-05-06 | [59693](https://github.com/airbytehq/airbyte/pull/59693) | Promoting release candidate 4.8.0-rc.1 to a main version. |
+| 5.2.0-rc.1 | 2025-05-15 | [59727](https://github.com/airbytehq/airbyte/pull/59727) | Migrate CRM object streams: goals, products                                                                                                                                                                                  |
+| 5.1.0-rc.1 | 2025-05-13 | [58105](https://github.com/airbytehq/airbyte/pull/58105) | Migrate deals_archived, forms, form_submissions, owners, owners_archived to low-code                                                                                                                                                      |
+| 5.0.0      | 2025-05-12 | [59673](https://github.com/airbytehq/airbyte/pull/59673)     | Deprecate contacts_form_submissions, contacts_list_memberships, contacts_merged_audit streams which are not supported in Hubspot's V3 API. Update contact_lists to use V3 API.                                               |
+| 4.12.2     | 2025-05-09 | [59755](https://github.com/airbytehq/airbyte/pull/59755) | Add missing cursor format for workflows stream state migration                                                                                                                                                      |
+| 4.12.1     | 2025-05-10 | [59810](https://github.com/airbytehq/airbyte/pull/59810) | Update dependencies |
+| 4.12.0     | 2025-05-09 | [58592](https://github.com/airbytehq/airbyte/pull/58592) | Migrate incremental streams: email_events, engagements, subscription_changes |
+| 4.11.0     | 2025-05-07 | [59216](https://github.com/airbytehq/airbyte/pull/59216) | Migrate workflows to low code |
+| 4.10.0     | 2025-05-07 | [59195](https://github.com/airbytehq/airbyte/pull/59195) | Migrate deal_pipelines to low code |
+| 4.9.0      | 2025-05-07 | [58135](https://github.com/airbytehq/airbyte/pull/58135) | Migrate campaigns to low code |
+| 4.8.0      | 2025-05-06 | [59693](https://github.com/airbytehq/airbyte/pull/59693) | Promoting release candidate 4.8.0-rc.1 to a main version. |
 | 4.8.0-rc.1 | 2025-04-30 | [58092](https://github.com/airbytehq/airbyte/pull/58092)     | Migrate companies_property_history, contacts_property_history and deals_property_history to low code                                                                                                                         |
 | 4.7.0      | 2025-04-30 | [59165](https://github.com/airbytehq/airbyte/pull/59165)     | Promoting release candidate 4.7.0-rc.2 to a main version. |
 | 4.7.0-rc.2 | 2025-04-28 | [59118](https://github.com/airbytehq/airbyte/pull/59118) | Add empty string state migration                                                                                                                                                 |

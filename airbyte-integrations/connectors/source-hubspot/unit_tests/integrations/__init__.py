@@ -22,7 +22,9 @@ from .response_builder.streams import GenericResponseBuilder, HubspotStreamRespo
 
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "goal_targets",
-    "product"
+    "product",
+    "deal",
+    "form"
 ]
 
 
@@ -130,20 +132,25 @@ class HubspotTestCase:
 
     @classmethod
     def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker):
-        for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
-            is_already_mocked = False
+        # figure out which entities are already mocked
+        existing = set()
+        for entity in OBJECTS_WITH_DYNAMIC_SCHEMA:
             for request_mock in http_mocker._get_matchers():
                 # check if dynamic stream was already mocked
-                if object_name in request_mock.request._parsed_url.path:
-                    is_already_mocked = True
+                if f"properties/v2/{entity}" in request_mock.request._parsed_url.path:
+                    existing.add(entity)
 
-            if not is_already_mocked:
-                templates = [{"name": "hs__test_field", "type": "enumeration"}]
-                response_builder = RootHttpResponseBuilder(templates)
-                http_mocker.get(
-                    PropertiesRequestBuilder().for_entity(object_name).build(),
-                    response_builder.build()
-                )
+        templates = [{"name": "hs__test_field", "type": "enumeration"}]
+        response_builder = RootHttpResponseBuilder(templates)
+
+        for entity in OBJECTS_WITH_DYNAMIC_SCHEMA:
+            if entity in existing:
+                continue  # skip if already mocked
+
+            http_mocker.get(
+                PropertiesRequestBuilder().for_entity(entity).build(),
+                response_builder.build()
+            )
 
     @classmethod
     def record_builder(cls, stream: str, record_cursor_path):

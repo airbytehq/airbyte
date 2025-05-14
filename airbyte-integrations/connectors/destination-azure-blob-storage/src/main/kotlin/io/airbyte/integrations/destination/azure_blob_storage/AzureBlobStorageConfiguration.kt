@@ -32,7 +32,6 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration(),
     override val numProcessRecordsWorkers: Int = 1,
-    override val processEmptyFiles: Boolean = true,
 
     // TODO remove these from config and hardcode them in AzureBlobStorageObjectLoader
     //   after we finish performance tuning
