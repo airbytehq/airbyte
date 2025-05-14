@@ -1389,6 +1389,8 @@ definitions:
                     field_path: [ ]
             property_chunking:
               type: PropertyChunking
+              # for crm object streams (goals, product, etc.) the limit is 50 properties.
+              # with 15000 characters it fails with 400 bad request error
               property_limit_type: property_count
               property_limit: 50
       record_selector:
@@ -1466,7 +1468,6 @@ definitions:
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
         cursor_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-
 
   goals_stream:
     $ref: "#/definitions/base_crm_object_stream"
