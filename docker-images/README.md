@@ -65,6 +65,15 @@ You have a few options as of now:
 
 For Docker containers, you can run the `assemble` task to build the docker image for your connector.
 
+Here are some convenient commands:
+
+\`\`\`bash
+./gradlew :airbyte-integrations:connectors:<connector-name>:assemble to just output the Java artifact and docker image.
+./gradlew :airbyte-integrations:connectors:<connector-name>:test to unit test.
+./gradlew :airbyte-integrations:connectors:<connector-name>:build to unit test, integration test and assemble.
+./gradlew :airbyte-integrations:connectors:<connector-name>:integrationTestJava to run integration test, which also runs assemble.
+\`\`\`
+
 Note:
 
 - While connectors are being migrating from `airbyte-ci` to the new Dockerfile images here in this directory, some connectors will build using the legacy `airbyte-ci` method and some will build using the new `Dockerfile`-based method.
