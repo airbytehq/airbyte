@@ -188,6 +188,53 @@ class TableCatalogFactoryTest {
         )
     }
 
+    @Test
+    fun testColumnNameCollisionRelyingOnCanonicalName() {
+        val schema =
+            ObjectType(
+                linkedMapOf(
+                    "FOO" to FieldType(StringType, true),
+                    "foo" to FieldType(StringType, true),
+                )
+            )
+        val stream = createTestStream("stream", "namespace", schema)
+        val catalog = DestinationCatalog(listOf(stream))
+        val rawTableNameGenerator = RawTableNameGenerator { _ ->
+            TableName("raw_dataset", "raw_stream")
+        }
+        val finalTableNameGenerator = FinalTableNameGenerator { _ ->
+            TableName("final_dataset", "final_stream")
+        }
+
+        // Simulate name collision by downcasing, while retaining the original name
+        // as the display name
+        val columnNameGenerator = ColumnNameGenerator { input ->
+            ColumnNameGenerator.ColumnName(
+                displayName = input,
+                canonicalName = input.lowercase(),
+            )
+        }
+
+        val tableCatalog =
+            TableCatalogFactory()
+                .getTableCatalog(
+                    catalog,
+                    rawTableNameGenerator,
+                    finalTableNameGenerator,
+                    columnNameGenerator,
+                )
+
+        val columnMapping = tableCatalog[stream]!!.columnNameMapping
+
+        assertEquals(
+            mapOf(
+                "FOO" to "FOO",
+                "foo" to "foo_1",
+            ),
+            columnMapping,
+        )
+    }
+
     private fun createTestStream(
         name: String,
         namespace: String,
