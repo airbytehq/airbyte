@@ -51,4 +51,4 @@ class BigqueryColumnNameGenerator : ColumnNameGenerator {
     }
 }
 
-fun TableName.toTableId() = TableId.of(this.namespace, this.name)
+fun TableName.toTableId(): TableId = TableId.of(this.namespace, this.name)
