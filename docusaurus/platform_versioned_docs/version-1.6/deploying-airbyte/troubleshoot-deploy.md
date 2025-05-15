@@ -176,7 +176,7 @@ If you want to interact with the pods or resources inside the cluster you can us
 
 [kind](https://kind.sigs.k8s.io/) is a tool for creating a K8s cluster using docker instead of having to install a local K8s cluster. You only need to think about kind if you want to make an adjustment to the cluster itself.
 
-For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](../../platform/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
+For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](/platform/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
 
 ### Unable To Locate User Email
 
@@ -202,7 +202,7 @@ In order to run a custom connector with an Airbyte instance that is running in k
 kind load docker-image <image-name>:<image-tag> -n airbyte-abctl
 ```
 
-For more troubleshooting information review the troubleshooting section in [Uploading Customer Connectors](../../platform/operator-guides/using-custom-connectors#troubleshooting)
+For more troubleshooting information review the troubleshooting section in [Uploading Customer Connectors](/platform/operator-guides/using-custom-connectors#troubleshooting)
 
 ### How do I connect from a container to a service on the host?
 
