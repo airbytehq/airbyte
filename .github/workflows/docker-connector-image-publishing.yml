@@ -1,5 +1,4 @@
-
-name: Manual Docker Base Image Build & Publish
+name: Docker Connector Image Publishing (On-Demand)
 on:
   workflow_dispatch:
     inputs:
