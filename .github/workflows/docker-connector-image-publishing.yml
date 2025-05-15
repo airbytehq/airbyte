@@ -3,32 +3,32 @@ on:
   workflow_dispatch:
     inputs:
       connector-type:
-        description: 'Connector Type'
+        description: "Connector Type"
         required: true
-        default: 'java'
+        default: "java"
         type: choice
         options:
-          - 'java'
-          - 'python'
+          - "java"
+          - "python"
       image-type:
         description: "Image Type (for now only 'base' is supported)"
         required: true
-        default: 'base'
+        default: "base"
         type: choice
         options:
-          - 'base'
+          - "base"
       tag-or-version-number:
         description: "Tag or Version Number (without 'v' prefix)"
         required: true
-        default: 'dev-test'
+        default: "dev-test"
       repository-root:
         description: "Repository Root, either GitHub (GHCR) or DockerHub. Use GHCR for testing."
         required: true
-        default: 'ghcr.io/airbytehq'
+        default: "ghcr.io/airbytehq"
         type: choice
         options:
-          - 'docker.io/airbyte'
-          - 'ghcr.io/airbytehq'
+          - "docker.io/airbyte"
+          - "ghcr.io/airbytehq"
       dry-run:
         description: "Dry Run (if true, no image will be pushed)"
         required: true
