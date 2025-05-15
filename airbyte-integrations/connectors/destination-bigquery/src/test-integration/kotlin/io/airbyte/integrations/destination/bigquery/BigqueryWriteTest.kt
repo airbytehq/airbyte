@@ -70,7 +70,7 @@ abstract class BigqueryRawTablesWriteTest(
         Untyped,
     )
 
-abstract class BigqueryTDWriteTest(configContents: String) :
+abstract class BigqueryDirectLoadWriteTest(configContents: String) :
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
@@ -92,7 +92,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
         ),
     )
 
-class StandardInsertRawOverrideDisableTd :
+class StandardInsertRawOverrideRawTables :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = STANDARD_INSERT_CONFIG,
@@ -111,7 +111,7 @@ class StandardInsertRawOverrideDisableTd :
 }
 
 class StandardInsertRawOverride :
-    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertRawOverrideConfig) {
+    BigqueryDirectLoadWriteTest(BigQueryDestinationTestUtils.standardInsertRawOverrideConfig) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
@@ -122,7 +122,8 @@ class StandardInsertRawOverride :
     }
 }
 
-class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
+class StandardInsert :
+    BigqueryDirectLoadWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
     @Test
     override fun testDedup() {
         super.testDedup()
@@ -130,7 +131,7 @@ class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standard
 }
 
 class StandardInsertCdcSoftDeletes :
-    BigqueryTDWriteTest(
+    BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = STANDARD_INSERT_CONFIG,
             cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
@@ -142,7 +143,7 @@ class StandardInsertCdcSoftDeletes :
     }
 }
 
-class GcsRawOverrideDisableTd :
+class GcsRawOverrideRawTables :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
@@ -157,7 +158,7 @@ class GcsRawOverrideDisableTd :
 }
 
 class GcsRawOverride :
-    BigqueryTDWriteTest(
+    BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
@@ -170,7 +171,7 @@ class GcsRawOverride :
 }
 
 class Gcs :
-    BigqueryTDWriteTest(
+    BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)
     ) {
     @Test
