@@ -2,12 +2,22 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 import requests
-from source_hubspot.components import HubspotPropertyHistoryExtractor, MigrateEmptyStringState, NewtoLegacyFieldTransformation
+from requests import Response
+from source_hubspot.components import (
+    HubspotAssociationsExtractor,
+    HubspotFlattenAssociationsTransformation,
+    HubspotPropertyHistoryExtractor,
+    HubspotRenamePropertiesTransformation,
+    MigrateEmptyStringState,
+    NewtoLegacyFieldTransformation,
+)
 from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
+
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
 
 @pytest.mark.parametrize(
@@ -107,6 +117,49 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
 
     if actual_should_migrate:
         assert state_migration.migrate(stream_state=state) == expected_state
+
+
+def test_hubspot_rename_properties_transformation():
+    expected_properties = {
+        "properties_amount": {"type": ["null", "number"]},
+        "properties_hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
+        "properties_hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
+        "properties_hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+        "properties": {
+            "type": "object",
+            "properties": {
+                "amount": {"type": ["null", "number"]},
+                "hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
+                "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
+                "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+            },
+        },
+    }
+
+    dynamic_properties_record = {
+        "amount": {"type": ["null", "number"]},
+        "hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
+        "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
+        "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+    }
+    transformation = HubspotRenamePropertiesTransformation()
+
+    transformation.transform(record=dynamic_properties_record)
+
+    assert dynamic_properties_record["properties_amount"] == expected_properties["properties_amount"]
+    assert (
+        dynamic_properties_record["properties_hs_v2_date_entered_closedwon"]
+        == expected_properties["properties_hs_v2_date_entered_closedwon"]
+    )
+    assert (
+        dynamic_properties_record["properties_hs_v2_date_exited_closedlost"]
+        == expected_properties["properties_hs_v2_date_exited_closedlost"]
+    )
+    assert (
+        dynamic_properties_record["properties_hs_v2_latest_time_in_contractsent"]
+        == expected_properties["properties_hs_v2_latest_time_in_contractsent"]
+    )
+    assert dynamic_properties_record["properties"] == expected_properties["properties"]
 
 
 def test_property_history_extractor():
@@ -315,3 +368,109 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate():
     actual_records = list(extractor.extract_records(response=requests.Response()))
 
     assert actual_records == expected_records
+
+
+def test_flatten_associations_transformation():
+    expected_record = {"id": "a2b", "Contacts": [101, 102], "Companies": [202, 209]}
+
+    transformation = HubspotFlattenAssociationsTransformation()
+
+    current_record = {
+        "id": "a2b",
+        "associations": {
+            "Contacts": {"results": [{"id": 101}, {"id": 102}]},
+            "Companies": {"results": [{"id": 202}, {"id": 209}]},
+        },
+    }
+
+    transformation.transform(record=current_record, config={}, stream_state=None, stream_slice=None)
+
+    assert current_record == expected_record
+
+
+def test_associations_extractor(config):
+    expected_records = [
+        {"id": "123", "companies": ["909", "424"], "contacts": ["408"]},
+        {
+            "id": "456",
+            "companies": ["606", "510"],
+            "contacts": ["888"],
+        },
+    ]
+
+    decoder = Mock()
+    decoder.decode.return_value = [
+        {
+            "total": 2,
+            "results": [{"id": "123", "updatedAt": "2025-05-01T00:00:00.000Z"}, {"id": "456", "updatedAt": "2025-05-01T00:00:00.000Z"}],
+        }
+    ]
+
+    companies_mocked_associations_records = [
+        {
+            "from": {"id": "123"},
+            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 909}],
+        },
+        {
+            "from": {"id": "456"},
+            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 606}],
+        },
+        {
+            "from": {"id": "123"},
+            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 424}],
+        },
+        {
+            "from": {"id": "456"},
+            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 510}],
+        },
+    ]
+
+    contacts_mocked_associations_records = [
+        {
+            "from": {"id": "123"},
+            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 408}],
+        },
+        {
+            "from": {"id": "456"},
+            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 888}],
+        },
+    ]
+
+    extractor = HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="deals",
+        associations_list=["companies", "contacts"],
+        decoder=decoder,
+        config=config,
+        parameters={},
+    )
+
+    with patch.object(
+        SimpleRetriever, "read_records", side_effect=[companies_mocked_associations_records, contacts_mocked_associations_records]
+    ):
+        records = list(extractor.extract_records(response=Response()))
+
+        assert len(records) == 2
+        assert records[0]["id"] == expected_records[0]["id"]
+        assert records[0]["companies"] == expected_records[0]["companies"]
+        assert records[0]["contacts"] == expected_records[0]["contacts"]
+
+        assert records[1]["id"] == expected_records[1]["id"]
+        assert records[1]["companies"] == expected_records[1]["companies"]
+        assert records[1]["contacts"] == expected_records[1]["contacts"]
+
+
+def test_extractor_supports_interpolation(config):
+    parameters = {"entity": "engagements_emails"}
+
+    extractor = HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="{{ parameters['entity'] }}",
+        associations_list=["companies", "contacts"],
+        config=config,
+        parameters=parameters,
+    )
+
+    entity = extractor._entity.eval(config=config)
+
+    assert entity == "engagements_emails"

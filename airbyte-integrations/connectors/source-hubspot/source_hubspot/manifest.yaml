@@ -81,7 +81,7 @@ definitions:
         error_message: >-
           Bad request (400). Please verify your credentials and try again.
 
-  base_paginator:
+  offset_paginator:
     type: DefaultPaginator
     page_token_option:
       type: RequestOption
@@ -94,6 +94,21 @@ definitions:
     pagination_strategy:
       type: OffsetIncrement
       page_size: 100
+
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
 
   base_selector:
     type: RecordSelector
@@ -109,9 +124,23 @@ definitions:
     record_selector:
       $ref: "#/definitions/base_selector"
     paginator:
-      $ref: "#/definitions/base_paginator"
+      $ref: "#/definitions/offset_paginator"
     decoder:
       type: JsonDecoder
+
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updatedAt
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%SZ"
 
   retriever_without_pagination:
     type: SimpleRetriever
@@ -124,8 +153,6 @@ definitions:
 
   stream_base:
     type: DeclarativeStream
-    primary_key:
-      - id
     retriever:
       $ref: "#/definitions/base_retriever"
 
@@ -133,6 +160,83 @@ definitions:
     $ref: "#/definitions/stream_base"
     retriever:
       $ref: "#/definitions/retriever_without_pagination"
+
+  base_dynamic_schema_loader:
+    type: DynamicSchemaLoader
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/properties/v2/{{ parameters['entity'] }}/properties"
+      decoder:
+        type: JsonDecoder
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotSchemaExtractor
+          field_path: []
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+    schema_type_identifier:
+      type: SchemaTypeIdentifier
+      key_pointer:
+        - name
+      type_pointer:
+        - type
+      schema_pointer:
+        - properties
+      types_mapping:
+        - type: TypesMap
+          target_type: boolean
+          current_type: bool
+        - type: TypesMap
+          target_type: date
+          current_type: date
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: date-time
+        - type: TypesMap
+          target_type: timestamp_with_timezone
+          current_type: datetime
+        - type: TypesMap
+          target_type: string
+          current_type: enumeration
+        - type: TypesMap
+          target_type: string
+          current_type: json
+        - type: TypesMap
+          target_type: string
+          current_type: object_coordinates
+        - type: TypesMap
+          target_type: string
+          current_type: phone_number
+
+  deals_archived_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/deal/properties
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+
+  forms_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/form/properties
 
   # Stream Definitions
   companies_property_history_stream:
@@ -209,6 +313,10 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
     $parameters:
       name: companies_property_history
       path: /crm/v3/objects/companies
@@ -292,6 +400,10 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%ms"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
     $parameters:
       name: contacts_property_history
       path: /crm/v3/objects/contacts
@@ -407,6 +519,10 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: timestamp
     $parameters:
       name: deals_property_history
       path: /crm/v3/objects/deals
@@ -417,6 +533,8 @@ definitions:
         $ref: "#/schemas/deals_property_history"
 
   marketing_emails_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_base"
     name: marketing_emails
     retriever:
@@ -425,7 +543,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /marketing-emails/v1/emails/with-statistics
       paginator:
-        $ref: "#/definitions/base_paginator"
+        $ref: "#/definitions/offset_paginator"
         pagination_strategy:
           type: OffsetIncrement
           page_size: 250
@@ -454,6 +572,8 @@ definitions:
         $ref: "#/schemas/marketing_emails"
 
   email_subscriptions_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_without_pagination"
     name: email_subscriptions
     retriever:
@@ -471,7 +591,478 @@ definitions:
       schema:
         $ref: "#/schemas/email_subscriptions"
 
+  deals_dynamic_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/deal/properties
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+
+  deals_full_refresh_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: deals
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/deals
+        request_parameters:
+          associations: "['contacts', 'companies', 'line_items']"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/deal/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path:
+          - properties
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/deals_dynamic_schema_loader"
+
+  deals_incremental_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: deals
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/deal/search
+        http_method: POST
+        fetch_properties_from_endpoint:
+          type: PropertiesFromEndpoint
+          property_field_path:
+            - name
+          retriever:
+            type: SimpleRetriever
+            requester:
+              $ref: "#/definitions/base_requester"
+              path: /properties/v2/deal/properties
+            decoder:
+              type: JsonDecoder
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+        request_body_json:
+          limit: 200
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          filters:
+            - propertyName: hs_lastmodifieddate
+              operator: GTE
+              value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+            - propertyName: hs_lastmodifieddate
+              operator: LTE
+              value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+            - propertyName: hs_object_id
+              operator: GTE
+              value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+          properties: "{{ stream_slice.extra_fields['query_properties'] }}"
+          after: "{{ next_page_token['next_page_token']['after'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
+          page_size: 200
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotAssociationsExtractor
+          field_path:
+            - results
+          entity: deal
+          associations_list:
+            - contacts
+            - companies
+            - line_items
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/deals_dynamic_schema_loader"
+
+  deals_stream:
+    type: StateDelegatingStream
+    name: deals
+    full_refresh_stream: "#/definitions/deals_full_refresh_stream"
+    incremental_stream: "#/definitions/deals_incremental_stream"
+
+  deals_archived_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: deals_archived
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/deals
+        request_parameters:
+          associations: "['contacts', 'companies', 'line_items']"
+          archived: "true"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/deal/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["archivedAt"]
+            value: "{{ record.get('archivedAt') or record['createdAt'] }}"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: archivedAt
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: archivedAt
+    schema_loader:
+      - $ref: "#/definitions/deals_archived_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals_archived"
+
+  forms_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: forms
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /marketing/v3/forms
+        request_parameters:
+          formTypes:
+            "['hubspot', 'captured', 'flow']"
+            # Not supported by `v1` api version used by the FormSubmissions stream
+            # TODO: consider migrating FormSubmissions stream to use `/v3` api version
+            # then uncomment the last 2 form types.
+            # "blog_comment",
+            # "all",
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/form/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+    schema_loader:
+      - $ref: "#/definitions/forms_schema_loader"
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+
+  form_submissions_stream:
+    $ref: "#/definitions/stream_base"
+    name: form_submissions
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/form-integrations/v1/submissions/forms/{{ stream_partition['form_id'][0] }}"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/forms_stream"
+              parent_key: "id"
+              partition_field: "form_id"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/cursor_paginator/pagination_strategy"
+          page_size: 50
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['submittedAt'] }}"
+          - path: ["formId"]
+            value: "{{ stream_slice['form_id'][0] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%ms') }}"
+        datetime_format: "%ms"
+      datetime_format: "%ms"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      cursor_datetime_formats:
+        - "%ms"
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+        cursor_format: "%ms"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/form_submissions"
+
+  owners_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: owners
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/owners
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/owners"
+
+  owners_archived_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: owners_archived
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/owners
+        request_parameters:
+          archived: "true"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/owners_archived"
+
   ticket_pipelines_stream:
+    primary_key:
+      - id
     $ref: "#/definitions/stream_base"
     name: ticket_pipelines
     retriever:
@@ -480,18 +1071,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /crm/v3/pipelines/tickets
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updatedAt
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%SZ"
+      $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     transformations:
       - type: AddFields
@@ -584,6 +1164,65 @@ definitions:
         cursor_field: lastUpdatedTime
         cursor_format: "%ms"
 
+  contact_lists_stream:
+    $ref: "#/definitions/stream_base"
+    name: contact_lists
+    primary_key: listId
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/lists/search
+        http_method: POST
+      # current implementation doesn't include additionalProperties request param
+      # additionalProperties in response includes only default:
+      # hs_list_size, hs_last_record_added_at, hs_last_record_removed_at, hs_folder_name, and hs_list_reference_count
+      record_selector:
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - lists
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: count
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('offset') }}"
+          stop_condition: "{{ not response.get('hasMore') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: P{{ config.get('lookback_window', 0) }}D
+      is_client_side_incremental: true
+      cursor_datetime_formats:
+        - "%ms" # support previous state format
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%d %H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record.get('createdAt') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/contact_lists"
+
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
     name: deal_pipelines
@@ -615,6 +1254,11 @@ definitions:
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_hubspot.components.MigrateEmptyStringState
+        cursor_field: updatedAt
+        cursor_format: "%ms"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -675,6 +1319,7 @@ definitions:
       - type: CustomStateMigration
         class_name: source_hubspot.components.MigrateEmptyStringState
         cursor_field: updatedAt
+        cursor_format: "%ms"
 
   email_events_stream:
     $ref: "#/definitions/stream_base"
@@ -887,10 +1532,17 @@ definitions:
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_property_history_stream"
+  - "#/definitions/contact_lists_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deals_property_history_stream"
+  - "#/definitions/deals_stream"
   - "#/definitions/email_subscriptions_stream"
+  - "#/definitions/deals_archived_stream"
+  - "#/definitions/forms_stream"
+  - "#/definitions/form_submissions_stream"
+  - "#/definitions/owners_stream"
+  - "#/definitions/owners_archived_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/workflows_stream"
@@ -905,6 +1557,92 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  contact_lists:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      processingType:
+        type:
+          - "null"
+          - string
+      objectTypeId:
+        type:
+          - "null"
+          - string
+      updatedById:
+        type:
+          - "null"
+          - string
+      filtersUpdatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      listId:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      processingStatus:
+        type:
+          - "null"
+          - string
+      deletedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      listVersion:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      additionalProperties:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          hs_list_size:
+            type:
+              - "null"
+              - integer
+          hs_last_record_added_at:
+            type:
+              - "null"
+              - integer
+          hs_last_record_removed_at:
+            type:
+              - "null"
+              - integer
+          hs_folder_name:
+            type:
+              - "null"
+              - string
+          hs_list_reference_count:
+            type:
+              - "null"
+              - integer
+      createdById:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
   deal_pipelines:
     $schema: http://json-schema.org/draft-07/schema#
     type:
@@ -1149,6 +1887,62 @@ schemas:
           - "null"
           - boolean
 
+  deals:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the deal
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the deal was created
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the deal was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the deal is archived
+        type:
+          - "null"
+          - boolean
+      companies:
+        description: Information about companies associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      contacts:
+        description: Information about contacts associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      line_items:
+        description: Details of line items associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
   deals_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
     type:
@@ -1198,6 +1992,864 @@ schemas:
         type:
           - "null"
           - boolean
+
+  deals_archived:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      properties:
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            type:
+              - "null"
+              - string
+          amount_in_home_currency:
+            type:
+              - "null"
+              - string
+          closed_lost_reason:
+            type:
+              - "null"
+              - string
+          closed_won_reason:
+            type:
+              - "null"
+              - string
+          closedate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          createdate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          days_to_close:
+            type:
+              - "null"
+              - string
+          dealname:
+            type:
+              - "null"
+              - string
+          dealstage:
+            type:
+              - "null"
+              - string
+          dealtype:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          engagements_last_meeting_booked:
+            type:
+              - "null"
+              - string
+          engagements_last_meeting_booked_campaign:
+            type:
+              - "null"
+              - string
+          engagements_last_meeting_booked_medium:
+            type:
+              - "null"
+              - string
+          engagements_last_meeting_booked_source:
+            type:
+              - "null"
+              - string
+          hs_acv:
+            type:
+              - "null"
+              - string
+          hs_all_accessible_team_ids:
+            type:
+              - "null"
+              - string
+          hs_all_assigned_business_unit_ids:
+            type:
+              - "null"
+              - string
+          hs_all_owner_ids:
+            type:
+              - "null"
+              - string
+          hs_all_team_ids:
+            type:
+              - "null"
+              - string
+          hs_analytics_source:
+            type:
+              - "null"
+              - string
+          hs_analytics_source_data_1:
+            type:
+              - "null"
+              - string
+          hs_analytics_source_data_2:
+            type:
+              - "null"
+              - string
+          hs_arr:
+            type:
+              - "null"
+              - string
+          hs_closed_amount:
+            type:
+              - "null"
+              - string
+          hs_closed_amount_in_home_currency:
+            type:
+              - "null"
+              - string
+          hs_created_by_user_id:
+            type:
+              - "null"
+              - string
+          hs_createdate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_9567448:
+            type:
+              - "null"
+              - string
+          hs_date_entered_9567449:
+            type:
+              - "null"
+              - string
+          hs_date_entered_appointmentscheduled:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_closedlost:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_closedwon:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_contractsent:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_customclosedwonstage:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_decisionmakerboughtin:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_presentationscheduled:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_entered_qualifiedtobuy:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_9567448:
+            type:
+              - "null"
+              - string
+          hs_date_exited_9567449:
+            type:
+              - "null"
+              - string
+          hs_date_exited_appointmentscheduled:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_closedlost:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_closedwon:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_contractsent:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_customclosedwonstage:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_decisionmakerboughtin:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_presentationscheduled:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_date_exited_qualifiedtobuy:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_deal_amount_calculation_preference:
+            type:
+              - "null"
+              - string
+          hs_deal_stage_probability:
+            type:
+              - "null"
+              - string
+          hs_deal_stage_probability_shadow:
+            type:
+              - "null"
+              - string
+          hs_forecast_amount:
+            type:
+              - "null"
+              - string
+          hs_forecast_probability:
+            type:
+              - "null"
+              - string
+          hs_is_closed:
+            type:
+              - "null"
+              - string
+          hs_is_closed_won:
+            type:
+              - "null"
+              - string
+          hs_lastmodifieddate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hs_latest_meeting_activity:
+            type:
+              - "null"
+              - string
+          hs_likelihood_to_close:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_hs_discount_percentage:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_hs_discount_percentage_enabled:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_hs_recurring_billing_period:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_hs_recurring_billing_period_enabled:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_hs_recurring_billing_start_date:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_hs_recurring_billing_start_date_enabled:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_recurringbillingfrequency:
+            type:
+              - "null"
+              - string
+          hs_line_item_global_term_recurringbillingfrequency_enabled:
+            type:
+              - "null"
+              - string
+          hs_manual_forecast_category:
+            type:
+              - "null"
+              - string
+          hs_merged_object_ids:
+            type:
+              - "null"
+              - string
+          hs_mrr:
+            type:
+              - "null"
+              - string
+          hs_next_step:
+            type:
+              - "null"
+              - string
+          hs_num_target_accounts:
+            type:
+              - "null"
+              - string
+          hs_object_id:
+            type:
+              - "null"
+              - string
+          hs_predicted_amount:
+            type:
+              - "null"
+              - string
+          hs_predicted_amount_in_home_currency:
+            type:
+              - "null"
+              - string
+          hs_priority:
+            type:
+              - "null"
+              - string
+          hs_projected_amount:
+            type:
+              - "null"
+              - string
+          hs_projected_amount_in_home_currency:
+            type:
+              - "null"
+              - string
+          hs_sales_email_last_replied:
+            type:
+              - "null"
+              - string
+          hs_tcv:
+            type:
+              - "null"
+              - string
+          hs_unique_creation_key:
+            type:
+              - "null"
+              - string
+          hs_updated_by_user_id:
+            type:
+              - "null"
+              - string
+          hs_user_ids_of_all_notification_followers:
+            type:
+              - "null"
+              - string
+          hs_user_ids_of_all_notification_unfollowers:
+            type:
+              - "null"
+              - string
+          hs_user_ids_of_all_owners:
+            type:
+              - "null"
+              - string
+          hubspot_owner_assigneddate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          hubspot_owner_id:
+            type:
+              - "null"
+              - string
+          hubspot_team_id:
+            type:
+              - "null"
+              - string
+          notes_last_contacted:
+            type:
+              - "null"
+              - string
+          notes_last_updated:
+            type:
+              - "null"
+              - string
+          notes_next_activity_date:
+            type:
+              - "null"
+              - string
+          num_associated_contacts:
+            type:
+              - "null"
+              - string
+          num_contacted_notes:
+            type:
+              - "null"
+              - string
+          num_notes:
+            type:
+              - "null"
+              - string
+          pipeline:
+            type:
+              - "null"
+              - string
+      properties_amount:
+        type:
+          - "null"
+          - string
+      properties_amount_in_home_currency:
+        type:
+          - "null"
+          - string
+      properties_closed_lost_reason:
+        type:
+          - "null"
+          - string
+      properties_closed_won_reason:
+        type:
+          - "null"
+          - string
+      properties_closedate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_createdate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_days_to_close:
+        type:
+          - "null"
+          - string
+      properties_dealname:
+        type:
+          - "null"
+          - string
+      properties_dealstage:
+        type:
+          - "null"
+          - string
+      properties_dealtype:
+        type:
+          - "null"
+          - string
+      properties_description:
+        type:
+          - "null"
+          - string
+      properties_engagements_last_meeting_booked:
+        type:
+          - "null"
+          - string
+      properties_engagements_last_meeting_booked_campaign:
+        type:
+          - "null"
+          - string
+      properties_engagements_last_meeting_booked_medium:
+        type:
+          - "null"
+          - string
+      properties_engagements_last_meeting_booked_source:
+        type:
+          - "null"
+          - string
+      properties_hs_acv:
+        type:
+          - "null"
+          - string
+      properties_hs_all_accessible_team_ids:
+        type:
+          - "null"
+          - string
+      properties_hs_all_assigned_business_unit_ids:
+        type:
+          - "null"
+          - string
+      properties_hs_all_owner_ids:
+        type:
+          - "null"
+          - string
+      properties_hs_all_team_ids:
+        type:
+          - "null"
+          - string
+      properties_hs_analytics_source:
+        type:
+          - "null"
+          - string
+      properties_hs_analytics_source_data_1:
+        type:
+          - "null"
+          - string
+      properties_hs_analytics_source_data_2:
+        type:
+          - "null"
+          - string
+      properties_hs_arr:
+        type:
+          - "null"
+          - string
+      properties_hs_closed_amount:
+        type:
+          - "null"
+          - string
+      properties_hs_closed_amount_in_home_currency:
+        type:
+          - "null"
+          - string
+      properties_hs_created_by_user_id:
+        type:
+          - "null"
+          - string
+      properties_hs_createdate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_9567448:
+        type:
+          - "null"
+          - string
+      properties_hs_date_entered_9567449:
+        type:
+          - "null"
+          - string
+      properties_hs_date_entered_appointmentscheduled:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_closedlost:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_closedwon:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_contractsent:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_customclosedwonstage:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_decisionmakerboughtin:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_presentationscheduled:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_entered_qualifiedtobuy:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_9567448:
+        type:
+          - "null"
+          - string
+      properties_hs_date_exited_9567449:
+        type:
+          - "null"
+          - string
+      properties_hs_date_exited_appointmentscheduled:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_closedlost:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_closedwon:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_contractsent:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_customclosedwonstage:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_decisionmakerboughtin:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_presentationscheduled:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_date_exited_qualifiedtobuy:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_deal_amount_calculation_preference:
+        type:
+          - "null"
+          - string
+      properties_hs_deal_stage_probability:
+        type:
+          - "null"
+          - string
+      properties_hs_deal_stage_probability_shadow:
+        type:
+          - "null"
+          - string
+      properties_hs_forecast_amount:
+        type:
+          - "null"
+          - string
+      properties_hs_forecast_probability:
+        type:
+          - "null"
+          - string
+      properties_hs_is_closed:
+        type:
+          - "null"
+          - string
+      properties_hs_is_closed_won:
+        type:
+          - "null"
+          - string
+      properties_hs_lastmodifieddate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_latest_meeting_activity:
+        type:
+          - "null"
+          - string
+      properties_hs_likelihood_to_close:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_hs_discount_percentage:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_hs_discount_percentage_enabled:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_hs_recurring_billing_period:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_hs_recurring_billing_period_enabled:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_hs_recurring_billing_start_date:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_hs_recurring_billing_start_date_enabled:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_recurringbillingfrequency:
+        type:
+          - "null"
+          - string
+      properties_hs_line_item_global_term_recurringbillingfrequency_enabled:
+        type:
+          - "null"
+          - string
+      properties_hs_manual_forecast_category:
+        type:
+          - "null"
+          - string
+      properties_hs_merged_object_ids:
+        type:
+          - "null"
+          - string
+      properties_hs_mrr:
+        type:
+          - "null"
+          - string
+      properties_hs_next_step:
+        type:
+          - "null"
+          - string
+      properties_hs_num_target_accounts:
+        type:
+          - "null"
+          - string
+      properties_hs_object_id:
+        type:
+          - "null"
+          - string
+      properties_hs_predicted_amount:
+        type:
+          - "null"
+          - string
+      properties_hs_predicted_amount_in_home_currency:
+        type:
+          - "null"
+          - string
+      properties_hs_priority:
+        type:
+          - "null"
+          - string
+      properties_hs_projected_amount:
+        type:
+          - "null"
+          - string
+      properties_hs_projected_amount_in_home_currency:
+        type:
+          - "null"
+          - string
+      properties_hs_sales_email_last_replied:
+        type:
+          - "null"
+          - string
+      properties_hs_tcv:
+        type:
+          - "null"
+          - string
+      properties_hs_unique_creation_key:
+        type:
+          - "null"
+          - string
+      properties_hs_updated_by_user_id:
+        type:
+          - "null"
+          - string
+      properties_hs_user_ids_of_all_notification_followers:
+        type:
+          - "null"
+          - string
+      properties_hs_user_ids_of_all_notification_unfollowers:
+        type:
+          - "null"
+          - string
+      properties_hs_user_ids_of_all_owners:
+        type:
+          - "null"
+          - string
+      properties_hubspot_owner_assigneddate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hubspot_owner_id:
+        type:
+          - "null"
+          - string
+      properties_hubspot_team_id:
+        type:
+          - "null"
+          - string
+      properties_notes_last_contacted:
+        type:
+          - "null"
+          - string
+      properties_notes_last_updated:
+        type:
+          - "null"
+          - string
+      properties_notes_next_activity_date:
+        type:
+          - "null"
+          - string
+      properties_num_associated_contacts:
+        type:
+          - "null"
+          - string
+      properties_num_contacted_notes:
+        type:
+          - "null"
+          - string
+      properties_num_notes:
+        type:
+          - "null"
+          - string
+      properties_pipeline:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        type:
+          - "null"
+          - boolean
+      archivedAt:
+        description: The date and time when the deal was archived
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      companies:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      contacts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      line_items:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
 
   email_subscriptions:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1263,6 +2915,368 @@ schemas:
         type:
           - "null"
           - string
+
+  form_submissions:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    properties:
+      conversionId:
+        description: The unique identifier for the form submission
+        type:
+          - "null"
+          - string
+      submittedAt:
+        description: The timestamp when the form was submitted.
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        description: The timestamp when the form submission data was last updated.
+        type:
+          - "null"
+          - integer
+      values:
+        description: An array of form field values submitted in the form.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            name:
+              description: The name or identifier of the form field.
+              type:
+                - "null"
+                - string
+            value:
+              description: The actual value submitted for the form field.
+              type:
+                - "null"
+                - string
+            objectTypeId:
+              description: The type identifier of the form field value.
+              type:
+                - "null"
+                - string
+      pageUrl:
+        description: The URL of the web page where the form was submitted.
+        type:
+          - "null"
+          - string
+      formId:
+        description: The unique identifier of the form associated with the submission.
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+
+  forms:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the form.
+        type:
+          - "null"
+          - string
+      name:
+        description: Name of the form.
+        type:
+          - "null"
+          - string
+      formType:
+        description: Type of the form.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the form was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Date and time when the form was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates whether the form is archived.
+        type:
+          - "null"
+          - boolean
+      deletedAt:
+        description: Date and time when the form was deleted.
+        type:
+          - "null"
+          - string
+      fieldGroups:
+        description: Groups containing fields of a form.
+        type:
+          - "null"
+          - array
+        items:
+          description: Field groups in the form.
+          type:
+            - "null"
+            - object
+          properties:
+            fields:
+              type:
+                - "null"
+                - array
+              items:
+                description: Properties of each field.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  objectTypeId:
+                    description: Object type ID for the field.
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the field.
+                    type:
+                      - "null"
+                      - string
+                  label:
+                    description: Label for the field.
+                    type:
+                      - "null"
+                      - string
+                  required:
+                    description: Indicates whether the field is required.
+                    type:
+                      - "null"
+                      - boolean
+                  hidden:
+                    description: Indicates whether the field is hidden.
+                    type:
+                      - "null"
+                      - boolean
+                  fieldType:
+                    description: Type of the field.
+                    type:
+                      - "null"
+                      - string
+                  validation:
+                    description: Validation settings for the field.
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      blockedEmailDomains:
+                        description: List of blocked email domains for validation.
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - string
+                      useDefaultBlockList:
+                        description:
+                          Indicates whether to use the default block list
+                          for validation.
+                        type:
+                          - "null"
+                          - boolean
+            groupType:
+              description: Type of field group.
+              type:
+                - "null"
+                - string
+            richTextType:
+              description: Type of rich text.
+              type:
+                - "null"
+                - string
+      configuration:
+        description: Configuration settings for the form.
+        type:
+          - "null"
+          - object
+        properties:
+          language:
+            description: Language setting for the form.
+            type:
+              - "null"
+              - string
+          cloneable:
+            description: Indicates whether the form is cloneable.
+            type:
+              - "null"
+              - boolean
+          postSubmitAction:
+            description: Action to be taken after form submission.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of post-submit action.
+                type:
+                  - "null"
+                  - string
+              value:
+                description: Value of post-submit action.
+                type:
+                  - "null"
+                  - string
+          editable:
+            description: Indicates whether the form is editable.
+            type:
+              - "null"
+              - boolean
+          archivable:
+            description: Indicates whether the form is archivable.
+            type:
+              - "null"
+              - boolean
+          recaptchaEnabled:
+            description: Indicates whether reCAPTCHA is enabled.
+            type:
+              - "null"
+              - boolean
+          notifyContactOwner:
+            description: Notification setting for contacting the owner.
+            type:
+              - "null"
+              - boolean
+          notifyRecipients:
+            description: Notification setting for recipients.
+            type:
+              - "null"
+              - array
+          createNewContactForNewEmail:
+            description: Creates a new contact for a new email.
+            type:
+              - "null"
+              - boolean
+          prePopulateKnownValues:
+            description: Pre-populates known values in the form.
+            type:
+              - "null"
+              - boolean
+          allowLinkToResetKnownValues:
+            description: Allows resetting known values through a link.
+            type:
+              - "null"
+              - boolean
+          lifecycleStages:
+            description: List of lifecycle stages.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+      displayOptions:
+        description: Display options for the form.
+        type:
+          - "null"
+          - object
+        properties:
+          renderRawHtml:
+            description: Indicates whether to render raw HTML.
+            type:
+              - "null"
+              - boolean
+          theme:
+            description: Theme setting for the form.
+            type:
+              - "null"
+              - string
+          submitButtonText:
+            description: Text for the submit button.
+            type:
+              - "null"
+              - string
+          style:
+            description: Style settings for the form.
+            type:
+              - "null"
+              - object
+            properties:
+              fontFamily:
+                description: Font family style.
+                type:
+                  - "null"
+                  - string
+              backgroundWidth:
+                description: Background width style.
+                type:
+                  - "null"
+                  - string
+              labelTextColor:
+                description: Label text color style.
+                type:
+                  - "null"
+                  - string
+              labelTextSize:
+                description: Label text font size.
+                type:
+                  - "null"
+                  - string
+              helpTextColor:
+                description: Help text color style.
+                type:
+                  - "null"
+                  - string
+              helpTextSize:
+                description: Help text font size.
+                type:
+                  - "null"
+                  - string
+              legalConsentTextColor:
+                description: Legal consent text color style.
+                type:
+                  - "null"
+                  - string
+              legalConsentTextSize:
+                description: Legal consent text font size.
+                type:
+                  - "null"
+                  - string
+              submitColor:
+                description: Color of submit button.
+                type:
+                  - "null"
+                  - string
+              submitAlignment:
+                description: Alignment of submit button.
+                type:
+                  - "null"
+                  - string
+              submitFontColor:
+                description: Font color of submit button.
+                type:
+                  - "null"
+                  - string
+              submitSize:
+                description: Size of submit button.
+                type:
+                  - "null"
+                  - string
+          cssClass:
+            description: CSS class for styling the form.
+            type:
+              - "null"
+              - string
+      legalConsentOptions:
+        description: Legal consent options for the form.
+        type:
+          - "null"
+          - object
+    additionalProperties: true
 
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#
@@ -2739,6 +4753,166 @@ schemas:
         type:
           - "null"
           - integer
+
+  owners:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The unique identifier of the owner.
+        type:
+          - "null"
+          - string
+      email:
+        description: The email address of the owner.
+        type:
+          - "null"
+          - string
+      firstName:
+        description: The first name of the owner.
+        type:
+          - "null"
+          - string
+      lastName:
+        description: The last name of the owner.
+        type:
+          - "null"
+          - string
+      userId:
+        description: The unique identifier of the user associated with the owner.
+        type:
+          - "null"
+          - integer
+      userIdIncludingInactive:
+        description:
+          The unique identifier of the user associated with the owner,
+          including inactive users.
+        type:
+          - "null"
+          - integer
+      createdAt:
+        description: The date and time when the owner was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the owner was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the owner is archived or not.
+        type:
+          - "null"
+          - boolean
+      teams:
+        description: An array of teams the owner belongs to.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            id:
+              description: The unique identifier of the team.
+              type:
+                - "null"
+                - string
+            name:
+              description: The name of the team.
+              type:
+                - "null"
+                - string
+            membership:
+              description: The membership status of the owner in the team.
+              type:
+                - "null"
+                - string
+
+  owners_archived:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The unique identifier of the owner.
+        type:
+          - "null"
+          - string
+      email:
+        description: The email address of the owner.
+        type:
+          - "null"
+          - string
+      firstName:
+        description: The first name of the owner.
+        type:
+          - "null"
+          - string
+      lastName:
+        description: The last name of the owner.
+        type:
+          - "null"
+          - string
+      userId:
+        description: The user ID associated with the owner.
+        type:
+          - "null"
+          - integer
+      userIdIncludingInactive:
+        description:
+          The unique identifier of the user associated with the owner,
+          including inactive users.
+        type:
+          - "null"
+          - integer
+      createdAt:
+        description: The date and time the owner was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time the owner was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the owner is archived or not.
+        type:
+          - "null"
+          - boolean
+      teams:
+        description: A list of teams the owner belongs to.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            id:
+              description: The unique identifier of the team.
+              type:
+                - "null"
+                - string
+            name:
+              description: The name of the team.
+              type:
+                - "null"
+                - string
+            membership:
+              description: The membership status of the owner within the team.
+              type:
+                - "null"
+                - string
 
   workflows:
     $schema: "http://json-schema.org/draft-07/schema#"
