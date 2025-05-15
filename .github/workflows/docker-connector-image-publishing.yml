@@ -30,7 +30,7 @@ on:
           - 'docker.io/airbyte'
           - 'ghcr.io/airbytehq'
       dry-run:
-        description: "Dry Run (if true, no image will be built or pushed)"
+        description: "Dry Run (if true, no image will be pushed)"
         required: true
         type: boolean
         default: true
