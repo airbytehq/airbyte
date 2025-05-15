@@ -6,6 +6,9 @@ import pytest
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API
 
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -108,3 +111,30 @@ def find_stream(stream_name, config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+@pytest.fixture(autouse=True)
+def patch_time(mocker):
+    mocker.patch("time.sleep")
+
+
+def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
+    return read(SourceHubspot(cfg, None, None), cfg, CatalogBuilder().with_stream(stream, sync_mode).build(), state, expecting_exception)
+
+
+@pytest.fixture()
+def mock_dynamic_schema_requests(requests_mock):
+    for entity in ["deal", "form"]:
+        requests_mock.get(
+            f"https://api.hubapi.com/properties/v2/{entity}/properties",
+            json=[
+                {
+                    "name": "hs__migration_soft_delete",
+                    "label": "migration_soft_delete_deprecated",
+                    "description": "Describes if the goal target can be treated as deleted.",
+                    "groupName": "goal_target_information",
+                    "type": "enumeration",
+                }
+            ],
+            status_code=200,
+        )

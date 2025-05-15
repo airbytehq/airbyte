@@ -20,7 +20,7 @@ class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
     private val taskFactory: LoadPipelineStepTaskFactory,
-    private val taskId: String,
+    private val stepId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
 
@@ -32,7 +32,7 @@ class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
             outputQueue,
             partition,
             numWorkers,
-            taskId = taskId,
+            stepId = stepId,
         )
     }
 }
