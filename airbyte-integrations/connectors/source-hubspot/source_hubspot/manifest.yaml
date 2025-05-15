@@ -167,7 +167,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
-        path: /properties/v2/deal/properties
+        path: "/properties/v2/{{ parameters['entity'] }}/properties"
       decoder:
         type: JsonDecoder
       record_selector:
@@ -177,12 +177,6 @@ definitions:
           class_name: source_hubspot.components.HubspotSchemaExtractor
           field_path: []
     schema_transformations:
-      - type: CustomTransformation
-        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
-        field_mapping:
-          hs_date_entered_: "hs_v2_date_entered_"
-          hs_date_exited_: "hs_v2_date_exited_"
-          hs_time_in_: "hs_v2_latest_time_in_"
       - type: CustomTransformation
         class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
     schema_type_identifier:
@@ -597,6 +591,191 @@ definitions:
       schema:
         $ref: "#/schemas/email_subscriptions"
 
+  deals_dynamic_schema_loader:
+    $ref: "#/definitions/base_dynamic_schema_loader"
+    retriever:
+      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /properties/v2/deal/properties
+    schema_transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+
+  deals_full_refresh_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: deals
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/deals
+        request_parameters:
+          associations: "['contacts', 'companies', 'line_items']"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /properties/v2/deal/properties
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path:
+          - properties
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/deals_dynamic_schema_loader"
+
+  deals_incremental_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: deals
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/objects/deal/search
+        http_method: POST
+        fetch_properties_from_endpoint:
+          type: PropertiesFromEndpoint
+          property_field_path:
+            - name
+          retriever:
+            type: SimpleRetriever
+            requester:
+              $ref: "#/definitions/base_requester"
+              path: /properties/v2/deal/properties
+            decoder:
+              type: JsonDecoder
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+        request_body_json:
+          limit: 200
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          filters:
+            - propertyName: hs_lastmodifieddate
+              operator: GTE
+              value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+            - propertyName: hs_lastmodifieddate
+              operator: LTE
+              value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+            - propertyName: hs_object_id
+              operator: GTE
+              value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+          properties: "{{ stream_slice.extra_fields['query_properties'] }}"
+          after: "{{ next_page_token['next_page_token']['after'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
+          page_size: 200
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotAssociationsExtractor
+          field_path:
+            - results
+          entity: deal
+          associations_list:
+            - contacts
+            - companies
+            - line_items
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: CustomTransformation
+        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/deals_dynamic_schema_loader"
+
+  deals_stream:
+    type: StateDelegatingStream
+    name: deals
+    full_refresh_stream: "#/definitions/deals_full_refresh_stream"
+    incremental_stream: "#/definitions/deals_incremental_stream"
+
   deals_archived_stream:
     primary_key:
       - id
@@ -892,18 +1071,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: /crm/v3/pipelines/tickets
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updatedAt
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%SZ"
+      $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
     transformations:
       - type: AddFields
@@ -1507,6 +1675,7 @@ streams:
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deals_property_history_stream"
+  - "#/definitions/deals_stream"
   - "#/definitions/email_subscriptions_stream"
   - "#/definitions/deals_archived_stream"
   - "#/definitions/forms_stream"
@@ -1859,6 +2028,62 @@ schemas:
         type:
           - "null"
           - boolean
+
+  deals:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the deal
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the deal was created
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the deal was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        description: Indicates if the deal is archived
+        type:
+          - "null"
+          - boolean
+      companies:
+        description: Information about companies associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      contacts:
+        description: Information about contacts associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      line_items:
+        description: Details of line items associated with the deal
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
 
   deals_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
