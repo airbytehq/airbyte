@@ -243,6 +243,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         stateStore
                     }
                     is PipelineHeartbeat -> {
+                        log.info { "Step: $stepId — Heartbeat received..." }
+
                         flushStrategy?.let { strategy ->
                             val now = System.currentTimeMillis()
                             val keysToRemove =

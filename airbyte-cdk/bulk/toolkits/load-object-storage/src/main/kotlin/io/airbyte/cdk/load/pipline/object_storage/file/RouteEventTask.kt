@@ -32,28 +32,38 @@ class RouteEventTask(
     override suspend fun execute() = inputFlow.collect(this::handleEvent)
 
     @VisibleForTesting
-    suspend fun handleEvent(event: PipelineEvent<StreamKey, DestinationRecordRaw>) {
-        val streamDesc =
-            when (event) {
-                is PipelineMessage -> event.key.stream
-                is PipelineEndOfStream<*, *> -> event.stream
-                is PipelineHeartbeat<*, *> -> null
-            }
-        val stream = streamDesc?.let { catalog.getStream(it) }
-
-        if (stream?.includeFiles == true) {
-            if (event is PipelineMessage) {
-                event.context =
-                    PipelineContext(
-                        event.checkpointCounts,
-                        event.value,
-                    )
+    suspend fun handleEvent(event: PipelineEvent<StreamKey, DestinationRecordRaw>) =
+        when (event) {
+            is PipelineHeartbeat -> {
+                recordQueue.broadcast(event)
             }
 
-            fileQueue.publish(event, partition)
-        } else {
-            // all heartbeat events go straight to the record queue
-            recordQueue.publish(event, partition)
+            is PipelineMessage -> {
+                val streamDesc = event.key.stream
+                val stream = catalog.getStream(streamDesc)
+
+                if (stream.includeFiles) {
+                    event.context =
+                        PipelineContext(
+                            event.checkpointCounts,
+                            event.value,
+                        )
+
+                    fileQueue.publish(event, partition)
+                } else {
+                    recordQueue.publish(event, partition)
+                }
+            }
+
+            is PipelineEndOfStream -> {
+                val streamDesc = event.stream
+                val stream = catalog.getStream(streamDesc)
+
+                if (stream.includeFiles) {
+                    fileQueue.publish(event, partition)
+                } else {
+                    recordQueue.publish(event, partition)
+                }
+            }
         }
     }
-}
