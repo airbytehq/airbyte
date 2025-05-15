@@ -1728,7 +1728,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -1994,7 +1994,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -2259,7 +2259,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -2528,7 +2528,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -2789,7 +2789,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -3016,7 +3016,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -3252,7 +3252,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -3485,7 +3485,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -3726,7 +3726,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -3967,7 +3967,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -4203,7 +4203,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -4428,7 +4428,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -4654,7 +4654,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -4873,7 +4873,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -5138,7 +5138,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -5402,7 +5402,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -5670,7 +5670,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -5930,7 +5930,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -6156,7 +6156,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -6393,7 +6393,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -6627,7 +6627,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -6869,7 +6869,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -7111,7 +7111,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -7348,7 +7348,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -7574,7 +7574,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
@@ -7801,7 +7801,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: {{ download_target }}
+          url_base: "{{ download_target }}"
           http_method: GET
         download_decoder:
           # TODO Fix me: Add default content type as "gzip" for GzipDecoder on python-cdk.
