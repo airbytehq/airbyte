@@ -80,9 +80,11 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@v4
         with:
+          # In order to work correctly on forks, `repository` must be set if `ref` is set:
+          repository: ${{ github.repository }}
           # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
           # TODO: Remove the Airbyte-CI dependency for running java integration tests.
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 1
 
       # Java deps
@@ -144,6 +146,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
@@ -239,6 +242,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 

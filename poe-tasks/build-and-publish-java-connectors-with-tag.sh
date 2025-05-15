@@ -23,7 +23,16 @@ CONNECTORS_DIR="airbyte-integrations/connectors"
 declare -A rollout_map=(
   [destination-dev-null]=1
   [destination-bigquery]=1
+  [destination-redshift]=1
+  [destination-snowflake]=1
+  [destination-s3]=1
+  [destination-azure-blob-storage]=1
+  [destination-databricks]=1
+  [destination-postgres]=1
+  [destination-s3-data-lake]=1
   [source-e2e-test]=1
+  [source-postgres]=1
+  [source-mysql]=1
 )
 
 # ------ Defaults & arg parsing -------

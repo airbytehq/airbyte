@@ -1232,6 +1232,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         if next_page_token:
             payload.update(next_page_token["payload"])
 
+        logger.debug(f"CRMSearchStream search. URL: {self.url}, Body: {payload}")
         response, raw_response = self.search(url=self.url, data=payload)
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
             stream_records[record["id"]] = record

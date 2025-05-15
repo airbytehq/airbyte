@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -11,22 +12,10 @@ import requests
 
 from airbyte_cdk import (
     BearerAuthenticator,
-    CursorPaginationStrategy,
-    DeclarativeStream,
-    DefaultPaginator,
     DpathExtractor,
-    HttpMethod,
-    HttpRequester,
-    JsonDecoder,
-    MessageRepository,
     RecordSelector,
-    RequestOption,
-    RequestOptionType,
     SimpleRetriever,
-    StreamSlice,
 )
-from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
@@ -44,10 +33,10 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
 
 
-# from source_hubspot.streams import AssociationsStream
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -208,6 +197,53 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
             record.update(data)
 
 
+@dataclass
+class HubspotSchemaExtractor(RecordExtractor):
+    """
+    Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
+    accepts the set of dynamic schema fields as a single record.
+    This might be doable with the existing DpathExtractor configuration.
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        yield {"properties": list(self.decoder.decode(response))}
+
+
+@dataclass
+class HubspotRenamePropertiesTransformation(RecordTransformation):
+    """
+    Custom transformation that takes in a record that represents a map of all dynamic properties retrieved
+    from the Hubspot properties endpoint. This mapping nests all of these fields under a sub-object called
+    `properties` and updates all the property field names at the top level to be prefixed with
+    `properties_<property_name>`.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        transformed_record = {
+            "properties": {
+                "type": "object",
+                "properties": {},
+            }
+        }
+        for key, value in record.items():
+            transformed_record["properties"]["properties"][key] = value
+            updated_key = f"properties_{key}"
+            transformed_record[updated_key] = value
+
+        record.clear()
+        record.update(transformed_record)
+
+
 class EngagementsHttpRequester(HttpRequester):
     """
     Engagements stream uses different endpoints:
@@ -292,6 +328,96 @@ class EngagementsHttpRequester(HttpRequester):
         return request_params
 
 
+class EntitySchemaNormalization(TypeTransformer):
+    """
+    For CRM object and CRM Search streams, which have dynamic schemas, custom normalization should be applied.
+    Convert record's received value according to its declared catalog dynamic schema type and format.
+
+    Empty strings for fields that have non string type converts to None.
+    Numeric strings for fields that have number type converts to integer type, otherwise to number.
+    Strings like "true"/"false" with boolean type converts to boolean.
+    Date and Datime fields converts to format datetime string. Set __ab_apply_cast_datetime: false in field definition, if you don't need to format datetime strings.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        config = TransformConfig.CustomSchemaNormalization
+        super().__init__(config)
+        self.registerCustomTransform(self.get_transform_function())
+
+    @staticmethod
+    def get_transform_function():
+        def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
+            target_type = field_schema.get("type")
+            target_format = field_schema.get("format")
+
+            if "null" in target_type:
+                if original_value is None:
+                    return original_value
+                # Sometimes hubspot output empty string on field with format set.
+                # Set it to null to avoid errors on destination' normalization stage.
+                if target_format and original_value == "":
+                    return None
+
+            if isinstance(original_value, str):
+                if "string" not in target_type and original_value == "":
+                    # do not cast empty strings, return None instead to be properly cast.
+                    transformed_value = None
+                    return transformed_value
+                if "number" in target_type:
+                    # do not cast numeric IDs into float, use integer instead
+                    target_type = int if original_value.isnumeric() else float
+                    transformed_value = target_type(original_value.replace(",", ""))
+                    return transformed_value
+                if "boolean" in target_type and original_value.lower() in ["true", "false"]:
+                    transformed_value = str(original_value).lower() == "true"
+                    return transformed_value
+                if target_format:
+                    if field_schema.get("__ab_apply_cast_datetime") is False:
+                        return original_value
+                    if "date" == target_format:
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
+                        if dt:
+                            transformed_value = DatetimeParser().format(dt, "%Y-%m-%d")
+                            return transformed_value
+                        else:
+                            return original_value
+                    if "date-time" == target_format:
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
+                        if dt:
+                            transformed_value = ab_datetime_format(dt)
+                            return transformed_value
+                        else:
+                            return original_value
+
+            return original_value
+
+        return transform_function
+
+    @staticmethod
+    def convert_datetime_string_to_ab_datetime(datetime_str: str) -> Optional[AirbyteDateTime]:
+        """
+        Implements the existing source-hubspot behavior where the API response can return either a timestamp
+        with seconds or milliseconds precision. We first attempt to parse in seconds, then millisecond, or
+        if unparsable we log a warning and emit the original value. Returns None if the string could not
+        be parsed into a datetime object because the existing source emits the original value and logs warning.
+        """
+        if not datetime_str:
+            return None
+
+        try:
+            return ab_datetime_parse(datetime_str)
+        except (ValueError, TypeError) as ex:
+            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+
+        try:
+            return ab_datetime_parse(int(datetime_str) // 1000)
+        except (ValueError, TypeError) as ex:
+            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+
+        return None
+
+
 class HubspotFlattenAssociationsTransformation(RecordTransformation):
     """
     A record transformation that flattens the `associations` field in HubSpot records.
@@ -337,23 +463,30 @@ class HubspotAssociationsExtractor(RecordExtractor):
     - Merges associated object IDs back into each entity's record under the corresponding association name.
     Attributes:
         field_path: Path to the list of records in the API response.
-        entity_primary_key: The field used for associations retriever endpoint.
+        entity: The field used for associations retriever endpoint.
         associations_list: List of associations to fetch (e.g., ["contacts", "companies"]).
     """
 
     field_path: List[Union[InterpolatedString, str]]
-    entity_primary_key: str
+    entity: Union[InterpolatedString, str]
     associations_list: List[str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._entity_primary_key = InterpolatedString.create(self.entity_primary_key, parameters=parameters)
         self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
+
+        self._entity = InterpolatedString.create(self.entity, parameters=parameters)
+
+        self._associations_retriever = build_associations_retriever(
+            associations_list=self.associations_list,
+            parent_entity=self._entity.eval(config=self.config),
+            config=self.config,
+        )
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         for body in self.decoder.decode(response):
@@ -371,47 +504,52 @@ class HubspotAssociationsExtractor(RecordExtractor):
                 raise ValueError(f"field_path should always point towards a list field in the response body")
 
             records_by_pk = {record["id"]: record for record in records}
-            identifiers = list(map(lambda x: x["id"], records))
+            record_ids = [{"id": record["id"]} for record in records]
 
-            assoc_retriever = build_associations_retriever(
-                associations_list=self.associations_list,
-                ids=identifiers,
-                parent_entity=self._entity_primary_key,
-                config=self.config,
-            )
-
-            slices = assoc_retriever.stream_slices()
+            slices = self._associations_retriever.stream_slices()
 
             for _slice in slices:
-                logger.debug(f"Reading {_slice} associations of {self._entity_primary_key.eval(config=self.config)}")
-                associations = assoc_retriever.read_records({}, stream_slice=_slice)
+                # Append the list of extracted records so they are usable during interpolation of the JSON request body
+                stream_slice = StreamSlice(
+                    cursor_slice=_slice.cursor_slice, partition=_slice.partition, extra_fields={"record_ids": record_ids}
+                )
+                logger.debug(f"Reading {_slice} associations of {self._entity.eval(config=self.config)}")
+                associations = self._associations_retriever.read_records({}, stream_slice=stream_slice)
                 for group in associations:
-                    slice_value = _slice["association_name"]
+                    slice_value = stream_slice["association_name"]
                     current_record = records_by_pk[group["from"]["id"]]
                     associations_list = current_record.get(slice_value, [])
                     associations_list.extend(association["toObjectId"] for association in group["to"])
-                    current_record[slice_value] = associations_list
+                    # Associations are defined in the schema as string ids but come in the API response as integer ids
+                    current_record[slice_value] = [str(association) for association in associations_list]
             yield from records_by_pk.values()
 
 
 def build_associations_retriever(
     *,
     associations_list: List[str],
-    ids: List[str],
-    parent_entity: InterpolatedString,
+    parent_entity: str,
     config: Config,
 ) -> SimpleRetriever:
     """
-    Returns a SimpleRetriever that hits
-      POST /crm/v4/associations/{self.parent_stream.entity}/{stream_slice.association}/batch/read
+    Instantiates a SimpleRetriever that makes requests against:
+    POST /crm/v4/associations/{self.parent_entity}/{stream_slice.association}/batch/read
+
+    The current architecture of the low-code framework makes it difficult to instantiate components
+    in arbitrary locations within the manifest.yaml. For example, the only place where a SimpleRetriever
+    can be instantiated is as a field of DeclarativeStream because the `model_to_component_factory.py.create_simple_retriever()`
+    constructor takes incoming parameters from values of the DeclarativeStream.
+
+    So we are unable to build the associations_retriever, from within this custom HubspotAssociationsExtractor
+    because we will be missing required parameters that are not supplied by the SimpleRetrieverModel.
+    And we're left with the workaround of building the runtime components in this method.
     """
 
     parameters: Mapping[str, Any] = {}
 
-    access_token = config["credentials"]["access_token"]
     bearer_authenticator = BearerAuthenticator(
         token_provider=InterpolatedStringTokenProvider(
-            api_token=access_token,
+            api_token=config.get("credentials", {}).get("access_token", ""),
             config=config,
             parameters=parameters,
         ),
@@ -424,9 +562,9 @@ def build_associations_retriever(
     oauth_authenticator = DeclarativeOauth2Authenticator(
         config=config,
         parameters=parameters,
-        client_id=config["credentials"].get("client_id", "client_id"),
-        client_secret=config["credentials"].get("client_secret", "client_secret"),
-        refresh_token=config["credentials"].get("refresh_token", "refresh_token"),
+        client_id=config.get("credentials", {}).get("client_id", "client_id"),
+        client_secret=config.get("credentials", {}).get("client_secret", "client_secret"),
+        refresh_token=config.get("credentials", {}).get("refresh_token", "refresh_token"),
         token_refresh_endpoint="https://api.hubapi.com/oauth/v1/token",
     )
 
@@ -435,17 +573,15 @@ def build_associations_retriever(
         authenticators={"Private App Credentials": bearer_authenticator, "OAuth Credentials": oauth_authenticator},
         authenticator_selection_path=["credentials", "credentials_title"],
     )
-    # HTTP requester
+
     requester = HttpRequester(
         name="associations",
         url_base="https://api.hubapi.com",
-        path=f"/crm/v4/associations/{parent_entity.eval(config=config)}/" + "{{ stream_slice['association_name'] }}/batch/read",
+        path=f"/crm/v4/associations/{parent_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
-            request_body_json={
-                "inputs": [{"id": id} for id in ids],
-            },
+            request_body_json={"inputs": "{{ stream_slice.extra_fields['record_ids'] }}"},
             config=config,
             parameters=parameters,
         ),
@@ -456,7 +592,6 @@ def build_associations_retriever(
     # Slice over IDs emitted by the parent stream
     slicer = ListPartitionRouter(values=associations_list, cursor_field="association_name", config=config, parameters=parameters)
 
-    # Record selector
     selector = RecordSelector(
         extractor=DpathExtractor(field_path=["results"], config=config, parameters=parameters),
         schema_normalization=TypeTransformer(TransformConfig.NoTransform),
@@ -466,9 +601,9 @@ def build_associations_retriever(
         parameters=parameters,
     )
 
-    # The retriever
     return SimpleRetriever(
         name="associations",
+        primary_key=None,
         requester=requester,
         record_selector=selector,
         paginator=None,  # batch/read never paginates
@@ -481,12 +616,14 @@ def build_associations_retriever(
 @dataclass
 class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
     """
-    This pagination strategy will return latest record cursor for the next_page_token after hitting records count limit
+    This pagination strategy functioning similarly to the default cursor pagination strategy. The custom
+    behavior accounts for Hubspot's /search API limitation that only allows for a max of 10,000 total results
+    for a query. Once we reach 10,000 records, we start a new query using the latest id collected.
     """
 
     page_size: int
     primary_key: str = "id"
-    RECORDS_LIMIT = 20
+    RECORDS_LIMIT = 10000
 
     @property
     def initial_token(self) -> Optional[Any]:
@@ -499,6 +636,10 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         last_record: Optional[Record],
         last_page_token_value: Optional[Any] = None,
     ) -> Optional[Any]:
+        # Hubspot documentation states that the search endpoints are limited to 10,000 total results
+        # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+        # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
+        # start a new search query with the latest id that has been collected.
         if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size > self.RECORDS_LIMIT:
             return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
 
