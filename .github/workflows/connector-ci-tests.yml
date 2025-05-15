@@ -125,16 +125,16 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
       - name: Fetch connector secrets
         if: matrix.connector
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
-
-      - name: Run Unit Tests
-        if: matrix.connector
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
@@ -221,16 +221,16 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
       - name: Fetch connector secrets
         if: matrix.connector
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
-
-      - name: Run Unit Tests
-        if: matrix.connector
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
