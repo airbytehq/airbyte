@@ -53,6 +53,14 @@ class RouteEventTask(
                 } else {
                     recordQueue.publish(event, partition)
                 }
+
+                // TODO: Forward this all the way through to the record stage or change memory
+                // "release" mechanism on the input queue.
+                // Forwarding all the way through is not currently possible because the first
+                // PipelineStep in the file pipe (the formatter) will immediately call this.
+                // NOTE: though generically named, the post-processing callback is specifically what
+                // "releases" memory on the input queue.
+                event.postProcessingCallback?.let { it() }
             }
 
             is PipelineEndOfStream -> {
