@@ -7,17 +7,41 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 
+/**
+ * @param flatten whether to promote user-defined fields to the root level. If this is set to
+ * `false`, fields defined in `stream.schema` will be left inside an `_airbyte_data` field.
+ * @param extractedAtAsTimestampWithTimezone whether to return the `_airbyte_extracted_at` field as
+ * an [IntegerValue] or as a [TimestampWithTimezoneValue].
+ */
 class DestinationRecordToAirbyteValueWithMeta(
     val stream: DestinationStream,
-    private val flatten: Boolean
+    private val flatten: Boolean,
+    private val extractedAtAsTimestampWithTimezone: Boolean,
 ) {
-    fun convert(data: AirbyteValue, emittedAtMs: Long, meta: Meta?): ObjectValue {
+    fun convert(
+        data: AirbyteValue,
+        emittedAtMs: Long,
+        meta: Meta?,
+    ): ObjectValue {
         val properties =
             linkedMapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to StringValue(UUID.randomUUID().toString()),
-                Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(emittedAtMs),
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to
+                    if (extractedAtAsTimestampWithTimezone) {
+                        TimestampWithTimezoneValue(
+                            OffsetDateTime.ofInstant(
+                                Instant.ofEpochMilli(emittedAtMs),
+                                ZoneOffset.UTC
+                            )
+                        )
+                    } else {
+                        IntegerValue(emittedAtMs)
+                    },
                 Meta.COLUMN_NAME_AB_META to
                     ObjectValue(
                         linkedMapOf(
@@ -54,15 +78,35 @@ class DestinationRecordToAirbyteValueWithMeta(
 fun Pair<AirbyteValue, List<Meta.Change>>.withAirbyteMeta(
     stream: DestinationStream,
     emittedAtMs: Long,
-    flatten: Boolean = false
+    flatten: Boolean = false,
+    extractedAtAsTimestampWithTimezone: Boolean = false,
 ) =
-    DestinationRecordToAirbyteValueWithMeta(stream, flatten)
-        .convert(first, emittedAtMs, Meta(second))
+    DestinationRecordToAirbyteValueWithMeta(
+            stream,
+            flatten = flatten,
+            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+        )
+        .convert(
+            first,
+            emittedAtMs,
+            Meta(second),
+        )
 
 fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
     stream: DestinationStream,
-    flatten: Boolean = false
-) = DestinationRecordToAirbyteValueWithMeta(stream, flatten).convert(data, emittedAtMs, meta)
+    flatten: Boolean = false,
+    extractedAtAsTimestampWithTimezone: Boolean = false,
+) =
+    DestinationRecordToAirbyteValueWithMeta(
+            stream,
+            flatten = flatten,
+            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+        )
+        .convert(
+            data,
+            emittedAtMs,
+            meta,
+        )
 
 fun Meta.Change.toAirbyteValue(): ObjectValue =
     ObjectValue(
