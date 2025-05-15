@@ -142,7 +142,7 @@ class TableCatalogFactory {
         finalTableColumnNameGenerator: ColumnNameGenerator,
     ): ColumnNameGenerator.ColumnName {
         // If processed name is unique, use it
-        if (processedName !in existingNames) {
+        if (!existingNames.hasConflict(processedName)) {
             return processedName
         }
 
@@ -161,7 +161,7 @@ class TableCatalogFactory {
                 finalTableColumnNameGenerator.getColumnName("${originalColumnName}_$counter")
 
             // Check if we're making progress (detecting potential truncation)
-            if (candidateName == previousCandidate) {
+            if (candidateName.canonicalName == previousCandidate.canonicalName) {
                 // We're not making progress, likely due to name truncation
                 // Use the more powerful resolution method with the ORIGINAL column name
                 return superResolveColumnCollisions(
@@ -174,7 +174,7 @@ class TableCatalogFactory {
 
             previousCandidate = candidateName
             counter++
-        } while (candidateName in existingNames)
+        } while (existingNames.hasConflict(candidateName))
 
         return candidateName
     }
@@ -215,7 +215,7 @@ class TableCatalogFactory {
 
         // If there's still a collision after this, just give up.
         // We could try to be more clever, but this is already a pretty rare case.
-        if (newColumnName in existingNames) {
+        if (existingNames.hasConflict(newColumnName)) {
             throw IllegalArgumentException(
                 "Cannot solve column name collision: $originalName. We recommend removing this column to continue syncing."
             )
@@ -229,3 +229,14 @@ class TableCatalogFactory {
         return TableCatalogByDescriptor(map.mapKeys { (k, _) -> k.descriptor })
     }
 }
+
+/**
+ * can't just use `.contains()`, because we don't care whether the column names have the same
+ * display name. We only care about the canonical name.
+ *
+ * (arguably we could override equals/hashcode? But that would make writing tests more difficult,
+ * because it's not an intuitive behavior)
+ */
+private fun Collection<ColumnNameGenerator.ColumnName>.hasConflict(
+    candidate: ColumnNameGenerator.ColumnName
+) = this.any { it.canonicalName == candidate.canonicalName }
