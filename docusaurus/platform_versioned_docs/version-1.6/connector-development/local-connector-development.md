@@ -126,7 +126,7 @@ Airbyte expects secrets to be stored in Google Secrets Manager (GCP) using the f
 1. Each secret should have a label called "connector:{connector-name}" indicating the name of the connector that the secret pertains to.
 2. Each secret must be a fully formed JSON config object.
 3. If more than one secret is provided, a label "filename:{config-file-basename}" should be set, indicating the filename with the "`.json`" prefix removed. (Google Secrets Manager does not support including the "`.`" character in label text.)
-4. To understand which secrets are required for a connector, consult the `acceptance-test-config.yml` file within the connector directory.
+4. To understand which secrets are required for a connector, consult the `metadata.yaml` and `acceptance-test-config.yml` files within the connector directory.
 5. Your fork repo should declare a secret called `GCP_GSM_CREDENTIALS` which contains the JSON text of your GCP credentials file, along with a repo variable or repo secret called `GCP_PROJECT_ID`, which contains the name of your GCP project containing your integration test credentials.
 6. When testing locally, the secrets should be saved to the corresponding file names (including the `.json` suffix for each file) within the `secrets` directory inside your connector directory.
 7. The `secrets` directory should be automatically excluded from git based upon the repo `.gitignore` rules, but please confirm this is true in your case, applying due caution whenever handling sensitive credentials.
