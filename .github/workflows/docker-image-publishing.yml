@@ -1,5 +1,5 @@
 
-name: Manual Docker Base Image Build & Test
+name: Manual Docker Base Image Build & Publish
 on:
   workflow_dispatch:
     inputs:
