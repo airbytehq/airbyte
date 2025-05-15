@@ -131,7 +131,7 @@ definitions:
       requester:
         type: HttpRequester
         url_base: https://campaign.api.bingads.microsoft.com
-        path: /CampaignManagement/v13/GetCampaignsByAccountId
+        path: /CampaignManagement/v13/Campaigns/QueryByAccountId
         http_method: POST
         request_headers:
           Content-Type: application/json
