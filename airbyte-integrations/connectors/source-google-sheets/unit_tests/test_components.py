@@ -119,7 +119,7 @@ def test_dpath_schema_extractor(body, expected_records: List):
         ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, []),
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"})]
+            [(0, "h1", {"formattedValue": "h1"})],
         ),
     ],
     ids=[
