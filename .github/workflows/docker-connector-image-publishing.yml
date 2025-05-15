@@ -70,7 +70,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Set image build variables
+      - name: Set and debug variables
         id: vars
         run: |
           DOCKERFILE=docker-images/Dockerfile.${{ github.event.inputs.connector-type }}-connector-base
@@ -79,6 +79,9 @@ jobs:
           echo "DOCKERFILE=${DOCKERFILE}" | tee -a "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=${IMAGE_NAME}" | tee -a "$GITHUB_OUTPUT"
           echo "FULL_IMAGE_REF=${FULL_IMAGE_REF}" | tee -a "$GITHUB_OUTPUT"
+          # Echo other input variables for debugging and logging purposes
+          echo "dry-run=${{ github.event.inputs.dry-run }}"
+          echo "require-security-check=${{ github.event.inputs.require-security-check }}"
 
       - name: Build Base Image
         id: docker-build-base
