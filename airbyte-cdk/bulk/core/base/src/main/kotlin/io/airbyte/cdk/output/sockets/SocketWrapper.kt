@@ -1,0 +1,88 @@
+package io.airbyte.cdk.output.sockets
+
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
+import java.io.File
+import java.net.StandardProtocolFamily
+import java.net.UnixDomainSocketAddress
+import java.nio.channels.Channels
+import java.nio.channels.ServerSocketChannel
+import java.nio.channels.SocketChannel
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+
+
+private val logger = KotlinLogging.logger {}
+
+interface SocketWrapper {
+    enum class SocketStatus {
+        SOCKET_INITIALIZED,
+        SOCKET_WAITING_LISTENER,
+        SOCKET_READY,
+        SOCKET_CLOSING,
+        SOCKET_CLOSED,
+        SOCKET_ERROR,
+    }
+
+    suspend fun initializeSocket()
+    suspend fun closeSocket()
+    val status: SocketStatus
+    var bound: Boolean
+
+}
+
+class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper {
+
+    private var socketStatus = AtomicReference<SocketWrapper.SocketStatus>(SocketWrapper.SocketStatus.SOCKET_CLOSED)
+    private var socketBound = AtomicBoolean(false)
+
+    override val status: SocketWrapper.SocketStatus
+        get() = socketStatus.get()
+
+    override var bound: Boolean
+        get() = socketBound.get()
+        set(value) = socketBound.set(value)
+
+    override suspend fun initializeSocket() = coroutineScope {
+        logger.info { "Initializing socket at $socketFilePath" }
+        val socketFile = File(socketFilePath)
+        if (socketFile.exists()) {
+            socketFile.delete()
+        }
+        val socketAddress: UnixDomainSocketAddress? = UnixDomainSocketAddress.of(socketFile.toPath())
+
+        val serverSocketChannel: ServerSocketChannel =
+            ServerSocketChannel.open(StandardProtocolFamily.UNIX)
+        serverSocketChannel.bind(socketAddress)
+        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_INITIALIZED)
+        launch(Dispatchers.IO + Job()) {
+            socketStatus.set(SocketWrapper.SocketStatus.SOCKET_WAITING_LISTENER)
+            logger.info { "Waiting for $socketFilePath to connect..." }
+            // accept blocks until a listener connects
+            val socketChennel: SocketChannel? = serverSocketChannel.accept()
+            socketStatus.set(SocketWrapper.SocketStatus.SOCKET_READY)
+            Channels.newOutputStream(socketChennel).buffered()
+            logger.info { "connected to server socket at $socketFilePath" }
+        }
+        Unit
+    }
+
+    override suspend fun closeSocket() {
+        socketStatus.set(SocketWrapper.SocketStatus.SOCKET_CLOSING) // TEMP
+    }
+}
+
+interface SocketWrapperFactory {
+    fun makeSocket(socketFilePath: String): SocketWrapper
+}
+
+@Singleton
+class DefaultSocketWrapperFactory: SocketWrapperFactory {
+    override fun makeSocket(socketFilePath: String): SocketWrapper =
+        UnixDomainSocketWrapper(socketFilePath)
+}

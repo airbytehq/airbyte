@@ -2,6 +2,7 @@
 airbyte:
   connector:
     extract:
+      speed-mode: boosted
       jdbc:
         mode: sequential
         with-sampling: true
