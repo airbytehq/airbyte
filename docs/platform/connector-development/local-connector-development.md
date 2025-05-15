@@ -147,3 +147,18 @@ If the `acceptance-test-config.yml` for `source-example` references `config.json
       - `filename: oauth_config`
 3. Our fork should have a repo variable or repo secret named `GCP_PROJECT_ID`, which contains the name of the GCP project that contains my integration test credentials.
 4. Our fork should have a `GCP_GSM_CREDENTIALS` secret set, which contains credentials for a GCP service account with read access to the above-mentioned secrets.
+
+## PR Slash Commands
+
+Maintainers can execute any of the following connector admin commands upon request:
+
+- `/bump-version` - Run the bump version command, which advances the connector version(s) and adds a changelog entry for any modified connector(s).
+- `/format-fix` - Fixes any formatting issues.
+- `/run-connector-tests` - Run the connector tests for any modified connectors.
+- `/poe` - Run a Poe task.
+
+When working on PRs from forks, maintainers can apply `/format-fix` to help expedite formatting fixes, and `/run-connector-tests` if the fork does not have sufficient secrets bootstrapping or other permissions needed to fully test the connector changes.
+
+Note:
+
+- Slash commands may only be executed by maintainers, and they run with the context and the permissions from the main repo.
