@@ -54,6 +54,7 @@ class DebeziumRecordIterator<T>(
     private var signalledDebeziumEngineShutdown = false
     private var numUnloggedPolls: Int = -1
     private var lastLoggedPoll: Instant = Instant.MIN
+    private var nullSince: LocalDateTime? = null
 
     @VisibleForTesting
     fun formatDuration(duration: Duration): String {
@@ -149,6 +150,10 @@ class DebeziumRecordIterator<T>(
                 val isProgressing = heartbeatPos != lastHeartbeatPosition
                 val instantSyncTime: Duration = Duration.between(instantBeforeSync, Instant.now())
                 val debeziumWaitingTimeRemaining = waitTime.seconds - instantSyncTime.toSeconds()
+                LOGGER.info {
+                    "Heartbeat Event Details: " +
+                        "Current heartbeat position: $heartbeatPos, last heartbeat position: $lastHeartbeatPosition"
+                }
                 LOGGER.info {
                     "CDC events queue poll(): " +
                         if (isProgressing) {
@@ -270,12 +275,30 @@ class DebeziumRecordIterator<T>(
     }
 
     private fun heartbeatPosNotChanging(): Boolean {
+        LOGGER.info {
+            "Checking if heartbeat position is not changing, last heartbeat: ${this.tsLastHeartbeat}"
+        }
+
+        val now = LocalDateTime.now()
+
         if (this.tsLastHeartbeat == null) {
-            return false
+            if (nullSince == null) {
+                nullSince = now
+                LOGGER.info { "Heartbeat timestamp is null. Starting null-since timer at $now" }
+                return false
+            }
+            val elapsedSinceNull = Duration.between(nullSince, now)
+            LOGGER.info { "Heartbeat timestamp still null. Time elapsed since first null: $elapsedSinceNull" }
+
+            return elapsedSinceNull > firstRecordWaitTime
         }
 
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
+        LOGGER.info {
+            "Time elapsed since last heartbeat: $timeElapsedSinceLastHeartbeatTs, " +
+                "heartbeat position: ${this.tsLastHeartbeat}"
+        }
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime) > 0
     }
 
