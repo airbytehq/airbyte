@@ -28,6 +28,7 @@ data:
       enableProgressiveRollout: false
   supportLevel: community
   supportsRefreshes: true
+  supportsFileTransfer: true
   tags:
     - language:java
 metadataSpecVersion: "1.0"
