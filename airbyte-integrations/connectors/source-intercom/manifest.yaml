@@ -271,9 +271,9 @@ definitions:
             inject_into: "request_parameter"
             field_name: "scroll_param"
           pagination_strategy:
-            type: CursorPagination
+            type: CustomPaginationStrategy
+            class_name: "source_declarative_manifest.components.IntercomScrollPagination"
             cursor_value: "{{ response.get('scroll_param') }}"
-            stop_condition: "{{ not response.get('data') }}"
         record_selector:
           type: RecordSelector
           $parameters:
@@ -590,9 +590,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversation_parts"
-        state_migrations:
-         - type: CustomStateMigration
-           class_name: source_declarative_manifest.components.SubstreamStateMigration
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.SubstreamStateMigration
     company_segments:
       description: >-
         https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies
@@ -704,7 +704,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
             stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
           page_size_option:
             type: RequestOption
