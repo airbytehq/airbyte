@@ -445,6 +445,11 @@
       "source": "/connector-specification-reference",
       "destination": "/platform/connector-development/connector-specification-reference",
       "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors",
+      "destination": "/integrations",
+      "statusCode": 301
     }
   ]
 }
