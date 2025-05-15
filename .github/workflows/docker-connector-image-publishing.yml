@@ -55,7 +55,6 @@ jobs:
         uses: docker/login-action@v3
         if: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' }}
         with:
-          registry: ${{ github.event.inputs.repository-root }}
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
