@@ -98,6 +98,9 @@ jobs:
           fail-build: ${{ github.event.inputs.require-security-check }}
 
       - name: Publish Base Image
+        # Note: By design, this should reuse the cache from above, without
+        # rebuilding the image.
+        # https://docs.docker.com/build/ci/github-actions/test-before-push/
         id: docker-image-publish
         if: ${{ github.event.inputs.dry-run == false }}
         uses: docker/build-push-action@v6
