@@ -14,14 +14,7 @@ When developing connectors locally, you'll want to ensure the following tools ar
 
 ### Poe the Poet
 
-[Poe the Poet](https://poethepoet.natn.io) - This tool allows you to perform common connector tasks from a single entrypoint.
-
-You can install using `brew` (recommended) or with [another package manager](https://poethepoet.natn.io/installation.html#):
-
-```bash
-brew tap nat-n/poethepoet
-brew install nat-n/poethepoet/poethepoet
-```
+[Poe the Poet](https://poethepoet.natn.io/installation.html#) - This tool allows you to perform common connector tasks from a single entrypoint.
 
 To see a list of available tasks, run `poe` from any directory in the `airbyte` repo.
 
@@ -49,7 +42,7 @@ brew install uv
 
 ### Docker
 
-We recommend using Docker Desktop or Orbstack, although other container runtimes might work as well. A full discussion of how to install and use docker is outside the scope of this guide.
+We recommend Docker Desktop but other container runtimes might be available. A full discussion of how to install and use docker is outside the scope of this guide.
 
 See [Debugging Docker](./debugging-docker.md) for common tips and tricks.
 
@@ -118,3 +111,31 @@ airbyte-cdk secrets list
 ```
 
 The `list` command also provides you with a URL which you can use to quickly navigate to the Google Secrets Manager interface. (GCP login will be required.)
+
+## Managing Connector Secrets
+
+Airbyte expects secrets to be stored in Google Secrets Manager (GCP) using the following conventions:
+
+1. Each secret should have a label called "connector:{connector-name}" indicating the name of the connector that the secret pertains to.
+2. Each secret must be a fully formed JSON config object.
+3. If more than one secret is provided, a label "filename:{config-file-basename}" should be set, indicating the filename with the "`.json`" prefix removed. (Google Secrets Manager does not support including the "`.`" character in label text.)
+4. To understand which secrets are required for a connector, consult the `acceptance-test-config.yml` file within the connector directory.
+5. Your fork repo should declare a secret called `GCP_GSM_CREDENTIALS` which contains the JSON text of your GCP credentials file.
+6. When testing locally, the secrets should be saved to the corresponding file names (including the `.json` suffix for each file) within the `secrets` directory inside your connector directory.
+7. The `secrets` directory should be automatically excluded from git based upon the repo `.gitignore` rules, but please confirm this is true in your case, applying due caution whenever handling sensitive credentials.
+
+Example:
+
+If the `acceptance-test-config.yml` for `source-example` references `config.json` and `oauth_config.json`, then the following should be true:
+
+1. Locally, I should have two files saved within the cloned repo directory, for local testing:
+   1. `airbyte-integrations/connectors/source-example/secrets/config.json`
+   2. `airbyte-integrations/connectors/source-example/secrets/oauth_config.json`
+2. My Google Secrets Manager (GSM) account should have the following secrets declared:
+   1. `SOURCE_EXAMPLE_CONFIG_CREDS` with labels:
+      - `connector: source-example`
+      - `filename: config`
+   2. `SOURCE_EXAMPLE_CONFIG_OAUTH_CREDS` with labels:
+      - `connector: source-example`
+      - `filename: oauth_config`
+3. My fork should have a `GCP_GSM_CREDENTIALS` secret set, containing credentials for a GCP service account with read access to the above-mentioned secrets.
