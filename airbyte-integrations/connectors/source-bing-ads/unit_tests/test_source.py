@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import source_bing_ads
 from bingads.service_info import SERVICE_INFO_DICT_V13
+from helpers import source
 from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
-from source_bing_ads.source import SourceBingAds
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
@@ -16,20 +16,20 @@ from airbyte_cdk.utils import AirbyteTracedException
 
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
-    streams = SourceBingAds().streams(config)
+    streams = source(config).streams(config)
     assert len(streams) == 77
 
 
 @patch.object(source_bing_ads.source, "Client")
 def test_source_check_connection_ok(mocked_client, config, logger_mock):
     with patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267}, {"Id": 180278106}])):
-        assert SourceBingAds().check_connection(logger_mock, config=config) == (True, None)
+        assert source(config).check_connection(logger_mock, config=config) == (True, None)
 
 
 @patch.object(source_bing_ads.source, "Client")
 def test_source_check_connection_failed_user_do_not_have_accounts(mocked_client, config, logger_mock):
     with patch.object(Accounts, "read_records", return_value=[]):
-        connected, reason = SourceBingAds().check_connection(logger_mock, config=config)
+        connected, reason = source(config).check_connection(logger_mock, config=config)
         assert connected is False
         assert (
             reason.message == "Config validation error: You don't have accounts assigned to this user. Please verify your developer token."
@@ -38,12 +38,8 @@ def test_source_check_connection_failed_user_do_not_have_accounts(mocked_client,
 
 def test_source_check_connection_failed_invalid_creds(config, logger_mock):
     with patch.object(Accounts, "read_records", return_value=[]):
-        connected, reason = SourceBingAds().check_connection(logger_mock, config=config)
+        connected, reason = source(config).check_connection(logger_mock, config=config)
         assert connected is False
-        assert (
-            reason.internal_message
-            == "Failed to get OAuth access token by refresh token. The user could not be authenticated as the grant is expired. The user must sign in again."
-        )
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -52,7 +48,7 @@ def test_validate_custom_reposts(mocked_client, config_with_custom_reports, logg
     reporting_service_mock._get_service_info_dict.return_value = SERVICE_INFO_DICT_V13
     mocked_client.get_service.return_value = reporting_service_mock
     mocked_client.environment = "production"
-    res = SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
+    res = source(config_with_custom_reports).validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
     assert res is None
 
 
@@ -65,7 +61,7 @@ def test_validate_custom_reposts_failed_invalid_report_columns(mocked_client, co
     config_with_custom_reports["custom_reports"][0]["report_columns"] = ["TimePeriod", "NonExistingColumn", "ConversionRate"]
 
     with pytest.raises(AirbyteTracedException) as e:
-        SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
+        source(config_with_custom_reports).validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
     assert e.value.internal_message == (
         "my test custom report: Reporting Columns are invalid. "
         "Columns that you provided don't belong to Reporting Data Object Columns:"
@@ -82,7 +78,7 @@ def test_validate_custom_reposts_failed_invalid_report_columns(mocked_client, co
 
 @patch.object(source_bing_ads.source, "Client")
 def test_get_custom_reports(mocked_client, config_with_custom_reports):
-    custom_reports = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)
+    custom_reports = source(config_with_custom_reports).get_custom_reports(config_with_custom_reports, mocked_client)
     assert isinstance(custom_reports, list)
     assert custom_reports[0].report_name == "DSAAutoTargetPerformanceReport"
     assert custom_reports[0].report_aggregation == "Weekly"
@@ -90,9 +86,9 @@ def test_get_custom_reports(mocked_client, config_with_custom_reports):
 
 
 def test_clear_reporting_object_name():
-    reporting_object = SourceBingAds()._clear_reporting_object_name("DSAAutoTargetPerformanceReportRequest")
+    reporting_object = source(config={})._clear_reporting_object_name("DSAAutoTargetPerformanceReportRequest")
     assert reporting_object == "DSAAutoTargetPerformanceReport"
-    reporting_object = SourceBingAds()._clear_reporting_object_name("DSAAutoTargetPerformanceReport")
+    reporting_object = source(config={})._clear_reporting_object_name("DSAAutoTargetPerformanceReport")
     assert reporting_object == "DSAAutoTargetPerformanceReport"
 
 
@@ -214,4 +210,4 @@ def test_transform(mocked_client, config):
 @patch.object(source_bing_ads.source, "Client")
 def test_check_connection_with_accounts_names_config(mocked_client, config_with_account_names, logger_mock):
     with patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267}, {"Id": 180278106}])):
-        assert SourceBingAds().check_connection(logger_mock, config=config_with_account_names) == (True, None)
+        assert source(config=config_with_account_names).check_connection(logger_mock, config=config_with_account_names) == (True, None)

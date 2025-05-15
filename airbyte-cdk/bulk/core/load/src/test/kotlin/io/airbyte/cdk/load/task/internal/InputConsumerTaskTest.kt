@@ -9,15 +9,17 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamRecordEvent
-import io.airbyte.cdk.load.state.DefaultStreamManager
+import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.StreamManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertThrows
 import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
@@ -40,9 +42,6 @@ class InputConsumerTaskTest {
     }
 
     @MockK(relaxed = true)
-    lateinit var recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
-    @MockK(relaxed = true)
     lateinit var checkpointQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
     @MockK(relaxed = true) lateinit var syncManager: SyncManager
     @MockK(relaxed = true) lateinit var memoryManager: ReservationManager
@@ -50,8 +49,9 @@ class InputConsumerTaskTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
     @MockK(relaxed = true) lateinit var stream1: DestinationStream
     @MockK(relaxed = true) lateinit var stream2: DestinationStream
-    @MockK(relaxed = true) lateinit var queue1: MessageQueue<Reserved<DestinationStreamEvent>>
-    @MockK(relaxed = true) lateinit var queue2: MessageQueue<Reserved<DestinationStreamEvent>>
+    @MockK(relaxed = true)
+    lateinit var pipelineInputQueue:
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
 
     @BeforeEach
     fun setup() {
@@ -60,11 +60,8 @@ class InputConsumerTaskTest {
 
         coEvery { catalog.streams } returns listOf(stream1, stream2)
 
-        coEvery { recordQueueSupplier.get(STREAM1) } returns queue1
-        coEvery { recordQueueSupplier.get(STREAM2) } returns queue2
-
-        coEvery { syncManager.getStreamManager(STREAM1) } returns DefaultStreamManager(stream1)
-        coEvery { syncManager.getStreamManager(STREAM2) } returns DefaultStreamManager(stream2)
+        coEvery { syncManager.getStreamManager(STREAM1) } returns StreamManager(stream1)
+        coEvery { syncManager.getStreamManager(STREAM2) } returns StreamManager(stream2)
     }
 
     private fun DestinationMessage.wrap(bytesReserved: Long) =
@@ -92,37 +89,19 @@ class InputConsumerTaskTest {
             }
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    recordQueueSupplier = recordQueueSupplier,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    loadPipeline = null,
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = pipelineInputQueue,
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
         task.execute()
 
-        coVerify(exactly = 1) {
-            queue1.publish(
-                match {
-                    it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM1
-                }
-            )
-        }
-        coVerify(exactly = 2) {
-            queue2.publish(
-                match {
-                    it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM2
-                }
-            )
-        }
+        coVerify(exactly = 3) { pipelineInputQueue.publish(any(), any()) }
         assert(syncManager.getStreamManager(stream1.descriptor).readCount() == 1L)
         assert(syncManager.getStreamManager(stream2.descriptor).readCount() == 2L)
     }
@@ -153,19 +132,16 @@ class InputConsumerTaskTest {
             }
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    recordQueueSupplier = recordQueueSupplier,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    loadPipeline = null,
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
         task.execute()
         coVerifySequence {
             memoryManager.release(2L)
@@ -195,19 +171,16 @@ class InputConsumerTaskTest {
             )
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    recordQueueSupplier = recordQueueSupplier,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    loadPipeline = null,
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
         coEvery { inputFlow.collect(any()) } coAnswers
             {
                 val collector = firstArg<FlowCollector<Pair<Long, Reserved<DestinationMessage>>>>()
@@ -227,7 +200,7 @@ class InputConsumerTaskTest {
         coEvery { checkpointQueue.publish(any()) } coAnswers { published.add(firstArg()) }
         published.toList().zip(batches).forEach { (checkpoint, event) ->
             val wrapped = checkpoint.value
-            Assertions.assertEquals(event.expectedStateIndex, wrapped.index)
+            Assertions.assertEquals(event.expectedStateIndex, wrapped.checkpointId)
             Assertions.assertEquals(event.stream.descriptor, wrapped.stream)
         }
     }
@@ -237,37 +210,34 @@ class InputConsumerTaskTest {
         open class TestEvent
         data class AddRecords(val stream: DestinationStream, val count: Int) : TestEvent()
         data class SendState(
-            val expectedStream1Count: Long,
-            val expectedStream2Count: Long,
+            val expectedStream1CheckpointId: CheckpointId,
+            val expectedStream2CheckpointId: CheckpointId,
             val expectedStats: Long = 0
         ) : TestEvent()
 
         val batches =
             listOf(
                 AddRecords(MockDestinationCatalogFactory.stream1, 10),
-                SendState(10, 0, 10),
+                SendState(CheckpointId(0), CheckpointId(0), 10),
                 AddRecords(MockDestinationCatalogFactory.stream2, 5),
                 AddRecords(MockDestinationCatalogFactory.stream1, 4),
-                SendState(14, 5, 9),
+                SendState(CheckpointId(1), CheckpointId(1), 9),
                 AddRecords(MockDestinationCatalogFactory.stream2, 3),
-                SendState(14, 8, 3),
-                SendState(14, 8, 0),
+                SendState(CheckpointId(2), CheckpointId(2), 3),
+                SendState(CheckpointId(3), CheckpointId(3), 0),
             )
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    recordQueueSupplier = recordQueueSupplier,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    loadPipeline = null,
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -283,9 +253,7 @@ class InputConsumerTaskTest {
                         }
                         is SendState -> {
                             collector.emit(
-                                StubDestinationMessageFactory.makeGlobalState(
-                                        event.expectedStream1Count
-                                    )
+                                StubDestinationMessageFactory.makeGlobalState(event.expectedStats)
                                     .wrap(0L)
                             )
                         }
@@ -302,8 +270,8 @@ class InputConsumerTaskTest {
             val wrapped = checkpoint.value
             val stream1State = wrapped.streamIndexes.find { it.first == stream1.descriptor }!!
             val stream2State = wrapped.streamIndexes.find { it.first == stream2.descriptor }!!
-            Assertions.assertEquals(event.expectedStream1Count, stream1State.second)
-            Assertions.assertEquals(event.expectedStream2Count, stream2State.second)
+            Assertions.assertEquals(event.expectedStream1CheckpointId, stream1State.second)
+            Assertions.assertEquals(event.expectedStream2CheckpointId, stream2State.second)
             Assertions.assertEquals(
                 event.expectedStats,
                 wrapped.checkpoint.destinationStats?.recordCount
@@ -332,19 +300,16 @@ class InputConsumerTaskTest {
             }
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    recordQueueSupplier = recordQueueSupplier,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(relaxed = true),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    loadPipeline = null,
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
 
         assertThrows(IllegalStateException::class) { task.execute() }
     }

@@ -45,6 +45,8 @@ You don't need to do anything with Docker, but you do need to run it in the back
 Airbyte runs on Kubernetes. When you deploy Airbyte locally, it uses Docker to create a Kubernetes cluster on your computer.
 :::
 
+For best performance, run Airbyte on a machine with 4 or more CPUs and at least 8-GB of memory. We also support running Airbyte with 2 CPUs and 8-GB of memory in low-resource mode. This guide explains how to do both. Follow this [Github discussion](https://github.com/airbytehq/airbyte/discussions/44391) to upvote and track progress toward supporting lower resource environments.
+
 ## Part 2: Install abctl
 
 abctl is Airbyte's command-line tool for deploying and managing Airbyte.

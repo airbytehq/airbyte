@@ -27,6 +27,8 @@ dependencies {
 
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'com.fasterxml.jackson.module:jackson-module-afterburner'
+
+    integrationTestImplementation testFixtures(project)
 }
 
 def integrationTestTask = tasks.register('integrationTest', Test) {
