@@ -57,6 +57,54 @@ The `test-base-image-build.sh` script can be used to build the base image.
 ./test-connector-image-build.sh python source-hubspot
 ```
 
+## Tools for Local Connector Builds
+
+You have a few options as of now:
+
+### Gradle-based Image Builds
+
+For Docker containers, you can run the `assemble` task to build the docker image for your connector.
+
+Here are some convenient commands:
+
+```bash
+./gradlew :airbyte-integrations:connectors:<connector-name>:assemble to just output the Java artifact and docker image.
+./gradlew :airbyte-integrations:connectors:<connector-name>:test to unit test.
+./gradlew :airbyte-integrations:connectors:<connector-name>:build to unit test, integration test and assemble.
+./gradlew :airbyte-integrations:connectors:<connector-name>:integrationTestJava to run integration test, which also runs assemble.
+```
+
+Note:
+
+- While connectors are being migrating from `airbyte-ci` to the new Dockerfile images here in this directory, some connectors will build using the legacy `airbyte-ci` method and some will build using the new `Dockerfile`-based method.
+- _This is the preferred and recommended method of building Docker files for all JVM-based connectors._
+- By default, this builds an image matching your local architecture (`arm64` on M-series Macs).
+
+### `airbyte-ci`-based Image Builds
+
+We are in the process of phasing this out, but for now it is still the official method of building connector images:
+
+`airbyte-ci connectors --connector-name=source-foo build`
+
+Note:
+
+- This method is _not_ using the Dockerfile images in this directory. Instead it is using custom Dagger code, which is currently at its end-of-life (EOL) and will no longer be supported going forward.
+- You need to be careful about which platform(s) you are building for in this method. Use `--help` for info on how to build `arm64` images vs `amd64` images, etc.
+- This is not guaranteed to work for JVM connectors that have migrated over to the new gradle flow. Gradle commands are recommended instead.
+### `airbyte-cdk`-based Builds
+
+This new method is faster, easier to type, and builds using the Dockerfiles in this directory, using the connector directory that is active:
+
+```
+cd airbyte-integrations/connectors/source-mysql
+airbyte-cdk image build
+```
+
+Note:
+- Until `airybte-ci` is phased out, the images created this way will not exactly match the ones that would be built by the connector publish flow.
+- This method will automatically build arm64 and amd64 images - defaulting your `dev` image to `arm64` (since Mac M-series laptops are standard at Airbyte), while still providing an `amd64` based image, which you will need if uploading to `amd64`-based Platform instances.
+- All connector types are supported using this method, since the code is only thin wrapper around the `Dockerfile`-based build process.
+
 ## Common Build Args
 
 These are used within the `Dockerfile` definitions and within the image build test scripts.
@@ -78,3 +126,4 @@ The base images don't need to copy in any files from the host computer. That is 
 ### Where should I source the build args?
 
 The build args should be scraped from the connector's `metadata.yml` file.
+
