@@ -1,4 +1,4 @@
-name: Dependency Changes
+name: Gradle Dependency Changes
 on:
   pull_request:
 
