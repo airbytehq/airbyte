@@ -136,7 +136,7 @@ definitions:
         request_headers:
           Content-Type: application/json
           CustomerAccountId: "{{ stream_partition['account_id'] }}"
-          CustomerId: "{{ stream_partition['customer_id'] }}"
+          CustomerId: "{{ stream_slice.extra_fields['ParentCustomerId'] }}"
           DeveloperToken: "{{ config['developer_token'] }}"
           Authorization: "Bearer {{ config['_token']['access_token'] }}"
         request_body_json:
@@ -150,14 +150,15 @@ definitions:
           type: DpathExtractor
           field_path: ["Campaigns"]
       partition_router:
-        type: CustomPartitionRouter
-        class_name: source_bing_ads.components.BingAdsCampaignsPartitionRouter
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             parent_key: Id
             partition_field: account_id
             stream:
               $ref: "#/definitions/accounts_stream"
+            extra_fields:
+              - - ParentCustomerId
     transformations:
       - type: AddFields
         fields:
@@ -168,7 +169,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - CustomerId
-            value: "{{ stream_partition['customer_id'] }}"
+            value: "{{ stream_slice.extra_fields['ParentCustomerId'] }}"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
