@@ -138,6 +138,7 @@ definitions:
           CustomerAccountId: "{{ stream_partition['account_id'] }}"
           CustomerId: "{{ stream_partition['customer_id'] }}"
           DeveloperToken: "{{ config['developer_token'] }}"
+          Authorization: "Bearer {{ config['_token']['access_token'] }}"
         request_body_json:
           AccountId: "{{ stream_partition['account_id'] }}"
           CampaignType: "Audience,DynamicSearchAds,Search,Shopping,PerformanceMax"
@@ -147,18 +148,14 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: ["Campaign"]
+          field_path: ["Campaigns"]
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: source_bing_ads.components.BingAdsCampaignsPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             parent_key: Id
             partition_field: account_id
-            stream:
-              $ref: "#/definitions/accounts_stream"
-          - type: ParentStreamConfig
-            parent_key: ParentCustomerId
-            partition_field: customer_id
             stream:
               $ref: "#/definitions/accounts_stream"
     transformations:
