@@ -469,7 +469,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
 
     field_path: List[Union[InterpolatedString, str]]
     entity: Union[InterpolatedString, str]
-    associations_list: List[str]
+    associations_list: Union[List[str], Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
@@ -482,9 +482,15 @@ class HubspotAssociationsExtractor(RecordExtractor):
 
         self._entity = InterpolatedString.create(self.entity, parameters=parameters)
 
+        # The list of associations can either be provided as a static list of constants or evaluated from an interpolated string
+        if isinstance(self.associations_list, list):
+            self._associations_list = self.associations_list
+        else:
+            self._associations_list = InterpolatedString.create(self.associations_list, parameters=parameters)
+
         self._associations_retriever = build_associations_retriever(
-            associations_list=self.associations_list,
-            parent_entity=self._entity.eval(config=self.config),
+            associations_list=self._associations_list,
+            parent_entity=self._entity,
             config=self.config,
         )
 
@@ -527,8 +533,8 @@ class HubspotAssociationsExtractor(RecordExtractor):
 
 def build_associations_retriever(
     *,
-    associations_list: List[str],
-    parent_entity: str,
+    associations_list: Union[List[str], InterpolatedString],
+    parent_entity: InterpolatedString,
     config: Config,
 ) -> SimpleRetriever:
     """
@@ -546,6 +552,12 @@ def build_associations_retriever(
     """
 
     parameters: Mapping[str, Any] = {}
+    evaluated_entity = parent_entity.eval(config=config)
+
+    if isinstance(associations_list, InterpolatedString):
+        associations = associations_list.eval(config=config)
+    else:
+        associations = associations_list
 
     bearer_authenticator = BearerAuthenticator(
         token_provider=InterpolatedStringTokenProvider(
@@ -577,7 +589,7 @@ def build_associations_retriever(
     requester = HttpRequester(
         name="associations",
         url_base="https://api.hubapi.com",
-        path=f"/crm/v4/associations/{parent_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
+        path=f"/crm/v4/associations/{evaluated_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
@@ -590,7 +602,7 @@ def build_associations_retriever(
     )
 
     # Slice over IDs emitted by the parent stream
-    slicer = ListPartitionRouter(values=associations_list, cursor_field="association_name", config=config, parameters=parameters)
+    slicer = ListPartitionRouter(values=associations, cursor_field="association_name", config=config, parameters=parameters)
 
     selector = RecordSelector(
         extractor=DpathExtractor(field_path=["results"], config=config, parameters=parameters),
@@ -699,45 +711,3 @@ class HubspotRenamePropertiesTransformation(RecordTransformation):
 
         record.clear()
         record.update(transformed_record)
-
-
-# Delete this once the first of CRMSearch streams are merged since this will already be there
-class EntitySchemaNormalization(TypeTransformer):
-    def __init__(self, *args, **kwargs):
-        config = TransformConfig.CustomSchemaNormalization
-        super().__init__(config)
-        self.registerCustomTransform(self.get_transform_function())
-
-    @staticmethod
-    def get_transform_function():
-        def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
-            target_type = field_schema.get("type")
-            target_format = field_schema.get("format")
-            if isinstance(original_value, str):
-                if original_value == "":
-                    # do not cast empty strings, return None instead to be properly cast.
-                    transformed_value = None
-                    return transformed_value
-                if "number" in target_type:
-                    # do not cast numeric IDs into float, use integer instead
-                    target_type = int if original_value.isnumeric() else float
-                    transformed_value = target_type(original_value.replace(",", ""))
-                    return transformed_value
-                if "boolean" in target_type and original_value.lower() in ["true", "false"]:
-                    transformed_value = str(original_value).lower() == "true"
-                    return transformed_value
-                if target_format:
-                    if field_schema.get("__ab_apply_cast_datetime") is False:
-                        return original_value
-                    if "date" == target_format:
-                        dt = ab_datetime_parse(original_value)
-                        transformed_value = DatetimeParser().format(dt, "%Y-%m-%d")
-                        return transformed_value
-                    if "date-time" == target_format:
-                        dt = ab_datetime_parse(original_value)
-                        transformed_value = ab_datetime_format(dt)
-                        return transformed_value
-
-            return original_value
-
-        return transform_function

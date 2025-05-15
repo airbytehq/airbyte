@@ -1468,59 +1468,7 @@ definitions:
         cursor_field: lastUpdated
         cursor_format: "%ms"
 
-  engagements_dynamic_schema_loader:
-    type: DynamicSchemaLoader
-    retriever:
-      type: SimpleRetriever
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: "/properties/v2/{{ parameters['entity'] }}/properties"
-      decoder:
-        type: JsonDecoder
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotSchemaExtractor
-          field_path: []
-    schema_transformations:
-      - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
-    schema_type_identifier:
-      type: SchemaTypeIdentifier
-      key_pointer:
-        - name
-      type_pointer:
-        - type
-      schema_pointer:
-        - properties
-      types_mapping:
-        - type: TypesMap
-          target_type: boolean
-          current_type: bool
-        - type: TypesMap
-          target_type: date
-          current_type: date
-        - type: TypesMap
-          target_type: timestamp_with_timezone
-          current_type: date-time
-        - type: TypesMap
-          target_type: timestamp_with_timezone
-          current_type: datetime
-        - type: TypesMap
-          target_type: string
-          current_type: enumeration
-        - type: TypesMap
-          target_type: string
-          current_type: json
-        - type: TypesMap
-          target_type: string
-          current_type: object_coordinates
-        - type: TypesMap
-          target_type: string
-          current_type: phone_number
-
-  engagements_full_refresh_stream:
+  base_crm_search_full_refresh_stream:
     primary_key:
       - id
     $ref: "#/definitions/stream_base"
@@ -1529,6 +1477,33 @@ definitions:
       requester:
         $ref: "#/definitions/base_requester"
         path: "/crm/v3/objects/{{ parameters['entity'] }}"
+        request_parameters:
+          associations: "{{ parameters['associations'] }}"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: "/properties/v2/{{ parameters['entity'] }}/properties"
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
       paginator:
         $ref: "#/definitions/cursor_paginator"
       record_selector:
@@ -1553,7 +1528,7 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       is_client_side_incremental: true
 
-  engagements_incremental_stream:
+  base_crm_search_incremental_stream:
     primary_key:
       - id
     $ref: "#/definitions/stream_base"
@@ -1580,7 +1555,7 @@ definitions:
                 type: DpathExtractor
                 field_path: []
         request_body_json:
-          limit: 100
+          limit: 200
           sorts:
             - propertyName: hs_object_id
               direction: ASCENDING
@@ -1601,7 +1576,7 @@ definitions:
         pagination_strategy:
           type: CustomPaginationStrategy
           class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
-          page_size: 100
+          page_size: 200
       record_selector:
         type: RecordSelector
         extractor:
@@ -1610,15 +1585,12 @@ definitions:
           field_path:
             - results
           entity_primary_key: "{{ parameters['entity'] }}"
-          associations_list:
-            - companies
-            - contacts
-            - deals
-            - tickets
+          associations_list: "{{ parameters['associations'] }}"
         schema_normalization:
           type: CustomSchemaNormalization
           class_name: source_hubspot.components.EntitySchemaNormalization
     transformations:
+      # - modular to allow support for NewtoLegacyFieldTransformation
       - type: DpathFlattenFields
         field_path: ["properties"]
         key_transformation:
@@ -1630,226 +1602,93 @@ definitions:
 
   engagements_calls_stream:
     type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/engagements_full_refresh_stream"
-      $parameters:
-        # I don't like that the entire request_parameters object must be passed via $parameters when
-        # ideally it should to use interpolation on /properties/v2/{{ parameters['entity'] }}/properties.
-        # However, there is a bug where $parameters is not propagated beyond non-components and
-        # because request_parameters is just an object and not a component, the underlying QueryProperties
-        # component does not inherit from the parent $parameters which contains entity=calls
-        request_parameters:
-          associations: "['companies', 'contacts', 'deals', 'tickets']"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: "/properties/v2/calls/properties" # This should be replaced with {{ parameters['entity'] }}
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-    incremental_stream: "#/definitions/engagements_incremental_stream"
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_calls
       entity: calls
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
       schema_loader:
         - type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/engagements_calls"
-        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_emails_stream:
     type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/engagements_full_refresh_stream"
-      $parameters:
-        # See the above note related to why the request_parameters is defined here in $parameters
-        # instead of {{ parameters['entity'] }}
-        request_parameters:
-          associations: "['companies', 'contacts', 'deals', 'tickets']"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: "/properties/v2/emails/properties" # This should be replaced with {{ parameters['entity'] }}
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-    incremental_stream: "#/definitions/engagements_incremental_stream"
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_emails
       entity: emails
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
       schema_loader:
         - type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/engagements_emails"
-        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_meetings_stream:
     type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/engagements_full_refresh_stream"
-      $parameters:
-        # See the above note related to why the request_parameters is defined here in $parameters
-        # instead of {{ parameters['entity'] }}
-        request_parameters:
-          associations: "['companies', 'contacts', 'deals', 'tickets']"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: "/properties/v2/meetings/properties" # This should be replaced with {{ parameters['entity'] }}
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-    incremental_stream: "#/definitions/engagements_incremental_stream"
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_meetings
       entity: meetings
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
       schema_loader:
         - type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/engagements_emails"
-        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_notes_stream:
     type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/engagements_full_refresh_stream"
-      $parameters:
-        # See the above note related to why the request_parameters is defined here in $parameters
-        # instead of {{ parameters['entity'] }}
-        request_parameters:
-          associations: "['companies', 'contacts', 'deals', 'tickets']"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: "/properties/v2/notes/properties" # This should be replaced with {{ parameters['entity'] }}
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-    incremental_stream: "#/definitions/engagements_incremental_stream"
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_notes
       entity: notes
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
       schema_loader:
         - type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/engagements_emails"
-        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_tasks_stream:
     type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/engagements_full_refresh_stream"
-      $parameters:
-        # See the above note related to why the request_parameters is defined here in $parameters
-        # instead of {{ parameters['entity'] }}
-        request_parameters:
-          associations: "['companies', 'contacts', 'deals', 'tickets']"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: "/properties/v2/tasks/properties" # This should be replaced with {{ parameters['entity'] }}
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-    incremental_stream: "#/definitions/engagements_incremental_stream"
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_tasks
       entity: tasks
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
       schema_loader:
         - type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/engagements_emails"
-        - $ref: "#/definitions/engagements_dynamic_schema_loader"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
 
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
@@ -1918,25 +1757,25 @@ streams:
   - "#/definitions/contact_lists_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
+  - "#/definitions/deals_archived_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/deals_stream"
+  - "#/definitions/email_events_stream"
   - "#/definitions/email_subscriptions_stream"
+  - "#/definitions/engagements_stream"
   - "#/definitions/engagements_calls_stream"
   - "#/definitions/engagements_emails_stream"
   - "#/definitions/engagements_meetings_stream"
   - "#/definitions/engagements_notes_stream"
   - "#/definitions/engagements_tasks_stream"
-  - "#/definitions/deals_archived_stream"
-  - "#/definitions/forms_stream"
   - "#/definitions/form_submissions_stream"
-  - "#/definitions/owners_stream"
-  - "#/definitions/owners_archived_stream"
+  - "#/definitions/forms_stream"
   - "#/definitions/marketing_emails_stream"
+  - "#/definitions/owners_archived_stream"
+  - "#/definitions/owners_stream"
+  - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/workflows_stream"
-  - "#/definitions/email_events_stream"
-  - "#/definitions/engagements_stream"
-  - "#/definitions/subscription_changes_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
