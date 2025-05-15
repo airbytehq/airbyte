@@ -47,11 +47,10 @@ jobs:
       java-connector: ${{ steps.changes.outputs.java-connector }}
       python-connector: ${{ steps.changes.outputs.python-connector }}
 
-  build-java-base-image:
-    name: Build Java Base Image
+  build-connector-base-image:
+    name: Build Connectors Base Image
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: needs.detect-changes.outputs.java-base == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
