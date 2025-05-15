@@ -5,16 +5,17 @@
 from dataclasses import dataclass
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Iterable, Mapping, Optional, Union, Dict
+from typing import Any, Callable, Dict, Iterable, Mapping, Optional, Union
 
 import requests
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from airbyte_cdk.sources.types import Record, StreamSlice
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
+
 
 RequestInput = Union[str, Mapping[str, str]]
 
@@ -333,18 +334,19 @@ class IntercomScrollRetriever(SimpleRetriever):
 
         yield from []
 
+
 class IntercomScrollPagination(CursorPaginationStrategy):
-    '''
+    """
     Custom pagination strategy for Intercom's companies stream. Only compatible with streams that sync using
     a single date time window instead of multiple windows when the step is defined. This is okay for the companies stream
     since it only allows for single-threaded processing.
-    
+
     The only change is the stop condtion logic, which is done by comparing the
     token value with the last page token value. If they are equal, we stop the pagination. This is needed since the Intercom API does not
     have any clear stop condition for pagination, and we need to rely on the token value to determine when to stop.
 
     As of 5/12/25 - they have some fields used for pagination stop conditons but they always result in null values, so we cannot rely on them.
-    Ex: 
+    Ex:
     {
         "type": "list",
         "data": [
@@ -354,7 +356,8 @@ class IntercomScrollPagination(CursorPaginationStrategy):
         "total_count": null,
         "scroll_param": "6287df44-6323-4dfa-8d19-eae43fdc4ab2" <- The scroll param also remains even if there are no more pages; leading to infinite pagination.
     }
-    '''
+    """
+
     def next_page_token(
         self,
         response: requests.Response,
@@ -376,6 +379,6 @@ class IntercomScrollPagination(CursorPaginationStrategy):
         )
 
         if token == last_page_token_value:
-            return None #stop pagination
-        
+            return None  # stop pagination
+
         return token if token else None
