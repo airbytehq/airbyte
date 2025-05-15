@@ -75,7 +75,7 @@ jobs:
         run: |
           DOCKERFILE=docker-images/Dockerfile.${{ github.event.inputs.connector-type }}-connector-base
           IMAGE_NAME=${{ github.event.inputs.connector-type }}-connector-base
-          FULL_IMAGE_REF=${{ github.event.inputs.repository-root }}${IMAGE_NAME}:${{ github.event.inputs.tag-or-version-number }}
+          FULL_IMAGE_REF=${{ github.event.inputs.repository-root }}/${IMAGE_NAME}:${{ github.event.inputs.tag-or-version-number }}
           echo "DOCKERFILE=${DOCKERFILE}" | tee -a "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=${IMAGE_NAME}" | tee -a "$GITHUB_OUTPUT"
           echo "FULL_IMAGE_REF=${FULL_IMAGE_REF}" | tee -a "$GITHUB_OUTPUT"
