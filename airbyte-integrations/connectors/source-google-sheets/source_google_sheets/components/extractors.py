@@ -56,7 +56,9 @@ class RawSchemaParser:
         names_conversion: bool,
     ):
         """
-        1. Parses sheet headers from the provided raw schema, skipping any headers that are empty or contain only whitespace.
+        1. Parses sheet headers from the provided raw schema. This method assumes that data is contiguous
+            i.e: every cell contains a value and the first cell which does not contain a value denotes the end
+            of the headers.
         2. Makes name conversion if required.
         3. Removes duplicated fields from the schema.
         Return a list of tuples with correct property index (by found in array), value and raw_schema
@@ -68,7 +70,7 @@ class RawSchemaParser:
         for property_index, raw_schema_property in enumerate(raw_schema_properties):
             raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
             if not raw_schema_property_value or raw_schema_property_value.isspace():
-                continue
+                break
             if names_conversion:
                 raw_schema_property_value = safe_name_conversion(raw_schema_property_value)
 
