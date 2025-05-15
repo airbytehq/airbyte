@@ -32,14 +32,15 @@ data:
       enabled: true
   releaseStage: generally_available
   suggestedStreams:
-    - Account
-    - Contact
-    - Lead
-    - Opportunity
-    - OpportunityStage
-    - Stage
-    - Task
-    - User
+    streams:
+      - Account
+      - Contact
+      - Lead
+      - Opportunity
+      - OpportunityStage
+      - Stage
+      - Task
+      - User
   supportLevel: certified
   tags:
     - language:python
