@@ -135,15 +135,15 @@ Example:
 
 If the `acceptance-test-config.yml` for `source-example` references `config.json` and `oauth_config.json`, then the following should be true:
 
-1. Locally, I should have two files saved within the cloned repo directory, for local testing:
+1. Locally, we should have two files saved within the cloned repo directory, for local testing:
    1. `airbyte-integrations/connectors/source-example/secrets/config.json`
    2. `airbyte-integrations/connectors/source-example/secrets/oauth_config.json`
-2. My Google Secrets Manager (GSM) account should have the following secrets declared:
+2. Our Google Secrets Manager (GSM) account should have the following secrets declared:
    1. `SOURCE_EXAMPLE_CONFIG_CREDS` with labels:
       - `connector: source-example`
       - `filename: config`
    2. `SOURCE_EXAMPLE_CONFIG_OAUTH_CREDS` with labels:
       - `connector: source-example`
       - `filename: oauth_config`
-3. My fork should have a repo variable or repo secret named `GCP_PROJECT_ID`, which contains the name of the GCP project that contains my integration test credentials.
-4. My fork should have a `GCP_GSM_CREDENTIALS` secret set, which contains credentials for a GCP service account with read access to the above-mentioned secrets.
+3. Our fork should have a repo variable or repo secret named `GCP_PROJECT_ID`, which contains the name of the GCP project that contains my integration test credentials.
+4. Our fork should have a `GCP_GSM_CREDENTIALS` secret set, which contains credentials for a GCP service account with read access to the above-mentioned secrets.
