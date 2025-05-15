@@ -743,7 +743,7 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testFunkyCharactersDedup() {
         assumeTrue(verifyDataWriting)
-        assumeTrue(supportsDedup)
+        assumeTrue(dedupBehavior != null)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -1889,7 +1889,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testDedupNoCursor() {
-        assumeTrue(verifyDataWriting && supportsDedup)
+        assumeTrue(verifyDataWriting && dedupBehavior != null)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
