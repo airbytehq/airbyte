@@ -20,7 +20,7 @@ class ObjectLoaderPartFormatterStep(
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     private val taskFactory: LoadPipelineStepTaskFactory,
-    private val taskId: String,
+    private val stepId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = objectLoader.numPartWorkers
 
@@ -32,7 +32,7 @@ class ObjectLoaderPartFormatterStep(
             outputQueue,
             partition,
             numWorkers,
-            taskId = taskId,
+            stepId = stepId,
         )
     }
 }
