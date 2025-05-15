@@ -288,8 +288,9 @@ class DebeziumRecordIterator<T>(
                 return false
             }
             val elapsedSinceNull = Duration.between(nullSince, now)
-            LOGGER.info { "Heartbeat timestamp still null. Time elapsed since first null: $elapsedSinceNull" }
-
+            LOGGER.info {
+                "Heartbeat timestamp still null. Time elapsed since first null: $elapsedSinceNull"
+            }
             return elapsedSinceNull > firstRecordWaitTime
         }
 
