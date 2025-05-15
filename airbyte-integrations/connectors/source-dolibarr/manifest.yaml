@@ -163,6 +163,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 0
+            inject_on_first_request: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -239,9 +240,6 @@ definitions:
             - - libelle
         - type: RemoveFields
           field_pointers:
-            - - product_label
-        - type: RemoveFields
-          field_pointers:
             - - fk_facture
         - type: RemoveFields
           field_pointers:
@@ -308,6 +306,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 0
+            inject_on_first_request: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -553,75 +552,75 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Products category id list:
+      hasRecords: true
       streamHash: 7862a5422e6f79820c61df05f680e2d7bb7e428e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Product categories list:
+      hasRecords: true
       streamHash: 4e0c76448593b3307e9f6d501e0ee39fae950559
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Customer invoices list:
-      streamHash: acb90f8098c4661bb7b17631f132e95bec7f28d0
+      streamHash: 6adfddc271a4e39efcd68eafee7a325b7eaeac6d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customer invoices lines list:
-      streamHash: 92533fe97d3c91c0753f279494afad9035a6fbe0
+      streamHash: 21bc977afaf79a3d399792a1fc75d855c60b5a75
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customers list:
+      hasRecords: true
       streamHash: 658a41c5275d59b2c90dbb4cf2660e71cd5133d9
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Supplier invoices list:
-      streamHash: 6e0b61834411921ae27dbd388aa3df93050c8279
+      streamHash: ec169b35ce12b9ca669ac299e5ca9d1a5c881d05
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Supplier invoices lines list:
-      streamHash: 12b5306af3bd77e1d77a6df447ecd823ad276d0e
+      streamHash: 61c98e6cf1523c6796df1def2cc6c3ec29b40196
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Suppliers list:
+      hasRecords: true
       streamHash: c0609ef32d2a3b08e80ea1d39f36a794c755265a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Internal Users:
+      hasRecords: true
       streamHash: 60dacdec868b3c81c45f7f3a766aa01dd7ca9533
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Company profile data:
+      hasRecords: true
       streamHash: 40f30eb72dc56e55b612350a4d6c52345d232dd1
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -1416,6 +1415,10 @@ schemas:
       product_id:
         type:
           - number
+          - "null"
+      product_label:
+        type:
+          - string
           - "null"
       product_ref:
         type:
