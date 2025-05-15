@@ -32,6 +32,7 @@ Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may l
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.12 | 2025-05-10 | [59878](https://github.com/airbytehq/airbyte/pull/59878) | Update dependencies |
 | 0.1.11 | 2025-05-03 | [59314](https://github.com/airbytehq/airbyte/pull/59314) | Update dependencies |
 | 0.1.10 | 2025-04-26 | [58702](https://github.com/airbytehq/airbyte/pull/58702) | Update dependencies |
 | 0.1.9 | 2025-04-19 | [58247](https://github.com/airbytehq/airbyte/pull/58247) | Update dependencies |

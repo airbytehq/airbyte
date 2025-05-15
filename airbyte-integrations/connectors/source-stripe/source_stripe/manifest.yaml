@@ -1487,7 +1487,7 @@ streams:
   # - State: Uses the event stream to call events related to streams (event types provided by params).
   - $ref: "#/definitions/streams/application_fees_refunds"
   - $ref: "#/definitions/streams/bank_accounts"
-  - $ref: "#/definitions/streams/invoice_line_items"
+  #  - $ref: "#/definitions/streams/invoice_line_items" - Rollback to the Python version due to memory leak issue: https://github.com/airbytehq/oncall/issues/7876
   - $ref: "#/definitions/streams/subscription_items"
 
   # These streams are base incremental partition streams with state condition streams as parents using lazy read logic:
