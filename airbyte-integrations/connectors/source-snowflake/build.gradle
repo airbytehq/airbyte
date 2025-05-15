@@ -14,6 +14,11 @@ application {
 }
 
 dependencies {
+    api 'org.bouncycastle:bcprov-jdk15on:1.67'   // for fixing vulnerability
+    api 'org.xerial.snappy:snappy-java:1.1.10.4' // for fixing vulnerability
+    api 'org.apache.sshd:sshd-common:2.12.0'// for fixing vulnerability
+    api 'org.apache.mina:mina-core:2.0.27'  // for fixing vulnerability
+    api 'net.minidev:json-smart:2.5.2' // for fixing vulnerability
     implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.20.0'
 
     testImplementation 'org.testcontainers:jdbc:1.19.4'
