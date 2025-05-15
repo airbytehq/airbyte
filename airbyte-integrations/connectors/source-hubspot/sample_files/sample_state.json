@@ -10,7 +10,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "timestamp": "2021-02-23T00:00:00Z" },
-      "stream_descriptor": { "name": "engagements_emails" }
+      "stream_descriptor": { "name": "contact_lists" }
     }
   },
   {

@@ -64,7 +64,6 @@ KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "datetime": ("string", "date-time"),
     "json": ("string", None),
     "phone_number": ("string", None),
-    "object_coordinates": ("string", None),
 }
 
 CUSTOM_FIELD_TYPE_TO_VALUE = {
