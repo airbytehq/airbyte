@@ -31,6 +31,15 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    - Account
+    - Contact
+    - Lead
+    - Opportunity
+    - OpportunityStage
+    - Stage
+    - Task
+    - User
   supportLevel: certified
   tags:
     - language:python

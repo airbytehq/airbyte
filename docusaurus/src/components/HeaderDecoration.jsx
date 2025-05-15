@@ -1,10 +1,10 @@
-import React from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import styles from "./HeaderDecoration.module.css";
-import { Chip } from "./Chip";
-import { Callout } from "./Callout";
+import React from "react";
 import { getSupportLevelDisplay } from "../connector_registry";
+import { Callout } from "./Callout";
+import { Chip } from "./Chip";
+import styles from "./HeaderDecoration.module.css";
 
 // Extend Day.js with the relativeTime plugin
 dayjs.extend(relativeTime);
@@ -235,6 +235,7 @@ const ConnectorMetadataCallout = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
+  definitionId,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
@@ -315,6 +316,11 @@ const ConnectorMetadataCallout = ({
           .
         </MetadataStat>
       )}
+      {definitionId && (
+        <MetadataStat label="Definition ID">
+          <code>{definitionId}</code>
+        </MetadataStat>
+      )}
     </dl>
   </Callout>
 );
@@ -350,7 +356,9 @@ export const HeaderDecoration = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
+  definitionId,
 }) => {
+  console.log("definitionId", definitionId);
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
@@ -378,6 +386,7 @@ export const HeaderDecoration = ({
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
         lastUpdated={lastUpdated}
+        definitionId={definitionId}
       />
     </>
   );
