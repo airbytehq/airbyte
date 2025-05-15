@@ -70,7 +70,10 @@ abstract class BigqueryRawTablesWriteTest(
         Untyped,
     )
 
-abstract class BigqueryDirectLoadWriteTest(configContents: String) :
+abstract class BigqueryDirectLoadWriteTest(
+    configContents: String,
+    cdcDeletionMode: CdcDeletionMode,
+) :
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
@@ -80,7 +83,21 @@ abstract class BigqueryDirectLoadWriteTest(configContents: String) :
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
-        dedupBehavior = DedupBehavior(),
+        dedupBehavior =
+            DedupBehavior(
+                cdcDeletionMode =
+                    when (cdcDeletionMode) {
+                        // medium confidence: the CDK might eventually add other deletion modes,
+                        // which this destination won't immediately support,
+                        // so we should have separate enums.
+                        // otherwise the new enum values would show up in the spec, which we don't
+                        // want.
+                        CdcDeletionMode.HARD_DELETE ->
+                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.HARD_DELETE
+                        CdcDeletionMode.SOFT_DELETE ->
+                            io.airbyte.cdk.load.write.DedupBehavior.CdcDeletionMode.SOFT_DELETE
+                    }
+            ),
         nullEqualsUnset = true,
         StronglyTyped(
             convertAllValuesToString = true,
@@ -111,7 +128,10 @@ class StandardInsertRawOverrideRawTables :
 }
 
 class StandardInsertRawOverride :
-    BigqueryDirectLoadWriteTest(BigQueryDestinationTestUtils.standardInsertRawOverrideConfig) {
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig,
+        CdcDeletionMode.HARD_DELETE,
+    ) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
@@ -123,7 +143,10 @@ class StandardInsertRawOverride :
 }
 
 class StandardInsert :
-    BigqueryDirectLoadWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertConfig,
+        CdcDeletionMode.HARD_DELETE,
+    ) {
     @Test
     override fun testDedup() {
         super.testDedup()
@@ -135,7 +158,8 @@ class StandardInsertCdcSoftDeletes :
         BigQueryDestinationTestUtils.createConfig(
             configFile = STANDARD_INSERT_CONFIG,
             cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
-        )
+        ),
+        CdcDeletionMode.SOFT_DELETE
     ) {
     @Test
     override fun testDedup() {
@@ -163,6 +187,7 @@ class GcsRawOverride :
             configFile = GCS_STAGING_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
         ),
+        CdcDeletionMode.HARD_DELETE,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -172,7 +197,8 @@ class GcsRawOverride :
 
 class Gcs :
     BigqueryDirectLoadWriteTest(
-        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
+        CdcDeletionMode.HARD_DELETE,
     ) {
     @Test
     override fun testBasicWrite() {
