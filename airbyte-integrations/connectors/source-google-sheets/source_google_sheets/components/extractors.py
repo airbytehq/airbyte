@@ -69,7 +69,7 @@ class RawSchemaParser:
         seen_values = set()
         for property_index, raw_schema_property in enumerate(raw_schema_properties):
             raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
-            if not raw_schema_property_value:
+            if not raw_schema_property_value or raw_schema_property_value.isspace():
                 break
             if names_conversion:
                 raw_schema_property_value = safe_name_conversion(raw_schema_property_value)
