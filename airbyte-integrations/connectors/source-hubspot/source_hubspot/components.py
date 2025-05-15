@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import timedelta
@@ -11,22 +12,11 @@ import requests
 
 from airbyte_cdk import (
     BearerAuthenticator,
-    CursorPaginationStrategy,
-    DeclarativeStream,
-    DefaultPaginator,
     DpathExtractor,
-    HttpMethod,
-    HttpRequester,
-    JsonDecoder,
-    MessageRepository,
     RecordSelector,
-    RequestOption,
-    RequestOptionType,
     SimpleRetriever,
-    StreamSlice,
 )
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
@@ -361,6 +351,15 @@ class EntitySchemaNormalization(TypeTransformer):
         def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
+
+            if "null" in target_type:
+                if original_value is None:
+                    return original_value
+                # Sometimes hubspot output empty string on field with format set.
+                # Set it to null to avoid errors on destination' normalization stage.
+                if target_format and original_value == "":
+                    return None
+
             if isinstance(original_value, str):
                 if "string" not in target_type and original_value == "":
                     # do not cast empty strings, return None instead to be properly cast.
@@ -470,7 +469,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
     """
 
     field_path: List[Union[InterpolatedString, str]]
-    entity: str
+    entity: Union[InterpolatedString, str]
     associations_list: List[str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
