@@ -184,12 +184,15 @@ definitions:
             path:
               - Settings
             value: |
-              {% set settings = record.get('Settings' or []) %}
-              {{ {"Setting": settings}}}
-          - type: AddedFieldDefinition
-            path:
-              - Id
-            value: "{{ record.Id|int }}"
+              {% set new_settings = [] %}
+              {% for setting in record.Settings %}
+                {% set new_setting = {"Type": setting.Type} %}
+                {% if setting.Details %}
+                  {% set new_setting = new_setting.update({"Details": {"TargetSettingDetail": setting.Details}}) or new_setting %}
+                {% endif %}
+                {% set new_settings = new_settings + [new_setting] %}
+              {% endfor %}
+              {{ {"Setting": new_settings} }}
 
 streams:
   - $ref: "#/definitions/accounts_stream"
