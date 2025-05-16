@@ -17,13 +17,13 @@ on:
         required: false
         description: "The git reference (branch or tag)"
       comment-id:
-        type: number
+        type: string
         required: false
-        description: "The ID of the comment triggering the workflow"
+        description: "The ID of the comment triggering the workflow. Unused as of now."
       pr:
-        type: number
+        type: string
         required: false
-        description: "The pull request number, if applicable"
+        description: "The pull request number, if applicable. Unused as of now."
 
 jobs:
   generate-matrix:
