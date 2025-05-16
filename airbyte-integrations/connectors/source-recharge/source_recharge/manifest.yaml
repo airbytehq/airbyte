@@ -66,8 +66,13 @@ definitions:
       $ref: "#/definitions/authenticator"
     error_handler:
       type: DefaultErrorHandler
-      description: >-
-        The default error handler
+      max_retries: 10
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 2
   requester_deprecated_api:
     $ref: "#/definitions/requester_base"
     # for deprecated retriever we should use `2021-01` api version
