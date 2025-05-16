@@ -1,4 +1,4 @@
-# When a PR is has the auto-merge feature enabled or disabled, this workflow adds or removes
+# When a PR is has the auto-merge feature enabled or disabled, this workflow adds or updates
 # warning text at the bottom of the PR description.
 
 name: "Add Auto-Merge Notification Text"
