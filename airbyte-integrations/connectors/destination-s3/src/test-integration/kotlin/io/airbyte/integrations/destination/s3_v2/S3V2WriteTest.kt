@@ -65,6 +65,13 @@ abstract class S3V2WriteTest(
         supportFileTransfer = true,
         unknownTypesBehavior = unknownTypesBehavior,
     ) {
+    @Disabled(
+        "tests are broken in avro/parquet; https://github.com/airbytehq/airbyte/pull/60322 will fix + reenable"
+    )
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
     @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
