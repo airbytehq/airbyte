@@ -110,17 +110,18 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
-      # Unit tests are run without creds
+      - name: Fetch connector secrets
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
       - name: Run Unit Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
-
-      - name: Fetch connector secrets
-        if: matrix.connector
-        run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
-            --print-ci-secrets-masks
 
       - name: Run Integration Tests
         if: matrix.connector
@@ -209,17 +210,18 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
-      # Unit tests are run without creds
+      - name: Fetch connector secrets
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
       - name: Run Unit Tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
-
-      - name: Fetch connector secrets
-        if: matrix.connector
-        run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
-            --print-ci-secrets-masks
 
       - name: Run Integration Tests
         if: matrix.connector
