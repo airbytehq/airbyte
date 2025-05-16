@@ -27,7 +27,7 @@ class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return taskFactory.createIntermediateStep(
             partLoader,
-            inputQueue,
+            inputQueue.consume(partition),
             outputPartitioner = ObjectLoaderLoadedPartPartitioner(),
             outputQueue,
             partition,

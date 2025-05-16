@@ -11,9 +11,11 @@ import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.pipline.object_storage.file.FileChunkStep
 import io.airbyte.cdk.load.pipline.object_storage.file.ForwardFileRecordStep
+import io.airbyte.cdk.load.pipline.object_storage.file.ProcessFileTaskLegacyStep
 import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventStep
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
@@ -58,7 +60,9 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
     @Named("fileRecordPartFormatterStep") fileRecordFormatStep: ObjectLoaderPartFormatterStep,
     @Named("recordPartFormatterStep") recordFormatStep: ObjectLoaderPartFormatterStep,
     @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
-    @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>
+    @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+    @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
+    processFileTaskLegacyStep: ProcessFileTaskLegacyStep,
 ) :
     LoadPipeline(
         selectPipelineSteps(
@@ -72,6 +76,8 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             recordFormatStep,
             recordUploadStep,
             recordCompleterStep,
+            isLegacyFileTransfer,
+            processFileTaskLegacyStep,
         )
     ) {
     companion object {
@@ -89,6 +95,8 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             recordPartStep: ObjectLoaderPartFormatterStep,
             recordUploadStep: ObjectLoaderPartLoaderStep<T>,
             recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
+            isLegacyFileTransfer: Boolean,
+            legacyProcessFileStep: ProcessFileTaskLegacyStep,
         ): List<LoadPipelineStep> {
             return if (hasFileTransfer(catalog)) {
                 listOf(
@@ -103,7 +111,11 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
                 )
             } else {
                 listOf(
-                    recordPartStep,
+                    if (isLegacyFileTransfer) {
+                        legacyProcessFileStep
+                    } else {
+                        recordPartStep
+                    },
                     recordUploadStep,
                     recordCompleterStep,
                 )
