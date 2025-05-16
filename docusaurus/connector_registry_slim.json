@@ -3168,12 +3168,6 @@
     "docUrl": "https://docs.airbyte.com/integrations/sources/thinkific"
   },
   {
-    "id": "thrive-learning",
-    "type": "source",
-    "supportLevel": "community",
-    "docUrl": "https://docs.airbyte.com/integrations/sources/thrive-learning"
-  },
-  {
     "id": "ticketmaster",
     "type": "source",
     "supportLevel": "community",
