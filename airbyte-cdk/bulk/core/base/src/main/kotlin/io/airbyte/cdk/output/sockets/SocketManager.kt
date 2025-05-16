@@ -2,12 +2,15 @@ package io.airbyte.cdk.output.sockets
 
 import io.micronaut.context.annotation.Requires
 import io.micronaut.core.annotation.Creator
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 
 @Singleton
 @Requires(property = SPEED_MODE_PROPERTY, value = "boosted")
 class SocketManager(private val socketPaths: List<String>, socketFactory: SocketWrapperFactory) {
+    @Inject constructor(socketFactory: SocketWrapperFactory) : this(List(10) { "/tmp/tmp-socket-$it" }, socketFactory) // TEMP
+
     val sockets: List<SocketWrapper>
     init {
         sockets = List(socketPaths.size) {

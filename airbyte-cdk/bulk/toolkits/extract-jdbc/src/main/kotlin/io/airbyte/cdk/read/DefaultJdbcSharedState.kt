@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.output.sockets.SocketManager
 import jakarta.inject.Singleton
 import java.time.Instant
 
@@ -15,7 +16,8 @@ class DefaultJdbcSharedState(
     override val configuration: JdbcSourceConfiguration,
     override val selectQuerier: SelectQuerier,
     val constants: DefaultJdbcConstants,
-    internal val concurrencyResource: ConcurrencyResource,
+    val concurrencyResource: ConcurrencyResource,
+    val resourceAcquirer: ResourceAcquirer,
 ) : JdbcSharedState {
 
     // First hit to the readStartTime initializes the value.
@@ -55,9 +57,14 @@ class DefaultJdbcSharedState(
         return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
-    override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? {
+    override fun tryAcquireResourcesForReader(resourceTypes: Any): JdbcPartitionReader.AcquiredResources? {
+        val reses = resourceAcquirer.tryAcquire(listOf(ResourceType.RESOURCE_DB_CONNECTION,
+            ResourceType.RESOURCE_OUTPUT_SOCKET))
+        val acquiredThread = reses?.get(ResourceType.RESOURCE_DB_CONNECTION) ?: return null
+/*
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire() ?: return null
+*/
         return JdbcPartitionReader.AcquiredResources { acquiredThread.close() }
     }
 }

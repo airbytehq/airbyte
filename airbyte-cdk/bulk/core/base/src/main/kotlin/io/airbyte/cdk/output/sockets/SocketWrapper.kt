@@ -1,7 +1,6 @@
 package io.airbyte.cdk.output.sockets
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Factory
 import java.io.File
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
@@ -33,7 +32,8 @@ interface SocketWrapper {
     suspend fun closeSocket()
     val status: SocketStatus
     var bound: Boolean
-
+    fun bindSocket()
+    fun unbindSocket()
 }
 
 class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper {
@@ -74,6 +74,13 @@ class UnixDomainSocketWrapper(private val socketFilePath: String): SocketWrapper
 
     override suspend fun closeSocket() {
         socketStatus.set(SocketWrapper.SocketStatus.SOCKET_CLOSING) // TEMP
+    }
+
+    override fun bindSocket() {
+        socketBound.set(true)
+    }
+    override fun unbindSocket() {
+        socketBound.set(false)
     }
 }
 

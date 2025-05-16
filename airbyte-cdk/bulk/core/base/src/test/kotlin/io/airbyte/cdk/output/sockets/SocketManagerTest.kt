@@ -36,6 +36,14 @@ class SocketManagerTest(private val socketManager: SocketManager) {
             get() = innerBound
             set(value: Boolean) { innerBound = value }
 
+        override fun bindSocket() {
+            innerBound = true
+        }
+
+        override fun unbindSocket() {
+            innerBound = false
+        }
+
     }
     @Primary
     @Singleton
