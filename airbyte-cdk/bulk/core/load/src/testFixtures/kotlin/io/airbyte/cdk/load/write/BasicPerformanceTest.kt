@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.write
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
-import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.EnvVarConstants
@@ -316,7 +315,7 @@ abstract class BasicPerformanceTest(
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
                 fileSizeMb = 10,
-                stagingDirectory = Path.of("/tmp").grantAllPermissions()
+                stagingDirectory = Path.of("/tmp")
             )
         scenario.setup()
         runSync(

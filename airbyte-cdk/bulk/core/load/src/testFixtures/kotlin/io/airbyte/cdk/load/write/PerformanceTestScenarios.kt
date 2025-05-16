@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
+import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -288,6 +289,7 @@ class SingleStreamFileAndMetadataTransfer(
             val outputStream = file.toFile().outputStream()
             repeat(fileSizeMb) { outputStream.write(randomMegabyte) }
             outputStream.close()
+            file.grantAllPermissions()
         }
     }
 
