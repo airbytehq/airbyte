@@ -105,6 +105,31 @@ Note:
 - This method will automatically build arm64 and amd64 images - defaulting your `dev` image to `arm64` (since Mac M-series laptops are standard at Airbyte), while still providing an `amd64` based image, which you will need if uploading to `amd64`-based Platform instances.
 - All connector types are supported using this method, since the code is only thin wrapper around the `Dockerfile`-based build process.
 
+## GitHub Actions Workflow for Building and Publishing Images
+
+A GitHub Actions workflow is now available for manually building and publishing connector base images:
+
+### Using the Workflow
+
+1. Go to the [Docker Connector Image Publishing workflow](https://github.com/airbytehq/airbyte/actions/workflows/docker-connector-image-publishing.yml)
+2. Click "Run workflow"
+3. Configure the options:
+   - **Connector Type**: `java` or `python`
+   - **Image Type**: `base` (currently only base images are supported)
+   - **Tag or Version Number**: The tag to apply to the image (e.g., `dev-test` or `2.0.2`)
+   - **Repository Root**: Choose between:
+     - `docker.io/airbyte` for production images
+     - `ghcr.io/airbytehq` for testing
+   - **Dry Run**: If enabled, builds the image but doesn't publish it
+   - **Require Security Check**: If enabled, fails the workflow if HIGH/CRITICAL vulnerabilities are found
+
+### Key Features
+
+- **Multi-Architecture Support**: Builds images for both `linux/amd64` and `linux/arm64` architectures
+- **Vulnerability Scanning**: Automatically scans images for security vulnerabilities
+- **Registry Options**: Supports publishing to either DockerHub or GitHub Container Registry
+- **Dry-Run Mode**: Test builds without publishing
+
 ## Common Build Args
 
 These are used within the `Dockerfile` definitions and within the image build test scripts.
