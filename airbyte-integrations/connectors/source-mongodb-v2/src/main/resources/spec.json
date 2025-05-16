@@ -22,7 +22,7 @@
             "required": [
               "cluster_type",
               "connection_string",
-              "database",
+              "databases",
               "username",
               "password",
               "auth_source"
@@ -41,11 +41,15 @@
                 "examples": ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
                 "order": 2
               },
-              "database": {
-                "title": "Database Name",
-                "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
-                "order": 3
+
+              "databases": {
+                "title": "Database Names",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
+                "order": 4
               },
               "username": {
                 "title": "Username",
@@ -81,7 +85,7 @@
           {
             "title": "Self-Managed Replica Set",
             "description": "MongoDB self-hosted cluster configured as a replica set",
-            "required": ["cluster_type", "connection_string", "database"],
+            "required": ["cluster_type", "connection_string", "databases"],
             "additionalProperties": true,
             "properties": {
               "cluster_type": {
@@ -99,11 +103,15 @@
                 ],
                 "order": 2
               },
-              "database": {
-                "title": "Database Name",
-                "type": "string",
-                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
-                "order": 3
+
+              "databases": {
+                "title": "Database Names",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The names of the MongoDB databases that contain the collection(s) to replicate.",
+                "order": 4
               },
               "username": {
                 "title": "Username",
