@@ -165,6 +165,10 @@ definitions:
         fields:
           - type: AddedFieldDefinition
             path:
+              - Id
+            value: "{{ record.Id|int }}"
+          - type: AddedFieldDefinition
+            path:
               - AccountId
             value: "{{ stream_partition['account_id'] }}"
           - type: AddedFieldDefinition
@@ -182,17 +186,25 @@ definitions:
               {{ {"string": languages} }}
           - type: AddedFieldDefinition
             path:
-              - Settings
+              - SettingContent
             value: |
-              {% set new_settings = [] %}
+              {% set settings_content = [] %}
               {% for setting in record.Settings %}
-                {% set new_setting = {"Type": setting.Type} %}
-                {% if setting.Details %}
-                  {% set new_setting = new_setting.update({"Details": {"TargetSettingDetail": setting.Details}}) or new_setting %}
-                {% endif %}
-                {% set new_settings = new_settings + [new_setting] %}
+                {% set target_details = [] %}
+                {% for detail in setting.Details %}
+                  {% set _ = target_details.append(detail) %}
+                {% endfor %}
+                {% set setting_obj = {"Type": setting.Type, "Details": {"TargetSettingDetail": target_details}} %}
+                {% set _ = settings_content.append(setting_obj) %}
               {% endfor %}
-              {{ {"Setting": new_settings} }}
+              {{ settings_content }}
+          - type: AddedFieldDefinition
+            path:
+              - Settings
+            value: '{"Setting": {{ record.SettingContent }}}'
+      - type: RemoveFields
+        field_pointers:
+          - - SettingContent
 
 streams:
   - $ref: "#/definitions/accounts_stream"
