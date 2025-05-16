@@ -1478,6 +1478,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: "/crm/v3/objects/{{ parameters['entity'] }}"
         request_parameters:
+          archived: "false"
           associations: "{{ parameters['associations'] }}"
           properties:
             type: QueryProperties
@@ -1560,10 +1561,10 @@ definitions:
             - propertyName: hs_object_id
               direction: ASCENDING
           filters:
-            - propertyName: hs_lastmodifieddate
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
               operator: GTE
               value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
-            - propertyName: hs_lastmodifieddate
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
               operator: LTE
               value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
             - propertyName: hs_object_id
@@ -1612,6 +1613,7 @@ definitions:
         - contacts
         - deals
         - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1630,6 +1632,7 @@ definitions:
         - contacts
         - deals
         - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1648,6 +1651,7 @@ definitions:
         - contacts
         - deals
         - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1666,6 +1670,7 @@ definitions:
         - contacts
         - deals
         - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1684,6 +1689,7 @@ definitions:
         - contacts
         - deals
         - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
       schema_loader:
         - type: InlineSchemaLoader
           schema:
