@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.typing_deduping
+package io.airbyte.integrations.destination.bigquery.write.typing_deduping
 
 import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.load.command.DestinationStream
@@ -11,10 +11,12 @@ import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
+import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator.Companion.nameTransformer
 import java.util.Locale
 import javax.inject.Singleton
+
+private val nameTransformer = BigQuerySQLNameTransformer()
 
 @Singleton
 class BigqueryRawTableNameGenerator(val config: BigqueryConfiguration) : RawTableNameGenerator {

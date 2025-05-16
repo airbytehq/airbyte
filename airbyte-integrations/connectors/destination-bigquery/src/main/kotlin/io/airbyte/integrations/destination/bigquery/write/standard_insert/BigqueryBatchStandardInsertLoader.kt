@@ -44,6 +44,8 @@ class BigqueryBatchStandardInsertsLoader(
     private val buffer = ByteArrayOutputStream()
 
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        // TODO there was a RateLimiter here for some reason...?
+        // TODO format to raw or direct-load format as needed
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
@@ -100,6 +102,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
         val rawTableName = tableCatalog[streamDescriptor]!!.tableNames.rawTableName!!
+        // TODO use the T+D raw table vs direct-load table as needed
         val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
 
         val writeChannelConfiguration =
