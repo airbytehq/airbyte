@@ -46,6 +46,7 @@ class ForwardFileRecordTask<T>(
                             event.context!!.parentCheckpointCounts!!,
                             event.key,
                             event.context!!.parentRecord!!,
+                            event.postProcessingCallback,
                         )
                     }
                 }

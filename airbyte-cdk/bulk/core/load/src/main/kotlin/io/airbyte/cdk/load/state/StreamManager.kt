@@ -258,7 +258,7 @@ class StreamManager(
         // Detailed debug logging for completeness checks. It's a little verbose but is only emitted
         // per-batch (every 10-20mb in most cases).
         // TODO: A more user-friendly aggregated version of this on a regular cadence?
-        log.debug {
+        log.info {
             val header =
                 "\nStream ${stream.descriptor.namespace}:${stream.descriptor.name}: Records Read: $readCount (done: ${markedEndOfStream.get()})"
             val byPart =
