@@ -47,9 +47,9 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
                     LinkedHashMap(
                         value.values
                             .map { (k, v) ->
-                                k.replace("é", "e").replace("+", "_").replace(Regex("(^\\d+)")) {
-                                    "_${it.groupValues[0]}"
-                                } to fieldNameMangler(v)
+                                k.replace("é", "e").replace("+", "_").replace(".", "_").replace(
+                                    Regex("(^\\d+)")
+                                ) { "_${it.groupValues[0]}" } to fieldNameMangler(v)
                             }
                             .toMap()
                     )

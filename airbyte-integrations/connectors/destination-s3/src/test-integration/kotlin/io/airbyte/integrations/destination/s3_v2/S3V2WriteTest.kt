@@ -401,7 +401,12 @@ class S3V2WriteTestAvroUncompressed :
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true,
-    )
+    ) {
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
