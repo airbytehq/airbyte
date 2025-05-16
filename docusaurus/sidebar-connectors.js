@@ -84,42 +84,13 @@ function loadConnectorRegistry() {
 function addSupportLevelToConnectors(connectors, registry) {
   return connectors.map((item) => {
     // Get the ID from either doc-type or category-type items
-    const id = item.type === "doc" ? item.id : (item.link && item.link.id);
-    
+    const id = item.type === "doc" ? item.id : item.link && item.link.id;
+
     if (!id) {
       return item;
     }
 
-    const idParts = id.split("/");
-    const connectorName = idParts[idParts.length - 1];
-    
-    // Determine if this is a source or destination based on the ID path
-    const isSource = id.includes('sources/');
-    const expectedType = isSource ? 'source' : 'destination';
-    
-    // First try exact match
-    let connectorInfo = registry.find(
-      (c) => c && c.id === connectorName && c.type === expectedType
-    );
-    
-    // If no exact match, try partial match for special cases
-    if (!connectorInfo) {
-      // Handle known ID mismatches
-      if (connectorName === 'databricks' && expectedType === 'destination') {
-        connectorInfo = registry.find(
-          (c) => c && c.id === 'databricks-lakehouse' && c.type === expectedType
-        );
-      } else if (connectorName === 'mssql' && expectedType === 'destination') {
-        connectorInfo = registry.find(
-          (c) => c && c.id === 'ms-sql-server' && c.type === expectedType
-        );
-      } else {
-        // Try partial match for other potential mismatches
-        connectorInfo = registry.find(
-          (c) => c && c.id.includes(connectorName) && c.type === expectedType
-        );
-      }
-    }
+    let connectorInfo = registry.find((record) => record.docUrl.includes(id));
 
     if (connectorInfo) {
       return {
@@ -287,11 +258,11 @@ function getSourceConnectors(registry) {
       };
     });
   const sourcesWithSupportLevel = addSupportLevelToConnectors(
-    [...specialSources, ...sources, ...enterpriseSourcesWithSupportLevel],
+    [...specialSources, ...sources],
     registry,
   );
 
-  return sourcesWithSupportLevel;
+  return [...sourcesWithSupportLevel, ...enterpriseSourcesWithSupportLevel];
 }
 
 const destinationS3 = {
@@ -331,11 +302,33 @@ const destinationPostgres = {
   ],
 };
 
+// Mssql destination is on the connector registry as mssql-v2, so we need to manually create the sidebar item
+const destinationMsSql = {
+  type: "category",
+  label: "MS SQL Server (MSSQL)",
+  link: {
+    type: "doc",
+    id: "destinations/mssql",
+  },
+  customProps: {
+    supportLevel: "certified",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Migration Guide",
+      id: "destinations/mssql-migrations",
+    },
+  ],
+};
+
 function getDestinationConnectors(registry) {
   const specialDestinationConnectors = [destinationS3, destinationPostgres];
   const destinations = getFilenamesInDir("destinations/", destinationDocs, [
     "s3",
     "postgres",
+    "mssql",
+    "readme",
   ]);
   const destinationsWithSupportLevel = addSupportLevelToConnectors(
     [...specialDestinationConnectors, ...destinations],
@@ -361,8 +354,8 @@ function getDestinationConnectors(registry) {
 
   return [
     ...destinationsWithSupportLevel,
-    ...specialDestinationConnectors,
     ...enterpriseDestinationsWithSupportLevel,
+    destinationMsSql,
   ];
 }
 
