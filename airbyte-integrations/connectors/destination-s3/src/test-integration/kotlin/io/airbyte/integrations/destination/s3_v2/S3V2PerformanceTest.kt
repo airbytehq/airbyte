@@ -8,6 +8,40 @@ import io.airbyte.cdk.load.write.BasicPerformanceTest
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+// Just ensure file transfer gets tested in CI
+class FileTransferPerformanceTest :
+    BasicPerformanceTest(
+        configContents = S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
+        configSpecClass = S3V2Specification::class.java,
+        defaultRecordsToInsert = 1_000_000,
+        micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES,
+        numFilesForFileTransfer = 5,
+        fileSizeMbForFileTransfer = 1024,
+    ) {
+
+    @Test
+    override fun testFileTransferNew() {
+        super.testFileTransferNew()
+    }
+
+    @Disabled
+    override fun testInsertRecords() {}
+    @Disabled
+    override fun testRefreshingRecords() {}
+    @Disabled
+    override fun testInsertRecordsComplexTypes() {}
+    @Disabled
+    override fun testInsertRecordsWithDedup() {}
+    @Disabled
+    override fun testInsertRecordsWithManyColumns() {}
+    @Disabled
+    override fun testAppendRecordsWithDuplicates() {}
+    @Disabled
+    override fun testFileTransferOld() {}
+    @Disabled
+    override fun testManyStreamsInsertRecords() {}
+}
+
 @Disabled("We don't want this to run in CI")
 class S3V2JsonNoFrillsPerformanceTest :
     BasicPerformanceTest(
