@@ -66,6 +66,7 @@ Several output streams are available from this source:
 - [Products](https://developer.rechargepayments.com/v1-shopify?python#list-products)
 - [Shop](https://developer.rechargepayments.com/v1-shopify?python#shop)
 - [Subscriptions](https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions) \(Incremental sync\)
+- [Credit Adjustments](https://developer.rechargepayments.com/2021-11/credits/credit_adjustment_list) - available only to merchants using [Retain](https://getrecharge.com/products/retain/) (Incremental sync)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -80,6 +81,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.0 | 2025-05-14 | [60265](https://github.com/airbytehq/airbyte/pull/60265) | Added `credit_adjustments` stream |
 | 2.7.0 | 2025-05-08 | [59734](https://github.com/airbytehq/airbyte/pull/59734) | Added lookback window to connector manifest configuration |
 | 2.6.14 | 2025-05-04 | [59512](https://github.com/airbytehq/airbyte/pull/59512) | Update dependencies |
 | 2.6.13 | 2025-04-27 | [59114](https://github.com/airbytehq/airbyte/pull/59114) | Update dependencies |
