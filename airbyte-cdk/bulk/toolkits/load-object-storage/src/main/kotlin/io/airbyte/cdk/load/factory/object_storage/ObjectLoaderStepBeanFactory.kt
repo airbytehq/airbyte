@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithStream
+import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
@@ -41,6 +42,7 @@ class ObjectLoaderStepBeanFactory {
         outputQueue:
             PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
         taskFactory: LoadPipelineStepTaskFactory,
+        pipelineFlushStrategy: PipelineFlushStrategy,
     ) =
         ObjectLoaderPartFormatterStep(
             loader,
@@ -49,6 +51,7 @@ class ObjectLoaderStepBeanFactory {
             outputQueue,
             taskFactory,
             "record-part-formatter-step",
+            pipelineFlushStrategy
         )
 
     @Named("recordPartLoaderStep")
@@ -157,6 +160,7 @@ class ObjectLoaderStepBeanFactory {
         outputQueue:
             PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
         taskFactory: LoadPipelineStepTaskFactory,
+        flushStrategy: PipelineFlushStrategy,
     ) =
         ObjectLoaderPartFormatterStep(
             loader,
@@ -165,6 +169,7 @@ class ObjectLoaderStepBeanFactory {
             outputQueue,
             taskFactory,
             "file-record-part-formatter-step",
+            flushStrategy
         )
 
     @Singleton

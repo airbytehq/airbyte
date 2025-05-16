@@ -21,6 +21,7 @@ data class BigqueryConfiguration(
     val disableTypingDeduping: Boolean,
 ) : DestinationConfiguration() {
     override val numOpenStreamWorkers = 3
+    override val maxTimeWithoutFlushingDataSeconds: Long = 60
 }
 
 sealed interface LoadingMethodConfiguration

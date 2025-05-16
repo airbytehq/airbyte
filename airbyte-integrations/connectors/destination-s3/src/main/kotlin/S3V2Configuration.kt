@@ -52,7 +52,9 @@ data class S3V2Configuration<T : OutputStream>(
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
-    ObjectStorageCompressionConfigurationProvider<T>
+    ObjectStorageCompressionConfigurationProvider<T> {
+    override val maxTimeWithoutFlushingDataSeconds: Long = 120L
+}
 
 @Singleton
 class S3V2ConfigurationFactory :

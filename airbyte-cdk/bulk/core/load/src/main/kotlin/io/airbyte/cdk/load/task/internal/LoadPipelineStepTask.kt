@@ -243,14 +243,19 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         stateStore
                     }
                     is PipelineHeartbeat -> {
+                        val now = System.currentTimeMillis()
+                        val status = stateStore.stateWithCounts.map {
+                            "${it.key} -> inputCount=${it.value.inputCount}; dataAgeS=${(now - it.value.createdAtMs)/1000}"
+                        }.joinToString("\n")
+                        log.info { "Heartbeat received for $stepId with status:\n$status" }
                         flushStrategy?.let { strategy ->
-                            val now = System.currentTimeMillis()
                             val keysToRemove =
                                 stateStore.stateWithCounts
                                     .filter { (_, v) ->
                                         strategy.shouldFlush(v.inputCount, now - v.createdAtMs)
                                     }
                                     .keys
+                            log.info { "Flushing state due to heartbeat for $keysToRemove" }
                             finishKeys(stateStore, keysToRemove, "flush strategy")
                         }
 
