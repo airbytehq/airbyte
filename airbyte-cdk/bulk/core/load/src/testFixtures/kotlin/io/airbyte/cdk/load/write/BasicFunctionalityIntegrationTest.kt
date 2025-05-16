@@ -665,6 +665,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             // "order" is a reserved word in many sql engines
                             "order" to stringType,
                             "ProperCase" to stringType,
+                            "Foo.Bar" to stringType,
                         )
                     ),
                     // this is apparently trying to test for reserved words?
@@ -723,6 +724,83 @@ abstract class BasicFunctionalityIntegrationTest(
                     )
                 }
             }
+        )
+    }
+
+    /**
+     * [testFunkyCharacters] runs using APPEND streams, so it can run on all destinations. But we
+     * should also test that funky characters in the PK/cursor behave correctly.
+     *
+     * This test just runs a single DEDUP stream, whose PK+cursor include various special
+     * characters.
+     */
+    @Test
+    open fun testFunkyCharactersDedup() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(supportsDedup)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                importType =
+                    Dedupe(
+                        // the actual string here is id~!@#$%^&*()`[]{}|;':",./<>?
+                        // note: no `\` character, because it causes significant problems in some
+                        // destinations (T+D destinations with noncompliant JSONPath
+                        // implementations,
+                        // e.g. bigquery)
+                        primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
+                        cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id~!@#\$%^&*()`[]{}|;':\",./<>?" to intType,
+                                "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to timestamptzType,
+                                "name~!@#\$%^&*()`[]{}|;':\",./<>?" to stringType,
+                            )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """
+                    {
+                      "id~!@#${'$'}%^&*()`[]{}|;':\",./<>?": 1,
+                      "updated_at~!@#${'$'}%^&*()`[]{}|;':\",./<>?": "2000-01-01T00:00:00Z",
+                      "name~!@#${'$'}%^&*()`[]{}|;':\",./<>?": "Alice1"
+                    }""".trimIndent(),
+                    emittedAtMs = 1000,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice has only the newer record, and Bob also exists
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id~!@#\$%^&*()`[]{}|;':\",./<>?" to 1,
+                            "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to
+                                TimestampWithTimezoneValue("2000-01-01T00:00:00Z"),
+                            "name~!@#\$%^&*()`[]{}|;':\",./<>?" to "Alice1",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
+            cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
         )
     }
 
