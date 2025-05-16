@@ -18,7 +18,6 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventTask
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.protocol.models.Jsons

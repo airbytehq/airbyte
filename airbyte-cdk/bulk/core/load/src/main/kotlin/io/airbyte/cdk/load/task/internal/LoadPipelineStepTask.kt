@@ -6,7 +6,9 @@ package io.airbyte.cdk.load.task.internal
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.InputEventType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
 import io.airbyte.cdk.load.message.PipelineEndOfStream
@@ -328,8 +330,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 @Requires(bean = LoadStrategy::class)
 class LoadPipelineStepTaskFactory(
     @Named("batchStateUpdateQueue") val batchUpdateQueue: QueueWriter<BatchUpdate>,
-    @Named("pipelineInputQueue")
-    val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("inputFlows") val inputFlows: Array<Flow<InputEventType>>,
     private val flushStrategy: PipelineFlushStrategy,
 ) {
     // A map of (TaskId, Stream) ->  streams to ensure eos is not forwarded from
@@ -373,7 +374,7 @@ class LoadPipelineStepTaskFactory(
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
         return create(
             batchAccumulator,
-            recordQueue.consume(part),
+            inputFlows[part],
             outputPartitioner,
             outputQueue,
             flushStrategy,

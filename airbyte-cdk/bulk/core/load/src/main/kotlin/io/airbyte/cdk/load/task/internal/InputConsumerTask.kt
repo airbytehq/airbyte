@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.InputEventType
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -23,6 +24,7 @@ import io.airbyte.cdk.load.message.FileTransferQueueRecord
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
+import io.airbyte.cdk.load.message.MessageRouter
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -40,8 +42,6 @@ import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -54,19 +54,16 @@ import java.util.concurrent.ConcurrentHashMap
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
-@Singleton
 class InputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
     val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
-    @Named("fileMessageQueue")
-    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-    @Named("pipelineInputQueue")
-    private val pipelineInputQueue:
-        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    private val fileTransferQueueLegacy: MessageQueue<FileTransferQueueMessage>,
+    private val pipelineInputQueue: PartitionedQueue<InputEventType>,
     private val partitioner: InputPartitioner,
-    private val openStreamQueue: QueueWriter<DestinationStream>
+    private val openStreamQueue: QueueWriter<DestinationStream>,
+    private val fileQueue: PartitionedQueue<InputEventType>
 ) : Task {
     private val log = KotlinLogging.logger {}
 
@@ -102,7 +99,11 @@ class InputConsumerTask(
                         postProcessingCallback = { reserved.release() }
                     )
                 val partition = partitioner.getPartition(record, pipelineInputQueue.partitions)
-                pipelineInputQueue.publish(pipelineMessage, partition)
+                if (stream.includeFiles) {
+                    fileQueue.publish(pipelineMessage, partition)
+                } else {
+                    pipelineInputQueue.publish(pipelineMessage, partition)
+                }
             }
             is DestinationRecordStreamComplete -> {
                 manager.markEndOfStream(true)
@@ -120,14 +121,14 @@ class InputConsumerTask(
                 val index = manager.incrementReadCount()
                 val checkpointId = manager.getCurrentCheckpointId()
                 // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(
+                fileTransferQueueLegacy.publish(
                     FileTransferQueueRecord(stream, message, index, checkpointId)
                 )
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
-                fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
+                fileTransferQueueLegacy.publish(FileTransferQueueEndOfStream(stream))
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
@@ -208,7 +209,7 @@ class InputConsumerTask(
             syncManager.markInputConsumed()
         } finally {
             log.info { "Closing record queues" }
-            fileTransferQueue.close()
+            fileTransferQueueLegacy.close()
             pipelineInputQueue.close()
         }
     }

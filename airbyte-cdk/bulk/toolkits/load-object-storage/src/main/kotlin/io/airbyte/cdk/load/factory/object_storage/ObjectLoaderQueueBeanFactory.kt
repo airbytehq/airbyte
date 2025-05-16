@@ -97,21 +97,8 @@ class ObjectLoaderQueueBeanFactory(
 
     /** A queue for records uploading. */
     @Singleton
-    @Named("recordQueue")
-    fun recordQueue(
-        loadStrategy: LoadStrategy? = null,
-    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
-        return StrictPartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
-        )
-    }
-
-    /** A queue for records with file references for file uploading. */
-    @Singleton
-    @Named("fileQueue")
-    fun fileQueue(
+    @Named("fileRecordQueue")
+    fun objectLoaderRecordQueue(
         loadStrategy: LoadStrategy? = null,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(

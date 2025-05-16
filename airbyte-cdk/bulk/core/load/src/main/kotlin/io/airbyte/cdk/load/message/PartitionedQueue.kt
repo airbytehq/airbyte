@@ -12,6 +12,7 @@ interface PartitionedQueue<T> : CloseableCoroutine {
     fun consume(partition: Int): Flow<T>
     suspend fun publish(value: T, partition: Int)
     suspend fun broadcast(value: T)
+    fun asOrderedFlows(): Array<Flow<T>> = Array(partitions) { consume(it) }
 }
 
 class StrictPartitionedQueue<T>(private val queues: Array<MessageQueue<T>>) : PartitionedQueue<T> {

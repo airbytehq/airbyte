@@ -80,8 +80,7 @@ class DestinationTaskLauncher(
     private val syncManager: SyncManager,
 
     // Internal Tasks
-    private val inputConsumerTask: InputConsumerTask,
-    private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
+    @Named("inputConsumerTasks") private val inputConsumerTasks: TaskGroup,
     private val updateBatchTask: UpdateBatchStateTaskFactory,
 
     // Implementor Tasks
@@ -100,9 +99,6 @@ class DestinationTaskLauncher(
 
     // Async queues
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
-    @Named("pipelineInputQueue")
-    private val pipelineInputQueue:
-        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
 ) {
@@ -163,8 +159,8 @@ class DestinationTaskLauncher(
 
     suspend fun run() {
         // Start the input consumer ASAP
-        log.info { "Starting input consumer task" }
-        launch(inputConsumerTask)
+        log.info { "Starting input consumer tasks" }
+        inputConsumerTasks.start { launch(it) }
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
@@ -179,8 +175,6 @@ class DestinationTaskLauncher(
         loadPipeline!!.start { launch(it) }
         log.info { "Launching update batch task" }
         launch(updateBatchTask.make(this))
-        log.info { "Launching heartbeat task" }
-        launch(heartbeatTask)
 
         log.info { "Starting checkpoint update task" }
         launch(updateCheckpointsTask)
@@ -188,7 +182,6 @@ class DestinationTaskLauncher(
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        pipelineInputQueue.close()
         batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()

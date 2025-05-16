@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.pipeline
 
 import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TaskGroup
 
 interface LoadPipelineStep {
     val numWorkers: Int
@@ -17,8 +18,8 @@ interface LoadPipelineStep {
  */
 abstract class LoadPipeline(
     private val steps: List<LoadPipelineStep>,
-) {
-    suspend fun start(launcher: suspend (Task) -> Unit) {
+): TaskGroup {
+    override suspend fun start(launcher: suspend (Task) -> Unit) {
         steps.forEach { step -> repeat(step.numWorkers) { launcher(step.taskForPartition(it)) } }
     }
 

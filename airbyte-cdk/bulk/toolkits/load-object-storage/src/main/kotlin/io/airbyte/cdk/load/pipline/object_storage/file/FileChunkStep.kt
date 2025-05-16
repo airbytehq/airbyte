@@ -24,7 +24,7 @@ import jakarta.inject.Singleton
 class FileChunkStep<T : RemoteObject<*>>(
     private val catalog: DestinationCatalog,
     private val fileLoader: ObjectLoader,
-    @Named("fileQueue")
+    @Named("recordsWithFilesQueue")
     private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("filePartQueue")
     private val partQueue:
