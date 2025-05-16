@@ -48,7 +48,8 @@ This mode throws an exception after receiving a configurable number of messages.
 The OSS and Cloud variants have the same version number starting from version `0.2.2`.
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
-| :---------- | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+|:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.25      | 2025-05-15 | [60312](https://github.com/airbytehq/airbyte/pull/60312) | Migrate to base 2.0.2.                                                                       |
 | 0.7.24      | 2025-05-15 | [60301](https://github.com/airbytehq/airbyte/pull/60301) | Add support for file-based syncs                                                             |
 | 0.7.23      | 2025-05-09 | [59766](https://github.com/airbytehq/airbyte/pull/59766) | Test publishing in new flow.                                                                 |
 | 0.7.22      | 2025-05-09 | [59759](https://github.com/airbytehq/airbyte/pull/59759) | Migrate to new flow.                                                                         |
