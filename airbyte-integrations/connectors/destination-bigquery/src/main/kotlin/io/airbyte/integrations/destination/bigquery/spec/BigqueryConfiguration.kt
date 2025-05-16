@@ -18,7 +18,7 @@ data class BigqueryConfiguration(
     val credentialsJson: String?,
     val transformationPriority: TransformationPriority,
     val rawTableDataset: String,
-    val disableTypingDeduping: Boolean,
+    val legacyRawTablesOnly: Boolean,
 ) : DestinationConfiguration() {
     override val numOpenStreamWorkers = 3
 }
@@ -61,7 +61,7 @@ class BigqueryConfigurationFactory :
                 } else {
                     pojo.rawTableDataset!!
                 },
-            disableTypingDeduping = pojo.disableTypingDeduping ?: false,
+            legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
         )
     }
 }
