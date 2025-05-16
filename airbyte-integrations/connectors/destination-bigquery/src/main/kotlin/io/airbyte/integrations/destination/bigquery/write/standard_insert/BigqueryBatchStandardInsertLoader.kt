@@ -9,12 +9,15 @@ import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
+import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingExecutionConfig
 import io.airbyte.cdk.load.write.DirectLoader
@@ -27,6 +30,7 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.CONFIG_ERROR_MSG
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_FORBIDDEN
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_NOT_FOUND
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -39,13 +43,12 @@ class BigqueryBatchStandardInsertsLoader(
     private val bigquery: BigQuery,
     private val writeChannelConfiguration: WriteChannelConfiguration,
     private val job: JobId,
+    private val recordFormatter: BigQueryRecordFormatter,
 ) : DirectLoader {
-    private val recordFormatter = BigQueryRecordFormatter()
     private val buffer = ByteArrayOutputStream()
 
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         // TODO there was a RateLimiter here for some reason...?
-        // TODO format to raw or direct-load format as needed
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
@@ -92,25 +95,38 @@ class BigqueryConfiguredForBatchStandardInserts : Condition {
 @Requires(condition = BigqueryConfiguredForBatchStandardInserts::class)
 @Singleton
 class BigqueryBatchStandardInsertsLoaderFactory(
+    private val catalog: DestinationCatalog,
     private val bigquery: BigQuery,
     private val config: BigqueryConfiguration,
     private val tableCatalog: TableCatalogByDescriptor,
-    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
+    private val typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
+    private val directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
 ) : DirectLoaderFactory<BigqueryBatchStandardInsertsLoader> {
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
         part: Int,
     ): BigqueryBatchStandardInsertsLoader {
-        val rawTableName = tableCatalog[streamDescriptor]!!.tableNames.rawTableName!!
-        // TODO use the T+D raw table vs direct-load table as needed
-        val rawTableNameSuffix = streamStateStore.get(streamDescriptor)!!.rawTableSuffix
-
-        val writeChannelConfiguration =
-            WriteChannelConfiguration.newBuilder(
-                    TableId.of(rawTableName.namespace, rawTableName.name + rawTableNameSuffix)
+        val tableId: TableId
+        val schema: Schema
+        val tableNameInfo = tableCatalog[streamDescriptor]!!
+        if (config.legacyRawTablesOnly) {
+            val rawTableName = tableNameInfo.tableNames.rawTableName!!
+            val rawTableSuffix =
+                typingDedupingStreamStateStore!!.get(streamDescriptor)!!.rawTableSuffix
+            tableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
+            schema = BigQueryRecordFormatter.SCHEMA_V2
+        } else {
+            tableId = directLoadStreamStateStore!!.get(streamDescriptor)!!.tableName.toTableId()
+            schema =
+                BigQueryRecordFormatter.getDirectLoadSchema(
+                    catalog.getStream(streamDescriptor),
+                    tableNameInfo.columnNameMapping,
                 )
+        }
+        val writeChannelConfiguration =
+            WriteChannelConfiguration.newBuilder(tableId)
                 .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
-                .setSchema(BigQueryRecordFormatter.SCHEMA_V2)
+                .setSchema(schema)
                 // new-line delimited json.
                 .setFormatOptions(FormatOptions.json())
                 .build()
@@ -126,6 +142,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             bigquery,
             writeChannelConfiguration,
             jobId,
+            BigQueryRecordFormatter(legacyRawTablesOnly = config.legacyRawTablesOnly),
         )
     }
 

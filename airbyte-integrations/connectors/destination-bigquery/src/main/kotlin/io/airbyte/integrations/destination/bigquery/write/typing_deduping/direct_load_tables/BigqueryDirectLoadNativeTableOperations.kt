@@ -38,14 +38,14 @@ class BigqueryDirectLoadNativeTableOperations(private val bigquery: BigQuery) :
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        TODO("Not yet implemented")
+        //        TODO("Not yet implemented")
     }
 
     override fun getGenerationId(tableName: TableName): Long {
         val result =
             bigquery.query(
                 QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name}$ LIMIT 1"
+                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name} LIMIT 1"
                 ),
             )
         val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
