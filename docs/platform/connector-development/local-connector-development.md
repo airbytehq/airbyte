@@ -135,7 +135,7 @@ Example:
 
 If the `acceptance-test-config.yml` for `source-example` references `config.json` and `oauth_config.json`, then the following should be true:
 
-1. Locally, we should have two files saved within the cloned repo directory, for local testing:
+1. Locally, we should create two files saved within the cloned repo directory, for local testing:
    1. `airbyte-integrations/connectors/source-example/secrets/config.json`
    2. `airbyte-integrations/connectors/source-example/secrets/oauth_config.json`
 2. Our Google Secrets Manager (GSM) account should have the following secrets declared:
