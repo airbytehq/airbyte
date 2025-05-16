@@ -75,6 +75,16 @@ Expand to see details about Sendgrid connector limitations and troubleshooting.
 
 The connector is restricted by normal Sendgrid [requests limitation](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits).
 
+#### Messages Stream: Only the Most Recent 1000 Messages Are Retained Between Syncs
+
+The Messages Stream can capture up to 1000 new messages between syncs
+
+If more than 1000 messages are received before the next sync, the oldest messages beyond this limit will be lost. This is due to the lack of pagination support in the Messages API — only the most recent 1000 messages are retained.
+
+To avoid data loss, ensure your sync runs frequently enough to stay within this 1000-message limit.
+Alternatively, you can use the Bulk Export API, which returns data in CSV format.
+Note: parsing CSV in the Connector Builder requires the use of custom components, which is currently an experimental feature.
+
 ### Troubleshooting
 
 - **Legacy marketing campaigns are not supported by this source connector**. Sendgrid provides two different kinds of marketing campaigns, "legacy marketing campaigns" and "new marketing campaigns". If you are seeing a `403 FORBIDDEN error message for https://api.sendgrid.com/v3/marketing/campaigns`, it might be because your SendGrid account uses legacy marketing campaigns.
@@ -89,6 +99,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.8 | 2025-05-14 | [58982](https://github.com/airbytehq/airbyte/pull/58982) | Added messages stream |
 | 1.3.7 | 2025-05-04 | [58982](https://github.com/airbytehq/airbyte/pull/58982) | Update dependencies |
 | 1.3.6 | 2025-04-19 | [58405](https://github.com/airbytehq/airbyte/pull/58405) | Update dependencies |
 | 1.3.5 | 2025-04-12 | [57952](https://github.com/airbytehq/airbyte/pull/57952) | Update dependencies |

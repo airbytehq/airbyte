@@ -650,6 +650,42 @@ definitions:
           $ref: "#/schemas/contacts"
       transformations:
         - type: KeysToLower
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - msg_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/messages
+          http_method: GET
+          request_parameters:
+            limit: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_event_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
   base_requester:
     type: HttpRequester
     url_base: https://api.sendgrid.com
@@ -673,6 +709,7 @@ streams:
   - $ref: "#/definitions/streams/templates"
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/messages"
 
 
 spec:
@@ -720,6 +757,7 @@ metadata:
     singlesends: false
     templates: false
     campaigns: false
+    messages: false
   testedStreams:
     bounces:
       streamHash: 145e6dd62816198a6f8f983c546ffba4f02040d9
@@ -749,6 +787,8 @@ metadata:
       streamHash: 2ccf8e48c47f194b19266e749f6bfb484eeebd7b
     campaigns:
       streamHash: d1c690aa2e38a4d9023053d3d9824dd08996e669
+    messages:
+      streamHash: f9b514fb4069388a641a0245a1aea6ea5335c077
   assist: {}
 
 schemas:
@@ -1139,3 +1179,39 @@ schemas:
         type:
           - string
           - 'null'
+messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      clicks_count:
+        type:
+          - number
+          - "null"
+      from_email:
+        type:
+          - string
+          - "null"
+      last_event_time:
+        type: string
+      msg_id:
+        type: string
+      opens_count:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      to_email:
+        type:
+          - string
+          - "null"
+    required:
+      - msg_id
+      - last_event_time
