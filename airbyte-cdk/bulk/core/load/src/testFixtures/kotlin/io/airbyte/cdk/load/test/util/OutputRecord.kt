@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.test.util
 
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta.Change
 import java.time.Instant
@@ -42,11 +43,27 @@ data class OutputRecord(
         data: Map<String, Any?>,
         airbyteMeta: Meta?,
     ) : this(
+        rawId,
+        extractedAt,
+        loadedAt,
+        generationId,
+        ObjectValue.from(data),
+        airbyteMeta,
+    )
+
+    constructor(
+        rawId: String,
+        extractedAt: Long,
+        loadedAt: Long?,
+        generationId: Long?,
+        data: AirbyteValue,
+        airbyteMeta: Meta?,
+    ) : this(
         UUID.fromString(rawId),
         Instant.ofEpochMilli(extractedAt),
         loadedAt?.let { Instant.ofEpochMilli(it) },
         generationId,
-        ObjectValue.from(data),
+        data as ObjectValue,
         airbyteMeta,
     )
 

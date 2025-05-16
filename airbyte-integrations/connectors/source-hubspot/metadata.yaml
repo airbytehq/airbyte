@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 5.0.0
+  dockerImageTag: 5.2.0
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
@@ -40,7 +40,7 @@ data:
           Hubspot's V3 API and the V1 API is being deprecated on 2025-09-30. Updates the `contact_lists`
           stream to use V3 API, which contains changes to the schema due to old fields no longer exposed by
           the V3 API. Users will need to refresh the source schema and clear the stream.
-        upgradeDeadline: "2025-09-30"
+        upgradeDeadline: "2025-06-15"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
