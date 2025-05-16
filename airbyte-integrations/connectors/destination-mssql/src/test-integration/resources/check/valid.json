@@ -5,6 +5,7 @@
   "schema": "mssql_default_schema_placeholder",
   "raw_data_schema": "guest",
   "ssl_method": { "name": "unencrypted" },
+  "authentication_method": { "name": "SqlPassword" },
   "user": "replace_me_username",
   "password": "replace_me_password",
   "load_type": {
