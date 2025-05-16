@@ -24,22 +24,14 @@ class FileTransferPerformanceTest :
         super.testFileTransferNew()
     }
 
-    @Disabled
-    override fun testInsertRecords() {}
-    @Disabled
-    override fun testRefreshingRecords() {}
-    @Disabled
-    override fun testInsertRecordsComplexTypes() {}
-    @Disabled
-    override fun testInsertRecordsWithDedup() {}
-    @Disabled
-    override fun testInsertRecordsWithManyColumns() {}
-    @Disabled
-    override fun testAppendRecordsWithDuplicates() {}
-    @Disabled
-    override fun testFileTransferOld() {}
-    @Disabled
-    override fun testManyStreamsInsertRecords() {}
+    @Disabled override fun testInsertRecords() {}
+    @Disabled override fun testRefreshingRecords() {}
+    @Disabled override fun testInsertRecordsComplexTypes() {}
+    @Disabled override fun testInsertRecordsWithDedup() {}
+    @Disabled override fun testInsertRecordsWithManyColumns() {}
+    @Disabled override fun testAppendRecordsWithDuplicates() {}
+    @Disabled override fun testFileTransferOld() {}
+    @Disabled override fun testManyStreamsInsertRecords() {}
 }
 
 @Disabled("We don't want this to run in CI")
