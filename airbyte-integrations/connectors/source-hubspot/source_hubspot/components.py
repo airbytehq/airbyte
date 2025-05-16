@@ -652,11 +652,11 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
         # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
         # start a new search query with the latest id that has been collected.
-        if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size > self.RECORDS_LIMIT:
+        if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size >= self.RECORDS_LIMIT:
             return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (last_page_size < self.page_size) or last_page_size == 0:
+        if (last_page_size < self.page_size) or last_page_size == 0 or not response.json().get("paging"):
             return None
 
         return {"after": last_page_token_value["after"] + last_page_size}

@@ -331,7 +331,6 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 <details>
   <summary>Expand to review</summary>
 
-<<<<<<< Updated upstream
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.3.0      | 2025-05-16 | [60249](https://github.com/airbytehq/airbyte/pull/60249) | Migrate engagements_calls, engagements_emails, engagements_meetings, engagements_notes, engagements_tasks to low code                                                                                                        |
