@@ -280,7 +280,7 @@ desired namespace.
 
 | Version         | Date        | Pull Request                                               | Subject                                                                                                                                                                          |
 |:----------------|:------------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.15.9          | 2025-05-016 | [59222](https://github.com/airbytehq/airbyte/pull/59222)   | Upgrade libraries for security patches.
+| 3.15.9          | 2025-05-016 | [60328](https://github.com/airbytehq/airbyte/pull/60328)   | Migrate to base 2.0.2.
 | 3.15.8          | 2025-05-02  | [59222](https://github.com/airbytehq/airbyte/pull/59222)   | Upgrade libraries for security patches.
 | 3.15.7          | 2025-04-24  | [59166](https://github.com/airbytehq/airbyte/pull/59166)   | Upgrade libraries for security patches.                                                                                                                                          |
 | 3.15.6          | 2025-04-24  | [58652](https://github.com/airbytehq/airbyte/pull/58652)   | Upgrade libraries for security patches.                                                                                                                                          |
