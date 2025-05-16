@@ -28,6 +28,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,7 +41,7 @@ class RouteEventTaskTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
 
     @MockK(relaxed = true)
-    lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
+    lateinit var inputQueue: Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>
 
     @MockK(relaxed = true)
     lateinit var fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>

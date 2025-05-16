@@ -17,10 +17,11 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
+import kotlinx.coroutines.flow.Flow
 
 class RouteEventTask(
     private val catalog: DestinationCatalog,
-    private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    private val inputFlow: Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partition: Int,
@@ -28,7 +29,7 @@ class RouteEventTask(
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
-    override suspend fun execute() = inputQueue.consume(partition).collect(this::handleEvent)
+    override suspend fun execute() = inputFlow.collect(this::handleEvent)
 
     @VisibleForTesting
     suspend fun handleEvent(event: PipelineEvent<StreamKey, DestinationRecordRaw>) {
