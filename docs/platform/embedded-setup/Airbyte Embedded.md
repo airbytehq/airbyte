@@ -298,7 +298,6 @@ app.get("/api/widget_token", async (req, res) => {
     client_secret: AIRBYTE_CLIENT_SECRET,
     "grant-type": "client_credentials",
   });
-  console.log(access_token_body);
   const response = await fetch(AIRBYTE_ACCESS_TOKEN_URL, {
     method: "POST",
     headers: {
@@ -309,7 +308,6 @@ app.get("/api/widget_token", async (req, res) => {
   });
 
   const access_token_response = await response.json();
-  console.log(access_token_response);
   const access_token = access_token_response.access_token;
 
   // Determine the allowed origin from the request
