@@ -80,6 +80,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.1 | 2025-05-16 | [60317](https://github.com/airbytehq/airbyte/pull/60317) | improve 429 error handler |
 | 2.7.0 | 2025-05-08 | [59734](https://github.com/airbytehq/airbyte/pull/59734) | Added lookback window to connector manifest configuration |
 | 2.6.14 | 2025-05-04 | [59512](https://github.com/airbytehq/airbyte/pull/59512) | Update dependencies |
 | 2.6.13 | 2025-04-27 | [59114](https://github.com/airbytehq/airbyte/pull/59114) | Update dependencies |
