@@ -55,7 +55,7 @@ See [Debugging Docker](./debugging-docker.md) for common tips and tricks.
 
 ### Gradle
 
-Gradle is used in Java and Kotlin development.  A full discussion of how to install and use docker is outside the scope of this guide. Similar to running `poe`, you can run `gradle tasks` to view a list of available Gradle development tasks.
+Gradle is used in Java and Kotlin development. A full discussion of how to install and use docker is outside the scope of this guide. Similar to running `poe`, you can run `gradle tasks` to view a list of available Gradle development tasks.
 
 :::tip
 
@@ -123,7 +123,7 @@ The `list` command also provides you with a URL which you can use to quickly nav
 
 Airbyte expects secrets to be stored in Google Secrets Manager (GCP) using the following conventions:
 
-1. Each secret should have a label called "connector:{connector-name}" indicating the name of the connector that the secret pertains to.
+1. Each secret should have a label called "`connector:<connector-name>`" indicating the name of the connector that the secret pertains to.
 2. Each secret must be a fully formed JSON config object.
 3. If more than one secret is provided, a label "filename:{config-file-basename}" should be set, indicating the filename with the "`.json`" suffix removed. (Google Secrets Manager does not support including the "`.`" character in label text.)
 4. To understand which secrets are required for a connector, consult the `metadata.yaml` and `acceptance-test-config.yml` files within the connector directory.
@@ -135,7 +135,7 @@ Example:
 
 If the `acceptance-test-config.yml` for `source-example` references `config.json` and `oauth_config.json`, then the following should be true:
 
-1. Locally, we should create two files saved within the cloned repo directory, for local testing:
+1. Locally, we should have two files saved within the cloned repo directory, for local testing:
    1. `airbyte-integrations/connectors/source-example/secrets/config.json`
    2. `airbyte-integrations/connectors/source-example/secrets/oauth_config.json`
 2. Our Google Secrets Manager (GSM) account should have the following secrets declared:
