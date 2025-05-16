@@ -34,7 +34,7 @@ class ObjectLoaderStepBeanFactory {
     @Named("recordPartFormatterStep")
     @Singleton
     fun <T : OutputStream> recordPartFormatter(
-        loader: ObjectLoader,
+        @Named("numInputPartitions") numInputPartitions: Int,
         partFormatter: ObjectLoaderPartFormatter<T>,
         @Named("dataChannelInputFlows")
         inputFlows: Array<Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
@@ -45,7 +45,7 @@ class ObjectLoaderStepBeanFactory {
         flushStrategy: PipelineFlushStrategy,
     ) =
         ObjectLoaderPartFormatterStep(
-            loader,
+            numInputPartitions,
             partFormatter,
             inputFlows,
             outputQueue,
@@ -152,7 +152,7 @@ class ObjectLoaderStepBeanFactory {
     @Named("fileRecordPartFormatterStep")
     @Singleton
     fun <T : OutputStream> fileRecordPartFormatterStep(
-        loader: ObjectLoader,
+        @Named("numInputPartitions") numInputPartitions: Int,
         partFormatter: ObjectLoaderPartFormatter<T>,
         @Named("recordQueue")
         inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
@@ -163,7 +163,7 @@ class ObjectLoaderStepBeanFactory {
         flushStrategy: PipelineFlushStrategy,
     ) =
         ObjectLoaderPartFormatterStep(
-            loader,
+            numInputPartitions,
             partFormatter,
             inputQueue.asOrderedFlows(),
             outputQueue,
