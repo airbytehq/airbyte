@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -16,7 +16,6 @@ from airbyte_cdk import (
     RecordSelector,
     SimpleRetriever,
 )
-from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
@@ -45,7 +44,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
     """
     Implements a custom transformation which adds the legacy field equivalent of v2 fields for streams which contain Deals and Contacts entities.
 
-    This custom implementation was developed in lieu of the AddFields component due to the dynamic-nature of the record properties for the HubSpot source. Each
+    This custom implmentation was developed in lieu of the AddFields component due to the dynamic-nature of the record properties for the HubSpot source. Each
 
     For example:
     hs_v2_date_exited_{stage_id} -> hs_date_exited_{stage_id} where {stage_id} is a user-generated value
@@ -470,7 +469,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
 
     field_path: List[Union[InterpolatedString, str]]
     entity: Union[InterpolatedString, str]
-    associations_list: List[str]
+    associations_list: Union[List[str], Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
@@ -483,9 +482,15 @@ class HubspotAssociationsExtractor(RecordExtractor):
 
         self._entity = InterpolatedString.create(self.entity, parameters=parameters)
 
+        # The list of associations can either be provided as a static list of constants or evaluated from an interpolated string
+        if isinstance(self.associations_list, list):
+            self._associations_list = self.associations_list
+        else:
+            self._associations_list = InterpolatedString.create(self.associations_list, parameters=parameters)
+
         self._associations_retriever = build_associations_retriever(
-            associations_list=self.associations_list,
-            parent_entity=self._entity.eval(config=self.config),
+            associations_list=self._associations_list,
+            parent_entity=self._entity,
             config=self.config,
         )
 
@@ -528,8 +533,8 @@ class HubspotAssociationsExtractor(RecordExtractor):
 
 def build_associations_retriever(
     *,
-    associations_list: List[str],
-    parent_entity: str,
+    associations_list: Union[List[str], InterpolatedString],
+    parent_entity: InterpolatedString,
     config: Config,
 ) -> SimpleRetriever:
     """
@@ -547,6 +552,12 @@ def build_associations_retriever(
     """
 
     parameters: Mapping[str, Any] = {}
+    evaluated_entity = parent_entity.eval(config=config)
+
+    if isinstance(associations_list, InterpolatedString):
+        associations = associations_list.eval(config=config)
+    else:
+        associations = associations_list
 
     bearer_authenticator = BearerAuthenticator(
         token_provider=InterpolatedStringTokenProvider(
@@ -578,7 +589,7 @@ def build_associations_retriever(
     requester = HttpRequester(
         name="associations",
         url_base="https://api.hubapi.com",
-        path=f"/crm/v4/associations/{parent_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
+        path=f"/crm/v4/associations/{evaluated_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
@@ -591,7 +602,7 @@ def build_associations_retriever(
     )
 
     # Slice over IDs emitted by the parent stream
-    slicer = ListPartitionRouter(values=associations_list, cursor_field="association_name", config=config, parameters=parameters)
+    slicer = ListPartitionRouter(values=associations, cursor_field="association_name", config=config, parameters=parameters)
 
     selector = RecordSelector(
         extractor=DpathExtractor(field_path=["results"], config=config, parameters=parameters),
@@ -641,11 +652,11 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
         # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
         # start a new search query with the latest id that has been collected.
-        if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size > self.RECORDS_LIMIT:
+        if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size >= self.RECORDS_LIMIT:
             return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (last_page_size < self.page_size) or last_page_size == 0:
+        if (last_page_size < self.page_size) or last_page_size == 0 or not response.json().get("paging"):
             return None
 
         return {"after": last_page_token_value["after"] + last_page_size}
