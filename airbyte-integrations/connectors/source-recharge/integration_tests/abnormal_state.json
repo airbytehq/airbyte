@@ -61,5 +61,12 @@
       "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
       "stream_descriptor": { "name": "bundle_selections" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "credit_adjustments" }
+    }
   }
 ]
