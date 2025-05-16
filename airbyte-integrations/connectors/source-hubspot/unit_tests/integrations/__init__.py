@@ -27,6 +27,12 @@ class HubspotTestCase:
     OBJECT_ID = "testID"
     ACCESS_TOKEN = "new_access_token"
     CURSOR_FIELD = "occurredAt"
+    MOCK_PROPERTIES_FOR_SCHEMA_LOADER = {
+        # We do not need to include `closed_date` because the first property is automatically mocked
+        # when we instantiate the properties in RootHttpResponseBuilder(templates).
+        # "closed_date": "datetime",
+        "createdate": "datetime",
+    }
     PROPERTIES = {
         "closed_date": "datetime",
         "createdate": "datetime",
@@ -124,8 +130,8 @@ class HubspotTestCase:
         getattr(http_mocker, method)(request, responses)
 
     @classmethod
-    def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker):
-        entities = ["deal", "form"]
+    def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
+        entities = entities or ["calls", "deal", "emails", "form", "meetings", "notes", "tasks"]
 
         # figure out which entities are already mocked
         existing = set()

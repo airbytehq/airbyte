@@ -591,190 +591,65 @@ definitions:
       schema:
         $ref: "#/schemas/email_subscriptions"
 
-  deals_dynamic_schema_loader:
-    $ref: "#/definitions/base_dynamic_schema_loader"
-    retriever:
-      $ref: "#/definitions/base_dynamic_schema_loader/retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: /properties/v2/deal/properties
-    schema_transformations:
-      - type: CustomTransformation
-        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
-        field_mapping:
-          hs_date_entered_: "hs_v2_date_entered_"
-          hs_date_exited_: "hs_v2_date_exited_"
-          hs_time_in_: "hs_v2_latest_time_in_"
-      - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
-
-  deals_full_refresh_stream:
-    primary_key:
-      - id
-    $ref: "#/definitions/stream_base"
-    name: deals
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: /crm/v3/objects/deals
-        request_parameters:
-          associations: "['contacts', 'companies', 'line_items']"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: /properties/v2/deal/properties
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_hubspot.components.EntitySchemaNormalization
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["updatedAt"]
-            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-      - type: CustomTransformation
-        class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
-      - type: CustomTransformation
-        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
-        field_mapping:
-          hs_date_entered_: "hs_v2_date_entered_"
-          hs_date_exited_: "hs_v2_date_exited_"
-          hs_time_in_: "hs_v2_latest_time_in_"
-      - type: DpathFlattenFields
-        field_path:
-          - properties
-        key_transformation:
-          type: KeyTransformation
-          prefix: properties_
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-      is_client_side_incremental: true
-    schema_loader:
-      - type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/deals"
-      - $ref: "#/definitions/deals_dynamic_schema_loader"
-
-  deals_incremental_stream:
-    primary_key:
-      - id
-    $ref: "#/definitions/stream_base"
-    name: deals
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: /crm/v3/objects/deal/search
-        http_method: POST
-        fetch_properties_from_endpoint:
-          type: PropertiesFromEndpoint
-          property_field_path:
-            - name
-          retriever:
-            type: SimpleRetriever
-            requester:
-              $ref: "#/definitions/base_requester"
-              path: /properties/v2/deal/properties
-            decoder:
-              type: JsonDecoder
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_path: []
-        request_body_json:
-          limit: 200
-          sorts:
-            - propertyName: hs_object_id
-              direction: ASCENDING
-          filters:
-            - propertyName: hs_lastmodifieddate
-              operator: GTE
-              value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
-            - propertyName: hs_lastmodifieddate
-              operator: LTE
-              value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
-            - propertyName: hs_object_id
-              operator: GTE
-              value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
-          properties: "{{ stream_slice.extra_fields['query_properties'] }}"
-          after: "{{ next_page_token['next_page_token']['after'] }}"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CustomPaginationStrategy
-          class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
-          page_size: 200
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_hubspot.components.HubspotAssociationsExtractor
-          field_path:
-            - results
-          entity: deal
-          associations_list:
-            - contacts
-            - companies
-            - line_items
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_hubspot.components.EntitySchemaNormalization
-    transformations:
-      - type: CustomTransformation
-        class_name: source_hubspot.components.NewtoLegacyFieldTransformation
-        field_mapping:
-          hs_date_entered_: "hs_v2_date_entered_"
-          hs_date_exited_: "hs_v2_date_exited_"
-          hs_time_in_: "hs_v2_latest_time_in_"
-      - type: DpathFlattenFields
-        field_path: ["properties"]
-        key_transformation:
-          type: KeyTransformation
-          prefix: properties_
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-      is_client_side_incremental: true
-    schema_loader:
-      - type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/deals"
-      - $ref: "#/definitions/deals_dynamic_schema_loader"
-
   deals_stream:
     type: StateDelegatingStream
-    name: deals
-    full_refresh_stream: "#/definitions/deals_full_refresh_stream"
-    incremental_stream: "#/definitions/deals_incremental_stream"
+    full_refresh_stream:
+      $ref: "#/definitions/base_crm_search_full_refresh_stream"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["updatedAt"]
+              value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+        - type: CustomTransformation
+          class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+        - type: CustomTransformation
+          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          field_mapping:
+            hs_date_entered_: "hs_v2_date_entered_"
+            hs_date_exited_: "hs_v2_date_exited_"
+            hs_time_in_: "hs_v2_latest_time_in_"
+        - type: DpathFlattenFields
+          field_path:
+            - properties
+          key_transformation:
+            type: KeyTransformation
+            prefix: properties_
+    incremental_stream:
+      $ref: "#/definitions/base_crm_search_incremental_stream"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          field_mapping:
+            hs_date_entered_: "hs_v2_date_entered_"
+            hs_date_exited_: "hs_v2_date_exited_"
+            hs_time_in_: "hs_v2_latest_time_in_"
+        - type: DpathFlattenFields
+          field_path: ["properties"]
+          key_transformation:
+            type: KeyTransformation
+            prefix: properties_
+    $parameters:
+      name: deals
+      entity: deal
+      associations:
+        - companies
+        - contacts
+        - line_items
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/deals"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+          schema_transformations:
+            - type: CustomTransformation
+              class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+              field_mapping:
+                hs_date_entered_: "hs_v2_date_entered_"
+                hs_date_exited_: "hs_v2_date_exited_"
+                hs_time_in_: "hs_v2_latest_time_in_"
+            - type: CustomTransformation
+              class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
 
   deals_archived_stream:
     primary_key:
@@ -1468,6 +1343,234 @@ definitions:
         cursor_field: lastUpdated
         cursor_format: "%ms"
 
+  base_crm_search_full_refresh_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}"
+        request_parameters:
+          archived: "false"
+          associations: "{{ parameters['associations'] }}"
+          properties:
+            type: QueryProperties
+            property_list:
+              type: PropertiesFromEndpoint
+              property_field_path:
+                - name
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: "/properties/v2/{{ parameters['entity'] }}/properties"
+                decoder:
+                  type: JsonDecoder
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: characters
+              property_limit: 15000
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key: id
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        $ref: "#/definitions/base_selector"
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+      - type: CustomTransformation
+        class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+      - type: DpathFlattenFields
+        field_path:
+          - properties
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+
+  base_crm_search_incremental_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+        http_method: POST
+        fetch_properties_from_endpoint:
+          type: PropertiesFromEndpoint
+          property_field_path:
+            - name
+          retriever:
+            type: SimpleRetriever
+            requester:
+              $ref: "#/definitions/base_requester"
+              path: "/properties/v2/{{ parameters['entity'] }}/properties"
+            decoder:
+              type: JsonDecoder
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: []
+        request_body_json:
+          limit: 200
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          filters:
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
+              operator: GTE
+              value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+            - propertyName: "{{ parameters['cursor_filter_property_field'] }}"
+              operator: LTE
+              value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+            - propertyName: hs_object_id
+              operator: GTE
+              value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+          properties: "{{ stream_slice.extra_fields['query_properties'] }}"
+          after: "{{ next_page_token['next_page_token']['after'] }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
+          page_size: 200
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_hubspot.components.HubspotAssociationsExtractor
+          field_path:
+            - results
+          entity_primary_key: "{{ parameters['entity'] }}"
+          associations_list: "{{ parameters['associations'] }}"
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_hubspot.components.EntitySchemaNormalization
+    transformations:
+      # - modular to allow support for NewtoLegacyFieldTransformation
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+
+  engagements_calls_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: engagements_calls
+      entity: calls
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_calls"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  engagements_emails_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: engagements_emails
+      entity: emails
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  engagements_meetings_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: engagements_meetings
+      entity: meetings
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  engagements_notes_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: engagements_notes
+      entity: notes
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  engagements_tasks_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: engagements_tasks
+      entity: tasks
+      associations:
+        - companies
+        - contacts
+        - deals
+        - tickets
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/engagements_emails"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
@@ -1535,20 +1638,25 @@ streams:
   - "#/definitions/contact_lists_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
+  - "#/definitions/deals_archived_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/deals_stream"
+  - "#/definitions/email_events_stream"
   - "#/definitions/email_subscriptions_stream"
-  - "#/definitions/deals_archived_stream"
-  - "#/definitions/forms_stream"
+  - "#/definitions/engagements_stream"
+  - "#/definitions/engagements_calls_stream"
+  - "#/definitions/engagements_emails_stream"
+  - "#/definitions/engagements_meetings_stream"
+  - "#/definitions/engagements_notes_stream"
+  - "#/definitions/engagements_tasks_stream"
   - "#/definitions/form_submissions_stream"
-  - "#/definitions/owners_stream"
-  - "#/definitions/owners_archived_stream"
+  - "#/definitions/forms_stream"
   - "#/definitions/marketing_emails_stream"
+  - "#/definitions/owners_archived_stream"
+  - "#/definitions/owners_stream"
+  - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/workflows_stream"
-  - "#/definitions/email_events_stream"
-  - "#/definitions/engagements_stream"
-  - "#/definitions/subscription_changes_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
@@ -1904,12 +2012,14 @@ schemas:
           - "null"
           - string
         format: date-time
+        __ab_apply_cast_datetime: false
       updatedAt:
         description: The date and time when the deal was last updated
         type:
           - "null"
           - string
         format: date-time
+        __ab_apply_cast_datetime: false
       archived:
         description: Indicates if the deal is archived
         type:
@@ -2915,6 +3025,341 @@ schemas:
         type:
           - "null"
           - string
+
+  engagements_calls:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the call engagement.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the call engagement was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the call engagement was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the call engagement is archived or not.
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Contacts associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: Deals associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: Companies associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: Tickets associated with the call engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  engagements_emails:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the engagement email
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the engagement email was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the engagement email was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the engagement email is archived or not
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: List of contacts associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: List of deals associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: List of companies associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: List of tickets associated with the engagement email
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  engagements_meetings:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the meeting engagement.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp indicating when the meeting engagement was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Timestamp indicating when the meeting engagement was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates whether the meeting engagement is archived or not.
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Information about the contacts associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: Information about the deals associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: Information about the companies associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: Information about the tickets associated with the meeting engagement.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  engagements_notes:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the engagement note
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the note was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the note was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the note has been archived
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Contacts associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: Deals associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: Companies associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: Tickets associated with the engagement note
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  engagements_tasks:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the task
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the task was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: The date and time when the task was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the task has been archived
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: List of contacts associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      deals:
+        description: List of deals associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      companies:
+        description: List of companies associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      tickets:
+        description: List of tickets associated with the task
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
 
   form_submissions:
     $schema: http://json-schema.org/schema#
