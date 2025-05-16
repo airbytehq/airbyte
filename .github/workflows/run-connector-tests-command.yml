@@ -1,0 +1,31 @@
+name: Run Connector CI Tests via Slash Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "The repository name"
+        required: false
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+
+jobs:
+  call-connector-ci-tests:
+    uses: ./.github/workflows/connector-ci-tests.yml
+    with:
+      repo: ${{ inputs.repo }}
+      gitref: ${{ inputs.gitref }}
+      comment-id: ${{ inputs['comment-id'] }}
+      pr: ${{ inputs.pr }}
+    secrets: inherit
