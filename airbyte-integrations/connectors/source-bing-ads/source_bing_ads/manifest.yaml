@@ -149,6 +149,7 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["Campaigns"]
+          schema_normalization: Default
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -170,6 +171,25 @@ definitions:
             path:
               - CustomerId
             value: "{{ stream_slice.extra_fields['ParentCustomerId'] }}"
+          - type: AddedFieldDefinition
+            path:
+              - Languages
+            value: |
+              {% set languages = [] %}
+              {% for language in (record.get('Languages') or []) %}
+              {% set _ = languages.append(language) %}
+              {% endfor %}
+              {{ {"string": languages} }}
+          - type: AddedFieldDefinition
+            path:
+              - Settings
+            value: |
+              {% set settings = record.get('Settings' or []) %}
+              {{ {"Setting": settings}}}
+          - type: AddedFieldDefinition
+            path:
+              - Id
+            value: "{{ record.Id|int }}"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
