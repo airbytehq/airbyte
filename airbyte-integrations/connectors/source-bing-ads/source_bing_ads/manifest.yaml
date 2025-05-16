@@ -169,6 +169,10 @@ definitions:
             value: "{{ record.Id|int }}"
           - type: AddedFieldDefinition
             path:
+              - ExperimentId
+            value: "{{ record.ExperimentId|int if record.ExperimentId is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
               - AccountId
             value: "{{ stream_partition['account_id'] }}"
           - type: AddedFieldDefinition
@@ -201,7 +205,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - Settings
-            value: '{"Setting": {{ record.SettingContent }}}'
+            value: "{{ {'Setting': record.SettingContent} }}"
       - type: RemoveFields
         field_pointers:
           - - SettingContent
