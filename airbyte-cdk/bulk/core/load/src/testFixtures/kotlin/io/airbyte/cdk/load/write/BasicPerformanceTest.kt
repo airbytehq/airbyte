@@ -315,7 +315,7 @@ abstract class BasicPerformanceTest(
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
                 fileSizeMb = 10,
-                stagingDirectory = Path.of("/tmp")
+                stagingDirectory = Path.of("/tmp").grantAllPermissions()
             )
         scenario.setup()
         runSync(
