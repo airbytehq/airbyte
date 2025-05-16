@@ -369,14 +369,25 @@ class TestSplittingPropertiesFunctionality:
             {
                 "streams": [
                     {
-                        "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"],},
+                        "stream": {
+                            "name": "products",
+                            "json_schema": {},
+                            "supported_sync_modes": ["full_refresh", "incremental"],
+                        },
                         "sync_mode": "incremental",
                         "destination_sync_mode": "append",
                     }
                 ]
             }
         )
-        state = (StateBuilder().with_stream_state("products", {"updatedAt": "2006-01-01T00:03:18.336Z"},).build())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "products",
+                {"updatedAt": "2006-01-01T00:03:18.336Z"},
+            )
+            .build()
+        )
 
         stream_records = read(
             SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state
