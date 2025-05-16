@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.factory.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -19,11 +20,13 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoaderStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleterStep
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
+import io.airbyte.cdk.load.write.object_storage.FilePartAccumulatorFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
+import kotlinx.coroutines.flow.Flow
 
 @Factory
 class ObjectLoaderStepBeanFactory {
@@ -32,8 +35,8 @@ class ObjectLoaderStepBeanFactory {
     fun <T : OutputStream> recordPartFormatter(
         loader: ObjectLoader,
         partFormatter: ObjectLoaderPartFormatter<T>,
-        @Named("pipelineInputQueue")
-        inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+        @Named("dataChannelInputFlows")
+        inputFlows: Array<Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
         @Named("objectLoaderPartQueue")
         outputQueue:
             PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
@@ -42,7 +45,7 @@ class ObjectLoaderStepBeanFactory {
         ObjectLoaderPartFormatterStep(
             loader,
             partFormatter,
-            inputQueue,
+            inputFlows,
             outputQueue,
             taskFactory,
             "record-part-formatter-step",
@@ -158,9 +161,20 @@ class ObjectLoaderStepBeanFactory {
         ObjectLoaderPartFormatterStep(
             loader,
             partFormatter,
-            inputQueue,
+            inputQueue.asOrderedFlows(),
             outputQueue,
             taskFactory,
             "file-record-part-formatter-step",
         )
+
+    @Singleton
+    fun legacyFilePartAccumulatorFactory(
+        pathFactory: ObjectStoragePathFactory,
+        @Named("objectLoaderPartQueue")
+        outputQueue:
+            PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+        loadStrategy: ObjectLoader
+    ): FilePartAccumulatorFactory {
+        return FilePartAccumulatorFactory(pathFactory, outputQueue, loadStrategy)
+    }
 }
