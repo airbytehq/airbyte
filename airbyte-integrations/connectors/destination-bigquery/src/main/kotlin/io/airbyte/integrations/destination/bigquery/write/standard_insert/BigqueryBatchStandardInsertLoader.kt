@@ -142,7 +142,10 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             bigquery,
             writeChannelConfiguration,
             jobId,
-            BigQueryRecordFormatter(legacyRawTablesOnly = config.legacyRawTablesOnly),
+            BigQueryRecordFormatter(
+                tableNameInfo.columnNameMapping,
+                legacyRawTablesOnly = config.legacyRawTablesOnly,
+            ),
         )
     }
 

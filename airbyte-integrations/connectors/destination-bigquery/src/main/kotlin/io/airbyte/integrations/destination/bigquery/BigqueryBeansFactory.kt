@@ -32,6 +32,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQue
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStateGatherer
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadTableExistenceChecker
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryRawTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
@@ -92,11 +93,14 @@ class BigqueryBeansFactory {
             )
         } else {
             val sqlTableOperations =
-                DefaultDirectLoadTableSqlOperations(
-                    BigqueryDirectLoadSqlGenerator(
-                        config.projectId,
+                BigqueryDirectLoadSqlTableOperations(
+                    DefaultDirectLoadTableSqlOperations(
+                        BigqueryDirectLoadSqlGenerator(
+                            config.projectId,
+                        ),
+                        destinationHandler,
                     ),
-                    destinationHandler,
+                    bigquery,
                 )
             return DirectLoadTableWriter(
                 names = names,
