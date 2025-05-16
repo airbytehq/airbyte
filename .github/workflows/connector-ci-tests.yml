@@ -81,7 +81,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           # In order to work correctly on forks, `repository` must be set if `ref` is set:
-          repository: ${{ github.repository }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
           # TODO: Remove the Airbyte-CI dependency for running java integration tests.
           ref: ${{ github.head_ref || github.ref_name }}
@@ -125,16 +125,16 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
       - name: Fetch connector secrets
         if: matrix.connector
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
-
-      - name: Run Unit Tests
-        if: matrix.connector
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
@@ -221,16 +221,16 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
+      - name: Run Unit Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
       - name: Fetch connector secrets
         if: matrix.connector
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
-
-      - name: Run Unit Tests
-        if: matrix.connector
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
 
       - name: Run Integration Tests
         if: matrix.connector
