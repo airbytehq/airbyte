@@ -1,0 +1,147 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/sftp",
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination SFTP",
+    "type": "object",
+    "required": ["host", "username", "password", "destination_path"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the SFTP server.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the SFTP server.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 22,
+        "examples": [22],
+        "order": 1
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the SFTP server.",
+        "type": "string",
+        "order": 2
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 3
+      },
+      "destination_path": {
+        "title": "Destination path",
+        "type": "string",
+        "description": "Path to the directory where files will be written.",
+        "examples": ["/data"],
+        "order": 4
+      },
+      "file_format": {
+        "title": "File Format",
+        "description": "File format to use when writing data.",
+        "type": "string",
+        "enum": ["json", "csv"],
+        "default": "json",
+        "examples": ["json", "csv"],
+        "order": 5
+      },
+      "file_name_pattern": {
+        "title": "File Name Pattern",
+        "description": "Pattern to use for naming the output files. Available variables: {format}, {stream}, {date}. You can use '/' to organize files into directories (e.g., '{format}/{stream}'). Default: airbyte_{format}_{stream}",
+        "type": "string",
+        "examples": [
+          "airbyte_{format}_{stream}",
+          "data_{stream}_{date}",
+          "{stream}",
+          "{format}/{stream}/{date}"
+        ],
+        "default": "airbyte_{format}_{stream}",
+        "order": 6
+      },
+      "ssh_algorithms": {
+        "title": "SSH Algorithms Configuration",
+        "type": "object",
+        "description": "Advanced configuration for SSH algorithms. Only configure this if you need to use specific algorithms.",
+        "required": [],
+        "additionalProperties": false,
+        "order": 7,
+        "properties": {
+          "key_exchange": {
+            "title": "Key Exchange Algorithms",
+            "type": "array",
+            "description": "List of key exchange algorithms to use, in order of preference.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              [
+                "diffie-hellman-group-exchange-sha256",
+                "diffie-hellman-group14-sha256"
+              ]
+            ],
+            "order": 0
+          },
+          "cipher": {
+            "title": "Cipher Algorithms",
+            "type": "array",
+            "description": "List of cipher algorithms to use, in order of preference.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [["aes256-ctr", "aes192-ctr", "aes128-ctr"]],
+            "order": 1
+          },
+          "server_host_key": {
+            "title": "Server Host Key Algorithms",
+            "type": "array",
+            "description": "List of server host key algorithms to use, in order of preference.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              ["ssh-ed25519", "ecdsa-sha2-nistp256", "rsa-sha2-512"]
+            ],
+            "order": 2
+          },
+          "mac": {
+            "title": "MAC Algorithms",
+            "type": "array",
+            "description": "List of MAC algorithms to use, in order of preference.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [["hmac-sha2-512", "hmac-sha2-256"]],
+            "order": 3
+          },
+          "disabled_algorithms": {
+            "title": "Disabled Algorithms",
+            "type": "object",
+            "description": "Specify algorithms to disable. This takes precedence over enabled algorithms.",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "examples": [
+              {
+                "key_exchange": ["diffie-hellman-group1-sha1"],
+                "cipher": ["arcfour256"]
+              }
+            ],
+            "order": 4
+          }
+        }
+      }
+    }
+  }
+}
