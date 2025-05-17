@@ -17,7 +17,12 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      - name: Test workflow (for push events)
+        if: github.event_name == 'push'
+        run: echo "Workflow is working correctly on push events (test only)"
+      
       - name: Add welcome comment to PR
+        if: github.event_name == 'pull_request_target'
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
