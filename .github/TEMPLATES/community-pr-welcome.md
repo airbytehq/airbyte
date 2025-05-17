@@ -1,6 +1,6 @@
 ## 👋 Welcome to Airbyte!
 
-Thank you for your contribution from **${{ github.event.pull_request.head.repo.full_name }}**! We're excited to have you join our community.
+Thank you for your contribution from **{{REPO_NAME}}**! We're excited to have you join our community.
 
 ### Helpful Resources
 

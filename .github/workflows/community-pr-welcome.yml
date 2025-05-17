@@ -20,7 +20,7 @@ jobs:
           REPO_NAME="${{ github.event.pull_request.head.repo.full_name }}"
           TEMPLATE=$(cat .github/TEMPLATES/community-pr-welcome.md)
           # Replace the template variable with the actual value
-          PROCESSED_TEMPLATE="${TEMPLATE//\${{ github.event.pull_request.head.repo.full_name }}/$REPO_NAME}"
+          PROCESSED_TEMPLATE="${TEMPLATE//{{REPO_NAME}}/$REPO_NAME}"
           # Save to output with proper escaping for multiline strings
           echo "content<<EOF" >> $GITHUB_OUTPUT
           echo "$PROCESSED_TEMPLATE" >> $GITHUB_OUTPUT
