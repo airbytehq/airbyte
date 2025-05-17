@@ -27,6 +27,7 @@ Less Annoying CRM connector  enables seamless data integration, allowing users t
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2025-05-17 | [60590](https://github.com/airbytehq/airbyte/pull/60590) | Update dependencies |
 | 0.0.21 | 2025-05-10 | [59792](https://github.com/airbytehq/airbyte/pull/59792) | Update dependencies |
 | 0.0.20 | 2025-05-03 | [59279](https://github.com/airbytehq/airbyte/pull/59279) | Update dependencies |
 | 0.0.19 | 2025-04-26 | [58753](https://github.com/airbytehq/airbyte/pull/58753) | Update dependencies |
