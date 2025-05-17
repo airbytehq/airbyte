@@ -3,6 +3,10 @@ name: Community PR Welcome Message
 on:
   pull_request_target:
     types: [opened]
+  # Temporary trigger for testing - will be removed before merging
+  push:
+    branches:
+      - devin/1747500900-welcome-message
 
 jobs:
   welcome-community-contributor:
