@@ -344,6 +344,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.33  | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.
 | 3.6.32  | 2025-05-8  | [59722](https://github.com/airbytehq/airbyte/pull/59722)   | Consolidate gradle set up.                                                                                                                                                 |
 | 3.6.31  | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                                                       |
 | 3.6.30  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234)   | Update base image version for certified DB source connectors                                                                                                               |

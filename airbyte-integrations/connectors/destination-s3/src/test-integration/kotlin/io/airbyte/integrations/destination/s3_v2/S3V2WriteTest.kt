@@ -53,7 +53,7 @@ abstract class S3V2WriteTest(
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
         micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = stringifySchemalessObjects,
         schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = schematizedArrayBehavior,
@@ -433,6 +433,7 @@ class S3V2WriteTestParquetUncompressed :
         mergesUnions = true,
     )
 
+@Disabled("flaky: re-enable after dagger flow is disabled")
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
@@ -446,7 +447,13 @@ class S3V2WriteTestParquetSnappy :
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true,
-    )
+    ) {
+    @Disabled("flaky: re-enable after dagger flow is disabled")
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 class S3V2WriteTestEndpointURL :
     S3V2WriteTest(

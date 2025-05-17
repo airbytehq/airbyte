@@ -27,6 +27,12 @@ class HubspotTestCase:
     OBJECT_ID = "testID"
     ACCESS_TOKEN = "new_access_token"
     CURSOR_FIELD = "occurredAt"
+    MOCK_PROPERTIES_FOR_SCHEMA_LOADER = {
+        # We do not need to include `closed_date` because the first property is automatically mocked
+        # when we instantiate the properties in RootHttpResponseBuilder(templates).
+        # "closed_date": "datetime",
+        "createdate": "datetime",
+    }
     PROPERTIES = {
         "closed_date": "datetime",
         "createdate": "datetime",
@@ -122,6 +128,30 @@ class HubspotTestCase:
         if not isinstance(responses, (list, tuple)):
             responses = [responses]
         getattr(http_mocker, method)(request, responses)
+
+    @classmethod
+    def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
+        entities = entities or ["calls", "deal", "emails", "form", "meetings", "notes", "tasks"]
+
+        # figure out which entities are already mocked
+        existing = set()
+        for entity in entities:
+            for request_mock in http_mocker._get_matchers():
+                # check if dynamic stream was already mocked
+                if f"properties/v2/{entity}" in request_mock.request._parsed_url.path:
+                    existing.add(entity)
+
+        templates = [{"name": "hs__test_field", "type": "enumeration"}]
+        response_builder = RootHttpResponseBuilder(templates)
+
+        for entity in entities:
+            if entity in existing:
+                continue  # skip if already mocked
+
+            http_mocker.get(
+                PropertiesRequestBuilder().for_entity(entity).build(),
+                response_builder.build()
+            )
 
     @classmethod
     def record_builder(cls, stream: str, record_cursor_path):
