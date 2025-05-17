@@ -11,12 +11,19 @@ on:
           - "java"
           - "python"
       image-type:
-        description: "Image Type (for now only 'base' is supported)"
+        description: "Image Type"
         required: true
         default: "base"
         type: choice
         options:
           - "base"
+          - "connector"
+      connector-name:
+        description: "Connector Name. Ignored if `image-type` is 'base'."
+        required: false
+      connector-base-image:
+        description: "Base Image Override. Ignored if `image-type` is 'base'."
+        required: false
       tag-or-version-number:
         description: "Tag or Version Number (without 'v' prefix)"
         required: true
@@ -41,10 +48,9 @@ on:
         default: true
 
 jobs:
-  build-and-publish-base-image:
-    name: Build and Publish ${{ github.event.inputs.connector-type }} Base Image
+  build-and-publish-image:
+    name: Build and Publish ${{ github.event.inputs.connector-type }} Image
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.image-type == 'base' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -72,8 +78,15 @@ jobs:
       - name: Set and debug variables
         id: vars
         run: |
-          DOCKERFILE=docker-images/Dockerfile.${{ github.event.inputs.connector-type }}-connector-base
-          IMAGE_NAME=${{ github.event.inputs.connector-type }}-connector-base
+          DOCKERFILE=docker-images/Dockerfile.${{ github.event.inputs.connector-type }}-connector
+          if [ "${{ github.event.inputs.image-type }}" == "base" ]; then
+            DOCKERFILE=${DOCKERFILE}-base
+            IMAGE_NAME=${{ github.event.inputs.connector-type }}-connector-base
+            CONTEXT_DIR="."
+          else
+            IMAGE_NAME=${{ github.event.inputs.connector-name }}
+            CONTEXT_DIR=airbyte-integrations/connectors/${{ github.event.inputs.connector-name }}
+          fi
           FULL_IMAGE_REF=${{ github.event.inputs.repository-root }}/${IMAGE_NAME}:${{ github.event.inputs.tag-or-version-number }}
           echo "DOCKERFILE=${DOCKERFILE}" | tee -a "$GITHUB_OUTPUT"
           echo "IMAGE_NAME=${IMAGE_NAME}" | tee -a "$GITHUB_OUTPUT"
@@ -82,10 +95,24 @@ jobs:
           echo "dry-run=${{ github.event.inputs.dry-run }}"
           echo "require-security-check=${{ github.event.inputs.require-security-check }}"
 
-      - name: Build Base Image
-        id: docker-build-base
+      - name: Setup Java
+        if: ${{ github.event.inputs.connector-type == 'java' && github.event.inputs.image-type == 'connector' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Build Java Connector Tarball
+        if: ${{ github.event.inputs.connector-type == 'java' && github.event.inputs.image-type == 'connector' }}
+        run: |
+          ./gradlew :airbyte-integrations:connectors:${{ github.event.inputs.connector-name }}:distTar
+
+      - name: Build Image
+        id: docker-build-image
         uses: docker/build-push-action@v6
         with:
+          context: ${{ steps.vars.outputs.CONTEXT_DIR }}
           file: ${{ steps.vars.outputs.DOCKERFILE }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.vars.outputs.FULL_IMAGE_REF }}
@@ -99,7 +126,7 @@ jobs:
           severity-cutoff: high
           fail-build: ${{ github.event.inputs.require-security-check }}
 
-      - name: Publish Base Image
+      - name: Publish Image
         # Note: By design, this should reuse the cache from above, without
         # rebuilding the image.
         # https://docs.docker.com/build/ci/github-actions/test-before-push/
@@ -107,6 +134,7 @@ jobs:
         if: ${{ github.event.inputs.dry-run == 'false' }}
         uses: docker/build-push-action@v6
         with:
+          context: ${{ steps.vars.outputs.CONTEXT_DIR }}
           platforms: linux/amd64,linux/arm64
           file: ${{ steps.vars.outputs.DOCKERFILE }}
           tags: ${{ steps.vars.outputs.FULL_IMAGE_REF }}
