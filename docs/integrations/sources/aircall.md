@@ -73,6 +73,7 @@ Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connec
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 0.4.1 | 2025-05-17 | [47602](https://github.com/airbytehq/airbyte/pull/47602) | Update dependencies |
 | 0.4.0 | 2024-08-23 | [44597](https://github.com/airbytehq/airbyte/pull/44597) | Refactor connector to manifest-only format |
 | 0.3.0 | 2024-08-19 | [44437](https://github.com/airbytehq/airbyte/pull/44437) | Fix pagination |
 | 0.2.12 | 2024-08-17 | [43879](https://github.com/airbytehq/airbyte/pull/43879) | Update dependencies |
