@@ -7,13 +7,22 @@ on:
 jobs:
   welcome-community-contributor:
     name: Welcome Community Contributor
-    # Only run when PR is from a fork (community contributor)
-    if: github.event.pull_request.head.repo.fork == true
     runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
     steps:
+      - name: Debug Event Info
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event action: ${{ github.event.action }}"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo "Head ref: ${{ github.head_ref }}"
+          echo "Is fork: ${{ github.event.pull_request.head.repo.fork }}"
+          echo "Repository: ${{ github.repository }}"
+
+      # Only run welcome message step when PR is from a fork (community contributor)
       - name: Add welcome comment to PR
+        if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
