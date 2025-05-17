@@ -43,6 +43,7 @@ To use the GlassFlow destination, you'll need:
 
 | Version | Date              | Pull Request                                              | Subject                                         |
 |:--------|:------------------| :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.7 | 2025-05-17 | [59862](https://github.com/airbytehq/airbyte/pull/59862) | Update dependencies |
 | 0.1.6 | 2025-05-03 | [59349](https://github.com/airbytehq/airbyte/pull/59349) | Update dependencies |
 | 0.1.5 | 2025-04-26 | [58697](https://github.com/airbytehq/airbyte/pull/58697) | Update dependencies |
 | 0.1.4 | 2025-04-19 | [58260](https://github.com/airbytehq/airbyte/pull/58260) | Update dependencies |
