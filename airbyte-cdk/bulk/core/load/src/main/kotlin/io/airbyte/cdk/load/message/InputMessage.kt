@@ -67,12 +67,10 @@ data class InputFile(
         stream: DestinationStream,
         emittedAtMs: Long,
         fileMessage: DestinationFile.AirbyteRecordMessageFile,
-        serialized: String = ""
     ) : this(
         DestinationFile(
             stream,
             emittedAtMs,
-            serialized,
             fileMessage,
         )
     )
@@ -97,6 +95,7 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
+            0L
         )
     )
     override fun asProtocolMessage(): AirbyteMessage = checkpoint.asProtocolMessage()

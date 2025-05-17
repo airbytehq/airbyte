@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_v2
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.message.InputRecord
@@ -28,6 +29,8 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 
 @Timeout(60, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
@@ -64,6 +67,7 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         unknownTypesBehavior = unknownTypesBehavior,
+        dataChannelMedium = DataChannelMedium.SOCKETS
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -315,7 +319,22 @@ class S3V2WriteTestJsonUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
+}
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
@@ -355,6 +374,11 @@ class S3V2WriteTestCsvUncompressed :
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
+    }
+
+    @Test
+    override fun testTruncateRefreshNoData() {
+        super.testTruncateRefreshNoData()
     }
 }
 

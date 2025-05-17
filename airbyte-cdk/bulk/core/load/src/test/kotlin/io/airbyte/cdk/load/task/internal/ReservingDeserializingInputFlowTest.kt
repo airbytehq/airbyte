@@ -60,8 +60,8 @@ class ReservingDeserializingInputFlowTest {
                 DestinationRecord(
                     stream,
                     AirbyteMessage(),
-                    firstArg<String>().reversed() + "!",
-                    ObjectTypeWithoutSchema
+                    ObjectTypeWithoutSchema,
+                    serializedSizeBytes = firstArg<ByteArray>().size.toLong(),
                 )
             }
         val inputs =
