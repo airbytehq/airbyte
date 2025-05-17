@@ -2,7 +2,7 @@ name: Community PR Welcome Message
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
 
 jobs:
   welcome-community-contributor:
@@ -11,19 +11,8 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - name: Debug Event Info
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Event action: ${{ github.event.action }}"
-          echo "PR number: ${{ github.event.pull_request.number }}"
-          echo "Head ref: ${{ github.head_ref }}"
-          echo "Is fork: ${{ github.event.pull_request.head.repo.fork }}"
-          echo "Repository: ${{ github.repository }}"
-          echo "Testing synchronize event trigger"
-
-      # Temporarily removed fork condition for testing
       - name: Add welcome comment to PR
-        # if: github.event.pull_request.head.repo.fork == true
+        if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
