@@ -25,6 +25,7 @@ Docs : https://developer.systeme.io/reference/api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-05-17 | [60130](https://github.com/airbytehq/airbyte/pull/60130) | Update dependencies |
 | 0.0.19 | 2025-05-04 | [58443](https://github.com/airbytehq/airbyte/pull/58443) | Update dependencies |
 | 0.0.18 | 2025-04-12 | [58002](https://github.com/airbytehq/airbyte/pull/58002) | Update dependencies |
 | 0.0.17 | 2025-04-05 | [56902](https://github.com/airbytehq/airbyte/pull/56902) | Update dependencies |
