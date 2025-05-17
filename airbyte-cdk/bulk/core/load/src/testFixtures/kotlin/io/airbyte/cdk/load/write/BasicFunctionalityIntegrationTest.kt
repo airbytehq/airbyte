@@ -35,8 +35,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.InputFile
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
@@ -387,21 +385,22 @@ abstract class BasicFunctionalityIntegrationTest(
                 includeFiles = true,
             )
 
+        val sourcePath = "path/to/file"
+        // these must match the values hard-coded in DockerizedDestination
+        val stagingDir = "tmp"
+        val fileName = "test_file"
+        val fileContents = "123"
+
         val fileReference =
             AirbyteRecordMessageFileReference()
-                .withSourceFileRelativePath("path/to/file")
+                .withSourceFileRelativePath(sourcePath)
+                .withStagingFileUrl("/$stagingDir/$fileName")
                 .withFileSizeBytes(1234L)
-                .withStagingFileUrl("/tmp/test_file")
-//                fileUrl = "/tmp/test_file",
-//                bytes = 1234L,
-//                fileRelativePath = "path/to/file",
-//                modified = 4321L,
-//                sourceFileUrl = "file://path/to/source",
 
         val input =
             InputRecord(
                 namespace = randomizedNamespace,
-                name = "test_stream",
+                name = "test_stream_file",
                 data = """{"id": 5678}""",
                 emittedAtMs = 1234,
                 changes = mutableListOf(),
@@ -447,7 +446,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
-        assertEquals(mapOf("path/to/file" to "123"), fileContent)
+        assertEquals(fileContents, fileContent[sourcePath])
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
