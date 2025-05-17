@@ -118,10 +118,568 @@ definitions:
             path:
               - LastModifiedTime
             value: '{{ format_datetime(record.LastModifiedTime, "%Y-%m-%dT%H:%M:%S.%f" ) }}'
-
+          # Schema parses Id as integer, we use this parsing for the state as historically value has been saved as string
+          - type: AddedFieldDefinition # useful when used as a parent stream
+            path:
+              - parsed_account_id
+            value: "{{ record.Id | string }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _airbyte_parent_id # when used as a parent stream
+            value: "{{ { 'account_id': record['Id'], 'customer_id': record['ParentCustomerId'] } }}"
+  ad_performance_report_hourly_stream:
+    type: DeclarativeStream
+    name: ad_performance_report_hourly
+    primary_key:
+      [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+      ]
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/ad_performance_report_hourly.json"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      partition_router:
+        $ref: "#/definitions/partition_router_slice_reducer"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AdPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AdPerformanceReportRequest
+            Aggregation: Hourly
+            Columns:
+              - AccountId
+              - CampaignId
+              - AdGroupId
+              - AdId
+              - TimePeriod
+              - AbsoluteTopImpressionRatePercent
+              - TopImpressionRatePercent
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Language
+              - Network
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - DeliveredMatchType
+              - AccountName
+              - CampaignName
+              - CampaignType
+              - AdGroupName
+              - Impressions
+              - Clicks
+              - Ctr
+              - Spend
+              - CostPerConversion
+              - DestinationUrl
+              - Assists
+              - ReturnOnAdSpend
+              - CostPerAssist
+              - CustomParameters
+              - FinalAppUrl
+              - AdDescription
+              - AdDescription2
+              - ViewThroughConversions
+              - ViewThroughConversionsQualified
+              - AllCostPerConversion
+              - AllReturnOnAdSpend
+              - Conversions
+              - ConversionRate
+              - ConversionsQualified
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - AllConversions
+              - AllConversionRate
+              - AllRevenue
+              - AllRevenuePerConversion
+              - Revenue
+              - RevenuePerConversion
+              - RevenuePerAssist
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - TimePeriod
+            #            Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+            #            Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+            value: |
+              {%- set parts = record.TimePeriod.split('|') -%}
+              {%- set time_period = record.TimePeriod -%}
+              {%- set date_part = '' -%}
+              {%- set hour_part = 0 -%}
+              {%- if parts|length > 1 -%}
+                {%- set date_part = parts[0] -%}
+                {%- set hour_part = parts[1]|int -%}
+                {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
+              {%- endif -%}
+              {{ time_period }}
+  ad_performance_report_daily_stream:
+    type: DeclarativeStream
+    name: ad_performance_report_daily
+    primary_key:
+      [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+      ]
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/ad_performance_report.json"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AdPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AdPerformanceReportRequest
+            Aggregation: Daily
+            Columns:
+              - AccountId
+              - CampaignId
+              - AdGroupId
+              - AdId
+              - TimePeriod
+              - AbsoluteTopImpressionRatePercent
+              - TopImpressionRatePercent
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Language
+              - Network
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - DeliveredMatchType
+              - AccountName
+              - CampaignName
+              - CampaignType
+              - AdGroupName
+              - Impressions
+              - Clicks
+              - Ctr
+              - Spend
+              - CostPerConversion
+              - DestinationUrl
+              - Assists
+              - ReturnOnAdSpend
+              - CostPerAssist
+              - CustomParameters
+              - FinalAppUrl
+              - AdDescription
+              - AdDescription2
+              - ViewThroughConversions
+              - ViewThroughConversionsQualified
+              - AllCostPerConversion
+              - AllReturnOnAdSpend
+              - Conversions
+              - ConversionRate
+              - ConversionsQualified
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - AllConversions
+              - AllConversionRate
+              - AllRevenue
+              - AllRevenuePerConversion
+              - Revenue
+              - RevenuePerConversion
+              - RevenuePerAssist
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    # FIXME transformations/normalization
+  ad_performance_report_weekly_stream:
+    type: DeclarativeStream
+    name: ad_performance_report_weekly
+    primary_key:
+      [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+      ]
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/ad_performance_report.json"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AdPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AdPerformanceReportRequest
+            Aggregation: Weekly
+            Columns:
+              - AccountId
+              - CampaignId
+              - AdGroupId
+              - AdId
+              - TimePeriod
+              - AbsoluteTopImpressionRatePercent
+              - TopImpressionRatePercent
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Language
+              - Network
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - DeliveredMatchType
+              - AccountName
+              - CampaignName
+              - CampaignType
+              - AdGroupName
+              - Impressions
+              - Clicks
+              - Ctr
+              - Spend
+              - CostPerConversion
+              - DestinationUrl
+              - Assists
+              - ReturnOnAdSpend
+              - CostPerAssist
+              - CustomParameters
+              - FinalAppUrl
+              - AdDescription
+              - AdDescription2
+              - ViewThroughConversions
+              - ViewThroughConversionsQualified
+              - AllCostPerConversion
+              - AllReturnOnAdSpend
+              - Conversions
+              - ConversionRate
+              - ConversionsQualified
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - AllConversions
+              - AllConversionRate
+              - AllRevenue
+              - AllRevenuePerConversion
+              - Revenue
+              - RevenuePerConversion
+              - RevenuePerAssist
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart: # {{ str_to_datetime(stream_interval.get('start_time')).year }}
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).day}}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).month}}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year if stream_interval.get('start_time') else str_to_datetime(config.get('reports_start_date')).year}}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    # FIXME transformations/normalization
+  ad_performance_report_monthly_stream:
+    type: DeclarativeStream
+    name: ad_performance_report_monthly
+    primary_key:
+      [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "DeliveredMatchType",
+      ]
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_bing_ads/schemas/ad_performance_report.json"
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body_json:
+          ReportRequest:
+            ExcludeColumnHeaders: false
+            ExcludeReportFooter: true
+            ExcludeReportHeader: true
+            Format: Csv
+            FormatVersion: "'2.0'"
+            ReportName: AdPerformanceReport
+            ReturnOnlyCompleteData: false
+            Type: AdPerformanceReportRequest
+            Aggregation: Monthly
+            Columns:
+              - AccountId
+              - CampaignId
+              - AdGroupId
+              - AdId
+              - TimePeriod
+              - AbsoluteTopImpressionRatePercent
+              - TopImpressionRatePercent
+              - CurrencyCode
+              - AdDistribution
+              - DeviceType
+              - Language
+              - Network
+              - DeviceOS
+              - TopVsOther
+              - BidMatchType
+              - DeliveredMatchType
+              - AccountName
+              - CampaignName
+              - CampaignType
+              - AdGroupName
+              - Impressions
+              - Clicks
+              - Ctr
+              - Spend
+              - CostPerConversion
+              - DestinationUrl
+              - Assists
+              - ReturnOnAdSpend
+              - CostPerAssist
+              - CustomParameters
+              - FinalAppUrl
+              - AdDescription
+              - AdDescription2
+              - ViewThroughConversions
+              - ViewThroughConversionsQualified
+              - AllCostPerConversion
+              - AllReturnOnAdSpend
+              - Conversions
+              - ConversionRate
+              - ConversionsQualified
+              - AverageCpc
+              - AveragePosition
+              - AverageCpm
+              - AllConversions
+              - AllConversionRate
+              - AllRevenue
+              - AllRevenuePerConversion
+              - Revenue
+              - RevenuePerConversion
+              - RevenuePerAssist
+            Scope:
+              AccountIds:
+                - "{{ stream_partition['account_id'] }}"
+            Time:
+              CustomDateRangeStart:
+                Day: "{{ str_to_datetime(stream_interval.get('start_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('start_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('start_time')).year }}"
+              CustomDateRangeEnd:
+                Day: "{{ str_to_datetime(stream_interval.get('end_time')).day }}"
+                Month: "{{ str_to_datetime(stream_interval.get('end_time')).month }}"
+                Year: "{{ str_to_datetime(stream_interval.get('end_time')).year }}"
+              # "PredefinedTime": "ValueHere"
+              "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
+    incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    # FIXME transformations/normalization
+  basic_async_retriever:
+    type: AsyncRetriever
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: Id
+          partition_field: account_id
+          stream:
+            $ref: "#/definitions/accounts_stream"
+    status_mapping:
+      failed:
+        - Error
+      running:
+        - Pending
+      completed:
+        - Success
+      timeout: []
+    download_target_extractor:
+      type: DpathExtractor
+      field_path:
+        - ReportRequestStatus
+        - ReportDownloadUrl
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    status_extractor:
+      type: DpathExtractor
+      field_path:
+        - ReportRequestStatus
+        - Status
+    polling_requester:
+      type: HttpRequester
+      url_base: https://reporting.api.bingads.microsoft.com/
+      path: Reporting/v13/GenerateReport/Poll
+      http_method: POST
+      authenticator: "#/definitions/authenticator"
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition['customer_id'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      request_body_json:
+        ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
+    download_requester:
+      type: HttpRequester
+      url_base: "{{download_target}}"
+      http_method: GET
+    download_decoder:
+      type: ZipfileDecoder
+      decoder:
+        type: CsvDecoder
+    creation_requester:
+      type: HttpRequester
+      url_base: https://reporting.api.bingads.microsoft.com/
+      path: Reporting/v13/GenerateReport/Submit
+      http_method: POST
+      request_headers:
+        Content-Type: application/json
+        DeveloperToken: "{{ config['developer_token'] }}"
+        CustomerId: "'{{ stream_partition['customer_id'] }}'"
+        CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
+      authenticator: "#/definitions/authenticator"
+  partition_router_slice_reducer:
+    type: CustomPartitionRouter
+    class_name: source_bing_ads.components.partition_routers.SubstreamPartitionRouterSliceReducer
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        # Id is the primary key of the accounts stream but an integer
+        # and not a string. We need to convert it to a string to be able
+        # to get the state from the previous state format transformed.
+        parent_key: parsed_account_id
+        partition_field: account_id
+        stream: "#/definitions/accounts_stream"
+  incremental_sync_report_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: TimePeriod
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['reports_start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+  incremental_sync_report_hourly_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: TimePeriod
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['reports_start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
 streams:
   - $ref: "#/definitions/accounts_stream"
-
+  - $ref: "#/definitions/ad_performance_report_hourly_stream"
+  - $ref: "#/definitions/ad_performance_report_daily_stream"
+  - $ref: "#/definitions/ad_performance_report_weekly_stream"
+  - $ref: "#/definitions/ad_performance_report_monthly_stream"
 schemas:
   accounts:
     $schema: http://json-schema.org/draft-07/schema#
