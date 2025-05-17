@@ -27,7 +27,8 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Add welcome comment to PR
-        if: github.event.pull_request.head.repo.fork == true
+        # Temporarily removed fork condition for testing
+        # if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
