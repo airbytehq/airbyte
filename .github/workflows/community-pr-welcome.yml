@@ -2,7 +2,7 @@ name: Community PR Welcome Message
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened]
 
 jobs:
   welcome-community-contributor:
@@ -12,8 +12,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Add welcome comment to PR
-        # Temporarily removed fork condition for testing
-        # if: github.event.pull_request.head.repo.fork == true
+        if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
