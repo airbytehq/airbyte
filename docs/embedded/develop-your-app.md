@@ -1,14 +1,8 @@
 ---
 products: embedded
-title: Develop your app
 ---
 
-# Develop your app with Airbyte Embedded
-
-<head>
-  <!-- HIDE PAGE FROM SEARCH ENGINES FOR NOW -->
-  <meta name="robots" content="noindex, nofollow" />
-</head>
+# Develop your app with Embedded
 
 Once you've completed the [prerequisites and one-time setup](prerequisites-setup), begin developing your app. This article illustrates how to integrate Airbyte Embedded into your app with an example. Feel free to follow along with this example app, or use the steps as indications of what you need to implement into your own codebase.
 

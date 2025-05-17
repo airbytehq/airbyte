@@ -4,11 +4,6 @@ products: embedded
 
 # Prerequisites and setup
 
-<head>
-  <!-- HIDE PAGE FROM SEARCH ENGINES FOR NOW -->
-  <meta name="robots" content="noindex, nofollow" />
-</head>
-
 Before you can start using Embedded, complete the following one-time setup process.
 
 ## Prerequisites

@@ -4,11 +4,6 @@ products: embedded
 
 # Use Airbyte Embedded
 
-<head>
-  <!-- HIDE PAGE FROM SEARCH ENGINES FOR NOW -->
-  <meta name="robots" content="noindex, nofollow" />
-</head>
-
 Once in your app, open Airbyte’s integration widget to see a catalog of available integrations. Choose one, and authenticate. Don't worry - if you want to show your own integration tiles, Embedded supports this flow as well.
 
 :::tip
