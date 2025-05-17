@@ -54,6 +54,7 @@ class TestSuiteReportStream(TestReportStream):
     state_file: str
     state_file_after_migration: Optional[str] = None
     state_file_after_migration_with_cursor_further_config_start_date: Optional[str] = None
+    state_file_legacy: Optional[str] = None
     incremental_report_file: str
     incremental_report_file_with_records_further_cursor: Optional[str] = None
     first_read_state: dict
@@ -92,7 +93,7 @@ class TestSuiteReportStream(TestReportStream):
     @freeze_time("2024-05-06")
     def test_incremental_read_returns_records_further_config_start_date(self):
         if self.stream_name not in MIGRATED_STREAMS:
-            self.skipTest("Skipping test_incremental_read_returns_records for NOT migrated to manifest streams")
+            self.skipTest(f"Skipping test_incremental_read_returns_records for NOT migrated to manifest stream: {self.stream_name}")
         if not self.report_file_with_records_further_start_date or not self.first_read_state_for_records_further_start_date:
             assert False, "test_incremental_read_returns_records_further_config_start_date is not correctly set"
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file_with_records_further_start_date)
@@ -102,7 +103,7 @@ class TestSuiteReportStream(TestReportStream):
     @freeze_time("2024-05-06")
     def test_incremental_read_with_state_returns_records(self):
         if self.stream_name in MIGRATED_STREAMS:
-            self.skipTest("Skipping for migrated to manifest streams")
+            self.skipTest(f"Skipping for migrated to manifest stream: : {self.stream_name}")
         state = self._state(self.state_file, self.stream_name)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state
@@ -131,7 +132,7 @@ class TestSuiteReportStream(TestReportStream):
         For this test the records are all with TimePeriod behind the config start date and the state TimePeriod cursor.
         """
         if self.stream_name not in MIGRATED_STREAMS:
-            self.skipTest("Skipping for NOT migrated to manifest streams")
+            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
         state = self._state(self.state_file_after_migration, self.stream_name)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state
@@ -143,12 +144,12 @@ class TestSuiteReportStream(TestReportStream):
 
         actual_cursor = None
         for state in output.most_recent_state.stream_state.states:
-            if state["partition"]["account_id"] == int(self.account_id):
+            if state["partition"]["account_id"] == self.account_id:
                 actual_cursor = state["cursor"]
         expected_state = self.second_read_state_for_records_before_start_date
         expected_cursor = None
         for state in expected_state["states"]:
-            if state["partition"]["account_id"] == int(self.account_id):
+            if state["partition"]["account_id"] == self.account_id:
                 expected_cursor = state["cursor"]
         if not expected_cursor or not actual_cursor:
             assert False, f"Expected state is empty for account_id: {self.account_id}"
@@ -164,7 +165,7 @@ class TestSuiteReportStream(TestReportStream):
         The state format before migration IS NOT involved in this test.
         """
         if self.stream_name not in MIGRATED_STREAMS:
-            self.skipTest("Skipping for NOT migrated to manifest streams")
+            self.skipTest(f"Skipping for NOT migrated to manifest stream: : {self.stream_name}")
         provided_state = self._state(self.state_file_after_migration_with_cursor_further_config_start_date, self.stream_name)
         output, service_call_mock = self.read_stream(
             self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file_with_records_further_cursor, provided_state
@@ -176,12 +177,12 @@ class TestSuiteReportStream(TestReportStream):
 
         actual_cursor = None
         for state in output.most_recent_state.stream_state.states:
-            if state["partition"]["account_id"] == int(self.account_id):
+            if state["partition"]["account_id"] == self.account_id:
                 actual_cursor = state["cursor"]
         expected_state = self.second_read_state_for_records_further_start_date
         expected_cursor = None
         for state in expected_state["states"]:
-            if state["partition"]["account_id"] == int(self.account_id):
+            if state["partition"]["account_id"] == self.account_id:
                 expected_cursor = state["cursor"]
         if not expected_cursor or not actual_cursor:
             assert False, f"Expected state is empty for account_id: {self.account_id}"
@@ -213,5 +214,61 @@ class TestSuiteReportStream(TestReportStream):
         assert job_start_time == last_successful_sync_cursor_value
         assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+0000"
 
-    # todo: We need to add a test to validate that the previous state format can be reused during first sync after migration and that
-    # consequently we can create jobs with new state format, but need to figure out if above test statement is correct or not
+    @freeze_time(SECOND_READ_FREEZE_TIME)
+    def test_incremental_read_with_legacy_state_returns_records_after_migration_with_records_further_state_cursor(self):
+        """
+        For this test we get records with TimePeriod further the config start date and the state TimePeriod cursor.
+        The provide state is taken from a previous run; with stream manifest; so, is in the new state format, and
+        where the resultant cursor was further the config start date.
+        So we validate that the cursor in the output.most_recent_state is moved to the value of the latest record read.
+        The state format before migration IS NOT involved in this test.
+        """
+        if self.stream_name not in MIGRATED_STREAMS:
+            self.skipTest(f"Skipping for NOT migrated to manifest stream: {self.stream_name}")
+        provided_state = self._state(self.state_file_legacy, self.stream_name)
+        output, service_call_mock = self.read_stream(
+            self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file_with_records_further_cursor, provided_state
+        )
+        if not self.second_read_records_number:
+            assert len(output.records) == self.records_number
+        else:
+            assert len(output.records) == self.second_read_records_number
+
+        actual_cursor = None
+        for state in output.most_recent_state.stream_state.states:
+            if state["partition"]["account_id"] == self.account_id:
+                actual_cursor = state["cursor"]
+        expected_state = self.second_read_state_for_records_further_start_date
+        expected_cursor = None
+        for state in expected_state["states"]:
+            if state["partition"]["account_id"] == self.account_id:
+                expected_cursor = state["cursor"]
+        if not expected_cursor or not actual_cursor:
+            assert False, f"Expected state is empty for account_id: {self.account_id}"
+        # here the cursor moved to expected that is the latest record read
+        assert actual_cursor == expected_cursor
+
+        # Let's check in the logs what was the start_time and end_time values of the Job
+        job_completed_log = ""
+        for current_log in output.logs:
+            if "The following jobs for stream slice" in current_log.log.message:
+                job_completed_log = current_log.log.message
+                break
+
+        if not job_completed_log:
+            assert False, "Job completed log is empty"
+
+        # Regex patterns to match start_time and end_time values
+        start_time_pattern = re.compile(r"'start_time': '([^']+)'")
+        end_time_pattern = re.compile(r"'end_time': '([^']+)'")
+
+        # Extract values
+        start_time_match = start_time_pattern.search(job_completed_log)
+        end_time_match = end_time_pattern.search(job_completed_log)
+
+        job_start_time = start_time_match.group(1) if start_time_match else None
+        job_end_time = end_time_match.group(1) if end_time_match else None
+
+        last_successful_sync_cursor_value = vars(provided_state[0].stream.stream_state)[self.account_id][self.cursor_field]
+        assert job_start_time == last_successful_sync_cursor_value
+        assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+0000"

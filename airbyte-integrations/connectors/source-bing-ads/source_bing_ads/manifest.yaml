@@ -118,6 +118,12 @@ definitions:
             path:
               - LastModifiedTime
             value: '{{ format_datetime(record.LastModifiedTime, "%Y-%m-%dT%H:%M:%S.%f" ) }}'
+          # Schema parses Id as integer, we use this parsing for the state as historically value has been saved as string
+          - type: AddedFieldDefinition # useful when used as a parent stream
+            path:
+              - parsed_account_id
+            value: "{{ record.Id | string }}"
+            value_type: string
           - type: AddedFieldDefinition
             path:
               - _airbyte_parent_id # when used as a parent stream
@@ -147,6 +153,8 @@ definitions:
       file_path: "./source_bing_ads/schemas/ad_performance_report_hourly.json"
     retriever:
       $ref: "#/definitions/basic_async_retriever"
+      partition_router:
+        $ref: "#/definitions/partition_router_slice_reducer"
       creation_requester:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
@@ -226,6 +234,8 @@ definitions:
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -625,6 +635,17 @@ definitions:
         CustomerId: "'{{ stream_partition['customer_id'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+  partition_router_slice_reducer:
+    type: CustomPartitionRouter
+    class_name: source_bing_ads.components.partition_routers.SubstreamPartitionRouterSliceReducer
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        # Id is the primary key of the accounts stream but an integer
+        # and not a string. We need to convert it to a string to be able
+        # to get the state from the previous state format transformed.
+        parent_key: parsed_account_id
+        partition_field: account_id
+        stream: "#/definitions/accounts_stream"
   incremental_sync_report_datetime_cursor:
     type: DatetimeBasedCursor
     cursor_field: TimePeriod

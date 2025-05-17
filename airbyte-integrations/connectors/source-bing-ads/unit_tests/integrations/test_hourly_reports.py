@@ -14,7 +14,12 @@ def get_state_after_migration(time_period: str, account_id: str) -> dict:
         "states": [
             {
                 "cursor": {"TimePeriod": f"{time_period}"},
-                "partition": {"account_id": int(account_id), "parent_slice": {"parent_slice": {}, "user_id": "123456789"}},
+                "partition": {
+                    "account_id": account_id,
+                    # "parent_slice": {"parent_slice": {},
+                    #                 "user_id": "123456789"
+                    # }
+                },
             }
         ],
         "use_global_cursor": False,
@@ -44,6 +49,7 @@ class HourlyReportsTestWithStateChangesAfterMigration(TestSuiteReportStream):
         time_period="2024-05-07T01:00:00+0000", account_id=TestSuiteReportStream.account_id
     )
     report_file_with_records_further_start_date = "ad_performance_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
     state_file_after_migration = "hourly_reports_state_after_migration"
     state_file_after_migration_with_cursor_further_config_start_date = (
         "hourly_reports_state_after_migration_with_cursor_further_config_start_date"

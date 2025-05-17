@@ -6,7 +6,7 @@
     {
       "cursor": { "TimePeriod": "2024-01-01T00:00:00+0000" },
       "partition": {
-        "account_id": 180535609,
+        "account_id": "180535609",
         "parent_slice": { "parent_slice": {}, "user_id": "123456789" }
       }
     }
