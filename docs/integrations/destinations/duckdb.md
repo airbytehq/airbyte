@@ -118,6 +118,7 @@ For information about migrating between different versions of DuckDB, please see
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.2 | 2025-05-17 | [48667](https://github.com/airbytehq/airbyte/pull/48667) | Update dependencies |
 | 0.5.1 | 2025-03-07 | [55256](https://github.com/airbytehq/airbyte/pull/55256) | Version bump to align Docker and Poetry versions |
 | 0.5.0 | 2025-03-07 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Upgrade DuckDB engine version to [`v1.2.1`](https://github.com/duckdb/duckdb/releases/tag/v1.2.1) |
 | 0.4.26 | 2024-10-29 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Update dependencies |
