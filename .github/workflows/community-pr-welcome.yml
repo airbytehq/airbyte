@@ -3,9 +3,8 @@ name: Community PR Welcome Message
 on:
   pull_request_target:
     types: [opened]
-  # Temporary triggers for testing
-  pull_request:
-    types: [synchronize, edited, labeled]
+  # Temporary trigger for testing
+  push:
     branches:
       - devin/1747500900-welcome-message
 
@@ -13,7 +12,7 @@ jobs:
   welcome-community-contributor:
     name: Welcome Community Contributor
     # Run on PR from fork or for testing on specific branch
-    if: github.event.pull_request.head.repo.fork == true || github.head_ref == 'devin/1747500900-welcome-message'
+    if: github.event.pull_request.head.repo.fork == true || github.event_name == 'push'
     runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
@@ -22,11 +21,35 @@ jobs:
         run: |
           echo "Event name: ${{ github.event_name }}"
           echo "Event action: ${{ github.event.action }}"
-          echo "PR number: ${{ github.event.pull_request.number }}"
-          echo "Head ref: ${{ github.head_ref }}"
-          echo "Is fork: ${{ github.event.pull_request.head.repo.fork }}"
+          echo "PR number: ${{ github.event.pull_request.number || '60531' }}"
+          echo "Head ref: ${{ github.head_ref || github.ref_name }}"
 
-      - name: Add welcome comment to PR
+      - name: Add welcome comment to PR (push event test)
+        if: github.event_name == 'push'
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: 60531
+          body: |
+            ## 👋 Welcome to Airbyte!
+
+            Thank you for your contribution to Airbyte! We're excited to have you join our community.
+
+            ### Helpful Resources
+
+            - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development): Learn how to set up your environment and develop connectors locally
+            - [PR Guidelines](https://docs.airbyte.com/contributing-to-airbyte): Check our guidelines for contributions
+
+            ### PR Slash Commands
+
+            Maintainers can execute the following slash commands on your PR:
+            - `/format-fix` - Fixes formatting issues
+            - `/bump-version` - Bumps connector versions
+            - `/run-connector-tests` - Runs connector tests
+
+            If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
+
+      - name: Add welcome comment to PR (PR event)
+        if: github.event_name == 'pull_request_target'
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
