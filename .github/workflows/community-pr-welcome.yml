@@ -2,7 +2,7 @@ name: Community PR Welcome Message
 
 on:
   pull_request_target:
-    types: [opened]
+    types: [opened, synchronize]
 
 jobs:
   welcome-community-contributor:
