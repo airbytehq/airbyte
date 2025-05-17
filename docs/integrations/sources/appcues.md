@@ -45,6 +45,7 @@ To set up the Appcues source connector, you'll need your Appcues [`API Key` and 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ----- | ---------------- |
+| 0.0.24 | 2025-05-17 | [60596](https://github.com/airbytehq/airbyte/pull/60596) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [59791](https://github.com/airbytehq/airbyte/pull/59791) | Update dependencies |
 | 0.0.22 | 2025-05-03 | [58710](https://github.com/airbytehq/airbyte/pull/58710) | Update dependencies |
 | 0.0.21 | 2025-04-19 | [58246](https://github.com/airbytehq/airbyte/pull/58246) | Update dependencies |
