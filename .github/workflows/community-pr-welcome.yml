@@ -3,22 +3,17 @@ name: Community PR Welcome Message
 on:
   pull_request_target:
     types: [opened]
-  # TEMPORARY: This trigger is only for testing and will be removed before merging
-  push:
-    branches:
-      - devin/1747500900-welcome-message
 
 jobs:
   welcome-community-contributor:
     name: Welcome Community Contributor
-    # Run when PR is from a fork (community contributor) or on push for testing
-    if: github.event.pull_request.head.repo.fork == true || github.event_name == 'push'
+    # Only run when PR is from a fork (community contributor)
+    if: github.event.pull_request.head.repo.fork == true
     runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
     steps:
       - name: Add welcome comment to PR
-        if: github.event_name == 'pull_request_target'
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -40,20 +35,3 @@ jobs:
             - `/run-connector-tests` - Runs connector tests
 
             If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
-
-      - name: Test step for push events (TEMPORARY)
-        if: github.event_name == 'push'
-        run: |
-          echo "This is a test step for push events"
-          echo "PR number for testing: ${{ github.event.pull_request.number || '60531' }}"
-          
-      - name: Create test comment on PR for push events (TEMPORARY)
-        if: github.event_name == 'push'
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          issue-number: 60531
-          body: |
-            ## 🧪 Test Comment from Push Event
-            
-            This is a test comment created by the workflow running on a push event.
-            Timestamp: $(date -u)
