@@ -137,8 +137,9 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 4.5.1      | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null                      |
-| 4.5.0      | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version.                               |
+| 4.5.2 | 2025-05-17 | [43886](https://github.com/airbytehq/airbyte/pull/43886) | Update dependencies |
+| 4.5.1 | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null |
+| 4.5.0 | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version. |
 | 4.5.0-rc.4 | 2025-02-04 | [53156](https://github.com/airbytehq/airbyte/pull/53156) | Add default type for `rollup`, `lookuo` and `multiplelookup`, add new type `manualSort` |
 | 4.5.0-rc.3 | 2025-01-29 | [52624](https://github.com/airbytehq/airbyte/pull/52624) | Fix type for multipleLookupValues fields                                                |
 | 4.5.0-rc.2 | 2025-01-28 | [52595](https://github.com/airbytehq/airbyte/pull/52595) | Fix type for datetime fields                                                            |
