@@ -49,7 +49,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     #    Running regression and acceptance at the same time can cause quota consumption problems
     #    - suite: liveTests
