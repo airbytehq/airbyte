@@ -183,6 +183,7 @@ EXAMPLE:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |---------| ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.3.6 | 2025-05-17 | [59350](https://github.com/airbytehq/airbyte/pull/59350) | Update dependencies |
 | 0.3.5 | 2025-04-30 | [59647](https://github.com/airbytehq/airbyte/pull/59647) | Truncate cell values exceeding 50,000 characters with warning |
 | 0.3.4 | 2025-04-26 | [58280](https://github.com/airbytehq/airbyte/pull/58280) | Update dependencies |
 | 0.3.3 | 2025-04-12 | [57636](https://github.com/airbytehq/airbyte/pull/57636) | Update dependencies |
