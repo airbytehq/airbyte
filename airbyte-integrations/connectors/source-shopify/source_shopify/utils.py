@@ -323,3 +323,69 @@ class EagerlyCachedStreamState:
             return func(*args, **kwargs)
 
         return decorator
+import logging
+from typing import Optional, Union
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
+import requests
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+
+# Default logger instance
+LOGGER = logging.getLogger("airbyte")
+
+def update_limit_in_url(url: str, new_limit: int) -> str:
+    """Update the 'limit' parameter in the URL query string."""
+    LOGGER.debug(f"[utils.py][update_limit_in_url] Updating 'limit' parameter in URL: {url} to new limit: {new_limit}")
+    parsed = urlparse(url)
+    query = parse_qs(parsed.query)
+    query["limit"] = [str(new_limit)]
+    new_query = urlencode(query, doseq=True)
+    return urlunparse(parsed._replace(query=new_query))
+
+class LimitReducingErrorHandler(ErrorHandler):
+    """Custom error handler that reduces the request limit on 500 errors and retries."""
+
+    def __init__(self, stream: "ShopifyStream", default_handler: ErrorHandler):
+        LOGGER.debug(f"[utils.py][LimitReducingErrorHandler][__init__] Initializing with stream: {stream} and default handler.")
+        self.stream = stream
+        self.default_handler = default_handler
+        self._initial_limit = stream.limit  # Store the initial limit (e.g., 250)
+
+    @property
+    def max_retries(self) -> Optional[int]:
+        LOGGER.debug(f"[utils.py][LimitReducingErrorHandler][max_retries] Accessing max retries.")
+        return self.default_handler.max_retries
+
+    @property
+    def max_time(self) -> Optional[int]:
+        LOGGER.debug(f"[utils.py][LimitReducingErrorHandler][max_time] Accessing max time.")
+        return self.default_handler.max_time
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        LOGGER.debug(f"[utils.py][LimitReducingErrorHandler][interpret_response] Interpreting response or exception: {response_or_exception}")
+        if isinstance(response_or_exception, requests.Response):
+            response = response_or_exception
+            if response.status_code == 500:
+                current_limit = self.stream._current_limit
+                LOGGER.info(f"[utils.py][LimitReducingErrorHandler][interpret_response] 500 error encountered. Current limit: {current_limit}")
+                if current_limit > 1:
+                    new_limit = max(1, current_limit // 2)
+                    self.stream._current_limit = new_limit
+                    new_url = update_limit_in_url(response.request.url, new_limit)
+                    response.request.url = new_url
+                    LOGGER.info(f"[utils.py][LimitReducingErrorHandler][interpret_response] Reduced limit from {current_limit} to {new_limit} for URL: {new_url}")
+                    return ErrorResolution(
+                        response_action=ResponseAction.RETRY,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Server error 500: Reduced limit to {new_limit}"
+                    )
+                LOGGER.error(f"[utils.py][LimitReducingErrorHandler][interpret_response] Persistent 500 error even at limit=1 for URL: {response.request.url}")
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.transient_error,
+                    error_message="Persistent 500 error after reducing limit to 1"
+                )
+        LOGGER.debug(f"[utils.py][LimitReducingErrorHandler][interpret_response] Delegating response interpretation to default handler.")
+        return self.default_handler.interpret_response(response_or_exception)

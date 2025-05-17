@@ -28,23 +28,32 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpSt
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 
+import logging
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Union
+from urllib.parse import parse_qsl, urlparse
+
+import requests
+from source_shopify.transform import DataTypeEnforcer
+
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+
 class ShopifyStream(HttpStream, ABC):
-    # define default logger
     logger = logging.getLogger("airbyte")
-
-    # Latest Stable Release
     api_version = "2025-01"
-    # Page size
     limit = 250
-
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
 
     def __init__(self, config: Dict) -> None:
+        self.logger.debug(f"[base_streams.py][ShopifyStream][__init__] Initializing stream with config: {config}")
         super().__init__(authenticator=config["authenticator"])
         self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
+        self._current_limit = self.limit  # Dynamic limit initialized to default
 
     @property
     @abstractmethod
@@ -53,68 +62,62 @@ class ShopifyStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
+        self.logger.debug(f"[base_streams.py][ShopifyStream][url_base] Constructing base URL for shop: {self.config['shop']}")
         return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/"
 
-    @property
-    def default_filter_field_value(self) -> Union[int, str]:
-        # certain streams are using `since_id` field as `filter_field`, which requires to use `int` type,
-        # but many other use `str` values for this, we determine what to use based on `filter_field` value
-        # by default, we use the user defined `Start Date` as initial value, or 0 for `id`-dependent streams.
-        return 0 if self.filter_field == "since_id" else (self.config.get("start_date") or "")
-
     def path(self, **kwargs) -> str:
+        self.logger.debug(f"[base_streams.py][ShopifyStream][path] Constructing path for data field: {self.data_field}")
         return f"{self.data_field}.json"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page = response.links.get("next", None)
-        if next_page:
-            return dict(parse_qsl(urlparse(next_page.get("url")).query))
-        else:
-            return None
+        self.logger.debug(f"[base_streams.py][ShopifyStream][next_page_token] Extracting next page token from response.")
+        next_page = response.links.get("next")
+        return dict(parse_qsl(urlparse(next_page.get("url")).query)) if next_page else None
 
     def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
+        params = {"limit": self._current_limit}
+        self.logger.debug(f"[base_streams.py][ShopifyStream][request_params] Requesting with limit: {self._current_limit}")
         if next_page_token:
-            params.update(**next_page_token)
+            self.logger.debug(f"[base_streams.py][ShopifyStream][request_params] Using next page token: {next_page_token}")
+            params.update(next_page_token)
         else:
             params["order"] = f"{self.order_field} asc"
-            params[self.filter_field] = self.default_filter_field_value
+            params[self.filter_field] = kwargs.get("stream_state", {}).get(self.filter_field, self.default_filter_field_value)
         return params
 
-    @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code is requests.codes.OK:
-            try:
-                json_response = response.json()
-                records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-                yield from self.produce_records(records)
-            except RequestException as e:
-                self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
-                yield {}
+        self.logger.debug(f"[base_streams.py][ShopifyStream][parse_response] Parsing response with status code: {response.status_code}")
+        if response.status_code == requests.codes.OK:
+            self._current_limit = self.limit  # Reset to default on success
+            self.logger.debug(f"[base_streams.py][ShopifyStream][parse_response] Successful response. Reset limit to {self.limit}")
+            json_response = response.json()
+            records = json_response.get(self.data_field, []) if self.data_field else json_response
+            yield from self.produce_records(records)
+        else:
+            self.logger.warning(f"[base_streams.py][ShopifyStream][parse_response] Non-OK response: {response.status_code}")
+            yield from []  # Yield empty iterable on failure
 
-    def produce_records(
-        self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None
-    ) -> Iterable[Mapping[str, Any]]:
-        # transform method was implemented according to issue 4841
-        # Shopify API returns price fields as a string and it should be converted to number
-        # this solution designed to convert string into number, but in future can be modified for general purpose
+    def produce_records(self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]]) -> Iterable[Mapping[str, Any]]:
+        self.logger.debug(f"[base_streams.py][ShopifyStream][produce_records] Producing records.")
         if isinstance(records, dict):
-            # for cases when we have a single record as dict
-            # add shop_url to the record to make querying easy
             records["shop_url"] = self.config["shop"]
             yield self._transformer.transform(records)
         else:
-            # for other cases
             for record in records:
-                # add shop_url to the record to make querying easy
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
+        self.logger.debug(f"[base_streams.py][ShopifyStream][get_error_handler] Initializing error handler.")
+        from source_shopify.utils import ShopifyNonRetryableErrors  # Lazy import to avoid circular dependency
         known_errors = ShopifyNonRetryableErrors(self.name)
         error_mapping = DEFAULT_ERROR_MAPPING | known_errors
         return HttpStatusErrorHandler(self.logger, max_retries=5, error_mapping=error_mapping)
 
+    @property
+    def default_filter_field_value(self) -> str:
+        self.logger.debug(f"[base_streams.py][ShopifyStream][default_filter_field_value] Getting default filter field value.")
+        return self.config.get("start_date", "2020-01-01T00:00:00Z")
 
 class ShopifyDeletedEventsStream(ShopifyStream):
     data_field = "events"

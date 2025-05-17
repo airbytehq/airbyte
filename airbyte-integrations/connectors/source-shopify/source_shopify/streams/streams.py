@@ -80,18 +80,27 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
+from typing import Any, Mapping, Optional, MutableMapping
 
+from source_shopify.utils import LimitReducingErrorHandler
+from .base_streams import IncrementalShopifyStreamWithDeletedEvents, ShopifyStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
     deleted_events_api_name = "Order"
 
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        self.logger.debug(f"[streams.py][Orders][request_params] Preparing request parameters. Stream state: {stream_state}, Next page token: {next_page_token}")
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
+            self.logger.debug(f"[streams.py][Orders][request_params] Adding 'status=any' to parameters.")
             params["status"] = "any"
         return params
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        self.logger.debug(f"[streams.py][Orders][get_error_handler] Initializing error handler for Orders stream.")
+        default_handler = super().get_error_handler()
+        return LimitReducingErrorHandler(stream=self, default_handler=default_handler)
 
 
 class Disputes(IncrementalShopifyStream):
@@ -321,6 +330,9 @@ class Fulfillments(IncrementalShopifyNestedStream):
 class Shop(ShopifyStream):
     data_field = "shop"
 
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        self.logger.debug(f"[streams.py][Shop][request_params] Preparing request parameters for Shop stream.")
+        return {}  # Shop stream doesn’t need limit or filter params
 
 class MetafieldShops(IncrementalShopifyStream):
     data_field = "metafields"
