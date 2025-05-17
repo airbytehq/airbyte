@@ -1093,8 +1093,7 @@ spec:
                   For steps on obtaining this key, refer to <a href="https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide">the
                   setup guide</a>.
                 examples:
-                  - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id":
-                YOUR_PRIVATE_KEY, ... }'
+                  - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
                 airbyte_secret: true
                 order: 1
       property_ids:
