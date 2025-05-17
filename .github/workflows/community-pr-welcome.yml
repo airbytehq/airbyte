@@ -3,12 +3,17 @@ name: Community PR Welcome Message
 on:
   pull_request_target:
     types: [opened]
+  # Temporary triggers for testing
+  pull_request:
+    types: [synchronize, edited]
+    branches:
+      - devin/1747500900-welcome-message
 
 jobs:
   welcome-community-contributor:
     name: Welcome Community Contributor
-    # Only run when PR is from a fork (community contributor)
-    if: github.event.pull_request.head.repo.fork == true
+    # Run on PR from fork or for testing on specific branch
+    if: github.event.pull_request.head.repo.fork == true || github.head_ref == 'devin/1747500900-welcome-message'
     runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
