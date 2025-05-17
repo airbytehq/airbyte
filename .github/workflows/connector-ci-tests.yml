@@ -1,8 +1,7 @@
 name: Connector CI Tests
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:  # Push events use secrets from the host repo/fork
 
   # Available as a reusable workflow
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
@@ -67,10 +66,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           # In order to work correctly on forks, `repository` must be set if `ref` is set:
-          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          repository: ${{ inputs.repo || github.repository }}
           # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
           # TODO: Remove the Airbyte-CI dependency for running java integration tests.
-          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          ref: ${{ inputs.gitref || github.ref_name }}
           fetch-depth: 1
 
       # Java deps
