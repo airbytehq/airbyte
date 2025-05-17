@@ -56,6 +56,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -382,14 +383,29 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                isFileBased = true,
+                includeFiles = true,
             )
-        val fileMessage =
-            DestinationFile.AirbyteRecordMessageFile(
-                fileUrl = "/tmp/test_file",
-                bytes = 1234L,
-                fileRelativePath = "path/to/file",
-                modified = 4321L,
-                sourceFileUrl = "file://path/to/source",
+
+        val fileReference =
+            AirbyteRecordMessageFileReference()
+                .withSourceFileRelativePath("path/to/file")
+                .withFileSizeBytes(1234L)
+                .withStagingFileUrl("/tmp/test_file")
+//                fileUrl = "/tmp/test_file",
+//                bytes = 1234L,
+//                fileRelativePath = "path/to/file",
+//                modified = 4321L,
+//                sourceFileUrl = "file://path/to/source",
+
+        val input =
+            InputRecord(
+                namespace = randomizedNamespace,
+                name = "test_stream",
+                data = """{"id": 5678}""",
+                emittedAtMs = 1234,
+                changes = mutableListOf(),
+                fileReference = fileReference,
             )
 
         val messages =
@@ -397,11 +413,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 updatedConfig,
                 stream,
                 listOf(
-                    InputFile(
-                        stream = stream,
-                        emittedAtMs = 1234,
-                        fileMessage = fileMessage,
-                    ),
+                    input,
                     InputStreamCheckpoint(
                         streamName = stream.descriptor.name,
                         streamNamespace = stream.descriptor.namespace,

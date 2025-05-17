@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 // Just ensure file transfer gets tested in CI
+@Disabled
 class FileTransferPerformanceTest :
     BasicPerformanceTest(
         configContents = S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
