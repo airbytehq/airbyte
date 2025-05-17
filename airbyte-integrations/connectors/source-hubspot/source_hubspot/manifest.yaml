@@ -1632,12 +1632,122 @@ definitions:
         cursor_field: timestamp
         cursor_format: "%ms"
 
+  contacts_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/base_crm_search_full_refresh_stream"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["updatedAt"]
+              value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+        - type: CustomTransformation
+          class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
+        - type: CustomTransformation
+          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          field_mapping:
+            hs_lifecyclestage_: "hs_v2_date_entered_"
+            hs_date_exited_: "hs_v2_date_exited_"
+            hs_time_in_: "hs_v2_latest_time_in_"
+        - type: DpathFlattenFields
+          field_path:
+            - properties
+          key_transformation:
+            type: KeyTransformation
+            prefix: properties_
+    incremental_stream:
+      $ref: "#/definitions/base_crm_search_incremental_stream"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+          field_mapping:
+            hs_lifecyclestage_: "hs_v2_date_entered_"
+            hs_date_exited_: "hs_v2_date_exited_"
+            hs_time_in_: "hs_v2_latest_time_in_"
+        - type: DpathFlattenFields
+          field_path: ["properties"]
+          key_transformation:
+            type: KeyTransformation
+            prefix: properties_
+    $parameters:
+      name: contacts
+      entity: contact
+      associations:
+        - contacts
+        - companies
+      cursor_filter_property_field: lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/contacts"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+          schema_transformations:
+            - type: CustomTransformation
+              class_name: source_hubspot.components.NewtoLegacyFieldTransformation
+              field_mapping:
+                hs_lifecyclestage_: "hs_v2_date_entered_"
+                hs_date_exited_: "hs_v2_date_exited_"
+                hs_time_in_: "hs_v2_latest_time_in_"
+            - type: CustomTransformation
+              class_name: source_hubspot.components.HubspotRenamePropertiesTransformation
+
+  deal_splits_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: deal_splits
+      entity: deal_split
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/deal_splits"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  leads_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: lead
+      entity: leads
+      associations:
+        - companies
+        - contacts
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/leads"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
+  tickets_stream:
+    type: StateDelegatingStream
+    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
+    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: tickets
+      entity: ticket
+      associations:
+        - companies
+        - contacts
+        - deals
+      cursor_filter_property_field: hs_lastmodifieddate
+      schema_loader:
+        - type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/tickets"
+        - $ref: "#/definitions/base_dynamic_schema_loader"
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
+  - "#/definitions/contacts_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
+  - "#/definitions/deal_splits_stream"
   - "#/definitions/deals_archived_stream"
   - "#/definitions/deals_property_history_stream"
   - "#/definitions/deals_stream"
@@ -1651,11 +1761,13 @@ streams:
   - "#/definitions/engagements_tasks_stream"
   - "#/definitions/form_submissions_stream"
   - "#/definitions/forms_stream"
+  - "#/definitions/leads_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/owners_archived_stream"
   - "#/definitions/owners_stream"
   - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
+  - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
@@ -1911,6 +2023,47 @@ schemas:
           - "null"
           - boolean
 
+  contacts:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the contact.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the contact was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the contact was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the contact is archived or not.
+        type:
+          - "null"
+          - boolean
+      companies:
+        description: List of companies associated with the contact.
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of a company associated with the contact.
+          type:
+            - "null"
+            - string
+
   contacts_property_history:
     $schema: "http://json-schema.org/draft-07/schema"
     type:
@@ -1991,6 +2144,37 @@ schemas:
             - integer
       archived:
         description: Indicates whether the data is associated with a contact record.
+        type:
+          - "null"
+          - boolean
+
+  deal_splits:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the deal split
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the deal split was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: The date and time when the deal split was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the deal is archived
         type:
           - "null"
           - boolean
@@ -3723,6 +3907,53 @@ schemas:
           - object
     additionalProperties: true
 
+  leads:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the lead
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the lead was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the lead was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates whether the lead is archived or active
+        type:
+          - "null"
+          - boolean
+      companies:
+        description: List of companies associated with the lead
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of individual companies
+          type: string
+      contacts:
+        description: List of contacts associated with the lead
+        type:
+          - "null"
+          - array
+        items:
+          description: Details of individual contacts
+          type: string
+
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#
     type:
@@ -4947,6 +5178,67 @@ schemas:
           - "null"
           - string
         format: date-time
+
+  tickets:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the ticket
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the ticket was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the ticket was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates if the ticket is archived or not
+        type:
+          - "null"
+          - boolean
+      contacts:
+        description: Contacts associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          description: Contact data
+          type:
+            - "null"
+            - integer
+      companies:
+        description: Companies associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          description: Company data
+          type:
+            - "null"
+            - string
+      deals:
+        description: Deals associated with the ticket
+        type:
+          - "null"
+          - array
+        items:
+          description: Deal data
+          type:
+            - "null"
+            - string
 
   campaigns:
     $schema: http://json-schema.org/draft-07/schema#

@@ -22,10 +22,8 @@ from source_hubspot.streams import (
     BaseStream,
     Companies,
     CompaniesWebAnalytics,
-    Contacts,
     ContactsWebAnalytics,
     CustomObject,
-    DealSplits,
     DealsWebAnalytics,
     EngagementsCallsWebAnalytics,
     EngagementsEmailsWebAnalytics,
@@ -34,12 +32,10 @@ from source_hubspot.streams import (
     EngagementsTasksWebAnalytics,
     Goals,
     GoalsWebAnalytics,
-    Leads,
     LineItems,
     LineItemsWebAnalytics,
     Products,
     ProductsWebAnalytics,
-    Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
 )
@@ -55,8 +51,10 @@ scopes = {
     "campaigns": {"crm.lists.read"},
     "companies_property_history": {"crm.objects.companies.read"},
     "contact_lists": {"crm.lists.read"},
+    "contacts": {"crm.objects.contacts.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
     "deal_pipelines": {"crm.objects.contacts.read"},
+    "deal_splits": {"crm.objects.deals.read"},
     "deals": {"contacts", "crm.objects.deals.read"},
     "deals_property_history": {"crm.objects.deals.read"},
     "email_subscriptions": {"content"},
@@ -69,8 +67,10 @@ scopes = {
     "deals_archived": {"contacts", "crm.objects.deals.read"},
     "forms": {"forms"},
     "form_submissions": {"forms"},
+    "leads": {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.leads.read"},
     "owners": {"crm.objects.owners.read"},
     "owners_archived": {"crm.objects.owners.read"},
+    "tickets": {"tickets"},
     "ticket_pipelines": {
         "media_bridge.read",
         "tickets",
@@ -192,13 +192,9 @@ class SourceHubspot(YamlDeclarativeSource):
         streams = super().streams(config=config)
         streams += [
             Companies(**common_params),
-            Contacts(**common_params),
-            DealSplits(**common_params),
             Goals(**common_params),
-            Leads(**common_params),
             LineItems(**common_params),
             Products(**common_params),
-            Tickets(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]

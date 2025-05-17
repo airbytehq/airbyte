@@ -10,22 +10,12 @@ import pendulum
 import pytest
 from source_hubspot.streams import (
     Companies,
-    Contacts,
     ContactsWebAnalytics,
     CustomObject,
-    Deals,
-    DealSplits,
-    EngagementsCalls,
-    EngagementsEmails,
-    EngagementsMeetings,
-    EngagementsNotes,
-    EngagementsTasks,
     Goals,
-    Leads,
     LineItems,
     Products,
     RecordUnnester,
-    Tickets,
 )
 
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
@@ -74,11 +64,11 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
         ("campaigns", "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("contact_lists", "contact", {"createdAt": "2021-02-25T16:43:11Z", "updatedAt": "2022-02-25T16:43:11Z"}),
-        (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
-        (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deal_splits", "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("engagements_calls", "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -89,14 +79,14 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
         ("forms", "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("form_submissions", "form", {"updatedAt": 1675121674227}),
         (Goals, "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Leads, "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("leads", "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("marketing_emails", "", {"updated": "1634050455543"}),
         ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("tickets", "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("workflows", "", {"updatedAt": 1675121674226}),
     ],
 )
@@ -199,8 +189,8 @@ def test_streams_read(
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value",
     [
-        (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
     ],
     ids=[
@@ -725,7 +715,7 @@ def test_cast_record_fields_with_schema_if_needed(
     "stream, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
     [
         (
-            Deals,
+            "deals",
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "string")],
@@ -733,7 +723,7 @@ def test_cast_record_fields_with_schema_if_needed(
             {"hs_closed_amount": "123456"},
         ),
         (
-            Deals,
+            "deals",
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "integer")],
@@ -741,7 +731,7 @@ def test_cast_record_fields_with_schema_if_needed(
             {"hs_closed_amount": 123456},
         ),
         (
-            Deals,
+            "deals",
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "number")],
@@ -749,7 +739,7 @@ def test_cast_record_fields_with_schema_if_needed(
             {"hs_closed_amount": 123456.10},
         ),
         (
-            Deals,
+            "deals",
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "boolean")],
