@@ -19,10 +19,11 @@ jobs:
           echo "Head ref: ${{ github.head_ref }}"
           echo "Is fork: ${{ github.event.pull_request.head.repo.fork }}"
           echo "Repository: ${{ github.repository }}"
+          echo "Testing synchronize event trigger"
 
-      # Only run welcome message step when PR is from a fork (community contributor)
+      # Temporarily removed fork condition for testing
       - name: Add welcome comment to PR
-        if: github.event.pull_request.head.repo.fork == true
+        # if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
