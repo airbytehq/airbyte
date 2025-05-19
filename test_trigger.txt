@@ -1,0 +1,1 @@
+This is a test commit to trigger the workflow with the renamed template file.
