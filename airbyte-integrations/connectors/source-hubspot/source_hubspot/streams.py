@@ -2011,6 +2011,30 @@ class Contacts(CRMSearchStream):
     _transformations = [NewtoLegacyFieldTransformation(field_mapping=CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
+class ContactsArchived(ClientSideIncrementalStream):
+    """Archived Contacts, API v3"""
+
+    url = "/crm/v3/objects/contacts"
+    entity = "contact"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "companies"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING)]
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
+
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"

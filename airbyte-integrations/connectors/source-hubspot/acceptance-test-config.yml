@@ -74,6 +74,8 @@ acceptance_tests:
             bypass_reason: No value in re-create every 90 days
           - name: engagements_tasks_archived
             bypass_reason: No value in re-create every 90 days
+          - name: contacts_archived
+            bypass_reason: No value in re-create every 90 days
   full_refresh:
     tests:
       - config_path: secrets/config.json

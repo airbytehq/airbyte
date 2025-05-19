@@ -14,6 +14,7 @@ from source_hubspot.streams import (
     CompaniesArchived,
     ContactLists,
     Contacts,
+    ContactsArchived,
     ContactsListMemberships,
     ContactsMergedAudit,
     ContactsWebAnalytics,
@@ -101,6 +102,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (CompaniesArchived, "company", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (ContactsArchived, "contact", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
@@ -218,11 +220,13 @@ def test_streams_read(
     "stream, endpoint, cursor_value",
     [
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (ContactsArchived, "contact", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
     ],
     ids=[
         "Contacts stream with v2 field transformations",
+        "ContactsArchived stream with v2 field transformations",
         "Deals stream with v2 field transformations",
         "DealsArchived stream with v2 field transformations",
     ],
@@ -288,7 +292,7 @@ def test_stream_read_with_legacy_field_transformation(
         "properties_hs_time_in_prospect": "1 month",
         "properties_hs_date_exited_prospect": "2024-02-01T00:00:00Z",
     } | cursor_value
-    if isinstance(stream, Contacts):
+    if isinstance(stream, Contacts) or isinstance(stream, ContactsArchived):
         expected_record = expected_record | {"properties_hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
         expected_record["properties"] = expected_record["properties"] | {"hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
     else:
