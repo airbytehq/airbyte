@@ -137,7 +137,27 @@
       }
     },
     {
+      "name": "engagements_calls_archived",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_call_callee_object_id": "contacts.id",
+        "properties_hs_call_external_account_id": "external_accounts.id"
+      }
+    },
+    {
       "name": "engagements_emails",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "engagements_emails_archived",
       "relations": {
         "properties_hs_created_by_user_id": "owners.userId",
         "properties_hs_updated_by_user_id": "owners.userId",
@@ -156,6 +176,16 @@
       }
     },
     {
+      "name": "engagements_meetings_archived",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_meeting_created_from_link_id": "links.id"
+      }
+    },
+    {
       "name": "engagements_notes",
       "relations": {
         "properties_hs_created_by_user_id": "owners.userId",
@@ -165,7 +195,25 @@
       }
     },
     {
+      "name": "engagements_notes_archived",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
       "name": "engagements_tasks",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "engagements_tasks_archived",
       "relations": {
         "properties_hs_created_by_user_id": "owners.userId",
         "properties_hs_updated_by_user_id": "owners.userId",

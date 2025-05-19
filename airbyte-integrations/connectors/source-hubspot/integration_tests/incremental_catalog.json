@@ -146,6 +146,18 @@
     },
     {
       "stream": {
+        "name": "engagements_calls_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["archivedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["archivedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "engagements_emails",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -154,6 +166,18 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_emails_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["archivedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["archivedAt"],
       "destination_sync_mode": "append"
     },
     {
@@ -170,6 +194,18 @@
     },
     {
       "stream": {
+        "name": "engagements_meetings_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["archivedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["archivedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "engagements_notes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -182,6 +218,18 @@
     },
     {
       "stream": {
+        "name": "engagements_notes_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["archivedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["archivedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "engagements_tasks",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -190,6 +238,18 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_tasks_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["archivedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["archivedAt"],
       "destination_sync_mode": "append"
     },
     {

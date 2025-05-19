@@ -2019,12 +2019,58 @@ class EngagementsCalls(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
+class EngagementsCallsArchived(ClientSideIncrementalStream):
+    """Archived Calls, API v3"""
+
+    url = "/crm/v3/objects/calls"
+    entity = "calls"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "deals", "companies", "tickets"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
+
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read", "sales-email-read"}
+
+
+class EngagementsEmailsArchived(ClientSideIncrementalStream):
+    """Archived EMails, API v3"""
+
+    url = "/crm/v3/objects/emails"
+    entity = "emails"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "deals", "companies", "tickets"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "sales-email-read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
 
 
 class EngagementsMeetings(CRMSearchStream):
@@ -2035,6 +2081,29 @@ class EngagementsMeetings(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
+class EngagementsMeetingsArchived(ClientSideIncrementalStream):
+    """Archived Meetings, API v3"""
+
+    url = "/crm/v3/objects/meetings"
+    entity = "meetings"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "deals", "companies", "tickets"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
+
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
@@ -2043,12 +2112,58 @@ class EngagementsNotes(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
+class EngagementsNotesArchived(ClientSideIncrementalStream):
+    """Archived Notes, API v3"""
+
+    url = "/crm/v3/objects/notes"
+    entity = "notes"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "deals", "companies", "tickets"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
+
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+
+
+class EngagementsTasksArchived(ClientSideIncrementalStream):
+    """Archived Tasks, API v3"""
+
+    url = "/crm/v3/objects/tasks"
+    entity = "tasks"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "deals", "companies", "tickets"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
 
 
 # this stream uses a beta endpoint thus is unstable and disabled
