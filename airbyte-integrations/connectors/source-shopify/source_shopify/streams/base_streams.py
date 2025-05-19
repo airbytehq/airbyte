@@ -61,24 +61,35 @@ class ShopifyStream(HttpStream, ABC):
     def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self._current_limit}
         if next_page_token:
-            # Update params with next_page_token, but preserve the current limit
             temp_params = dict(next_page_token)
-            temp_params.pop("limit", None)  # Remove limit from token
+            temp_params.pop("limit", None)
             params.update(temp_params)
         else:
             params["order"] = f"{self.order_field} asc"
-            params[self.filter_field] = kwargs.get("stream_state", {}).get(self.filter_field, self.default_filter_field_value)
+            stream_state = kwargs.get("stream_state")
+            if stream_state is not None:
+                params[self.filter_field] = stream_state.get(self.filter_field, self.default_filter_field_value)
+            else:
+                params[self.filter_field] = self.default_filter_field_value
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code == requests.codes.OK:
-            self._current_limit = self.limit  # Reset to default on success
-            json_response = response.json()
-            records = json_response.get(self.data_field, []) if self.data_field else json_response
-            yield from self.produce_records(records)
+            self._current_limit = self.limit
+            try:
+                json_response = response.json()
+                records = json_response.get(self.data_field, []) if self.data_field else json_response
+                yield from self.produce_records(records)
+            except requests.exceptions.JSONDecodeError as e:
+                error_msg = (
+                    f"Failed to decode JSON from response (status code: {response.status_code}, "
+                    f"content length: {len(response.content)}). JSONDecodeError at position {e.pos}: {e.msg}"
+                )
+                self.logger.warning(error_msg)
+                yield {}
         else:
             self.logger.warning(f"Non-OK response: {response.status_code}")
-            yield from []  # Yield empty iterable on failure
+            yield from []
 
     def produce_records(self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]]) -> Iterable[Mapping[str, Any]]:
         if isinstance(records, dict):
