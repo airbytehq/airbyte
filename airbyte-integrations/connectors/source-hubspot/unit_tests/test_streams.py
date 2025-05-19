@@ -11,6 +11,7 @@ import pytest
 from source_hubspot.streams import (
     Campaigns,
     Companies,
+    CompaniesArchived,
     ContactLists,
     Contacts,
     ContactsListMemberships,
@@ -92,6 +93,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
     [
         (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (CompaniesArchived, "company", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
