@@ -1,6 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping
+
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 from airbyte_cdk.sources.declarative.models import (
     CustomIncrementalSync,
