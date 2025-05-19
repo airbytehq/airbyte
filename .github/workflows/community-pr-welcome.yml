@@ -2,7 +2,7 @@ name: Community PR Welcome Message
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened]
 
 jobs:
   welcome-community-contributor:
@@ -14,21 +14,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Read and process template
+      - name: Render template
         id: template
-        run: |
-          REPO_NAME="${{ github.event.pull_request.head.repo.full_name }}"
-          TEMPLATE=$(cat .github/TEMPLATES/community-pr-welcome.md)
-          # Replace the template variable with the actual value using sed with a different delimiter
-          PROCESSED_TEMPLATE=$(echo "$TEMPLATE" | sed "s|{{REPO_NAME}}|$REPO_NAME|g")
-          # Save to output with proper escaping for multiline strings
-          echo "content<<EOF" >> $GITHUB_OUTPUT
-          echo "$PROCESSED_TEMPLATE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+        uses: chuhlomin/render-template@v1.4
+        with:
+          template: .github/comment-template.md
+          vars: |
+            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
 
-      - name: Add welcome comment to PR
+      - name: Create comment
         if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: ${{ steps.template.outputs.content }}
+          body: ${{ steps.template.outputs.result }}
