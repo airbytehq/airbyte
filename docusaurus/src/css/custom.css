@@ -342,3 +342,7 @@ nav a.navbar__link--active {
   color: var(--ifm-color-primary) !important;
   border-bottom: 3px solid var(--ifm-color-primary);
 }
+
+.MarkpromptContentDialog[data-variant="sheet"] {
+  z-index: 201 !important; /* This needs to be greater than var(--ifm-z-index-fixed) */
+}

@@ -1,0 +1,24 @@
+.chatTrigger {
+  background-color: var(--color-white);
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 50;
+  border-radius: 100%;
+  outline-style: none;
+  cursor: pointer;
+  transition-timing-function: cubic-bezier(0.4, 0.36, 0, 1);
+  transition-property: all;
+  transition-duration: 300ms;
+  width: 64px;
+  height: 64px;
+  border: none;
+
+}
+
+.chatTrigger img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 100%;
+}
