@@ -153,8 +153,6 @@ definitions:
       file_path: "./source_bing_ads/schemas/ad_performance_report_hourly.json"
     retriever:
       $ref: "#/definitions/basic_async_retriever"
-      partition_router:
-        $ref: "#/definitions/account_substream_partition_router"
       creation_requester:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
@@ -235,12 +233,7 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
     state_migrations:
-      - type: CustomStateMigration
-        class_name: source_bing_ads.components.state_migrations.LegacyToPerPartitionStateMigrationWithParentSlice
-        $parameters:
-          partition_router: "#/definitions/account_substream_partition_router"
-          config: "{{ config }}"
-          cursor: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice_for_hourly_report"
 
     transformations:
       - type: AddFields
@@ -365,6 +358,8 @@ definitions:
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice"
     # FIXME transformations/normalization
   ad_performance_report_weekly_stream:
     type: DeclarativeStream
@@ -470,6 +465,8 @@ definitions:
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice"
     # FIXME transformations/normalization
   ad_performance_report_monthly_stream:
     type: DeclarativeStream
@@ -575,6 +572,8 @@ definitions:
               # "PredefinedTime": "ValueHere"
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
+    state_migrations:
+      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice"
     # FIXME transformations/normalization
   basic_async_retriever:
     type: AsyncRetriever
@@ -645,6 +644,7 @@ definitions:
         parent_key: parsed_account_id
         partition_field: account_id
         stream: "#/definitions/accounts_stream"
+  # cursors section
   incremental_sync_report_datetime_cursor:
     type: DatetimeBasedCursor
     cursor_field: TimePeriod
@@ -673,6 +673,21 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
+  # migrations section
+  legacy_to_perpartition_state_migration_with_parent_slice:
+    type: CustomStateMigration
+    class_name: source_bing_ads.components.state_migrations.LegacyToPerPartitionStateMigrationWithParentSlice
+    $parameters:
+      partition_router: "#/definitions/account_substream_partition_router"
+      config: "{{ config }}"
+      cursor: "#/definitions/incremental_sync_report_datetime_cursor"
+  legacy_to_perpartition_state_migration_with_parent_slice_for_hourly_report:
+    type: CustomStateMigration
+    class_name: source_bing_ads.components.state_migrations.LegacyToPerPartitionStateMigrationWithParentSlice
+    $parameters:
+      partition_router: "#/definitions/account_substream_partition_router"
+      config: "{{ config }}"
+      cursor: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/ad_performance_report_hourly_stream"
