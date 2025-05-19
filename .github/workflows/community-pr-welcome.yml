@@ -23,7 +23,8 @@ jobs:
             repo_name: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Create comment
-        if: github.event.pull_request.head.repo.fork == true
+        # Temporarily removed fork condition for testing
+        # if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
