@@ -15,7 +15,7 @@ on:
     types:
       - opened
       # Toggle this line, uncommenting for testing:
-      - synchronize
+      # - synchronize
 
 jobs:
   welcome-community-contributor:
@@ -24,7 +24,7 @@ jobs:
     permissions:
       pull-requests: write
     # Comment-out this line for manual testing:
-    # if: github.event.pull_request.head.repo.fork == true
+    if: github.event.pull_request.head.repo.fork == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
