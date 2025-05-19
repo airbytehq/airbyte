@@ -1,0 +1,1 @@
+Test trigger for synchronize event
