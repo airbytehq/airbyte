@@ -34,6 +34,7 @@ class SapHanaJdbcPartitionsCreator<
 >(
     val partition: P,
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
+    val deleteQuerier: DeleteQuerier,
 ) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
 
@@ -153,7 +154,7 @@ class SapHanaJdbcPartitionsCreator<
                 "Table cannot be read by concurrent partition readers because it cannot be sampled."
             }
             // TODO: adaptive fetchSize computation?
-            return listOf(SapHanaJdbcNonResumablePartitionReader(partition))
+            return listOf(SapHanaJdbcNonResumablePartitionReader(partition, deleteQuerier))
         }
         // Sample the table for partition split boundaries and for record byte sizes.
         val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: ObjectNode ->
@@ -175,7 +176,7 @@ class SapHanaJdbcPartitionsCreator<
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be split."
             }
-            return listOf(SapHanaJdbcNonResumablePartitionReader(partition))
+            return listOf(SapHanaJdbcNonResumablePartitionReader(partition, deleteQuerier))
         }
         // Happy path.
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
@@ -199,6 +200,6 @@ class SapHanaJdbcPartitionsCreator<
                 .distinct()
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
-        return partitions.map { SapHanaJdbcNonResumablePartitionReader(it) }
+        return partitions.map { SapHanaJdbcNonResumablePartitionReader(it, deleteQuerier) }
     }
 }

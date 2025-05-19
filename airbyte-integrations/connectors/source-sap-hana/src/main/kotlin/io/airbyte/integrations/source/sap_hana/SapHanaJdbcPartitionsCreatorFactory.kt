@@ -26,12 +26,13 @@ class SapHanaJdbcPartitionsCreatorFactory<
     P : JdbcPartition<S>,
 >(
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
+    val deleteQuerier: DeleteQuerier,
 ) : PartitionsCreatorFactory {
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is StreamFeedBootstrap) return null
         val partition: P = partitionFactory.create(feedBootstrap) ?: return CreateNoPartitions
-        return SapHanaJdbcPartitionsCreator(partition, partitionFactory)
+        return SapHanaJdbcPartitionsCreator(partition, partitionFactory, deleteQuerier)
     }
 }
 

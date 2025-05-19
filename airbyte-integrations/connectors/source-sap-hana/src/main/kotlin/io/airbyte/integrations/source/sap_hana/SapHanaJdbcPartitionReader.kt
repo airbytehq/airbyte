@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference
 sealed class SapHanaJdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
-
     private val log = KotlinLogging.logger {}
 
     val streamState: JdbcStreamState<*> = partition.streamState
@@ -81,7 +80,10 @@ sealed class SapHanaJdbcPartitionReader<P : JdbcPartition<*>>(
         return validatedData
     }
 
-    private fun createValueNode(data: ObjectNode, isDelete: Boolean): ObjectNode {
+    private fun createValueNode(
+        data: ObjectNode,
+        isDelete: Boolean,
+    ): ObjectNode {
         val valueNode: ObjectNode = JsonNodeFactory.instance.objectNode()
         val suffix = if (isDelete) "_before" else "_after"
         stream.schema.forEach {
@@ -93,7 +95,10 @@ sealed class SapHanaJdbcPartitionReader<P : JdbcPartition<*>>(
 
     // Validate the data field name with the schema field name so they have the same case.
     // Field names are case-sensitive in JsonNode
-    private fun validateDataFieldName(data: JsonNode, schema: Set<FieldOrMetaField>): ObjectNode {
+    private fun validateDataFieldName(
+        data: JsonNode,
+        schema: Set<FieldOrMetaField>,
+    ): ObjectNode {
         val validatedData: ObjectNode = Jsons.objectNode()
         for (field in schema) {
             val value =
@@ -125,6 +130,7 @@ sealed class SapHanaJdbcPartitionReader<P : JdbcPartition<*>>(
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
 class SapHanaJdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
+    val deleteQuerier: DeleteQuerier
 ) : SapHanaJdbcPartitionReader<P>(partition) {
 
     val runComplete = AtomicBoolean(false)
@@ -137,13 +143,24 @@ class SapHanaJdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
 
+        // Check if partition is for trigger based CDC. We don't do cleanup for user defined cursor
+        if (
+            partition is SapHanaJdbcCursorIncrementalPartition &&
+                partition.triggerCdcPartitionState == TriggerCdcPartitionState.INCREMENTAL
+        ) {
+            val lastestCheckpoint = partition.cursorLowerBound.asText()
+            deleteQuerier.executeDelete(
+                "DELETE FROM \"${TriggerTableConfig.TRIGGER_TABLE_NAMESPACE}\".\"${partition.triggerTableName}\" WHERE \"${TriggerTableConfig.CURSOR_FIELD.id}\" < '${lastestCheckpoint}'",
+            )
+        }
+
         selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
                 parameters =
                     SelectQuerier.Parameters(
                         reuseResultObject = true,
-                        fetchSize = streamState.fetchSize
+                        fetchSize = streamState.fetchSize,
                     ),
             )
             .use { result: SelectQuerier.Result ->
