@@ -22,6 +22,7 @@ from source_hubspot.streams import (
     BaseStream,
     Campaigns,
     Companies,
+    CompaniesArchived,
     CompaniesWebAnalytics,
     ContactLists,
     Contacts,
@@ -195,6 +196,7 @@ class SourceHubspot(YamlDeclarativeSource):
         streams += [
             Campaigns(**common_params),
             Companies(**common_params),
+            CompaniesArchived(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
             ContactsFormSubmissions(**common_params),

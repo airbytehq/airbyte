@@ -1979,6 +1979,28 @@ class Companies(CRMSearchStream):
     primary_key = "id"
     scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
+class CompaniesArchived(ClientSideIncrementalStream):
+    """Archived Companies, API v3"""
+
+    url = "/crm/v3/objects/companies"
+    entity = "company"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
 
 class Contacts(CRMSearchStream):
     entity = "contact"
