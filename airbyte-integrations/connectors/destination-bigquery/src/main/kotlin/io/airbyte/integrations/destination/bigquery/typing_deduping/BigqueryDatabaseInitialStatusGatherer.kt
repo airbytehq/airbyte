@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
@@ -176,7 +175,7 @@ class BigqueryDatabaseInitialStatusGatherer(private val bq: BigQuery) :
         val pks = getPks(stream, columnNameMapping)
 
         val streamSchema: Map<String, StandardSQLTypeName> =
-            (stream.schema as ObjectType).properties.entries.associate {
+            stream.schema.asColumns().entries.associate {
                 columnNameMapping[it.key]!! to BigQuerySqlGenerator.toDialectType(it.value.type)
             }
 
