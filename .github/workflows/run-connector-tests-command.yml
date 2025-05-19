@@ -19,13 +19,20 @@ on:
         description: "The pull request number, if applicable"
         required: false
         type: number
+  push:
 
 jobs:
   call-connector-ci-tests:
+    # Run always for 'workflow_dipatch' events.
+    # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.repository != 'airbytehq/airbyte' &&
+      (secrets.GCP_PROJECT_ID != '' || vars.GCP_PROJECT_ID != ''))
     uses: ./.github/workflows/connector-ci-tests.yml
     with:
-      repo: "${{ inputs.repo }}"
-      gitref: "${{ inputs.gitref }}"
-      comment-id: "${{ inputs['comment-id'] }}"
-      pr: "${{ inputs.pr }}"
+      repo: "${{ inputs.repo || github.repository }}"
+      gitref: "${{ inputs.gitref || github.ref_name }}"
+      comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
+      pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
     secrets: inherit
