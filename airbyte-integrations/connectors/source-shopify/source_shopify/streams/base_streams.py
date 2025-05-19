@@ -28,18 +28,6 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpSt
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 
-import logging
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Union
-from urllib.parse import parse_qsl, urlparse
-
-import requests
-from source_shopify.transform import DataTypeEnforcer
-
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-
 class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
     api_version = "2025-01"
@@ -103,13 +91,18 @@ class ShopifyStream(HttpStream, ABC):
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
         from source_shopify.utils import ShopifyNonRetryableErrors  # Lazy import to avoid circular dependency
+
         known_errors = ShopifyNonRetryableErrors(self.name)
         error_mapping = DEFAULT_ERROR_MAPPING | known_errors
         return HttpStatusErrorHandler(self.logger, max_retries=5, error_mapping=error_mapping)
 
     @property
     def default_filter_field_value(self) -> str:
+        # articles stream
+        if self.filter_field == "since_id":
+            return 0
         return self.config.get("start_date", "2020-01-01T00:00:00Z")
+
 
 class ShopifyDeletedEventsStream(ShopifyStream):
     data_field = "events"

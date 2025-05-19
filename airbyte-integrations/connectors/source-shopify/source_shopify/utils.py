@@ -7,11 +7,13 @@ import enum
 import logging
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, Final, List, Mapping, Optional
+from typing import Any, Callable, Dict, Final, List, Mapping, Optional, Union
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -323,28 +325,12 @@ class EagerlyCachedStreamState:
             return func(*args, **kwargs)
 
         return decorator
-import logging
-from typing import Optional, Union
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-import requests
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-
-# Default logger instance
-LOGGER = logging.getLogger("airbyte")
-
-def update_limit_in_url(url: str, new_limit: int) -> str:
-    """Update the 'limit' parameter in the URL query string."""
-    parsed = urlparse(url)
-    query = parse_qs(parsed.query)
-    query["limit"] = [str(new_limit)]
-    new_query = urlencode(query, doseq=True)
-    return urlunparse(parsed._replace(query=new_query))
 
 class LimitReducingErrorHandler(ErrorHandler):
-    """Custom error handler that reduces the request limit on 500 errors and retries."""
+    """Custom error handler that reduces the request limit (of items/page) on 500 errors and retries.
+    limit is halved on each retry until it reaches 1. We still exponentially backoff on retries in addition to this.
+    """
 
     def __init__(self, stream: "ShopifyStream", default_handler: ErrorHandler):
         self.stream = stream
@@ -366,16 +352,24 @@ class LimitReducingErrorHandler(ErrorHandler):
                 if current_limit > 1:
                     new_limit = max(1, current_limit // 2)
                     self.stream._current_limit = new_limit
-                    new_url = update_limit_in_url(response.request.url, new_limit)
+                    new_url = self.update_limit_in_url(response.request.url, new_limit)
                     response.request.url = new_url
                     return ErrorResolution(
                         response_action=ResponseAction.RETRY,
                         failure_type=FailureType.transient_error,
-                        error_message=f"Server error 500: Reduced limit to {new_limit}"
+                        error_message=f"Server error 500: Reduced limit to {new_limit}",
                     )
                 return ErrorResolution(
                     response_action=ResponseAction.FAIL,
                     failure_type=FailureType.transient_error,
-                    error_message="Persistent 500 error after reducing limit to 1"
+                    error_message="Persistent 500 error after reducing limit to 1",
                 )
         return self.default_handler.interpret_response(response_or_exception)
+
+    def update_limit_in_url(self, url: str, new_limit: int) -> str:
+        """Update the 'limit' parameter in the URL query string."""
+        parsed = urlparse(url)
+        query = parse_qs(parsed.query)
+        query["limit"] = [str(new_limit)]
+        new_query = urlencode(query, doseq=True)
+        return urlunparse(parsed._replace(query=new_query))

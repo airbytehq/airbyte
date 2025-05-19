@@ -31,9 +31,11 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
+from source_shopify.utils import LimitReducingErrorHandler
 
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .base_streams import (
@@ -80,16 +82,14 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
-from typing import Any, Mapping, Optional, MutableMapping
 
-from source_shopify.utils import LimitReducingErrorHandler
-from .base_streams import IncrementalShopifyStreamWithDeletedEvents, ShopifyStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
     deleted_events_api_name = "Order"
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params["status"] = "any"
@@ -328,8 +328,8 @@ class Shop(ShopifyStream):
     data_field = "shop"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        self.logger.debug(f"[streams.py][Shop][request_params] Preparing request parameters for Shop stream.")
         return {}  # Shop stream doesn’t need limit or filter params
+
 
 class MetafieldShops(IncrementalShopifyStream):
     data_field = "metafields"
