@@ -13,9 +13,9 @@ name: Community PR Welcome Message
 on:
   pull_request:
     types:
-    - opened
-    # Toggle this line, uncommenting for testing:
-    - synchronize
+      - opened
+      # Toggle this line, uncommenting for testing:
+      - synchronize
 
 jobs:
   welcome-community-contributor:
@@ -24,7 +24,7 @@ jobs:
     permissions:
       pull-requests: write
     # Comment-out this line for manual testing:
-    if: github.event.pull_request.head.repo.fork == true
+    # if: github.event.pull_request.head.repo.fork == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
         id: template
         uses: chuhlomin/render-template@v1.4
         with:
-          template: .github/comment-template.md
+          template: .github/community-pr-welcome.md
           vars: |
             repo_name: ${{ github.event.pull_request.head.repo.full_name }}
 
