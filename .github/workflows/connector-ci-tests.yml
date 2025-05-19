@@ -1,7 +1,8 @@
 name: Connector CI Tests
 
 on:
-  push: # Push events use secrets from the host repo/fork
+  pull_request:
+    types: [opened, synchronize, reopened]
 
   # Available as a reusable workflow
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
