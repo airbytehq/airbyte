@@ -36,6 +36,7 @@ class ShopifyStream(HttpStream, ABC):
     api_version = "2025-01"
     # Page size
     limit = 250
+    
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"

@@ -327,9 +327,6 @@ class Fulfillments(IncrementalShopifyNestedStream):
 class Shop(ShopifyStream):
     data_field = "shop"
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {}  # Shop stream doesn’t need limit or filter params
-
 
 class MetafieldShops(IncrementalShopifyStream):
     data_field = "metafields"
