@@ -1,8 +1,20 @@
 name: Community PR Welcome Message
 
+# This workflow automatically adds a welcome message to PRs from community contributors (forks)
+# It includes a link to the local connector development documentation and other helpful resources
+#
+# MANUAL TESTING INSTRUCTIONS:
+# To manually test this workflow without a real fork PR:
+# 1. Temporarily comment out the fork condition in the "Create comment" step
+# 2. Add the "synchronize" event type to the workflow trigger
+# 3. Push a change to trigger the workflow
+# 4. Check that the welcome message appears in the PR with the correct repository name
+# 5. After testing, restore the fork condition and remove "synchronize" from event types
+# 6. The workflow should only run on PRs from forks with type "opened" in production
+
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
 
 jobs:
   welcome-community-contributor:
@@ -23,8 +35,7 @@ jobs:
             repo_name: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Create comment
-        # Temporarily removed fork condition for testing
-        # if: github.event.pull_request.head.repo.fork == true
+        if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
