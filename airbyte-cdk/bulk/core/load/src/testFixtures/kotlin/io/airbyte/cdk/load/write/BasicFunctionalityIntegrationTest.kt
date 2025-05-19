@@ -3118,6 +3118,44 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(),
             cursor = null,
         )
+        // Run a second sync to catch bugs in schema change detection.
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{}""",
+                    emittedAtMs = 2000L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1000L,
+                    generationId = 42,
+                    data =
+                        if (preserveUndeclaredFields) {
+                            mapOf("foo" to "bar")
+                        } else {
+                            emptyMap()
+                        },
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 2000L,
+                    generationId = 42,
+                    data = emptyMap(),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(),
+            cursor = null,
+        )
     }
 
     @Test
