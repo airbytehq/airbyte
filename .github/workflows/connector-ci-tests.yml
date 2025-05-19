@@ -35,6 +35,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Add upstream remote (forks only)
+        # This step is only needed for forks to fetch the upstream repository.
+        if: github.repository != 'airbytehq/airbyte'
+        run: |
+          # only add upstream if it doesn't already exist
+          if ! git remote | grep -q upstream; then
+            git remote add upstream https://github.com/airbytehq/airbyte.git
+          fi
+          # fetch the default branch from upstream
+          git fetch --quiet upstream master
+
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
