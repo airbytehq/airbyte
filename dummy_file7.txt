@@ -1,1 +1,0 @@
-Test trigger for synchronize event after resolving merge conflicts
