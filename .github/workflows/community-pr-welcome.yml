@@ -14,7 +14,10 @@ name: Community PR Welcome Message
 
 on:
   pull_request:
-    types: [opened]
+    types:
+    - opened
+    # Toggle this line, uncommenting for testing:
+    - synchronize
 
 jobs:
   welcome-community-contributor:
