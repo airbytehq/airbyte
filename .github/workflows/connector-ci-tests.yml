@@ -51,6 +51,10 @@ jobs:
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    concurrency:
+      # Large runners aren't free, so cancel in-progress jobs when a new commit is pushed to the PR.
+      cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+      group: ${{ github.workflow }}-jvm-tests-${{ matrix.connector }}-${{ github.head_ref }}
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
