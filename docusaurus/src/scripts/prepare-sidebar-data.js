@@ -4,12 +4,13 @@
  * to use even on the first build.
  */
 const fs = require("fs");
-const path = require("path");
 const https = require("https");
-
+const path = require("path");
 const REGISTRY_CACHE_PATH = path.join(
   __dirname,
-  "../connector_registry_slim.json",
+  "..",
+  "data",
+  "connector_registry_slim.json",
 );
 
 const REGISTRY_URL =

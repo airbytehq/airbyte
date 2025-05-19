@@ -3,9 +3,10 @@ const path = require("path");
 
 const REGISTRY_CACHE_PATH = path.join(
   __dirname,
+  "..",
+  "data",
   "connector_registry_slim.json",
 );
-
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
 const destinationDocs = `${connectorsDocsRoot}/destinations`;
