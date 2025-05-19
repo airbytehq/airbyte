@@ -17,30 +17,13 @@ on:
         required: false
         description: "The git reference (branch or tag)"
       comment-id:
-        type: number
+        type: string
         required: false
-        description: "The ID of the comment triggering the workflow"
+        description: "The ID of the comment triggering the workflow. Unused as of now."
       pr:
-        type: number
+        type: string
         required: false
-        description: "The pull request number, if applicable"
-
-  # Available as a slash command and workflow dispatch
-  workflow_dispatch:
-    inputs:
-      # Static args from the slash command dispatch:
-      repo:
-        required: false
-        description: "The repository name"
-      gitref:
-        required: false
-        description: "The git reference (branch or tag)"
-      comment-id:
-        required: false
-        description: "The ID of the comment triggering the workflow"
-      pr:
-        required: false
-        description: "The pull request number, if applicable"
+        description: "The pull request number, if applicable. Unused as of now."
 
 jobs:
   generate-matrix:
@@ -70,6 +53,9 @@ jobs:
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      DD_TAGS: "connector.name:${{ matrix.connector }}"
+
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -80,9 +66,11 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@v4
         with:
+          # In order to work correctly on forks, `repository` must be set if `ref` is set:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
           # TODO: Remove the Airbyte-CI dependency for running java integration tests.
-          ref: ${{ github.head_ref }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
       # Java deps
@@ -124,7 +112,9 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        if: matrix.connector
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
@@ -144,6 +134,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
@@ -160,6 +151,8 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -219,7 +212,9 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        if: matrix.connector
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
@@ -239,6 +234,7 @@ jobs:
         if: always() && !cancelled() && matrix.connector
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
+          large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
