@@ -3100,21 +3100,21 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             )
         )
+        val expectedFirstRecord =
+            OutputRecord(
+                extractedAt = 1000L,
+                generationId = 42,
+                data =
+                    if (preserveUndeclaredFields) {
+                        mapOf("foo" to "bar")
+                    } else {
+                        emptyMap()
+                    },
+                airbyteMeta = OutputRecord.Meta(syncId = 42),
+            )
         dumpAndDiffRecords(
             parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 1000L,
-                    generationId = 42,
-                    data =
-                        if (preserveUndeclaredFields) {
-                            mapOf("foo" to "bar")
-                        } else {
-                            emptyMap()
-                        },
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
-            ),
+            listOf(expectedFirstRecord),
             stream,
             primaryKey = listOf(),
             cursor = null,
@@ -3135,17 +3135,7 @@ abstract class BasicFunctionalityIntegrationTest(
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
-                OutputRecord(
-                    extractedAt = 1000L,
-                    generationId = 42,
-                    data =
-                        if (preserveUndeclaredFields) {
-                            mapOf("foo" to "bar")
-                        } else {
-                            emptyMap()
-                        },
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
-                ),
+                expectedFirstRecord,
                 OutputRecord(
                     extractedAt = 2000L,
                     generationId = 42,
