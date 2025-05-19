@@ -3076,6 +3076,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * Verify that we can handle a stream with 0 columns. This is... not particularly useful, but
      * happens sometimes.
      */
+    @Test
     open fun testNoColumns() {
         assumeTrue(verifyDataWriting)
         val stream =
