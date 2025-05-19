@@ -154,7 +154,7 @@ definitions:
     retriever:
       $ref: "#/definitions/basic_async_retriever"
       partition_router:
-        $ref: "#/definitions/partition_router_slice_reducer"
+        $ref: "#/definitions/account_substream_partition_router"
       creation_requester:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body_json:
@@ -235,7 +235,13 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
     state_migrations:
-      - type: LegacyToPerPartitionStateMigration
+      - type: CustomStateMigration
+        class_name: source_bing_ads.components.state_migrations.LegacyToPerPartitionStateMigrationWithParentSlice
+        $parameters:
+          partition_router: "#/definitions/account_substream_partition_router"
+          config: "{{ config }}"
+          cursor: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
+
     transformations:
       - type: AddFields
         fields:
@@ -573,13 +579,7 @@ definitions:
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
-      type: SubstreamPartitionRouter
-      parent_stream_configs:
-        - type: ParentStreamConfig
-          parent_key: Id
-          partition_field: account_id
-          stream:
-            $ref: "#/definitions/accounts_stream"
+      $ref: "#/definitions/account_substream_partition_router"
     status_mapping:
       failed:
         - Error
@@ -635,9 +635,8 @@ definitions:
         CustomerId: "'{{ stream_partition['customer_id'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
-  partition_router_slice_reducer:
-    type: CustomPartitionRouter
-    class_name: source_bing_ads.components.partition_routers.SubstreamPartitionRouterSliceReducer
+  account_substream_partition_router:
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - type: ParentStreamConfig
         # Id is the primary key of the accounts stream but an integer

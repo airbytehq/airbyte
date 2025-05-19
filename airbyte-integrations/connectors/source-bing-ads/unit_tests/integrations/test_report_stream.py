@@ -176,18 +176,26 @@ class TestSuiteReportStream(TestReportStream):
             assert len(output.records) == self.second_read_records_number
 
         actual_cursor = None
+        actual_partition = None
         for state in output.most_recent_state.stream_state.states:
             if state["partition"]["account_id"] == self.account_id:
                 actual_cursor = state["cursor"]
+                actual_partition = state["partition"]
         expected_state = self.second_read_state_for_records_further_start_date
         expected_cursor = None
+        expected_partition = None
         for state in expected_state["states"]:
             if state["partition"]["account_id"] == self.account_id:
                 expected_cursor = state["cursor"]
+                expected_partition = state["partition"]
         if not expected_cursor or not actual_cursor:
             assert False, f"Expected state is empty for account_id: {self.account_id}"
         # here the cursor moved to expected that is the latest record read
         assert actual_cursor == expected_cursor
+        # this is important as we are expecting the new state format
+        # to contain the parent slice as should be happening. In this case
+        # migration is not needed as the state is already in the new format
+        assert actual_partition == expected_partition
 
         # Let's check in the logs what was the start_time and end_time values of the Job
         job_completed_log = ""
@@ -235,18 +243,27 @@ class TestSuiteReportStream(TestReportStream):
             assert len(output.records) == self.second_read_records_number
 
         actual_cursor = None
+        actual_partition = None
         for state in output.most_recent_state.stream_state.states:
             if state["partition"]["account_id"] == self.account_id:
                 actual_cursor = state["cursor"]
+                actual_partition = state["partition"]
         expected_state = self.second_read_state_for_records_further_start_date
         expected_cursor = None
+        expected_partition = None
         for state in expected_state["states"]:
             if state["partition"]["account_id"] == self.account_id:
                 expected_cursor = state["cursor"]
+                expected_partition = state["partition"]
         if not expected_cursor or not actual_cursor:
+            assert False, f"Expected state is empty for account_id: {self.account_id}"
+        if not actual_partition or not expected_partition:
             assert False, f"Expected state is empty for account_id: {self.account_id}"
         # here the cursor moved to expected that is the latest record read
         assert actual_cursor == expected_cursor
+        # this is important as we are expecting the new migrated state partition
+        # to contain the parent slice as should be happening in the custom migrate component
+        assert actual_partition == expected_partition
 
         # Let's check in the logs what was the start_time and end_time values of the Job
         job_completed_log = ""
