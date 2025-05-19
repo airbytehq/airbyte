@@ -223,19 +223,14 @@ abstract class IntegrationTest(
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
     ): List<AirbyteMessage> {
         destinationProcessFactory.testName = testPrettyName
-        val fileTransferProperty =
-            if (useFileTransfer) {
-                mapOf(EnvVarConstants.FILE_TRANSFER_ENABLED to "true")
-            } else {
-                emptyMap()
-            }
+
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                micronautProperties = micronautProperties + fileTransferProperty,
+                micronautProperties = micronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
