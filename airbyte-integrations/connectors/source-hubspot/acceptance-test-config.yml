@@ -62,6 +62,8 @@ acceptance_tests:
             bypass_reason: Unable to populate - covered by integration tests
           - name: cars_web_analytics
             bypass_reason: Unable to populate - covered by integration tests
+          - name: companies_archived
+            bypass_reason: No value in re-create every 90 days
   full_refresh:
     tests:
       - config_path: secrets/config.json

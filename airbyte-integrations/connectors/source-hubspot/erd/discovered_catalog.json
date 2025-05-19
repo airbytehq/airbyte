@@ -1060,6 +1060,857 @@
       "is_resumable": true
     },
     {
+      "name": "companies_archived",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "description": "Unique identifier for the company",
+            "type": ["null", "string"]
+          },
+          "createdAt": {
+            "description": "Date and time when the company was created",
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "description": "Date and time when the company was last updated",
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "archived": {
+            "description": "Indicates whether the company is archived or active",
+            "type": ["null", "boolean"]
+          },
+          "contacts": {
+            "description": "List of contacts associated with the company",
+            "type": ["null", "array"],
+            "items": {
+              "description": "Details of individual contacts",
+              "type": "string"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "about_us": { "type": ["null", "string"] },
+              "address": { "type": ["null", "string"] },
+              "address2": { "type": ["null", "string"] },
+              "annualrevenue": { "type": ["null", "number"] },
+              "city": { "type": ["null", "string"] },
+              "closedate": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "closedate_timestamp_earliest_value_a2a17e6e": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "country": { "type": ["null", "string"] },
+              "createdate": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "custom_company_property": { "type": ["null", "string"] },
+              "days_to_close": { "type": ["null", "number"] },
+              "description": { "type": ["null", "string"] },
+              "domain": { "type": ["null", "string"] },
+              "engagements_last_meeting_booked": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "engagements_last_meeting_booked_campaign": {
+                "type": ["null", "string"]
+              },
+              "engagements_last_meeting_booked_medium": {
+                "type": ["null", "string"]
+              },
+              "engagements_last_meeting_booked_source": {
+                "type": ["null", "string"]
+              },
+              "facebook_company_page": { "type": ["null", "string"] },
+              "facebookfans": { "type": ["null", "number"] },
+              "first_contact_createdate": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "first_contact_createdate_timestamp_earliest_value_78b50eea": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "first_conversion_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "first_conversion_date_timestamp_earliest_value_61f58f2c": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "first_conversion_event_name": { "type": ["null", "string"] },
+              "first_conversion_event_name_timestamp_earliest_value_68ddae0a": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "first_deal_created_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "founded_year": { "type": ["null", "string"] },
+              "googleplus_page": { "type": ["null", "string"] },
+              "hs_additional_domains": { "type": ["null", "string"] },
+              "hs_all_accessible_team_ids": { "type": ["null", "string"] },
+              "hs_all_owner_ids": { "type": ["null", "string"] },
+              "hs_all_team_ids": { "type": ["null", "string"] },
+              "hs_analytics_first_timestamp": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_first_timestamp_timestamp_earliest_value_11e3a63a": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_first_touch_converting_campaign": {
+                "type": ["null", "string"]
+              },
+              "hs_analytics_first_touch_converting_campaign_timestamp_earliest_value_4757fe10": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_first_visit_timestamp": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_first_visit_timestamp_timestamp_earliest_value_accc17ae": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_last_timestamp": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_last_timestamp_timestamp_latest_value_4e16365a": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_last_touch_converting_campaign": {
+                "type": ["null", "string"]
+              },
+              "hs_analytics_last_touch_converting_campaign_timestamp_latest_value_81a64e30": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_last_visit_timestamp": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_last_visit_timestamp_timestamp_latest_value_999a0fce": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_latest_source": { "type": ["null", "string"] },
+              "hs_analytics_latest_source_data_1": {
+                "type": ["null", "string"]
+              },
+              "hs_analytics_latest_source_data_2": {
+                "type": ["null", "string"]
+              },
+              "hs_analytics_latest_source_timestamp": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_num_page_views": { "type": ["null", "number"] },
+              "hs_analytics_num_page_views_cardinality_sum_e46e85b0": {
+                "type": ["null", "number"]
+              },
+              "hs_analytics_num_visits": { "type": ["null", "number"] },
+              "hs_analytics_num_visits_cardinality_sum_53d952a6": {
+                "type": ["null", "number"]
+              },
+              "hs_analytics_source": { "type": ["null", "string"] },
+              "hs_analytics_source_data_1": { "type": ["null", "string"] },
+              "hs_analytics_source_data_1_timestamp_earliest_value_9b2f1fa1": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_source_data_2": { "type": ["null", "string"] },
+              "hs_analytics_source_data_2_timestamp_earliest_value_9b2f9400": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_analytics_source_timestamp_earliest_value_25a3a52c": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_annual_revenue_currency_code": { "type": ["null", "string"] },
+              "hs_avatar_filemanager_key": { "type": ["null", "string"] },
+              "hs_country_code": { "type": ["null", "string"] },
+              "hs_created_by_user_id": { "type": ["null", "number"] },
+              "hs_createdate": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_csm_sentiment": { "type": ["null", "string"] },
+              "hs_customer_success_ticket_sentiment": {
+                "type": ["null", "number"]
+              },
+              "hs_date_entered_customer": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_entered_evangelist": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_entered_lead": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_entered_marketingqualifiedlead": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_entered_opportunity": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_entered_other": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_entered_salesqualifiedlead": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_entered_subscriber": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_customer": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_evangelist": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_lead": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_marketingqualifiedlead": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_opportunity": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_other": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_salesqualifiedlead": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_date_exited_subscriber": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_ideal_customer_profile": { "type": ["null", "string"] },
+              "hs_is_target_account": { "type": ["null", "boolean"] },
+              "hs_last_booked_meeting_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_last_logged_call_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_last_open_task_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_last_sales_activity_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_last_sales_activity_timestamp": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_last_sales_activity_type": { "type": ["null", "string"] },
+              "hs_lastmodifieddate": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_latest_createdate_of_active_subscriptions": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_latest_meeting_activity": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_lead_status": { "type": ["null", "string"] },
+              "hs_logo_url": { "type": ["null", "string"] },
+              "hs_merged_object_ids": { "type": ["null", "string"] },
+              "hs_notes_next_activity_type": { "type": ["null", "string"] },
+              "hs_num_blockers": { "type": ["null", "number"] },
+              "hs_num_child_companies": { "type": ["null", "number"] },
+              "hs_num_contacts_with_buying_roles": {
+                "type": ["null", "number"]
+              },
+              "hs_num_decision_makers": { "type": ["null", "number"] },
+              "hs_num_open_deals": { "type": ["null", "number"] },
+              "hs_object_id": { "type": ["null", "number"] },
+              "hs_object_source": { "type": ["null", "string"] },
+              "hs_object_source_detail_1": { "type": ["null", "string"] },
+              "hs_object_source_detail_2": { "type": ["null", "string"] },
+              "hs_object_source_detail_3": { "type": ["null", "string"] },
+              "hs_object_source_id": { "type": ["null", "string"] },
+              "hs_object_source_label": { "type": ["null", "string"] },
+              "hs_object_source_user_id": { "type": ["null", "number"] },
+              "hs_parent_company_id": { "type": ["null", "number"] },
+              "hs_pinned_engagement_id": { "type": ["null", "number"] },
+              "hs_pipeline": { "type": ["null", "string"] },
+              "hs_predictivecontactscore_v2": { "type": ["null", "number"] },
+              "hs_predictivecontactscore_v2_next_max_max_d4e58c1e": {
+                "type": ["null", "number"]
+              },
+              "hs_read_only": { "type": ["null", "boolean"] },
+              "hs_sales_email_last_replied": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_target_account": { "type": ["null", "string"] },
+              "hs_target_account_probability": { "type": ["null", "number"] },
+              "hs_target_account_recommendation_snooze_time": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hs_target_account_recommendation_state": {
+                "type": ["null", "string"]
+              },
+              "hs_time_in_customer": { "type": ["null", "number"] },
+              "hs_time_in_evangelist": { "type": ["null", "number"] },
+              "hs_time_in_lead": { "type": ["null", "number"] },
+              "hs_time_in_marketingqualifiedlead": {
+                "type": ["null", "number"]
+              },
+              "hs_time_in_opportunity": { "type": ["null", "number"] },
+              "hs_time_in_other": { "type": ["null", "number"] },
+              "hs_time_in_salesqualifiedlead": { "type": ["null", "number"] },
+              "hs_time_in_subscriber": { "type": ["null", "number"] },
+              "hs_total_deal_value": { "type": ["null", "number"] },
+              "hs_unique_creation_key": { "type": ["null", "string"] },
+              "hs_updated_by_user_id": { "type": ["null", "number"] },
+              "hs_user_ids_of_all_notification_followers": {
+                "type": ["null", "string"]
+              },
+              "hs_user_ids_of_all_notification_unfollowers": {
+                "type": ["null", "string"]
+              },
+              "hs_user_ids_of_all_owners": { "type": ["null", "string"] },
+              "hs_was_imported": { "type": ["null", "boolean"] },
+              "hubspot_owner_assigneddate": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "hubspot_owner_id": { "type": ["null", "string"] },
+              "hubspot_team_id": { "type": ["null", "string"] },
+              "hubspotscore": { "type": ["null", "number"] },
+              "industry": { "type": ["null", "string"] },
+              "is_public": { "type": ["null", "boolean"] },
+              "lifecyclestage": { "type": ["null", "string"] },
+              "linkedin_company_page": { "type": ["null", "string"] },
+              "linkedinbio": { "type": ["null", "string"] },
+              "name": { "type": ["null", "string"] },
+              "notes_last_contacted": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "notes_last_updated": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "notes_next_activity_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "num_associated_contacts": { "type": ["null", "number"] },
+              "num_associated_deals": { "type": ["null", "number"] },
+              "num_contacted_notes": { "type": ["null", "number"] },
+              "num_conversion_events": { "type": ["null", "number"] },
+              "num_conversion_events_cardinality_sum_d095f14b": {
+                "type": ["null", "number"]
+              },
+              "num_notes": { "type": ["null", "number"] },
+              "numberofemployees": { "type": ["null", "number"] },
+              "phone": { "type": ["null", "string"] },
+              "recent_conversion_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "recent_conversion_date_timestamp_latest_value_72856da1": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "recent_conversion_event_name": { "type": ["null", "string"] },
+              "recent_conversion_event_name_timestamp_latest_value_66c820bf": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "recent_deal_amount": { "type": ["null", "number"] },
+              "recent_deal_close_date": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "state": { "type": ["null", "string"] },
+              "timezone": { "type": ["null", "string"] },
+              "total_money_raised": { "type": ["null", "string"] },
+              "total_revenue": { "type": ["null", "number"] },
+              "twitterbio": { "type": ["null", "string"] },
+              "twitterfollowers": { "type": ["null", "number"] },
+              "twitterhandle": { "type": ["null", "string"] },
+              "type": { "type": ["null", "string"] },
+              "web_technologies": { "type": ["null", "string"] },
+              "website": { "type": ["null", "string"] },
+              "zip": { "type": ["null", "string"] }
+            }
+          },
+          "properties_about_us": { "type": ["null", "string"] },
+          "properties_address": { "type": ["null", "string"] },
+          "properties_address2": { "type": ["null", "string"] },
+          "properties_annualrevenue": { "type": ["null", "number"] },
+          "properties_city": { "type": ["null", "string"] },
+          "properties_closedate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_closedate_timestamp_earliest_value_a2a17e6e": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_country": { "type": ["null", "string"] },
+          "properties_createdate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_custom_company_property": { "type": ["null", "string"] },
+          "properties_days_to_close": { "type": ["null", "number"] },
+          "properties_description": { "type": ["null", "string"] },
+          "properties_domain": { "type": ["null", "string"] },
+          "properties_engagements_last_meeting_booked": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_engagements_last_meeting_booked_campaign": {
+            "type": ["null", "string"]
+          },
+          "properties_engagements_last_meeting_booked_medium": {
+            "type": ["null", "string"]
+          },
+          "properties_engagements_last_meeting_booked_source": {
+            "type": ["null", "string"]
+          },
+          "properties_facebook_company_page": { "type": ["null", "string"] },
+          "properties_facebookfans": { "type": ["null", "number"] },
+          "properties_first_contact_createdate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_first_contact_createdate_timestamp_earliest_value_78b50eea": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_first_conversion_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_first_conversion_date_timestamp_earliest_value_61f58f2c": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_first_conversion_event_name": {
+            "type": ["null", "string"]
+          },
+          "properties_first_conversion_event_name_timestamp_earliest_value_68ddae0a": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_first_deal_created_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_founded_year": { "type": ["null", "string"] },
+          "properties_googleplus_page": { "type": ["null", "string"] },
+          "properties_hs_additional_domains": { "type": ["null", "string"] },
+          "properties_hs_all_accessible_team_ids": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_all_owner_ids": { "type": ["null", "string"] },
+          "properties_hs_all_team_ids": { "type": ["null", "string"] },
+          "properties_hs_analytics_first_timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_first_timestamp_timestamp_earliest_value_11e3a63a": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_first_touch_converting_campaign": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_analytics_first_touch_converting_campaign_timestamp_earliest_value_4757fe10": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_first_visit_timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_first_visit_timestamp_timestamp_earliest_value_accc17ae": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_last_timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_last_timestamp_timestamp_latest_value_4e16365a": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_last_touch_converting_campaign": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_analytics_last_touch_converting_campaign_timestamp_latest_value_81a64e30": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_last_visit_timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_last_visit_timestamp_timestamp_latest_value_999a0fce": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_latest_source": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_analytics_latest_source_data_1": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_analytics_latest_source_data_2": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_analytics_latest_source_timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_num_page_views": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_analytics_num_page_views_cardinality_sum_e46e85b0": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_analytics_num_visits": { "type": ["null", "number"] },
+          "properties_hs_analytics_num_visits_cardinality_sum_53d952a6": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_analytics_source": { "type": ["null", "string"] },
+          "properties_hs_analytics_source_data_1": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_analytics_source_data_1_timestamp_earliest_value_9b2f1fa1": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_source_data_2": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_analytics_source_data_2_timestamp_earliest_value_9b2f9400": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_analytics_source_timestamp_earliest_value_25a3a52c": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_annual_revenue_currency_code": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_avatar_filemanager_key": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_country_code": { "type": ["null", "string"] },
+          "properties_hs_created_by_user_id": { "type": ["null", "number"] },
+          "properties_hs_createdate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_csm_sentiment": { "type": ["null", "string"] },
+          "properties_hs_customer_success_ticket_sentiment": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_date_entered_customer": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_entered_evangelist": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_entered_lead": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_entered_marketingqualifiedlead": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_entered_opportunity": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_entered_other": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_entered_salesqualifiedlead": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_entered_subscriber": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_customer": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_evangelist": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_lead": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_marketingqualifiedlead": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_opportunity": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_other": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_salesqualifiedlead": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_date_exited_subscriber": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_ideal_customer_profile": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_is_target_account": { "type": ["null", "boolean"] },
+          "properties_hs_last_booked_meeting_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_last_logged_call_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_last_open_task_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_last_sales_activity_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_last_sales_activity_timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_last_sales_activity_type": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_lastmodifieddate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_latest_createdate_of_active_subscriptions": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_latest_meeting_activity": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_lead_status": { "type": ["null", "string"] },
+          "properties_hs_logo_url": { "type": ["null", "string"] },
+          "properties_hs_merged_object_ids": { "type": ["null", "string"] },
+          "properties_hs_notes_next_activity_type": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_num_blockers": { "type": ["null", "number"] },
+          "properties_hs_num_child_companies": { "type": ["null", "number"] },
+          "properties_hs_num_contacts_with_buying_roles": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_num_decision_makers": { "type": ["null", "number"] },
+          "properties_hs_num_open_deals": { "type": ["null", "number"] },
+          "properties_hs_object_id": { "type": ["null", "number"] },
+          "properties_hs_object_source": { "type": ["null", "string"] },
+          "properties_hs_object_source_detail_1": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_object_source_detail_2": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_object_source_detail_3": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_object_source_id": { "type": ["null", "string"] },
+          "properties_hs_object_source_label": { "type": ["null", "string"] },
+          "properties_hs_object_source_user_id": { "type": ["null", "number"] },
+          "properties_hs_parent_company_id": { "type": ["null", "number"] },
+          "properties_hs_pinned_engagement_id": { "type": ["null", "number"] },
+          "properties_hs_pipeline": { "type": ["null", "string"] },
+          "properties_hs_predictivecontactscore_v2": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_predictivecontactscore_v2_next_max_max_d4e58c1e": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_read_only": { "type": ["null", "boolean"] },
+          "properties_hs_sales_email_last_replied": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_target_account": { "type": ["null", "string"] },
+          "properties_hs_target_account_probability": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_target_account_recommendation_snooze_time": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hs_target_account_recommendation_state": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_time_in_customer": { "type": ["null", "number"] },
+          "properties_hs_time_in_evangelist": { "type": ["null", "number"] },
+          "properties_hs_time_in_lead": { "type": ["null", "number"] },
+          "properties_hs_time_in_marketingqualifiedlead": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_time_in_opportunity": { "type": ["null", "number"] },
+          "properties_hs_time_in_other": { "type": ["null", "number"] },
+          "properties_hs_time_in_salesqualifiedlead": {
+            "type": ["null", "number"]
+          },
+          "properties_hs_time_in_subscriber": { "type": ["null", "number"] },
+          "properties_hs_total_deal_value": { "type": ["null", "number"] },
+          "properties_hs_unique_creation_key": { "type": ["null", "string"] },
+          "properties_hs_updated_by_user_id": { "type": ["null", "number"] },
+          "properties_hs_user_ids_of_all_notification_followers": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_user_ids_of_all_notification_unfollowers": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_user_ids_of_all_owners": {
+            "type": ["null", "string"]
+          },
+          "properties_hs_was_imported": { "type": ["null", "boolean"] },
+          "properties_hubspot_owner_assigneddate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_hubspot_owner_id": { "type": ["null", "string"] },
+          "properties_hubspot_team_id": { "type": ["null", "string"] },
+          "properties_hubspotscore": { "type": ["null", "number"] },
+          "properties_industry": { "type": ["null", "string"] },
+          "properties_is_public": { "type": ["null", "boolean"] },
+          "properties_lifecyclestage": { "type": ["null", "string"] },
+          "properties_linkedin_company_page": { "type": ["null", "string"] },
+          "properties_linkedinbio": { "type": ["null", "string"] },
+          "properties_name": { "type": ["null", "string"] },
+          "properties_notes_last_contacted": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_notes_last_updated": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_notes_next_activity_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_num_associated_contacts": { "type": ["null", "number"] },
+          "properties_num_associated_deals": { "type": ["null", "number"] },
+          "properties_num_contacted_notes": { "type": ["null", "number"] },
+          "properties_num_conversion_events": { "type": ["null", "number"] },
+          "properties_num_conversion_events_cardinality_sum_d095f14b": {
+            "type": ["null", "number"]
+          },
+          "properties_num_notes": { "type": ["null", "number"] },
+          "properties_numberofemployees": { "type": ["null", "number"] },
+          "properties_phone": { "type": ["null", "string"] },
+          "properties_recent_conversion_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_recent_conversion_date_timestamp_latest_value_72856da1": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_recent_conversion_event_name": {
+            "type": ["null", "string"]
+          },
+          "properties_recent_conversion_event_name_timestamp_latest_value_66c820bf": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_recent_deal_amount": { "type": ["null", "number"] },
+          "properties_recent_deal_close_date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "properties_state": { "type": ["null", "string"] },
+          "properties_timezone": { "type": ["null", "string"] },
+          "properties_total_money_raised": { "type": ["null", "string"] },
+          "properties_total_revenue": { "type": ["null", "number"] },
+          "properties_twitterbio": { "type": ["null", "string"] },
+          "properties_twitterfollowers": { "type": ["null", "number"] },
+          "properties_twitterhandle": { "type": ["null", "string"] },
+          "properties_type": { "type": ["null", "string"] },
+          "properties_web_technologies": { "type": ["null", "string"] },
+          "properties_website": { "type": ["null", "string"] },
+          "properties_zip": { "type": ["null", "string"] }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["archivedAt"],
+      "source_defined_primary_key": [["id"]],
+      "is_resumable": true
+    },
+    {
       "name": "contact_lists",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",

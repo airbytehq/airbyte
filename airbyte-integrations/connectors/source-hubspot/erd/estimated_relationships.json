@@ -19,6 +19,16 @@
       }
     },
     {
+      "name": "companies_archived",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_parent_company_id": "companies.id"
+      }
+    },
+    {
       "name": "contact_lists",
       "relations": {
         "parentId": "contact_lists.listId",
