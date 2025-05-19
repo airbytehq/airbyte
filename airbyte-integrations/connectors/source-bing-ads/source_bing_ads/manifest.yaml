@@ -22,34 +22,6 @@ definitions:
     client_id: '{{ config["client_id"] }}'
     client_secret: '{{ config["client_secret"] }}'
     refresh_token: '{{ config["refresh_token"] }}'
-  users_stream:
-    type: DeclarativeStream
-    name: users
-    primary_key: Id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema: # this does not matter as we don't expose the stream as public
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/User/Query
-        http_method: POST
-        request_headers:
-          Content-Type: application/json
-          DeveloperToken: "{{ config['developer_token'] }}"
-        request_body_data: '{"UserId": null}'
-        authenticator: "#/definitions/authenticator"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["User"]
-        schema_normalization: Default
   accounts_stream:
     type: DeclarativeStream
     name: accounts
@@ -71,10 +43,6 @@ definitions:
           PageInfo:
             Index: "{{ next_page_token.next_page_token }}"
             Size: 1000
-          Predicates:
-            - Field: UserId
-              Operator: Equals
-              Value: "'{{ stream_partition['user_id'] }}'"
           ReturnAdditionalFields: TaxCertificate,AccountMode
         authenticator: "#/definitions/authenticator"
       paginator:
@@ -84,18 +52,13 @@ definitions:
           inject_on_first_request: true
           page_size: 1000
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: Id
-            partition_field: user_id
-            stream:
-              $ref: "#/definitions/users_stream"
+        type: CustomPartitionRouter
+        class_name: source_bing_ads.components.AccountsPartitionRouter
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path: ["Accounts"]
+          type: CustomRecordExtractor
+          class_name: source_bing_ads.components.DedupingAccountsExtractor
         schema_normalization: Default
     transformations:
       - type: AddFields
