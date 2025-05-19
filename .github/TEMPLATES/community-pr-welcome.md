@@ -9,7 +9,7 @@ Thank you for your contribution from **{{REPO_NAME}}**! We're excited to have yo
 
 ### PR Slash Commands
 
-Maintainers can execute the following slash commands on your PR:
+As needed or by request, Airbyte Maintainers can execute the following slash commands on your PR:
 - `/format-fix` - Fixes formatting issues
 - `/bump-version` - Bumps connector versions
 - `/run-connector-tests` - Runs connector tests
