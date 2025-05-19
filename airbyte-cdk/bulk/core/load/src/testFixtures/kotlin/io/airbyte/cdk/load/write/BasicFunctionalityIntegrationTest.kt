@@ -262,6 +262,15 @@ abstract class BasicFunctionalityIntegrationTest(
      * would set this parameter to `true`.
      */
     val commitDataIncrementally: Boolean,
+    /**
+     * The same concept as [commitDataIncrementally], but specifically describes how the connector
+     * behaves when the destination contains no data at the start of the sync. Some destinations
+     * commit incrementally during such an "initial" truncate refresh, then switch to committing
+     * non-incrementally for subsequent truncates.
+     *
+     * (warehouse destinations with direct-load tables should set this to true).
+     */
+    val commitDataIncrementallyToEmptyDestination: Boolean = commitDataIncrementally,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset: Boolean = false,
@@ -1125,7 +1134,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         dumpAndDiffRecords(
             parsedConfig,
-            if (commitDataIncrementally) {
+            if (commitDataIncrementallyToEmptyDestination) {
                 listOf(
                     makeOutputRecord(
                         id = 1,

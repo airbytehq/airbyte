@@ -50,6 +50,7 @@ abstract class BigqueryWriteTest(
         preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
         commitDataIncrementally = false,
+        commitDataIncrementallyToEmptyDestination = true,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
