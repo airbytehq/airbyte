@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 0
 
       - name: Add upstream remote (forks only)
-        # This step is only needed for forks to fetch the upstream repository.
+        # This step only runs from forks.
         if: github.repository != 'airbytehq/airbyte'
         run: |
           # only add upstream if it doesn't already exist
