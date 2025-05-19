@@ -24,15 +24,20 @@ from source_hubspot.streams import (
     CompaniesArchived,
     CompaniesWebAnalytics,
     Contacts,
-    ContactsArchived
+    ContactsArchived,
     ContactsWebAnalytics,
     CustomObject,
     DealSplits,
     DealsWebAnalytics,
+    EngagementsCallsArchived,
     EngagementsCallsWebAnalytics,
+    EngagementsEmailsArchived,
     EngagementsEmailsWebAnalytics,
+    EngagementsMeetingsArchived,
     EngagementsMeetingsWebAnalytics,
+    EngagementsNotesArchived,
     EngagementsNotesWebAnalytics,
+    EngagementsTasksArchived,
     EngagementsTasksWebAnalytics,
     Goals,
     GoalsWebAnalytics,
@@ -194,6 +199,7 @@ class SourceHubspot(YamlDeclarativeSource):
         streams = super().streams(config=config)
         streams += [
             Companies(**common_params),
+            CompaniesArchived(**common_params),
             Contacts(**common_params),
             ContactsArchived(**common_params),
             DealSplits(**common_params),
@@ -202,6 +208,11 @@ class SourceHubspot(YamlDeclarativeSource):
             LineItems(**common_params),
             Products(**common_params),
             Tickets(**common_params),
+            EngagementsCallsArchived(**common_params),
+            EngagementsEmailsArchived(**common_params),
+            EngagementsMeetingsArchived(**common_params),
+            EngagementsNotesArchived(**common_params),
+            EngagementsTasksArchived(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
