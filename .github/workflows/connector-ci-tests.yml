@@ -37,6 +37,8 @@ jobs:
 
       - name: Add upstream remote (forks only)
         # This step only runs from forks.
+        # It ensures the `upstream` ref is properly declared before proceeding
+        # to the step of determining which connectors are modified.
         if: github.repository != 'airbytehq/airbyte'
         run: |
           # only add upstream if it doesn't already exist
