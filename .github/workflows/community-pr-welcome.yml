@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
+    if: github.event.pull_request.head.repo.fork == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,8 +39,6 @@ jobs:
             repo_name: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Create comment
-        # Temporarily removed fork condition for testing
-        if: github.event.pull_request.head.repo.fork == true
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
