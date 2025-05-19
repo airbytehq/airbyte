@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
+    # Comment-out this line for manual testing:
     if: github.event.pull_request.head.repo.fork == true
     steps:
       - name: Checkout repository
