@@ -1,4 +1,4 @@
-name: Airbyte Connector CI for Contributors
+name: Connector CI for Contributors
 # This workflow is used to run connector tests for contributors.
 # It can be triggered manually via slash command or workflow dispatch.
 # It also will run on push events to forks, if the fork has "BYO Secrets" defined.
