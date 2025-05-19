@@ -79,7 +79,10 @@ class ShopifyStream(HttpStream, ABC):
         self.logger.debug(f"[base_streams.py][ShopifyStream][request_params] Requesting with limit: {self._current_limit}")
         if next_page_token:
             self.logger.debug(f"[base_streams.py][ShopifyStream][request_params] Using next page token: {next_page_token}")
-            params.update(next_page_token)
+            # Update params with next_page_token, but preserve the current limit
+            temp_params = dict(next_page_token)
+            temp_params.pop("limit", None)  # Remove limit from token
+            params.update(temp_params)
         else:
             params["order"] = f"{self.order_field} asc"
             params[self.filter_field] = kwargs.get("stream_state", {}).get(self.filter_field, self.default_filter_field_value)
