@@ -33,7 +33,6 @@ class S3V2Checker<T : OutputStream>(
             val path = pathFactory.getFinalDirectory(mockStream())
             val key = Paths.get(path, "_EXAMPLE").toString()
             log.info { "Checking if destination can write to $path" }
-            log.info { "Force test" }
             var s3Object: S3Object? = null
             val compressor = config.objectStorageCompressionConfiguration.compressor
             try {
