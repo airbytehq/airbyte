@@ -13,22 +13,15 @@ import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailStreamTask : Task
-
-/**
- * FailStreamTask is a task that is executed when the processing of a stream fails in the
- * destination. It is responsible for cleaning up resources and reporting the failure.
- */
-class DefaultFailStreamTask(
+class FailStreamTask(
     private val taskLauncher: DestinationTaskLauncher,
     private val exception: Exception,
     private val syncManager: SyncManager,
     private val stream: DestinationStream.Descriptor,
     private val shouldRunStreamLoaderClose: Boolean,
-) : FailStreamTask {
+) : Task {
     val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -63,29 +56,19 @@ class DefaultFailStreamTask(
                 }
             }
         }
-        taskLauncher.handleFailStreamComplete(stream, exception)
+        taskLauncher.handleFailStreamComplete(exception)
     }
 }
 
-interface FailStreamTaskFactory {
+@Singleton
+class FailStreamTaskFactory(private val syncManager: SyncManager) {
     fun make(
         taskLauncher: DestinationTaskLauncher,
         exception: Exception,
         stream: DestinationStream.Descriptor,
         shouldRunStreamLoaderClose: Boolean,
-    ): FailStreamTask
-}
-
-@Singleton
-@Secondary
-class DefaultFailStreamTaskFactory(private val syncManager: SyncManager) : FailStreamTaskFactory {
-    override fun make(
-        taskLauncher: DestinationTaskLauncher,
-        exception: Exception,
-        stream: DestinationStream.Descriptor,
-        shouldRunStreamLoaderClose: Boolean,
     ): FailStreamTask {
-        return DefaultFailStreamTask(
+        return FailStreamTask(
             taskLauncher,
             exception,
             syncManager,

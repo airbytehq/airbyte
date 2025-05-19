@@ -28,6 +28,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,7 +42,7 @@ class RouteEventTaskTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
 
     @MockK(relaxed = true)
-    lateinit var inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
+    lateinit var inputQueue: Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>
 
     @MockK(relaxed = true)
     lateinit var fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
@@ -75,12 +77,14 @@ class RouteEventTaskTest {
             val key = StreamKey(stream.descriptor)
             val record = Fixtures.record()
             val checkpoints = mapOf(CheckpointId(1) to 2L)
+            val releaseMemCallback: (suspend () -> Unit) = mockk(relaxed = true)
 
             val input =
                 PipelineMessage(
                     checkpointCounts = checkpoints,
                     key = key,
                     value = record,
+                    postProcessingCallback = releaseMemCallback,
                 )
             every { catalog.getStream(key.stream) } returns stream
 
@@ -97,10 +101,12 @@ class RouteEventTaskTest {
                     checkpointCounts = checkpoints,
                     key = key,
                     value = Fixtures.record(),
+                    postProcessingCallback = releaseMemCallback,
                     context = expectedContext
                 )
 
             coVerify { fileQueue.publish(expected, partition) }
+            coVerify { releaseMemCallback() }
         }
 
     @Test
@@ -150,12 +156,12 @@ class RouteEventTaskTest {
     }
 
     @Test
-    fun `routes heartbeats to record queue`() = runTest {
+    fun `broadcasts heartbeats to record queue`() = runTest {
         val input = PipelineHeartbeat<StreamKey, DestinationRecordRaw>()
 
         task.handleEvent(input)
 
-        coVerify { recordQueue.publish(input, partition) }
+        coVerify { recordQueue.broadcast(input) }
     }
 
     object Fixtures {

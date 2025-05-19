@@ -4,11 +4,19 @@
 
 package io.airbyte.cdk.load.command
 
+import io.airbyte.cdk.Operation
+import io.airbyte.cdk.load.config.CHECK_STREAM_NAMESPACE
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import org.apache.commons.lang3.RandomStringUtils
 
 /**
  * Internal representation of destination streams. This is intended to be a case class specialized
@@ -51,13 +59,39 @@ interface DestinationCatalogFactory {
 }
 
 @Factory
-class DefaultDestinationCatalogFactory(
-    private val catalog: ConfiguredAirbyteCatalog,
-    private val streamFactory: DestinationStreamFactory
-) {
+class DefaultDestinationCatalogFactory {
     @Singleton
-    @Secondary
-    fun make(): DestinationCatalog {
-        return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })
+    fun getDestinationCatalog(
+        catalog: ConfiguredAirbyteCatalog,
+        streamFactory: DestinationStreamFactory,
+        @Value("\${${Operation.PROPERTY}}") operation: String,
+    ): DestinationCatalog {
+        if (operation == "check") {
+            // generate a string like "20240523"
+            val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+            // generate 5 random characters
+            val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
+            return DestinationCatalog(
+                listOf(
+                    DestinationStream(
+                        descriptor =
+                            DestinationStream.Descriptor(
+                                CHECK_STREAM_NAMESPACE,
+                                "test$date$random"
+                            ),
+                        importType = Append,
+                        schema =
+                            ObjectType(
+                                linkedMapOf("test" to FieldType(IntegerType, nullable = true))
+                            ),
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                    )
+                )
+            )
+        } else {
+            return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })
+        }
     }
 }
