@@ -253,6 +253,151 @@ definitions:
                 {%- set time_period = date_part ~ "T" ~ "%02d" % hour_part ~ ":00:00+00:00" -%}
               {%- endif -%}
               {{ time_period }}
+          - type: AddedFieldDefinition
+            path:
+              - AdGroupId
+            value: |
+              {{ record.get('AdGroupId') | int if record.get('AdGroupId') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AdId
+            value: |
+              {{ record.get('AdId') | int if record.get('AdId') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AllConversionRate
+            value: |
+              {{ record.get('AllConversionRate') | replace('%', '') | float if record.get('AllConversionRate') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AllConversions
+            value: |
+              {{ record.get('AllConversions') | int if record.get('AllConversions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AllReturnOnAdSpend
+            value: |
+              {{ record.get('AllReturnOnAdSpend') | float if record.get('AllReturnOnAdSpend') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AllRevenue
+            value: |
+              {{ record.get('AllRevenue') | float if record.get('AllRevenue') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Assists
+            value: |
+              {{ record.get('Assists') | int if record.get('Assists') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AverageCpc
+            value: |
+              {{ record.get('AverageCpc') | float if record.get('AverageCpc') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AverageCpm
+            value: |
+              {{ record.get('AverageCpm') | float if record.get('AverageCpm') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AveragePosition
+            value: |
+              {{ record.get('AveragePosition') | float if record.get('AveragePosition') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - CampaignId
+            value: |
+              {{ record.get('CampaignId') | int if record.get('CampaignId') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Clicks
+            value: |
+              {{ record.get('Clicks') | int if record.get('Clicks') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ConversionRate
+            value: |
+              {{ record.get('ConversionRate') | replace('%', '') | float if record.get('ConversionRate') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Conversions
+            value: |
+              {{ record.get('Conversions') | float if record.get('Conversions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ConversionsQualified
+            value: |
+              {{ record.get('ConversionsQualified') | float if record.get('ConversionsQualified') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Ctr
+            value: |
+              {{ record.get('Ctr') | replace('%', '') | float if record.get('Ctr') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Impressions
+            value: |
+              {{ record.get('Impressions') | int if record.get('Impressions') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ReturnOnAdSpend
+            value: |
+              {{ record.get('ReturnOnAdSpend') | float if record.get('ReturnOnAdSpend') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Revenue
+            value: |
+              {{ record.get('Revenue') | float if record.get('Revenue') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - Spend
+            value: |
+              {{ record.get('Spend') | float if record.get('Spend') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ViewThroughConversions
+            value: |
+              {{ record.get('ViewThroughConversions') | int if record.get('ViewThroughConversions') | default('') | trim else none }}
+          # next fields didn't appear in SOAP api if no data was available, but we get empty string in rest version
+          - type: AddedFieldDefinition
+            path:
+              - AllCostPerConversion
+            value: |
+              {{ record.get('AllCostPerConversion') | float if record.get('AllCostPerConversion') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - AllRevenuePerConversion
+            value: |
+              {{ record.get('AllRevenuePerConversion') | float if record.get('AllRevenuePerConversion') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - CostPerAssist
+            value: |
+              {{ record.get('CostPerAssist') | float if record.get('CostPerAssist') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - CostPerConversion
+            value: |
+              {{ record.get('CostPerConversion') | float if record.get('CostPerConversion') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - RevenuePerAssist
+            value: |
+              {{ record.get('RevenuePerAssist') | float if record.get('RevenuePerAssist') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - RevenuePerConversion
+            value: |
+              {{ record.get('RevenuePerConversion') | float if record.get('RevenuePerConversion') | default('') | trim else none }}
+          - type: AddedFieldDefinition
+            path:
+              - ViewThroughConversionsQualified
+            value: |
+              {{ record.get('ViewThroughConversionsQualified') | float if record.get('ViewThroughConversionsQualified') | default('') | trim else none }}
+      - type: RemoveFields
+        field_pointers:
+          - ["TopImpressionRatePercent"]
+          - ["AbsoluteTopImpressionRatePercent"]
   ad_performance_report_daily_stream:
     type: DeclarativeStream
     name: ad_performance_report_daily
