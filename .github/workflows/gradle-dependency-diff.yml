@@ -4,9 +4,10 @@ on:
 
 jobs:
   dependencies-diff:
+    name: Gradle Dependency Diff
     runs-on: ubuntu-latest
     # As of now, the diff analysis does not work for forks.
-    if: github.repository == 'airbytehq/airbyte'
+    if: github.event.pull_request.head.repo.fork == false
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
