@@ -1,6 +1,7 @@
 airbyte:
   destination:
     core:
+      data-channel-medium: ${DATA_CHANNEL_MEDIUM:STDIO}
       record-batch-size-override: ${AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE:null}
       file-transfer:
         enabled: ${USE_FILE_TRANSFER:false}
