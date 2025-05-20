@@ -16,7 +16,7 @@ When developing connectors locally, you'll want to ensure the following tools ar
 1. [`uv`](#uv) - Used for installing Python-based CLI apps, such as `Poe`.
 1. [`docker`](#docker) - Used when building and running connector container images.
 1. [`gradle`](#gradle) - Required when working with Java and Kotlin connectors.
-1. [Airbyte CDK](#airbyte-cdk) - The Airbyte Connector Development Kit.
+1. [Airbyte CDKs](#airbyte-connector-development-kits-cdks) - The Airbyte Connector Development Kit (CDK) tools, including the [`airbyte-cdk` CLI](#the-airbyte-cdk-cli).
 1. [`airbyte-ci` (deprecated)](#airbyte-ci-deprecated) - Used for a large number of tasks such as building and publishing.
 
 ### Poe the Poet
@@ -78,20 +78,22 @@ What we loosely refer to as the "Airbyte CDK" is actually a combination of sever
 
 1. [**Python CDK**](https://airbytehq.github.io/airbyte-python-cdk/airbyte_cdk.html) - A developer kit that includes the foundation for low-code and no-code connectors, as well as several other Python-based implementations.
 1. **File CDK** - A CDK for building file-based source connectors, built on the Python CDK.
-1. **Airbyte CDK CLI** - A command line interface (CLI) for performing common connector-related tasks, built into the Python CDK. (See below for installation instructions.)
+1. **Airbyte CDK CLI** - A command line interface (CLI) for performing common connector-related tasks, built into the Python CDK. (See [below](#the-airbyte-cdk-cli) for installation instructions.)
 
 For high-throughput connectors, we also use:
 
 1. **Bulk Load CDK** - A set of libraries and resources for building destinations using the Kotlin language.
 1. **Bulk Extract CDK** - A set of libraries and resources for building sources using the Kotlin language.
 
-#### Installing the `airbyte-cdk` CLI
+#### The `airbyte-cdk` CLI
 
-First install `uv` using the instructions above. Then, you can install or upgrade the `airbyte-cdk` CLI using:
+To install the `airbyte-cdk` CLI, first install `uv` using the instructions above. Then you can install or upgrade the `airbyte-cdk` CLI using:
 
 ```bash
 uv install --upgrade 'airbyte-cdk[dev]'
 ```
+
+For a list of available commands in the `airbyte-cdk` CLI, run `airbyte-cdk --help`.
 
 ### airbyte-ci (deprecated)
 
