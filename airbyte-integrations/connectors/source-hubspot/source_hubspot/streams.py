@@ -1231,6 +1231,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         if next_page_token:
             payload.update(next_page_token["payload"])
 
+        logger.debug(f"CRMSearchStream search. URL: {self.url}, Body: {payload}")
         response, raw_response = self.search(url=self.url, data=payload)
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
             stream_records[record["id"]] = record
@@ -1421,126 +1422,6 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
             stream_state=stream_state,
         )
         yield from self._flat_associations(records)
-
-
-class ContactLists(IncrementalStream):
-    """Contact lists, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
-    """
-
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-
-    url = "/contacts/v1/lists"
-    data_field = "lists"
-    more_key = "has-more"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
-    limit_field = "count"
-    primary_key = "listId"
-    need_chunk = False
-    scopes = {"crm.lists.read"}
-    unnest_fields = ["metaData"]
-
-
-# class ContactsAllBase(ClientSideIncrementalStream):
-class ContactsAllBase(BaseStream):
-    url = "/contacts/v1/lists/all/contacts/all"
-    updated_at_field = "timestamp"
-    more_key = "has-more"
-    data_field = "contacts"
-    page_filter = "vidOffset"
-    page_field = "vid-offset"
-    primary_key = "canonical-vid"
-    limit_field = "count"
-    scopes = {"crm.objects.contacts.read"}
-    properties_scopes = {"crm.schemas.contacts.read"}
-    records_field = None
-    filter_field = None
-    filter_value = None
-    _state = {}
-    limit_field = "count"
-    limit = 100
-
-    def _transform(self, records: Iterable) -> Iterable:
-        for record in super()._transform(records):
-            canonical_vid = record.get("canonical-vid")
-            for item in record.get(self.records_field, []):
-                yield {"canonical-vid": canonical_vid, **item}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if self.filter_field and self.filter_value:
-            params.update({self.filter_field: self.filter_value})
-        return params
-
-
-class ResumableFullRefreshMixin(BaseStream, CheckpointMixin, ABC):
-    checkpoint_by_page = True
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = value
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        This is a specialized read_records for resumable full refresh that only attempts to read a single page of records
-        at a time and updates the state w/ a synthetic cursor based on the Hubspot cursor pagination value `vidOffset`
-        """
-
-        next_page_token = stream_slice
-        yield from self.read_paged_records(next_page_token=next_page_token, stream_slice=stream_slice, stream_state=stream_state)
-
-
-class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
-    """Contacts list Memberships, API v1
-    The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
-    According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
-    in get all contacts endpoint. API will return list memberships for each contact record.
-    But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
-    Therefore, new stream was created based on get all contacts endpoint of API V1.
-    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
-    """
-
-    records_field = "list-memberships"
-    filter_field = "showListMemberships"
-    filter_value = True
-    checkpoint_by_page = False
-
-    @property
-    def updated_at_field(self) -> str:
-        """Name of the field associated with the state"""
-        return "timestamp"
-
-    @property
-    def cursor_field_datetime_format(self) -> str:
-        """Cursor value expected to be a timestamp in milliseconds"""
-        return "x"
-
-
-class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-    records_field = "form-submissions"
-    filter_field = "formSubmissionMode"
-    filter_value = "all"
-
-
-class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-    records_field = "merge-audits"
-    unnest_fields = ["merged_from_email", "merged_to_email"]
 
 
 class Deals(CRMSearchStream):

@@ -8,6 +8,7 @@ import random
 from datetime import timedelta
 from http import HTTPStatus
 from unittest.mock import MagicMock
+from urllib.parse import urlencode
 
 import mock
 import pendulum
@@ -15,14 +16,14 @@ import pytest
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, BaseStream, Companies, Deals, Products
+from source_hubspot.streams import API, BaseStream, Companies, Deals
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import find_stream
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip
 from .utils import read_full_refresh, read_incremental
 
 
@@ -91,14 +92,14 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
 def test_streams(requests_mock, config):
     streams = SourceHubspot(config, None, None).streams(config)
 
-    assert len(streams) == 35
+    assert len(streams) == 32
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams_incremental(requests_mock, config_experimental):
     streams = SourceHubspot(config_experimental, None, None).streams(config_experimental)
 
-    assert len(streams) == 47
+    assert len(streams) == 44
 
 
 def test_custom_streams(config_experimental):
@@ -180,7 +181,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_stream_forbidden(requests_mock, config, caplog):
+def test_stream_forbidden(requests_mock, config, caplog, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -211,7 +212,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
     assert "The authenticated user does not have permissions to access the URL" in caplog.text
 
 
-def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list):
+def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -326,22 +327,26 @@ class TestSplittingPropertiesFunctionality:
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, common_params, api, fake_properties_list):
+    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, config, common_params, api, fake_properties_list):
         """
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
+        mock_dynamic_schema_requests_with_skip(requests_mock, ["product"])
+        requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
-        parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
 
-        test_stream = Products(**common_params)
+        test_stream = find_stream("products", config)
 
-        for property_slice in parsed_properties:
+        property_slices = (fake_properties_list[:686], fake_properties_list[686:1351], fake_properties_list[1351:])
+
+        for property_slice in property_slices:
+            data = {p: "fake_data" for p in property_slice}
             record_responses = [
                 {
                     "json": {
                         "results": [
-                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
+                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": data}}
                             for id in ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
                         ],
                         "paging": {},
@@ -349,13 +354,48 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
-            prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
-            requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
+            params = {
+                "archived": "false",
+                "properties": ",".join(property_slice),
+                "limit": 100,
+            }
+            requests_mock.register_uri(
+                "GET",
+                f"{test_stream.retriever.requester.url_base}/{test_stream.retriever.requester.get_path()}?{urlencode(params)}",
+                record_responses,
+            )
 
-        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+        catalog = ConfiguredAirbyteCatalogSerializer.load(
+            {
+                "streams": [
+                    {
+                        "stream": {
+                            "name": "products",
+                            "json_schema": {},
+                            "supported_sync_modes": ["full_refresh", "incremental"],
+                        },
+                        "sync_mode": "incremental",
+                        "destination_sync_mode": "append",
+                    }
+                ]
+            }
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "products",
+                {"updatedAt": "2006-01-01T00:03:18.336Z"},
+            )
+            .build()
+        )
+
+        stream_records = read(
+            SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state
+        ).records
 
         assert len(stream_records) == 5
-        for record in stream_records:
+        for record_ab_message in stream_records:
+            record = record_ab_message.record.data
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
@@ -642,7 +682,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params, confi
     assert len(records) == 100
 
 
-def test_engagements_stream_since_old_date(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'All Engagements' API for old dates (more than 30 days)
     """
@@ -693,7 +733,7 @@ def test_engagements_stream_since_old_date(requests_mock, common_params, fake_pr
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
     """
@@ -740,7 +780,9 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_recent_date_more_than_10k(
+    mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config
+):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,

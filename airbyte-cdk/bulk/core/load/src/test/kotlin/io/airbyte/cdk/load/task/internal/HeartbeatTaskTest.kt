@@ -5,9 +5,8 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.config.PipelineInputEvent
 import io.airbyte.cdk.load.message.PartitionedQueue
-import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.WithStream
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -19,9 +18,9 @@ import org.junit.jupiter.api.Test
 
 class HeartbeatTaskTest {
     @Test
-    fun <K : WithStream, V> `heartbeat task updates every configured interval`() = runTest {
+    fun `heartbeat task updates every configured interval`() = runTest {
         val config = mockk<DestinationConfiguration>()
-        val recordQueue = mockk<PartitionedQueue<PipelineEvent<K, V>>>()
+        val recordQueue = mockk<PartitionedQueue<PipelineInputEvent>>()
         val task = HeartbeatTask(config, recordQueue)
         every { config.heartbeatIntervalSeconds } returns 5
         coEvery { recordQueue.broadcast(any()) } returns Unit
