@@ -1,12 +1,62 @@
+import sys
+import traceback
+from datetime import datetime
+
+from orjson import orjson
+
+from airbyte_cdk import AirbyteEntrypoint
+from airbyte_cdk.entrypoint import launch, logger
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteTraceMessage,
+    TraceType,
+    Type,
+)
+from source_exact import SourceExact
 
 
-# from source_gitlab import SourceGitlab
-# from source_gitlab.config_migrations import MigrateGroups, MigrateProjects
+def _get_source(args: list[str]):
+    catalog_path = AirbyteEntrypoint.extract_catalog(args)
+    config_path = AirbyteEntrypoint.extract_config(args)
+    state_path = AirbyteEntrypoint.extract_state(args)
+    try:
+        return SourceExact(
+            SourceExact.read_catalog(catalog_path) if catalog_path else None,
+            SourceExact.read_config(config_path) if config_path else None,
+            SourceExact.read_state(state_path) if state_path else None,
+        )
+
+    except Exception as error:
+        print(
+            orjson.dumps(
+                AirbyteMessageSerializer.dump(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message=f"Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance. Error: {error}",
+                                stack_trace=traceback.format_exc(),
+                            ),
+                        ),
+                    )
+                )
+            ).decode()
+        )
+        return None
 
 
-def run():
-    # source = SourceGitlab()
-    # MigrateGroups.migrate(sys.argv[1:], source)
-    # MigrateProjects.migrate(sys.argv[1:], source)
-    # launch(source, sys.argv[1:])
-    pass
+
+def run() -> None:
+    init_uncaught_exception_handler(logger)
+    _args = sys.argv[1:]
+    source = _get_source(_args)
+    logger.info(f"Running source: {source}")
+    if source:
+        launch(source, _args)
+
+
