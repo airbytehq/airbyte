@@ -177,10 +177,10 @@ To understand which secrets are required for a connector, consult the `metadata.
 To view a list of secrets, or to fetch them locally, you can use the [Airbyte CDK CLI](#the-airbyte-cdk-cli):
 
 - `airbyte-cdk secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
-- `airbyte-cdk secrets list` - Lists the secrets available for the give connector, along with a GSM deep link to each available secret.
+- `airbyte-cdk secrets list` - Lists the secrets available for the given connector, along with a GSM deep link to each available secret.
   - Note: The `secrets list` command is purely a metadata operation; no secrets are downloaded to your machine locally when running this step.
 - `airbyte-cdk secrets fetch`
-  - Fetching the secrets saves them to local `.json` files within in the connector's `secrets`, making them secrets available for local connector testing.
+  - Fetching the secrets saves them to local `.json` files within in the connector's `secrets`, making them available for local connector testing.
 
 :::caution
 The `secrets` directory should be automatically excluded from git based upon repo-level `.gitignore` rules. It is always a good idea to confirm that his is true for your case, and please always use caution whenever handling sensitive credentials.
