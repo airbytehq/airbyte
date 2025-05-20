@@ -17,7 +17,7 @@ include = "source_hardcoded_records"
 
 [tool.poetry.dependencies]
 python = "^3.11,<3.13"
-airbyte-cdk = "6.46.0"
+airbyte-cdk = {git = "https://github.com/airbytehq/airbyte-python-cdk.git", rev = "aj/feat/unprivileged-discover-for-declarative-static-schemas"}
 
 [tool.poetry.scripts]
 source-hardcoded-records = "source_hardcoded_records.run:run"
