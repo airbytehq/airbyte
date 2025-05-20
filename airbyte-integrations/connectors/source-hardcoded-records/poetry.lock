@@ -59,7 +59,7 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 type = "git"
 url = "https://github.com/airbytehq/airbyte-python-cdk.git"
 reference = "aj/feat/unprivileged-discover-for-declarative-static-schemas"
-resolved_reference = "9b37bc525f83f08bed7b041376e9a4f5fcd20d38"
+resolved_reference = "c8dd910870a8c0ce759857316fc4c341fcbc53b9"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
