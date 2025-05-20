@@ -183,7 +183,7 @@ To view a list of secrets, or to fetch them locally, you can use the [Airbyte CD
   - Fetching the secrets saves them to local `.json` files within in the connector's `secrets`, making them available for local connector testing.
 
 :::caution
-The `secrets` directory should be automatically excluded from git based upon repo-level `.gitignore` rules. It is always a good idea to confirm that his is true for your case, and please always use caution whenever handling sensitive credentials.
+The `secrets` directory should be automatically excluded from git based upon repo-level `.gitignore` rules. It is always a good idea to confirm that this is true for your case, and please always use caution whenever handling sensitive credentials.
 :::
 
 ## PR Slash Commands
