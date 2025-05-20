@@ -159,7 +159,7 @@ Airbyte tools and CI workflows will expect secrets to be stored in Google Secret
    1. `connector: <connector-name>`: indicates the name of the connector that the secret pertains to.
       - For example, `connector: source-s3` will be used when testing the S3 source connector.
    2. `filename: <use-case-name>`: The use case name or scenario name that is being declared.
-      - Common `filename` values are: `config` (default), `invalid_config`, `oath_config`, etc.
+      - Common `filename` values are: `config` (default), `invalid_config`, `oauth_config`, etc.
       - When fetching secrets locally, the label `filename: oath_config` value will result in a config file being fetched with the name `secrets/oauth_config.json`.
       - Note: Google Secrets Manager does not support including the "`.`" character in label text, which is why the label should always be stored without the `.json` suffix.
 3. Airbyte tooling will authenticate to your GSM instance using the following two env vars:
