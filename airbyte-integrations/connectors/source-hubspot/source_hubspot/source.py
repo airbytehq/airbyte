@@ -31,11 +31,8 @@ from source_hubspot.streams import (
     EngagementsMeetingsWebAnalytics,
     EngagementsNotesWebAnalytics,
     EngagementsTasksWebAnalytics,
-    Goals,
     GoalsWebAnalytics,
-    LineItems,
     LineItemsWebAnalytics,
-    Products,
     ProductsWebAnalytics,
     TicketsWebAnalytics,
     WebAnalyticsStream,
@@ -95,6 +92,9 @@ scopes = {
     "email_events": {"content"},
     "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "subscription_changes": {"content"},
+    "goals": {"crm.objects.goals.read"},
+    "products": {"e-commerce"},
+    "line_items": {"e-commerce", "crm.objects.line_items.read"},
 }
 
 
@@ -193,9 +193,6 @@ class SourceHubspot(YamlDeclarativeSource):
         streams = super().streams(config=config)
         streams += [
             Companies(**common_params),
-            Goals(**common_params),
-            LineItems(**common_params),
-            Products(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
