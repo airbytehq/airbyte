@@ -164,9 +164,9 @@ Airbyte tools and CI workflows will expect secrets to be stored in Google Secret
       - Note: Google Secrets Manager does not support including the "`.`" character in label text, which is why the label should always be stored without the `.json` suffix.
 3. Airbyte tooling will authenticate to your GSM instance using the following two env vars:
    1. `GCP_PROJECT_ID` - This is a alphanumeric project name, which tells Airbyte which project ID to authenticate against when fetching secrets.
-      - Airbyte CI workflows will look for this value as a repo-level variable with the same name.
-   1. `GCP_GSM_CREDENTIALS` - Unlike `GCP_PROJECT_ID`
-      - Airbyte CI workflows will look for this value as a repo-level secret with the same name.
+      - Airbyte CI workflows will look for this value as a **repo-level variable** with the same name.
+   1. `GCP_GSM_CREDENTIALS`
+      - Airbyte CI workflows will look for this value as a **repo-level secret** with the same name.
 
 ### Understanding the required secrets for testing
 
