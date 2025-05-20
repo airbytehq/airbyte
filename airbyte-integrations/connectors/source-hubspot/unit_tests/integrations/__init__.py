@@ -131,7 +131,7 @@ class HubspotTestCase:
 
     @classmethod
     def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
-        entities = entities or ["calls", "deal", "emails", "form", "meetings", "notes", "tasks"]
+        entities = entities or ["calls", "deal", "emails", "form", "meetings", "notes", "tasks", "company"]
 
         # figure out which entities are already mocked
         existing = set()

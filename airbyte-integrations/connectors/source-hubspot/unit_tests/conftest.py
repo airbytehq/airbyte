@@ -124,7 +124,7 @@ def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exceptio
 
 @pytest.fixture()
 def mock_dynamic_schema_requests(requests_mock):
-    for entity in ["calls", "deal", "emails", "form", "meetings", "notes", "tasks"]:
+    for entity in ["calls", "deal", "emails", "form", "meetings", "notes", "tasks", "company"]:
         requests_mock.get(
             f"https://api.hubapi.com/properties/v2/{entity}/properties",
             json=[

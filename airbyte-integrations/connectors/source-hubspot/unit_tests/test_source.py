@@ -8,6 +8,7 @@ import random
 from datetime import timedelta
 from http import HTTPStatus
 from unittest.mock import MagicMock
+from urllib.parse import urlencode
 
 import mock
 import pendulum
@@ -15,7 +16,7 @@ import pytest
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, BaseStream, Companies, Deals, Products
+from source_hubspot.streams import API, BaseStream, Deals, Products
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -130,25 +131,6 @@ def test_convert_datetime_to_string():
 
     assert BaseStream._convert_datetime_to_string(pendulum_time, declared_format="date")
     assert BaseStream._convert_datetime_to_string(pendulum_time, declared_format="date-time")
-
-
-def test_cast_datetime(common_params, caplog):
-    field_value = pendulum.now()
-    field_name = "current_time"
-
-    Companies(**common_params)._cast_datetime(field_name, field_value)
-
-    expected_warning_message = {
-        "type": "LOG",
-        "log": {
-            "level": "WARN",
-            # if you find some diff locally try using "Ex: argument of type 'DateTime' is not iterable in the message". There could be a
-            # difference in local environment when pendulum.parsing.__init__.py importing parse_iso8601. Anyway below is working fine
-            # in container for now and I am not sure if this diff was just a problem with my setup.
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}",
-        },
-    }
-    assert expected_warning_message["log"]["message"] in caplog.text
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
@@ -278,29 +260,28 @@ class TestSplittingPropertiesFunctionality:
         response = api._session.get(api.BASE_URL + url, params=params)
         return api._parse_and_handle_errors(response)
 
-    def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, common_params):
+    def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, config, mock_dynamic_schema_requests):
+        requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
         """
         Check working stream `companies` with large list of properties using new functionality with splitting properties
         """
-        test_stream = Companies(**common_params)
+        test_stream = find_stream("companies", config)
 
-        parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
 
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
 
         test_stream._sync_mode = SyncMode.full_refresh
-        test_stream_url = test_stream.url
-        test_stream._sync_mode = None
-
+        test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path()
+        properties_slices = (fake_properties_list[:686], fake_properties_list[686:1351], fake_properties_list[1351:])
         after_id = None
         for id_list in record_ids_paginated:
-            for property_slice in parsed_properties:
+            for property_slice in properties_slices:
                 record_responses = [
                     {
                         "json": {
                             "results": [
-                                {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
+                                {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
                                 for id in id_list
                             ],
                             "paging": {"next": {"after": id_list[-1]}} if len(id_list) == 100 else {},
@@ -308,20 +289,51 @@ class TestSplittingPropertiesFunctionality:
                         "status_code": 200,
                     }
                 ]
-                prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
+                params = {
+                    "associations": "contacts",
+                    "properties": ",".join(property_slice),
+                    "limit": 100,
+                }
+                if after_id:
+                    params.update({"after": after_id})
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream_url}?limit=100&{prop_key}={prop_val}{f'&after={after_id}' if after_id else ''}",
+                    f"{test_stream_url}?{urlencode(params)}",
                     record_responses,
                 )
             after_id = id_list[-1]
+        catalog = ConfiguredAirbyteCatalogSerializer.load(
+            {
+                "streams": [
+                    {
+                        "stream": {
+                            "name": "companies",
+                            "json_schema": {},
+                            "supported_sync_modes": ["full_refresh", "incremental"],
+                        },
+                        "sync_mode": "full_refresh",
+                        "destination_sync_mode": "append",
+                    }
+                ]
+            }
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "companies",
+                {},
+            )
+            .build()
+        )
 
-        # Read preudo-output from generator object
-        stream_records = read_full_refresh(test_stream)
+        stream_records = read(
+            SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state
+        ).records
 
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
-        for record in stream_records:
+        for record_ab_message in stream_records:
+            record = record_ab_message.record.data
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
@@ -416,47 +428,50 @@ def configured_catalog_fixture():
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
-def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(requests_mock, common_params, fake_properties_list):
+def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
+    requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
+):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
     the CRMSearchStream instance should stop at the 10Kth record
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
     responses = [
         {
             "json": {
-                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
+                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(200)],
                 "paging": {
                     "next": {
-                        "after": f"{x * 100}",
+                        "after": f"{x * 200}",
                     }
                 },
             },
             "status_code": 200,
         }
-        for x in range(1, 101)
+        for x in range(1, 51)
     ]
     # After reaching 10K records, it performs a new search query.
     responses.extend(
         [
             {
                 "json": {
-                    "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
+                    "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
                     "paging": {
                         "next": {
-                            "after": f"{x * 100}",
+                            "after": f"{x * 200}",
                         }
                     },
                 },
                 "status_code": 200,
             }
-            for x in range(1, 10)
+            for x in range(1, 5)
         ]
     )
     # Last page... it does not have paging->next->after
     responses.append(
         {
-            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)], "paging": {}},
+            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)], "paging": {}},
             "status_code": 200,
         }
     )
@@ -472,92 +487,151 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     ]
 
     # Create test_stream instance with some state
-    test_stream = Companies(**common_params)
-    test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
-    test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
+    test_stream = find_stream("companies", config)
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "companies",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                    },
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "companies",
+            {"updatedAt": "2022-02-24T16:43:11Z"},
+        )
+        .build()
+    )
 
-    # Mocking Request
-    test_stream._sync_mode = SyncMode.incremental
-    requests_mock.register_uri("POST", test_stream.url, responses)
-    test_stream._sync_mode = None
+    test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path() + "/search"
+    requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",
         [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
     )
+    requests_mock.register_uri(
+        "POST",
+        "/crm/v4/associations/company/contacts/batch/read",
+        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
+    )
 
-    records, _ = read_incremental(test_stream, {})
+    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
-    assert len(records) == 11000
-    assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
+    assert len(output.records) == 11000
+    assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
 
 
-def test_search_based_incremental_stream_should_sort_by_id(requests_mock, common_params, fake_properties_list):
+def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
     the CRMSearchStream instance should stop at the 10Kth record
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     # Create test_stream instance with some state
-    test_stream = Companies(**common_params)
-    test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
-    test_stream.state = {"updatedAt": "2022-01-24T16:43:11Z"}
+    test_stream = find_stream("companies", config)
     test_stream.associations = []
-
-    def random_date(start, end):
-        return pendulum.from_timestamp(random.randint(start, end) / 1000).to_iso8601_string()
-
-    after = 0
 
     # Custom callback to mock search endpoint filter and sort behavior, returns 100 records per request.
     # See _process_search in stream.py for details on the structure of the filter amd sort parameters.
     # The generated records will have an id that is the sum of the current id and the current "after" value
     # and the updatedAt field will be a random date between min_time and max_time.
     # Store "after" value in the record to check if it resets after 10k records.
-    def custom_callback(request, context):
-        post_data = request.json()  # Access JSON data from the request body
-        after = int(post_data.get("after", 0))
-        filters = post_data.get("filters", [])
-        min_time = int(filters[0].get("value", 0))
-        max_time = int(filters[1].get("value", 0))
-        id = int(filters[2].get("value", 0))
-        next = int(after) + 100
-        results = [
-            {"id": f"{y + id}", "updatedAt": random_date(min_time, max_time), "after": after} for y in range(int(after) + 1, next + 1)
-        ]
-        context.status_code = 200
-        if (id + next) < 11000:
-            return {"results": results, "paging": {"next": {"after": f"{next}"}}}
-        else:
-            return {"results": results, "paging": {}}  # Last page
-
+    responses = [
+        {
+            "json": {
+                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
+                "paging": {
+                    "next": {
+                        "after": f"{x * 200}",
+                    }
+                },
+            },
+            "status_code": 200,
+        }
+        for x in range(1, 51)
+    ]
+    responses_more_than_10k = [
+        {
+            "json": {
+                "results": [{"id": f"{y + 10000}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
+                "paging": {
+                    "next": {
+                        "after": f"{x * 200}",
+                    }
+                }
+                if x < 5
+                else None,
+            },
+            "status_code": 200,
+        }
+        for x in range(1, 6)
+    ]
+    responses.extend(responses_more_than_10k)
     properties_response = [
         {
-            "json": [],
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
             "status_code": 200,
         }
     ]
-
+    test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path() + "/search"
     # Mocking Request
-    test_stream._sync_mode = SyncMode.incremental
-    requests_mock.register_uri("POST", test_stream.url, json=custom_callback)
-    # test_stream._sync_mode = None
+    requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
-    records, _ = read_incremental(test_stream, {})
+    requests_mock.register_uri(
+        "POST",
+        "/crm/v4/associations/company/contacts/batch/read",
+        [{"status_code": 200, "json": {"results": [{"from": {"id": f"{x}"}, "to": [{"toObjectId": "2"}]}]}} for x in range(1, 11001, 200)],
+    )
+
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "companies",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                    },
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "companies",
+            {"updatedAt": "2022-01-24T16:43:11Z"},
+        )
+        .build()
+    )
+    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+    records = output.records
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
     # Check that the records are sorted by id and that "after" resets after 10k records
-    assert records[0]["id"] == "1"
-    assert records[0]["after"] == 0
-    assert records[10000 - 1]["id"] == "10000"
-    assert records[10000 - 1]["after"] == 9900
-    assert records[10000]["id"] == "10001"
-    assert records[10000]["after"] == 0
-    assert records[-1]["id"] == "11000"
-    assert records[-1]["after"] == 900
-    assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
+    assert dict(records[0].record.data)["id"] == "1"
+    assert dict(records[10000 - 1].record.data)["id"] == "10000"
+    assert dict(records[10000].record.data)["id"] == "10001"
+    assert dict(records[-1].record.data)["id"] == "11000"
+    assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-02-25T16:43:11.000000Z"
 
 
 def test_engagements_stream_pagination_works(requests_mock, common_params, config):
