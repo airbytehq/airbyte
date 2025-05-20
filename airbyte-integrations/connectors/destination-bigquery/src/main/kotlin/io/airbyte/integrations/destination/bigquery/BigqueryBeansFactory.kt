@@ -73,11 +73,15 @@ class BigqueryBeansFactory {
         bigquery: BigQuery,
         config: BigqueryConfiguration,
         names: TableCatalog,
-        directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
-        typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
+        // micronaut will only instantiate a single instance of StreamStateStore,
+        // so accept it as a * generic and cast as needed.
+        // we use a different type depending on whether we're in legacy raw tables vs
+        // direct-load tables mode.
+        streamStateStore: StreamStateStore<*>,
     ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
         if (config.disableTypingDeduping) {
+            @Suppress("UNCHECKED_CAST")
             return TypingDedupingWriter(
                 names,
                 BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
@@ -88,7 +92,7 @@ class BigqueryBeansFactory {
                     destinationHandler,
                 ),
                 disableTypeDedupe = true,
-                typingDedupingStreamStateStore!!,
+                streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>,
             )
         } else {
             val sqlTableOperations =
@@ -98,13 +102,15 @@ class BigqueryBeansFactory {
                     ),
                     destinationHandler,
                 )
+            @Suppress("UNCHECKED_CAST")
             return DirectLoadTableWriter(
                 names = names,
                 stateGatherer = BigqueryDirectLoadDatabaseInitialStateGatherer(bigquery),
                 destinationHandler = destinationHandler,
                 nativeTableOperations = BigqueryDirectLoadNativeTableOperations(bigquery),
                 sqlTableOperations = sqlTableOperations,
-                streamStateStore = directLoadStreamStateStore!!,
+                streamStateStore =
+                    streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>,
                 directLoadTableTempTableNameMigration =
                     DefaultDirectLoadTableTempTableNameMigration(
                         BigqueryDirectLoadTableExistenceChecker(bigquery),
