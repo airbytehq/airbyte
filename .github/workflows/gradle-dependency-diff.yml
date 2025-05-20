@@ -4,6 +4,7 @@ on:
 
 jobs:
   dependencies-diff:
+    name: Gradle Dependency Diff
     runs-on: ubuntu-latest
     # As of now, the diff analysis does not work for forks.
     if: ${{ ! github.event.pull_request.head.repo.fork }}
