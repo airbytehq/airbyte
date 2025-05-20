@@ -2,10 +2,10 @@
 
 from typing import Any, Dict
 
-import requests
+import requests  # type: ignore
 import semver
-import yaml
-from connector_ops.utils import Connector
+import yaml  # type: ignore
+from connector_ops.utils import Connector  # type: ignore
 
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
