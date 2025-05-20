@@ -4,9 +4,8 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
-  # We need to use Contacts stream once it is migrated
   stream_names:
-    - marketing_emails
+    - contacts
 
 definitions:
   # Authenticator Definitions
