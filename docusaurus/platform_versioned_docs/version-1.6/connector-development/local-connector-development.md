@@ -5,7 +5,7 @@ This document outlines the tools needed to develop connectors locally, and how t
 :::tip
 **Using Connector Builder**
 
-For most cases, when building new source connectors, and especially when building API sources, we recommend starting with our Connector Builder instead of starting from the development tools described here. The Connector Builder provides the most streamlined experience for building new connectors, with little or no code, and directly within the web interface.
+For most cases, when building new source connectors, we recommend starting with our [**Low-Code Connector Builder**](./connector-builder-ui/overview) instead of starting from the development tools described here. The Connector Builder provides the most streamlined experience for building new connectors, with little or no code, and directly within the Airbyte web interface.
 :::
 
 ## Tooling
@@ -77,13 +77,13 @@ Using this syntax you can avoid the long task prefixes such as typing `gradle :i
 What we loosely refer to as the "Airbyte CDK" is actually a combination of several CDKs and tools:
 
 1. [**Python CDK**](https://airbytehq.github.io/airbyte-python-cdk/airbyte_cdk.html) - A developer kit that includes the foundation for low-code and no-code connectors, as well as several other Python-based implementations.
-1. "File CDK" - A CDK for building file-based source connectors, built on the Python CDK.
-1. Airbyte CDK CLI - A command line interface (CLI) for performing common connector-related tasks.
+1. **File CDK** - A CDK for building file-based source connectors, built on the Python CDK.
+1. **Airbyte CDK CLI** - A command line interface (CLI) for performing common connector-related tasks, built into the Python CDK. (See below for installation instructions.)
 
 For high-throughput connectors, we also use:
 
-1. "Bulk Load CDK" - A CDK for building destinations using the Kotlin language.
-1. "Bulk Extract CDK" - A CDK for build sources using the Kotlin language.
+1. **Bulk Load CDK** - A set of libraries and resources for building destinations using the Kotlin language.
+1. **Bulk Extract CDK** - A set of libraries and resources for building sources using the Kotlin language.
 
 #### Installing the `airbyte-cdk` CLI
 
