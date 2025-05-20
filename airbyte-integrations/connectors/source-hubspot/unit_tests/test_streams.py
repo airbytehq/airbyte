@@ -15,9 +15,6 @@ from source_hubspot.streams import (
     CustomObject,
     Deals,
     DealSplits,
-    Goals,
-    LineItems,
-    Products,
     RecordUnnester,
 )
 
