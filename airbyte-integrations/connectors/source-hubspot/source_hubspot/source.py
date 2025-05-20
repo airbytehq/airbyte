@@ -20,7 +20,6 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     BaseStream,
-    Companies,
     CompaniesWebAnalytics,
     Contacts,
     ContactsWebAnalytics,
@@ -94,6 +93,7 @@ scopes = {
     "email_events": {"content"},
     "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "subscription_changes": {"content"},
+    "companies": {"crm.objects.contacts.read", "crm.objects.companies.read"},
 }
 
 
@@ -191,7 +191,6 @@ class SourceHubspot(YamlDeclarativeSource):
         # Temporarily using `ConcurrentDeclarativeSource.streams()` to validate granted scopes.
         streams = super().streams(config=config)
         streams += [
-            Companies(**common_params),
             Contacts(**common_params),
             DealSplits(**common_params),
             Goals(**common_params),
