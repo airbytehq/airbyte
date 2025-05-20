@@ -16,7 +16,7 @@ from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder
 
 class SourceMicrosoftSharePoint(FileBasedSource):
     SCOPES = ["offline_access", "Files.Read.All", "Sites.Read.All", "Sites.Selected"]
-    _concurrency_level = DEFAULT_CONCURRENCY
+    _concurrency_level = 10
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
