@@ -1,4 +1,7 @@
-name: Run Connector CI Tests via Slash Command
+name: Airbyte CI for Connector Contributions
+# This workflow is used to run connector tests for contributors.
+# It can be triggered manually via slash command or workflow dispatch.
+# It also will run on push events to forks, if the fork has "BYO Secrets" defined.
 
 on:
   workflow_dispatch:
@@ -19,13 +22,20 @@ on:
         description: "The pull request number, if applicable"
         required: false
         type: number
+  push:
 
 jobs:
   call-connector-ci-tests:
+    # Run always for 'workflow_dipatch' events.
+    # Run for 'push' events on forks, but only if the fork defines "BYO Secrets".
+    if: >
+      ${{ github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.repository != 'airbytehq/airbyte' &&
+      (vars.GCP_PROJECT_ID != '')) }}
     uses: ./.github/workflows/connector-ci-tests.yml
     with:
-      repo: ${{ inputs.repo }}
-      gitref: ${{ inputs.gitref }}
-      comment-id: ${{ inputs['comment-id'] }}
-      pr: ${{ inputs.pr }}
+      repo: "${{ inputs.repo || github.repository }}"
+      gitref: "${{ inputs.gitref || github.ref_name }}"
+      comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
+      pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
     secrets: inherit
