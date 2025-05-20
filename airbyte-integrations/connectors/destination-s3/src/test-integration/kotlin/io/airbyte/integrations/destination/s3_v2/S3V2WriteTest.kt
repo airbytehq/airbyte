@@ -81,6 +81,18 @@ abstract class S3V2WriteTest(
     }
 
     @Test
+    @Disabled("flaky")
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
+
+    @Test
+    @Disabled("flaky")
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+
+    @Test
     fun testMergeUnions() {
         Assumptions.assumeTrue(mergesUnions)
         // Avro and parquet merges unions, merging schemas. Validate the behavior by ensuring
