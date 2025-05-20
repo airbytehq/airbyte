@@ -2,10 +2,10 @@
 
 from typing import Any, Dict
 
-import requests  # type: ignore
-import semver  # type: ignore
-import yaml  # type: ignore
-from connector_ops.utils import Connector  # type: ignore
+import requests
+import semver
+import yaml
+from connector_ops.utils import Connector
 
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
@@ -34,8 +34,14 @@ class CheckVersionIncrement(Check):
     #     "build_customization.py",
     # ]
 
+    def _should_run(self) -> bool:
+        # Always run
+        # TODO: don't run if only files changed are in the bypass list or running in the context of the master branch
+        return True
+
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
+        # TODO: test out if this works on the private airbyte-enterprise repo - consider using git-based approach
         github_url_prefix = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
         master_metadata_url = f"{github_url_prefix}/{connector.technical_name}/{consts.METADATA_FILE_NAME}"
         response = requests.get(master_metadata_url)
@@ -43,7 +49,7 @@ class CheckVersionIncrement(Check):
         # New connectors will not have a metadata file in master
         if not response.ok:
             return None
-        return yaml.safe_load(response.text).get("data", None)
+        return yaml.safe_load(response.text)["data"]
 
     def _parse_version_from_metadata(self, metadata: Dict[str, Any]) -> semver.Version:
         return semver.Version.parse(str(metadata["dockerImageTag"]))
@@ -80,14 +86,7 @@ class CheckVersionIncrement(Check):
     def _run(self, connector: Connector) -> CheckResult:
         """Run the version increment check."""
         if connector.metadata and connector.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
-            return self.skip(connector, "Connector opts out of version checks.")
-        # if self.context.ci_context == CIContext.MASTER: # TODO: fix this
-        #     return self.skip(
-        #         connector,
-        #         "Connector is in master branch."
-        #     )
-        # if connector.code_directory.modified_files.intersection(self._BYPASS_CHECK_FOR): # TODO: fix this
-        #     return False
+            return self.skip(connector, "Connector opts out of version increment checks.")
 
         try:
             master_version = self._get_master_connector_version(connector)
