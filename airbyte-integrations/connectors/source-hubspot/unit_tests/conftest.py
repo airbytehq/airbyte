@@ -11,6 +11,18 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 
 NUMBER_OF_PROPERTIES = 2000
+OBJECTS_WITH_DYNAMIC_SCHEMA = [
+    "calls",
+    "deal",
+    "emails",
+    "form",
+    "goal_targets",
+    "line_item",
+    "meetings",
+    "notes",
+    "tasks",
+    "product",
+]
 
 
 @pytest.fixture(name="oauth_config")
@@ -124,7 +136,7 @@ def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exceptio
 
 @pytest.fixture()
 def mock_dynamic_schema_requests(requests_mock):
-    for entity in ["calls", "deal", "emails", "form", "meetings", "notes", "tasks"]:
+    for entity in OBJECTS_WITH_DYNAMIC_SCHEMA:
         requests_mock.get(
             f"https://api.hubapi.com/properties/v2/{entity}/properties",
             json=[
@@ -136,5 +148,16 @@ def mock_dynamic_schema_requests(requests_mock):
                     "type": "enumeration",
                 }
             ],
+            status_code=200,
+        )
+
+
+def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
+    for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
+        if object_name in object_to_skip:
+            continue
+        requests_mock.get(
+            f"https://api.hubapi.com/properties/v2/{object_name}/properties",
+            json=[{"name": "hs__test_field", "type": "enumeration"}],
             status_code=200,
         )
