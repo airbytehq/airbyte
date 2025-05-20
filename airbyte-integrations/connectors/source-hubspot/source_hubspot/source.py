@@ -31,12 +31,9 @@ from source_hubspot.streams import (
     EngagementsMeetingsWebAnalytics,
     EngagementsNotesWebAnalytics,
     EngagementsTasksWebAnalytics,
-    Goals,
     GoalsWebAnalytics,
     Leads,
-    LineItems,
     LineItemsWebAnalytics,
-    Products,
     ProductsWebAnalytics,
     Tickets,
     TicketsWebAnalytics,
@@ -52,6 +49,7 @@ we use start date 2006-01-01  as date of creation of Hubspot to retrieve all dat
 DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "campaigns": {"crm.lists.read"},
+    "companies": {"crm.objects.contacts.read", "crm.objects.companies.read"},
     "companies_property_history": {"crm.objects.companies.read"},
     "contact_lists": {"crm.lists.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
@@ -93,7 +91,9 @@ scopes = {
     "email_events": {"content"},
     "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "subscription_changes": {"content"},
-    "companies": {"crm.objects.contacts.read", "crm.objects.companies.read"},
+    "goals": {"crm.objects.goals.read"},
+    "products": {"e-commerce"},
+    "line_items": {"e-commerce", "crm.objects.line_items.read"},
 }
 
 
@@ -193,10 +193,7 @@ class SourceHubspot(YamlDeclarativeSource):
         streams += [
             Contacts(**common_params),
             DealSplits(**common_params),
-            Goals(**common_params),
             Leads(**common_params),
-            LineItems(**common_params),
-            Products(**common_params),
             Tickets(**common_params),
         ]
 

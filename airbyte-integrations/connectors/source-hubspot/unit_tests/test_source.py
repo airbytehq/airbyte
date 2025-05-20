@@ -16,14 +16,14 @@ import pytest
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, BaseStream, Deals, Products
+from source_hubspot.streams import API, BaseStream, Deals
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import find_stream
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip
 from .utils import read_full_refresh, read_incremental
 
 
@@ -338,22 +338,26 @@ class TestSplittingPropertiesFunctionality:
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, common_params, api, fake_properties_list):
+    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, config, common_params, api, fake_properties_list):
         """
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
+        mock_dynamic_schema_requests_with_skip(requests_mock, ["product"])
+        requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
-        parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
 
-        test_stream = Products(**common_params)
+        test_stream = find_stream("products", config)
 
-        for property_slice in parsed_properties:
+        property_slices = (fake_properties_list[:686], fake_properties_list[686:1351], fake_properties_list[1351:])
+
+        for property_slice in property_slices:
+            data = {p: "fake_data" for p in property_slice}
             record_responses = [
                 {
                     "json": {
                         "results": [
-                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
+                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": data}}
                             for id in ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
                         ],
                         "paging": {},
@@ -361,13 +365,48 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
-            prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
-            requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
+            params = {
+                "archived": "false",
+                "properties": ",".join(property_slice),
+                "limit": 100,
+            }
+            requests_mock.register_uri(
+                "GET",
+                f"{test_stream.retriever.requester.url_base}/{test_stream.retriever.requester.get_path()}?{urlencode(params)}",
+                record_responses,
+            )
 
-        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+        catalog = ConfiguredAirbyteCatalogSerializer.load(
+            {
+                "streams": [
+                    {
+                        "stream": {
+                            "name": "products",
+                            "json_schema": {},
+                            "supported_sync_modes": ["full_refresh", "incremental"],
+                        },
+                        "sync_mode": "incremental",
+                        "destination_sync_mode": "append",
+                    }
+                ]
+            }
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "products",
+                {"updatedAt": "2006-01-01T00:03:18.336Z"},
+            )
+            .build()
+        )
+
+        stream_records = read(
+            SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state
+        ).records
 
         assert len(stream_records) == 5
-        for record in stream_records:
+        for record_ab_message in stream_records:
+            record = record_ab_message.record.data
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
