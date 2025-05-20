@@ -2,6 +2,12 @@
 
 This document outlines the tools needed to develop connectors locally, and how to use each tool.
 
+:::tip
+**Using Connector Builder**
+
+For most cases, when building new source connectors, and especially when building API sources, we recommend starting with our Connector Builder instead of starting from the development tools described here. The Connector Builder provides the most streamlined experience for building new connectors, with little or no code, and directly within the web interface.
+:::
+
 ## Tooling
 
 When developing connectors locally, you'll want to ensure the following tools are installed:
@@ -10,6 +16,7 @@ When developing connectors locally, you'll want to ensure the following tools ar
 1. [`uv`](#uv) - Used for installing Python-based CLI apps, such as `Poe`.
 1. [`docker`](#docker) - Used when building and running connector container images.
 1. [`gradle`](#gradle) - Required when working with Java and Kotlin connectors.
+1. [Airbyte CDK](#airbyte-cdk) - The Airbyte Connector Development Kit.
 1. [`airbyte-ci` (deprecated)](#airbyte-ci-deprecated) - Used for a large number of tasks such as building and publishing.
 
 ### Poe the Poet
@@ -64,6 +71,27 @@ You can also use `poe` to execute Gradle tasks, often with less typing. From wit
 Using this syntax you can avoid the long task prefixes such as typing `gradle :integration-tests:connectors:source-mysource:unitTest` and instead run `poe gradle unitTest` within the connector directory.
 
 :::
+
+### Airbyte Connector Development Kits (CDKs)
+
+What we loosely refer to as the "Airbyte CDK" is actually a combination of several CDKs and tools:
+
+1. [**Python CDK**](https://airbytehq.github.io/airbyte-python-cdk/airbyte_cdk.html) - A developer kit that includes the foundation for low-code and no-code connectors, as well as several other Python-based implementations.
+1. "File CDK" - A CDK for building file-based source connectors, built on the Python CDK.
+1. Airbyte CDK CLI - A command line interface (CLI) for performing common connector-related tasks.
+
+For high-throughput connectors, we also use:
+
+1. "Bulk Load CDK" - A CDK for building destinations using the Kotlin language.
+1. "Bulk Extract CDK" - A CDK for build sources using the Kotlin language.
+
+#### Installing the `airbyte-cdk` CLI
+
+First install `uv` using the instructions above. Then, you can install or upgrade the `airbyte-cdk` CLI using:
+
+```bash
+uv install --upgrade 'airbyte-cdk[dev]'
+```
 
 ### airbyte-ci (deprecated)
 
