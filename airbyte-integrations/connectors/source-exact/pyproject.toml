@@ -1,0 +1,25 @@
+[project]
+name = "source-exact"
+version = "0.1.0"
+description = "Connector for the bookkeeping software exact online"
+authors = [
+    { name = "Jeroen de Vries", email = "jeroen@maildevries.eu" }
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "airbyte-cdk (>=6.48.16,<7.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+source-exact = "source_exact.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
