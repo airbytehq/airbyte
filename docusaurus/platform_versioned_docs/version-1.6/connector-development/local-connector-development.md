@@ -149,34 +149,42 @@ airbyte-cdk secrets list
 
 The `list` command also provides you with a URL which you can use to quickly navigate to the Google Secrets Manager interface. (GCP login will be required.)
 
-## Managing Connector Secrets
+## Managing Connector Secrets in GSM
 
-Airbyte expects secrets to be stored in Google Secrets Manager (GCP) using the following conventions:
+Airbyte tools and CI workflows will expect secrets to be stored in Google Secrets Manager (GCP) using the following conventions:
 
-1. Each secret should have a label called "`connector: <connector-name>`" indicating the name of the connector that the secret pertains to.
-2. Each secret must be a fully formed JSON config object.
-3. If more than one secret is provided, a label "`filename: <config-file-basename>`" should be set, indicating the filename with the "`.json`" suffix removed. (Google Secrets Manager does not support including the "`.`" character in label text.)
-4. To understand which secrets are required for a connector, consult the `metadata.yaml` and `acceptance-test-config.yml` files within the connector directory.
-5. Your fork repo should declare a secret called `GCP_GSM_CREDENTIALS` which contains the JSON text of your GCP credentials file, along with a repo variable or repo secret called `GCP_PROJECT_ID`, which contains the name of your GCP project containing your integration test credentials.
-6. When testing locally, the secrets should be saved to the corresponding file names (including the `.json` suffix for each file) within the `secrets` directory inside your connector directory.
-7. The `secrets` directory should be automatically excluded from git based upon the repo `.gitignore` rules, but please confirm this is true in your case, applying due caution whenever handling sensitive credentials.
+1. Each secret value stored in GSM must be a fully formed JSON config object.
+   - For the purpose of this section, the term "connector secret" is interchangeable with "connector config" containing one or more sensitive values.
+2. Each connector secret value stored in GSM should have two labels:
+   1. `connector: <connector-name>`: indicates the name of the connector that the secret pertains to.
+      - For example, `connector: source-s3` will be used when testing the S3 source connector.
+   2. `filename: <use-case-name>`: The use case name or scenario name that is being declared.
+      - Common `filename` values are: `config` (default), `invalid_config`, `oath_config`, etc.
+      - When fetching secrets locally, the label `filename: oath_config` value will result in a config file being fetched with the name `secrets/oauth_config.json`.
+      - Note: Google Secrets Manager does not support including the "`.`" character in label text, which is why the label should always be stored without the `.json` suffix.
+3. Airbyte tooling will authenticate to your GSM instance using the following two env vars:
+   1. `GCP_PROJECT_ID` - This is a alphanumeric project name, which tells Airbyte which project ID to authenticate against when fetching secrets.
+      - Airbyte CI workflows will look for this value as a repo-level variable with the same name.
+   1. `GCP_GSM_CREDENTIALS` - Unlike `GCP_PROJECT_ID`
+      - Airbyte CI workflows will look for this value as a repo-level secret with the same name.
 
-Example:
+### Understanding the required secrets for testing
 
-If the `acceptance-test-config.yml` for `source-example` references `config.json` and `oauth_config.json`, then the following should be true:
+To understand which secrets are required for a connector, consult the `metadata.yaml` and `acceptance-test-config.yml` files within the connector directory.
 
-1. Locally, we should have two files saved within the cloned repo directory, for local testing:
-   1. `airbyte-integrations/connectors/source-example/secrets/config.json`
-   2. `airbyte-integrations/connectors/source-example/secrets/oauth_config.json`
-2. Our Google Secrets Manager (GSM) account should have the following secrets declared:
-   1. `SOURCE_EXAMPLE_CONFIG_CREDS` with labels:
-      - `connector: source-example`
-      - `filename: config`
-   2. `SOURCE_EXAMPLE_CONFIG_OAUTH_CREDS` with labels:
-      - `connector: source-example`
-      - `filename: oauth_config`
-3. Our fork should have a repo variable or repo secret named `GCP_PROJECT_ID`, which contains the name of the GCP project that contains my integration test credentials.
-4. Our fork should have a `GCP_GSM_CREDENTIALS` secret set, which contains credentials for a GCP service account with read access to the above-mentioned secrets.
+### Fetching and Listing Connector Secrets Locally
+
+To view a list of secrets, or to fetch them locally, you can use the Airbyte CDK CLI:
+
+- `airbyte-cdk secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
+- `airbyte-cdk secrets list` - Lists the secrets available for the give connector, along with a GSM deep link to each available secret.
+  - Note: The `secrets list` command is purely a metadata operation; no secrets are downloaded to your machine locally when running this step.
+- `airbyte-cdk secrets fetch`
+  - Fetching the secrets saves them to local `.json` files within in the connector's `secrets`, making them secrets available for local connector testing.
+
+:::caution
+The `secrets` directory should be automatically excluded from git based upon repo-level `.gitignore` rules. It is always a good idea to confirm that his is true for your case, and please always use caution whenever handling sensitive credentials.
+:::
 
 ## PR Slash Commands
 
