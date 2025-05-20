@@ -164,9 +164,9 @@ Airbyte tools and CI workflows will expect secrets to be stored in Google Secret
       - Note: Google Secrets Manager does not support including the "`.`" character in label text, which is why the label should always be stored without the `.json` suffix.
 3. Airbyte tooling will authenticate to your GSM instance using the following two env vars:
    1. `GCP_PROJECT_ID` - This is your alphanumeric project name, which tells Airbyte which project ID to authenticate against when fetching secrets.
-      - Airbyte CI workflows will look for this value as a **repo-level variable** with the same name.
+      - Airbyte CI workflows will look for this value as a [**repo-level variable**](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#creating-configuration-variables-for-a-repository) with the same name.
    1. `GCP_GSM_CREDENTIALS` - A variable containing the GCP credentials JSON text for your service account.
-      - Airbyte CI workflows will look for this value as a **repo-level secret** with the same name.
+      - Airbyte CI workflows will look for this value as a [**repo-level secret**](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions) with the same name.
 
 ### Understanding the required secrets for testing
 
@@ -174,7 +174,7 @@ To understand which secrets are required for a connector, consult the `metadata.
 
 ### Fetching and Listing Connector Secrets Locally
 
-To view a list of secrets, or to fetch them locally, you can use the Airbyte CDK CLI:
+To view a list of secrets, or to fetch them locally, you can use the [Airbyte CDK CLI](#the-airbyte-cdk-cli):
 
 - `airbyte-cdk secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
 - `airbyte-cdk secrets list` - Lists the secrets available for the give connector, along with a GSM deep link to each available secret.
