@@ -276,6 +276,17 @@ The command produces the private key in PEM format and the public key remains in
 
 <HideInUI>
 
+## Configuring Entra authentication
+
+The Airbyte source can be configured to authenticate as a Microsoft Entra service principal. 
+This allows Airbyte to use short-lived identity tokens to authenticate to an Azure Postgres server. 
+Consult the Microsoft [documentation on this topic](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-azure-ad-authentication) for more detail on configuring the server and other Entra resources.
+
+To configure the Airbyte Postgres source with Entra authentication, set the `Username` to the Entra ID, as discussed 
+in [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-configure-sign-in-azure-ad-authentication).
+Set the password to a client secret for your Entra service principal.
+Expand the Optional Fields and provide the Entra tenant ID and Entra client (or app) ID of the service principal.
+
 ## Limitations & Troubleshooting
 
 To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).
@@ -344,7 +355,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.33  | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.
+| 3.7.0   | 2025-??-?? | [57511](https://github.com/airbytehq/airbyte/pull/57511)   | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                     |
+| 3.6.33  | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.                                                                                                                                                
 | 3.6.32  | 2025-05-8  | [59722](https://github.com/airbytehq/airbyte/pull/59722)   | Consolidate gradle set up.                                                                                                                                                 |
 | 3.6.31  | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                                                       |
 | 3.6.30  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234)   | Update base image version for certified DB source connectors                                                                                                               |
