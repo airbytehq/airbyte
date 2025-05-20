@@ -118,3 +118,47 @@ airbyte-cdk secrets list
 ```
 
 The `list` command also provides you with a URL which you can use to quickly navigate to the Google Secrets Manager interface. (GCP login will be required.)
+
+## Managing Connector Secrets
+
+Airbyte expects secrets to be stored in Google Secrets Manager (GCP) using the following conventions:
+
+1. Each secret should have a label called "`connector: <connector-name>`" indicating the name of the connector that the secret pertains to.
+2. Each secret must be a fully formed JSON config object.
+3. If more than one secret is provided, a label "`filename: <config-file-basename>`" should be set, indicating the filename with the "`.json`" suffix removed. (Google Secrets Manager does not support including the "`.`" character in label text.)
+4. To understand which secrets are required for a connector, consult the `metadata.yaml` and `acceptance-test-config.yml` files within the connector directory.
+5. Your fork repo should declare a secret called `GCP_GSM_CREDENTIALS` which contains the JSON text of your GCP credentials file, along with a repo variable or repo secret called `GCP_PROJECT_ID`, which contains the name of your GCP project containing your integration test credentials.
+6. When testing locally, the secrets should be saved to the corresponding file names (including the `.json` suffix for each file) within the `secrets` directory inside your connector directory.
+7. The `secrets` directory should be automatically excluded from git based upon the repo `.gitignore` rules, but please confirm this is true in your case, applying due caution whenever handling sensitive credentials.
+
+Example:
+
+If the `acceptance-test-config.yml` for `source-example` references `config.json` and `oauth_config.json`, then the following should be true:
+
+1. Locally, we should have two files saved within the cloned repo directory, for local testing:
+   1. `airbyte-integrations/connectors/source-example/secrets/config.json`
+   2. `airbyte-integrations/connectors/source-example/secrets/oauth_config.json`
+2. Our Google Secrets Manager (GSM) account should have the following secrets declared:
+   1. `SOURCE_EXAMPLE_CONFIG_CREDS` with labels:
+      - `connector: source-example`
+      - `filename: config`
+   2. `SOURCE_EXAMPLE_CONFIG_OAUTH_CREDS` with labels:
+      - `connector: source-example`
+      - `filename: oauth_config`
+3. Our fork should have a repo variable or repo secret named `GCP_PROJECT_ID`, which contains the name of the GCP project that contains my integration test credentials.
+4. Our fork should have a `GCP_GSM_CREDENTIALS` secret set, which contains credentials for a GCP service account with read access to the above-mentioned secrets.
+
+## PR Slash Commands
+
+Maintainers can execute any of the following connector admin commands upon request:
+
+- `/bump-version` - Run the bump version command, which advances the connector version(s) and adds a changelog entry for any modified connector(s).
+- `/format-fix` - Fixes any formatting issues.
+- `/run-connector-tests` - Run the connector tests for any modified connectors.
+- `/poe` - Run a Poe task.
+
+When working on PRs from forks, maintainers can apply `/format-fix` to help expedite formatting fixes, and `/run-connector-tests` if the fork does not have sufficient secrets bootstrapping or other permissions needed to fully test the connector changes.
+
+Note:
+
+- Slash commands may only be executed by maintainers, and they run with the context and the permissions from the main repo.

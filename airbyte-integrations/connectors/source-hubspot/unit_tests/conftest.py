@@ -11,7 +11,18 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 
 NUMBER_OF_PROPERTIES = 2000
-OBJECTS_WITH_DYNAMIC_SCHEMA = ["goal_targets", "product", "deal", "form", "line_item"]
+OBJECTS_WITH_DYNAMIC_SCHEMA = [
+    "calls",
+    "deal",
+    "emails",
+    "form",
+    "goal_targets",
+    "line_item",
+    "meetings",
+    "notes",
+    "tasks",
+    "product",
+]
 
 
 @pytest.fixture(name="oauth_config")

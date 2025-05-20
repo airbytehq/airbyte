@@ -21,11 +21,16 @@ from .response_builder.api import ScopesResponseBuilder
 from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
 
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
-    "goal_targets",
-    "product",
+    "calls",
     "deal",
+    "emails",
     "form",
+    "goal_targets",
     "line_item",
+    "meetings",
+    "notes",
+    "tasks",
+    "product",
 ]
 
 
@@ -35,6 +40,12 @@ class HubspotTestCase:
     OBJECT_ID = "testID"
     ACCESS_TOKEN = "new_access_token"
     CURSOR_FIELD = "occurredAt"
+    MOCK_PROPERTIES_FOR_SCHEMA_LOADER = {
+        # We do not need to include `closed_date` because the first property is automatically mocked
+        # when we instantiate the properties in RootHttpResponseBuilder(templates).
+        # "closed_date": "datetime",
+        "createdate": "datetime",
+    }
     PROPERTIES = {
         "closed_date": "datetime",
         "createdate": "datetime",
@@ -132,10 +143,12 @@ class HubspotTestCase:
         getattr(http_mocker, method)(request, responses)
 
     @classmethod
-    def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker):
+    def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
+        entities = entities or OBJECTS_WITH_DYNAMIC_SCHEMA
+
         # figure out which entities are already mocked
         existing = set()
-        for entity in OBJECTS_WITH_DYNAMIC_SCHEMA:
+        for entity in entities:
             for request_mock in http_mocker._get_matchers():
                 # check if dynamic stream was already mocked
                 if f"properties/v2/{entity}" in request_mock.request._parsed_url.path:
@@ -144,7 +157,7 @@ class HubspotTestCase:
         templates = [{"name": "hs__test_field", "type": "enumeration"}]
         response_builder = RootHttpResponseBuilder(templates)
 
-        for entity in OBJECTS_WITH_DYNAMIC_SCHEMA:
+        for entity in entities:
             if entity in existing:
                 continue  # skip if already mocked
 
