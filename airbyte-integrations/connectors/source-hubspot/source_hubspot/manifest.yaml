@@ -1710,7 +1710,7 @@ definitions:
     full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
     incremental_stream: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
-      name: lead
+      name: leads
       entity: leads
       associations:
         - companies

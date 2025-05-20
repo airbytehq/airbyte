@@ -22,6 +22,7 @@ from source_hubspot.streams import (
     BaseStream,
     Companies,
     CompaniesWebAnalytics,
+    Contacts,
     ContactsWebAnalytics,
     CustomObject,
     DealsWebAnalytics,

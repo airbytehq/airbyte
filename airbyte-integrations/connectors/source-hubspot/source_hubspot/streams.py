@@ -1459,6 +1459,15 @@ class DealsArchived(ClientSideIncrementalStream):
         return params
 
 
+class DealSplits(CRMSearchStream):
+    """Deal splits, API v3"""
+
+    entity = "deal_split"
+    last_modified_field = "hs_lastmodifieddate"
+    primary_key = "id"
+    scopes = {"crm.objects.deals.read"}
+
+
 class Forms(ClientSideIncrementalStream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint

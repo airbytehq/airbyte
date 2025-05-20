@@ -10,8 +10,11 @@ import pendulum
 import pytest
 from source_hubspot.streams import (
     Companies,
+    Contacts,
     ContactsWebAnalytics,
     CustomObject,
+    Deals,
+    DealSplits,
     Goals,
     LineItems,
     Products,
@@ -250,7 +253,7 @@ def test_stream_read_with_legacy_field_transformation(
     stream._sync_mode = SyncMode.full_refresh
 
     if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
     else:
         stream_url = stream.url
     requests_mock.register_uri("GET", stream_url, responses)
@@ -278,7 +281,7 @@ def test_stream_read_with_legacy_field_transformation(
         "properties_hs_time_in_prospect": "1 month",
         "properties_hs_date_exited_prospect": "2024-02-01T00:00:00Z",
     } | cursor_value
-    if isinstance(stream, Contacts):
+    if isinstance(stream, Contacts) or stream == "contacts":
         expected_record = expected_record | {"properties_hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
         expected_record["properties"] = expected_record["properties"] | {"hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
     else:
@@ -715,7 +718,7 @@ def test_cast_record_fields_with_schema_if_needed(
     "stream, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
     [
         (
-            "deals",
+            Deals,
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "string")],
@@ -723,7 +726,7 @@ def test_cast_record_fields_with_schema_if_needed(
             {"hs_closed_amount": "123456"},
         ),
         (
-            "deals",
+            Deals,
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "integer")],
@@ -731,7 +734,7 @@ def test_cast_record_fields_with_schema_if_needed(
             {"hs_closed_amount": 123456},
         ),
         (
-            "deals",
+            Deals,
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "number")],
@@ -739,7 +742,7 @@ def test_cast_record_fields_with_schema_if_needed(
             {"hs_closed_amount": 123456.10},
         ),
         (
-            "deals",
+            Deals,
             "deal",
             {"updatedAt": "2022-02-25T16:43:11Z"},
             [("hs_closed_amount", "boolean")],
@@ -749,7 +752,16 @@ def test_cast_record_fields_with_schema_if_needed(
     ],
 )
 def test_cast_record_fields_if_needed(
-    stream, endpoint, cursor_value, fake_properties_list_response, requests_mock, common_params, data_to_cast, expected_casted_data
+    stream,
+    endpoint,
+    cursor_value,
+    fake_properties_list_response,
+    requests_mock,
+    common_params,
+    data_to_cast,
+    expected_casted_data,
+    custom_object_schema,
+    config,
 ):
     """
     Test that the stream cast record fields in properties key with properties endpoint response if needed
