@@ -165,7 +165,7 @@ Airbyte tools and CI workflows will expect secrets to be stored in Google Secret
 3. Airbyte tooling will authenticate to your GSM instance using the following two env vars:
    1. `GCP_PROJECT_ID` - This is a alphanumeric project name, which tells Airbyte which project ID to authenticate against when fetching secrets.
       - Airbyte CI workflows will look for this value as a **repo-level variable** with the same name.
-   1. `GCP_GSM_CREDENTIALS`
+   1. `GCP_GSM_CREDENTIALS` - A variable containing the GCP credentials JSON text for your service account.
       - Airbyte CI workflows will look for this value as a **repo-level secret** with the same name.
 
 ### Understanding the required secrets for testing
