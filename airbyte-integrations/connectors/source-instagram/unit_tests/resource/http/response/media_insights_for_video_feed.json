@@ -1,18 +1,6 @@
 {
   "data": [
     {
-      "name": "impressions",
-      "period": "lifetime",
-      "values": [
-        {
-          "value": 10000
-        }
-      ],
-      "title": "Impressions",
-      "description": "The number of times your video was displayed.",
-      "id": "90014330517797123/insights/impressions/lifetime"
-    },
-    {
       "name": "reach",
       "period": "lifetime",
       "values": [

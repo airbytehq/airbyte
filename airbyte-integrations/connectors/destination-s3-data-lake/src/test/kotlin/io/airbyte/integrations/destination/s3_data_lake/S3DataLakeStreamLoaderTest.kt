@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
@@ -120,7 +119,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { secretAccessKey } returns "secret-access-key"
         }
         val bucketConfiguration: S3BucketConfiguration = mockk {
-            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`
+            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`.region
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
@@ -146,10 +145,9 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =
@@ -196,7 +194,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { secretAccessKey } returns "secret-access-key"
         }
         val bucketConfiguration: S3BucketConfiguration = mockk {
-            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`
+            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`.region
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
@@ -243,10 +241,9 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
             every { constructGenerationIdSuffix(any() as Long) } returns ""
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
@@ -279,7 +276,7 @@ internal class S3DataLakeStreamLoaderTest {
         verify { updateSchema.addColumn(null, "id", Types.LongType.get()) }
         verify(exactly = 0) { updateSchema.commit() }
 
-        runBlocking { streamLoader.close(streamFailure = null) }
+        runBlocking { streamLoader.close(hadNonzeroRecords = true, streamFailure = null) }
         verify { updateSchema.commit() }
     }
 
@@ -347,7 +344,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { secretAccessKey } returns "secret-access-key"
         }
         val bucketConfiguration: S3BucketConfiguration = mockk {
-            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`
+            every { s3BucketRegion } returns S3BucketRegion.`us-east-1`.region
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
@@ -394,10 +391,9 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
             every { constructGenerationIdSuffix(any() as Long) } returns ""
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
@@ -428,7 +424,7 @@ internal class S3DataLakeStreamLoaderTest {
         verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
         verify(exactly = 0) { updateSchema.commit() }
 
-        runBlocking { streamLoader.close(streamFailure = null) }
+        runBlocking { streamLoader.close(hadNonzeroRecords = true, streamFailure = null) }
         verify { updateSchema.commit() }
     }
 
@@ -452,10 +448,9 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergConfiguration: S3DataLakeConfiguration = mockk()
         val s3DataLakeUtil: S3DataLakeUtil = mockk()
         val icebergUtil: IcebergUtil = mockk {
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =

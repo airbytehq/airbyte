@@ -29,7 +29,7 @@ class ReservingDeserializingInputFlowTest {
     @MockK(relaxed = true) lateinit var config: DestinationConfiguration
     @MockK(relaxed = true) lateinit var deserializer: ProtocolMessageDeserializer
     @MockK(relaxed = true) lateinit var memoryManager: ReservationManager
-    @MockK(relaxed = true) lateinit var stream: DestinationStream.Descriptor
+    @MockK(relaxed = true) lateinit var stream: DestinationStream
     lateinit var inputFlow: ReservingDeserializingInputFlow
 
     @BeforeEach

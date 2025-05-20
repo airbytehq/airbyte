@@ -38,7 +38,7 @@ def get_http_response(name: str, path: str, request_params: Dict, config: Config
         http_client = HttpClient(
             name=name,
             logger=http_logger,
-            use_cache=True,
+            use_cache=False,
             error_handler=error_handler,
         )
         _, response = http_client.send_request(

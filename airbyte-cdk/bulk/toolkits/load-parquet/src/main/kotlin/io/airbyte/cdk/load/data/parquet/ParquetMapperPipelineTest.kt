@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.FailOnAllUnknownTypesExceptNull
-import io.airbyte.cdk.load.data.MapperPipeline
-import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
@@ -18,13 +16,30 @@ import io.airbyte.cdk.load.data.TimeStringToInteger
 import io.airbyte.cdk.load.data.UnionTypeToDisjointRecord
 import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
 
-class ParquetMapperPipelineTest : MapperPipelineFactory {
-    override fun create(stream: DestinationStream): MapperPipeline =
-        MapperPipeline(
+/**
+ * @deprecated This class is deprecated and will be removed in a future release. We are
+ * transitioning to a new mapping pattern using EnrichedDestinationRecordAirbyteValue and
+ * EnrichedAirbyteValue for improved type safety and consistency.
+ *
+ * For examples on implementing the new pattern, please refer to:
+ * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()
+ * - toRecord() method in the s3-data-lake destination
+ */
+@Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
+@Suppress("DEPRECATION")
+class ParquetMapperPipelineTest : io.airbyte.cdk.load.data.MapperPipelineFactory {
+    @Suppress("DEPRECATION")
+    override fun create(stream: DestinationStream): io.airbyte.cdk.load.data.MapperPipeline =
+        io.airbyte.cdk.load.data.MapperPipeline(
             stream.schema,
             listOf(
                 FailOnAllUnknownTypesExceptNull() to AirbyteValueNoopMapper(),
                 MergeUnions() to AirbyteValueNoopMapper(),
+                /**
+                 * This recursive behavior is pretty sad and should not be replicated in the future.
+                 * We currently support this to meet legacy requirements for S3 and should be
+                 * avoided at all costs
+                 */
                 AirbyteSchemaNoopMapper() to
                     AirbyteValueDeepCoercingMapper(
                         recurseIntoObjects = true,

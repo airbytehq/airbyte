@@ -1,3 +1,4 @@
+.tmp
 .gradle
 .idea
 *.iml
@@ -13,6 +14,8 @@ out
 .kotlin
 **/gmon.out
 static_checker_reports/
+.tool-versions
+test-results
 
 # Logs
 acceptance_tests_logs/

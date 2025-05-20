@@ -6,9 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.MapperPipeline
-import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.DirectLoader
@@ -57,7 +55,6 @@ class S3DataLakeDirectLoaderFactory(
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             writer = writer,
             icebergUtil = icebergUtil,
-            pipeline = IcebergParquetPipelineFactory().create(stream)
         )
     }
 }
@@ -70,7 +67,6 @@ class S3DataLakeDirectLoader(
     private val batchSize: Long,
     private val writer: BaseTaskWriter<Record>,
     private val icebergUtil: IcebergUtil,
-    private val pipeline: MapperPipeline
 ) : DirectLoader {
     private val log = KotlinLogging.logger {}
     private var dataSize = 0L
@@ -79,17 +75,20 @@ class S3DataLakeDirectLoader(
         val commitLock: Any = Any()
     }
 
-    override fun accept(record: DestinationRecordAirbyteValue): DirectLoader.DirectLoadResult {
+    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        val enrichedRecordAirbyteValue = record.asEnrichedDestinationRecordAirbyteValue()
+
         val icebergRecord =
             icebergUtil.toRecord(
-                record = record,
+                record = enrichedRecordAirbyteValue,
                 stream = stream,
                 tableSchema = schema,
-                pipeline = pipeline
             )
         writer.write(icebergRecord)
 
-        dataSize += record.serializedSizeBytes // TODO: use icebergRecord.size() instead?
+        dataSize +=
+            enrichedRecordAirbyteValue
+                .serializedSizeBytes // TODO: use icebergRecord.size() instead?
         if (dataSize < batchSize) {
             return DirectLoader.Incomplete
         }

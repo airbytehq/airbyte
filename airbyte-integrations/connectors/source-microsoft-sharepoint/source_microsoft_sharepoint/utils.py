@@ -3,7 +3,12 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
+from functools import lru_cache
 from http import HTTPStatus
+from typing import List, Tuple
+
+from office365.graph_client import GraphClient
+from office365.onedrive.sites.site import Site
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -24,6 +29,7 @@ class FolderNotFoundException(Exception):
 
 class MicrosoftSharePointRemoteFile(RemoteFile):
     download_url: str
+    created_at: datetime
 
 
 def filter_http_urls(files, logger):
@@ -150,3 +156,29 @@ class PlaceholderUrlBuilder:
         query_string = "&".join(self._segments)
         query_string = "?" + query_string if query_string else ""
         return f"{self._scheme}://{self._host}{self._path}{query_string}"
+
+
+def get_site_prefix(graph_client: GraphClient) -> Tuple[str, str]:
+    """
+    Retrieves the SharePoint site and extracts its URL and host prefix.
+
+    Example:
+        For a site with `web_url` = "https://contoso.sharepoint.com/sites/example" and
+        `site_collection.hostname` = "contoso.sharepoint.com", this function will return:
+        ("https://contoso.sharepoint.com/sites/example", "contoso")
+
+    Args:
+        graph_client (GraphClient): An instance of the Microsoft Graph client.
+
+    Returns:
+        Tuple[str, str]: A tuple containing (site_url, hostname_prefix).
+    """
+    site = execute_query_with_retry(graph_client.sites.root.get())
+
+    site_url = site.web_url
+    host_name = site.site_collection.hostname
+    host_name_parts: List = host_name.split(".")
+    if len(host_name_parts) < 2:
+        raise ValueError(f"Invalid host name: {host_name}")
+
+    return site_url, host_name_parts[0]

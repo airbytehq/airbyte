@@ -33,6 +33,17 @@ def wrong_date_config() -> Mapping[str, str]:
 
 
 @fixture
+def wrong_account_id_config() -> Mapping[str, str]:
+    return {
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "refresh_token": "test_refresh_token",
+        "start_date": "2024-01-01",
+        "account_id": "invalid_account",
+    }
+
+
+@fixture
 def test_incremental_config() -> Mapping[str, Any]:
     return {
         "authenticator": MagicMock(),
@@ -59,6 +70,13 @@ def test_record_filter() -> Mapping[str, Any]:
 def test_response(test_record) -> MagicMock:
     response = MagicMock()
     response.json.return_value = test_record
+    return response
+
+
+@fixture
+def test_response_single_account() -> MagicMock:
+    response = MagicMock()
+    response.json.return_value = {"id": "1234"}
     return response
 
 

@@ -1,0 +1,13 @@
+{
+    //
+    // Configuration file for MarkDownLint. More information: https://docs.airbyte.com/contributing-to-airbyte/writing-docs#lint-with-markdownlint
+    //
+    "MD007": false, // Disable the "unordered-list-indentation" rule (allows unordered list items to be indented by any number of spaces)
+    "MD013": false, // Disable the "line-length" rule (allows long lines without warnings)
+    "MD033": false, // Disable the "no-inline-html" rule (allows inline HTML in Markdown)
+    "MD010": false, // Disable the "no-hard-tabs" rule (allows hard tabs instead of spaces)
+    "MD041": false, // Disable the "first-line-heading/first-line-h1" rule (allows files without a top-level heading as the first line)
+    "MD004": {
+        "style": "dash" // Enforce "dash" style for unordered list items (e.g., "- item")
+    }
+}
