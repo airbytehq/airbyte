@@ -11,9 +11,10 @@ name: Community PR Welcome Message
 # Before merging, remember to again comment-out the "synchronize" clause and uncomment the `if:` condition.
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
+      - reopened
       # Toggle this line, uncommenting for testing:
       # - synchronize
 
@@ -24,7 +25,7 @@ jobs:
     permissions:
       pull-requests: write
     # Comment-out this line for manual testing:
-    if: github.event.pull_request.head.repo.fork == true
+    if: github.event.pull_request_target.head.repo.fork == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,10 +36,10 @@ jobs:
         with:
           template: .github/community-pr-welcome.md
           vars: |
-            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
+            repo_name: ${{ github.event.pull_request_target.head.repo.full_name }}
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v4
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ github.event.pull_request_target.number }}
           body: ${{ steps.template.outputs.result }}
