@@ -21,11 +21,13 @@ on:
 jobs:
   welcome-community-contributor:
     name: Welcome Community Contributor
-    runs-on: ubuntu-24.04
-    permissions:
-      pull-requests: write
     # Comment-out this line for manual testing:
-    if: github.event.pull_request_target.head.repo.fork == true
+    if: github.event.pull_request.head.repo.fork == true
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,10 +38,10 @@ jobs:
         with:
           template: .github/community-pr-welcome.md
           vars: |
-            repo_name: ${{ github.event.pull_request_target.head.repo.full_name }}
+            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v4
         with:
-          issue-number: ${{ github.event.pull_request_target.number }}
+          issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.template.outputs.result }}
