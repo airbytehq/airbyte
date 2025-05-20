@@ -21,11 +21,13 @@ on:
 jobs:
   welcome-community-contributor:
     name: Welcome Community Contributor
-    runs-on: ubuntu-24.04
-    permissions:
-      pull-requests: write
     # Comment-out this line for manual testing:
     if: github.event.pull_request.head.repo.fork == true
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
