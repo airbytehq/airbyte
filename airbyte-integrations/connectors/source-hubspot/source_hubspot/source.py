@@ -248,7 +248,7 @@ class SourceHubspot(YamlDeclarativeSource):
             available_streams = streams
 
         custom_object_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
-        available_streams.extend(custom_object_streams)
+        # available_streams.extend(custom_object_streams)
 
         if enable_experimental_streams:
             custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(

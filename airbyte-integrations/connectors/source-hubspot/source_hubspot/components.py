@@ -30,6 +30,7 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -663,3 +664,16 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size
+
+
+@dataclass
+class HubspotCustomObjectsSchemaLoader(SchemaLoader):
+    config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        schema_properties = parameters.get("schema_properties", {})
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        schema = {}
+        return schema
