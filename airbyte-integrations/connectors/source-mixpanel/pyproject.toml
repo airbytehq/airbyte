@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.4.19"
+version = "3.6.0-rc.2"
 name = "source-mixpanel"
 description = "Source implementation for Mixpanel."
 authors = ["Airbyte <contact@airbyte.io>"]
@@ -17,7 +17,9 @@ include = "source_mixpanel"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^4"
+airbyte-cdk = "^6"
+pendulum = "2.1.2"
+responses = "^0.25.7"
 
 [tool.poetry.scripts]
 source-mixpanel = "source_mixpanel.run:run"
@@ -25,7 +27,7 @@ source-mixpanel = "source_mixpanel.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

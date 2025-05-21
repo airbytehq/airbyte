@@ -161,6 +161,32 @@
           }
         }
       }
+    },
+    "learning_stage_info": {
+      "description": "Info about whether the ranking or delivery system is still learning for this ad set.",
+      "type": ["null", "object"],
+      "properties": {
+        "status": {
+          "description": "Learning Phase progress for the ad set. Values: LEARNING — The ad set is still learning. SUCCESS — The ad set exited the learning phase. FAIL — The ad set isn’t generating enough results to exit the learning phase.",
+          "type": ["null", "string"]
+        },
+        "conversions": {
+          "description": "Number of conversions the ad set generated since the time of its last significant edit during the learning phase. Significant edits cause ad sets to reenter the learning phase.",
+          "type": ["null", "integer"]
+        },
+        "last_sig_edit_ts": {
+          "description": "Timestamp of the last significant edit that caused ad set to reenter the learning phase.",
+          "type": ["null", "integer"]
+        },
+        "attribution_windows": {
+          "description": "List of configured attribution windows.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "Number of days between when a person viewed or clicked your ad and subsequently took action. By default, the attribution window is set to 1-day view and 28-day click.",
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }

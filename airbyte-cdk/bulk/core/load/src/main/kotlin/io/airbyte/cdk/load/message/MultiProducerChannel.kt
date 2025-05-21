@@ -14,9 +14,9 @@ import kotlinx.coroutines.channels.Channel
  */
 class MultiProducerChannel<T>(
     producerCount: Long,
-    override val channel: Channel<T>,
+    channel: Channel<T>,
     private val name: String,
-) : ChannelMessageQueue<T>() {
+) : ChannelMessageQueue<T>(channel = channel) {
     private val log = KotlinLogging.logger {}
     private val initializedProducerCount = producerCount
     private val producerCount = AtomicLong(producerCount)

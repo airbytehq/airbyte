@@ -7,6 +7,7 @@ import pendulum
 from pendulum.datetime import DateTime
 from source_zendesk_support import SourceZendeskSupport
 
+from airbyte_cdk.connector_builder.models import HttpRequest
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, SyncMode
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -34,3 +35,9 @@ def datetime_to_string(dt: DateTime) -> str:
 
 def string_to_datetime(dt_string: str) -> DateTime:
     return pendulum.parse(dt_string)
+
+
+def http_request_to_str(http_request: Optional[HttpRequest]) -> Optional[str]:
+    if http_request is None:
+        return None
+    return http_request._parsed_url._replace(fragment="").geturl()

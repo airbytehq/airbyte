@@ -91,6 +91,14 @@ connectionSpecification:
       description: If enabled then experimental streams become available for sync.
       type: boolean
       default: false
+    num_worker:
+      type: integer
+      title: Number of concurrent workers
+      minimum: 1
+      maximum: 40
+      default: 3
+      examples: [1, 2, 3]
+      description: The number of worker threads to use for the sync.
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:

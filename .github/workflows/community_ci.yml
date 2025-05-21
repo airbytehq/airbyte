@@ -37,8 +37,8 @@ jobs:
           echo "The fork has changes in protected paths. This is not allowed."
           exit 1
 
-  connectors_early_ci:
-    name: Run connectors early CI on fork
+  connectors_pre_release_checks:
+    name: Run pre-release checks on fork
     if: github.event.pull_request.head.repo.fork == true
     needs: fail_on_protected_path_changes
     environment: community-ci-auto
@@ -75,7 +75,7 @@ jobs:
         with:
           context: "pull_request"
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          subcommand: "connectors --modified test --only-step=qa_checks --only-step=version_inc_check --global-status-check-context='Connectors early CI checks' --global-status-check-description='Running early CI checks on connectors'"
+          subcommand: "connectors --modified test --only-step=qa_checks --only-step=version_inc_check --global-status-check-context='Connector Pre-Release Checks' --global-status-check-description='Running pre-release checks...'"
           is_fork: "true"
           git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
           git_branch: ${{ github.head_ref }}
@@ -144,7 +144,7 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --modified test"
+          subcommand: "connectors --modified test --skip-step=qa_checks --skip-step=version_inc_check"
           is_fork: "true"
       - name: Upload pipeline reports
         id: upload-artifact

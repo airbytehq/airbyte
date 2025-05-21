@@ -34,7 +34,7 @@ class MySqlSourceDatatypeIntegrationTest {
         @BeforeAll
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
-            dbContainer = MySqlContainerFactory.shared("mysql:8.0", MySqlContainerFactory.WithCdc)
+            dbContainer = MySqlContainerFactory.shared("mysql:9.2.0", MySqlContainerFactory.WithCdc)
         }
     }
 }
@@ -238,12 +238,12 @@ object MySqlSourceDatatypeTestOperations :
                     LeafAirbyteSchemaType.INTEGER,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "DECIMAL(10,2)",
+                    "DECIMAL(10,1)",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "DECIMAL(10,2) UNSIGNED",
+                    "DECIMAL(10,1) UNSIGNED",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),

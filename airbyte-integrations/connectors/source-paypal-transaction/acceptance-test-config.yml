@@ -8,14 +8,14 @@ acceptance_tests:
   spec:
     tests:
       # Test with Prod credentials (Make sure you purt the right ones)
-      - spec_path: "source_paypal_transaction/spec.yaml"
+      - spec_path: "manifest.yaml"
         config_path: secrets/config.json
   connection:
     tests:
       # Test With Prod Credentials
       - config_path: secrets/config.json
         status: succeed
-      # Test with Invalid Credentials
+        # Test with Invalid Credentials
       - config_path: integration_tests/sample_files/invalid_config.json
         status: failed
   discovery:
@@ -32,15 +32,18 @@ acceptance_tests:
           - name: show_product_details
             bypass_reason: "Products may not exist"
           - name: search_invoices
-            bypass_reason: "Order makes the diff fail."
-          # Have to add for testing PR CI.
+            bypass_reason:
+              "Order makes the diff fail."
+              # Have to add for testing PR CI.
           - name: list_disputes
             bypass_reason: "Disputes may not exist."
+          - name: transactions
+            bypass_reason: "Empty Stream."
         timeout_seconds: 3200
         expect_records:
           path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
           exact_order: yes
-        fail_on_extra_columns: False
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: secrets/config.json

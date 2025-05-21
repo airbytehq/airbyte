@@ -1,5 +1,6 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 import json
 from datetime import datetime, timedelta, timezone
@@ -221,17 +222,17 @@ class FullRefreshTest(TestCase):
         slice_datetime = start_date + slice_range
 
         http_mocker.get(
-            _application_fees_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
+            _application_fees_request()
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
             _application_fees_response()
             .with_record(_an_application_fee().with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()))))
             .build(),
         )
         http_mocker.get(
-            _application_fees_request()
-            .with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .build(),
+            _application_fees_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response()
             .with_record(_an_application_fee().with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()))))
             .build(),
@@ -255,7 +256,11 @@ class FullRefreshTest(TestCase):
             _application_fees_response().build(),
         )  # catching subsequent slicing request that we don't really care for this test
         http_mocker.get(
-            _application_fees_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
+            _application_fees_request()
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
             _application_fees_response()
             .with_record(
                 _an_application_fee()
@@ -359,7 +364,7 @@ class IncrementalTest(TestCase):
 
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=cursor_value)
+        assert most_recent_state.stream_state.state["updated"] == str(cursor_value)
 
     @HttpMocker()
     def test_given_state_when_read_then_query_events_using_types_and_state_value_plus_1(self, http_mocker: HttpMocker) -> None:
@@ -368,12 +373,7 @@ class IncrementalTest(TestCase):
         cursor_value = int(state_datetime.timestamp()) + 1
 
         http_mocker.get(
-            _events_request()
-            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(_an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, _a_refund().build())).build(),
         )
 
@@ -384,18 +384,13 @@ class IncrementalTest(TestCase):
 
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=cursor_value)
+        assert most_recent_state.stream_state.updated == str(cursor_value)
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
-            _events_request()
-            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response()
             .with_pagination()
             .with_record(_an_event().with_id("last_record_id_from_first_page").with_field(_DATA_FIELD, _a_refund().build()))
@@ -404,7 +399,7 @@ class IncrementalTest(TestCase):
         http_mocker.get(
             _events_request()
             .with_starting_after("last_record_id_from_first_page")
-            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_gte(state_datetime)
             .with_created_lte(_NOW)
             .with_limit(100)
             .with_types(_EVENT_TYPES)
@@ -423,24 +418,19 @@ class IncrementalTest(TestCase):
     def test_given_state_and_small_slice_range_when_read_then_perform_multiple_queries(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
         slice_range = timedelta(days=3)
-        slice_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES + slice_range
+        slice_datetime = state_datetime + slice_range
 
         http_mocker.get(
             _events_request()
-            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
-            .with_created_lte(slice_datetime)
+            .with_created_gte(state_datetime)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
             .with_limit(100)
             .with_types(_EVENT_TYPES)
             .build(),
             _events_response().with_record(self._a_refund_event()).build(),
         )
         http_mocker.get(
-            _events_request()
-            .with_created_gte(slice_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(self._a_refund_event()).with_record(self._a_refund_event()).build(),
         )
 

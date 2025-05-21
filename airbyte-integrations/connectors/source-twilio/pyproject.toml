@@ -28,7 +28,7 @@ source-twilio = "source_twilio.run:run"
 pytest-mock = "^3.12.0"
 freezegun = "^1.4.0"
 requests-mock = "^1.9.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

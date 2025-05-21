@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.32"
+version = "1.1.2"
 name = "source-facebook-pages"
 description = "Source implementation for Facebook Pages."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,14 +16,15 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_facebook_pages"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
+pendulum = "^3.0.0"
 
 [tool.poetry.scripts]
 source-facebook-pages = "source_facebook_pages.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.11.0"
 

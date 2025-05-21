@@ -7,7 +7,7 @@ from unittest.mock import patch
 import freezegun
 import pendulum
 
-from airbyte_cdk.models import AirbyteStateBlob, SyncMode
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStreamStatus, SyncMode
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -23,6 +23,7 @@ from .zs_responses.records import PostsCommentsRecordBuilder
 
 
 _NOW = datetime.now(timezone.utc)
+_START_DATE = pendulum.now(tz="UTC").subtract(years=2)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -33,7 +34,7 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(_START_DATE)
             .build()
         )
 
@@ -56,7 +57,7 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostsCommentsResponseBuilder.posts_comments_response().with_record(PostsCommentsRecordBuilder.posts_commetns_record()).build(),
+            PostsCommentsResponseBuilder.posts_comments_response().with_record(PostsCommentsRecordBuilder.posts_comments_record()).build(),
         )
 
         output = read_stream("post_comments", SyncMode.full_refresh, self._config)
@@ -83,13 +84,11 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
 
         output = read_stream("post_comments", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
-
-        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert output.get_stream_statuses("post_comments")[-1] == AirbyteStreamStatus.INCOMPLETE
         assert any(
             [
-                "Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-                in error
-                for error in info_logs
+                "failed with status code '403' and error message" in error
+                for error in get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
             ]
         )
 
@@ -112,15 +111,13 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
             ErrorResponseBuilder.response_with_status(404).build(),
         )
 
-        output = read_stream("post_comments", SyncMode.full_refresh, self._config)
+        output = read_stream("post_comments", SyncMode.full_refresh, self._config, expecting_exception=True)
         assert len(output.records) == 0
-
-        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert output.get_stream_statuses("post_comments")[-1] == AirbyteStreamStatus.INCOMPLETE
         assert any(
             [
-                "Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-                in error
-                for error in info_logs
+                "failed with status code '404' and error message" in error
+                for error in get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
             ]
         )
 
@@ -160,7 +157,7 @@ class TestPostsCommentsStreamIncremental(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(_START_DATE)
             .build()
         )
 
@@ -177,7 +174,7 @@ class TestPostsCommentsStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         post = posts_record_builder.build()
-        post_comments_record_builder = PostsCommentsRecordBuilder.posts_commetns_record()
+        post_comments_record_builder = PostsCommentsRecordBuilder.posts_comments_record()
 
         http_mocker.get(
             PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
@@ -191,8 +188,32 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         post_comment = post_comments_record_builder.build()
-        assert output.most_recent_state.stream_descriptor.name == "post_comments"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": post_comment["updated_at"]})
+        assert output.most_recent_state.stream_descriptor.name == "post_comments"  # 1687393942.0
+        post_comments_state_value = str(string_to_datetime(post_comment["updated_at"]).int_timestamp)
+        assert (
+            output.most_recent_state.stream_state
+            == AirbyteStateBlob(
+                {
+                    "lookback_window": 0,
+                    "parent_state": {
+                        "posts": {"updated_at": post["updated_at"]}
+                    },  # note that this state does not have the concurrent format because SubstreamPartitionRouter is still relying on the declarative cursor
+                    "state": {"updated_at": post_comments_state_value},
+                    "states": [
+                        {
+                            "partition": {
+                                "parent_slice": {},
+                                "post_id": post["id"],
+                            },
+                            "cursor": {
+                                "updated_at": post_comments_state_value,
+                            },
+                        }
+                    ],
+                    "use_global_cursor": False,
+                }
+            )
+        )
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker):
@@ -210,7 +231,7 @@ class TestPostsCommentsStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, state_start_date, api_token_authenticator)
         post = posts_record_builder.build()
 
-        post_comments_first_record_builder = PostsCommentsRecordBuilder.posts_commetns_record().with_field(
+        post_comments_first_record_builder = PostsCommentsRecordBuilder.posts_comments_record().with_field(
             FieldPath("updated_at"), datetime_to_string(first_page_record_updated_at)
         )
 
@@ -220,16 +241,16 @@ class TestPostsCommentsStreamIncremental(TestCase):
             .with_start_time(datetime_to_string(state_start_date))
             .with_page_size(100)
             .build(),
-            PostsCommentsResponseBuilder.posts_comments_response()
+            PostsCommentsResponseBuilder.posts_comments_response(
+                PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build()
+            )
             .with_pagination()
             .with_record(post_comments_first_record_builder)
             .build(),
         )
 
-        post_comments_last_record_builder = (
-            PostsCommentsRecordBuilder.posts_commetns_record()
-            .with_id("last_record_id_from_last_page")
-            .with_field(FieldPath("updated_at"), datetime_to_string(last_page_record_updated_at))
+        post_comments_last_record_builder = PostsCommentsRecordBuilder.posts_comments_record().with_field(
+            FieldPath("updated_at"), datetime_to_string(last_page_record_updated_at)
         )
 
         # Read second page request mock
@@ -247,4 +268,24 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 2
 
         assert output.most_recent_state.stream_descriptor.name == "post_comments"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": datetime_to_string(last_page_record_updated_at)})
+        post_comments_state_value = str(last_page_record_updated_at.int_timestamp)
+        assert output.most_recent_state.stream_state == AirbyteStateBlob(
+            {
+                "lookback_window": 0,
+                "parent_state": {"posts": {"updated_at": post["updated_at"]}},
+                # note that this state does not have the concurrent format because SubstreamPartitionRouter is still relying on the declarative cursor
+                "state": {"updated_at": post_comments_state_value},
+                "states": [
+                    {
+                        "partition": {
+                            "parent_slice": {},
+                            "post_id": post["id"],
+                        },
+                        "cursor": {
+                            "updated_at": post_comments_state_value,
+                        },
+                    }
+                ],
+                "use_global_cursor": False,
+            }
+        )

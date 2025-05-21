@@ -6,7 +6,7 @@ import json
 import logging
 import tempfile
 from datetime import datetime, timedelta
-from io import IOBase
+from io import IOBase, StringIO
 from typing import Iterable, List, Optional
 
 import pytz
@@ -139,6 +139,8 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             result = smart_open.open(
                 file.uri, mode=mode.value, compression=compression, encoding=encoding, transport_params={"client": self.gcs_client}
             )
+            if not result.seekable():
+                result = StringIO(result.read())
         except OSError as oe:
             logger.warning(ERROR_MESSAGE_ACCESS.format(uri=file.uri, bucket=self.config.bucket))
             logger.exception(oe)

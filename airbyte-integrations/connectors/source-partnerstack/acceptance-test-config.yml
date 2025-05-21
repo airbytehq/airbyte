@@ -4,7 +4,7 @@ connector_image: airbyte/source-partnerstack:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_partnerstack/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.util.Jsons
 import java.nio.file.Files
@@ -52,4 +53,11 @@ object S3V2TestUtils {
                 assumeRoleExternalId,
             )
     }
+
+    val PERFORMANCE_TEST_MICRONAUT_PROPERTIES =
+        mapOf(
+            Property("airbyte.destination.aws.assume-role.access-key", "FOO") to "foo",
+            Property("airbyte.destination.aws.assume-role.secret-key", "BAR") to "bar",
+            Property("airbyte.destination.aws.assume-role.external-id", "BAZ") to "baz",
+        )
 }

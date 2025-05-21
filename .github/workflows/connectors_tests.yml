@@ -16,7 +16,7 @@ on:
     inputs:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
-        default: "--modified"
+        default: "--modified --concurrency=10"
   pull_request:
     types:
       - opened
@@ -78,7 +78,7 @@ jobs:
     # If the condition is not met the job will be skipped (it will not fail)
     if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
     name: Connectors CI
-    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte
@@ -115,7 +115,10 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
+          # Unit and integration tests are moved to the new connector-ci workflows,
+          # along with pre-release checks (qa_checks, version_inc_check)
+          subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test --skip-step=unit --skip-step=integration --skip-step=qa_checks --skip-step=version_inc_check"
+
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/run-airbyte-ci
@@ -133,4 +136,6 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
-          subcommand: "connectors --execute-timeout=18000 --modified test --skip-step=qa_checks --skip-step=version_inc_check"
+          # Unit and integration tests are moved to the new connector-ci workflows,
+          # along with pre-release checks (qa_checks, version_inc_check)
+          subcommand: "connectors --execute-timeout=18000 --modified test --skip-step=unit --skip-step=integration --skip-step=qa_checks --skip-step=version_inc_check"

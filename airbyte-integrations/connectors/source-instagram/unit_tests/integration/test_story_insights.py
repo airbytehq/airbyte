@@ -7,6 +7,7 @@ from unittest import TestCase
 
 import pytest
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -17,7 +18,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import SyncMode
 
 from .config import BUSINESS_ACCOUNT_ID, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, InstagramPaginationStrategy
@@ -50,7 +50,7 @@ STORIES_ID_ERROR_CODE_10 = "3874523487644"
 HAPPY_PATH = "story_insights_happy_path"
 ERROR_10 = "story_insights_error_code_10"
 
-_METRICS = ["impressions", "reach", "replies", "follows", "profile_visits", "shares", "total_interactions"]
+_METRICS = ["reach", "replies", "follows", "profile_visits", "shares", "total_interactions"]
 
 
 def _get_parent_request() -> RequestBuilder:

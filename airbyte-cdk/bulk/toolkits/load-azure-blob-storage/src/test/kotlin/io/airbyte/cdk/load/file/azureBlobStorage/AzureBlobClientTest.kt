@@ -18,7 +18,7 @@ import com.azure.storage.blob.models.BlobProperties
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.specialized.BlobInputStream
 import com.azure.storage.blob.specialized.BlockBlobClient
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -40,7 +40,7 @@ class AzureBlobClientTest {
 
     private lateinit var serviceClient: BlobServiceClient
     private lateinit var containerClient: BlobContainerClient
-    private lateinit var blobConfig: AzureBlobStorageConfiguration
+    private lateinit var blobConfig: AzureBlobStorageClientConfiguration
     private lateinit var azureBlobClient: AzureBlobClient
 
     @BeforeEach
@@ -48,10 +48,11 @@ class AzureBlobClientTest {
         serviceClient = mockk()
         containerClient = mockk()
         blobConfig =
-            AzureBlobStorageConfiguration(
+            AzureBlobStorageClientConfiguration(
                 accountName = "testAccount",
                 containerName = "testContainer",
-                sharedAccessSignature = "null",
+                sharedAccessSignature = "",
+                accountKey = "test",
             )
         every { serviceClient.getBlobContainerClient(blobConfig.containerName) } returns
             containerClient

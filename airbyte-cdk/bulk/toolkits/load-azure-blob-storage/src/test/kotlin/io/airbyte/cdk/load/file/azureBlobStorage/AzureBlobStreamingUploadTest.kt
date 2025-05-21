@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.file.azureBlobStorage
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.BlockBlobItem
 import com.azure.storage.blob.specialized.BlockBlobClient
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 class AzureBlobStreamingUploadTest {
 
     private lateinit var blockBlobClient: BlockBlobClient
-    private lateinit var config: AzureBlobStorageConfiguration
+    private lateinit var config: AzureBlobStorageClientConfiguration
     private lateinit var metadata: Map<String, String>
     private lateinit var streamingUpload: AzureBlobStreamingUpload
 
@@ -34,12 +34,13 @@ class AzureBlobStreamingUploadTest {
     fun setup() {
         blockBlobClient = mockk()
         config =
-            AzureBlobStorageConfiguration(
+            AzureBlobStorageClientConfiguration(
                 accountName = "fakeAccount",
                 containerName = "fakeContainer",
-                sharedAccessSignature = "null"
+                sharedAccessSignature = "",
+                accountKey = "test",
             )
-        metadata = mapOf("env" to "dev", "author" to "testUser")
+        metadata = mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
 
         // By default, let's assume blobName returns something
         every { blockBlobClient.blobName } returns "testBlob"
@@ -85,16 +86,25 @@ class AzureBlobStreamingUploadTest {
         // We want to ensure commitBlockList is NOT called
         val blobItem = mockk<BlockBlobItem>()
         every { blockBlobClient.commitBlockList(any(), any()) } returns blobItem
-        every { blockBlobClient.setMetadata(metadata) } just runs
+        // note that generation ID metadata is changed from ab-generation-id -> ab_generation_id
+        every {
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
+        } just runs
 
         // Act
         val resultBlob = streamingUpload.complete()
 
         // Assert
-        // 1) No block list calls
-        verify(exactly = 0) { blockBlobClient.commitBlockList(any(), any()) }
+        // 1) We committed the empty blob
+        verify(exactly = 1) { blockBlobClient.commitBlockList(emptyList(), true) }
         // 2) Metadata still set (the code checks for empty map, but here it's non-empty).
-        verify(exactly = 1) { blockBlobClient.setMetadata(metadata) }
+        verify(exactly = 1) {
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
+        }
 
         // 3) Return object is AzureBlob
         assertEquals("testBlob", resultBlob.key)
@@ -129,7 +139,11 @@ class AzureBlobStreamingUploadTest {
                 true
             )
         }
-        verify(exactly = 1) { blockBlobClient.setMetadata(metadata) }
+        verify(exactly = 1) {
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
+        }
         // Confirm the returned object
         assertEquals("testBlob", resultBlob.key)
         assertEquals(config, resultBlob.storageConfig)
@@ -155,7 +169,11 @@ class AzureBlobStreamingUploadTest {
         // Assert
         verify(exactly = 1) { blockBlobClient.commitBlockList(any(), true) }
         // setMetadata also only once
-        verify(exactly = 1) { blockBlobClient.setMetadata(metadata) }
+        verify(exactly = 1) {
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
+        }
         // Both calls return the same AzureBlob reference
         assertEquals("testBlob", firstCall.key)
         assertEquals("testBlob", secondCall.key)
@@ -187,7 +205,7 @@ class AzureBlobStreamingUploadTest {
     fun `generateBlockId - verifies fixed-size buffer structure`() {
         // Set up a real instance (mocks only for constructor args).
         val mockClient = mockk<BlockBlobClient>(relaxed = true)
-        val config = AzureBlobStorageConfiguration("acc", "key", "container")
+        val config = AzureBlobStorageClientConfiguration("acc", "key", "container", "")
         val metadata = emptyMap<String, String>()
         val streamingUpload = AzureBlobStreamingUpload(mockClient, config, metadata)
 

@@ -118,14 +118,3 @@ class APIv3Property(IURLPropertyRepresentation):
 
     def as_url_param(self):
         return {"properties": ",".join(self.properties)}
-
-
-class APIPropertiesWithHistory(IURLPropertyRepresentation):
-    """
-    It works for both v1 and v2 versions of API
-    """
-
-    _term_representation = "propertiesWithHistory={property}&"
-
-    def as_url_param(self):
-        return "&".join(map(lambda prop: f"propertiesWithHistory={prop}", self.properties))

@@ -576,6 +576,7 @@ abstract class AbstractJdbcSource<Datatype>(
             }
             .values
             .map { fields: List<JsonNode> -> jsonFieldListToTableInfo(fields) }
+            .filter { ti: TableInfo<CommonField<Datatype>> -> ti.name == tableName }
             .firstOrNull()
     }
 

@@ -1,0 +1,3692 @@
+[
+  {
+    "id": "astra-db",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/astra"
+  },
+  {
+    "id": "aws-datalake",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/aws-datalake"
+  },
+  {
+    "id": "azure-blob-storage",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/azure-blob-storage"
+  },
+  {
+    "id": "bigquery",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/bigquery"
+  },
+  {
+    "id": "chroma",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/chroma"
+  },
+  {
+    "id": "clickhouse",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/clickhouse"
+  },
+  {
+    "id": "salesforce",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/enterprise-connectors/destination-salesforce"
+  },
+  {
+    "id": "convex",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/convex"
+  },
+  {
+    "id": "local-csv",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/csv"
+  },
+  {
+    "id": "databricks-lakehouse",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/databricks"
+  },
+  {
+    "id": "deepset",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/deepset"
+  },
+  {
+    "id": "end-to-end-testing-devnull",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/dev-null"
+  },
+  {
+    "id": "duckdb",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/duckdb"
+  },
+  {
+    "id": "dynamodb",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/dynamodb"
+  },
+  {
+    "id": "elasticsearch",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/elasticsearch"
+  },
+  {
+    "id": "firebolt",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/firebolt"
+  },
+  {
+    "id": "google-firestore",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/firestore"
+  },
+  {
+    "id": "google-cloud-storage-gcs",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/gcs"
+  },
+  {
+    "id": "glassflow",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/glassflow"
+  },
+  {
+    "id": "google-sheets",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/google-sheets"
+  },
+  {
+    "id": "kafka",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/kafka"
+  },
+  {
+    "id": "local-json",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/local-json"
+  },
+  {
+    "id": "milvus",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/milvus"
+  },
+  {
+    "id": "mongodb",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/mongodb"
+  },
+  {
+    "id": "motherduck",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/motherduck"
+  },
+  {
+    "id": "ms-sql-server-v2",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/mssql-v2"
+  },
+  {
+    "id": "ms-sql-server",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/mssql"
+  },
+  {
+    "id": "mysql",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/mysql"
+  },
+  {
+    "id": "oracle",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/oracle"
+  },
+  {
+    "id": "pgvector",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/pgvector"
+  },
+  {
+    "id": "pinecone",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/pinecone"
+  },
+  {
+    "id": "postgres",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/postgres"
+  },
+  {
+    "id": "google-pubsub",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/pubsub"
+  },
+  {
+    "id": "qdrant",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/qdrant"
+  },
+  {
+    "id": "rabbitmq",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/rabbitmq"
+  },
+  {
+    "id": "redis",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/redis"
+  },
+  {
+    "id": "redshift",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/redshift"
+  },
+  {
+    "id": "s3-data-lake",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/s3-data-lake"
+  },
+  {
+    "id": "s3",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/s3"
+  },
+  {
+    "id": "sftp-json",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/sftp-json"
+  },
+  {
+    "id": "snowflake-cortex",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/snowflake-cortex"
+  },
+  {
+    "id": "snowflake",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/snowflake"
+  },
+  {
+    "id": "local-sqlite",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/sqlite"
+  },
+  {
+    "id": "starburst-galaxy",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/starburst-galaxy"
+  },
+  {
+    "id": "teradata-vantage",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/teradata"
+  },
+  {
+    "id": "timeplus",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/timeplus"
+  },
+  {
+    "id": "typesense",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/typesense"
+  },
+  {
+    "id": "vectara",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/vectara"
+  },
+  {
+    "id": "weaviate",
+    "type": "destination",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/weaviate"
+  },
+  {
+    "id": "yellowbrick",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/yellowbrick"
+  },
+  {
+    "id": "streamr",
+    "type": "destination",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/destinations/streamr"
+  },
+  {
+    "id": "100ms",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/100ms"
+  },
+  {
+    "id": "7shifts",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/7shifts"
+  },
+  {
+    "id": "activecampaign",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/activecampaign"
+  },
+  {
+    "id": "adjust",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/adjust"
+  },
+  {
+    "id": "agilecrm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/agilecrm"
+  },
+  {
+    "id": "aha",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/aha"
+  },
+  {
+    "id": "airbyte",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/airbyte"
+  },
+  {
+    "id": "aircall",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/aircall"
+  },
+  {
+    "id": "airtable",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/airtable"
+  },
+  {
+    "id": "akeneo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/akeneo"
+  },
+  {
+    "id": "algolia",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/algolia"
+  },
+  {
+    "id": "alpaca-broker-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/alpaca-broker-api"
+  },
+  {
+    "id": "alpha-vantage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/alpha-vantage"
+  },
+  {
+    "id": "amazon-ads",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads"
+  },
+  {
+    "id": "amazon-seller-partner",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
+  },
+  {
+    "id": "amazon-sqs",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/amazon-sqs"
+  },
+  {
+    "id": "amplitude",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/amplitude"
+  },
+  {
+    "id": "apify-dataset",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/apify-dataset"
+  },
+  {
+    "id": "appcues",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/appcues"
+  },
+  {
+    "id": "appfigures",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/appfigures"
+  },
+  {
+    "id": "appfollow",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/appfollow"
+  },
+  {
+    "id": "apple-ads",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/apple-search-ads"
+  },
+  {
+    "id": "appsflyer",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/appsflyer"
+  },
+  {
+    "id": "apptivo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/apptivo"
+  },
+  {
+    "id": "asana",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/asana"
+  },
+  {
+    "id": "ashby",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ashby"
+  },
+  {
+    "id": "assemblyai",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/assemblyai"
+  },
+  {
+    "id": "auth0",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/auth0"
+  },
+  {
+    "id": "aviationstack",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/aviationstack"
+  },
+  {
+    "id": "avni",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/avni"
+  },
+  {
+    "id": "awin-advertiser",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/awin-advertiser"
+  },
+  {
+    "id": "aws-cloudtrail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/aws-cloudtrail"
+  },
+  {
+    "id": "azure-blob-storage",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/azure-blob-storage"
+  },
+  {
+    "id": "azure-table-storage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/azure-table"
+  },
+  {
+    "id": "babelforce",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/babelforce"
+  },
+  {
+    "id": "bamboohr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bamboo-hr"
+  },
+  {
+    "id": "basecamp",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/basecamp"
+  },
+  {
+    "id": "beamer",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/beamer"
+  },
+  {
+    "id": "bigmailer",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bigmailer"
+  },
+  {
+    "id": "bigquery",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bigquery"
+  },
+  {
+    "id": "bing-ads",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bing-ads"
+  },
+  {
+    "id": "bitly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bitly"
+  },
+  {
+    "id": "blogger",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/blogger"
+  },
+  {
+    "id": "bluetally",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bluetally"
+  },
+  {
+    "id": "boldsign",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/boldsign"
+  },
+  {
+    "id": "box-data-extract",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/box-data-extract"
+  },
+  {
+    "id": "box",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/box"
+  },
+  {
+    "id": "braintree",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/braintree"
+  },
+  {
+    "id": "braze",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/braze"
+  },
+  {
+    "id": "breezometer",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/breezometer"
+  },
+  {
+    "id": "breezy-hr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/breezy-hr"
+  },
+  {
+    "id": "brevo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/brevo"
+  },
+  {
+    "id": "brex",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/brex"
+  },
+  {
+    "id": "bugsnag",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bugsnag"
+  },
+  {
+    "id": "buildkite",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/buildkite"
+  },
+  {
+    "id": "bunny-inc",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/bunny-inc"
+  },
+  {
+    "id": "buzzsprout",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/buzzsprout"
+  },
+  {
+    "id": "calcom",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/cal-com"
+  },
+  {
+    "id": "calendly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/calendly"
+  },
+  {
+    "id": "callrail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/callrail"
+  },
+  {
+    "id": "campaign-monitor",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/campaign-monitor"
+  },
+  {
+    "id": "campayn",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/campayn"
+  },
+  {
+    "id": "canny",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/canny"
+  },
+  {
+    "id": "capsule-crm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/capsule-crm"
+  },
+  {
+    "id": "captain-data",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/captain-data"
+  },
+  {
+    "id": "care-quality-commission",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/care-quality-commission"
+  },
+  {
+    "id": "cartcom",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/cart"
+  },
+  {
+    "id": "castor-edc",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/castor-edc"
+  },
+  {
+    "id": "chameleon",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/chameleon"
+  },
+  {
+    "id": "chargebee",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/chargebee"
+  },
+  {
+    "id": "chargedesk",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/chargedesk"
+  },
+  {
+    "id": "chargify",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/chargify"
+  },
+  {
+    "id": "chartmogul",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/chartmogul"
+  },
+  {
+    "id": "cimis",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/cimis"
+  },
+  {
+    "id": "cin7",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/cin7"
+  },
+  {
+    "id": "circa",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/circa"
+  },
+  {
+    "id": "circleci",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/circleci"
+  },
+  {
+    "id": "cisco-meraki",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/cisco-meraki"
+  },
+  {
+    "id": "clarif-ai",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/clarif-ai"
+  },
+  {
+    "id": "clazar",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/clazar"
+  },
+  {
+    "id": "clickhouse",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/clickhouse"
+  },
+  {
+    "id": "clickup",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/clickup-api"
+  },
+  {
+    "id": "clockify",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/clockify"
+  },
+  {
+    "id": "clockodo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/clockodo"
+  },
+  {
+    "id": "closecom",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/close-com"
+  },
+  {
+    "id": "cloudbeds",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/cloudbeds"
+  },
+  {
+    "id": "coassemble",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/coassemble"
+  },
+  {
+    "id": "cockroachdb",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/cockroachdb"
+  },
+  {
+    "id": "coda",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/coda"
+  },
+  {
+    "id": "codefresh",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/codefresh"
+  },
+  {
+    "id": "coin-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/coin-api"
+  },
+  {
+    "id": "coingecko-coins",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/coingecko-coins"
+  },
+  {
+    "id": "coinmarketcap",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/coinmarketcap"
+  },
+  {
+    "id": "commcare",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/commcare"
+  },
+  {
+    "id": "commercetools",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/commercetools"
+  },
+  {
+    "id": "concord",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/concord"
+  },
+  {
+    "id": "configcat",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/configcat"
+  },
+  {
+    "id": "confluence",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/confluence"
+  },
+  {
+    "id": "convertkit",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/convertkit"
+  },
+  {
+    "id": "convex",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/convex"
+  },
+  {
+    "id": "copper",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/copper"
+  },
+  {
+    "id": "couchbase",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/couchbase"
+  },
+  {
+    "id": "countercyclical",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/countercyclical"
+  },
+  {
+    "id": "customerio",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/customer-io"
+  },
+  {
+    "id": "customerly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/customerly"
+  },
+  {
+    "id": "datadog",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/datadog"
+  },
+  {
+    "id": "datascope",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/datascope"
+  },
+  {
+    "id": "ibm-db2",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/db2"
+  },
+  {
+    "id": "dbt",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/dbt"
+  },
+  {
+    "id": "delighted",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/delighted"
+  },
+  {
+    "id": "deputy",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/deputy"
+  },
+  {
+    "id": "ding-connect",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ding-connect"
+  },
+  {
+    "id": "dixa",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/dixa"
+  },
+  {
+    "id": "dockerhub",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/dockerhub"
+  },
+  {
+    "id": "docuseal",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/docuseal"
+  },
+  {
+    "id": "dremio",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/dremio"
+  },
+  {
+    "id": "drift",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/drift"
+  },
+  {
+    "id": "drip",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/drip"
+  },
+  {
+    "id": "dropbox-sign",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/dropbox-sign"
+  },
+  {
+    "id": "dwolla",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/dwolla"
+  },
+  {
+    "id": "dynamodb",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/dynamodb"
+  },
+  {
+    "id": "e-conomic",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/e-conomic"
+  },
+  {
+    "id": "e2e-testing",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/e2e-test"
+  },
+  {
+    "id": "easypost",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/easypost"
+  },
+  {
+    "id": "easypromos",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/easypromos"
+  },
+  {
+    "id": "ebay-finance",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ebay-finance"
+  },
+  {
+    "id": "elasticemail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/elasticemail"
+  },
+  {
+    "id": "elasticsearch",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/elasticsearch"
+  },
+  {
+    "id": "emailoctopus",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/emailoctopus"
+  },
+  {
+    "id": "employment-hero",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/employment-hero"
+  },
+  {
+    "id": "encharge",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/encharge"
+  },
+  {
+    "id": "eventbrite",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/eventbrite"
+  },
+  {
+    "id": "eventee",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/eventee"
+  },
+  {
+    "id": "eventzilla",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/eventzilla"
+  },
+  {
+    "id": "everhour",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/everhour"
+  },
+  {
+    "id": "exchange-rates-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/exchange-rates"
+  },
+  {
+    "id": "ezofficeinventory",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ezofficeinventory"
+  },
+  {
+    "id": "facebook-marketing",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing"
+  },
+  {
+    "id": "facebook-pages",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/facebook-pages"
+  },
+  {
+    "id": "factorial",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/factorial"
+  },
+  {
+    "id": "sample-data-faker",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/faker"
+  },
+  {
+    "id": "fastbill",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/fastbill"
+  },
+  {
+    "id": "fastly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/fastly"
+  },
+  {
+    "id": "fauna",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/fauna"
+  },
+  {
+    "id": "file-csv-json-excel-feather-parquet",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/file"
+  },
+  {
+    "id": "fillout",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/fillout"
+  },
+  {
+    "id": "finage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/finage"
+  },
+  {
+    "id": "financial-modelling",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/financial-modelling"
+  },
+  {
+    "id": "finnhub",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/finnhub"
+  },
+  {
+    "id": "finnworlds",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/finnworlds"
+  },
+  {
+    "id": "firebase-realtime-database",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/firebase-realtime-database"
+  },
+  {
+    "id": "firebolt",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/firebolt"
+  },
+  {
+    "id": "firehydrant",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/firehydrant"
+  },
+  {
+    "id": "fleetio",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/fleetio"
+  },
+  {
+    "id": "flexmail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/flexmail"
+  },
+  {
+    "id": "flexport",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/flexport"
+  },
+  {
+    "id": "float",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/float"
+  },
+  {
+    "id": "flowlu",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/flowlu"
+  },
+  {
+    "id": "formbricks",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/formbricks"
+  },
+  {
+    "id": "freeagent",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/free-agent-connector"
+  },
+  {
+    "id": "freightview",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/freightview"
+  },
+  {
+    "id": "freshbooks",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/freshbooks"
+  },
+  {
+    "id": "freshcaller",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/freshcaller"
+  },
+  {
+    "id": "freshchat",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/freshchat"
+  },
+  {
+    "id": "freshdesk",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/freshdesk"
+  },
+  {
+    "id": "freshsales",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/freshsales"
+  },
+  {
+    "id": "freshservice",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/freshservice"
+  },
+  {
+    "id": "front",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/front"
+  },
+  {
+    "id": "fulcrum",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/fulcrum"
+  },
+  {
+    "id": "fullstory",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/fullstory"
+  },
+  {
+    "id": "gainsight-px",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gainsight-px"
+  },
+  {
+    "id": "google-cloud-storage-gcs",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gcs"
+  },
+  {
+    "id": "genesys",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/genesys"
+  },
+  {
+    "id": "getgist",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/getgist"
+  },
+  {
+    "id": "lago",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/getlago"
+  },
+  {
+    "id": "giphy",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/giphy"
+  },
+  {
+    "id": "gitbook",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gitbook"
+  },
+  {
+    "id": "github",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/github"
+  },
+  {
+    "id": "gitlab",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gitlab"
+  },
+  {
+    "id": "glassfrog",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/glassfrog"
+  },
+  {
+    "id": "gmail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gmail"
+  },
+  {
+    "id": "gnews",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gnews"
+  },
+  {
+    "id": "gocardless",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gocardless"
+  },
+  {
+    "id": "goldcast",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/goldcast"
+  },
+  {
+    "id": "gologin",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gologin"
+  },
+  {
+    "id": "gong",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gong"
+  },
+  {
+    "id": "google-ads",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-ads"
+  },
+  {
+    "id": "google-analytics-4-ga4",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-data-api"
+  },
+  {
+    "id": "google-calendar",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-calendar"
+  },
+  {
+    "id": "google-classroom",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-classroom"
+  },
+  {
+    "id": "google-directory",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-directory"
+  },
+  {
+    "id": "google-drive",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-drive"
+  },
+  {
+    "id": "google-forms",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-forms"
+  },
+  {
+    "id": "google-pagespeed-insights",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-pagespeed-insights"
+  },
+  {
+    "id": "google-search-console",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-search-console"
+  },
+  {
+    "id": "google-sheets",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-sheets"
+  },
+  {
+    "id": "google-tasks",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-tasks"
+  },
+  {
+    "id": "google-webfonts",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/google-webfonts"
+  },
+  {
+    "id": "gorgias",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gorgias"
+  },
+  {
+    "id": "greenhouse",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/greenhouse"
+  },
+  {
+    "id": "greythr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/greythr"
+  },
+  {
+    "id": "gridly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gridly"
+  },
+  {
+    "id": "guru",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/guru"
+  },
+  {
+    "id": "gutendex",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/gutendex"
+  },
+  {
+    "id": "hardcoded-records",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/hardcoded-records"
+  },
+  {
+    "id": "harness",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/harness"
+  },
+  {
+    "id": "harvest",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/harvest"
+  },
+  {
+    "id": "height",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/height"
+  },
+  {
+    "id": "hellobaton",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/hellobaton"
+  },
+  {
+    "id": "help-scout",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/help-scout"
+  },
+  {
+    "id": "hibob",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/hibob"
+  },
+  {
+    "id": "high-level",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/high-level"
+  },
+  {
+    "id": "hoorayhr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/hoorayhr"
+  },
+  {
+    "id": "hubplanner",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/hubplanner"
+  },
+  {
+    "id": "hubspot",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/hubspot"
+  },
+  {
+    "id": "hugging-face---datasets",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/hugging-face-datasets"
+  },
+  {
+    "id": "humanitix",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/humanitix"
+  },
+  {
+    "id": "huntr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/huntr"
+  },
+  {
+    "id": "illumina-basespace",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/illumina-basespace"
+  },
+  {
+    "id": "imagga",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/imagga"
+  },
+  {
+    "id": "incident",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/incident-io"
+  },
+  {
+    "id": "inflowinventory",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/inflowinventory"
+  },
+  {
+    "id": "insightful",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/insightful"
+  },
+  {
+    "id": "insightly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/insightly"
+  },
+  {
+    "id": "instagram",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/instagram"
+  },
+  {
+    "id": "instatus",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/instatus"
+  },
+  {
+    "id": "intercom",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/intercom"
+  },
+  {
+    "id": "intruder",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/intruder"
+  },
+  {
+    "id": "invoiced",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/invoiced"
+  },
+  {
+    "id": "invoiceninja",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/invoiceninja"
+  },
+  {
+    "id": "ip2whois",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ip2whois"
+  },
+  {
+    "id": "iterable",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/iterable"
+  },
+  {
+    "id": "jamf-pro",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/jamf-pro"
+  },
+  {
+    "id": "jina-ai-reader",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/jina-ai-reader"
+  },
+  {
+    "id": "jira",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/jira"
+  },
+  {
+    "id": "jobnimbus",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/jobnimbus"
+  },
+  {
+    "id": "jotform",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/jotform"
+  },
+  {
+    "id": "justsift",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/just-sift"
+  },
+  {
+    "id": "justcall",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/justcall"
+  },
+  {
+    "id": "k6-cloud",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/k6-cloud"
+  },
+  {
+    "id": "kafka",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/kafka"
+  },
+  {
+    "id": "katana",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/katana"
+  },
+  {
+    "id": "keka",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/keka"
+  },
+  {
+    "id": "kisi",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/kisi"
+  },
+  {
+    "id": "kissmetrics",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/kissmetrics"
+  },
+  {
+    "id": "klarna",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/klarna"
+  },
+  {
+    "id": "klaus-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/klaus-api"
+  },
+  {
+    "id": "klaviyo",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/klaviyo"
+  },
+  {
+    "id": "kyriba",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/kyriba"
+  },
+  {
+    "id": "kyve",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/kyve"
+  },
+  {
+    "id": "launchdarkly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/launchdarkly"
+  },
+  {
+    "id": "leadfeeder",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/leadfeeder"
+  },
+  {
+    "id": "lemlist",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/lemlist"
+  },
+  {
+    "id": "less-annoying-crm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/less-annoying-crm"
+  },
+  {
+    "id": "lever-hiring",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/lever-hiring"
+  },
+  {
+    "id": "lightspeed-retail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/lightspeed-retail"
+  },
+  {
+    "id": "linear",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/linear"
+  },
+  {
+    "id": "linkedin-ads",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/linkedin-ads"
+  },
+  {
+    "id": "linkedin-pages",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/linkedin-pages"
+  },
+  {
+    "id": "linnworks",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/linnworks"
+  },
+  {
+    "id": "lob",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/lob"
+  },
+  {
+    "id": "lokalise",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/lokalise"
+  },
+  {
+    "id": "looker",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/looker"
+  },
+  {
+    "id": "luma",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/luma"
+  },
+  {
+    "id": "mailchimp",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailchimp"
+  },
+  {
+    "id": "mailerlite",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailerlite"
+  },
+  {
+    "id": "mailersend",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailersend"
+  },
+  {
+    "id": "mailgun",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailgun"
+  },
+  {
+    "id": "mailjet-mail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailjet-mail"
+  },
+  {
+    "id": "mailjet-sms",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailjet-sms"
+  },
+  {
+    "id": "mailosaur",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailosaur"
+  },
+  {
+    "id": "mailtrap",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mailtrap"
+  },
+  {
+    "id": "marketo",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/marketo"
+  },
+  {
+    "id": "marketstack",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/marketstack"
+  },
+  {
+    "id": "mendeley",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mendeley"
+  },
+  {
+    "id": "mention",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mention"
+  },
+  {
+    "id": "merge",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/merge"
+  },
+  {
+    "id": "metabase",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/metabase"
+  },
+  {
+    "id": "microsoft-dataverse",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/microsoft-dataverse"
+  },
+  {
+    "id": "microsoft-entra-id",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/microsoft-entra-id"
+  },
+  {
+    "id": "microsoft-lists",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/microsoft-lists"
+  },
+  {
+    "id": "microsoft-onedrive",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/microsoft-onedrive"
+  },
+  {
+    "id": "microsoft-sharepoint",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/microsoft-sharepoint"
+  },
+  {
+    "id": "microsoft-teams",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/microsoft-teams"
+  },
+  {
+    "id": "miro",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/miro"
+  },
+  {
+    "id": "missive",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/missive"
+  },
+  {
+    "id": "mixmax",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mixmax"
+  },
+  {
+    "id": "mixpanel",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mixpanel"
+  },
+  {
+    "id": "mode",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mode"
+  },
+  {
+    "id": "monday",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/monday"
+  },
+  {
+    "id": "mongodb",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mongodb-v2"
+  },
+  {
+    "id": "microsoft-sql-server-mssql",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mssql"
+  },
+  {
+    "id": "mux",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mux"
+  },
+  {
+    "id": "my-hours",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/my-hours"
+  },
+  {
+    "id": "mysql",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/mysql"
+  },
+  {
+    "id": "n8n",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/n8n"
+  },
+  {
+    "id": "nasa",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/nasa"
+  },
+  {
+    "id": "navan",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/navan"
+  },
+  {
+    "id": "nebius-ai",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/nebius-ai"
+  },
+  {
+    "id": "netsuite-enterprise-source",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite"
+  },
+  {
+    "id": "netsuite",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/netsuite"
+  },
+  {
+    "id": "news-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/news-api"
+  },
+  {
+    "id": "newsdataio",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/newsdata-io"
+  },
+  {
+    "id": "newsdata",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/newsdata"
+  },
+  {
+    "id": "nexiopay",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/nexiopay"
+  },
+  {
+    "id": "ninjaone-rmm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ninjaone-rmm"
+  },
+  {
+    "id": "nocrm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/nocrm"
+  },
+  {
+    "id": "northpass-lms",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/northpass-lms"
+  },
+  {
+    "id": "notion",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/notion"
+  },
+  {
+    "id": "nutshell",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/nutshell"
+  },
+  {
+    "id": "nylas",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/nylas"
+  },
+  {
+    "id": "new-york-times",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/nytimes"
+  },
+  {
+    "id": "okta",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/okta"
+  },
+  {
+    "id": "omnisend",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/omnisend"
+  },
+  {
+    "id": "oncehub",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/oncehub"
+  },
+  {
+    "id": "onepagecrm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/onepagecrm"
+  },
+  {
+    "id": "onesignal",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/onesignal"
+  },
+  {
+    "id": "onfleet",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/onfleet"
+  },
+  {
+    "id": "open-data-dc",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/open-data-dc"
+  },
+  {
+    "id": "open-exchange-rates",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/open-exchange-rates"
+  },
+  {
+    "id": "openaq",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/openaq"
+  },
+  {
+    "id": "openfda",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/openfda"
+  },
+  {
+    "id": "openweather",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/openweather"
+  },
+  {
+    "id": "opinion-stage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/opinion-stage"
+  },
+  {
+    "id": "opsgenie",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/opsgenie"
+  },
+  {
+    "id": "opuswatch",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/opuswatch"
+  },
+  {
+    "id": "oracle",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle-enterprise"
+  },
+  {
+    "id": "oracle-db",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/oracle"
+  },
+  {
+    "id": "orb",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/orb"
+  },
+  {
+    "id": "oura",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/oura"
+  },
+  {
+    "id": "outbrain-amplify",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/outbrain-amplify"
+  },
+  {
+    "id": "outreach",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/outreach"
+  },
+  {
+    "id": "oveit",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/oveit"
+  },
+  {
+    "id": "pabbly-subscriptions-billing",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pabbly-subscriptions-billing"
+  },
+  {
+    "id": "paddle",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/paddle"
+  },
+  {
+    "id": "pagerduty",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pagerduty"
+  },
+  {
+    "id": "pandadoc",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pandadoc"
+  },
+  {
+    "id": "paperform",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/paperform"
+  },
+  {
+    "id": "papersign",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/papersign"
+  },
+  {
+    "id": "pardot",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pardot"
+  },
+  {
+    "id": "partnerize",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/partnerize"
+  },
+  {
+    "id": "partnerstack",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/partnerstack"
+  },
+  {
+    "id": "payfit",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/payfit"
+  },
+  {
+    "id": "paypal-transaction",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/paypal-transaction"
+  },
+  {
+    "id": "paystack",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/paystack"
+  },
+  {
+    "id": "pendo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pendo"
+  },
+  {
+    "id": "pennylane",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pennylane"
+  },
+  {
+    "id": "perigon",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/perigon"
+  },
+  {
+    "id": "persistiq",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/persistiq"
+  },
+  {
+    "id": "persona",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/persona"
+  },
+  {
+    "id": "pexels-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pexels-api"
+  },
+  {
+    "id": "phyllo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/phyllo"
+  },
+  {
+    "id": "picqer",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/picqer"
+  },
+  {
+    "id": "pingdom",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pingdom"
+  },
+  {
+    "id": "pinterest",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pinterest"
+  },
+  {
+    "id": "pipedrive",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pipedrive"
+  },
+  {
+    "id": "pipeliner",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pipeliner"
+  },
+  {
+    "id": "pivotal-tracker",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pivotal-tracker"
+  },
+  {
+    "id": "piwik",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/piwik"
+  },
+  {
+    "id": "plaid",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/plaid"
+  },
+  {
+    "id": "planhat",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/planhat"
+  },
+  {
+    "id": "plausible",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/plausible"
+  },
+  {
+    "id": "pocket",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pocket"
+  },
+  {
+    "id": "pokeapi",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pokeapi"
+  },
+  {
+    "id": "polygon-stock-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/polygon-stock-api"
+  },
+  {
+    "id": "poplar",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/poplar"
+  },
+  {
+    "id": "postgres",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/postgres"
+  },
+  {
+    "id": "posthog",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/posthog"
+  },
+  {
+    "id": "postmark-app",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/postmarkapp"
+  },
+  {
+    "id": "prestashop",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/prestashop"
+  },
+  {
+    "id": "pretix",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pretix"
+  },
+  {
+    "id": "primetric",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/primetric"
+  },
+  {
+    "id": "printify",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/printify"
+  },
+  {
+    "id": "productboard",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/productboard"
+  },
+  {
+    "id": "productive",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/productive"
+  },
+  {
+    "id": "public-apis",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/public-apis"
+  },
+  {
+    "id": "pypi",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pypi"
+  },
+  {
+    "id": "qualaroo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/qualaroo"
+  },
+  {
+    "id": "quickbooks",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/quickbooks"
+  },
+  {
+    "id": "railz",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/railz"
+  },
+  {
+    "id": "rd-station-marketing",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rd-station-marketing"
+  },
+  {
+    "id": "recharge",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/recharge"
+  },
+  {
+    "id": "recreation",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/recreation"
+  },
+  {
+    "id": "recruitee",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/recruitee"
+  },
+  {
+    "id": "recurly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/recurly"
+  },
+  {
+    "id": "reddit",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/reddit"
+  },
+  {
+    "id": "redshift",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/redshift"
+  },
+  {
+    "id": "referralhero",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/referralhero"
+  },
+  {
+    "id": "rentcast",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rentcast"
+  },
+  {
+    "id": "repairshopr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/repairshopr"
+  },
+  {
+    "id": "replyio",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/reply-io"
+  },
+  {
+    "id": "retail-express-by-maropost",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/retailexpress-by-maropost"
+  },
+  {
+    "id": "retently",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/retently"
+  },
+  {
+    "id": "revenuecat",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/revenuecat"
+  },
+  {
+    "id": "revolut-merchant",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/revolut-merchant"
+  },
+  {
+    "id": "ringcentral",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ringcentral"
+  },
+  {
+    "id": "rki-covid",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rki-covid"
+  },
+  {
+    "id": "rocketchat",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rocket-chat"
+  },
+  {
+    "id": "rocketlane",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rocketlane"
+  },
+  {
+    "id": "rollbar",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rollbar"
+  },
+  {
+    "id": "rootly",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rootly"
+  },
+  {
+    "id": "rss",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/rss"
+  },
+  {
+    "id": "ruddr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ruddr"
+  },
+  {
+    "id": "s3",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/s3"
+  },
+  {
+    "id": "safetyculture",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/safetyculture"
+  },
+  {
+    "id": "sage-hr",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sage-hr"
+  },
+  {
+    "id": "salesflare",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/salesflare"
+  },
+  {
+    "id": "salesforce",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/salesforce"
+  },
+  {
+    "id": "salesloft",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/salesloft"
+  },
+  {
+    "id": "sap-fieldglass",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sap-fieldglass"
+  },
+  {
+    "id": "sap-hana",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/enterprise-connectors/source-sap-hana"
+  },
+  {
+    "id": "savvycal",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/savvycal"
+  },
+  {
+    "id": "scryfall",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/scryfall"
+  },
+  {
+    "id": "secoda",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/secoda"
+  },
+  {
+    "id": "segment",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/segment"
+  },
+  {
+    "id": "sendgrid",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sendgrid"
+  },
+  {
+    "id": "sendinblue",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sendinblue"
+  },
+  {
+    "id": "sendowl",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sendowl"
+  },
+  {
+    "id": "sendpulse",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sendpulse"
+  },
+  {
+    "id": "senseforce",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/senseforce"
+  },
+  {
+    "id": "sentry",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sentry"
+  },
+  {
+    "id": "serpstat",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/serpstat"
+  },
+  {
+    "id": "service-now",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/service-now"
+  },
+  {
+    "id": "sftp-bulk",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sftp-bulk"
+  },
+  {
+    "id": "sftp",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sftp"
+  },
+  {
+    "id": "sharepoint-enterprise",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/enterprise-connectors/source-sharepoint-enterprise"
+  },
+  {
+    "id": "sharetribe",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sharetribe"
+  },
+  {
+    "id": "shippo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/shippo"
+  },
+  {
+    "id": "shipstation",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/shipstation"
+  },
+  {
+    "id": "shopify",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/shopify"
+  },
+  {
+    "id": "shopwired",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/shopwired"
+  },
+  {
+    "id": "shortcut",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/shortcut"
+  },
+  {
+    "id": "shortio",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/shortio"
+  },
+  {
+    "id": "shutterstock",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/shutterstock"
+  },
+  {
+    "id": "sigma-computing",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sigma-computing"
+  },
+  {
+    "id": "signnow",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/signnow"
+  },
+  {
+    "id": "simfin",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/simfin"
+  },
+  {
+    "id": "simplecast",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/simplecast"
+  },
+  {
+    "id": "simplesat",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/simplesat"
+  },
+  {
+    "id": "singlestore",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/singlestore"
+  },
+  {
+    "id": "slack",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/slack"
+  },
+  {
+    "id": "smaily",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/smaily"
+  },
+  {
+    "id": "smartengage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/smartengage"
+  },
+  {
+    "id": "smartreach",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/smartreach"
+  },
+  {
+    "id": "smartsheets",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/smartsheets"
+  },
+  {
+    "id": "smartwaiver",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/smartwaiver"
+  },
+  {
+    "id": "snapchat-marketing",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
+  },
+  {
+    "id": "snowflake",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/snowflake"
+  },
+  {
+    "id": "solarwinds-service-desk",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/solarwinds-service-desk"
+  },
+  {
+    "id": "sonar-cloud",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sonar-cloud"
+  },
+  {
+    "id": "spacex-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/spacex-api"
+  },
+  {
+    "id": "sparkpost",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/sparkpost"
+  },
+  {
+    "id": "split-io",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/split-io"
+  },
+  {
+    "id": "spotlercrm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/spotlercrm"
+  },
+  {
+    "id": "square",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/square"
+  },
+  {
+    "id": "squarespace",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/squarespace"
+  },
+  {
+    "id": "statsig",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/statsig"
+  },
+  {
+    "id": "statuspage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/statuspage"
+  },
+  {
+    "id": "stockdata",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/stockdata"
+  },
+  {
+    "id": "strava",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/strava"
+  },
+  {
+    "id": "stripe",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/stripe"
+  },
+  {
+    "id": "surveysparrow",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/survey-sparrow"
+  },
+  {
+    "id": "surveycto",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/surveycto"
+  },
+  {
+    "id": "surveymonkey",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/surveymonkey"
+  },
+  {
+    "id": "survicate",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/survicate"
+  },
+  {
+    "id": "svix",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/svix"
+  },
+  {
+    "id": "systeme",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/systeme"
+  },
+  {
+    "id": "taboola",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/taboola"
+  },
+  {
+    "id": "tavus",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tavus"
+  },
+  {
+    "id": "teamtailor",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/teamtailor"
+  },
+  {
+    "id": "teamwork",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/teamwork"
+  },
+  {
+    "id": "tempo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tempo"
+  },
+  {
+    "id": "teradata",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/teradata"
+  },
+  {
+    "id": "testrail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/testrail"
+  },
+  {
+    "id": "the-guardian-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/the-guardian-api"
+  },
+  {
+    "id": "thinkific-courses",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/thinkific-courses"
+  },
+  {
+    "id": "thinkific",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/thinkific"
+  },
+  {
+    "id": "ticketmaster",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ticketmaster"
+  },
+  {
+    "id": "tickettailor",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tickettailor"
+  },
+  {
+    "id": "tidb",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tidb"
+  },
+  {
+    "id": "tiktok-marketing",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
+  },
+  {
+    "id": "timely",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/timely"
+  },
+  {
+    "id": "tinyemail",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tinyemail"
+  },
+  {
+    "id": "tmdb",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tmdb"
+  },
+  {
+    "id": "todoist",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/todoist"
+  },
+  {
+    "id": "toggl",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/toggl"
+  },
+  {
+    "id": "tplcentral",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tplcentral"
+  },
+  {
+    "id": "track-pms",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/track-pms"
+  },
+  {
+    "id": "trello",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/trello"
+  },
+  {
+    "id": "tremendous",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tremendous"
+  },
+  {
+    "id": "trustpilot",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/trustpilot"
+  },
+  {
+    "id": "tvmaze-schedule",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tvmaze-schedule"
+  },
+  {
+    "id": "twelve-data",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/twelve-data"
+  },
+  {
+    "id": "twilio-taskrouter",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/twilio-taskrouter"
+  },
+  {
+    "id": "twilio",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/twilio"
+  },
+  {
+    "id": "twitter",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/twitter"
+  },
+  {
+    "id": "tyntec-sms",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/tyntec-sms"
+  },
+  {
+    "id": "typeform",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/typeform"
+  },
+  {
+    "id": "ubidots",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/ubidots"
+  },
+  {
+    "id": "unleash",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/unleash"
+  },
+  {
+    "id": "uppromote",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/uppromote"
+  },
+  {
+    "id": "us-census",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/us-census"
+  },
+  {
+    "id": "uservoice",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/uservoice"
+  },
+  {
+    "id": "vantage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/vantage"
+  },
+  {
+    "id": "veeqo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/veeqo"
+  },
+  {
+    "id": "vercel",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/vercel"
+  },
+  {
+    "id": "visma-economic",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/visma-economic"
+  },
+  {
+    "id": "vitally",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/vitally"
+  },
+  {
+    "id": "vwo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/vwo"
+  },
+  {
+    "id": "waiteraid",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/waiteraid"
+  },
+  {
+    "id": "wasabi",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/wasabi-stats-api"
+  },
+  {
+    "id": "watchmode",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/watchmode"
+  },
+  {
+    "id": "weatherstack",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/weatherstack"
+  },
+  {
+    "id": "web-scrapper",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/web-scrapper"
+  },
+  {
+    "id": "webflow",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/webflow"
+  },
+  {
+    "id": "wheniwork",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/when-i-work"
+  },
+  {
+    "id": "whisky-hunter",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/whisky-hunter"
+  },
+  {
+    "id": "wikipedia-pageviews",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/wikipedia-pageviews"
+  },
+  {
+    "id": "woocommerce",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/woocommerce"
+  },
+  {
+    "id": "wordpress",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/wordpress"
+  },
+  {
+    "id": "workable",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/workable"
+  },
+  {
+    "id": "workday",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/workday"
+  },
+  {
+    "id": "workflowmax",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/workflowmax"
+  },
+  {
+    "id": "workramp",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/workramp"
+  },
+  {
+    "id": "wrike",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/wrike"
+  },
+  {
+    "id": "wufoo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/wufoo"
+  },
+  {
+    "id": "xero",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/xero"
+  },
+  {
+    "id": "xkcd",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/xkcd"
+  },
+  {
+    "id": "xsolla",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/xsolla"
+  },
+  {
+    "id": "yahoo-finance-price",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/yahoo-finance-price"
+  },
+  {
+    "id": "yandex-metrica",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/yandex-metrica"
+  },
+  {
+    "id": "yotpo",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/yotpo"
+  },
+  {
+    "id": "you-need-a-budget-ynab",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/you-need-a-budget-ynab"
+  },
+  {
+    "id": "younium",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/younium"
+  },
+  {
+    "id": "yousign",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/yousign"
+  },
+  {
+    "id": "youtube-analytics",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/youtube-analytics"
+  },
+  {
+    "id": "youtube-data",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/youtube-data"
+  },
+  {
+    "id": "zapier-supported-storage",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zapier-supported-storage"
+  },
+  {
+    "id": "zapsign",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zapsign"
+  },
+  {
+    "id": "zendesk-chat",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zendesk-chat"
+  },
+  {
+    "id": "zendesk-sunshine",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zendesk-sunshine"
+  },
+  {
+    "id": "zendesk-support",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zendesk-support"
+  },
+  {
+    "id": "zendesk-talk",
+    "type": "source",
+    "supportLevel": "certified",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zendesk-talk"
+  },
+  {
+    "id": "zenefits",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zenefits"
+  },
+  {
+    "id": "zenloop",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zenloop"
+  },
+  {
+    "id": "zoho-analytics-metadata-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-analytics-metadata-api"
+  },
+  {
+    "id": "zoho-bigin",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-bigin"
+  },
+  {
+    "id": "zoho-billing",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-billing"
+  },
+  {
+    "id": "zoho-books",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-books"
+  },
+  {
+    "id": "zoho-campaign",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-campaign"
+  },
+  {
+    "id": "zohocrm",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-crm"
+  },
+  {
+    "id": "zoho-desk",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-desk"
+  },
+  {
+    "id": "zoho-expense",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-expense"
+  },
+  {
+    "id": "zoho-inventory",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-inventory"
+  },
+  {
+    "id": "zoho-invoice",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoho-invoice"
+  },
+  {
+    "id": "zonka-feedback",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zonka-feedback"
+  },
+  {
+    "id": "zoom",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zoom"
+  },
+  {
+    "id": "customerio",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/customer-io"
+  },
+  {
+    "id": "harness",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/harness"
+  },
+  {
+    "id": "jenkins",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/jenkins"
+  },
+  {
+    "id": "pagerduty",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/pagerduty"
+  },
+  {
+    "id": "victorops",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/victorops"
+  },
+  {
+    "id": "end-to-end-testing-mock-api",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/e2e-test"
+  },
+  {
+    "id": "zendesk-sell",
+    "type": "source",
+    "supportLevel": "community",
+    "docUrl": "https://docs.airbyte.com/integrations/sources/zendesk-sell"
+  }
+]

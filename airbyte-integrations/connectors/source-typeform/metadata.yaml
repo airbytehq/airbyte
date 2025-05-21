@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.4.0
+  dockerImageTag: 1.4.1
   dockerRepository: airbyte/source-typeform
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   githubIssueLabel: source-typeform

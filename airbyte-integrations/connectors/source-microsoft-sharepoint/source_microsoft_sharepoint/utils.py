@@ -3,7 +3,12 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
+from functools import lru_cache
 from http import HTTPStatus
+from typing import List, Tuple
+
+from office365.graph_client import GraphClient
+from office365.onedrive.sites.site import Site
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -24,6 +29,7 @@ class FolderNotFoundException(Exception):
 
 class MicrosoftSharePointRemoteFile(RemoteFile):
     download_url: str
+    created_at: datetime
 
 
 def filter_http_urls(files, logger):
@@ -93,3 +99,86 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
 
     message = f"Maximum number of retries of {max_retries} exceeded for execute_query."
     raise AirbyteTracedException(message, message, failure_type=FailureType.system_error)
+
+
+class PlaceholderUrlBuilder:
+    """
+    A basic builder that constructs a URL with placeholder parameters like:
+      {{client_id_param}}
+      {{redirect_uri_param}}
+    etc.
+    These placeholders will be replaced later during Oauth flow.
+    """
+
+    def __init__(self):
+        self._scheme = "https"
+        self._host = ""
+        self._path = ""
+        self._segments = []  # Each segment will become part of the query string
+
+    def set_scheme(self, scheme: str):
+        self._scheme = scheme
+        return self
+
+    def set_host(self, host: str):
+        self._host = host
+        return self
+
+    def set_path(self, path: str):
+        # If you want a leading slash, you can incorporate it here or let caller handle it
+        self._path = path
+        return self
+
+    def add_key_value_placeholder_param(self, param_name: str):
+        """
+        Example:
+           add_key_value_placeholder_param("client_id")
+         => produces "{{client_id_param}}" in the final query string.
+        """
+        placeholder = f"{{{{{param_name}_param}}}}"  # e.g. "{{client_id_param}}"
+        self._segments.append(placeholder)
+        return self
+
+    def add_literal_param(self, literal: str):
+        """
+        If you want to add a static string like "response_type=code"
+        or "access_type=offline", you can do so here.
+        """
+        self._segments.append(literal)
+        return self
+
+    def build(self) -> str:
+        """
+        Joins the query segments with '&' and forms the complete URL.
+        Example final output might look like:
+           https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code
+        """
+        query_string = "&".join(self._segments)
+        query_string = "?" + query_string if query_string else ""
+        return f"{self._scheme}://{self._host}{self._path}{query_string}"
+
+
+def get_site_prefix(graph_client: GraphClient) -> Tuple[str, str]:
+    """
+    Retrieves the SharePoint site and extracts its URL and host prefix.
+
+    Example:
+        For a site with `web_url` = "https://contoso.sharepoint.com/sites/example" and
+        `site_collection.hostname` = "contoso.sharepoint.com", this function will return:
+        ("https://contoso.sharepoint.com/sites/example", "contoso")
+
+    Args:
+        graph_client (GraphClient): An instance of the Microsoft Graph client.
+
+    Returns:
+        Tuple[str, str]: A tuple containing (site_url, hostname_prefix).
+    """
+    site = execute_query_with_retry(graph_client.sites.root.get())
+
+    site_url = site.web_url
+    host_name = site.site_collection.hostname
+    host_name_parts: List = host_name.split(".")
+    if len(host_name_parts) < 2:
+        raise ValueError(f"Invalid host name: {host_name}")
+
+    return site_url, host_name_parts[0]

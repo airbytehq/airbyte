@@ -8,8 +8,8 @@ import uuid
 from enum import Enum, auto
 from typing import Dict, Optional
 
-import tomli
 import tomli_w
+import tomllib
 from dagger import Container, Directory
 
 from pipelines.consts import PYPROJECT_TOML_FILE_PATH, SETUP_PY_FILE_PATH
@@ -35,7 +35,7 @@ class PublishToPythonRegistry(Step):
     async def _get_package_metadata_from_pyproject_toml(self, package_dir_to_publish: Directory) -> Optional[PythonPackageMetadata]:
         pyproject_toml = package_dir_to_publish.file(PYPROJECT_TOML_FILE_PATH)
         pyproject_toml_content = await pyproject_toml.contents()
-        contents = tomli.loads(pyproject_toml_content)
+        contents = tomllib.loads(pyproject_toml_content)
         try:
             return PythonPackageMetadata(contents["tool"]["poetry"]["name"], contents["tool"]["poetry"]["version"])
         except KeyError:
@@ -105,7 +105,7 @@ class PublishToPythonRegistry(Step):
     async def _poetry_publish(self, package_dir_to_publish: Directory) -> StepResult:
         pyproject_toml = package_dir_to_publish.file(PYPROJECT_TOML_FILE_PATH)
         pyproject_toml_content = await pyproject_toml.contents()
-        contents = tomli.loads(pyproject_toml_content)
+        contents = tomllib.loads(pyproject_toml_content)
         # make sure package name and version are set to the configured one
         contents["tool"]["poetry"]["name"] = self.context.package_metadata.name
         contents["tool"]["poetry"]["version"] = self.context.package_metadata.version

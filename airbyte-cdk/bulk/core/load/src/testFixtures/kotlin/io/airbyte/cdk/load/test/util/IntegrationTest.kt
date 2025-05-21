@@ -27,6 +27,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -54,6 +55,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 abstract class IntegrationTest(
     additionalMicronautEnvs: List<String>,
     val dataDumper: DestinationDataDumper,
+    /** This object MUST be a singleton. It will be invoked exactly once per gradle run. */
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
@@ -93,8 +95,29 @@ abstract class IntegrationTest(
 
     @AfterEach
     fun teardown() {
+        // some tests (e.g. CheckIntegrationTest) hardcode the noop cleaner.
+        // so just skip all the fancy logic if we detect it.
+        if (destinationCleaner == NoopDestinationCleaner) {
+            return
+        }
+
         if (hasRunCleaner.compareAndSet(false, true)) {
             destinationCleaner.cleanup()
+        }
+
+        // Simple guardrail to prevent people from doing the wrong thing,
+        // since it's not immediately intuitive.
+        val firstCleaner = cleanerSeen.compareAndSet(null, destinationCleaner)
+        val sameCleaner = cleanerSeen.compareAndSet(destinationCleaner, destinationCleaner)
+        if (!(firstCleaner || sameCleaner)) {
+            throw IllegalStateException(
+                """
+                Multiple DestinationCleaner instances detected. This is not supported. The cleaner MUST be a singleton.
+                Cleaners detected:
+                  $destinationCleaner
+                  ${cleanerSeen.get()}
+                """.trimIndent()
+            )
         }
     }
 
@@ -154,13 +177,15 @@ abstract class IntegrationTest(
         messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
     ): List<AirbyteMessage> =
         runSync(
             configContents,
             DestinationCatalog(listOf(stream)),
             messages,
             streamStatus,
-            useFileTransfer,
+            useFileTransfer = useFileTransfer,
+            destinationProcessFactory,
         )
 
     /**
@@ -195,21 +220,17 @@ abstract class IntegrationTest(
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
     ): List<AirbyteMessage> {
-        val fileTransferProperty =
-            if (useFileTransfer) {
-                mapOf(EnvVarConstants.FILE_TRANSFER_ENABLED to "true")
-            } else {
-                emptyMap()
-            }
+        destinationProcessFactory.testName = testPrettyName
+
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                micronautProperties =
-                    micronautProperties + fileTransferProperty + defaultMicronautProperties,
+                micronautProperties = micronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -217,7 +238,7 @@ abstract class IntegrationTest(
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        DestinationRecordStreamComplete(it.descriptor, System.currentTimeMillis())
+                        DestinationRecordStreamComplete(it, System.currentTimeMillis())
                             .asProtocolMessage()
                     )
                 }
@@ -237,6 +258,10 @@ abstract class IntegrationTest(
      *
      * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
      * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
+     *
+     * This forces the connector to run with microbatching enabled - without that option, tests
+     * using this method would take significantly longer, because they would need to push 100MB
+     * (ish) to the destination before it would ack a state message.
      */
     fun runSyncUntilStateAck(
         configContents: String,
@@ -252,7 +277,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
-                micronautProperties = micronautProperties + defaultMicronautProperties,
+                micronautProperties = micronautProperties + micronautPropertyEnableMicrobatching,
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -299,10 +324,15 @@ abstract class IntegrationTest(
     fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
-        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
+        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
-        val defaultMicronautProperties: Map<Property, String> =
+
+        /**
+         * When set, this property forces the CDK to invoke processRecords once per record. This
+         * allows tests which depend on state acks to run quickly.
+         */
+        val micronautPropertyEnableMicrobatching: Map<Property, String> =
             mapOf(EnvVarConstants.RECORD_BATCH_SIZE to "1")
 
         /**
@@ -322,6 +352,7 @@ abstract class IntegrationTest(
         }
 
         private val hasRunCleaner = AtomicBoolean(false)
+        private val cleanerSeen = AtomicReference<DestinationCleaner>(null)
 
         // Connectors are calling System.getenv rather than using micronaut-y properties,
         // so we have to mock it out, instead of just setting more properties

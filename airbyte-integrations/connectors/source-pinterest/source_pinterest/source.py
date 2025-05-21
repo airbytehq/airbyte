@@ -9,7 +9,7 @@ from typing import Any, List, Mapping
 
 import pendulum
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
@@ -31,7 +31,7 @@ from .reports.reports import (
     ProductGroupTargetingReport,
     ProductItemReport,
 )
-from .streams import PinterestStream
+from .streams import AdAccountValidationStream, PinterestStream
 
 
 logger = logging.getLogger("airbyte")
@@ -67,6 +67,18 @@ class SourcePinterest(YamlDeclarativeSource):
                 f"Resetting start_date to: {latest_date_allowed_by_api}"
             )
             config["start_date"] = latest_date_allowed_by_api
+
+            # Check if account_id exists
+        if "account_id" in config:
+            validation_stream = AdAccountValidationStream(config)
+            response = list(validation_stream.read_records(sync_mode=SyncMode.full_refresh))
+
+            if not response:
+                raise AirbyteTracedException(
+                    message=f"Invalid ad_account_id: {config['account_id']}. No data returned from Pinterest API.",
+                    internal_message="The provided ad_account_id does not exist.",
+                    failure_type=FailureType.config_error,
+                )
 
         return config
 
