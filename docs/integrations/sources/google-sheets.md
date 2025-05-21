@@ -137,7 +137,7 @@ The Google Sheets connector offers two optional settings to customize how column
   - **Description**: When turned on (off by default), this converts column names to be compatible with SQL databases.
 
 - **Experimental Column Name Sanitization**:
-  - **Description**: When turned on (off by default), this adds extra checks to clean up column names, overriding the standard conversion if both are enabled. Note that this is an experimental feature, and its behavior may change in future updates, which could affect your column names. To avoid unexpected changes, set the connection’s "Detect and propagate schema changes" to "Approve all changes myself" in the advanced settings.
+  - **Description**: When turned on (off by default), this adds extra checks to clean up column names, overriding the standard conversion if both are enabled. Note that this is an experimental feature, and its behavior may change in future updates, which could affect your column names. To avoid unexpected changes, set the connection’s "Detect and propagate schema changes" to "Approve all changes myself" in the advanced connector settings.
 
   - **Checks Performed**:
     1. **Removes leading or trailing spaces**:
@@ -207,7 +207,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.0 | 2025-05-22 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Feature: Added optional experimental name conversion setting with enhanced sanitization for column names. |
+| 0.10.0 | 2025-05-22 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added optional experimental name conversion setting with enhanced sanitization for column names. |
 | 0.9.5 | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`|
 | 0.9.4 | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies |
 | 0.9.3 | 2025-02-22 | [54434](https://github.com/airbytehq/airbyte/pull/54434) | Update dependencies |
