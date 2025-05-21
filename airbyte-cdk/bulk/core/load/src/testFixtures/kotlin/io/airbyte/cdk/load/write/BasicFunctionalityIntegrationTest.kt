@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -252,6 +253,8 @@ abstract class BasicFunctionalityIntegrationTest(
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+    // Which medium to use as your input source for the test
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -262,6 +265,7 @@ abstract class BasicFunctionalityIntegrationTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
+        dataChannelMedium = dataChannelMedium,
     ) {
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
