@@ -358,7 +358,6 @@ export const HeaderDecoration = ({
   lastUpdated,
   definitionId,
 }) => {
-  console.log("definitionId", definitionId);
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
