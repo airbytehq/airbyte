@@ -1,24 +1,34 @@
 .chatTrigger {
-  background-color: var(--color-white);
-  position: fixed;
-  right: 1.5rem;
-  bottom: 1.5rem;
-  z-index: 50;
-  border-radius: 100%;
-  outline-style: none;
+  color: var(--color-grey-900);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15em;
+  font-weight: 500 !important;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background:
+    linear-gradient(var(--color-white), var(--color-white)
+    ) padding-box,
+    linear-gradient(90deg, var(--ifm-color-primary-dark)
+    0%, var(--color-orange-400)
+    100%) border-box;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition-timing-function: cubic-bezier(0.4, 0.36, 0, 1);
-  transition-property: all;
-  transition-duration: 300ms;
-  width: 64px;
-  height: 64px;
-  border: none;
+  transition: .2s ease-in;
+  white-space: nowrap;
+  margin-right: 4px;
+ &:hover {
+  filter: brightness(0.9);
+  color: var(--color-grey-900) !important;
+ }
 
 }
-
-.chatTrigger img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  border-radius: 100%;
+.chatTrigger__icon {
+  display: inline-block;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  justify-content: center;
 }

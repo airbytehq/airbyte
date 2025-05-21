@@ -32,7 +32,7 @@
   --ifm-table-border-color: var(--ifm-color-primary-lightest);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
 
-  --color-white: hsl(0, 0%, 100%);
+  --color-white: hsl(246, 100%, 96%);
   --color-grey-40: hsl(240, 25%, 98%);
   --color-grey-100: hsl(240, 12%, 92%);
   --color-grey-400: hsl(239, 10%, 59%);
@@ -46,7 +46,7 @@
   --color-dark-blue-40: hsl(230, 23%, 95%);
   --color-dark-blue-700: hsl(236, 43%, 31%);
   --color-red-400: hsl(0, 73%, 50%);
-
+  --color-orange-400: hsl(9, 100%, 60%);
   --modal-overlay-background: hsla(241, 51%, 20%, 50%);
   --icon-background: transparent;
 }
@@ -81,6 +81,7 @@ html[data-theme="dark"] {
   --color-dark-blue-700: hsl(240, 100%, 98%);
   --color-white: hsl(0, 0%, 16%);
   --color-red-400: hsl(0, 81%, 71%);
+  --color-orange-400: hsl(9, 100%, 60%);
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
@@ -346,3 +347,9 @@ nav a.navbar__link--active {
 .MarkpromptContentDialog[data-variant="sheet"] {
   z-index: 201 !important; /* This needs to be greater than var(--ifm-z-index-fixed) */
 }
+.MarkpromptBranding {
+  display: none !important;
+}
+
+
+
