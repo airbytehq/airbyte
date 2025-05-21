@@ -80,7 +80,7 @@ class BigqueryBeansFactory {
         streamStateStore: StreamStateStore<*>,
     ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
-        if (config.disableTypingDeduping) {
+        if (config.legacyRawTablesOnly) {
             @Suppress("UNCHECKED_CAST")
             return TypingDedupingWriter(
                 names,
