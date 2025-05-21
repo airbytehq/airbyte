@@ -668,12 +668,57 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
 
 @dataclass
 class HubspotCustomObjectsSchemaLoader(SchemaLoader):
+    """
+    Custom schema loader for HubSpot custom object streams.
+
+    This class generates a JSON schema based on the properties defined in the manifest.
+    These properties are injected into the parameters by the HttpComponentsResolver used within the DynamicDeclarativeStream.
+    """
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        schema_properties = parameters.get("schema_properties", {})
+        raw_schema_properties: List[Mapping[str, Any]] = parameters.get("schema_properties", {})
+        properties = self._get_properties(raw_schema=raw_schema_properties)
+        self._schema = self._generate_schema(properties)
+
+    def _get_properties(self, raw_schema: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+        return {field["name"]: self._field_to_property_schema(field) for field in raw_schema}
+
+    def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
+        field_type = field["type"]
+        property_schema = {}
+        if field_type == "enumeration" or field_type == "string":
+            property_schema = {"type": ["null", "string"]}
+        elif field_type == "datetime" or field_type == "date":
+            property_schema = {"type": ["null", "string"], "format": "date-time"}
+        elif field_type == "number":
+            property_schema = {"type": ["null", "number"]}
+        elif field_type == "boolean" or field_type == "bool":
+            property_schema = {"type": ["null", "boolean"]}
+        else:
+            logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
+            property_schema = {"type": ["null", "string"]}
+
+        return property_schema
+
+    def _generate_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Any]:
+        unnested_properties = {f"properties_{property_name}": property_value for (property_name, property_value) in properties.items()}
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+                "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+                "archived": {"type": ["null", "boolean"]},
+                "properties": {"type": ["null", "object"], "properties": properties},
+                **unnested_properties,
+            },
+        }
+
+        return schema
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        schema = {}
-        return schema
+        return self._schema

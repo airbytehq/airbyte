@@ -1705,8 +1705,6 @@ dynamic_streams:
             fields:
               - path: [ "updatedAt" ]
                 value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-          - type: CustomTransformation
-            class_name: source_hubspot.components.HubspotFlattenAssociationsTransformation
           - type: DpathFlattenFields
             field_path:
               - properties
@@ -1753,17 +1751,13 @@ dynamic_streams:
           record_selector:
             type: RecordSelector
             extractor:
-              type: CustomRecordExtractor
-              class_name: source_hubspot.components.HubspotAssociationsExtractor
+              type: DpathExtractor
               field_path:
                 - results
-              entity_primary_key: "{{ parameters['entity'] }}"
-              associations_list: "{{ parameters['associations'] }}"
             schema_normalization:
               type: CustomSchemaNormalization
               class_name: source_hubspot.components.EntitySchemaNormalization
         transformations:
-          # - modular to allow support for NewtoLegacyFieldTransformation
           - type: DpathFlattenFields
             field_path: [ "properties" ]
             key_transformation:
@@ -1789,11 +1783,6 @@ dynamic_streams:
       components_mapping:
         - type: ComponentMappingDefinition
           field_path:
-            - $parameters
-            - schema_properties
-          value: "{{ components_values.properties }}"
-        - type: ComponentMappingDefinition
-          field_path:
             - name
           value: "{{ components_values.name }}"
         - type: ComponentMappingDefinition
@@ -1810,7 +1799,7 @@ dynamic_streams:
           field_path:
             - $parameters
             - entity
-          value: "{{ components_values.fullyQualifiedName }}"
+          value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
         - type: ComponentMappingDefinition
           field_path:
             - full_refresh_stream
@@ -1828,6 +1817,11 @@ dynamic_streams:
             - request_body_json
             - properties
           value: "{{ components_values.properties | map(attribute='name') | list }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - $parameters
+            - schema_properties
+          value: "{{ components_values.properties }}"
 
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
