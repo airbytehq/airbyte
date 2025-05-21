@@ -20,10 +20,7 @@ from source_hubspot.streams import (
     EngagementsMeetings,
     EngagementsNotes,
     EngagementsTasks,
-    Goals,
     Leads,
-    LineItems,
-    Products,
     RecordUnnester,
     Tickets,
 )
@@ -75,26 +72,26 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("contact_lists", "contact", {"createdAt": "2021-02-25T16:43:11Z", "updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
         (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsMeetings, "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsNotes, "notes", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (EngagementsTasks, "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_calls", "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_emails", "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_meetings", "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_notes", "notes", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("engagements_tasks", "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("forms", "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("form_submissions", "form", {"updatedAt": 1675121674227}),
-        (Goals, "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("goals", "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Leads, "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("line_items", "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("marketing_emails", "", {"updated": "1634050455543"}),
         ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("products", "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("workflows", "", {"updatedAt": 1675121674226}),
@@ -174,9 +171,10 @@ def test_streams_read(
 
     stream._sync_mode = SyncMode.full_refresh
     if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+        stream_slice = {}
         if is_form_submission:
-            stream_url = stream_url.replace("{{ stream_partition['form_id'][0] }}", "test_id")
+            stream_slice = {"form_id": ["test_id"]}
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path(stream_slice=stream_slice)
     else:
         stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None

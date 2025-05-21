@@ -44,8 +44,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - dateCreated
+            field_path: []
           record_filter:
             type: RecordFilter
             condition: "{{ record['dateCreated'] > stream_interval.get('start_time', '') }}"

@@ -35,8 +35,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.InputFile
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
@@ -56,6 +54,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -203,6 +202,11 @@ enum class UnknownTypesBehavior {
     FAIL,
 }
 
+// eventually we'll put some parameters in here (e.g. CDC deletes as soft vs hard delete)
+// and should switch it to a data class.
+// but for now, that would be a compiler error, so just use a normal class.
+class DedupBehavior
+
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
     configContents: String,
@@ -227,7 +231,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * retroactive schemas: writing a new file without a column has no effect on older files.
      */
     val isStreamSchemaRetroactive: Boolean,
-    val supportsDedup: Boolean,
+    val dedupBehavior: DedupBehavior?,
     val stringifySchemalessObjects: Boolean,
     val schematizedObjectBehavior: SchematizedNestedValueBehavior,
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
@@ -377,14 +381,30 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
+                isFileBased = true,
+                includeFiles = true,
             )
-        val fileMessage =
-            DestinationFile.AirbyteRecordMessageFile(
-                fileUrl = "/tmp/test_file",
-                bytes = 1234L,
-                fileRelativePath = "path/to/file",
-                modified = 4321L,
-                sourceFileUrl = "file://path/to/source",
+
+        val sourcePath = "path/to/file"
+        // these must match the values hard-coded in DockerizedDestination
+        val stagingDir = "tmp"
+        val fileName = "test_file"
+        val fileContents = "123"
+
+        val fileReference =
+            AirbyteRecordMessageFileReference()
+                .withSourceFileRelativePath(sourcePath)
+                .withStagingFileUrl("/$stagingDir/$fileName")
+                .withFileSizeBytes(1234L)
+
+        val input =
+            InputRecord(
+                namespace = randomizedNamespace,
+                name = "test_stream_file",
+                data = """{"id": 5678}""",
+                emittedAtMs = 1234,
+                changes = mutableListOf(),
+                fileReference = fileReference,
             )
 
         val messages =
@@ -392,11 +412,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 updatedConfig,
                 stream,
                 listOf(
-                    InputFile(
-                        stream = stream,
-                        emittedAtMs = 1234,
-                        fileMessage = fileMessage,
-                    ),
+                    input,
                     InputStreamCheckpoint(
                         streamName = stream.descriptor.name,
                         streamNamespace = stream.descriptor.namespace,
@@ -430,13 +446,14 @@ abstract class BasicFunctionalityIntegrationTest(
         val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
-        assertEquals(mapOf("path/to/file" to "123"), fileContent)
+        assertEquals(fileContents, fileContent[sourcePath])
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
     @Test
     open fun testMidSyncCheckpointingStreamState(): Unit =
         runBlocking(Dispatchers.IO) {
+            assumeTrue(verifyDataWriting)
             val stream =
                 DestinationStream(
                     DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -665,6 +682,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             // "order" is a reserved word in many sql engines
                             "order" to stringType,
                             "ProperCase" to stringType,
+                            "Foo.Bar" to stringType,
                         )
                     ),
                     // this is apparently trying to test for reserved words?
@@ -723,6 +741,83 @@ abstract class BasicFunctionalityIntegrationTest(
                     )
                 }
             }
+        )
+    }
+
+    /**
+     * [testFunkyCharacters] runs using APPEND streams, so it can run on all destinations. But we
+     * should also test that funky characters in the PK/cursor behave correctly.
+     *
+     * This test just runs a single DEDUP stream, whose PK+cursor include various special
+     * characters.
+     */
+    @Test
+    open fun testFunkyCharactersDedup() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                importType =
+                    Dedupe(
+                        // the actual string here is id~!@#$%^&*()`[]{}|;':",./<>?
+                        // note: no `\` character, because it causes significant problems in some
+                        // destinations (T+D destinations with noncompliant JSONPath
+                        // implementations,
+                        // e.g. bigquery)
+                        primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
+                        cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id~!@#\$%^&*()`[]{}|;':\",./<>?" to intType,
+                                "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to timestamptzType,
+                                "name~!@#\$%^&*()`[]{}|;':\",./<>?" to stringType,
+                            )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """
+                    {
+                      "id~!@#${'$'}%^&*()`[]{}|;':\",./<>?": 1,
+                      "updated_at~!@#${'$'}%^&*()`[]{}|;':\",./<>?": "2000-01-01T00:00:00Z",
+                      "name~!@#${'$'}%^&*()`[]{}|;':\",./<>?": "Alice1"
+                    }""".trimIndent(),
+                    emittedAtMs = 1000,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice has only the newer record, and Bob also exists
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id~!@#\$%^&*()`[]{}|;':\",./<>?" to 1,
+                            "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to
+                                TimestampWithTimezoneValue("2000-01-01T00:00:00Z"),
+                            "name~!@#\$%^&*()`[]{}|;':\",./<>?" to "Alice1",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
+            cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
         )
     }
 
@@ -1519,7 +1614,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testDedup() {
-        assumeTrue(supportsDedup)
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
         fun makeStream(syncId: Long) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -1661,7 +1757,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testDedupWithStringKey() {
-        assumeTrue(supportsDedup)
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
         fun makeStream(syncId: Long) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -1801,6 +1898,58 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testDedupNoCursor() {
+        assumeTrue(verifyDataWriting && dedupBehavior != null)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    namespace = randomizedNamespace,
+                    name = "test_stream",
+                    data = """{"id": 1234, "name": "a"}""",
+                    emittedAtMs = 1234,
+                ),
+            ),
+        )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    namespace = randomizedNamespace,
+                    name = "test_stream",
+                    data = """{"id": 1234, "name": "b"}""",
+                    emittedAtMs = 5678,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 0,
+                    data = mapOf("id" to 1234, "name" to "b"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
+                ),
+            ),
+            stream,
+            listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
     /**
      * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
      * Verify that we overwrite everything correctly.
@@ -1810,7 +1959,8 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     @Test
     open fun testDedupChangeCursor() {
-        assumeTrue(verifyDataWriting && supportsDedup)
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
         fun makeStream(cursor: String) =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -2937,6 +3087,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * Verify that we can handle a stream with 0 columns. This is... not particularly useful, but
      * happens sometimes.
      */
+    @Test
     open fun testNoColumns() {
         assumeTrue(verifyDataWriting)
         val stream =
@@ -2960,20 +3111,48 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             )
         )
+        val expectedFirstRecord =
+            OutputRecord(
+                extractedAt = 1000L,
+                generationId = 42,
+                data =
+                    if (preserveUndeclaredFields) {
+                        mapOf("foo" to "bar")
+                    } else {
+                        emptyMap()
+                    },
+                airbyteMeta = OutputRecord.Meta(syncId = 42),
+            )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(expectedFirstRecord),
+            stream,
+            primaryKey = listOf(),
+            cursor = null,
+        )
+        // Run a second sync to catch bugs in schema change detection.
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{}""",
+                    emittedAtMs = 2000L,
+                )
+            )
+        )
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
+                expectedFirstRecord,
                 OutputRecord(
-                    extractedAt = 1000L,
+                    extractedAt = 2000L,
                     generationId = 42,
-                    data =
-                        if (preserveUndeclaredFields) {
-                            mapOf("foo" to "bar")
-                        } else {
-                            emptyMap()
-                        },
+                    data = emptyMap(),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
+                ),
             ),
             stream,
             primaryKey = listOf(),
@@ -3040,6 +3219,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testClear() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
