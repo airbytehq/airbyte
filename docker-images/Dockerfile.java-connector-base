@@ -11,14 +11,6 @@ RUN sh -c set -o xtrace && \
     yum clean all && \
     rm -rf /var/cache/yum
 
-# Install flatbuffers compiler
-ADD https://github.com/google/flatbuffers/releases/latest/download/Linux.flatc.binary.g++-13.zip flatbuffers.zip
-RUN unzip flatbuffers.zip
-RUN mkdir flatbuffers && mv flatc flatbuffers/
-ENV PATH="/airbyte/flatbuffers:$PATH"
-RUN flatc --version
-RUN rm flatbuffers.zip
-
 # Set-up groups, users, and directories
 RUN groupadd --gid 1000 airbyte && \
     useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && \
@@ -43,6 +35,14 @@ ENV AIRBYTE_WRITE_CMD="/airbyte/javabase.sh --write"
 ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
 
 WORKDIR /airbyte
+
+# Install flatbuffers compiler
+ADD https://github.com/google/flatbuffers/releases/latest/download/Linux.flatc.binary.g++-13.zip flatbuffers.zip
+RUN unzip flatbuffers.zip
+RUN mkdir flatbuffers && mv flatc flatbuffers/
+ENV PATH="/airbyte/flatbuffers:$PATH"
+RUN flatc --version
+RUN rm flatbuffers.zip
 
 ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base/base.sh \
     /airbyte/base.sh
