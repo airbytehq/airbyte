@@ -104,7 +104,8 @@ class BigqueryBeansFactory {
                 BigqueryDirectLoadSqlTableOperations(
                     DefaultDirectLoadTableSqlOperations(
                         BigqueryDirectLoadSqlGenerator(
-                            config.projectId,
+                            projectId = config.projectId,
+                            cdcDeletionMode = config.cdcDeletionMode,
                         ),
                         destinationHandler,
                     ),

@@ -29,11 +29,15 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
+import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import java.util.ArrayList
 import java.util.stream.Collectors
 import org.apache.commons.lang3.StringUtils
 
-class BigqueryDirectLoadSqlGenerator(private val projectId: String?) : DirectLoadSqlGenerator {
+class BigqueryDirectLoadSqlGenerator(
+    private val projectId: String?,
+    private val cdcDeletionMode: CdcDeletionMode,
+) : DirectLoadSqlGenerator {
     override fun createTable(
         stream: DestinationStream,
         tableName: TableName,
@@ -160,7 +164,10 @@ class BigqueryDirectLoadSqlGenerator(private val projectId: String?) : DirectLoa
 
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
-        if (stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
+        if (
+            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+                cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+        ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
                 "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND $cursorComparison THEN DELETE"
