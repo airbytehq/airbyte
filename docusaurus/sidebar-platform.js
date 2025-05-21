@@ -174,6 +174,50 @@ const deployAirbyte = {
   },
   items: [
     {
+      type: "doc",
+      id: "deploying-airbyte/deploy-airbyte-aws-eks",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/deploy-airbyte-aws-ec2",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/deploy-airbyte-gc-gke",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/deploy-airbyte-gc-gce",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/deploy-airbyte-azure-ake",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/deploy-airbyte-azure-vm",
+    },
+
+
+    {
+      type: "category",
+      label: "abctl",
+      link: {
+        type: "doc",
+        id: "deploying-airbyte/abctl",
+      },
+      items: [
+        "deploying-airbyte/troubleshoot-deploy",
+      ],
+    },
+
+
+    {
+      type: "doc",
+      id: "deploying-airbyte/reference",
+    },
+
+    {
       type: "category",
       label: "Infrastructure",
       items: [
@@ -204,15 +248,7 @@ const deployAirbyte = {
     },
     {
       type: "doc",
-      id: "deploying-airbyte/troubleshoot-deploy",
-    },
-    {
-      type: "doc",
       id: "deploying-airbyte/migrating-from-docker-compose",
-    },
-    {
-      type: "doc",
-      id: "deploying-airbyte/abctl-ec2",
     },
   ],
 };

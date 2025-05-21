@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Deploy Airbyte to AWS EKS
 
-Airbyte is built to be deployed to a Kubernetes cluster. This tutorial walks you through deploying Airbyte Self-Managed Community, Airbyte's open source product, on [AWS EKS](https://aws.amazon.com/eks/). It is intended for Software/DevOps Engineers who already use, or want to begin using, AWS for infrastructure. It is accessible to beginners, but assumes you have functional knowledge of:
+Airbyte runs on a Kubernetes cluster. This tutorial walks you through deploying Airbyte on [AWS EKS](https://aws.amazon.com/eks/). This guide is for Software/DevOps Engineers who want to run Airbyte on AWS infrastructure. It's accessible to beginners, but assumes you have functional knowledge of:
 
 - [Kubernetes](https://kubernetes.io/)
 - [Helm](https://helm.sh/)
@@ -16,11 +16,13 @@ Airbyte is built to be deployed to a Kubernetes cluster. This tutorial walks you
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [eksctl](https://eksctl.io/)
 
+Data Engineers without this experience may struggle to complete all of these steps, so ask your infrastructure team for help if you need it.
+
 By the end of this tutorial, you'll have a production-ready version of Airbyte running on an EKS cluster.
 
-:::note
+<!-- :::note
 If you aren't a Kubernetes expert or don't actually need to run on EKS, [deploying to EC2](deploy-airbyte-aws-ec2) is usually simpler.
-:::
+::: -->
 
 ## Before you start
 
@@ -33,22 +35,6 @@ Before starting this tutorial, install the following tools on your local machine
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [eksctl](https://eksctl.io/installation/#docker)
 
-### Suggested resources {#suggested-resources}
-
-For best performance, run Airbyte on a machine with 4 or more CPUs and at least 8GB of memory. We also support running Airbyte with 2 CPUs and 8GM of memory in low-resource mode. Follow this [Github discussion](https://github.com/airbytehq/airbyte/discussions/44391) to upvote and track progress toward supporting lower resource environments.
-
-<!--
-It's easiest if they're all running in the [same virtual private cloud](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html).
-
-- An [AWS EKS](https://aws.amazon.com/eks/) cluster running on EC2 instances with [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) and a minimum of 6 nodes
-- An [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
-- A URL to access the Airbyte UI and make API requests
-- An [AWS S3](https://aws.amazon.com/s3/) bucket with two directories: one for log storage and another for state storage
-- Optional, but recommended: An [Amazon RDS Postgres](https://aws.amazon.com/rds/postgresql/) database
-- [Amazon Secrets Manager](https://aws.amazon.com/secrets-manager/) 
-
--->
-
 ### Limitations
 
 Things to keep in mind.
@@ -57,16 +43,25 @@ Things to keep in mind.
 
 ## What involved in an EKS deployment
 
-- Consider integrations beforehand and set up that infra.
-- Authenticate and connect to AWS
-- Add the Airbyte Helm repository
-- Create a namespace
-- Configure your customizations
-- Deploy
+At a high level, this is what you're building:
+
+- An [AWS EKS](https://aws.amazon.com/eks/) cluster running on EC2 instances with [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) and a minimum of 6 nodes. Each instance should have at least 2 cores and 8-GB of RAM.
+- An [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) and a URL to access the Airbyte UI and make API requests.
+- An [S3](https://aws.amazon.com/s3/) bucket with two directories: one for log storage and another for state storage.
+- An [Amazon RDS Postgres](https://aws.amazon.com/rds/postgresql/) database.
+- [Amazon Secrets Manager](https://aws.amazon.com/secrets-manager/) to store connector secrets.
+
+Technically, Airbyte only requires the EKS cluster to run. However, your production deployment would suffer from serious limitations if you omit the rest of this infrastructure. It's important you add these into your plan.
 
 ![AWS EKS](aws-eks.png)
 
 ## Part 1: Set up your infrastructure
+
+In almost all cases, Airbyte's defaults have limitations that make them insufficient for a production deployment on EKS.
+
+
+
+## Part 2: Configure Kubernetes secrets
 
 ## Part 2: Authenticate and connect to AWS
 
@@ -159,7 +154,7 @@ The Airbyte deployment process uses a Helm chart, which is a package for Kuberne
 
 ## Part 4: Create a namespace for Airbyte
 
-It's not strictly necessary to isolate the Airbyte installation into its own namespace, but we recommend it as a best practice. This example assumes you chose the name `airbyte` for the namespace, but you can choose a different name.
+It's not strictly necessary to isolate the Airbyte installation into its own namespace, but this is a best practice. This example assumes you choose the name `airbyte` for the namespace, but you can choose a different name.
 
 To create a namespace run the following command.
 
@@ -178,8 +173,6 @@ namespace/airbyte created
 Airbyte has everything you need to use the product. In some cases, Airbyte's defaults are enough, but they do have limitations and aren't for everyone.
 
 <!-- Bryce has a good example here of a "complete" secrets and values file: https://github.com/airbytehq/airbyte/discussions/47256#discussioncomment-11082158 -->
-
-### Configure Kubernetes secrets
 
 ### Create a values.yaml file to customize your deployment
 
@@ -235,8 +228,8 @@ You can now access Airbyte in your browser at: http://127.0.0.1:8080 or, if you 
 
 ## What's next
 
-Congratulations! You now have a fully-functional production deployment of Airbyte.
+You now have a fully functional production deployment of Airbyte.
 
 - **Move data**: In Airbyte, you move data from [sources](../using-airbyte/getting-started/add-a-source) to [destinations](../using-airbyte/getting-started/add-a-destination.md). The relationship between a source and a destination is called a [connection](../using-airbyte/getting-started/set-up-a-connection.md). Try moving some data.
-- **Change customizations**: If something about your cloud infrastructure changes later on, make the corresponding update in your `values.yaml` file, then rerun [`helm install`](#deploy-airbyte). <!-- Need to verify this, I'm actually not sure if you need to rerun -->
-- **Update Airbyte**: We release new versions of Airbyte and its connectors regularly. [Keep Airbyte up to date](../operator-guides/upgrading-airbyte.md) to get the latest features and fixes.
+- **Change customizations**: If something about your cloud infrastructure changes later on, make the corresponding update in your `values.yaml` file, then rerun [`helm install`](#deploy-airbyte).
+- **Update Airbyte**: Airbyte releases new versions of the Airbyte platform and its connectors regularly. [Keep Airbyte up to date](../operator-guides/upgrading-airbyte.md) to get the latest features and fixes.
