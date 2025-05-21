@@ -1705,11 +1705,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       websiteUrl:
         type:
           - "null"
@@ -2509,11 +2505,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       user:
         type:
           - "null"
@@ -3301,11 +3293,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
   personas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -4534,11 +4522,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       updaterId:
         type:
           - "null"
@@ -4823,11 +4807,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
   sequence_states:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -5193,11 +5173,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
   stages:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -5242,11 +5218,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
   tasks:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -5639,11 +5611,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
   users:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -6149,11 +6117,7 @@ schemas:
       updater:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       useSalesNavigatorForLinkedInTasks:
         type:
           - "null"
