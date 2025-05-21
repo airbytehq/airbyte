@@ -56,6 +56,7 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.13 | 2025-05-21 | [60843](https://github.com/airbytehq/airbyte/pull/60843) | Properly extract relationship keys |
 | 1.1.13 | 2025-05-10 | [60057](https://github.com/airbytehq/airbyte/pull/60057) | Update dependencies |
 | 1.1.12 | 2025-05-04 | [59050](https://github.com/airbytehq/airbyte/pull/59050) | Update dependencies |
 | 1.1.11 | 2025-04-19 | [57869](https://github.com/airbytehq/airbyte/pull/57869) | Update dependencies |
