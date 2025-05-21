@@ -540,4 +540,9 @@ class S3V2WriteTestJsonUncompressedSockets :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
         dataChannelMedium = DataChannelMedium.SOCKETS
-    )
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}

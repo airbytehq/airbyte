@@ -6,7 +6,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.OutputStream
 import java.net.InetSocketAddress
 import java.net.Socket
-import java.time.Duration
 
 /**
  * An OutputStream that writes directly to a TCP port. Used by the Dockerized destination for
@@ -16,8 +15,7 @@ import java.time.Duration
 class TCPSocketWriter(
     private val host: String,
     private val port: Int,
-    private val awaitFirstWrite: Boolean,
-    private val connectTimeout: Duration = Duration.ofSeconds(5)
+    awaitFirstWrite: Boolean,
 ) : OutputStream(), AutoCloseable {
     private val log = KotlinLogging.logger {}
 
@@ -32,7 +30,13 @@ class TCPSocketWriter(
 
     private fun connect() {
         log.info { "Connecting to TCP socket at $host:$port" }
-        Thread.sleep(1000L) // Avoid socat race condition
+        // This is a hack due to the fact that there is a slight delay between
+        // the only signal we have for socat availability (the destination
+        // successfully connecting to the UNIX socket) and the TCP socket
+        // becoming available. In practice, this is enough time even if I
+        // run every single test in parallel in socket mode.
+        // See the DockerizedDestinationFactory sidecar for more details.
+        Thread.sleep(1000L)
         socket.connect(InetSocketAddress(host, port), 0)
         outputStream = socket.getOutputStream().buffered()
     }

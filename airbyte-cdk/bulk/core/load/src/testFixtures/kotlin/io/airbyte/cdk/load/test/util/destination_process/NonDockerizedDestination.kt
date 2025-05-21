@@ -76,6 +76,7 @@ class NonDockerizedDestination(
                 }
                 DataChannelMedium.SOCKETS -> {
                     val socketFile = File.createTempFile("ab_socket", ".socket")
+                    socketFile.delete()
                     val serverSocketWriterOutputStream =
                         ServerSocketWriterOutputStream(socketFile.path.toString())
                     destinationStdinPipe = PrintWriter(serverSocketWriterOutputStream)

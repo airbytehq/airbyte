@@ -217,8 +217,27 @@ class DockerizedDestination(
     }
 
     private fun startSidecar(sidecarPort: Int): Process {
-        // Start the socat container first, which creates the socket with proper permissions
-        // UNIX-LISTEN ensures socat will create the so
+        // Starts the socat container first, which creates the socket with proper permissions
+        // UNIX-LISTEN ensures socat will create the UNIX socket. It will also await connections
+        // and block until a connection is made.
+        // TCP-LISTEN will create a TCP socket that forwards to the UNIX socket. It will only
+        // start accepting connections after the UNIX socket connection. Connections made sooner
+        // will silently fail. (Either by blocking on write or by devnulling the data. I have no
+        // idea why
+        // this happens. In practice tests will hang or destinations will throw as if having
+        // received EOF before end-of-stream.)
+        //
+        // In theory we should be able to make the TCP port available sooner by `fork`ing the UNIX
+        // call, but in practice the TCP connection will still silently fail if the destination
+        // hasn't connected to
+        // the socket yet. To hack around this, we A) lazily initialize the TCP socket connection on
+        // first write and B) block writes until the destination logs that it has successfully
+        // connected. THIS IS HORRIBLE AND WILL PROBABLY BREAK IN A CONFUSING WAY.
+        //
+        // NOTE: There is also a slight delay between the destination connecting to the UNIX socket
+        // and the TCP port being available. To hack around that the TcpSocketWriter waits an extra
+        // second before connecting. In practice this seems sufficient even when running 100s of
+        // tests concurrently. (Without it about 3-4 of the total will hang indefinitely.)
         val socatCommand =
             listOf(
                 "docker",
@@ -232,6 +251,8 @@ class DockerizedDestination(
                 "-p",
                 "$sidecarPort:$sidecarPort",
                 "alpine/socat",
+                // level of logging; more d's => more verbose. At 15 it becomes sentient.
+                // socat will go away
                 "-dddd",
                 "UNIX-LISTEN:$socketPath,reuseaddr,mode=777",
                 "TCP-LISTEN:$sidecarPort,reuseaddr,nodelay=1",

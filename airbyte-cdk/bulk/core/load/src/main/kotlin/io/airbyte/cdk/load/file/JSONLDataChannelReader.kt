@@ -14,7 +14,7 @@ import java.io.InputStream
 class JSONLDataChannelReader(catalog: DestinationCatalog) : DataChannelReader {
     // NOTE: Presumes that legacy file transfer is not compatible with sockets.
     private val destinationMessageFactory: DestinationMessageFactory =
-        DestinationMessageFactory(catalog, false)
+        DestinationMessageFactory(catalog, fileTransferEnabled = false)
     private var bytesRead: Long = 0
 
     override fun read(inputStream: InputStream): Sequence<DestinationMessage> {

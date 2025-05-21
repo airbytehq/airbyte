@@ -20,8 +20,6 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.InputPartitioner
 import io.airbyte.cdk.load.state.CheckpointManager
-import io.airbyte.cdk.load.state.Reserved
-import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
