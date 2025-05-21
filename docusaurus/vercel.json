@@ -445,6 +445,11 @@
       "source": "/connector-specification-reference",
       "destination": "/platform/connector-development/connector-specification-reference",
       "statusCode": 301
+    },
+    {
+      "source": "/platform/next/embedded-setup",
+      "destination": "/embedded",
+      "statusCode": 301
     }
   ]
 }

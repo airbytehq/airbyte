@@ -41,7 +41,6 @@ import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
-import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -54,7 +53,6 @@ import java.util.concurrent.ConcurrentHashMap
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
-@Singleton
 class InputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
