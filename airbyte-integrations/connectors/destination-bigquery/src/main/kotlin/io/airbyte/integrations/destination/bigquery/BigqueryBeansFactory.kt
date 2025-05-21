@@ -29,7 +29,7 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStateGatherer
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadTableExistenceChecker
@@ -105,7 +105,7 @@ class BigqueryBeansFactory {
             @Suppress("UNCHECKED_CAST")
             return DirectLoadTableWriter(
                 names = names,
-                stateGatherer = BigqueryDirectLoadDatabaseInitialStateGatherer(bigquery),
+                stateGatherer = BigqueryDirectLoadDatabaseInitialStatusGatherer(bigquery),
                 destinationHandler = destinationHandler,
                 nativeTableOperations = BigqueryDirectLoadNativeTableOperations(bigquery),
                 sqlTableOperations = sqlTableOperations,

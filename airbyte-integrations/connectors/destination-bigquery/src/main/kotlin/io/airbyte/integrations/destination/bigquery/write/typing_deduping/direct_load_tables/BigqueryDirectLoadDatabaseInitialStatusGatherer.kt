@@ -19,7 +19,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
-class BigqueryDirectLoadDatabaseInitialStateGatherer(private val bigquery: BigQuery) :
+class BigqueryDirectLoadDatabaseInitialStatusGatherer(private val bigquery: BigQuery) :
     DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
         streams: TableCatalog,
