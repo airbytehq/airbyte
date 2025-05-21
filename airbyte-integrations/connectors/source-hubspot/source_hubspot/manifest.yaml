@@ -1658,7 +1658,6 @@ streams:
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/workflows_stream"
 
-
 dynamic_streams:
   - type: DynamicDeclarativeStream
     stream_template:
@@ -1703,7 +1702,7 @@ dynamic_streams:
         transformations:
           - type: AddFields
             fields:
-              - path: [ "updatedAt" ]
+              - path: ["updatedAt"]
                 value: "{{ record.get('updatedAt') or record['createdAt'] }}"
           - type: DpathFlattenFields
             field_path:
@@ -1759,7 +1758,7 @@ dynamic_streams:
               class_name: source_hubspot.components.EntitySchemaNormalization
         transformations:
           - type: DpathFlattenFields
-            field_path: [ "properties" ]
+            field_path: ["properties"]
             key_transformation:
               type: KeyTransformation
               prefix: properties_
@@ -1822,7 +1821,6 @@ dynamic_streams:
             - $parameters
             - schema_properties
           value: "{{ components_values.properties }}"
-
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:

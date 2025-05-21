@@ -674,6 +674,7 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
     This class generates a JSON schema based on the properties defined in the manifest.
     These properties are injected into the parameters by the HttpComponentsResolver used within the DynamicDeclarativeStream.
     """
+
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
 
