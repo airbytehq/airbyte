@@ -57,7 +57,7 @@ class TestLeadsStream(HubspotTestCase):
         if with_oauth:
             self._set_up_oauth(http_mocker)
         self.mock_custom_objects(http_mocker)
-        self.mock_properties(http_mocker, self.OBJECT_TYPE, self.PROPERTIES)
+        self.mock_properties(http_mocker, self.OBJECT_TYPE, self.MOCK_PROPERTIES_FOR_SCHEMA_LOADER)
         if with_dynamic_schema:
             self.mock_dynamic_schema_requests(http_mocker)
 

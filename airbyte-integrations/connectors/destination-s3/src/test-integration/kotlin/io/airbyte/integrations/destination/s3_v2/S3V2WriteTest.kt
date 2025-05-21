@@ -53,7 +53,7 @@ abstract class S3V2WriteTest(
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
         micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = stringifySchemalessObjects,
         schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = schematizedArrayBehavior,

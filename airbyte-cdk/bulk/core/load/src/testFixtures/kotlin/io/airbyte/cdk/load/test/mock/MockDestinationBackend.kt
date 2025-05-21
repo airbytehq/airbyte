@@ -9,9 +9,11 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.RecordDiffer
+import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -50,7 +52,15 @@ object MockDestinationBackend {
         }
         fun getPk(record: OutputRecord): List<AirbyteValue?> =
             primaryKey.map { pkField -> getField(pkField, record) }
-        fun getCursor(record: OutputRecord): AirbyteValue? = getField(cursor, record)
+        fun getCursor(record: OutputRecord): AirbyteValue? =
+            if (cursor.isEmpty()) {
+                TimestampWithTimezoneValue(record.extractedAt.atOffset(ZoneOffset.UTC))
+            } else {
+                // technically this is wrong - we should actually return a tuple of
+                // (cursor_field, extracted_at)
+                // but this is easier to implement :P
+                getField(cursor, record)
+            }
 
         val file = getFile(filename)
         records.forEach { incomingRecord ->
