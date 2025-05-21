@@ -231,6 +231,7 @@ jobs:
       fail-fast: false
       matrix:
         connector:
+          - source-google-drive
           - source-hubspot
           - source-salesforce
           - source-shopify
