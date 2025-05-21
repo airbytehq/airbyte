@@ -95,7 +95,7 @@ class TestAccountsStream(BaseTest):
         # Use a config with account_names predicate
         config_with_account_names = {
             **self._config,
-            "account_names": [{"operator": "Equals", "name": "Airbyte"}, {"operator": "Contains", "name": "demo"}]
+            "account_names": [{"operator": "Equals", "name": "Airbyte"}, {"operator": "Contains", "name": "demo"}],
         }
 
         http_mocker = self.http_mocker
