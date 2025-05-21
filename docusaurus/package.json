@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "prepare-sidebar": "node scripts/prepare-sidebar-data.js",
+    "prepare-sidebar": "node src/scripts/prepare-sidebar-data.js",
     "prebuild": "pnpm run prepare-sidebar",
     "prestart": "pnpm run prepare-sidebar",
     "docusaurus": "docusaurus",
