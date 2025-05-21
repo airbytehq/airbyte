@@ -56,7 +56,9 @@ scopes = {
     "deal_pipelines": {"crm.objects.contacts.read"},
     "deals": {"contacts", "crm.objects.deals.read"},
     "deals_property_history": {"crm.objects.deals.read"},
+    "email_events": {"content"},
     "email_subscriptions": {"content"},
+    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "engagements_calls": {"crm.objects.contacts.read"},
     "engagements_emails": {"crm.objects.contacts.read", "sales-email-read"},
     "engagements_meetings": {"crm.objects.contacts.read"},
@@ -66,8 +68,12 @@ scopes = {
     "deals_archived": {"contacts", "crm.objects.deals.read"},
     "forms": {"forms"},
     "form_submissions": {"forms"},
+    "goals": {"crm.objects.goals.read"},
+    "line_items": {"e-commerce", "crm.objects.line_items.read"},
     "owners": {"crm.objects.owners.read"},
     "owners_archived": {"crm.objects.owners.read"},
+    "products": {"e-commerce"},
+    "subscription_changes": {"content"},
     "ticket_pipelines": {
         "media_bridge.read",
         "tickets",
@@ -88,12 +94,6 @@ scopes = {
         "crm.objects.companies.write",
     },
     "workflows": {"automation"},
-    "email_events": {"content"},
-    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
-    "subscription_changes": {"content"},
-    "goals": {"crm.objects.goals.read"},
-    "products": {"e-commerce"},
-    "line_items": {"e-commerce", "crm.objects.line_items.read"},
 }
 
 
