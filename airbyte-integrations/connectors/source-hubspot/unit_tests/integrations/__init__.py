@@ -22,6 +22,7 @@ from .response_builder.streams import GenericResponseBuilder, HubspotStreamRespo
 
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
+    "company",
     "contact",
     "deal",
     "deal_split",
