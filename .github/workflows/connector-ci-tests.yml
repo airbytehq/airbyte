@@ -105,11 +105,10 @@ jobs:
           java-version: 21
           cache: gradle
 
+      # The default behaviour is read-only on PR branches and read/write on master.
+      # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
       - uses: gradle/actions/setup-gradle@v4
         if: matrix.connector
-        with:
-          cache-read-only: false
-          cache-write-only: false
 
       - name: Install system dependencies
         if: matrix.connector
