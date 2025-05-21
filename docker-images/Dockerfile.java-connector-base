@@ -6,7 +6,7 @@ FROM ${BASE_IMAGE}
 
 # Install dependencies
 RUN sh -c set -o xtrace && \
-    yum install -y shadow-utils tar openssl findutils && \
+    yum install -y shadow-utils tar openssl findutils unzip && \
     yum update -y --security && \
     yum clean all && \
     rm -rf /var/cache/yum
