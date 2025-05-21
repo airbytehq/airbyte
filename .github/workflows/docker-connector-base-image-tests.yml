@@ -3,7 +3,7 @@
 
 # NOTE: This workflow does not publish the images to Docker Hub. It only builds them and tests them.
 
-name: Dockerimage Tests for Connector and Base Images
+name: Docker Tests for Connector and Base Images
 on:
   pull_request:
     paths:
@@ -51,6 +51,7 @@ jobs:
     name: Build Java Base Image
     runs-on: ubuntu-latest
     needs: detect-changes
+    environment: ghcr.io/airbytehq/java-connector-base
     if: needs.detect-changes.outputs.java-base == 'true'
     steps:
       - name: Checkout code
@@ -97,6 +98,7 @@ jobs:
     name: Build Python Base Image
     runs-on: ubuntu-latest
     needs: detect-changes
+    environment: ghcr.io/airbytehq/python-connector-base
     if: needs.detect-changes.outputs.python-base == 'true'
     steps:
       - name: Checkout code
@@ -146,6 +148,7 @@ jobs:
   test-java-connector-image-matrix:
     runs-on: ubuntu-latest
     needs: [detect-changes, build-java-base-image]
+    environment: ghcr.io/airbytehq
     if: >
       needs.detect-changes.outputs.java-connector
     strategy:
