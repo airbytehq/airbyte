@@ -3,7 +3,7 @@
 
 # NOTE: This workflow does not publish the images to Docker Hub. It only builds them and tests them.
 
-name: Docker Tests for Connector and Base Images
+name: Docker Image Tests
 on:
   pull_request:
     paths:
