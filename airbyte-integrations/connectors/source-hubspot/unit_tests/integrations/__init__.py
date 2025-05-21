@@ -20,6 +20,20 @@ from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
 from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
 
+OBJECTS_WITH_DYNAMIC_SCHEMA = [
+    "calls",
+    "company",
+    "deal",
+    "emails",
+    "form",
+    "goal_targets",
+    "line_item",
+    "meetings",
+    "notes",
+    "tasks",
+    "product",
+]
+
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
 class HubspotTestCase:
@@ -131,7 +145,7 @@ class HubspotTestCase:
 
     @classmethod
     def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
-        entities = entities or ["calls", "deal", "emails", "form", "meetings", "notes", "tasks"]
+        entities = entities or OBJECTS_WITH_DYNAMIC_SCHEMA
 
         # figure out which entities are already mocked
         existing = set()
