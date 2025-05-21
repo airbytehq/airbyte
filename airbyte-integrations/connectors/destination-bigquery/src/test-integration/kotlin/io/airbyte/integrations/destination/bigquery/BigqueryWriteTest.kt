@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
-import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
@@ -81,8 +80,8 @@ abstract class BigqueryTDWriteTest(configContents: String) :
         configContents = configContents,
         BigqueryFinalTableDataDumper,
         ColumnNameModifyingMapper(BigqueryColumnNameGenerator())
+            .compose(TimeWithTimezoneMapper)
             .compose(RootLevelTimestampsToUtcMapper)
-            .compose(TypingDedupingMetaChangeMapper)
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
@@ -94,7 +93,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
             numberCanBeLarge = false,
-            timeWithTimezoneBehavior = SimpleValueBehavior.PASS_THROUGH,
+            timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
     ) {
     private val oldCdkDestinationFactory =
@@ -297,8 +296,8 @@ class StandardInsertRawOverride :
 
 class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
     @Test
-    override fun testDedup() {
-        super.testDedup()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
 
