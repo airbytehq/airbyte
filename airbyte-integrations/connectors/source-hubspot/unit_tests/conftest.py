@@ -13,6 +13,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 NUMBER_OF_PROPERTIES = 2000
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
+    "company",
     "deal",
     "emails",
     "form",
