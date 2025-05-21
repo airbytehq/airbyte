@@ -129,6 +129,16 @@
         "airbyte_secret" : true,
         "always_show" : true
       },
+      "cdc_deletion_mode" : {
+        "type" : "string",
+        "default" : "Hard delete",
+        "enum" : [ "Hard delete", "Soft delete" ],
+        "description" : "Whether to execute CDC deletions as hard deletes (i.e. actually delete the record from the destination), or soft deletes (i.e. leave a tombstone record).",
+        "title" : "CDC hard deletes",
+        "group" : "sync_behavior",
+        "order" : 5,
+        "always_show" : true
+      },
       "transformation_priority" : {
         "type" : "string",
         "default" : "interactive",
@@ -136,7 +146,15 @@
         "description" : "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>. The default \"interactive\" value is used if not set explicitly.",
         "title" : "Transformation Query Run Type",
         "group" : "advanced",
-        "order" : 5
+        "order" : 6
+      },
+      "disable_type_dedupe" : {
+        "type" : "boolean",
+        "description" : "Write the legacy \"raw tables\" format, to enable backwards compatibility with older versions of this connector.",
+        "title" : "Legacy raw tables",
+        "group" : "advanced",
+        "order" : 7,
+        "default" : false
       },
       "raw_data_dataset" : {
         "type" : "string",
@@ -144,20 +162,15 @@
         "title" : "Legacy Raw Table Dataset Name",
         "group" : "advanced",
         "order" : 8
-      },
-      "disable_type_dedupe" : {
-        "type" : "boolean",
-        "description" : "Write the legacy \"raw tables\" format, for backwards compatibility with older versions of this connector.",
-        "title" : "Legacy raw tables mode",
-        "group" : "advanced",
-        "order" : 7,
-        "default" : false
       }
     },
     "required" : [ "project_id", "dataset_location", "dataset_id" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
+    }, {
+      "id" : "sync_behavior",
+      "title" : "Sync Behavior"
     }, {
       "id" : "advanced",
       "title" : "Advanced"
