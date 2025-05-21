@@ -27,9 +27,9 @@ class CustomExtractor(RecordExtractor):
                     data = relations.get("data", [])
 
                     if isinstance(data, dict):
-                        data = [data]
-
-                    relationships[f"{r_type}"] = [e.get("id") for e in data]
+                        relationships[f"{r_type}"] = data.get("id")
+                    else:
+                        relationships[f"{r_type}"] = [e.get("id") for e in data]
 
             extracted_record = {**element.get("attributes"), **{self.primary_key: element[self.primary_key], **relationships}}
             extracted_records.append(extracted_record)

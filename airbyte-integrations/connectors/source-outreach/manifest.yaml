@@ -991,11 +991,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       custom1:
         type:
           - "null"
@@ -1662,11 +1658,7 @@ schemas:
       owner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       prospects:
         type:
           - "null"
@@ -1788,11 +1780,7 @@ schemas:
       opportunity:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       outboundVoicemail:
         type:
           - "null"
@@ -1816,11 +1804,7 @@ schemas:
       prospect:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       recordingDeletionReason:
         type:
           - "null"
@@ -1907,11 +1891,7 @@ schemas:
       user:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       userCallType:
         type:
           - "null"
@@ -1945,11 +1925,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       defaultForOutboundVoicemail:
         type:
           - "null"
@@ -1994,11 +1970,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       id:
         type: integer
       name:
@@ -2178,11 +2150,7 @@ schemas:
       opportunity:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       optimizedScheduledAt:
         type:
           - "null"
@@ -2195,11 +2163,7 @@ schemas:
       prospect:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       recipients:
         type:
           - "null"
@@ -2250,27 +2214,15 @@ schemas:
       sequence:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       sequenceState:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       sequenceStep:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       state:
         type:
           - "null"
@@ -2287,11 +2239,7 @@ schemas:
       task:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       tasks:
         type:
           - "null"
@@ -2303,11 +2251,7 @@ schemas:
       template:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       trackLinks:
         type:
           - "null"
@@ -2329,11 +2273,7 @@ schemas:
       user:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
   mailboxes:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -2351,11 +2291,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       editable:
         type:
           - "null"
@@ -2581,11 +2517,7 @@ schemas:
       user:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       userId:
         type:
           - "null"
@@ -2606,11 +2538,7 @@ schemas:
       account:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       amount:
         type:
           - "null"
@@ -2640,11 +2568,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       currencyType:
         type:
           - "null"
@@ -3323,11 +3247,7 @@ schemas:
       owner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       primaryProspect:
         type:
           - "null"
@@ -3427,11 +3347,7 @@ schemas:
       account:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       accountName:
         type:
           - "null"
@@ -3587,11 +3503,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       custom1:
         type:
           - "null"
@@ -4457,11 +4369,7 @@ schemas:
       owner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       persona:
         type:
           - "null"
@@ -4708,11 +4616,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       deliverCount:
         type:
           - "null"
@@ -4797,11 +4701,7 @@ schemas:
       owner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       positiveReplyCount:
         type:
           - "null"
@@ -4936,11 +4836,7 @@ schemas:
       account:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       activeAt:
         type:
           - "null"
@@ -4991,11 +4887,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       deliverCount:
         type:
           - "null"
@@ -5041,11 +4933,7 @@ schemas:
       opportunity:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       optOutCount:
         type:
           - "null"
@@ -5061,11 +4949,7 @@ schemas:
       prospect:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       repliedAt:
         type:
           - "null"
@@ -5150,11 +5034,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       date:
         type:
           - "null"
@@ -5219,9 +5099,7 @@ schemas:
       sequence:
         type:
           - "null"
-          - array
-        items:
-          type: integer
+          - integer
       sequenceTemplates:
         type:
           - "null"
@@ -5288,11 +5166,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       id:
         type: integer
       name:
@@ -5302,11 +5176,7 @@ schemas:
       owner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       shareType:
         type:
           - "null"
@@ -5345,11 +5215,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       id:
         type: integer
       name:
@@ -5389,11 +5255,7 @@ schemas:
       account:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       action:
         type:
           - "null"
@@ -5448,11 +5310,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       defaultPluginMapping:
         type:
           - "null"
@@ -5487,11 +5345,7 @@ schemas:
       opportunity:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       opportunityAssociation:
         type:
           - "null"
@@ -5499,27 +5353,15 @@ schemas:
       owner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       prospect:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       prospectAccount:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       prospectContacts:
         type:
           - "null"
@@ -5528,14 +5370,10 @@ schemas:
           type:
             - "null"
             - integer
-      prospectOwner:
+      prospectowner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       prospectPhoneNumbers:
         type:
           - "null"
@@ -5543,11 +5381,7 @@ schemas:
       prospectStage:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       scheduledAt:
         type:
           - "null"
@@ -5625,27 +5459,15 @@ schemas:
       subject:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       taskPriority:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       taskTheme:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       taskType:
         type:
           - "null"
@@ -5717,11 +5539,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       deliverCount:
         type:
           - "null"
@@ -5760,11 +5578,7 @@ schemas:
       owner:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       positiveReplyCount:
         type:
           - "null"
@@ -5907,11 +5721,7 @@ schemas:
       creator:
         type:
           - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
+          - integer
       currentSignInAt:
         type:
           - "null"
