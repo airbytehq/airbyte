@@ -73,7 +73,13 @@ class DefaultObjectStorageFormattingWriterFactory(
                         as ParquetFormatConfiguration,
                     flatten
                 )
-            is CSVFormatConfiguration -> CSVFormattingWriter(stream, outputStream, flatten)
+            is CSVFormatConfiguration ->
+                CSVFormattingWriter(
+                    stream,
+                    outputStream,
+                    flatten,
+                    extractedAtAsTimestampWithTimezone = false
+                )
         }
     }
 }
@@ -107,7 +113,8 @@ class JsonFormattingWriter(
 class CSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
-    private val rootLevelFlattening: Boolean
+    private val rootLevelFlattening: Boolean,
+    private val extractedAtAsTimestampWithTimezone: Boolean,
 ) : ObjectStorageFormattingWriter {
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
@@ -116,7 +123,11 @@ class CSVFormattingWriter(
         printer.printRecord(
             record
                 .asDestinationRecordAirbyteValue()
-                .dataWithAirbyteMeta(stream, rootLevelFlattening)
+                .dataWithAirbyteMeta(
+                    stream,
+                    rootLevelFlattening,
+                    extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone
+                )
                 .toCsvRecord(finalSchema)
         )
     }

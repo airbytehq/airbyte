@@ -58,7 +58,7 @@ On the following screen you'll need to configure all parameters for your Okta ap
       <dd>You can control whether everyone in your Okta organization should be able to access Airbyte using their Okta account or limit it only to a subset of your users by selecting specific groups who should get access.</dd>
     </dl>
 
-    You'll need to pass your Airbyte contact the following information of the created application. After that we'll setup SSO for you and let you know once it's ready.
+    You'll need to **securely** share the following information from the newly created application with your Airbyte contact. After that we'll setup SSO for you and let you know once it's ready.
 
     * Your **Okta domain** (it's not specific to this application, see [Find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
     * **Client ID**

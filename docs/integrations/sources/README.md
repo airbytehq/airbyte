@@ -2,12 +2,6 @@ import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
 # Sources
 
-A source is an API, file, database, or data warehouse that you want to ingest data from.
-
-Read more about our [Connector Support Levels](/integrations/connector-support-levels) to understand what to expect from a connector.
-
-## Sources
+Source connectors connect to the APIs, file, databases, or data warehouses from which you want to pull data. Each connector has one of three support levels. Review [Connector support levels](../connector-support-levels) for details on each tier.
 
 <ConnectorRegistry type="source"/>
-
-_[View the connector registry in full](/integrations)_

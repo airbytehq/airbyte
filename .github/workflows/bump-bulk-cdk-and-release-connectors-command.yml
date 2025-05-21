@@ -1,4 +1,4 @@
-name: Bump Bulk CDK Version
+name: Bump Bulk CDK + Release Connectors
 on:
   workflow_dispatch:
     inputs:

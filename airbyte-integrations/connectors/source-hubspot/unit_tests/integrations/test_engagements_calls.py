@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import http
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import freezegun
 import mock
@@ -21,7 +21,7 @@ class TestEngagementCallsStream(HubspotTestCase):
     CURSOR_FIELD = "updatedAt"
     STREAM_NAME = "engagements_calls"
     OBJECT_TYPE = "calls"
-    ASSOCIATIONS = ["contacts", "deals", "companies", "tickets"]
+    ASSOCIATIONS = ["companies", "contacts", "deals", "tickets"]
 
     @property
     def response_builder(self):
@@ -53,20 +53,28 @@ class TestEngagementCallsStream(HubspotTestCase):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
         self.mock_scopes(http_mocker, self.ACCESS_TOKEN, self.SCOPES)
 
-    def _set_up_requests(self, http_mocker: HttpMocker, with_oauth: bool = False):
+    def _set_up_requests(
+        self, http_mocker: HttpMocker, with_oauth: bool = False, with_dynamic_schemas: bool = True, entities: Optional[List[str]] = None
+    ):
         if with_oauth:
             self._set_up_oauth(http_mocker)
         self.mock_custom_objects(http_mocker)
-        self.mock_properties(http_mocker, self.OBJECT_TYPE, self.PROPERTIES)
+        self.mock_properties(http_mocker, self.OBJECT_TYPE, self.MOCK_PROPERTIES_FOR_SCHEMA_LOADER)
+        if with_dynamic_schemas:
+            self.mock_dynamic_schema_requests(http_mocker, entities)
 
     @HttpMocker()
     def test_given_oauth_authentication_when_read_then_perform_authenticated_queries(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker, with_oauth=True)
+        self._set_up_requests(
+            http_mocker, with_oauth=True, with_dynamic_schemas=True, entities=["calls", "emails", "meetings", "notes", "tasks", "company"]
+        )
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
 
     @HttpMocker()
     def test_given_records_when_read_extract_desired_records(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker, with_oauth=True)
+        self._set_up_requests(
+            http_mocker, with_oauth=True, with_dynamic_schemas=True, entities=["calls", "emails", "meetings", "notes", "tasks", "company"]
+        )
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
         assert len(output.records) == 1
@@ -137,4 +145,4 @@ class TestEngagementCallsStream(HubspotTestCase):
         self._set_up_requests(http_mocker)
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.incremental)
-        assert len(output.state_messages) == 1
+        assert len(output.state_messages) == 2
