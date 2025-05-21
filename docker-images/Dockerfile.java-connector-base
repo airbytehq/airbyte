@@ -11,6 +11,14 @@ RUN sh -c set -o xtrace && \
     yum clean all && \
     rm -rf /var/cache/yum
 
+# Install flatbuffers compiler
+ADD https://github.com/google/flatbuffers/releases/latest/download/Linux.flatc.binary.g++-13.zip flatbuffers.zip
+RUN unzip flatbuffers.zip
+RUN mkdir flatbuffers && mv flatc flatbuffers/
+ENV PATH="/airbyte/flatbuffers:$PATH"
+RUN flatc --version
+RUN rm flatbuffers.zip
+
 # Set-up groups, users, and directories
 RUN groupadd --gid 1000 airbyte && \
     useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && \
