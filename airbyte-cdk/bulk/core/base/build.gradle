@@ -1,3 +1,86 @@
+import io.netifi.flatbuffers.plugin.tasks.FlatBuffers
+
+plugins {
+    id 'io.netifi.flatbuffers' version '1.0.7'
+}
+
+/* ------------------------------------------------------------
+ * 1.  pick a flatc version and the right OS classifier
+ * ---------------------------------------------------------- */
+ext.flatcVersion = '2.0.8'                          // last release on Central&#8203;:contentReference[oaicite:0]{index=0}
+
+def os  = org.gradle.internal.os.OperatingSystem.current()
+def cls = os.isMacOsX()   ? 'distribution-osx' :
+        os.isWindows()  ? 'distribution-windows' :
+                'distribution-linux'     // default → Linux
+
+/* ------------------------------------------------------------
+ * 2.  declare a detached configuration that holds the tar.gz
+ * ---------------------------------------------------------- */
+configurations {
+    flatc
+}
+
+dependencies {
+    // artifact = group : name           : version : classifier    @ extension
+    flatc "com.github.davidmoten:flatbuffers-compiler:${flatcVersion}:${cls}@tar.gz"
+}
+
+/* ------------------------------------------------------------
+ * 3.  unpack the compiler into build/flatc and make it executable
+ * ---------------------------------------------------------- */
+def flatcDir = "build/flatc"
+
+def unpackFlatc = tasks.register('unpackFlatc', Copy) {
+    from { tarTree(resources.gzip(configurations.flatc.singleFile)) }
+    into flatcDir
+    doLast {
+        if (!os.isWindows()) {
+            file("$flatcDir/bin/flatc").setExecutable(true)
+        }
+    }
+}
+
+/* ------------------------------------------------------------
+ * 4.  plug the downloaded binary into the FlatBuffers plugin
+ * ---------------------------------------------------------- */
+flatbuffers {
+    flatcPath = file("$flatcDir/bin/flatc").absolutePath
+    language  = 'java'            // or 'kotlin' if you prefer
+}
+
+/* ------------------------------------------------------------
+ * 5.  make your code‑gen task wait for the download
+ * ---------------------------------------------------------- */
+
+//flatbuffers {
+//    flatcPath = '/opt/homebrew/bin/flatc'
+//    language = 'java'
+//}
+
+def generateFbs = tasks.register('generateFbs', FlatBuffers) {
+    inputDir  = file('src/main/fbs')
+    outputDir = file("build/generated/fbs")
+    language  = 'java'                // or 'kotlin'
+}
+
+tasks.named('generateFbs') { dependsOn unpackFlatc }
+
+kotlin {
+    sourceSets {
+        main {
+            kotlin.srcDir generateFbs.map { it.outputDir }   // provider‑safe
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn generateFbs
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
 
 dependencies {
 
@@ -18,6 +101,7 @@ dependencies {
     api 'org.apache.mina:mina-core:2.0.27' // for fixing vulnerability of sshd-mina
     api 'org.apache.sshd:sshd-mina:2.13.2'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
+    api 'com.google.flatbuffers:flatbuffers-java:2.0.8'
 
     implementation 'com.datadoghq:dd-trace-api:1.39.0'
     implementation 'com.datadoghq:dd-trace-ot:1.39.0'
