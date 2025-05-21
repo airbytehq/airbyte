@@ -16,6 +16,7 @@ data class BigqueryConfiguration(
     val datasetId: String,
     val loadingMethod: LoadingMethodConfiguration,
     val credentialsJson: String?,
+    val cdcDeletionMode: CdcDeletionMode,
     val transformationPriority: TransformationPriority,
     val rawTableDataset: String,
     val legacyRawTablesOnly: Boolean,
@@ -54,6 +55,8 @@ class BigqueryConfigurationFactory :
             datasetId = pojo.datasetId,
             loadingMethodConfig,
             credentialsJson = pojo.credentialsJson,
+            // default to hard delete for backwards compatibility.
+            cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             pojo.transformationPriority ?: TransformationPriority.INTERACTIVE,
             rawTableDataset =
                 if (pojo.rawTableDataset.isNullOrBlank()) {
