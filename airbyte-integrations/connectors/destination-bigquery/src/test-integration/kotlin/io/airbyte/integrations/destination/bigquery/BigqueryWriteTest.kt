@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToU
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.SimpleValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -40,7 +41,7 @@ abstract class BigqueryWriteTest(
     expectedRecordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean,
     preserveUndeclaredFields: Boolean,
-    supportsDedup: Boolean,
+    dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
 ) :
@@ -51,7 +52,7 @@ abstract class BigqueryWriteTest(
         BigqueryDestinationCleaner,
         recordMangler = expectedRecordMapper,
         isStreamSchemaRetroactive = isStreamSchemaRetroactive,
-        supportsDedup = supportsDedup,
+        dedupBehavior = dedupBehavior,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -74,7 +75,7 @@ abstract class BigqueryRawTablesWriteTest(
         UncoercedExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
         preserveUndeclaredFields = true,
-        supportsDedup = false,
+        dedupBehavior = null,
         nullEqualsUnset = false,
         Untyped,
     )
@@ -89,7 +90,7 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
-        supportsDedup = true,
+        dedupBehavior = DedupBehavior(),
         nullEqualsUnset = true,
         StronglyTyped(
             convertAllValuesToString = true,

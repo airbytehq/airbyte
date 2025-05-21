@@ -460,7 +460,7 @@ def test_associations_extractor(config):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
-def test_extractor_supports_interpolation(config):
+def test_extractor_supports_entity_interpolation(config):
     parameters = {"entity": "engagements_emails"}
 
     extractor = HubspotAssociationsExtractor(
@@ -474,3 +474,29 @@ def test_extractor_supports_interpolation(config):
     entity = extractor._entity.eval(config=config)
 
     assert entity == "engagements_emails"
+
+
+@pytest.mark.parametrize(
+    "associations_list_value",
+    [
+        pytest.param(["contacts", "deals", "tickets"], id="test_static_associations"),
+        pytest.param("{{ parameters['associations'] }}", id="test_interpolated_associations"),
+    ],
+)
+def test_extractor_supports_associations_list_interpolation(config, associations_list_value):
+    extractor = HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="emails",
+        associations_list=associations_list_value,
+        config=config,
+        parameters={
+            "associations": ["contacts", "deals", "tickets"],
+        },
+    )
+
+    if isinstance(associations_list_value, str):
+        evaluated_associations_list = extractor._associations_list.eval(config=config)
+    else:
+        evaluated_associations_list = extractor._associations_list
+
+    assert evaluated_associations_list == ["contacts", "deals", "tickets"]
