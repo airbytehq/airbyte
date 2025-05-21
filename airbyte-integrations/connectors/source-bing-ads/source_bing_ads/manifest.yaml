@@ -111,7 +111,7 @@ definitions:
               stream:
                 $ref: "#/definitions/users_stream"
         - type: ListPartitionRouter
-          values: "{{ config['account_names'] if 'account_names' in config and config['account_names'] | length else ['invalid'] }}"
+          values: "{{ config['account_names'] if 'account_names' in config and config['account_names'] | length else [''] }}"
           cursor_field: account_name
       record_selector:
         type: RecordSelector
@@ -201,11 +201,11 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - AccountId
-            value: "{{ stream_partition['account_id'] }}"
+            value: "{{ stream_partition['account_id'][0] }}"
           - type: AddedFieldDefinition
             path:
               - CustomerId
-            value: "{{ stream_slice.extra_fields['ParentCustomerId'] }}"
+            value: "{{ stream_slice.extra_fields['ParentCustomerId'][0] }}"
           - type: AddedFieldDefinition
             path:
               - Languages
