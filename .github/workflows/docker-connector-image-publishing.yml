@@ -1,4 +1,4 @@
-name: Docker Connector Image Publishing (On-Demand)
+name: Docker Image Publishing (On-Demand)
 on:
   workflow_dispatch:
     inputs:
