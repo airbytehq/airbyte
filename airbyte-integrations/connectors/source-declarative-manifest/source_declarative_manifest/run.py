@@ -65,8 +65,8 @@ def handle_command(args: List[str]) -> None:
 
 def _get_local_yaml_source(args: List[str]) -> SourceLocalYaml:
     try:
-        config, catalog, state = _parse_inputs_into_config_catalog_state(args)
-        return SourceLocalYaml(config=config, catalog=catalog, state=state)
+        config, catalog, state, config_path = _parse_inputs_into_config_catalog_state(args)
+        return SourceLocalYaml(config=config, catalog=catalog, state=state, config_path=config_path)
     except Exception as error:
         print(
             orjson.dumps(
@@ -120,13 +120,17 @@ def create_declarative_source(args: List[str]) -> ConcurrentDeclarativeSource:
     connector builder.
     """
     try:
-        config, catalog, state = _parse_inputs_into_config_catalog_state(args)
+        config, catalog, state, config_path = _parse_inputs_into_config_catalog_state(args)
         if "__injected_declarative_manifest" not in config:
             raise ValueError(
                 f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
             )
         return ConcurrentDeclarativeSource(
-            config=config, catalog=catalog, state=state, source_config=config.get("__injected_declarative_manifest")
+            config=config,
+            catalog=catalog,
+            state=state,
+            source_config=config.get("__injected_declarative_manifest"),
+            config_path=config_path,
         )
     except Exception as error:
         print(
@@ -151,13 +155,14 @@ def create_declarative_source(args: List[str]) -> ConcurrentDeclarativeSource:
 
 def _parse_inputs_into_config_catalog_state(
     args: List[str],
-) -> (Optional[Mapping[str, Any]], Optional[ConfiguredAirbyteCatalog], List[AirbyteStateMessage]):
+) -> (Optional[Mapping[str, Any]], Optional[ConfiguredAirbyteCatalog], List[AirbyteStateMessage], Optional[str]):
     parsed_args = AirbyteEntrypoint.parse_args(args)
     config = ConcurrentDeclarativeSource.read_config(parsed_args.config) if hasattr(parsed_args, "config") else None
     catalog = ConcurrentDeclarativeSource.read_catalog(parsed_args.catalog) if hasattr(parsed_args, "catalog") else None
     state = ConcurrentDeclarativeSource.read_state(parsed_args.state) if hasattr(parsed_args, "state") else []
+    config_path = parsed_args.config_path if hasattr(parsed_args, "config_path") else None
 
-    return config, catalog, state
+    return config, catalog, state, config_path
 
 
 def run():
