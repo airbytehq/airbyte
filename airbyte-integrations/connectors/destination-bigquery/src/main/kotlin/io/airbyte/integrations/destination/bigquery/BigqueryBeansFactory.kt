@@ -112,7 +112,8 @@ class BigqueryBeansFactory {
                 names = names,
                 stateGatherer = BigqueryDirectLoadDatabaseInitialStatusGatherer(bigquery),
                 destinationHandler = destinationHandler,
-                nativeTableOperations = BigqueryDirectLoadNativeTableOperations(bigquery),
+                nativeTableOperations =
+                    BigqueryDirectLoadNativeTableOperations(bigquery, destinationHandler, config),
                 sqlTableOperations = sqlTableOperations,
                 streamStateStore =
                     streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>,
