@@ -107,19 +107,48 @@ def test_dpath_schema_extractor(body, expected_records: List):
 
 
 @pytest.mark.parametrize(
-    "raw_schema_data, expected_data",
+    "raw_schema_data, expected_data, names_conversion, experimental_names_conversion",
     [
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h2"}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"}), (1, "h2", {"formattedValue": "h2"}), (2, "h3", {"formattedValue": "h3"})],
+            False,
+            False,
         ),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]}, [(2, "h3", {"formattedValue": "h3"})]),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
-        ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, []),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]},
+            [(2, "h3", {"formattedValue": "h3"})],
+            False,
+            False,
+        ),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"})],
+            False,
+            False,
+        ),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"})],
+            False,
+            False,
+        ),
+        ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, [], False, False),
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"})],
+            False,
+            False,
+        ),
+        (
+            {"values": [{"formattedValue": "AMPED Domain "}, {"formattedValue": "50th Percentile"}, {"formattedValue": "Normal Header"}]},
+            [
+                (0, "amped_domain", {"formattedValue": "AMPED Domain "}),
+                (1, "50th_percentile", {"formattedValue": "50th Percentile"}),
+                (2, "normal_header", {"formattedValue": "Normal Header"}),
+            ],
+            False,
+            True,
         ),
     ],
     ids=[
@@ -129,15 +158,18 @@ def test_dpath_schema_extractor(body, expected_records: List):
         "test_blank_values_terminate_row",
         "test_is_row_empty_with_empty_row",
         "test_whitespace_terminates_row",
+        "test_experimental_names_conversion",
     ],
 )
-def test_parse_raw_schema_value(raw_schema_data, expected_data):
+def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion, experimental_names_conversion):
     extractor = RawSchemaParser()
+    extractor.config = {"names_conversion": names_conversion, "experimental_names_conversion": experimental_names_conversion}
     parsed_data = extractor.parse_raw_schema_values(
         raw_schema_data,
         schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
         key_pointer=_SCHEMA_TYPE_IDENTIFIERS["key_pointer"],
-        names_conversion=False,
+        names_conversion=names_conversion,
+        experimental_names_conversion=experimental_names_conversion,
     )
     assert parsed_data == expected_data
 

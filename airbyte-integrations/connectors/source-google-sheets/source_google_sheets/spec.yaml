@@ -33,6 +33,14 @@ connectionSpecification:
       title: Convert Column Names to SQL-Compliant Format
       description: Enables the conversion of column names to a standardized, SQL-compliant format. For example, 'My Name' -> 'my_name'. Enable this option if your destination is SQL-based.
       default: false
+    experimental_names_conversion:
+      type: boolean
+      title: Experimental Convert Column Names to SQL-Compliant Format
+      description: >-
+        Adds additional sanitization to column names before converting to SQL-compliant format, such as removing leading and trailing spaces.
+        This option may change behavior in the future, which may cause column names to update in your destination on future updates.
+        Due to this, it is recommended that you also change the "Detect and propagate schema changes" to "Approve all changes myself" in the connection advances settings.
+        If enabled, this option will supersede the `Convert Column Names to SQL-Compliant Format` option.
     credentials:
       type: object
       title: Authentication

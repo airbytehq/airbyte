@@ -37,10 +37,55 @@ def name_conversion(text: str) -> str:
     return text
 
 
+def experimental_name_conversion(text: str) -> str:
+    """
+    Convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
+    Removes leading/trailing spaces and combines number-word pairs (e.g., '50th' -> '50th').
+    """
+    text = unidecode.unidecode(text.strip())  # Strip leading/trailing spaces
+
+    tokens = []
+    for m in TOKEN_PATTERN.finditer(text):
+        if m.group("NoToken") is None:
+            tokens.append(m.group(0))
+        else:
+            tokens.append("")
+
+    # Combine number followed by word (e.g., "50" and "th" -> "50th")
+    combined_tokens = []
+    i = 0
+    while i < len(tokens):
+        if i + 1 < len(tokens) and tokens[i].isdigit() and tokens[i + 1].isalpha():
+            combined_tokens.append(tokens[i] + tokens[i + 1])
+            i += 2
+        else:
+            combined_tokens.append(tokens[i])
+            i += 1
+
+    if len(combined_tokens) >= 3:
+        combined_tokens = combined_tokens[:1] + [t for t in combined_tokens[1:-1] if t] + combined_tokens[-1:]
+
+    if combined_tokens and combined_tokens[0].isdigit():
+        combined_tokens.insert(0, "")
+
+    text = DEFAULT_SEPARATOR.join(combined_tokens)
+    text = text.lower()
+    return text
+
+
 def safe_name_conversion(text: str) -> str:
     if not text:
         return text
     new = name_conversion(text)
+    if not new:
+        raise Exception(f"initial string '{text}' converted to empty")
+    return new
+
+
+def experimental_safe_name_conversion(text: str) -> str:
+    if not text:
+        return text
+    new = experimental_name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
     return new
