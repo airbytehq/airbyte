@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -202,10 +203,23 @@ enum class UnknownTypesBehavior {
     FAIL,
 }
 
-// eventually we'll put some parameters in here (e.g. CDC deletes as soft vs hard delete)
-// and should switch it to a data class.
-// but for now, that would be a compiler error, so just use a normal class.
-class DedupBehavior
+data class DedupBehavior(
+    val cdcDeletionMode: CdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+) {
+    enum class CdcDeletionMode {
+        /**
+         * CDC deletions are actual deletions; we completely drop the record from the destination.
+         */
+        HARD_DELETE,
+
+        /**
+         * CDC deletions are represented by simply upserting the deletion record to the destination.
+         * This behavior is source-dependent, but typically results in nulling out all fields except
+         * for the primary key(s), cursor, and any `_ab_cdc_*` fields.
+         */
+        SOFT_DELETE,
+    }
+}
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
@@ -248,6 +262,15 @@ abstract class BasicFunctionalityIntegrationTest(
      * would set this parameter to `true`.
      */
     val commitDataIncrementally: Boolean,
+    /**
+     * The same concept as [commitDataIncrementally], but specifically describes how the connector
+     * behaves when the destination contains no data at the start of the sync. Some destinations
+     * commit incrementally during such an "initial" truncate refresh, then switch to committing
+     * non-incrementally for subsequent truncates.
+     *
+     * (warehouse destinations with direct-load tables should set this to true).
+     */
+    val commitDataIncrementallyToEmptyDestination: Boolean = commitDataIncrementally,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset: Boolean = false,
@@ -1111,7 +1134,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         dumpAndDiffRecords(
             parsedConfig,
-            if (commitDataIncrementally) {
+            if (commitDataIncrementallyToEmptyDestination) {
                 listOf(
                     makeOutputRecord(
                         id = 1,
@@ -1612,8 +1635,10 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
-    @Test
-    open fun testDedup() {
+    private fun baseTestDedup(
+        idType: AirbyteType,
+        idValue: Any?,
+    ) {
         assumeTrue(verifyDataWriting)
         assumeTrue(dedupBehavior != null)
         fun makeStream(syncId: Long) =
@@ -1628,7 +1653,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     ObjectType(
                         properties =
                             linkedMapOf(
-                                "id1" to intType,
+                                "id1" to FieldType(idType, nullable = false),
                                 "id2" to intType,
                                 "updated_at" to timestamptzType,
                                 "name" to stringType,
@@ -1657,18 +1682,18 @@ abstract class BasicFunctionalityIntegrationTest(
                 // but that's OK because (from destinations POV) updated_at has no relation to
                 // extractedAt.
                 makeRecord(
-                    """{"id1": 1, "id2": 200, "updated_at": "2000-01-01T00:00:00Z", "name": "Alice1", "_ab_cdc_deleted_at": null}""",
+                    """{"id1": ${idValue.serializeToString()}, "id2": 200, "updated_at": "2000-01-01T00:00:00Z", "name": "Alice1", "_ab_cdc_deleted_at": null}""",
                     extractedAt = 1000,
                 ),
                 // Emit a second record for id=(1,200) with a different updated_at.
                 makeRecord(
-                    """{"id1": 1, "id2": 200, "updated_at": "2000-01-01T00:01:00Z", "name": "Alice2", "_ab_cdc_deleted_at": null}""",
+                    """{"id1": ${idValue.serializeToString()}, "id2": 200, "updated_at": "2000-01-01T00:01:00Z", "name": "Alice2", "_ab_cdc_deleted_at": null}""",
                     extractedAt = 1000,
                 ),
                 // Emit a record with no _ab_cdc_deleted_at field. CDC sources typically emit an
                 // explicit null, but we should handle both cases.
                 makeRecord(
-                    """{"id1": 1, "id2": 201, "updated_at": "2000-01-01T00:02:00Z", "name": "Bob1"}""",
+                    """{"id1": ${idValue.serializeToString()}, "id2": 201, "updated_at": "2000-01-01T00:02:00Z", "name": "Bob1"}""",
                     extractedAt = 1000,
                 ),
             ),
@@ -1682,7 +1707,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 42,
                     data =
                         mapOf(
-                            "id1" to 1,
+                            "id1" to idValue,
                             "id2" to 200,
                             "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
                             "name" to "Alice2",
@@ -1695,7 +1720,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 42,
                     data =
                         mapOf(
-                            "id1" to 1,
+                            "id1" to idValue,
                             "id2" to 201,
                             "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
                             "name" to "Bob1"
@@ -1715,32 +1740,101 @@ abstract class BasicFunctionalityIntegrationTest(
             listOf(
                 // Update both Alice and Bob
                 makeRecord(
-                    """{"id1": 1, "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "name": "Alice3", "_ab_cdc_deleted_at": null}""",
+                    """{"id1": ${idValue.serializeToString()}, "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "name": "Alice3", "_ab_cdc_deleted_at": null}""",
                     extractedAt = 2000,
                 ),
                 makeRecord(
-                    """{"id1": 1, "id2": 201, "updated_at": "2000-01-02T00:00:00Z", "name": "Bob2"}""",
+                    """{"id1": ${idValue.serializeToString()}, "id2": 201, "updated_at": "2000-01-02T00:00:00Z", "name": "Bob2"}""",
                     extractedAt = 2000,
                 ),
                 // And delete Bob. Again, T+D doesn't check the actual _value_ of deleted_at (i.e.
                 // the fact that it's in the past is irrelevant). It only cares whether deleted_at
                 // is non-null. So the destination should delete Bob.
                 makeRecord(
-                    """{"id1": 1, "id2": 201, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
+                    """{"id1": ${idValue.serializeToString()}, "id2": 201, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
+                    extractedAt = 2000,
+                ),
+                // insert + delete Charlie within a single sync.
+                makeRecord(
+                    """{"id1": ${idValue.serializeToString()}, "id2": 202, "updated_at": "2000-01-02T00:00:00Z", "name": "Charlie1"}""",
+                    extractedAt = 2000,
+                ),
+                makeRecord(
+                    """{"id1": ${idValue.serializeToString()}, "id2": 202, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
+                    extractedAt = 2000,
+                ),
+                // delete some nonexistent record - this is incoherent, but we should behave
+                // reasonably.
+                makeRecord(
+                    """{"id1": ${idValue.serializeToString()}, "id2": 203, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
                     extractedAt = 2000,
                 ),
             ),
         )
+        val deletedRecords =
+            when (dedupBehavior!!.cdcDeletionMode) {
+                // in hard deletes mode, we drop Bob
+                DedupBehavior.CdcDeletionMode.HARD_DELETE -> emptyList()
+                // in soft deletes mode, we just take the deletion record wholesale.
+                // note that we just upsert the record directly, without retaining any previous
+                // values. I.e. the `name` field is null, because the final records have null name.
+                DedupBehavior.CdcDeletionMode.SOFT_DELETE ->
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 2000,
+                            generationId = 42,
+                            data =
+                                mapOf(
+                                    "id1" to idValue,
+                                    "id2" to 201,
+                                    "updated_at" to
+                                        TimestampWithTimezoneValue("2000-01-02T00:01:00Z"),
+                                    "_ab_cdc_deleted_at" to
+                                        TimestampWithTimezoneValue("1970-01-01T00:00:00Z"),
+                                ),
+                            airbyteMeta = OutputRecord.Meta(syncId = 43),
+                        ),
+                        OutputRecord(
+                            extractedAt = 2000,
+                            generationId = 42,
+                            data =
+                                mapOf(
+                                    "id1" to idValue,
+                                    "id2" to 202,
+                                    "updated_at" to
+                                        TimestampWithTimezoneValue("2000-01-02T00:01:00Z"),
+                                    "_ab_cdc_deleted_at" to
+                                        TimestampWithTimezoneValue("1970-01-01T00:00:00Z"),
+                                ),
+                            airbyteMeta = OutputRecord.Meta(syncId = 43),
+                        ),
+                        OutputRecord(
+                            extractedAt = 2000,
+                            generationId = 42,
+                            data =
+                                mapOf(
+                                    "id1" to idValue,
+                                    "id2" to 203,
+                                    "updated_at" to
+                                        TimestampWithTimezoneValue("2000-01-02T00:01:00Z"),
+                                    "_ab_cdc_deleted_at" to
+                                        TimestampWithTimezoneValue("1970-01-01T00:00:00Z"),
+                                ),
+                            airbyteMeta = OutputRecord.Meta(syncId = 43),
+                        ),
+                    )
+            }
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
-                // Alice still exists (and has been updated to the latest version), but Bob is gone
+                // Alice still exists (and has been updated to the latest version), and Bob is
+                // deleted.
                 OutputRecord(
                     extractedAt = 2000,
                     generationId = 42,
                     data =
                         mapOf(
-                            "id1" to 1,
+                            "id1" to idValue,
                             "id2" to 200,
                             "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
                             "name" to "Alice3",
@@ -1748,7 +1842,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 )
-            ),
+            ) + deletedRecords,
             sync2Stream,
             primaryKey = listOf(listOf("id1"), listOf("id2")),
             cursor = listOf("updated_at"),
@@ -1756,146 +1850,13 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
+    open fun testDedup() {
+        baseTestDedup(IntegerType, idValue = 1)
+    }
+
+    @Test
     open fun testDedupWithStringKey() {
-        assumeTrue(verifyDataWriting)
-        assumeTrue(dedupBehavior != null)
-        fun makeStream(syncId: Long) =
-            DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                importType =
-                    Dedupe(
-                        primaryKey = listOf(listOf("id1"), listOf("id2")),
-                        cursor = listOf("updated_at"),
-                    ),
-                schema =
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "id1" to stringType,
-                                "id2" to intType,
-                                "updated_at" to timestamptzType,
-                                "name" to stringType,
-                                "_ab_cdc_deleted_at" to timestamptzType,
-                            )
-                    ),
-                generationId = 42,
-                minimumGenerationId = 0,
-                syncId = syncId,
-            )
-        fun makeRecord(data: String, extractedAt: Long) =
-            InputRecord(
-                randomizedNamespace,
-                "test_stream",
-                data,
-                emittedAtMs = extractedAt,
-            )
-
-        val sync1Stream = makeStream(syncId = 42)
-        runSync(
-            updatedConfig,
-            sync1Stream,
-            listOf(
-                // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
-                // This obviously makes no sense in relation to updated_at being in the year 2000,
-                // but that's OK because (from destinations POV) updated_at has no relation to
-                // extractedAt.
-                makeRecord(
-                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:00:00Z", "name": "Alice1", "_ab_cdc_deleted_at": null}""",
-                    extractedAt = 1000,
-                ),
-                // Emit a second record for id=(1,200) with a different updated_at.
-                makeRecord(
-                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:01:00Z", "name": "Alice2", "_ab_cdc_deleted_at": null}""",
-                    extractedAt = 1000,
-                ),
-                // Emit a record with no _ab_cdc_deleted_at field. CDC sources typically emit an
-                // explicit null, but we should handle both cases.
-                makeRecord(
-                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-01T00:02:00Z", "name": "Bob1"}""",
-                    extractedAt = 1000,
-                ),
-            ),
-        )
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                // Alice has only the newer record, and Bob also exists
-                OutputRecord(
-                    extractedAt = 1000,
-                    generationId = 42,
-                    data =
-                        mapOf(
-                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
-                            "id2" to 200,
-                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
-                            "name" to "Alice2",
-                            "_ab_cdc_deleted_at" to null
-                        ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
-                ),
-                OutputRecord(
-                    extractedAt = 1000,
-                    generationId = 42,
-                    data =
-                        mapOf(
-                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
-                            "id2" to 201,
-                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
-                            "name" to "Bob1"
-                        ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
-                ),
-            ),
-            sync1Stream,
-            primaryKey = listOf(listOf("id1"), listOf("id2")),
-            cursor = listOf("updated_at"),
-        )
-
-        val sync2Stream = makeStream(syncId = 43)
-        runSync(
-            updatedConfig,
-            sync2Stream,
-            listOf(
-                // Update both Alice and Bob
-                makeRecord(
-                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "name": "Alice3", "_ab_cdc_deleted_at": null}""",
-                    extractedAt = 2000,
-                ),
-                makeRecord(
-                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:00:00Z", "name": "Bob2"}""",
-                    extractedAt = 2000,
-                ),
-                // And delete Bob. Again, T+D doesn't check the actual _value_ of deleted_at (i.e.
-                // the fact that it's in the past is irrelevant). It only cares whether deleted_at
-                // is non-null. So the destination should delete Bob.
-                makeRecord(
-                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
-                    extractedAt = 2000,
-                ),
-            ),
-        )
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                // Alice still exists (and has been updated to the latest version), but Bob is gone
-                OutputRecord(
-                    extractedAt = 2000,
-                    generationId = 42,
-                    data =
-                        mapOf(
-                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
-                            "id2" to 200,
-                            "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
-                            "name" to "Alice3",
-                            "_ab_cdc_deleted_at" to null
-                        ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 43),
-                )
-            ),
-            sync2Stream,
-            primaryKey = listOf(listOf("id1"), listOf("id2")),
-            cursor = listOf("updated_at"),
-        )
+        baseTestDedup(StringType, idValue = "9cf974de-52cf-4194-9f3d-7efa76ba4d84")
     }
 
     @Test
