@@ -24,7 +24,7 @@ class BigqueryDirectLoadDatabaseInitialStatusGatherer(private val bigquery: BigQ
     override suspend fun gatherInitialStatus(
         streams: TableCatalog,
     ): Map<DestinationStream, DirectLoadInitialStatus> {
-        val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>()
+        val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(streams.size)
         coroutineScope {
             streams.forEach { (stream, tableNameInfo) ->
                 launch {
