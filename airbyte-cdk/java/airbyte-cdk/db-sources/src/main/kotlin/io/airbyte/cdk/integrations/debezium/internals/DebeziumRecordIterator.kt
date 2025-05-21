@@ -291,7 +291,7 @@ class DebeziumRecordIterator<T>(
             LOGGER.info {
                 "Heartbeat timestamp still null. Time elapsed since first null: $elapsedSinceNull"
             }
-            return elapsedSinceNull > firstRecordWaitTime
+            return elapsedSinceNull.compareTo(firstRecordWaitTime) > 0
         }
 
         val timeElapsedSinceLastHeartbeatTs =
