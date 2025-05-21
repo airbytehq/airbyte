@@ -114,9 +114,7 @@ jobs:
       - name: Install system dependencies
         if: matrix.connector
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            flatbuffers-compiler
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends flatbuffers-compiler && sudo rm -rf /var/lib/apt/lists/*
 
       # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
       - name: Set up Python (For Airbyte-CI)
