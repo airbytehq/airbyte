@@ -109,3 +109,37 @@ interface TypingDedupingSqlGenerator {
         return Sql.concat(createTempTable, clearLoadedAt)
     }
 }
+
+/**
+ * We are switching all destinations away from T+D, to use direct-load tables instead. However, some
+ * destinations will continue to provide a "legacy raw tables" mode, which writes the raw table
+ * format of T+D, but with the actual T+D disabled.
+ *
+ * This sqlgenerator supports that, by simply doing nothing.
+ */
+object NoopTypingDedupingSqlGenerator : TypingDedupingSqlGenerator {
+    override fun createFinalTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        finalTableSuffix: String,
+        replace: Boolean
+    ) = Sql.empty()
+
+    override fun updateFinalTable(
+        stream: DestinationStream,
+        tableNames: TableNames,
+        columnNameMapping: ColumnNameMapping,
+        finalTableSuffix: String,
+        maxProcessedTimestamp: Instant?,
+        useExpensiveSaferCasting: Boolean
+    ) = Sql.empty()
+
+    override fun overwriteFinalTable(
+        stream: DestinationStream,
+        finalTableName: TableName,
+        finalTableSuffix: String
+    ) = Sql.empty()
+
+    override fun clearLoadedAt(stream: DestinationStream, rawTableName: TableName) = Sql.empty()
+}
