@@ -5359,7 +5359,7 @@ schemas:
           description: Contact data
           type:
             - "null"
-            - integer
+            - string
       companies:
         description: Companies associated with the ticket
         type:
