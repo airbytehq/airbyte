@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
@@ -161,11 +162,12 @@ class DataChannelBeanFactory {
     fun stdioHeartbeatTask(
         @Named("_pipelineInputQueue")
         pipelineInputQueue: PartitionedQueue<PipelineInputEvent>? = null,
-        config: DestinationConfiguration
+        config: DestinationConfiguration,
+        checkpointManager: CheckpointManager<*>,
     ): HeartbeatTask {
         check(pipelineInputQueue != null) {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."
         }
-        return HeartbeatTask(config, pipelineInputQueue)
+        return HeartbeatTask(config, pipelineInputQueue, checkpointManager)
     }
 }
