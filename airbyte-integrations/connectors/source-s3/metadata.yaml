@@ -6,7 +6,7 @@ data:
     hosts:
       - "*.s3.amazonaws.com"
   connectorBuildOptions:
-    baseImage: ghcr.io/airbytehq/python-connector-base:draft-pr-60820@sha256:8deec9986b9502e1d93e4b88a20fab5c2e525e9658e16d222d7a7a329d1dafd4
+    baseImage: airbyte/python-connector-base:4.0.1@sha256:111cbcb26795adcd42b03c3f29c8b6b7adbbfcb5c5192a520d9b8d399a976b22
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
