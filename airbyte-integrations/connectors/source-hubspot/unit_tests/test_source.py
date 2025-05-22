@@ -30,10 +30,14 @@ def time_sleep_mock(mocker):
 
 def test_check_connection_ok(requests_mock, config):
     responses = [
-        {"json": [], "status_code": 200},
+        {
+            "json": [{"name": "hs__migration_soft_delete", "type": "enumeration",}],
+            "status_code": 200
+        },
     ]
 
-    requests_mock.register_uri("GET", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", responses)
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", {})
     ok, error_msg = get_source(config).check_connection(logger, config=config)
 
     assert ok
@@ -64,10 +68,9 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
     assert error_msg
 
 
-def test_streams(requests_mock, config):
+def test_streams(config):
     streams = get_source(config).streams(config)
-    # TODO: fix when all streams are low code
-    assert len(streams) == 28
+    assert len(streams) == 32
 
 # TODO: uncomment when custom streams are low code
 # def test_custom_streams(config_experimental):
@@ -88,12 +91,19 @@ def test_check_credential_title_exception(config):
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     """Error once, check that we retry and not fail"""
+    prop_response = [
+        {
+            "json": [{"name": "hs__migration_soft_delete", "type": "enumeration",}],
+            "status_code": 200
+        }
+    ]
     responses = [
         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
         {"json": [], "status_code": 200},
     ]
 
-    requests_mock.register_uri("GET", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", responses)
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", responses)
     source = get_source(config)
     alive, error = source.check_connection(logger=logger, config=config)
 
@@ -103,11 +113,18 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
 
 def test_check_connection_backoff_on_server_error(requests_mock, config):
     """Error once, check that we retry and not fail"""
+    prop_response = [
+        {
+            "json": [{"name": "hs__migration_soft_delete", "type": "enumeration",}],
+            "status_code": 200
+        }
+    ]
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
-    requests_mock.register_uri("GET", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", responses)
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", responses)
     source = get_source(config)
     alive, error = source.check_connection(logger=logger, config=config)
 
@@ -277,41 +294,6 @@ class TestSplittingPropertiesFunctionality:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
-
-    # TODO: uncomment when deals is low code
-    # def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
-    #     """
-    #     Check working stream `workflows` with large list of properties using new functionality with splitting properties
-    #     """
-    #
-    #     parsed_properties = list(APIv3Property(fake_properties_list).split())
-    #     self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
-    #
-    #     test_stream = Deals(**common_params)
-    #
-    #     ids_list = ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
-    #     for property_slice in parsed_properties:
-    #         record_responses = [
-    #             {
-    #                 "json": {
-    #                     "results": [
-    #                         {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
-    #                         for id in ids_list
-    #                     ],
-    #                     "paging": {},
-    #                 },
-    #                 "status_code": 200,
-    #             }
-    #         ]
-    #         test_stream._sync_mode = SyncMode.full_refresh
-    #         prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
-    #         requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
-    #         test_stream._sync_mode = None
-    #         ids_list.append("1092593513")
-    #
-    #     stream_records = read_full_refresh(test_stream)
-    #
-    #     assert len(stream_records) == 6
 
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     requests_mock, config, fake_properties_list, mock_dynamic_schema_requests

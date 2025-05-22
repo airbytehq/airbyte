@@ -12,6 +12,8 @@ from .utils import read_full_refresh
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read, discover
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
+from .utils import read_incremental
 
 
 def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properties_list, custom_object_schema):
@@ -45,13 +47,13 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
     "stream_class, endpoint, cursor_value",
     [
         ("campaigns", "campaigns", {"lastUpdatedTime": 1675121674226}),
-        # (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("companies", "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("contact_lists", "contact", {"createdAt": "2021-02-25T16:43:11Z", "updatedAt": "2022-02-25T16:43:11Z"}),
-        # (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         ("deal_pipelines", "deal", {"updatedAt": 1675121674226}),
-        # (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deal_splits", "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_events", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("email_subscriptions", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("engagements_calls", "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -62,14 +64,14 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
         ("forms", "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("form_submissions", "form", {"updatedAt": 1675121674227}),
         ("goals", "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        # (Leads, "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("leads", "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("line_items", "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("marketing_emails", "", {"updated": "1634050455543"}),
         ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("products", "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("ticket_pipelines", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        # (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("tickets", "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("workflows", "", {"updatedAt": 1675121674226}),
     ],
 )
@@ -167,13 +169,13 @@ def test_streams_read(
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value",
     [
-        # (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        # (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("contacts", "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("deals", "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("deals_archived", "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
     ],
     ids=[
-        # "Contacts stream with v2 field transformations",
-        # "Deals stream with v2 field transformations",
+        "Contacts stream with v2 field transformations",
+        "Deals stream with v2 field transformations",
         "DealsArchived stream with v2 field transformations",
     ],
 )
@@ -221,7 +223,7 @@ def test_stream_read_with_legacy_field_transformation(
     stream._sync_mode = SyncMode.full_refresh
 
     if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
     else:
         stream_url = stream.url
     requests_mock.register_uri("GET", stream_url, responses)
@@ -249,64 +251,72 @@ def test_stream_read_with_legacy_field_transformation(
         "properties_hs_time_in_prospect": "1 month",
         "properties_hs_date_exited_prospect": "2024-02-01T00:00:00Z",
     } | cursor_value
-    # if isinstance(stream, Contacts):
-    #     expected_record = expected_record | {"properties_hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
-    #     expected_record["properties"] = expected_record["properties"] | {"hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
-    # else:
-    expected_record = expected_record | {"properties_hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
-    expected_record["properties"] = expected_record["properties"] | {"hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
+    if stream_class == "contacts":
+        expected_record = expected_record | {"properties_hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
+        expected_record["properties"] = expected_record["properties"] | {"hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
+    else:
+        expected_record = expected_record | {"properties_hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
+        expected_record["properties"] = expected_record["properties"] | {"hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
     record = records[0].data if isinstance(records[0], Record) else records[0]
     assert json.dumps(record, sort_keys=True) == json.dumps(expected_record, sort_keys=True)
 
-# TODO: uncomment when deal splits is low code
-# @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
-# def test_crm_search_streams_with_no_associations(sync_mode, common_params, requests_mock, fake_properties_list):
-#     stream = DealSplits(**common_params)
-#     stream_state = {
-#         "type": "STREAM",
-#         "stream": {"stream_descriptor": {"name": "deal_splits"}, "stream_state": {"updatedAt": "2021-01-01T00:00:00.000000Z"}},
-#     }
-#     cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
-#     responses = [
-#         {
-#             "json": {
-#                 stream.data_field: [
-#                     {
-#                         "id": "test_id",
-#                         "created": "2022-02-25T16:43:11Z",
-#                     }
-#                     | cursor_value
-#                 ],
-#             }
-#         }
-#     ]
-#     if sync_mode == SyncMode.full_refresh:
-#         stream.set_sync(SyncMode.full_refresh, stream_state=None)
-#         endpoint_path = f"/crm/v3/objects/{stream.entity}"
-#         requests_mock.register_uri("GET", endpoint_path, responses)
-#     else:
-#         stream.set_sync(SyncMode.incremental, stream_state)
-#         endpoint_path = f"/crm/v3/objects/{stream.entity}/search"
-#         requests_mock.register_uri("POST", endpoint_path, responses)
-#     properties_path = f"/properties/v2/{stream.entity}/properties"
-#     properties_response = [
-#         {
-#             "json": [
-#                 {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-#                 for property_name in fake_properties_list
-#             ],
-#             "status_code": 200,
-#         }
-#     ]
-#     stream._sync_mode = sync_mode
-#     requests_mock.register_uri("POST", endpoint_path, responses)
-#     requests_mock.register_uri("GET", properties_path, properties_response)
-#     if sync_mode == SyncMode.incremental:
-#         records, state = read_incremental(stream, stream_state=stream_state)
-#         assert state
-#     else:
-#         records = read_full_refresh(stream)
-#     assert records
+
+@pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+def test_crm_search_streams_with_no_associations(
+    sync_mode, requests_mock, fake_properties_list, config
+):
+    stream_state = AirbyteStateMessage(
+        type=AirbyteStateType.STREAM,
+        stream=AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name="deal_splits"), stream_state=AirbyteStateBlob(updatedAt="2021-01-01T00:00:00.000000Z")
+        ),
+    )
+
+    if sync_mode == SyncMode.incremental:
+        stream = find_stream("deal_splits", config, [stream_state])
+    else:
+        stream = find_stream("deal_splits", config)
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
+
+    cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
+    responses = [
+        {
+            "json": {
+                data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-02-25T16:43:11Z",
+                    }
+                    | cursor_value
+                ],
+            }
+        }
+    ]
+    if sync_mode == SyncMode.full_refresh:
+        endpoint_path = "/crm/v3/objects/deal_split"
+        requests_mock.register_uri("GET", endpoint_path, responses)
+    else:
+        endpoint_path = "/crm/v3/objects/deal_split/search"
+        requests_mock.register_uri("POST", endpoint_path, responses)
+    properties_path = f"/properties/v2/deal_split/properties"
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    stream._sync_mode = sync_mode
+    requests_mock.register_uri("POST", endpoint_path, responses)
+    requests_mock.register_uri("GET", properties_path, properties_response)
+    if sync_mode == SyncMode.incremental:
+        records, state = read_incremental(stream, stream_state=stream_state.stream.stream_state.__dict__)
+        assert state
+    else:
+        records = read_full_refresh(stream)
+    assert records
 
 
 @pytest.mark.parametrize(
@@ -330,7 +340,10 @@ def test_common_error_retry(error_response, requests_mock, config, fake_properti
             "status_code": 200,
         },
     ]
-    data_field = "results"
+
+    stream = find_stream("companies", config)
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
+
     response = {
         data_field: [
             {
@@ -342,11 +355,15 @@ def test_common_error_retry(error_response, requests_mock, config, fake_properti
         ],
     }
     requests_mock.register_uri("GET", "/properties/v2/company/properties", responses)
+    stream._sync_mode = SyncMode.full_refresh
+    stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
+    stream._sync_mode = None
+    requests_mock.register_uri("GET", stream_url, [{"json": response}])
+    records = read_full_refresh(stream)
 
-    requests_mock.register_uri("GET", "https://api.hubapi.com/crm/v3/objects/company", [{"json": response}])
-    records = read_from_stream(config, "companies", SyncMode.full_refresh)
-
-    assert [response[data_field][0]] == [r.record.data for r in records.records]
+    expected_record = response[data_field][0]
+    record = records[0].data if isinstance(records[0], Record) else records[0]
+    assert json.dumps(record, sort_keys=True) == json.dumps(expected_record, sort_keys=True)
     assert len(requests_mock.request_history) > 1
 
 
@@ -507,80 +524,93 @@ def test_cast_record_fields_with_schema_if_needed(
     for casted_key, casted_value in expected_casted_data.items():
         assert record[casted_key] == casted_value
 
-# TODO: Uncomment when Deals is low code
-# @pytest.mark.parametrize(
-#     "stream, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
-#     [
-#         (
-#             Deals,
-#             "deal",
-#             {"updatedAt": "2022-02-25T16:43:11Z"},
-#             [("hs_closed_amount", "string")],
-#             {"hs_closed_amount": 123456},
-#             {"hs_closed_amount": "123456"},
-#         ),
-#         (
-#             Deals,
-#             "deal",
-#             {"updatedAt": "2022-02-25T16:43:11Z"},
-#             [("hs_closed_amount", "integer")],
-#             {"hs_closed_amount": "123456"},
-#             {"hs_closed_amount": 123456},
-#         ),
-#         (
-#             Deals,
-#             "deal",
-#             {"updatedAt": "2022-02-25T16:43:11Z"},
-#             [("hs_closed_amount", "number")],
-#             {"hs_closed_amount": "123456.10"},
-#             {"hs_closed_amount": 123456.10},
-#         ),
-#         (
-#             Deals,
-#             "deal",
-#             {"updatedAt": "2022-02-25T16:43:11Z"},
-#             [("hs_closed_amount", "boolean")],
-#             {"hs_closed_amount": "1"},
-#             {"hs_closed_amount": True},
-#         ),
-#     ],
-# )
-# def test_cast_record_fields_if_needed(
-#     stream, endpoint, cursor_value, fake_properties_list_response, requests_mock, common_params, data_to_cast, expected_casted_data
-# ):
-#     """
-#     Test that the stream cast record fields in properties key with properties endpoint response if needed
-#     """
-#     stream = stream(**common_params)
-#     responses = [
-#         {
-#             "json": {
-#                 stream.data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "properties": data_to_cast} | cursor_value],
-#             }
-#         }
-#     ]
-#
-#     properties_response = [
-#         {
-#             "json": [
-#                 {"name": property_name, "type": property_type, "updatedAt": 1571085954360, "createdAt": 1565059306048}
-#                 for property_name, property_type in fake_properties_list_response
-#             ],
-#             "status_code": 200,
-#         }
-#     ]
-#
-#     stream._sync_mode = SyncMode.full_refresh
-#     stream_url = stream.url
-#     stream._sync_mode = None
-#
-#     requests_mock.register_uri("GET", stream_url, responses)
-#     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
-#     records = read_full_refresh(stream)
-#     assert records
-#     record = records[0]
-#     for casted_key, casted_value in expected_casted_data.items():
-#         assert record["properties"][casted_key] == casted_value
+
+@pytest.mark.parametrize(
+    "stream_class, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
+    [
+        (
+            "deals",
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "string")],
+            {"hs_closed_amount": 123456},
+            {"hs_closed_amount": "123456"},
+        ),
+        (
+            "deals",
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "integer")],
+            {"hs_closed_amount": "123456"},
+            {"hs_closed_amount": 123456},
+        ),
+        (
+            "deals",
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "number")],
+            {"hs_closed_amount": "123456.10"},
+            {"hs_closed_amount": 123456.10},
+        ),
+        (
+            "deals",
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "boolean")],
+            {"hs_closed_amount": "1"},
+            {"hs_closed_amount": True},
+        ),
+    ],
+)
+def test_cast_record_fields_if_needed(
+    stream_class,
+    endpoint,
+    cursor_value,
+    fake_properties_list_response,
+    requests_mock,
+    data_to_cast,
+    expected_casted_data,
+    custom_object_schema,
+    config,
+):
+    """
+    Test that the stream cast record fields in properties key with properties endpoint response if needed
+    """
+    stream = find_stream(stream_class, config)
+    data_field = stream.retriever.record_selector.extractor.field_path[0]
+
+    responses = [
+        {
+            "json": {
+                data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "properties": data_to_cast} | cursor_value],
+            }
+        }
+    ]
+
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": property_type, "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name, property_type in fake_properties_list_response
+            ],
+            "status_code": 200,
+        }
+    ]
+
+    stream._sync_mode = SyncMode.full_refresh
+    if isinstance(stream_class, str):
+        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
+    else:
+        stream_url = stream.url
+    stream._sync_mode = None
+
+    requests_mock.register_uri("GET", stream_url, responses)
+    requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
+    records = read_full_refresh(stream)
+    assert records
+    record = records[0]
+    for casted_key, casted_value in expected_casted_data.items():
+        assert record["properties"][casted_key] == casted_value
 
 @pytest.mark.parametrize(
     "stream, scopes, url, method",

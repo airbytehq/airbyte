@@ -18,15 +18,19 @@ NUMBER_OF_PROPERTIES = 2000
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
     "company",
+    "contact",
     "deal",
+    "deal_split",
     "emails",
     "form",
     "goal_targets",
+    "leads",
     "line_item",
     "meetings",
     "notes",
     "tasks",
     "product",
+    "ticket",
 ]
 
 
@@ -134,8 +138,9 @@ def get_source(config, state=None) -> YamlDeclarativeSource:
     state = StateBuilder().build() if not state else state
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
-def find_stream(stream_name, config):
-    streams = get_source(config).streams(config=config)
+def find_stream(stream_name, config, state=None):
+    state = StateBuilder().build() if not state else state
+    streams = get_source(config, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream

@@ -66,14 +66,20 @@ class TestEngagementCallsStream(HubspotTestCase):
     @HttpMocker()
     def test_given_oauth_authentication_when_read_then_perform_authenticated_queries(self, http_mocker: HttpMocker):
         self._set_up_requests(
-            http_mocker, with_oauth=True, with_dynamic_schemas=True, entities=["calls", "emails", "meetings", "notes", "tasks", "company"]
+            http_mocker,
+            with_oauth=True,
+            with_dynamic_schemas=True,
+            entities=["calls", "company", "contact", "emails", "meetings", "notes", "tasks"],
         )
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
 
     @HttpMocker()
     def test_given_records_when_read_extract_desired_records(self, http_mocker: HttpMocker):
         self._set_up_requests(
-            http_mocker, with_oauth=True, with_dynamic_schemas=True, entities=["calls", "emails", "meetings", "notes", "tasks", "company"]
+            http_mocker,
+            with_oauth=True,
+            with_dynamic_schemas=True,
+            entities=["calls", "company", "contact", "emails", "leads", "meetings", "notes", "tasks"],
         )
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)

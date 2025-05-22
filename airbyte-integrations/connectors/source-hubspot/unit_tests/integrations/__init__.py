@@ -23,17 +23,20 @@ from ..conftest import get_source
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
     "company",
+    "contact",
     "deal",
+    "deal_split",
     "emails",
     "form",
     "goal_targets",
+    "leads",
     "line_item",
     "meetings",
     "notes",
     "tasks",
     "product",
+    "ticket",
 ]
-
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
 class HubspotTestCase:
