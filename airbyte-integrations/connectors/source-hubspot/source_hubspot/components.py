@@ -696,20 +696,20 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
 
     def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
         field_type = field["type"]
-        property_schema = {}
-        if field_type == "enumeration" or field_type == "string":
-            property_schema = {"type": ["null", "string"]}
-        elif field_type == "datetime" or field_type == "date":
-            property_schema = {"type": ["null", "string"], "format": "date-time"}
+
+        if field_type in ["string", "enumeration", "phone_number", "object_coordinates", "json"]:
+            return {"type": ["null", "string"]}
+        elif field_type == "datetime" or field_type == "date-time":
+            return {"type": ["null", "string"], "format": "date-time"}
+        elif field_type == "date":
+            return {"type": ["null", "string"], "format": "date"}
         elif field_type == "number":
-            property_schema = {"type": ["null", "number"]}
+            return {"type": ["null", "number"]}
         elif field_type == "boolean" or field_type == "bool":
-            property_schema = {"type": ["null", "boolean"]}
+            return {"type": ["null", "boolean"]}
         else:
             logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
-            property_schema = {"type": ["null", "string"]}
-
-        return property_schema
+            return {"type": ["null", "string"]}
 
     def _generate_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Any]:
         unnested_properties = {f"properties_{property_name}": property_value for (property_name, property_value) in properties.items()}

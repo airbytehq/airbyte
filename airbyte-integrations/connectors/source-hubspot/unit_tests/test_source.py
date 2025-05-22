@@ -18,12 +18,11 @@ from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, BaseStream, Deals
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import find_stream, mock_dynamic_schema_requests_with_skip
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -164,7 +163,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_stream_forbidden(requests_mock, config, caplog, mock_dynamic_schema_requests):
+def test_stream_forbidden(requests_mock, config, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -172,30 +171,12 @@ def test_stream_forbidden(requests_mock, config, caplog, mock_dynamic_schema_req
     requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "workflows",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh"],
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
-    with pytest.raises(AirbyteTracedException) as ex:
-        records = list(SourceHubspot(config, None, None).read(logger, config, catalog, {}))
-        records = [r for r in records if r.type == Type.RECORD]
-        assert not records
-    assert json["message"] in caplog.text
-    assert "The authenticated user does not have permissions to access the resource." in ex.value.message
+    output = read_from_stream(config, "workflows", SyncMode.full_refresh)
+    assert not output.records
+    assert "The authenticated user does not have permissions to access the resource" in output.errors[0].trace.error.message
 
 
-def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list, mock_dynamic_schema_requests):
+def test_parent_stream_forbidden(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -213,28 +194,9 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
     requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "form_submissions",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh"],
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
-
-    with pytest.raises(AirbyteTracedException) as ex:
-        records = list(SourceHubspot(config, None, None).read(logger, config, catalog, {}))
-        records = [r for r in records if r.type == Type.RECORD]
-        assert not records
-    assert json["message"] in caplog.text
-    assert "The authenticated user does not have permissions to access the resource." in ex.value.message
+    output = read_from_stream(config, "form_submissions", SyncMode.full_refresh)
+    assert not output.records
+    assert "The authenticated user does not have permissions to access the resource" in output.errors[0].trace.error.message
 
 
 class TestSplittingPropertiesFunctionality:
