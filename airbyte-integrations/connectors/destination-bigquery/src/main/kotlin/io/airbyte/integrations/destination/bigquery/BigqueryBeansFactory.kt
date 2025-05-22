@@ -82,7 +82,9 @@ class BigqueryBeansFactory {
     ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
         if (config.legacyRawTablesOnly) {
+            // force smart cast
             @Suppress("UNCHECKED_CAST")
+            streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>
             return TypingDedupingWriter(
                 names,
                 BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
@@ -93,7 +95,7 @@ class BigqueryBeansFactory {
                     destinationHandler,
                 ),
                 disableTypeDedupe = true,
-                streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>,
+                streamStateStore = streamStateStore,
             )
         } else {
             val sqlTableOperations =
@@ -107,16 +109,21 @@ class BigqueryBeansFactory {
                     ),
                     bigquery,
                 )
+            // force smart cast
             @Suppress("UNCHECKED_CAST")
+            streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>
             return DirectLoadTableWriter(
                 names = names,
                 stateGatherer = BigqueryDirectLoadDatabaseInitialStatusGatherer(bigquery),
                 destinationHandler = destinationHandler,
                 nativeTableOperations =
-                    BigqueryDirectLoadNativeTableOperations(bigquery, destinationHandler, config),
+                    BigqueryDirectLoadNativeTableOperations(
+                        bigquery,
+                        destinationHandler,
+                        projectId = config.projectId,
+                    ),
                 sqlTableOperations = sqlTableOperations,
-                streamStateStore =
-                    streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>,
+                streamStateStore = streamStateStore,
                 directLoadTableTempTableNameMigration =
                     DefaultDirectLoadTableTempTableNameMigration(
                         BigqueryDirectLoadTableExistenceChecker(bigquery),

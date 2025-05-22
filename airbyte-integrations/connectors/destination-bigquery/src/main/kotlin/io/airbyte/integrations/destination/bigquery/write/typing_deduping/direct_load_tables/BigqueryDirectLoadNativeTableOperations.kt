@@ -23,7 +23,6 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.containsIgnoreCase
 import io.airbyte.cdk.util.findIgnoreCase
-import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -34,7 +33,7 @@ private val logger = KotlinLogging.logger {}
 class BigqueryDirectLoadNativeTableOperations(
     private val bigquery: BigQuery,
     private val databaseHandler: BigQueryDatabaseHandler,
-    private val config: BigqueryConfiguration,
+    private val projectId: String,
 ) : DirectLoadTableNativeOperations {
     override fun ensureSchemaMatches(
         stream: DestinationStream,
@@ -57,7 +56,7 @@ class BigqueryDirectLoadNativeTableOperations(
         } else {
             databaseHandler.execute(
                 getAlterTableSql(
-                    projectId = config.projectId,
+                    projectId = projectId,
                     tableName,
                     columnsToAdd = alterTableReport.columnsToAdd,
                     columnsToRemove = alterTableReport.columnsToRemove,
