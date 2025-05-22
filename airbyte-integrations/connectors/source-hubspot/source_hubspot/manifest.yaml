@@ -1995,7 +1995,6 @@ dynamic_streams:
             path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
             http_method: POST
             request_body_json:
-              limit: 200
               sorts:
                 - propertyName: hs_object_id
                   direction: ASCENDING
@@ -2017,6 +2016,10 @@ dynamic_streams:
               type: CustomPaginationStrategy
               class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
               page_size: 200
+            page_size_option:
+              type: RequestOption
+              inject_into: body_json
+              field_name: limit
           record_selector:
             type: RecordSelector
             extractor:

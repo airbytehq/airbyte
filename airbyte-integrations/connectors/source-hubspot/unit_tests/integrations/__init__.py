@@ -38,6 +38,7 @@ OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "ticket",
 ]
 
+
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
 class HubspotTestCase:
     DT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -165,10 +166,7 @@ class HubspotTestCase:
             if entity in existing:
                 continue  # skip if already mocked
 
-            http_mocker.get(
-                PropertiesRequestBuilder().for_entity(entity).build(),
-                response_builder.build()
-            )
+            http_mocker.get(PropertiesRequestBuilder().for_entity(entity).build(), response_builder.build())
 
     @classmethod
     def mock_custom_objects_streams(cls, http_mocker: HttpMocker):

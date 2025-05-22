@@ -18,7 +18,7 @@ from source_hubspot.streams import (
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.types import Record
 
-from .conftest import find_stream, read_from_stream, mock_dynamic_schema_requests_with_skip
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
