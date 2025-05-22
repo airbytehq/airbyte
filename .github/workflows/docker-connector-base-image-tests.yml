@@ -233,6 +233,7 @@ jobs:
         connector:
           - source-google-drive
           - source-hubspot
+          - source-s3
           - source-salesforce
           - source-shopify
           - destination-motherduck
