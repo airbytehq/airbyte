@@ -320,6 +320,7 @@ definitions:
     single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+      - $ref: "#/definitions/response_filters/rate_limit"
     check_operation_single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/fail_duplicate_headers"
