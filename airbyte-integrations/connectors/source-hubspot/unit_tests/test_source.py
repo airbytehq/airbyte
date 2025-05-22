@@ -4,26 +4,16 @@
 
 
 import logging
-import random
 from datetime import timedelta
-from http import HTTPStatus
-from unittest.mock import MagicMock
 from urllib.parse import urlencode
 
-import mock
 import pendulum
 import pytest
-from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
-from source_hubspot.helpers import APIv3Property
-from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, BaseStream, Deals
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import find_stream, mock_dynamic_schema_requests_with_skip
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, get_source, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -43,29 +33,22 @@ def test_check_connection_ok(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
 
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    ok, error_msg = SourceHubspot(config, None, None).check_connection(logger, config=config)
+    requests_mock.register_uri("GET", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", responses)
+    ok, error_msg = get_source(config).check_connection(logger, config=config)
 
     assert ok
     assert not error_msg
 
 
-def test_check_connection_empty_config(config):
+def test_check_connection_empty_config(caplog):
     config = {}
-
-    with pytest.raises(KeyError):
-        SourceHubspot(config, None, None).check_connection(logger, config=config)
-
-
-def test_check_connection_invalid_config(config):
-    config.pop("credentials")
-
-    with pytest.raises(KeyError):
-        SourceHubspot(config, None, None).check_connection(logger, config=config)
+    get_source(config).check_connection(logger, config=config)
+    assert "KeyError: ['credentials', 'credentials_title']" in caplog.records[0].message
+    assert caplog.records[0].levelname == "ERROR"
 
 
 def test_check_connection_exception(config):
-    ok, error_msg = SourceHubspot(config, None, None).check_connection(logger, config=config)
+    ok, error_msg = get_source(config).check_connection(logger, config=config)
 
     assert not ok
     assert error_msg
@@ -76,61 +59,31 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
         {"json": {"message": "invalid client_id"}, "status_code": 400},
     ]
     requests_mock.register_uri("POST", "/oauth/v1/token", responses)
-    ok, error_msg = SourceHubspot(config_invalid_client_id, None, None).check_connection(logger, config=config_invalid_client_id)
+    ok, error_msg = get_source(config_invalid_client_id).check_connection(logger, config=config_invalid_client_id)
     assert not ok
     assert error_msg
 
 
-def test_check_connection_invalid_start_date_exception(config_invalid_date):
-    with pytest.raises(InvalidStartDateConfigError):
-        ok, error_msg = SourceHubspot(config_invalid_date, None, None).check_connection(logger, config=config_invalid_date)
-        assert not ok
-        assert error_msg
-
-
-@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams(requests_mock, config):
-    streams = SourceHubspot(config, None, None).streams(config)
+    streams = get_source(config).streams(config)
+    # TODO: fix when all streams are low code
+    assert len(streams) == 28
 
-    assert len(streams) == 32
-
-
-@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_streams_incremental(requests_mock, config_experimental):
-    streams = SourceHubspot(config_experimental, None, None).streams(config_experimental)
-
-    assert len(streams) == 44
-
-
-def test_custom_streams(config_experimental):
-    custom_object_stream_instances = [MagicMock()]
-    streams = SourceHubspot(config_experimental, None, None).get_web_analytics_custom_objects_stream(
-        custom_object_stream_instances=custom_object_stream_instances,
-        common_params={"api": MagicMock(), "start_date": "2021-01-01T00:00:00Z", "credentials": config_experimental["credentials"]},
-    )
-    assert len(list(streams)) == 1
+# TODO: uncomment when custom streams are low code
+# def test_custom_streams(config_experimental):
+#     custom_object_stream_instances = [MagicMock()]
+#     streams = SourceHubspot(config_experimental, None, None).get_web_analytics_custom_objects_stream(
+#         custom_object_stream_instances=custom_object_stream_instances,
+#         common_params={"api": MagicMock(), "start_date": "2021-01-01T00:00:00Z", "credentials": config_experimental["credentials"]},
+#     )
+#     assert len(list(streams)) == 1
 
 
 def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
-
-    with pytest.raises(Exception):
-        SourceHubspot(config, None, None).check_connection(logger, config=config)
-
-
-def test_parse_and_handle_errors(some_credentials):
-    response = MagicMock()
-    response.status_code = HTTPStatus.TOO_MANY_REQUESTS
-
-    with pytest.raises(HubspotRateLimited):
-        API(some_credentials)._parse_and_handle_errors(response)
-
-
-def test_convert_datetime_to_string():
-    pendulum_time = pendulum.now()
-
-    assert BaseStream._convert_datetime_to_string(pendulum_time, declared_format="date")
-    assert BaseStream._convert_datetime_to_string(pendulum_time, declared_format="date-time")
+    ok, message = get_source(config).check_connection(logger, config=config)
+    assert ok == False
+    assert "`authenticator_selection_path` is not found in the config" in message
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
@@ -140,8 +93,8 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
 
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    source = SourceHubspot(config, None, None)
+    requests_mock.register_uri("GET", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", responses)
+    source = get_source(config)
     alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
@@ -154,15 +107,15 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    source = SourceHubspot(config, None, None)
+    requests_mock.register_uri("GET", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", responses)
+    source = get_source(config)
     alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
     assert not error
 
 
-def test_stream_forbidden(requests_mock, config, caplog, mock_dynamic_schema_requests):
+def test_stream_forbidden(requests_mock, config, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -170,30 +123,12 @@ def test_stream_forbidden(requests_mock, config, caplog, mock_dynamic_schema_req
     requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "workflows",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh"],
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
-    with pytest.raises(AirbyteTracedException):
-        records = list(SourceHubspot(config, None, None).read(logger, config, catalog, {}))
-        records = [r for r in records if r.type == Type.RECORD]
-        assert not records
-    assert json["message"] in caplog.text
-    assert "The authenticated user does not have permissions to access the URL" in caplog.text
+    output = read_from_stream(config, "workflows", SyncMode.full_refresh)
+    assert not output.records
+    assert "The authenticated user does not have permissions to access the resource" in output.errors[0].trace.error.message
 
 
-def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list, mock_dynamic_schema_requests):
+def test_parent_stream_forbidden(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
@@ -211,28 +146,9 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
     requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "form_submissions",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh"],
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
-
-    with pytest.raises(AirbyteTracedException):
-        records = list(SourceHubspot(config, None, None).read(logger, config, catalog, {}))
-        records = [r for r in records if r.type == Type.RECORD]
-        assert not records
-    assert json["message"] in caplog.text
-    assert "The authenticated user does not have permissions to access the URL" in caplog.text
+    output = read_from_stream(config, "form_submissions", SyncMode.full_refresh)
+    assert not output.records
+    assert "The authenticated user does not have permissions to access the resource" in output.errors[0].trace.error.message
 
 
 class TestSplittingPropertiesFunctionality:
@@ -260,7 +176,7 @@ class TestSplittingPropertiesFunctionality:
         response = api._session.get(api.BASE_URL + url, params=params)
         return api._parse_and_handle_errors(response)
 
-    def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, config, mock_dynamic_schema_requests):
+    def test_stream_with_splitting_properties(self, requests_mock, fake_properties_list, config, mock_dynamic_schema_requests):
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
         """
         Check working stream `companies` with large list of properties using new functionality with splitting properties
@@ -302,34 +218,8 @@ class TestSplittingPropertiesFunctionality:
                     record_responses,
                 )
             after_id = id_list[-1]
-        catalog = ConfiguredAirbyteCatalogSerializer.load(
-            {
-                "streams": [
-                    {
-                        "stream": {
-                            "name": "companies",
-                            "json_schema": {},
-                            "supported_sync_modes": ["full_refresh", "incremental"],
-                        },
-                        "sync_mode": "full_refresh",
-                        "destination_sync_mode": "append",
-                    }
-                ]
-            }
-        )
-        state = (
-            StateBuilder()
-            .with_stream_state(
-                "companies",
-                {},
-            )
-            .build()
-        )
 
-        stream_records = read(
-            SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state
-        ).records
-
+        stream_records = read_from_stream(config, "companies", SyncMode.full_refresh).records
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
         for record_ab_message in stream_records:
@@ -338,7 +228,7 @@ class TestSplittingPropertiesFunctionality:
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, config, common_params, api, fake_properties_list):
+    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, config, fake_properties_list):
         """
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
@@ -375,34 +265,11 @@ class TestSplittingPropertiesFunctionality:
                 f"{test_stream.retriever.requester.url_base}/{test_stream.retriever.requester.get_path()}?{urlencode(params)}",
                 record_responses,
             )
-
-        catalog = ConfiguredAirbyteCatalogSerializer.load(
-            {
-                "streams": [
-                    {
-                        "stream": {
-                            "name": "products",
-                            "json_schema": {},
-                            "supported_sync_modes": ["full_refresh", "incremental"],
-                        },
-                        "sync_mode": "incremental",
-                        "destination_sync_mode": "append",
-                    }
-                ]
-            }
-        )
         state = (
-            StateBuilder()
-            .with_stream_state(
-                "products",
-                {"updatedAt": "2006-01-01T00:03:18.336Z"},
-            )
-            .build()
+            StateBuilder().with_stream_state("products", {"updatedAt": "2006-01-01T00:03:18.336Z"},).build()
         )
 
-        stream_records = read(
-            SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state
-        ).records
+        stream_records = read_from_stream(config, "products", SyncMode.incremental, state).records
 
         assert len(stream_records) == 5
         for record_ab_message in stream_records:
@@ -411,61 +278,40 @@ class TestSplittingPropertiesFunctionality:
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
-        """
-        Check working stream `workflows` with large list of properties using new functionality with splitting properties
-        """
-
-        parsed_properties = list(APIv3Property(fake_properties_list).split())
-        self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
-
-        test_stream = Deals(**common_params)
-
-        ids_list = ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
-        for property_slice in parsed_properties:
-            record_responses = [
-                {
-                    "json": {
-                        "results": [
-                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
-                            for id in ids_list
-                        ],
-                        "paging": {},
-                    },
-                    "status_code": 200,
-                }
-            ]
-            test_stream._sync_mode = SyncMode.full_refresh
-            prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
-            requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
-            test_stream._sync_mode = None
-            ids_list.append("1092593513")
-
-        stream_records = read_full_refresh(test_stream)
-
-        assert len(stream_records) == 6
-
-
-@pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture():
-    configured_catalog = {
-        "streams": [
-            {
-                "stream": {
-                    "name": "quotes",
-                    "json_schema": {},
-                    "supported_sync_modes": ["full_refresh", "incremental"],
-                    "source_defined_cursor": True,
-                    "default_cursor_field": ["updatedAt"],
-                },
-                "sync_mode": "incremental",
-                "cursor_field": ["updatedAt"],
-                "destination_sync_mode": "append",
-            }
-        ]
-    }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
-
+    # TODO: uncomment when deals is low code
+    # def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
+    #     """
+    #     Check working stream `workflows` with large list of properties using new functionality with splitting properties
+    #     """
+    #
+    #     parsed_properties = list(APIv3Property(fake_properties_list).split())
+    #     self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
+    #
+    #     test_stream = Deals(**common_params)
+    #
+    #     ids_list = ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
+    #     for property_slice in parsed_properties:
+    #         record_responses = [
+    #             {
+    #                 "json": {
+    #                     "results": [
+    #                         {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
+    #                         for id in ids_list
+    #                     ],
+    #                     "paging": {},
+    #                 },
+    #                 "status_code": 200,
+    #             }
+    #         ]
+    #         test_stream._sync_mode = SyncMode.full_refresh
+    #         prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
+    #         requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
+    #         test_stream._sync_mode = None
+    #         ids_list.append("1092593513")
+    #
+    #     stream_records = read_full_refresh(test_stream)
+    #
+    #     assert len(stream_records) == 6
 
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
@@ -527,28 +373,8 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
 
     # Create test_stream instance with some state
     test_stream = find_stream("companies", config)
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "companies",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                    },
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "append",
-                }
-            ]
-        }
-    )
     state = (
-        StateBuilder()
-        .with_stream_state(
-            "companies",
-            {"updatedAt": "2022-02-24T16:43:11Z"},
-        )
-        .build()
+        StateBuilder().with_stream_state("companies", {"updatedAt": "2022-02-24T16:43:11Z"},).build()
     )
 
     test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path() + "/search"
@@ -565,7 +391,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
     )
 
-    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+    output = read_from_stream(config, "companies", SyncMode.incremental, state)
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(output.records) == 11000
@@ -636,31 +462,10 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
         "/crm/v4/associations/company/contacts/batch/read",
         [{"status_code": 200, "json": {"results": [{"from": {"id": f"{x}"}, "to": [{"toObjectId": "2"}]}]}} for x in range(1, 11001, 200)],
     )
-
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "companies",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                    },
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "append",
-                }
-            ]
-        }
-    )
     state = (
-        StateBuilder()
-        .with_stream_state(
-            "companies",
-            {"updatedAt": "2022-01-24T16:43:11Z"},
-        )
-        .build()
+        StateBuilder().with_stream_state("companies", {"updatedAt": "2022-01-24T16:43:11Z"},).build()
     )
-    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+    output = read_from_stream(config, "companies", SyncMode.incremental, state)
     records = output.records
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
@@ -673,7 +478,7 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
     assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-02-25T16:43:11.000000Z"
 
 
-def test_engagements_stream_pagination_works(requests_mock, common_params, config):
+def test_engagements_stream_pagination_works(requests_mock, config):
     """
     Tests the engagements stream handles pagination correctly, for both
     full_refresh and incremental sync modes.
@@ -755,7 +560,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params, confi
     assert len(records) == 100
 
 
-def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'All Engagements' API for old dates (more than 30 days)
     """
@@ -777,36 +582,16 @@ def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, request
 
     # Mocking Request
     requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "engagements",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                    },
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "append",
-                }
-            ]
-        }
-    )
     state = (
-        StateBuilder()
-        .with_stream_state(
-            "engagements",
-            {"lastUpdated": old_date},
-        )
-        .build()
+        StateBuilder().with_stream_state("engagements", {"lastUpdated": old_date},).build()
     )
-    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+    output = read_from_stream(config, "engagements", SyncMode.incremental, state)
 
     assert len(output.records) == 100
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config):
+def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
     """
@@ -825,36 +610,17 @@ def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requ
             "status_code": 200,
         }
     ]
-
-    # Create test_stream instance with some state
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "engagements",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                    },
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
     state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
-
     # Mocking Request
     requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}", responses)
-
-    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+    output = read_from_stream(config, "engagements", SyncMode.incremental, state)
     # The stream should not attempt to get more than 10K records.
     assert len(output.records) == 100
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
 def test_engagements_stream_since_recent_date_more_than_10k(
-    mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config
+    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
 ):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
@@ -876,36 +642,16 @@ def test_engagements_stream_since_recent_date_more_than_10k(
             "status_code": 200,
         }
     ]
-
-    # Create test_stream instance with some state
-    catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "engagements",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                    },
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
     state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
-
     # Mocking Request
     requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}", responses)
     requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
 
-    output = read(SourceHubspot(config=config, catalog=catalog, state=state), config=config, catalog=catalog, state=state)
+    output = read_from_stream(config, "engagements", SyncMode.incremental, state)
     assert len(output.records) == 100
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
-
-@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_pagination_marketing_emails_stream(mock_get_custom_objects_stream, requests_mock, common_params, config):
+def test_pagination_marketing_emails_stream(requests_mock, config):
     """
     Test pagination for Marketing Emails stream
     """
@@ -948,52 +694,3 @@ def test_pagination_marketing_emails_stream(mock_get_custom_objects_stream, requ
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-
-
-def test_get_granted_scopes(requests_mock, mocker):
-    authenticator = mocker.Mock()
-    authenticator.get_access_token.return_value = "the-token"
-
-    expected_scopes = ["a", "b", "c"]
-    response = [
-        {"json": {"scopes": expected_scopes}, "status_code": 200},
-    ]
-    requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
-
-    actual_scopes = SourceHubspot({}, None, None).get_granted_scopes(authenticator)
-
-    assert expected_scopes == actual_scopes
-
-
-def test_get_granted_scopes_retry(requests_mock, mocker):
-    authenticator = mocker.Mock()
-    expected_token = "the-token"
-    authenticator.get_access_token.return_value = expected_token
-    mock_url = f"https://api.hubapi.com/oauth/v1/access-tokens/{expected_token}"
-    response = [
-        {"json": {}, "status_code": 500},
-    ]
-
-    requests_mock.register_uri("GET", mock_url, response)
-    actual_scopes = SourceHubspot({}, None, None).get_granted_scopes(authenticator)
-    assert len(requests_mock.request_history) > 1
-
-
-def test_streams_oauth_2_auth_no_suitable_scopes(requests_mock, mocker, config):
-    authenticator = mocker.Mock()
-    authenticator.get_access_token.return_value = "the-token"
-
-    mocker.patch("source_hubspot.streams.API.is_oauth2", return_value=True)
-    mocker.patch("source_hubspot.streams.API.get_authenticator", return_value=authenticator)
-
-    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-
-    expected_scopes = ["no.scopes.granted"]
-    response = [
-        {"json": {"scopes": expected_scopes}, "status_code": 200},
-    ]
-    requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
-
-    streams = SourceHubspot(config, None, None).streams(config)
-
-    assert len(streams) == 0

@@ -3,11 +3,15 @@
 #
 
 import pytest
-from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from pathlib import Path
+import sys
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
 NUMBER_OF_PROPERTIES = 2000
@@ -40,13 +44,6 @@ def oauth_config_fixture():
             "token_expires": "2021-05-30T06:00:00Z",
         },
     }
-
-
-@pytest.fixture(name="common_params")
-def common_params_fixture(config):
-    source = SourceHubspot(config, None, None)
-    common_params = source.get_common_params(config=config)
-    return common_params
 
 
 @pytest.fixture(name="config_invalid_client_id")
@@ -109,9 +106,9 @@ def migrated_properties_list():
     ]
 
 
-@pytest.fixture(name="api")
-def api(some_credentials):
-    return API(some_credentials)
+# @pytest.fixture(name="api")
+# def api(some_credentials):
+#     return API(some_credentials)
 
 
 @pytest.fixture
@@ -119,8 +116,27 @@ def http_mocker():
     return None
 
 
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+
+
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
 def find_stream(stream_name, config):
-    for stream in SourceHubspot(config=config, catalog=None, state=None).streams(config=config):
+    streams = get_source(config).streams(config=config)
+    for stream in streams:
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
@@ -132,7 +148,7 @@ def patch_time(mocker):
 
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
-    return read(SourceHubspot(cfg, None, None), cfg, CatalogBuilder().with_stream(stream, sync_mode).build(), state, expecting_exception)
+    return read(get_source(cfg, state), cfg, CatalogBuilder().with_stream(stream, sync_mode).build(), state, expecting_exception)
 
 
 @pytest.fixture()
@@ -162,3 +178,62 @@ def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
             json=[{"name": "hs__test_field", "type": "enumeration"}],
             status_code=200,
         )
+
+@pytest.fixture(name="custom_object_schema")
+def custom_object_schema_fixture():
+    return {
+        "labels": {"this": "that"},
+        "requiredProperties": ["name"],
+        "searchableProperties": ["name"],
+        "primaryDisplayProperty": "name",
+        "secondaryDisplayProperties": [],
+        "archived": False,
+        "restorable": True,
+        "metaType": "PORTAL_SPECIFIC",
+        "id": "7232155",
+        "fullyQualifiedName": "p19936848_Animal",
+        "createdAt": "2022-06-17T18:40:27.019Z",
+        "updatedAt": "2022-06-17T18:40:27.019Z",
+        "objectTypeId": "2-7232155",
+        "properties": [
+            {
+                "name": "name",
+                "label": "Animal name",
+                "type": "string",
+                "fieldType": "text",
+                "description": "The animal name.",
+                "groupName": "animal_information",
+                "options": [],
+                "displayOrder": -1,
+                "calculated": False,
+                "externalOptions": False,
+                "hasUniqueValue": False,
+                "hidden": False,
+                "hubspotDefined": False,
+                "modificationMetadata": {"archivable": True, "readOnlyDefinition": True, "readOnlyValue": False},
+                "formField": True,
+            }
+        ],
+        "associations": [],
+        "name": "animals",
+    }
+
+@pytest.fixture(name="configured_catalog")
+def configured_catalog_fixture():
+    configured_catalog = {
+        "streams": [
+            {
+                "stream": {
+                    "name": "quotes",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["updatedAt"],
+                },
+                "sync_mode": "incremental",
+                "cursor_field": ["updatedAt"],
+                "destination_sync_mode": "append",
+            }
+        ]
+    }
+    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)

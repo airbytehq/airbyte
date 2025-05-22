@@ -5,11 +5,10 @@ import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-from unit_tests.conftest import find_stream
 
+from .conftest import find_stream
 
 def test_handle_request_with_retry(config, requests_mock):
-    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.get(
         "https://api.hubapi.com/email/public/v1/campaigns?limit=500",
         json={"campaigns": [{"id": "test_id", "lastUpdatedTime": 1744969160000}]},
@@ -23,7 +22,7 @@ def test_handle_request_with_retry(config, requests_mock):
     assert len(stream_slices) == 1
     list(stream_instance.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
     # one request per each mock
-    assert requests_mock.call_count == 3
+    assert requests_mock.call_count == 2
 
 
 def test_handle_request_with_retry_token_expired(config, requests_mock):

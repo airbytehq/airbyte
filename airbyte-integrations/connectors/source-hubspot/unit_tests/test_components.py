@@ -7,95 +7,86 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 from requests import Response
-from source_hubspot.components import (
-    HubspotAssociationsExtractor,
-    HubspotFlattenAssociationsTransformation,
-    HubspotPropertyHistoryExtractor,
-    HubspotRenamePropertiesTransformation,
-    MigrateEmptyStringState,
-    NewtoLegacyFieldTransformation,
-)
-from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
 
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
-
-@pytest.mark.parametrize(
-    "input, expected",
-    [
-        (
-            {
-                "name": {"type": ["null", "string"]},
-                "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
-                "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
-                "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
-                "hs_v2_some_other_field": {"type": ["null", "string"]},
-            },
-            {
-                "name": {"type": ["null", "string"]},
-                "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
-                "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
-                "hs_date_entered_prospect": {"type": ["null", "string"]},
-                "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
-                "hs_date_exited_prospect": {"type": ["null", "string"]},
-                "hs_v2_some_other_field": {"type": ["null", "string"]},
-            },
-        ),
-        (
-            {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "hs_v2_date_entered_poetry": 1827},
-            {
-                "name": "Edgar Allen Poe",
-                "age": 215,
-                "birthplace": "Boston",
-                "hs_v2_date_entered_poetry": 1827,
-                "hs_date_entered_poetry": 1827,
-            },
-        ),
-        (
-            {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "properties": {"hs_v2_date_entered_poetry": 1827}},
-            {
-                "name": "Edgar Allen Poe",
-                "age": 215,
-                "birthplace": "Boston",
-                "properties": {
-                    "hs_v2_date_entered_poetry": 1827,
-                    "hs_date_entered_poetry": 1827,
-                },
-            },
-        ),
-        (
-            {
-                "name": "Edgar Allen Poe",
-                "age": 215,
-                "birthplace": "Boston",
-            },
-            {
-                "name": "Edgar Allen Poe",
-                "age": 215,
-                "birthplace": "Boston",
-            },
-        ),
-        (
-            {"name": "Edgar Allen Poe", "hs_v2_date_entered_poetry": 1827, "hs_date_entered_poetry": 9999},
-            {
-                "name": "Edgar Allen Poe",
-                "hs_v2_date_entered_poetry": 1827,
-                "hs_date_entered_poetry": 9999,
-            },
-        ),
-    ],
-    ids=[
-        "Transforms stream schema/properties dictionary",
-        "Transforms record w/ flat properties",
-        "Transform record w/ nested properties",
-        "Does not transform record w/o need to transformation",
-        "Does not overwrite value for legacy field if legacy field exists",
-    ],
-)
-def test_new_to_legacy_field_transformation(input, expected):
-    transformer = NewtoLegacyFieldTransformation(DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
-    transformer.transform(input)
-    assert input == expected
+# TODO: uncomments when deals is low code
+# @pytest.mark.parametrize(
+#     "input, expected",
+#     [
+#         (
+#             {
+#                 "name": {"type": ["null", "string"]},
+#                 "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
+#                 "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
+#                 "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
+#                 "hs_v2_some_other_field": {"type": ["null", "string"]},
+#             },
+#             {
+#                 "name": {"type": ["null", "string"]},
+#                 "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
+#                 "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
+#                 "hs_date_entered_prospect": {"type": ["null", "string"]},
+#                 "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
+#                 "hs_date_exited_prospect": {"type": ["null", "string"]},
+#                 "hs_v2_some_other_field": {"type": ["null", "string"]},
+#             },
+#         ),
+#         (
+#             {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "hs_v2_date_entered_poetry": 1827},
+#             {
+#                 "name": "Edgar Allen Poe",
+#                 "age": 215,
+#                 "birthplace": "Boston",
+#                 "hs_v2_date_entered_poetry": 1827,
+#                 "hs_date_entered_poetry": 1827,
+#             },
+#         ),
+#         (
+#             {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "properties": {"hs_v2_date_entered_poetry": 1827}},
+#             {
+#                 "name": "Edgar Allen Poe",
+#                 "age": 215,
+#                 "birthplace": "Boston",
+#                 "properties": {
+#                     "hs_v2_date_entered_poetry": 1827,
+#                     "hs_date_entered_poetry": 1827,
+#                 },
+#             },
+#         ),
+#         (
+#             {
+#                 "name": "Edgar Allen Poe",
+#                 "age": 215,
+#                 "birthplace": "Boston",
+#             },
+#             {
+#                 "name": "Edgar Allen Poe",
+#                 "age": 215,
+#                 "birthplace": "Boston",
+#             },
+#         ),
+#         (
+#             {"name": "Edgar Allen Poe", "hs_v2_date_entered_poetry": 1827, "hs_date_entered_poetry": 9999},
+#             {
+#                 "name": "Edgar Allen Poe",
+#                 "hs_v2_date_entered_poetry": 1827,
+#                 "hs_date_entered_poetry": 9999,
+#             },
+#         ),
+#     ],
+#     ids=[
+#         "Transforms stream schema/properties dictionary",
+#         "Transforms record w/ flat properties",
+#         "Transform record w/ nested properties",
+#         "Does not transform record w/o need to transformation",
+#         "Does not overwrite value for legacy field if legacy field exists",
+#     ],
+# )
+# def test_new_to_legacy_field_transformation(input, expected, components_module):
+#     transformer = components_module.NewtoLegacyFieldTransformation(DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
+#     transformer.transform(input)
+#     assert input == expected
 
 
 @pytest.mark.parametrize(
@@ -109,8 +100,8 @@ def test_new_to_legacy_field_transformation(input, expected):
         "Valid state: date string, no need to migrate",
     ],
 )
-def test_migrate_empty_string_state(config, state, expected_should_migrate, expected_state):
-    state_migration = MigrateEmptyStringState("updatedAt", config)
+def test_migrate_empty_string_state(config, state, expected_should_migrate, expected_state, components_module):
+    state_migration = components_module.MigrateEmptyStringState("updatedAt", config)
 
     actual_should_migrate = state_migration.should_migrate(stream_state=state)
     assert actual_should_migrate is expected_should_migrate
@@ -119,7 +110,7 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
         assert state_migration.migrate(stream_state=state) == expected_state
 
 
-def test_hubspot_rename_properties_transformation():
+def test_hubspot_rename_properties_transformation(components_module):
     expected_properties = {
         "properties_amount": {"type": ["null", "number"]},
         "properties_hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
@@ -142,7 +133,7 @@ def test_hubspot_rename_properties_transformation():
         "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
         "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
     }
-    transformation = HubspotRenamePropertiesTransformation()
+    transformation = components_module.HubspotRenamePropertiesTransformation()
 
     transformation.transform(record=dynamic_properties_record)
 
@@ -162,7 +153,7 @@ def test_hubspot_rename_properties_transformation():
     assert dynamic_properties_record["properties"] == expected_properties["properties"]
 
 
-def test_property_history_extractor():
+def test_property_history_extractor(components_module):
     expected_records = [
         {
             "dealId": "1234",
@@ -297,7 +288,7 @@ def test_property_history_extractor():
     decoder = Mock()
     decoder.decode.return_value = response
 
-    extractor = HubspotPropertyHistoryExtractor(
+    extractor = components_module.HubspotPropertyHistoryExtractor(
         field_path=["results"], entity_primary_key="dealId", additional_keys=["archived"], decoder=decoder, config={}, parameters={}
     )
 
@@ -306,7 +297,7 @@ def test_property_history_extractor():
     assert actual_records == expected_records
 
 
-def test_property_history_extractor_ignore_hs_lastmodifieddate():
+def test_property_history_extractor_ignore_hs_lastmodifieddate(components_module):
     expected_records = [
         {
             "dealId": "1234",
@@ -361,7 +352,7 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate():
     decoder = Mock()
     decoder.decode.return_value = response
 
-    extractor = HubspotPropertyHistoryExtractor(
+    extractor = components_module.HubspotPropertyHistoryExtractor(
         field_path=["results"], entity_primary_key="dealId", additional_keys=[], decoder=decoder, config={}, parameters={}
     )
 
@@ -370,10 +361,10 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate():
     assert actual_records == expected_records
 
 
-def test_flatten_associations_transformation():
+def test_flatten_associations_transformation(components_module):
     expected_record = {"id": "a2b", "Contacts": [101, 102], "Companies": [202, 209]}
 
-    transformation = HubspotFlattenAssociationsTransformation()
+    transformation = components_module.HubspotFlattenAssociationsTransformation()
 
     current_record = {
         "id": "a2b",
@@ -388,7 +379,7 @@ def test_flatten_associations_transformation():
     assert current_record == expected_record
 
 
-def test_associations_extractor(config):
+def test_associations_extractor(config, components_module):
     expected_records = [
         {"id": "123", "companies": ["909", "424"], "contacts": ["408"]},
         {
@@ -436,7 +427,7 @@ def test_associations_extractor(config):
         },
     ]
 
-    extractor = HubspotAssociationsExtractor(
+    extractor = components_module.HubspotAssociationsExtractor(
         field_path=["results"],
         entity="deals",
         associations_list=["companies", "contacts"],
@@ -460,10 +451,10 @@ def test_associations_extractor(config):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
-def test_extractor_supports_entity_interpolation(config):
+def test_extractor_supports_entity_interpolation(config, components_module):
     parameters = {"entity": "engagements_emails"}
 
-    extractor = HubspotAssociationsExtractor(
+    extractor = components_module.HubspotAssociationsExtractor(
         field_path=["results"],
         entity="{{ parameters['entity'] }}",
         associations_list=["companies", "contacts"],
@@ -483,8 +474,8 @@ def test_extractor_supports_entity_interpolation(config):
         pytest.param("{{ parameters['associations'] }}", id="test_interpolated_associations"),
     ],
 )
-def test_extractor_supports_associations_list_interpolation(config, associations_list_value):
-    extractor = HubspotAssociationsExtractor(
+def test_extractor_supports_associations_list_interpolation(config, associations_list_value, components_module):
+    extractor = components_module.HubspotAssociationsExtractor(
         field_path=["results"],
         entity="emails",
         associations_list=associations_list_value,
