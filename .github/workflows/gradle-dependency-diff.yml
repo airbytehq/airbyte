@@ -28,7 +28,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Run Gradle Dependency Diff
-        uses: airbytehq/gradle-dependency-diff-action@v0.1-rc1
+        uses: airbytehq/gradle-dependency-diff-action@v0.1.0-rc1
         with:
           old-repo-dir: old
           new-repo-dir: new
