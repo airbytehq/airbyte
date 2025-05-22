@@ -21,7 +21,7 @@ class TestLeadsStream(HubspotTestCase):
     CURSOR_FIELD = "updatedAt"
     STREAM_NAME = "leads"
     OBJECT_TYPE = "leads"
-    ASSOCIATIONS = ["contacts", "companies"]
+    ASSOCIATIONS = ["companies", "contacts"]
 
     @property
     def response_builder(self):
@@ -139,4 +139,4 @@ class TestLeadsStream(HubspotTestCase):
         self._set_up_requests(http_mocker)
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.incremental)
-        assert len(output.state_messages) == 1
+        assert len(output.state_messages) == 2
