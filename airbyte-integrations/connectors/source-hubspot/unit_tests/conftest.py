@@ -14,15 +14,19 @@ NUMBER_OF_PROPERTIES = 2000
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
     "company",
+    "contact",
     "deal",
+    "deal_split",
     "emails",
     "form",
     "goal_targets",
+    "leads",
     "line_item",
     "meetings",
     "notes",
     "tasks",
     "product",
+    "ticket",
 ]
 
 
@@ -119,8 +123,8 @@ def http_mocker():
     return None
 
 
-def find_stream(stream_name, config):
-    for stream in SourceHubspot(config=config, catalog=None, state=None).streams(config=config):
+def find_stream(stream_name, config, state=None):
+    for stream in SourceHubspot(config=config, catalog=None, state=state).streams(config=config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
