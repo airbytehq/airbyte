@@ -8,7 +8,7 @@ import freezegun
 import pytz
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpResponse, HttpRequest, HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, RecordBuilder, create_record_builder, find_template
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from source_hubspot import SourceHubspot
@@ -169,6 +169,14 @@ class HubspotTestCase:
                 PropertiesRequestBuilder().for_entity(entity).build(),
                 response_builder.build()
             )
+
+    @classmethod
+    def mock_custom_objects_streams(cls, http_mocker: HttpMocker):
+        # Mock CustomObjects streams
+        http_mocker.get(
+            HttpRequest("https://api.hubapi.com/crm/v3/schemas"),
+            HttpResponse("{}", 200),
+        )
 
     @classmethod
     def record_builder(cls, stream: str, record_cursor_path):
