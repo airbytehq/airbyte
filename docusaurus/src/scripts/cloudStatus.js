@@ -40,7 +40,10 @@ if (ExecutionEnvironment.canUseDOM) {
 }
 
 export const onRouteDidUpdate = ({ location, previousLocation }) => {
-  if (!location.pathname.includes(previousLocation?.pathname)) {
+  if (
+    !location.pathname.includes(previousLocation?.pathname) ||
+    previousLocation?.pathname === "/"
+  ) {
     pollForCloudStatusLinkAndUpdate();
   }
 };
