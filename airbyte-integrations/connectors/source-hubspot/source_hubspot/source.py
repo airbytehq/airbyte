@@ -20,26 +20,19 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     BaseStream,
-    Companies,
     CompaniesWebAnalytics,
     Contacts,
     ContactsWebAnalytics,
     CustomObject,
-    DealSplits,
     DealsWebAnalytics,
     EngagementsCallsWebAnalytics,
     EngagementsEmailsWebAnalytics,
     EngagementsMeetingsWebAnalytics,
     EngagementsNotesWebAnalytics,
     EngagementsTasksWebAnalytics,
-    Goals,
     GoalsWebAnalytics,
-    Leads,
-    LineItems,
     LineItemsWebAnalytics,
-    Products,
     ProductsWebAnalytics,
-    Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
 )
@@ -53,13 +46,18 @@ we use start date 2006-01-01  as date of creation of Hubspot to retrieve all dat
 DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 scopes = {
     "campaigns": {"crm.lists.read"},
+    "companies": {"crm.objects.contacts.read", "crm.objects.companies.read"},
     "companies_property_history": {"crm.objects.companies.read"},
     "contact_lists": {"crm.lists.read"},
+    "contacts": {"crm.objects.contacts.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
     "deal_pipelines": {"crm.objects.contacts.read"},
+    "deal_splits": {"crm.objects.deals.read"},
     "deals": {"contacts", "crm.objects.deals.read"},
     "deals_property_history": {"crm.objects.deals.read"},
+    "email_events": {"content"},
     "email_subscriptions": {"content"},
+    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
     "engagements_calls": {"crm.objects.contacts.read"},
     "engagements_emails": {"crm.objects.contacts.read", "sales-email-read"},
     "engagements_meetings": {"crm.objects.contacts.read"},
@@ -69,8 +67,13 @@ scopes = {
     "deals_archived": {"contacts", "crm.objects.deals.read"},
     "forms": {"forms"},
     "form_submissions": {"forms"},
+    "goals": {"crm.objects.goals.read"},
+    "leads": {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.leads.read"},
+    "line_items": {"e-commerce", "crm.objects.line_items.read"},
     "owners": {"crm.objects.owners.read"},
     "owners_archived": {"crm.objects.owners.read"},
+    "products": {"e-commerce"},
+    "subscription_changes": {"content"},
     "ticket_pipelines": {
         "media_bridge.read",
         "tickets",
@@ -90,10 +93,8 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "tickets": {"tickets"},
     "workflows": {"automation"},
-    "email_events": {"content"},
-    "engagements": {"crm.objects.companies.read", "crm.objects.contacts.read", "crm.objects.deals.read", "tickets", "e-commerce"},
-    "subscription_changes": {"content"},
 }
 
 
@@ -190,16 +191,6 @@ class SourceHubspot(YamlDeclarativeSource):
         common_params = self.get_common_params(config=config)
         # Temporarily using `ConcurrentDeclarativeSource.streams()` to validate granted scopes.
         streams = super().streams(config=config)
-        streams += [
-            Companies(**common_params),
-            Contacts(**common_params),
-            DealSplits(**common_params),
-            Goals(**common_params),
-            Leads(**common_params),
-            LineItems(**common_params),
-            Products(**common_params),
-            Tickets(**common_params),
-        ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
 
