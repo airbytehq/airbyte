@@ -33,7 +33,7 @@ class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
         } else {
             taskFactory.createIntermediateStep(
                 uploadCompleter,
-                inputQueue,
+                inputQueue.consume(partition),
                 completedUploadPartitioner,
                 completedUploadQueue,
                 partition,

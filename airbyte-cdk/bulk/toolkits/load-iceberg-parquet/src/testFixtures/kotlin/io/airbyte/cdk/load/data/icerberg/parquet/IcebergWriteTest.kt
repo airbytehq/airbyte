@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.BaseDeltaTaskWriter
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
@@ -45,7 +46,7 @@ abstract class IcebergWriteTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
         micronautProperties = micronautProperties,
         isStreamSchemaRetroactive = true,
-        supportsDedup = true,
+        dedupBehavior = DedupBehavior(),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,

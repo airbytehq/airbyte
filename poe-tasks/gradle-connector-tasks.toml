@@ -47,6 +47,8 @@ lint-check = "echo 'No lint check step for this connector.'"
 
 test-unit-tests = "gradle test"
 test-integration-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
 if [ -d src/test-integration ]; then
   echo "Found 'src/test-integration' directory, running integration tests..."
   gradle integrationTestJava
@@ -58,6 +60,8 @@ fi
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
 shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
 connector_name=$(basename "$PWD")
 echo "Running: ./gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
 ${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}

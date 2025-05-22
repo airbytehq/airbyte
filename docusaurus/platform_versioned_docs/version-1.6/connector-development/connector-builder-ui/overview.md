@@ -6,7 +6,7 @@ Connector Builder offers the most straightforward method for building, contribut
 
 ## When should I use Connector Builder?
 
-First, check if the API you want to use has an available connector in the [catalog](../../../integrations). If you find it there, you can use it as is.
+First, check if the API you want to use has an available connector in the [catalog](/integrations). If you find it there, you can use it as is.
 If the connector you're looking for doesn't already exist and you'd like to try creating your own implementation, the Connector Builder should be your first destination.
 
 ## Getting started

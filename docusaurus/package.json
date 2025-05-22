@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "prepare-sidebar": "node scripts/prepare-sidebar-data.js",
+    "prepare-sidebar": "node src/scripts/prepare-sidebar-data.js",
     "prebuild": "pnpm run prepare-sidebar",
     "prestart": "pnpm run prepare-sidebar",
     "docusaurus": "docusaurus",
@@ -141,7 +141,7 @@
     "yaml-loader": "^0.8.0"
   },
   "resolutions": {
-    "dompurify": "3.2.4",
+    "dompurify": "3.1.6",
     "jsonpath-plus": "10.3.0"
   },
   "browserslist": {

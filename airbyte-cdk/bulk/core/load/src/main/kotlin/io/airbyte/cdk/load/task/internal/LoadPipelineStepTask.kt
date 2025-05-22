@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.task.internal
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.PipelineInputEvent
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -328,8 +329,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 @Requires(bean = LoadStrategy::class)
 class LoadPipelineStepTaskFactory(
     @Named("batchStateUpdateQueue") val batchUpdateQueue: QueueWriter<BatchUpdate>,
-    @Named("pipelineInputQueue")
-    val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("dataChannelInputFlows") val inputFlows: Array<Flow<PipelineInputEvent>>,
     private val flushStrategy: PipelineFlushStrategy,
 ) {
     // A map of (TaskId, Stream) ->  streams to ensure eos is not forwarded from
@@ -373,7 +373,7 @@ class LoadPipelineStepTaskFactory(
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
         return create(
             batchAccumulator,
-            recordQueue.consume(part),
+            inputFlows[part],
             outputPartitioner,
             outputQueue,
             flushStrategy,
@@ -413,7 +413,7 @@ class LoadPipelineStepTaskFactory(
 
     fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> createIntermediateStep(
         batchAccumulator: BatchAccumulator<S, K1, T, U>,
-        inputQueue: PartitionedQueue<PipelineEvent<K1, T>>,
+        inputFlow: Flow<PipelineEvent<K1, T>>,
         outputPartitioner: OutputPartitioner<K1, T, K2, U>?,
         outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
         part: Int,
@@ -422,7 +422,7 @@ class LoadPipelineStepTaskFactory(
     ): LoadPipelineStepTask<S, K1, T, K2, U> {
         return create(
             batchAccumulator,
-            inputQueue.consume(part),
+            inputFlow,
             outputPartitioner,
             outputQueue,
             null,

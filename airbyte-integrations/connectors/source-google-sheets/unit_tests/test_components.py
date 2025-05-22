@@ -117,6 +117,10 @@ def test_dpath_schema_extractor(body, expected_records: List):
         ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
         ({"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
         ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, []),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"})],
+        ),
     ],
     ids=[
         "test_headers",
@@ -124,6 +128,7 @@ def test_dpath_schema_extractor(body, expected_records: List):
         "test_duplicate_headers_retrieved_not_first_position",
         "test_blank_values_terminate_row",
         "test_is_row_empty_with_empty_row",
+        "test_whitespace_terminates_row",
     ],
 )
 def test_parse_raw_schema_value(raw_schema_data, expected_data):

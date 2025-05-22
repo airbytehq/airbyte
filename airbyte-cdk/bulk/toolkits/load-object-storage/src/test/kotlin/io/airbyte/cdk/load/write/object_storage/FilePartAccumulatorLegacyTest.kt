@@ -98,7 +98,6 @@ class FilePartAccumulatorLegacyTest {
         return DestinationFile(
             stream,
             0,
-            "",
             DestinationFile.AirbyteRecordMessageFile(
                 fileUrl = file.absolutePath,
                 fileRelativePath = fileRelativePath,

@@ -11,19 +11,15 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 
-sealed interface CheckpointMessageWrapped {
-    val sizeBytes: Long
-}
+sealed interface CheckpointMessageWrapped
 
 data class StreamCheckpointWrapped(
-    override val sizeBytes: Long,
     val stream: DestinationStream.Descriptor,
     val checkpointId: CheckpointId,
     val checkpoint: CheckpointMessage
 ) : CheckpointMessageWrapped
 
 data class GlobalCheckpointWrapped(
-    override val sizeBytes: Long,
     val streamIndexes: List<Pair<DestinationStream.Descriptor, CheckpointId>>,
     val checkpoint: CheckpointMessage
 ) : CheckpointMessageWrapped

@@ -27,7 +27,7 @@ abstract class AzureBlobStorageWriteTest(
         recordMangler = UncoercedExpectedRecordMapper,
         destinationCleaner = NoopDestinationCleaner,
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,

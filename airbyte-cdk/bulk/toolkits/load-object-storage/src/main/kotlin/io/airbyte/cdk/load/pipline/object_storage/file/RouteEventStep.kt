@@ -13,12 +13,13 @@ import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.task.Task
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 
 @Singleton
 class RouteEventStep(
     private val catalog: DestinationCatalog,
-    @Named("pipelineInputQueue")
-    private val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("dataChannelInputFlows")
+    private val inputFlows: Array<Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
     @Named("fileQueue")
     private val fileQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("recordQueue")
@@ -29,7 +30,7 @@ class RouteEventStep(
     override fun taskForPartition(partition: Int): Task =
         RouteEventTask(
             catalog,
-            inputQueue,
+            inputFlows[0],
             fileQueue,
             recordQueue,
             partition,

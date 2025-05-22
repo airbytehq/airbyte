@@ -268,8 +268,8 @@ class FileChunkTaskTest<T> {
             DestinationRecordRaw(
                 stream = stream,
                 rawData = message,
-                serialized = "",
                 schema = schema,
+                serializedSizeBytes = 0L
             )
     }
 }

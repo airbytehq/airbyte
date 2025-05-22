@@ -1231,6 +1231,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         if next_page_token:
             payload.update(next_page_token["payload"])
 
+        logger.debug(f"CRMSearchStream search. URL: {self.url}, Body: {payload}")
         response, raw_response = self.search(url=self.url, data=payload)
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
             stream_records[record["id"]] = record
@@ -1668,14 +1669,6 @@ class Goals(CRMObjectIncrementalStream):
     last_modified_field = "hs_lastmodifieddate"
     primary_key = "id"
     scopes = {"crm.objects.goals.read"}
-
-
-class Leads(CRMSearchStream):
-    entity = "leads"
-    last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "companies"]
-    primary_key = "id"
-    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.leads.read"}
 
 
 class LineItems(CRMObjectIncrementalStream):

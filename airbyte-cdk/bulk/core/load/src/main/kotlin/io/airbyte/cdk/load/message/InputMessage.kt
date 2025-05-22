@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 
 sealed interface InputMessage {
@@ -27,6 +28,7 @@ data class InputRecord(
     val emittedAtMs: Long,
     val meta: Meta?,
     val serialized: String,
+    val fileReference: AirbyteRecordMessageFileReference? = null,
 ) : InputMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -35,12 +37,14 @@ data class InputRecord(
         data: String,
         emittedAtMs: Long,
         changes: MutableList<Meta.Change> = mutableListOf(),
+        fileReference: AirbyteRecordMessageFileReference? = null,
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
         data = JsonToAirbyteValue().convert(data.deserializeToNode()),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = "",
+        fileReference,
     )
 
     override fun asProtocolMessage(): AirbyteMessage =
@@ -56,6 +60,9 @@ data class InputRecord(
                         if (meta != null) {
                             it.withMeta(meta.asProtocolObject())
                         }
+                        if (fileReference != null) {
+                            it.withFileReference(fileReference)
+                        }
                     }
             )
 }
@@ -67,12 +74,10 @@ data class InputFile(
         stream: DestinationStream,
         emittedAtMs: Long,
         fileMessage: DestinationFile.AirbyteRecordMessageFile,
-        serialized: String = ""
     ) : this(
         DestinationFile(
             stream,
             emittedAtMs,
-            serialized,
             fileMessage,
         )
     )
@@ -97,6 +102,7 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
+            0L
         )
     )
     override fun asProtocolMessage(): AirbyteMessage = checkpoint.asProtocolMessage()

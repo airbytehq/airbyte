@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
@@ -25,7 +26,7 @@ class MockBasicFunctionalityIntegrationTest :
         UncoercedExpectedRecordMapper,
         NoopNameMapper,
         isStreamSchemaRetroactive = false,
-        supportsDedup = true,
+        dedupBehavior = DedupBehavior(),
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,

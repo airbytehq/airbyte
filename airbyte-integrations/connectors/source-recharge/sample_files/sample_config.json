@@ -1,4 +1,6 @@
 {
   "access_token": "<your-recharge-token>",
-  "start_date": "2021-05-01T00:00:00Z"
+  "start_date": "2025-05-13T00:00:00Z",
+  "use_orders_deprecated_api": false,
+  "lookback_window_days": 0
 }

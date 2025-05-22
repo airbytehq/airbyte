@@ -755,6 +755,10 @@ serviceAccount:
 
 See [Multiple region deployments](multi-region).
 
+### Enabling audit logs
+
+See [Audit logging](audit-logging.md).
+
 ## AWS Policies Appendix
 
 Ensure your access key is tied to an IAM user or you are using a Role with the following policies.

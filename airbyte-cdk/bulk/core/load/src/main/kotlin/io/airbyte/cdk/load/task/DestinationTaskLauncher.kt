@@ -10,12 +10,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.PartitionedQueue
-import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.SyncManager
@@ -80,8 +75,8 @@ class DestinationTaskLauncher(
     private val syncManager: SyncManager,
 
     // Internal Tasks
-    private val inputConsumerTask: InputConsumerTask,
-    private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
+    private val inputConsumerTask: InputConsumerTask? = null,
+    private val heartbeatTask: HeartbeatTask? = null,
     private val updateBatchTask: UpdateBatchStateTaskFactory,
 
     // Implementor Tasks
@@ -100,9 +95,6 @@ class DestinationTaskLauncher(
 
     // Async queues
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
-    @Named("pipelineInputQueue")
-    private val pipelineInputQueue:
-        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
 ) {
@@ -162,9 +154,11 @@ class DestinationTaskLauncher(
     }
 
     suspend fun run() {
-        // Start the input consumer ASAP
-        log.info { "Starting input consumer task" }
-        launch(inputConsumerTask)
+        // Start the input consumer ASAP if/a
+        inputConsumerTask?.let {
+            log.info { "Starting input consumer task" }
+            launch(it)
+        }
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
@@ -179,8 +173,10 @@ class DestinationTaskLauncher(
         loadPipeline!!.start { launch(it) }
         log.info { "Launching update batch task" }
         launch(updateBatchTask.make(this))
-        log.info { "Launching heartbeat task" }
-        launch(heartbeatTask)
+        heartbeatTask?.let {
+            log.info { "Launching heartbeat task" }
+            launch(it)
+        }
 
         log.info { "Starting checkpoint update task" }
         launch(updateCheckpointsTask)
@@ -188,7 +184,6 @@ class DestinationTaskLauncher(
         // Await completion
         val result = succeeded.receive()
         openStreamQueue.close()
-        pipelineInputQueue.close()
         batchUpdateQueue.close()
         if (result) {
             taskScopeProvider.close()

@@ -29,8 +29,8 @@ const config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
-  onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "throw",
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
@@ -97,7 +97,7 @@ const config = {
     ],
   ],
   plugins: [
-    // This plugin controls "platform" docs, which are to be versioned
+    // This plugin controls "platform" docs, which are versioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -114,7 +114,24 @@ const config = {
         ],
       },
     ],
-    // This plugin controls release notes, which are unversioned
+    // This plugin controls Airbyte Embedded docs, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded",
+        path: "../docs/embedded",
+        routeBasePath: "/embedded",
+        sidebarPath: "./sidebar-embedded.js",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
+      },
+    ],
+    // This plugin controls release notes, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -131,7 +148,7 @@ const config = {
         ],
       },
     ],
-    // This plugin controls "connector/source/destination" docs, which are unversioned by Docusaurus and use their own versioning
+    // This plugin controls Connector docs, which are unversioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -232,6 +249,13 @@ const config = {
             docsPluginId: "release_notes",
             sidebarId: "releaseNotes",
             label: "Release notes",
+          },
+          {
+            type: "docSidebar",
+            position: "left",
+            docsPluginId: "embedded",
+            sidebarId: "embedded",
+            label: "Airbyte Embedded",
           },
           {
             href: "https://support.airbyte.com/",

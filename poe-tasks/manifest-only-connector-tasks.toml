@@ -32,6 +32,8 @@ test-all = [
   "test-integration-tests",
 ]
 test-unit-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
 if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
   echo "Found 'unit_tests/pyproject.toml' file, running unit tests..."
   cd ${POE_PWD}/unit_tests
@@ -45,6 +47,8 @@ test-integration-tests = "airbyte-cdk connector test ${POE_PWD}"
 format-check = "echo 'No format check step for this connector.'"
 
 lock.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
 if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
   echo "Found 'unit_tests/pyproject.toml' file, locking unit tests project..."
   cd ${POE_PWD}/unit_tests

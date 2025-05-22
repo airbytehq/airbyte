@@ -65,7 +65,7 @@ class DestinationMessageTest {
             // as `Int?`.
             // Fortunately, the protocol models are (by definition) round-trippable through JSON.
             serialized.deserializeToClass(AirbyteMessage::class.java),
-            serialized,
+            serialized.length.toLong()
         )
     }
 
@@ -351,12 +351,7 @@ class DestinationMessageTest {
                 .withRecord(AirbyteRecordMessage().withFileReference(fileRefProto))
 
         val internalRecord =
-            DestinationRecordRaw(
-                mockk(),
-                msg,
-                "serialized",
-                mockk(),
-            )
+            DestinationRecordRaw(mockk(), msg, mockk(), "serialized".length.toLong())
 
         assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
         assertEquals(sourceFileRelativePath, internalRecord.fileReference!!.sourceFileRelativePath)
@@ -370,12 +365,7 @@ class DestinationMessageTest {
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(AirbyteRecordMessage().withFileReference(null))
         val internalRecord =
-            DestinationRecordRaw(
-                mockk(),
-                msg,
-                "serialized",
-                mockk(),
-            )
+            DestinationRecordRaw(mockk(), msg, mockk(), "serialized".length.toLong())
 
         assertNull(internalRecord.fileReference)
     }

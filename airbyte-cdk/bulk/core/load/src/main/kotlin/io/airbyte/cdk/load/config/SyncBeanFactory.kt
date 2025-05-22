@@ -8,16 +8,8 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.FileTransferQueueMessage
-import io.airbyte.cdk.load.message.MultiProducerChannel
-import io.airbyte.cdk.load.message.PartitionedQueue
-import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.write.LoadStrategy
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
@@ -60,16 +52,6 @@ class SyncBeanFactory {
      * ASYNCHRONOUS QUEUES
      * ********************/
 
-    // DEPRECATED: Legacy file transfer.
-    @Singleton
-    @Named("fileMessageQueue")
-    fun fileMessageQueue(
-        config: DestinationConfiguration,
-    ): MultiProducerChannel<FileTransferQueueMessage> {
-        val channel = Channel<FileTransferQueueMessage>(config.batchQueueDepth)
-        return MultiProducerChannel(1, channel, "fileMessageQueue")
-    }
-
     /**
      * A queue of streams to open on. This allows the dev to control the number of concurrent calls
      * to open by controlling how many workers (coroutines) are pulling from this queue.
@@ -77,24 +59,6 @@ class SyncBeanFactory {
     @Singleton
     @Named("openStreamQueue")
     class OpenStreamQueue : ChannelMessageQueue<DestinationStream>(Channel(Channel.UNLIMITED))
-
-    /**
-     * A single record queue for the whole sync, containing all streams, optionally partitioned by a
-     * configurable number of partitions. Number of partitions is controlled by the specified
-     * LoadStrategy, if any.
-     */
-    @Singleton
-    @Named("pipelineInputQueue")
-    fun pipelineInputQueue(
-        loadStrategy: LoadStrategy? = null,
-        @Named("isFileTransfer") isFileTransfer: Boolean = false,
-    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
-        return StrictPartitionedQueue(
-            Array(if (isFileTransfer) 1 else loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
-        )
-    }
 
     /** A queue for updating batch states, which is not partitioned. */
     @Singleton
