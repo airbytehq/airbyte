@@ -32,7 +32,7 @@
   --ifm-table-border-color: var(--ifm-color-primary-lightest);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
 
-  --color-white: hsl(246, 100%, 96%);
+  --color-white: hsl(0, 0%, 100%);
   --color-grey-40: hsl(240, 25%, 98%);
   --color-grey-100: hsl(240, 12%, 92%);
   --color-grey-400: hsl(239, 10%, 59%);
