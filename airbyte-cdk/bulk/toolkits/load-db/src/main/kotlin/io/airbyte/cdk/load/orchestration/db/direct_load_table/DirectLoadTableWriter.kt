@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.write.StreamStateStore
  * with `_airbyte_tmp`), you MUST provide this object.
  */
 class DirectLoadTableWriter(
+    private val internalNamespace: String,
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val destinationHandler: DatabaseHandler,
@@ -33,10 +34,9 @@ class DirectLoadTableWriter(
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
     override suspend fun setup() {
-        // TODO also create airbyte_internal namespace
         val namespaces =
             names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }.toSet()
-        destinationHandler.createNamespaces(namespaces)
+        destinationHandler.createNamespaces(namespaces + listOf(internalNamespace))
 
         directLoadTableTempTableNameMigration?.execute(names)
 
@@ -47,7 +47,7 @@ class DirectLoadTableWriter(
         val initialStatus = initialStatuses[stream]!!
         val tableNameInfo = names[stream]!!
         val realTableName = tableNameInfo.tableNames.finalTableName!!
-        val tempTableName = realTableName.asTempTable()
+        val tempTableName = realTableName.asTempTable(internalNamespace = internalNamespace)
         val columnNameMapping = tableNameInfo.columnNameMapping
         return when (stream.minimumGenerationId) {
             0L ->
@@ -94,6 +94,7 @@ class DirectLoadTableWriter(
                         DirectLoadTableDedupTruncateStreamLoader(
                             stream,
                             initialStatus,
+                            internalNamespace = internalNamespace,
                             realTableName = realTableName,
                             tempTableName = tempTableName,
                             columnNameMapping,

@@ -19,8 +19,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
-class BigqueryDirectLoadDatabaseInitialStatusGatherer(private val bigquery: BigQuery) :
-    DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
+class BigqueryDirectLoadDatabaseInitialStatusGatherer(
+    private val bigquery: BigQuery,
+    private val internalTableDataset: String,
+) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
         streams: TableCatalog,
     ): Map<DestinationStream, DirectLoadInitialStatus> {
@@ -32,7 +34,13 @@ class BigqueryDirectLoadDatabaseInitialStatusGatherer(private val bigquery: BigQ
                     map[stream] =
                         DirectLoadInitialStatus(
                             realTable = getTableStatus(tableName),
-                            tempTable = getTableStatus(tableName.asTempTable()),
+                            // TODO this feels sketchy. We maybe should compute the temp table name
+                            //   in DirectLoadTableWriter, then pass that down to the status
+                            //   gatherer (and wherever else we're using it)?
+                            tempTable =
+                                getTableStatus(
+                                    tableName.asTempTable(internalNamespace = internalTableDataset)
+                                ),
                         )
                 }
             }

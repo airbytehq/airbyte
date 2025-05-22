@@ -23,6 +23,7 @@ interface DirectLoadTableTempTableNameMigration {
 }
 
 class DefaultDirectLoadTableTempTableNameMigration(
+    private val internalNamespace: String,
     private val tableExistenceChecker: DirectLoadTableExistenceChecker,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
 ) : DirectLoadTableTempTableNameMigration {
@@ -32,7 +33,8 @@ class DefaultDirectLoadTableTempTableNameMigration(
                 .map { (_, tableNameInfo) ->
                     val realTableName = tableNameInfo.tableNames.finalTableName!!
                     val oldTempTableName = realTableName.asOldStyleTempTable()
-                    val newTempTableName = realTableName.asTempTable()
+                    val newTempTableName =
+                        realTableName.asTempTable(internalNamespace = internalNamespace)
                     oldTempTableName to newTempTableName
                 }
                 .toMap()
@@ -42,7 +44,8 @@ class DefaultDirectLoadTableTempTableNameMigration(
             for (oldTempTableName in existingOldTempTables) {
                 launch {
                     val realTableName = oldTempNameToNewTempName[oldTempTableName]!!
-                    val tempTableName = realTableName.asTempTable()
+                    val tempTableName =
+                        realTableName.asTempTable(internalNamespace = internalNamespace)
                     sqlTableOperations.overwriteTable(oldTempTableName, tempTableName)
                 }
             }

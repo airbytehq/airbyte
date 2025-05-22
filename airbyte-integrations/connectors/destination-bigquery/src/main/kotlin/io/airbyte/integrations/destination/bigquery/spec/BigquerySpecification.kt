@@ -105,13 +105,13 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7, "default": false}""")
     val legacyRawTablesOnly: Boolean? = null
 
-    @get:JsonSchemaTitle("Legacy Raw Table Dataset Name")
+    @get:JsonSchemaTitle("Airbyte Internal Table Dataset Name")
     @get:JsonPropertyDescription(
-        """The dataset to write raw tables into (default: airbyte_internal). Only relevant if you enable legacy raw tables.""",
+        """Airbyte will use this dataset for various internal tables (default: airbyte_internal). In legacy raw tables mode, the raw tables will be stored in this dataset.""",
     )
     @get:JsonProperty("raw_data_dataset")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
-    val rawTableDataset: String? = null
+    val internalTableDataset: String? = null
 }
 
 @JsonTypeInfo(

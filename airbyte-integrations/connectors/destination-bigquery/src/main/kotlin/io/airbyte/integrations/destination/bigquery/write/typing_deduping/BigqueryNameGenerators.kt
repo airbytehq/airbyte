@@ -22,7 +22,7 @@ private val nameTransformer = BigQuerySQLNameTransformer()
 class BigqueryRawTableNameGenerator(val config: BigqueryConfiguration) : RawTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
-            nameTransformer.getNamespace(config.rawTableDataset),
+            nameTransformer.getNamespace(config.internalTableDataset),
             nameTransformer.convertStreamName(
                 TypingDedupingUtil.concatenateRawTableName(
                     streamDescriptor.namespace ?: config.datasetId,
