@@ -7,7 +7,7 @@ data:
       - api.airtable.com
       - airtable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.49.0.post65.dev15174030141@sha256:45ea3c9b97a31b31985ddf855a986bed166e2328d0d7480eea1ea1310ed31f9a
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
