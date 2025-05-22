@@ -684,7 +684,27 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
-
+  config_normalization_rules:
+    config_migrations:
+        - type: ConfigMigrations
+          description: |
+            Remaps the existing config authentication format to a new format
+            OLD: {"api_key": ...}
+            NEW: {"credentials": ..., "auth_method": "api_key"}
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  field_path:
+                    - "credentials"
+                  value: "{{ config['api_key'] }}"
+                - type: AddedFieldDefinition
+                  field_path:
+                    - "auth_method"
+                  value: "api_key"
+            - type: ConfigRemoveFields
+              field_pointers:
+                - ["api_key"]
 schemas:
   bases:
     type: object

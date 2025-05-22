@@ -7,11 +7,11 @@ data:
       - api.airtable.com
       - airtable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.49.0.post65.dev15174030141@sha256:45ea3c9b97a31b31985ddf855a986bed166e2328d0d7480eea1ea1310ed31f9a
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.5.1
+  dockerImageTag: 4.6.0
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   githubIssueLabel: source-airtable
