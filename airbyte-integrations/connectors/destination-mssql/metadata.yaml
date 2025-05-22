@@ -15,8 +15,13 @@ data:
             alias: airbyte-connector-testing-secret-store
             type: GSM
   connectorType: destination
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.1"
+      supportedSerialization: ["JSONL"]
+      supportedTransport: ["STDIO"]
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 2.2.9
+  dockerImageTag: 2.2.10
   dockerRepository: airbyte/destination-mssql
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   githubIssueLabel: destination-mssql

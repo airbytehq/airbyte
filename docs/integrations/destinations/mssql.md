@@ -158,6 +158,7 @@ See the [Getting Started: Configuration section](#configuration) of this guide f
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.2.10     | 2025-05-19 | [60791](https://github.com/airbytehq/airbyte/pull/60791)   | Just a test                                                                                         |
 | 2.2.9      | 2025-05-19 | [60791](https://github.com/airbytehq/airbyte/pull/60791)   | Fix bug in detecting schema change when stream has no columns                                       |
 | 2.2.8      | 2025-05-08 | [59735](https://github.com/airbytehq/airbyte/pull/59735)   | Cleanup: Remove unused code                                                                         |
 | 2.2.7      | 2025-05-07 | [56444](https://github.com/airbytehq/airbyte/pull/56444)   | CDK: Internal refactor; perf improvements                                                           |
