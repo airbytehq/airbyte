@@ -37,9 +37,9 @@ data:
     - language:python
     - cdk:low-code
   ab_internal:
-    sl: 200
+    sl: 100
     ql: 400
-  supportLevel: certified
+  supportLevel: community
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
