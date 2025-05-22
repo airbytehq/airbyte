@@ -14,7 +14,10 @@ application {
 }
 
 dependencies {
-    implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067'
+    implementation 'com.amazon.redshift:redshift-jdbc42:2.1.0.32'
+    // TODO: remove this once the dependency v1 SDK dependency on StringUtils for the metadata is removed.
+    // https://github.com/aws/amazon-redshift-jdbc-driver/issues/132
+    implementation 'com.amazonaws:aws-java-sdk-core:1.12.775'
 
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation "org.testcontainers:jdbc:1.19.4"
