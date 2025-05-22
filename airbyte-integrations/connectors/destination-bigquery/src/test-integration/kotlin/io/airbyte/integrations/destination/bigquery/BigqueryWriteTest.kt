@@ -152,8 +152,8 @@ class StandardInsert :
         CdcDeletionMode.HARD_DELETE,
     ) {
     @Test
-    override fun testDedupChangeCursor() {
-        super.testDedupChangeCursor()
+    override fun testDedupChangePk() {
+        super.testDedupChangePk()
     }
 }
 

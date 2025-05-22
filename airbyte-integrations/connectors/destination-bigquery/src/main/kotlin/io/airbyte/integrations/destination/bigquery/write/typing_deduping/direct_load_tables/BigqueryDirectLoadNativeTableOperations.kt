@@ -32,13 +32,14 @@ private val logger = KotlinLogging.logger {}
 
 class BigqueryDirectLoadNativeTableOperations(
     private val bigquery: BigQuery,
+    private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
 ) : DirectLoadTableNativeOperations {
     override fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ) {
         val existingTable =
             bigquery.getTable(tableName.toTableId()).getDefinition<TableDefinition>()
@@ -48,21 +49,32 @@ class BigqueryDirectLoadNativeTableOperations(
             "Stream ${stream.descriptor.toPrettyString()} had alter table report $alterTableReport"
         }
         if (shouldRecreateTable) {
-            // roughly:
-            // 1. create a temp table
-            // 2. copy the existing data into it (casting columns as needed)
-            // 3. replace the real table with the temp table
-            TODO()
-        } else {
+            logger.info {
+                "Stream ${stream.descriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
+            }
+            recreateTable(
+                stream,
+                columnNameMapping,
+                tableName,
+                alterTableReport.columnsToRetain,
+                alterTableReport.columnsToChangeType,
+            )
+        } else if (!alterTableReport.isNoOp) {
+            logger.info {
+                "Stream ${stream.descriptor.toPrettyString()} detected schema change. Altering the table."
+            }
             databaseHandler.execute(
                 getAlterTableSql(
-                    projectId = projectId,
                     tableName,
                     columnsToAdd = alterTableReport.columnsToAdd,
                     columnsToRemove = alterTableReport.columnsToRemove,
                     columnsToChange = alterTableReport.columnsToChangeType,
                 )
             )
+        } else {
+            logger.info {
+                "Stream ${stream.descriptor.toPrettyString()} has correct schema; no action needed."
+            }
         }
     }
 
@@ -171,8 +183,64 @@ class BigqueryDirectLoadNativeTableOperations(
         return "CAST($columnName AS $newType)"
     }
 
+    /**
+     * roughly:
+     * 1. create a temp table
+     * 2. copy the existing data into it (casting columns as needed)
+     * 3. replace the real table with the temp table
+     */
+    private fun recreateTable(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        tableName: TableName,
+        columnsToRetain: List<String>,
+        columnsToChange: List<ColumnChange<StandardSQLTypeName>>,
+    ) {
+        val tempTableName =
+            tableName.asTempTable().let { it.copy(name = it.name + "_airbyte_tmp_schema_change") }
+
+        val originalTableId = "`$projectId`.`${tableName.namespace}`.`${tableName.name}`"
+        val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
+        val columnList =
+            (Meta.COLUMN_NAMES + columnsToRetain + columnsToChange.map { it.name }).joinToString(
+                ","
+            )
+        val valueList =
+            (Meta.COLUMN_NAMES +
+                    columnsToRetain +
+                    columnsToChange.map {
+                        getColumnCastStatement(
+                            columnName = it.name,
+                            originalType = it.originalType,
+                            newType = it.newType,
+                        )
+                    })
+                .joinToString(",")
+        val insertToTempTable =
+            Sql.of(
+                """
+                INSERT INTO $tempTableId
+                ($columnList)
+                SELECT
+                $valueList
+                FROM $originalTableId
+                """.trimIndent()
+            )
+
+        logger.info {
+            "Stream ${stream.descriptor.toPrettyString()} using temporary table ${tempTableName.toPrettyString()} to recreate table ${tableName.toPrettyString()}."
+        }
+        sqlOperations.createTable(
+            stream,
+            tempTableName,
+            columnNameMapping,
+            replace = true,
+        )
+        databaseHandler.execute(insertToTempTable)
+        sqlOperations.overwriteTable(tempTableName, tableName)
+    }
+
     private fun getAlterTableSql(
-        projectId: String,
         tableName: TableName,
         columnsToAdd: List<ColumnAdd<StandardSQLTypeName>>,
         columnsToRemove: List<String>,

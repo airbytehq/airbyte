@@ -51,16 +51,18 @@ data class TableName(val namespace: String, val name: String) {
      * [asOldStyleTempTable] instead
      */
     fun asTempTable(length: Int = 32) =
-        copy(
+        TableName(
             name =
-                DigestUtils.sha256Hex(
-                        TypingDedupingUtil.concatenateRawTableName(
-                            namespace,
-                            name + TMP_TABLE_SUFFIX
-                        )
-                    )
+                // sha256 might start with a digit, so prefix with a letter
+                ("a" +
+                        DigestUtils.sha256Hex(
+                            TypingDedupingUtil.concatenateRawTableName(
+                                namespace,
+                                name + TMP_TABLE_SUFFIX
+                            )
+                        ))
                     .substring(length),
-            namespace = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+            namespace = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
         )
 
     fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)

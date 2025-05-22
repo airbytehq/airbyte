@@ -1950,9 +1950,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 randomizedNamespace,
                 "test_stream",
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
-                // this is unrealistic (extractedAt should always increase between syncs),
-                // but it lets us force the dedupe behavior to rely solely on the cursor column,
-                // instead of being able to fallback onto extractedAt.
                 emittedAtMs = emittedAtMs,
             )
         runSync(
@@ -1980,6 +1977,89 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             primaryKey = listOf(listOf("id")),
             cursor = listOf("cursor2"),
+        )
+    }
+
+    /**
+     * This is a bit of an edge case, but we should handle it regardless. If the user configures a
+     * primary key, then changes it (e.g. they realize that their composite key doesn't need to
+     * include a certain column), we should do _something_ reasonable.
+     *
+     * Intentionally not doing a complex scenario here; users should probably just truncate refresh
+     * if they want to do this. Just assert that if we upsert a record after changing the PK, the
+     * upsert looks correct.
+     */
+    @Test
+    open fun testDedupChangePk() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
+        fun makeStream(secondPk: String) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Dedupe(
+                    primaryKey = listOf(listOf("id1"), listOf(secondPk)),
+                    cursor = listOf("updated_at"),
+                ),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id1" to intType,
+                            "id2" to intType,
+                            "id3" to intType,
+                            "updated_at" to intType,
+                            "name" to stringType,
+                        )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        fun makeRecord(secondPk: String, emittedAtMs: Long) =
+            InputRecord(
+                randomizedNamespace,
+                "test_stream",
+                data =
+                    """{"id1": 1, "$secondPk": 200, "updated_at": 1, "name": "foo_$emittedAtMs"}""",
+                emittedAtMs = emittedAtMs,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(secondPk = "id2"),
+            listOf(makeRecord(secondPk = "id2", emittedAtMs = 100)),
+        )
+        val stream2 = makeStream(secondPk = "id3")
+        runSync(updatedConfig, stream2, listOf(makeRecord(secondPk = "id3", emittedAtMs = 200)))
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to 1,
+                            "id2" to 200,
+                            "updated_at" to 1,
+                            "name" to "foo_100",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 200,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to 1,
+                            "id3" to 200,
+                            "updated_at" to 1,
+                            "name" to "foo_200",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id1"), listOf("id3")),
+            cursor = listOf("updated_at"),
         )
     }
 

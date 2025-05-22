@@ -119,6 +119,7 @@ class BigqueryBeansFactory {
                 nativeTableOperations =
                     BigqueryDirectLoadNativeTableOperations(
                         bigquery,
+                        sqlTableOperations,
                         destinationHandler,
                         projectId = config.projectId,
                     ),
