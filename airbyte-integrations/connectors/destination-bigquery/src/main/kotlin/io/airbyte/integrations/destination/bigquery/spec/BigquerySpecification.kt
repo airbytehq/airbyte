@@ -109,6 +109,7 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription(
         """Airbyte will use this dataset for various internal tables (default: airbyte_internal). In legacy raw tables mode, the raw tables will be stored in this dataset.""",
     )
+    // for backwards compatibility, the JSON property is still called raw_data_dataset.
     @get:JsonProperty("raw_data_dataset")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
