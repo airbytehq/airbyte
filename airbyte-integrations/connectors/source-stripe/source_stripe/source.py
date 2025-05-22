@@ -285,8 +285,6 @@ class SourceStripe(YamlDeclarativeSource):
         # TODO: Remove all Python connector-related implementations once this issue is resolved –
         #  https://github.com/airbytehq/oncall/issues/7876
 
-
-
         streams = [
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="invoice_line_items",
@@ -314,9 +312,9 @@ class SourceStripe(YamlDeclarativeSource):
             StripeSubStream(
                 name="usage_records",
                 path=lambda self,
-                            stream_slice,
-                            *args,
-                            **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
+                stream_slice,
+                *args,
+                **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,
