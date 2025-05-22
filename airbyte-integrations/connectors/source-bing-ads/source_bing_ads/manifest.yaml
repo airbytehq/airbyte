@@ -72,11 +72,30 @@ definitions:
           PageInfo:
             Index: "{{ next_page_token.next_page_token }}"
             Size: 1000
-          Predicates:
-            - Field: UserId
-              Operator: Equals
-              Value: "'{{ stream_partition['user_id'] }}'"
-          ReturnAdditionalFields: TaxCertificate,AccountMode
+          Predicates: |
+            {% if "account_names" in config and config["account_names"] | length %}
+            [
+              {
+                "Field": "UserId",
+                "Operator": "Equals",
+                "Value": "{{ stream_partition['user_id'] }}"
+              },
+              {
+                "Field": "AccountName",
+                "Operator": "{{ stream_slice.account_name['operator'] }}",
+                "Value": "{{ stream_slice.account_name['name'] }}"
+              }
+            ]
+            {% else %}
+            [
+              {
+                "Field": "UserId",
+                "Operator": "Equals",
+                "Value": "{{ stream_partition['user_id'] }}"
+              }
+            ]
+            {% endif %}
+          ReturnAdditionalFields: "TaxCertificate,AccountMode"
         authenticator: "#/definitions/authenticator"
       paginator:
         type: DefaultPaginator
@@ -85,13 +104,16 @@ definitions:
           inject_on_first_request: true
           page_size: 1000
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: Id
-            partition_field: user_id
-            stream:
-              $ref: "#/definitions/users_stream"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/users_stream"
+        - type: ListPartitionRouter
+          values: "{{ config['account_names'] if 'account_names' in config and config['account_names'] | length else [''] }}"
+          cursor_field: account_name
       record_selector:
         type: RecordSelector
         extractor:
