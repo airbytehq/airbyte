@@ -112,7 +112,8 @@ def scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
     if isinstance(stream, BaseStream):
         return stream.scope_is_granted(granted_scopes)
     else:
-        return len(scopes.get(stream.name, set()).intersection(granted_scopes)) > 0
+        # The default value is scopes for custom objects streams
+        return len(scopes.get(stream.name, {"crm.schemas.custom.read", "crm.objects.custom.read"}).intersection(granted_scopes)) > 0
 
 
 def properties_scope_is_granted(stream: Stream, granted_scopes: List[str]) -> bool:
