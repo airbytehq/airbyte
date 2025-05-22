@@ -1,0 +1,6 @@
+namespace io.airbyte.protocol;
+
+enum AirbyteRecordChangeType:int {
+  NULLED = 0,
+  TRUNCATED = 1
+}
