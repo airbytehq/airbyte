@@ -6,15 +6,29 @@ jobs:
   dependencies-diff:
     name: Gradle Dependency Diff
     runs-on: ubuntu-latest
-    # As of now, the diff analysis does not work for forks.
-    if: github.event.pull_request.head.repo.fork == false
     steps:
-      - name: Checkout Code
+      - name: Checkout base branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          repository: ${{ github.event.pull_request.base.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: old
+          submodules: 'recursive'
+      - name: Checkout PR merge result
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: new
+          submodules: 'recursive'
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
       - name: Run Gradle Dependency Diff
-        uses: be-hase/gradle-dependency-diff-action@v2
+        uses: airbytehq/gradle-dependency-diff-action@v0.1-rc1
+        with:
+          old-repo-dir: old
+          new-repo-dir: new
