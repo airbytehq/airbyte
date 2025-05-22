@@ -210,7 +210,9 @@ jobs:
           context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.java-connector
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          tags: |
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
             CONNECTOR_NAME=${{ matrix.connector }}
@@ -274,7 +276,9 @@ jobs:
           context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.python-connector
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+          tags: |
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
             CONNECTOR_NAME=${{ matrix.connector }}
