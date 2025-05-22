@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    sl: 100
+    ql: 100
   allowedHosts:
     hosts:
       - openexchangerates.org
