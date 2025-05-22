@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -52,6 +53,7 @@ class BigqueryBatchStandardInsertsLoader(
     private var buffer: ByteArrayOutputStream? = ByteArrayOutputStream()
     private lateinit var writer: TableDataWriteChannel
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
@@ -82,6 +84,9 @@ class BigqueryBatchStandardInsertsLoader(
 
     override fun close() {}
 
+    // Somehow spotbugs thinks that `writer.write(ByteBuffer.wrap(byteArray))` is a redundant null
+    // check...
+    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
     private fun switchToWriteChannel() {
         writer =
             try {
