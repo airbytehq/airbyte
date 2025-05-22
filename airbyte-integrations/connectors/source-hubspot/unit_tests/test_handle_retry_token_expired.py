@@ -8,6 +8,7 @@ from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffExcept
 
 from .conftest import find_stream
 
+
 def test_handle_request_with_retry(config, requests_mock):
     requests_mock.get(
         "https://api.hubapi.com/email/public/v1/campaigns?limit=500",

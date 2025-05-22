@@ -11,11 +11,10 @@ import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
-
-from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, get_source, read_from_stream
-from .utils import read_full_refresh, read_incremental
-
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+
+from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
+from .utils import read_full_refresh, read_incremental
 
 
 NUMBER_OF_PROPERTIES = 2000
@@ -32,8 +31,13 @@ def time_sleep_mock(mocker):
 def test_check_connection_ok(requests_mock, config):
     responses = [
         {
-            "json": [{"name": "hs__migration_soft_delete", "type": "enumeration",}],
-            "status_code": 200
+            "json": [
+                {
+                    "name": "hs__migration_soft_delete",
+                    "type": "enumeration",
+                }
+            ],
+            "status_code": 200,
         },
     ]
 
@@ -73,6 +77,7 @@ def test_streams(config):
     streams = get_source(config).streams(config)
     assert len(streams) == 32
 
+
 # TODO: uncomment when custom streams are low code
 # def test_custom_streams(config_experimental):
 #     custom_object_stream_instances = [MagicMock()]
@@ -94,8 +99,13 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     """Error once, check that we retry and not fail"""
     prop_response = [
         {
-            "json": [{"name": "hs__migration_soft_delete", "type": "enumeration",}],
-            "status_code": 200
+            "json": [
+                {
+                    "name": "hs__migration_soft_delete",
+                    "type": "enumeration",
+                }
+            ],
+            "status_code": 200,
         }
     ]
     responses = [
@@ -116,8 +126,13 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     """Error once, check that we retry and not fail"""
     prop_response = [
         {
-            "json": [{"name": "hs__migration_soft_delete", "type": "enumeration",}],
-            "status_code": 200
+            "json": [
+                {
+                    "name": "hs__migration_soft_delete",
+                    "type": "enumeration",
+                }
+            ],
+            "status_code": 200,
         }
     ]
     responses = [
@@ -284,7 +299,12 @@ class TestSplittingPropertiesFunctionality:
                 record_responses,
             )
         state = (
-            StateBuilder().with_stream_state("products", {"updatedAt": "2006-01-01T00:03:18.336Z"},).build()
+            StateBuilder()
+            .with_stream_state(
+                "products",
+                {"updatedAt": "2006-01-01T00:03:18.336Z"},
+            )
+            .build()
         )
 
         stream_records = read_from_stream(config, "products", SyncMode.incremental, state).records
@@ -295,6 +315,7 @@ class TestSplittingPropertiesFunctionality:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
             properties = [field for field in record if field.startswith("properties_")]
             assert len(properties) == NUMBER_OF_PROPERTIES
+
 
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
@@ -357,7 +378,12 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     # Create test_stream instance with some state
     test_stream = find_stream("companies", config)
     state = (
-        StateBuilder().with_stream_state("companies", {"updatedAt": "2022-02-24T16:43:11Z"},).build()
+        StateBuilder()
+        .with_stream_state(
+            "companies",
+            {"updatedAt": "2022-02-24T16:43:11Z"},
+        )
+        .build()
     )
 
     test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path() + "/search"
@@ -446,7 +472,12 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
         [{"status_code": 200, "json": {"results": [{"from": {"id": f"{x}"}, "to": [{"toObjectId": "2"}]}]}} for x in range(1, 11001, 200)],
     )
     state = (
-        StateBuilder().with_stream_state("companies", {"updatedAt": "2022-01-24T16:43:11Z"},).build()
+        StateBuilder()
+        .with_stream_state(
+            "companies",
+            {"updatedAt": "2022-01-24T16:43:11Z"},
+        )
+        .build()
     )
     output = read_from_stream(config, "companies", SyncMode.incremental, state)
     records = output.records
@@ -566,7 +597,12 @@ def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, request
     # Mocking Request
     requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
     state = (
-        StateBuilder().with_stream_state("engagements", {"lastUpdated": old_date},).build()
+        StateBuilder()
+        .with_stream_state(
+            "engagements",
+            {"lastUpdated": old_date},
+        )
+        .build()
     )
     output = read_from_stream(config, "engagements", SyncMode.incremental, state)
 
@@ -580,7 +616,7 @@ def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requ
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
-    recent_date = ab_datetime_now()- timedelta(days=10)  # 10 days ago
+    recent_date = ab_datetime_now() - timedelta(days=10)  # 10 days ago
     recent_date = int(recent_date.timestamp() * 1000)
     responses = [
         {
@@ -602,9 +638,7 @@ def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requ
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(
-    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
-):
+def test_engagements_stream_since_recent_date_more_than_10k(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,
@@ -633,6 +667,7 @@ def test_engagements_stream_since_recent_date_more_than_10k(
     output = read_from_stream(config, "engagements", SyncMode.incremental, state)
     assert len(output.records) == 100
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
+
 
 def test_pagination_marketing_emails_stream(requests_mock, config):
     """

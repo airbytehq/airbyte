@@ -10,6 +10,7 @@ from requests import Response
 
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
+
 # TODO: uncomments when deals is low code
 # @pytest.mark.parametrize(
 #     "input, expected",

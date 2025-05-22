@@ -1903,6 +1903,7 @@ definitions:
         - contacts
         - companies
       cursor_filter_property_field: lastmodifieddate
+      required_scopes: crm.objects.contacts.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1926,6 +1927,7 @@ definitions:
       name: deal_splits
       entity: deal_split
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.deals.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1943,6 +1945,7 @@ definitions:
         - companies
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.contacts.read, crm.objects.companies.read, crm.objects.leads.read
       schema_loader:
         - type: InlineSchemaLoader
           schema:
@@ -1961,6 +1964,7 @@ definitions:
         - contacts
         - deals
       cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: tickets
       schema_loader:
         - type: InlineSchemaLoader
           schema:

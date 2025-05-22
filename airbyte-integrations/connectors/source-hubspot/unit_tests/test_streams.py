@@ -3,17 +3,24 @@
 #
 
 import json
+
 import pytest
 
+from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalogSerializer,
+    StreamDescriptor,
+    SyncMode,
+)
 from airbyte_cdk.sources.types import Record
+from airbyte_cdk.test.entrypoint_wrapper import discover, read
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .conftest import find_stream, get_source, read_from_stream
-from .utils import read_full_refresh
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
-from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read, discover
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
-from .utils import read_incremental
+from .utils import read_full_refresh, read_incremental
 
 
 def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properties_list, custom_object_schema):
@@ -75,14 +82,10 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
         ("workflows", "", {"updatedAt": 1675121674226}),
     ],
 )
-def test_streams_read(
-    stream_class, endpoint, cursor_value, requests_mock, fake_properties_list, config
-):
+def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_properties_list, config):
     stream = find_stream(stream_class, config)
     data_field = (
-        stream.retriever.record_selector.extractor.field_path[0]
-        if len(stream.retriever.record_selector.extractor.field_path) > 0
-        else None
+        stream.retriever.record_selector.extractor.field_path[0] if len(stream.retriever.record_selector.extractor.field_path) > 0 else None
     )
     list_entities = [
         {
@@ -262,9 +265,7 @@ def test_stream_read_with_legacy_field_transformation(
 
 
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
-def test_crm_search_streams_with_no_associations(
-    sync_mode, requests_mock, fake_properties_list, config
-):
+def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_properties_list, config):
     stream_state = AirbyteStateMessage(
         type=AirbyteStateType.STREAM,
         stream=AirbyteStreamState(
@@ -398,9 +399,7 @@ def test_contact_lists_transform(requests_mock, config, custom_object_schema, mo
         assert isinstance(record.record.data["updatedAt"], str)
 
 
-def test_client_side_incremental_stream(
-    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
-):
+def test_client_side_incremental_stream(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     data_field = "results"
     latest_cursor_value = "2024-01-30T23:46:36.287000Z"
     responses = [
@@ -424,12 +423,12 @@ def test_client_side_incremental_stream(
         }
     ]
 
-
     requests_mock.register_uri("GET", "https://api.hubapi.com/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
 
     output = read_from_stream(config, "forms", SyncMode.incremental)
     assert output.state_messages[-1].state.stream.stream_state.__dict__["updatedAt"] == latest_cursor_value
+
 
 # TODO: uncomment when custom objects is low code
 # @pytest.fixture(name="expected_custom_object_json_schema")
@@ -476,6 +475,7 @@ def test_client_side_incremental_stream(
 #
 #
 
+
 @pytest.mark.parametrize(
     "stream_class, cursor_value, data_to_cast, expected_casted_data",
     [
@@ -485,9 +485,7 @@ def test_client_side_incremental_stream(
         ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": 1234.56}, {"rootMicId": "1234.56"}),
     ],
 )
-def test_cast_record_fields_with_schema_if_needed(
-    stream_class, cursor_value, requests_mock, data_to_cast, expected_casted_data, config
-):
+def test_cast_record_fields_with_schema_if_needed(stream_class, cursor_value, requests_mock, data_to_cast, expected_casted_data, config):
     """
     Test that the stream cast record fields with stream json schema if needed
     """
@@ -572,7 +570,7 @@ def test_cast_record_fields_if_needed(
     expected_casted_data,
     custom_object_schema,
     config,
-    mock_dynamic_schema_requests
+    mock_dynamic_schema_requests,
 ):
     """
     Test that the stream cast record fields in properties key with properties endpoint response if needed
@@ -613,44 +611,25 @@ def test_cast_record_fields_if_needed(
     for casted_key, casted_value in expected_casted_data.items():
         assert record.record.data["properties"][casted_key] == casted_value
 
+
 @pytest.mark.parametrize(
     "stream, scopes, url, method",
     [
-        (
-            "campaigns", "crm.lists.read", "https://api.hubapi.com/email/public/v1/campaigns", "GET"
-        ),
-        (
-            "companies", "crm.objects.contacts.read, crm.objects.companies.read", "https://api.hubapi.com/crm/v3/objects/company", "GET"
-        ),
-        (
-            "companies_property_history", "crm.objects.companies.read", "https://api.hubapi.com/properties/v2/companies/properties", "GET"
-        ),
-        (
-            "contact_lists", "crm.lists.read", "https://api.hubapi.com/crm/v3/lists/search", "POST"
-        ),
-        (
-            "contacts_property_history", "crm.objects.contacts.read", "https://api.hubapi.com/properties/v2/contacts/properties", "GET"
-        ),
-        (
-            "deal_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm-pipelines/v1/pipelines/deals", "GET"
-        ),
-        (
-            "deals", "crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deal", "GET"
-        ),
-        (
-            "deals_property_history", "crm.objects.deals.read", "https://api.hubapi.com/properties/v2/deals/properties", "GET"
-        ),
-        (
-            "email_events", "content", "https://api.hubapi.com/email/public/v1/events", "GET"
-        ),
-        (
-            "email_subscriptions", "content", "https://api.hubapi.com/email/public/v1/subscriptions", "GET"
-        ),
+        ("campaigns", "crm.lists.read", "https://api.hubapi.com/email/public/v1/campaigns", "GET"),
+        ("companies", "crm.objects.contacts.read, crm.objects.companies.read", "https://api.hubapi.com/crm/v3/objects/company", "GET"),
+        ("companies_property_history", "crm.objects.companies.read", "https://api.hubapi.com/properties/v2/companies/properties", "GET"),
+        ("contact_lists", "crm.lists.read", "https://api.hubapi.com/crm/v3/lists/search", "POST"),
+        ("contacts_property_history", "crm.objects.contacts.read", "https://api.hubapi.com/properties/v2/contacts/properties", "GET"),
+        ("deal_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm-pipelines/v1/pipelines/deals", "GET"),
+        ("deals", "crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deal", "GET"),
+        ("deals_property_history", "crm.objects.deals.read", "https://api.hubapi.com/properties/v2/deals/properties", "GET"),
+        ("email_events", "content", "https://api.hubapi.com/email/public/v1/events", "GET"),
+        ("email_subscriptions", "content", "https://api.hubapi.com/email/public/v1/subscriptions", "GET"),
         (
             "engagements",
             "crm.objects.companies.read, crm.objects.contacts.read, crm.objects.deals.read, tickets, e-commerce",
             "https://api.hubapi.com/engagements/v1/engagements/paged",
-            "GET"
+            "GET",
         ),
         ("engagements_calls", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/calls", "GET"),
         ("engagements_emails", "crm.objects.contacts.read, sales-email-read", "https://api.hubapi.com/crm/v3/objects/emails", "GET"),
@@ -669,12 +648,21 @@ def test_cast_record_fields_if_needed(
         ("products", "e-commerce", "https://api.hubapi.com/crm/v3/objects/product", "GET"),
         ("subscription_changes", "content", "https://api.hubapi.com/email/public/v1/subscriptions/timeline", "GET"),
         (
-                "ticket_pipelines",
-                "media_bridge.read, tickets, crm.schemas.custom.read, e-commerce, timeline, contacts, crm.schemas.contacts.read, crm.objects.contacts.read, crm.objects.contacts.write, crm.objects.deals.read, crm.schemas.quotes.read, crm.objects.deals.write, crm.objects.companies.read, crm.schemas.companies.read, crm.schemas.deals.read, crm.schemas.line_items.read, crm.objects.companies.write",
-                "https://api.hubapi.com/crm/v3/pipelines/tickets",
-                "GET"
+            "ticket_pipelines",
+            "media_bridge.read, tickets, crm.schemas.custom.read, e-commerce, timeline, contacts, crm.schemas.contacts.read, crm.objects.contacts.read, crm.objects.contacts.write, crm.objects.deals.read, crm.schemas.quotes.read, crm.objects.deals.write, crm.objects.companies.read, crm.schemas.companies.read, crm.schemas.deals.read, crm.schemas.line_items.read, crm.objects.companies.write",
+            "https://api.hubapi.com/crm/v3/pipelines/tickets",
+            "GET",
         ),
-        ("workflows", "automation", "https://api.hubapi.com/automation/v3/workflows", "GET")
+        ("workflows", "automation", "https://api.hubapi.com/automation/v3/workflows", "GET"),
+        ("contacts", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/contact", "GET"),
+        ("deal_splits", "crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deal_split", "GET"),
+        (
+            "leads",
+            "crm.objects.contacts.read, crm.objects.companies.read, crm.objects.leads.read",
+            "https://api.hubapi.com/crm/v3/objects/leads",
+            "GET",
+        ),
+        ("tickets", "tickets", "https://api.hubapi.com/crm/v3/objects/ticket", "GET"),
     ],
 )
 def test_streams_raise_error_message_if_scopes_missing(stream, scopes, url, method, requests_mock, config, mock_dynamic_schema_requests):
@@ -685,18 +673,27 @@ def test_streams_raise_error_message_if_scopes_missing(stream, scopes, url, meth
             "streams": [
                 {
                     "stream": {"name": stream, "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                    "sync_mode": "full_refresh", "destination_sync_mode": "append",
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
                 }
             ]
         }
     )
-    state = (StateBuilder().with_stream_state(stream, {},).build())
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            stream,
+            {},
+        )
+        .build()
+    )
     source_hubspot = get_source(config)
     output = read(source_hubspot, config=config, catalog=catalog, state=state)
     assert output.errors[0].trace.error.message == (
         "Access denied (403). The authenticated user does not have permissions to access the resource. "
         f"Verify your scopes: {scopes} to access stream {stream}. See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only"
     )
+
 
 def test_discover_if_scopes_missing(config, requests_mock, mock_dynamic_schema_requests):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)

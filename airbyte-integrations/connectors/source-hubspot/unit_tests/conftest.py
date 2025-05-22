@@ -2,16 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import sys
+from pathlib import Path
+
 import pytest
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from pathlib import Path
-import sys
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
@@ -139,6 +140,7 @@ def get_source(config, state=None) -> YamlDeclarativeSource:
     state = StateBuilder().build() if not state else state
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
+
 def find_stream(stream_name, config, state=None):
     state = StateBuilder().build() if not state else state
     streams = get_source(config, state).streams(config=config)
@@ -185,6 +187,7 @@ def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
             status_code=200,
         )
 
+
 @pytest.fixture(name="custom_object_schema")
 def custom_object_schema_fixture():
     return {
@@ -223,6 +226,7 @@ def custom_object_schema_fixture():
         "associations": [],
         "name": "animals",
     }
+
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture():

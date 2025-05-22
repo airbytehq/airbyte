@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 
-from . import HubspotTestCase, OBJECTS_WITH_DYNAMIC_SCHEMA
+from . import OBJECTS_WITH_DYNAMIC_SCHEMA, HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder
 from .response_builder.streams import HubspotStreamResponseBuilder
 
