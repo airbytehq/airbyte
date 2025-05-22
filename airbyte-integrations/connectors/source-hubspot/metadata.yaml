@@ -21,7 +21,7 @@ data:
   name: HubSpot
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-hubspot
   registryOverrides:
     cloud:
