@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.config.PipelineInputEvent
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineHeartbeat
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
@@ -16,7 +17,8 @@ import kotlinx.coroutines.delay
 
 class HeartbeatTask(
     private val config: DestinationConfiguration,
-    private val outputQueue: PartitionedQueue<PipelineInputEvent>
+    private val outputQueue: PartitionedQueue<PipelineInputEvent>,
+    private val checkpointManager: CheckpointManager<*>,
 ) : Task {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
@@ -25,6 +27,7 @@ class HeartbeatTask(
             delay(config.heartbeatIntervalSeconds * 1000L)
             try {
                 outputQueue.broadcast(PipelineHeartbeat())
+                checkpointManager.flushReadyCheckpointMessages()
             } catch (e: ClosedSendChannelException) {
                 // Do nothing. We don't care. Move on
             }

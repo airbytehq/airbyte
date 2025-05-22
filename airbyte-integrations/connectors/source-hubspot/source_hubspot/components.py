@@ -346,8 +346,7 @@ class EntitySchemaNormalization(TypeTransformer):
         super().__init__(config)
         self.registerCustomTransform(self.get_transform_function())
 
-    @staticmethod
-    def get_transform_function():
+    def get_transform_function(self):
         def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
@@ -390,8 +389,17 @@ class EntitySchemaNormalization(TypeTransformer):
                             return transformed_value
                         else:
                             return original_value
-
-            return original_value
+            if "properties" in field_schema and isinstance(original_value, dict):
+                normalized_nested_properties = dict()
+                for nested_key, nested_val in original_value.items():
+                    nested_property_schema = field_schema.get("properties").get(nested_key)
+                    if nested_property_schema:
+                        normalized_nested_properties[nested_key] = transform_function(nested_val, nested_property_schema)
+                    else:
+                        normalized_nested_properties[nested_key] = nested_val
+                return normalized_nested_properties
+            else:
+                return self.default_convert(original_value, field_schema)
 
         return transform_function
 
@@ -723,3 +731,26 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._schema
+
+
+_TRUTHY_STRINGS = ("y", "yes", "t", "true", "on", "1")
+_FALSEY_STRINGS = ("n", "no", "f", "false", "off", "0")
+
+
+def _strtobool(value: str, /) -> int:
+    """Mimic the behavior of distutils.util.strtobool.
+
+    From: https://docs.python.org/2/distutils/apiref.html#distutils.util.strtobool
+
+    > Convert a string representation of truth to true (1) or false (0).
+    > True values are y, yes, t, true, on and 1; false values are n, no, f, false, off and 0. Raises
+    > `ValueError` if val is anything else.
+    """
+    normalized_str = value.lower().strip()
+    if normalized_str in _TRUTHY_STRINGS:
+        return 1
+
+    if normalized_str in _FALSEY_STRINGS:
+        return 0
+
+    raise ValueError(f"Invalid boolean value: {normalized_str}")
