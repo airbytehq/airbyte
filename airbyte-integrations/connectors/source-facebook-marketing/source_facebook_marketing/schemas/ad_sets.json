@@ -187,6 +187,23 @@
           }
         }
       }
+    },
+    "attribution_spec": {
+      "description": "Conversion attribution spec used for attributing conversions for optimization. Supported window lengths differ by optimization goal and campaign objective.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "event_type": {
+            "description": "The type of conversion event to which the attribution applies.",
+            "type": "string"
+          },
+          "window_days": {
+            "description": "The attribution window in days. Common values: 1, 7, or 28 depending on the event type.",
+            "type": "integer"
+          }
+        }
+      }
     }
   }
 }
