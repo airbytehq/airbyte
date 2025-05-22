@@ -11,83 +11,87 @@ from requests import Response
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
 
-# TODO: uncomments when deals is low code
-# @pytest.mark.parametrize(
-#     "input, expected",
-#     [
-#         (
-#             {
-#                 "name": {"type": ["null", "string"]},
-#                 "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
-#                 "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
-#                 "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
-#                 "hs_v2_some_other_field": {"type": ["null", "string"]},
-#             },
-#             {
-#                 "name": {"type": ["null", "string"]},
-#                 "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
-#                 "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
-#                 "hs_date_entered_prospect": {"type": ["null", "string"]},
-#                 "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
-#                 "hs_date_exited_prospect": {"type": ["null", "string"]},
-#                 "hs_v2_some_other_field": {"type": ["null", "string"]},
-#             },
-#         ),
-#         (
-#             {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "hs_v2_date_entered_poetry": 1827},
-#             {
-#                 "name": "Edgar Allen Poe",
-#                 "age": 215,
-#                 "birthplace": "Boston",
-#                 "hs_v2_date_entered_poetry": 1827,
-#                 "hs_date_entered_poetry": 1827,
-#             },
-#         ),
-#         (
-#             {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "properties": {"hs_v2_date_entered_poetry": 1827}},
-#             {
-#                 "name": "Edgar Allen Poe",
-#                 "age": 215,
-#                 "birthplace": "Boston",
-#                 "properties": {
-#                     "hs_v2_date_entered_poetry": 1827,
-#                     "hs_date_entered_poetry": 1827,
-#                 },
-#             },
-#         ),
-#         (
-#             {
-#                 "name": "Edgar Allen Poe",
-#                 "age": 215,
-#                 "birthplace": "Boston",
-#             },
-#             {
-#                 "name": "Edgar Allen Poe",
-#                 "age": 215,
-#                 "birthplace": "Boston",
-#             },
-#         ),
-#         (
-#             {"name": "Edgar Allen Poe", "hs_v2_date_entered_poetry": 1827, "hs_date_entered_poetry": 9999},
-#             {
-#                 "name": "Edgar Allen Poe",
-#                 "hs_v2_date_entered_poetry": 1827,
-#                 "hs_date_entered_poetry": 9999,
-#             },
-#         ),
-#     ],
-#     ids=[
-#         "Transforms stream schema/properties dictionary",
-#         "Transforms record w/ flat properties",
-#         "Transform record w/ nested properties",
-#         "Does not transform record w/o need to transformation",
-#         "Does not overwrite value for legacy field if legacy field exists",
-#     ],
-# )
-# def test_new_to_legacy_field_transformation(input, expected, components_module):
-#     transformer = components_module.NewtoLegacyFieldTransformation(DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
-#     transformer.transform(input)
-#     assert input == expected
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        (
+            {
+                "name": {"type": ["null", "string"]},
+                "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
+                "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
+                "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
+                "hs_v2_some_other_field": {"type": ["null", "string"]},
+            },
+            {
+                "name": {"type": ["null", "string"]},
+                "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
+                "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
+                "hs_date_entered_prospect": {"type": ["null", "string"]},
+                "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
+                "hs_date_exited_prospect": {"type": ["null", "string"]},
+                "hs_v2_some_other_field": {"type": ["null", "string"]},
+            },
+        ),
+        (
+            {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "hs_v2_date_entered_poetry": 1827},
+            {
+                "name": "Edgar Allen Poe",
+                "age": 215,
+                "birthplace": "Boston",
+                "hs_v2_date_entered_poetry": 1827,
+                "hs_date_entered_poetry": 1827,
+            },
+        ),
+        (
+            {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "properties": {"hs_v2_date_entered_poetry": 1827}},
+            {
+                "name": "Edgar Allen Poe",
+                "age": 215,
+                "birthplace": "Boston",
+                "properties": {
+                    "hs_v2_date_entered_poetry": 1827,
+                    "hs_date_entered_poetry": 1827,
+                },
+            },
+        ),
+        (
+            {
+                "name": "Edgar Allen Poe",
+                "age": 215,
+                "birthplace": "Boston",
+            },
+            {
+                "name": "Edgar Allen Poe",
+                "age": 215,
+                "birthplace": "Boston",
+            },
+        ),
+        (
+            {"name": "Edgar Allen Poe", "hs_v2_date_entered_poetry": 1827, "hs_date_entered_poetry": 9999},
+            {
+                "name": "Edgar Allen Poe",
+                "hs_v2_date_entered_poetry": 1827,
+                "hs_date_entered_poetry": 9999,
+            },
+        ),
+    ],
+    ids=[
+        "Transforms stream schema/properties dictionary",
+        "Transforms record w/ flat properties",
+        "Transform record w/ nested properties",
+        "Does not transform record w/o need to transformation",
+        "Does not overwrite value for legacy field if legacy field exists",
+    ],
+)
+def test_new_to_legacy_field_transformation(input, expected, components_module):
+    deals_new_to_legacy_mapping = {
+        "hs_date_entered_": "hs_v2_date_entered_",
+        "hs_date_exited_": "hs_v2_date_exited_",
+        "hs_time_in_": "hs_v2_latest_time_in_",
+    }
+    transformer = components_module.NewtoLegacyFieldTransformation(deals_new_to_legacy_mapping)
+    transformer.transform(input)
+    assert input == expected
 
 
 @pytest.mark.parametrize(
