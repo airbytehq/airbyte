@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.AlterTableReport
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
@@ -116,6 +117,7 @@ class BigqueryDirectLoadNativeTableOperations(
         val columnsToAdd =
             expectedSchema
                 .filter { (name, _) -> actualSchema.findIgnoreCase(name) == null }
+                .map { (name, type) -> ColumnAdd(name, type) }
                 .toList()
 
         // Columns in the current schema that are no longer in the DestinationStream
@@ -173,7 +175,7 @@ class BigqueryDirectLoadNativeTableOperations(
     private fun getAlterTableSql(
         projectId: String,
         tableName: TableName,
-        columnsToAdd: List<Pair<String, StandardSQLTypeName>>,
+        columnsToAdd: List<ColumnAdd<StandardSQLTypeName>>,
         columnsToRemove: List<String>,
         columnsToChange: List<ColumnChange<StandardSQLTypeName>>,
     ): Sql {
