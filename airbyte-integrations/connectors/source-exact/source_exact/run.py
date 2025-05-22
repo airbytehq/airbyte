@@ -4,7 +4,6 @@ from datetime import datetime
 
 from orjson import orjson
 
-from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk.entrypoint import launch, logger
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import (
@@ -18,15 +17,10 @@ from airbyte_cdk.models import (
 from source_exact import SourceExact
 
 
-def _get_source(args: list[str]):
-    catalog_path = AirbyteEntrypoint.extract_catalog(args)
-    config_path = AirbyteEntrypoint.extract_config(args)
-    state_path = AirbyteEntrypoint.extract_state(args)
+def _get_source():
+
     try:
         return SourceExact(
-            SourceExact.read_catalog(catalog_path) if catalog_path else None,
-            SourceExact.read_config(config_path) if config_path else None,
-            SourceExact.read_state(state_path) if state_path else None,
         )
 
     except Exception as error:

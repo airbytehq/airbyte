@@ -1,15 +1,124 @@
-version: 6.6.0
+version: 6.48.15
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - Employments
+
+definitions:
+  streams:
+    Employments:
+      type: DeclarativeStream
+      name: Employments
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sync/Payroll/Employments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [ ]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employments"
+  base_requester:
+    type: HttpRequester
+    url_base: https://start.exactonline.nl/api/v1/3691924/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body:
+        client_id: "{{ config['client_id'] }}"
+        grant_type: refresh_token
+        client_secret: "{{ config['client_secret'] }}"
+      refresh_token_updater:
+        access_token_config_path:
+          - oauth_access_token
+        refresh_token_config_path:
+          - client_refresh_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+      token_refresh_endpoint: https://start.exactonline.nl/api/oauth2/token
+
+streams:
+  - $ref: "#/definitions/streams/Employments"
 
 spec:
   type: Spec
-  connectionSpecification:
+  connection_specification:
+    type: object
     $schema: http://json-schema.org/draft-07/schema#
-    title: Exact Online Spec
     required:
-      - access_token
+      - client_id
+      - client_secret
+      - refresh_token
     properties:
-      access_token:
+      client_id:
         type: string
-        description: "Access token for Exact Online API"
         order: 0
+        title: Client ID
         airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        order: 3
+        title: Refresh Token
+      oauth_access_token:
+        type: string
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        order: 4
+        title: Access token
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_hidden: true
+        airbyte_secret: true
+      oauth_token_expiry_date:
+        type: string
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        order: 5
+        title: Token expiry date
+        format: date-time
+    additionalProperties: true
+
+metadata:
+  assist: { }
+  testedStreams:
+    Employments:
+      hasRecords: false
+      streamHash: a6da560abc2bb744748bed1bb9c2f333b12ff54b
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
+  autoImportSchema:
+    Employments: true
+
+schemas:
+  Employments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: { }
+    additionalProperties: true
