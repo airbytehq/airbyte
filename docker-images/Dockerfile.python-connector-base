@@ -13,7 +13,7 @@ RUN adduser --uid 1000 --system --group --no-create-home airbyte && \
     chown airbyte:airbyte /airbyte
 
 ENV PIP_CACHE_DIR=/custom_cache/pip
-RUN pip install --upgrade pip==24.0 setuptools==78.1.1 
+RUN pip install --upgrade pip==24.0 setuptools==78.1.1
 
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
