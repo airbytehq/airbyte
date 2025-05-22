@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.stream.Stream;
+
+import io.airbyte.integrations.source.postgres.cdc.PostgresDebeziumStateUtil;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -200,4 +202,9 @@ public class PostgresTestDatabase extends
 
   }
 
+  @Override
+  public void close() {
+    PostgresDebeziumStateUtil.disposeInitialState();
+    super.close();
+  }
 }
