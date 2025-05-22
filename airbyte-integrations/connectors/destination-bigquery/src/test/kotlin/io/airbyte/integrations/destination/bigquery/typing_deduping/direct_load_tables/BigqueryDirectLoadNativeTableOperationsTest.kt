@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
@@ -69,7 +70,12 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         Mockito.`when`(existingTable.schema!!.fields)
             .thenReturn(FieldList.of(Field.of("a2", StandardSQLTypeName.INT64)))
         val alterTableReport =
-            BigqueryDirectLoadNativeTableOperations(Mockito.mock(), Mockito.mock(), Mockito.mock())
+            BigqueryDirectLoadNativeTableOperations(
+                    Mockito.mock(),
+                    Mockito.mock(),
+                    Mockito.mock(),
+                    projectId = "unused"
+                )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         Assertions.assertAll(
             {
@@ -118,13 +124,18 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 )
             )
         val alterTableReport =
-            BigqueryDirectLoadNativeTableOperations(Mockito.mock(), Mockito.mock(), Mockito.mock())
+            BigqueryDirectLoadNativeTableOperations(
+                    Mockito.mock(),
+                    Mockito.mock(),
+                    Mockito.mock(),
+                    projectId = "unused"
+                )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         // NB: column names in AlterTableReport are all _after_ destination name transform
         Assertions.assertAll(
             {
                 Assertions.assertEquals(
-                    listOf("c2" to StandardSQLTypeName.INT64),
+                    listOf(ColumnAdd("c2", StandardSQLTypeName.INT64)),
                     alterTableReport.columnsToAdd
                 )
             },
