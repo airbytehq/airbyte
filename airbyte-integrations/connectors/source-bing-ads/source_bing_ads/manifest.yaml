@@ -208,6 +208,22 @@ definitions:
             value: "{{ stream_slice.extra_fields['ParentCustomerId'][0] }}"
           - type: AddedFieldDefinition
             path:
+              - DailyBudget
+            value: "{{ record.DailyBudget|float if record.DailyBudget is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - BudgetId
+            value: "{{ record.BudgetId|int if record.BudgetId is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - BidStrategyId
+            value: "{{ record.BidStrategyId|int if record.BidStrategyId is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
+              - BidStrategyId
+            value: "{{ record.BidStrategyId|int if record.BidStrategyId is not none else none }}"
+          - type: AddedFieldDefinition
+            path:
               - Languages
             value: |
               {% set languages = [] %}
