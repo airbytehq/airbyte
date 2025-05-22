@@ -14,14 +14,14 @@ jobs:
           repository: ${{ github.event.pull_request.base.repo.full_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           path: old
-          submodules: 'recursive'
+          submodules: recursive
       - name: Checkout PR merge result
         uses: actions/checkout@v4
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           token: ${{ secrets.GITHUB_TOKEN }}
           path: new
-          submodules: 'recursive'
+          submodules: recursive
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
