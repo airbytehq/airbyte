@@ -218,6 +218,9 @@ class BigqueryDirectLoadNativeTableOperations(
         columnsToRetain: List<String>,
         columnsToChange: List<ColumnChange<StandardSQLTypeName>>,
     ) {
+        // can't just use asTempTable(), since that could conflict with
+        // a truncate-refresh temp table.
+        // so add an explicit suffix that this is for schema change.
         val tempTableName =
             tableName.asTempTable().let { it.copy(name = it.name + "_airbyte_tmp_schema_change") }
 
@@ -238,6 +241,8 @@ class BigqueryDirectLoadNativeTableOperations(
                         )
                     })
                 .joinToString(",")
+        // note: we don't care about columnsToDrop (because they don't exist in the tempTable)
+        // and we don't care about columnsToAdd (because they'll just default to null)
         val insertToTempTable =
             Sql.of(
                 """
@@ -275,7 +280,7 @@ class BigqueryDirectLoadNativeTableOperations(
             columnsToRemove.map { name -> """ALTER TABLE $tableId DROP COLUMN $name""" }
         val changeColumns =
             columnsToChange.flatMap { (name, originalType, newType) ->
-                // prefix with underscore
+                // prefix with underscore in case the SHA256 starts with a number
                 val nameHash = "_" + DigestUtils.sha256Hex(name)
                 val tempColumnName = "${nameHash}_airbyte_tmp"
                 val backupColumnName = "${nameHash}_airbyte_tmp_to_drop"
