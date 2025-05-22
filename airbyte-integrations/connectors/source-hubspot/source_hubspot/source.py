@@ -24,7 +24,6 @@ from source_hubspot.streams import (
     Contacts,
     ContactsWebAnalytics,
     CustomObject,
-    DealSplits,
     DealsWebAnalytics,
     EngagementsCallsWebAnalytics,
     EngagementsEmailsWebAnalytics,
@@ -32,10 +31,8 @@ from source_hubspot.streams import (
     EngagementsNotesWebAnalytics,
     EngagementsTasksWebAnalytics,
     GoalsWebAnalytics,
-    Leads,
     LineItemsWebAnalytics,
     ProductsWebAnalytics,
-    Tickets,
     TicketsWebAnalytics,
     WebAnalyticsStream,
 )
@@ -52,8 +49,10 @@ scopes = {
     "companies": {"crm.objects.contacts.read", "crm.objects.companies.read"},
     "companies_property_history": {"crm.objects.companies.read"},
     "contact_lists": {"crm.lists.read"},
+    "contacts": {"crm.objects.contacts.read"},
     "contacts_property_history": {"crm.objects.contacts.read"},
     "deal_pipelines": {"crm.objects.contacts.read"},
+    "deal_splits": {"crm.objects.deals.read"},
     "deals": {"contacts", "crm.objects.deals.read"},
     "deals_property_history": {"crm.objects.deals.read"},
     "email_events": {"content"},
@@ -69,6 +68,7 @@ scopes = {
     "forms": {"forms"},
     "form_submissions": {"forms"},
     "goals": {"crm.objects.goals.read"},
+    "leads": {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.leads.read"},
     "line_items": {"e-commerce", "crm.objects.line_items.read"},
     "owners": {"crm.objects.owners.read"},
     "owners_archived": {"crm.objects.owners.read"},
@@ -93,6 +93,7 @@ scopes = {
         "crm.schemas.line_items.read",
         "crm.objects.companies.write",
     },
+    "tickets": {"tickets"},
     "workflows": {"automation"},
 }
 
@@ -190,12 +191,6 @@ class SourceHubspot(YamlDeclarativeSource):
         common_params = self.get_common_params(config=config)
         # Temporarily using `ConcurrentDeclarativeSource.streams()` to validate granted scopes.
         streams = super().streams(config=config)
-        streams += [
-            Contacts(**common_params),
-            DealSplits(**common_params),
-            Leads(**common_params),
-            Tickets(**common_params),
-        ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
 

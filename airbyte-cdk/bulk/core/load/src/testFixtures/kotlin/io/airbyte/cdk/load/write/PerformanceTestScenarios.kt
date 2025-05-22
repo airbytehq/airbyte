@@ -14,7 +14,9 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
+import io.airbyte.cdk.load.util.CloseableCoroutine
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.util.use
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -86,7 +88,7 @@ class SingleStreamInsert(
         stream: DestinationStream,
         private val destination: DestinationProcess,
         private val recordBufferSize: Long = 1,
-    ) : AutoCloseable {
+    ) : CloseableCoroutine {
         private val baseRecord = run {
             val data = (listOf(indexColumn) + columns).associate { Pair(it.name, it.sample) }
             InputRecord(
@@ -105,7 +107,7 @@ class SingleStreamInsert(
         var recordWritten: Long = 0
         var bytesWritten: Long = 0
 
-        fun write(id: Long) {
+        suspend fun write(id: Long) {
             sb.append(messageParts[0])
             sb.append(id)
             sb.append(messageParts[1])
@@ -119,19 +121,19 @@ class SingleStreamInsert(
             bytesWritten += baseMessageSize + id.length()
         }
 
-        private fun flush() {
+        private suspend fun flush() {
             if (sb.isNotEmpty()) {
                 destination.sendMessage(sb.toString())
                 sb.clear()
             }
         }
 
-        override fun close() {
+        override suspend fun close() {
             flush()
         }
     }
 
-    override fun send(destination: DestinationProcess) {
+    override suspend fun send(destination: DestinationProcess) {
         RecordWriter(
                 indexColumn = idColumn,
                 columns = columns,
@@ -210,14 +212,13 @@ class SingleStreamFileTransfer(
         }
     }
 
-    override fun send(destination: DestinationProcess) {
+    override suspend fun send(destination: DestinationProcess) {
         repeat(numFiles) {
             val fileName = makeFileName(it.toLong())
             val message =
                 DestinationFile(
                     stream,
                     System.currentTimeMillis(),
-                    "",
                     DestinationFile.AirbyteRecordMessageFile(
                         fileUrl = stagingDirectory.resolve(fileName).toString(),
                         fileRelativePath = fileName,
@@ -291,7 +292,7 @@ class SingleStreamFileAndMetadataTransfer(
         }
     }
 
-    override fun send(destination: DestinationProcess) {
+    override suspend fun send(destination: DestinationProcess) {
         repeat(numFiles) {
             val fileName = makeFileName(it.toLong())
 
@@ -384,7 +385,7 @@ class MultiStreamInsert(
 
     override val catalog = DestinationCatalog(streams)
 
-    override fun send(destination: DestinationProcess) {
+    override suspend fun send(destination: DestinationProcess) {
         streams.forEach { stream ->
             val inputRecord =
                 InputRecord(
