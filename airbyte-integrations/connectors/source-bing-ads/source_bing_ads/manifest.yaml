@@ -233,7 +233,7 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
     state_migrations:
-      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice_for_hourly_report"
+      - Type: LegacyToPerPartitionStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -366,7 +366,7 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
-      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice"
+      - Type: LegacyToPerPartitionStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -477,7 +477,7 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
-      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice"
+      - Type: LegacyToPerPartitionStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -588,7 +588,7 @@ definitions:
               "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"
     incremental_sync: "#/definitions/incremental_sync_report_datetime_cursor"
     state_migrations:
-      - $ref: "#/definitions/legacy_to_perpartition_state_migration_with_parent_slice"
+      - Type: LegacyToPerPartitionStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -653,7 +653,8 @@ definitions:
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
   account_substream_partition_router:
-    type: SubstreamPartitionRouter
+    type: CustomPartitionRouter
+    class_name: source_bing_ads.components.partition_routers.SubstreamPartitionRouterSliceReducer
     parent_stream_configs:
       - type: ParentStreamConfig
         # Id is the primary key of the accounts stream but an integer
@@ -691,21 +692,6 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
-  # migrations section
-  legacy_to_perpartition_state_migration_with_parent_slice:
-    type: CustomStateMigration
-    class_name: source_bing_ads.components.state_migrations.LegacyToPerPartitionStateMigrationWithParentSlice
-    $parameters:
-      partition_router: "#/definitions/account_substream_partition_router"
-      config: "{{ config }}"
-      cursor: "#/definitions/incremental_sync_report_datetime_cursor"
-  legacy_to_perpartition_state_migration_with_parent_slice_for_hourly_report:
-    type: CustomStateMigration
-    class_name: source_bing_ads.components.state_migrations.LegacyToPerPartitionStateMigrationWithParentSlice
-    $parameters:
-      partition_router: "#/definitions/account_substream_partition_router"
-      config: "{{ config }}"
-      cursor: "#/definitions/incremental_sync_report_hourly_datetime_cursor"
   transformations:
     ad_performance_report_transformations:
       - type: AddedFieldDefinition

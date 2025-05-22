@@ -14,7 +14,10 @@ def get_state_after_migration(time_period: str, account_id: str) -> dict:
         "states": [
             {
                 "cursor": {"TimePeriod": f"{time_period}"},
-                "partition": {"account_id": account_id, "parent_slice": {"parent_slice": {}, "user_id": "123456789"}},
+                "partition": {
+                    "account_id": account_id,
+                    # "parent_slice": {"parent_slice": {}, "user_id": "123456789"}
+                },
             }
         ],
         "use_global_cursor": False,
