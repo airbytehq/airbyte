@@ -641,6 +641,7 @@ definitions:
       type: ZipfileDecoder
       decoder:
         type: CsvDecoder
+        encoding: "utf-8-sig"
     creation_requester:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
@@ -694,6 +695,11 @@ definitions:
       datetime_format: "%Y-%m-%d"
   transformations:
     ad_performance_report_transformations:
+      - type: AddedFieldDefinition
+        path:
+          - AccountId
+        value: |
+          {{ record.get('AccountId') | int if record.get('AccountId') | default('') | trim else none }}
       - type: AddedFieldDefinition
         path:
           - AdGroupId
