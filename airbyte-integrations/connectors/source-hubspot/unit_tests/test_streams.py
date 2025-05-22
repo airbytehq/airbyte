@@ -572,6 +572,7 @@ def test_cast_record_fields_if_needed(
     expected_casted_data,
     custom_object_schema,
     config,
+    mock_dynamic_schema_requests
 ):
     """
     Test that the stream cast record fields in properties key with properties endpoint response if needed
@@ -606,11 +607,11 @@ def test_cast_record_fields_if_needed(
 
     requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
-    records = read_full_refresh(stream)
+    records = read_from_stream(config, stream_class, SyncMode.full_refresh).records
     assert records
     record = records[0]
     for casted_key, casted_value in expected_casted_data.items():
-        assert record["properties"][casted_key] == casted_value
+        assert record.record.data["properties"][casted_key] == casted_value
 
 @pytest.mark.parametrize(
     "stream, scopes, url, method",

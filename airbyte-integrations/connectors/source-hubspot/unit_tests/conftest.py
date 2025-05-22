@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 NUMBER_OF_PROPERTIES = 2000
 OBJECTS_WITH_DYNAMIC_SCHEMA = [

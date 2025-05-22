@@ -7,7 +7,6 @@ import logging
 from datetime import timedelta
 from urllib.parse import urlencode
 
-import pendulum
 import pytest
 
 from airbyte_cdk.models import SyncMode
@@ -15,6 +14,8 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, get_source, read_from_stream
 from .utils import read_full_refresh, read_incremental
+
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 NUMBER_OF_PROPERTIES = 2000
@@ -579,7 +580,7 @@ def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requ
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
-    recent_date = pendulum.now() - timedelta(days=10)  # 10 days ago
+    recent_date = ab_datetime_now()- timedelta(days=10)  # 10 days ago
     recent_date = int(recent_date.timestamp() * 1000)
     responses = [
         {
@@ -611,7 +612,7 @@ def test_engagements_stream_since_recent_date_more_than_10k(
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
-    recent_date = pendulum.now() - timedelta(days=10)  # 10 days ago
+    recent_date = ab_datetime_now() - timedelta(days=10)  # 10 days ago
     recent_date = int(recent_date.timestamp() * 1000)
     responses = [
         {

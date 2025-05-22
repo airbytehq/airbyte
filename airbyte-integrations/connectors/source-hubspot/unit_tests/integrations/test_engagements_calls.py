@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 
-from . import HubspotTestCase
+from . import HubspotTestCase, OBJECTS_WITH_DYNAMIC_SCHEMA
 from .request_builders.streams import CRMStreamRequestBuilder
 from .response_builder.streams import HubspotStreamResponseBuilder
 
@@ -51,14 +51,14 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     def _set_up_oauth(self, http_mocker: HttpMocker):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
-        self.mock_scopes(http_mocker, self.ACCESS_TOKEN, self.SCOPES)
 
     def _set_up_requests(
         self, http_mocker: HttpMocker, with_oauth: bool = False, with_dynamic_schemas: bool = True, entities: Optional[List[str]] = None
     ):
         if with_oauth:
             self._set_up_oauth(http_mocker)
-        self.mock_custom_objects(http_mocker)
+        # TODO: uncomment when custom objects is low-code
+        # self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, self.OBJECT_TYPE, self.MOCK_PROPERTIES_FOR_SCHEMA_LOADER)
         if with_dynamic_schemas:
             self.mock_dynamic_schema_requests(http_mocker, entities)
@@ -69,8 +69,9 @@ class TestEngagementCallsStream(HubspotTestCase):
             http_mocker,
             with_oauth=True,
             with_dynamic_schemas=True,
-            entities=["calls", "company", "contact", "emails", "meetings", "notes", "tasks"],
+            entities=OBJECTS_WITH_DYNAMIC_SCHEMA,
         )
+        self.mock_response(http_mocker, self.request(), self.response())
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
 
     @HttpMocker()
@@ -79,7 +80,7 @@ class TestEngagementCallsStream(HubspotTestCase):
             http_mocker,
             with_oauth=True,
             with_dynamic_schemas=True,
-            entities=["calls", "company", "contact", "emails", "leads", "meetings", "notes", "tasks"],
+            entities=OBJECTS_WITH_DYNAMIC_SCHEMA,
         )
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
@@ -123,7 +124,6 @@ class TestEngagementCallsStream(HubspotTestCase):
     @HttpMocker()
     def test_given_missing_scopes_error_when_read_then_stop_sync(self, http_mocker: HttpMocker):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
-        self.mock_scopes(http_mocker, self.ACCESS_TOKEN, [])
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh, expecting_exception=True)
 
     @HttpMocker()

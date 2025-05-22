@@ -118,10 +118,6 @@ class HubspotTestCase:
         http_mocker.post(req, response)
 
     @classmethod
-    def mock_scopes(cls, http_mocker: HttpMocker, token: str, scopes: List[str]):
-        http_mocker.get(ScopesRequestBuilder().with_access_token(token).build(), ScopesResponseBuilder(scopes).build())
-
-    @classmethod
     def mock_custom_objects(cls, http_mocker: HttpMocker):
         http_mocker.get(
             CustomObjectsRequestBuilder().build(),
