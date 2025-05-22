@@ -49,7 +49,7 @@ class ProtocolMessageDeserializer(
 
         return destinationMessageFactory.fromAirbyteMessage(
             airbyteMessage,
-            serialized,
+            serialized.length.toLong(),
         )
     }
 }

@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.StreamManager
@@ -52,6 +53,8 @@ class InputConsumerTaskTest {
     @MockK(relaxed = true)
     lateinit var pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
+    @MockK(relaxed = true)
+    lateinit var pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 
     @BeforeEach
     fun setup() {
@@ -88,16 +91,21 @@ class InputConsumerTaskTest {
                 }
             }
 
+        val bookkeeper =
+            PipelineEventBookkeepingRouter(
+                catalog = catalog,
+                syncManager = syncManager,
+                checkpointQueue = checkpointQueue,
+                openStreamQueue = mockk(relaxed = true),
+                fileTransferQueue = mockk(relaxed = true),
+            )
         val task =
             InputConsumerTask(
                 catalog = catalog,
                 inputFlow = inputFlow,
-                checkpointQueue = checkpointQueue,
-                syncManager = syncManager,
-                fileTransferQueue = mockk(relaxed = true),
                 pipelineInputQueue = pipelineInputQueue,
                 partitioner = mockk(relaxed = true),
-                openStreamQueue = mockk(relaxed = true),
+                pipelineEventBookkeepingRouter = bookkeeper,
             )
         task.execute()
 
@@ -131,16 +139,21 @@ class InputConsumerTaskTest {
                 )
             }
 
+        val bookkeeper =
+            PipelineEventBookkeepingRouter(
+                catalog = catalog,
+                syncManager = syncManager,
+                checkpointQueue = checkpointQueue,
+                openStreamQueue = mockk(relaxed = true),
+                fileTransferQueue = mockk(relaxed = true),
+            )
         val task =
             InputConsumerTask(
                 catalog = catalog,
                 inputFlow = inputFlow,
-                checkpointQueue = checkpointQueue,
-                syncManager = syncManager,
-                fileTransferQueue = mockk(relaxed = true),
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
-                openStreamQueue = mockk(relaxed = true),
+                pipelineEventBookkeepingRouter = bookkeeper,
             )
         task.execute()
         coVerifySequence {
@@ -174,12 +187,9 @@ class InputConsumerTaskTest {
             InputConsumerTask(
                 catalog = catalog,
                 inputFlow = inputFlow,
-                checkpointQueue = checkpointQueue,
-                syncManager = syncManager,
-                fileTransferQueue = mockk(relaxed = true),
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
-                openStreamQueue = mockk(relaxed = true),
+                pipelineEventBookkeepingRouter = pipelineEventBookkeepingRouter,
             )
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -231,12 +241,9 @@ class InputConsumerTaskTest {
             InputConsumerTask(
                 catalog = catalog,
                 inputFlow = inputFlow,
-                checkpointQueue = checkpointQueue,
-                syncManager = syncManager,
-                fileTransferQueue = mockk(relaxed = true),
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
-                openStreamQueue = mockk(relaxed = true),
+                pipelineEventBookkeepingRouter = pipelineEventBookkeepingRouter,
             )
 
         coEvery { inputFlow.collect(any()) } coAnswers
@@ -287,7 +294,6 @@ class InputConsumerTaskTest {
                 collector.emit(
                     StubDestinationMessageFactory.makeFile(
                             MockDestinationCatalogFactory.stream1,
-                            "test"
                         )
                         .wrap(1L)
                 )
@@ -299,16 +305,21 @@ class InputConsumerTaskTest {
                 )
             }
 
+        val bookkeeper =
+            PipelineEventBookkeepingRouter(
+                catalog = catalog,
+                syncManager = syncManager,
+                checkpointQueue = checkpointQueue,
+                openStreamQueue = mockk(relaxed = true),
+                fileTransferQueue = mockk(relaxed = true),
+            )
         val task =
             InputConsumerTask(
                 catalog = catalog,
                 inputFlow = inputFlow,
-                checkpointQueue = checkpointQueue,
-                syncManager = syncManager,
-                fileTransferQueue = mockk(relaxed = true),
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
-                openStreamQueue = mockk(relaxed = true),
+                pipelineEventBookkeepingRouter = bookkeeper,
             )
 
         assertThrows(IllegalStateException::class) { task.execute() }

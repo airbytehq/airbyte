@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.test.util.destination_process
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -30,9 +31,9 @@ interface DestinationProcess {
      */
     suspend fun run()
 
-    fun sendMessage(string: String)
-    fun sendMessage(message: AirbyteMessage)
-    fun sendMessages(vararg messages: AirbyteMessage) {
+    suspend fun sendMessage(string: String)
+    suspend fun sendMessage(message: AirbyteMessage)
+    suspend fun sendMessages(vararg messages: AirbyteMessage) {
         messages.forEach { sendMessage(it) }
     }
 
@@ -69,6 +70,7 @@ abstract class DestinationProcessFactory {
         catalog: ConfiguredAirbyteCatalog? = null,
         useFileTransfer: Boolean = false,
         micronautProperties: Map<Property, String> = emptyMap(),
+        dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 
