@@ -1,10 +1,21 @@
-from typing import Any, Mapping
+import logging
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from airbyte_cdk.sources.source import TState
+from airbyte_cdk.sources import AbstractSource
 
 
-class SourceExact(YamlDeclarativeSource):
-    def __init__(self, catalog: ConfiguredAirbyteCatalog | None, config: Mapping[str, Any] | None, state: TState, **kwargs):
-        super().__init__(catalog=catalog,config=config,state=state, **{"path_to_yaml": "exact.yaml"})
+class SourceExact(AbstractSource):
+    def check_connection(self, logger: logging.Logger, config):
+        pass
+
+    def streams(self, config):
+        pass
+
+    def discover(self, logger: logging.Logger, config):
+        pass
+
+    def check(self, logger: logging.Logger, config):
+        pass
+
+    def read(self, logger: logging.Logger, config, catalog, state=None):
+        pass
+
