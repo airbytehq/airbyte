@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.write
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
@@ -53,6 +52,7 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -1526,6 +1526,80 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     /**
+     * In many databases/warehouses, changing a column to/from JSON is nontrivial. This test runs
+     * syncs to execute that schema change (under the assumption that UnknownType is rendered as a
+     * JSON column).
+     */
+    @Test
+    open fun testAppendJsonSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(schema: LinkedHashMap<String, FieldType>) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+            )
+
+        val stream1 =
+            makeStream(linkedMapOf("id" to intType, "a" to unknownType, "b" to stringType))
+        runSync(
+            updatedConfig,
+            stream1,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "a": "foo1", "b": "bar1"}""",
+                    emittedAtMs = 100,
+                ),
+            ),
+        )
+
+        // note: `a` is changed from unknown -> string; `b` is changed from string -> unknown
+        val stream2 =
+            makeStream(linkedMapOf("id" to intType, "a" to stringType, "b" to unknownType))
+        runSync(
+            updatedConfig,
+            stream2,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 43, "a": "foo2", "b": "bar2"}""",
+                    emittedAtMs = 200,
+                )
+            )
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // no need to branch based on isStreamSchemaRetroactive.
+                // the values are always strings, the only change is how the destination
+                // represents them.
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "a" to "foo1", "b" to "bar1"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 0),
+                ),
+                OutputRecord(
+                    extractedAt = 200,
+                    generationId = 0,
+                    data = mapOf("id" to 43, "a" to "foo2", "b" to "bar2"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 0),
+                )
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
      * Some destinations have better support for schema evolution in single-generation truncate
      * syncs. For example, if a destination imposes limitations on column type changes, we can
      * actually ignore those limits in a truncate sync (because we're dropping all older data
@@ -2751,18 +2825,7 @@ abstract class BasicFunctionalityIntegrationTest(
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
                 Append,
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        "name" to
-                            FieldType(
-                                UnknownType(
-                                    JsonNodeFactory.instance.objectNode().put("type", "whatever")
-                                ),
-                                nullable = true
-                            ),
-                    ),
-                ),
+                ObjectType(linkedMapOf("id" to intType, "name" to unknownType)),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
@@ -3335,8 +3398,13 @@ abstract class BasicFunctionalityIntegrationTest(
 
     companion object {
         val intType = FieldType(IntegerType, nullable = true)
-        private val numberType = FieldType(NumberType, nullable = true)
+        val numberType = FieldType(NumberType, nullable = true)
         val stringType = FieldType(StringType, nullable = true)
+        val unknownType =
+            FieldType(
+                UnknownType(Jsons.readTree("""{"type": "potato"}""")),
+                nullable = true,
+            )
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 }

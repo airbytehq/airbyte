@@ -179,8 +179,30 @@ class BigqueryDirectLoadNativeTableOperations(
         originalType: StandardSQLTypeName,
         newType: StandardSQLTypeName,
     ): String {
-        // probably something like this, except with special handling for JSON values.
-        return "CAST($columnName AS $newType)"
+        if (originalType == StandardSQLTypeName.JSON) {
+            // somewhat annoying.
+            // TO_JSON_STRING returns string values with double quotes, which is not what we want
+            // (i.e. we should unwrap the strings).
+            // but JSON_VALUE doesn't handle non-scalar values.
+            // so we have to handle both cases explicitly.
+            // there's technically some cases where this doesn't round-trip, e.g.
+            // JSON'"{\"foo\": 42}"' -> '{"foo":42}' -> JSON'{"foo": 42}'
+            // but that seems like a weird enough situation that we shouldn't worry about it.
+            return """
+                CAST(
+                  CASE JSON_TYPE($columnName)
+                    WHEN 'object' THEN TO_JSON_STRING($columnName)
+                    WHEN 'array' THEN TO_JSON_STRING($columnName)
+                    ELSE JSON_VALUE($columnName)
+                  END
+                  AS $newType
+                )
+                """.trimIndent()
+        } else if (newType == StandardSQLTypeName.JSON) {
+            return "TO_JSON($columnName)"
+        } else {
+            return "CAST($columnName AS $newType)"
+        }
     }
 
     /**

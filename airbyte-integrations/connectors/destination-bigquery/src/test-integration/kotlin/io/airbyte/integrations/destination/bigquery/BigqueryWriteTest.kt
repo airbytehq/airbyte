@@ -152,8 +152,8 @@ class StandardInsert :
         CdcDeletionMode.HARD_DELETE,
     ) {
     @Test
-    override fun testDedupChangePk() {
-        super.testDedupChangePk()
+    override fun testAppendJsonSchemaEvolution() {
+        super.testAppendJsonSchemaEvolution()
     }
 }
 
