@@ -81,8 +81,8 @@ definitions:
               },
               {
                 "Field": "AccountName",
-                "Operator": "{{ stream_slice.account_name['operator'] }}",
-                "Value": "{{ stream_slice.account_name['name'] }}"
+                "Operator": "{{ stream_partition.account_name['operator'] }}",
+                "Value": "{{ stream_partition.account_name['name'] }}"
               }
             ]
             {% else %}
@@ -145,10 +145,6 @@ definitions:
               - parsed_account_id
             value: "{{ record.Id | string }}"
             value_type: string
-          - type: AddedFieldDefinition
-            path:
-              - _airbyte_parent_id # when used as a parent stream
-            value: "{{ { 'account_id': record['Id'], 'customer_id': record['ParentCustomerId'] } }}"
   ad_performance_report_hourly_stream:
     type: DeclarativeStream
     name: ad_performance_report_hourly
@@ -651,7 +647,7 @@ definitions:
       request_headers:
         Content-Type: application/json
         DeveloperToken: "{{ config['developer_token'] }}"
-        CustomerId: "'{{ stream_partition['customer_id'] }}'"
+        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
@@ -672,7 +668,7 @@ definitions:
       request_headers:
         Content-Type: application/json
         DeveloperToken: "{{ config['developer_token'] }}"
-        CustomerId: "'{{ stream_partition['customer_id'] }}'"
+        CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
   account_substream_partition_router:
@@ -686,6 +682,8 @@ definitions:
         parent_key: parsed_account_id
         partition_field: account_id
         stream: "#/definitions/accounts_stream"
+        extra_fields:
+          - - ParentCustomerId
   # cursors section
   incremental_sync_report_datetime_cursor:
     type: DatetimeBasedCursor
