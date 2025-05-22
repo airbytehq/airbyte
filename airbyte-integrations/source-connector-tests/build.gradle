@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.airbyte.integrations.source-connector-tests'
+version = 'unspecified'
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    implementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.0.0"
+
+    // Add dependency to airbyte-cdk core modules
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
+    implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
+
+    // TestContainers dependencies
+    implementation "org.testcontainers:testcontainers:1.19.1"
+    implementation "org.testcontainers:jdbc:1.19.1"
+    implementation "org.testcontainers:junit-jupiter:1.19.1"
+}
+
+test {
+    useJUnitPlatform()
+}
