@@ -32,7 +32,12 @@ const Icon = () => {
 };
 const ChatTrigger = () => {
   return (
-    <button className={styles.chatTrigger}>
+    <button
+      className={styles.chatTrigger}
+      onClick={() => {
+        window.analytics?.track("ask_ai_button_clicked");
+      }}
+    >
       <Icon />
       Ask AI
     </button>
