@@ -16,7 +16,7 @@ data:
   name: Open Exchange Rates
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: 2023-10-02
