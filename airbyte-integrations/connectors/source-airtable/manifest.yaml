@@ -700,9 +700,11 @@ spec:
                 - type: AddedFieldDefinition
                   path: ["credentials", "auth_method"]
                   value: "api_key"
+              condition: "{{ config.get('api_key') }}"
             - type: ConfigRemoveFields
               field_pointers:
                 - ["api_key"]
+              condition: "{{ config.get('credentials', {}).get('api_key') }}"
 
 schemas:
   bases:
