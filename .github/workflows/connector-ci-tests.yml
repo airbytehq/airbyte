@@ -17,30 +17,13 @@ on:
         required: false
         description: "The git reference (branch or tag)"
       comment-id:
-        type: number
+        type: string
         required: false
-        description: "The ID of the comment triggering the workflow"
+        description: "The ID of the comment triggering the workflow. Unused as of now."
       pr:
-        type: number
+        type: string
         required: false
-        description: "The pull request number, if applicable"
-
-  # Available as a slash command and workflow dispatch
-  workflow_dispatch:
-    inputs:
-      # Static args from the slash command dispatch:
-      repo:
-        required: false
-        description: "The repository name"
-      gitref:
-        required: false
-        description: "The git reference (branch or tag)"
-      comment-id:
-        required: false
-        description: "The ID of the comment triggering the workflow"
-      pr:
-        required: false
-        description: "The pull request number, if applicable"
+        description: "The pull request number, if applicable. Unused as of now."
 
 jobs:
   generate-matrix:
@@ -52,6 +35,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Add upstream remote (forks only)
+        # This step only runs from forks.
+        # It ensures the `upstream` ref is properly declared before proceeding
+        # to the step of determining which connectors are modified.
+        if: github.repository != 'airbytehq/airbyte'
+        run: |
+          # only add upstream if it doesn't already exist
+          if ! git remote | grep -q upstream; then
+            git remote add upstream https://github.com/airbytehq/airbyte.git
+          fi
+          # fetch the default branch from upstream
+          git fetch --quiet upstream master
+
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
@@ -60,16 +56,30 @@ jobs:
           echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
 
+      - name: Set JVM Runner Type
+        id: set-jvm-runner-type
+        run: |
+          # Default to ubuntu-24.04 for all connectors
+          echo "jvm-runner-type=ubuntu-24.04" >> $GITHUB_OUTPUT
+          if [[ "${{ github.repository }}" == "airbytehq/airbyte" ]]; then
+            # Within our own repo, we can use the custom (larger) runner
+            echo "jvm-runner-type=linux-24.04-large" | tee -a "$GITHUB_OUTPUT"
+          fi
+
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
+      jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
 
   jvm-connectors-test-matrix:
     needs: [generate-matrix]
-    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    runs-on: ${{ needs.generate-matrix.outputs.jvm-runner-type }} # Custom runner, defined in GitHub org settings
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      DD_TAGS: "connector.name:${{ matrix.connector }}"
+
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -81,10 +91,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           # In order to work correctly on forks, `repository` must be set if `ref` is set:
-          repository: ${{ github.repository }}
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           # Java `integrationTestJava` Gradle task still calls Airbyte-CI, which fails on a detached head.
           # TODO: Remove the Airbyte-CI dependency for running java integration tests.
-          ref: ${{ github.head_ref || github.ref_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           fetch-depth: 1
 
       # Java deps
@@ -95,11 +105,10 @@ jobs:
           java-version: 21
           cache: gradle
 
+      # The default behaviour is read-only on PR branches and read/write on master.
+      # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
       - uses: gradle/actions/setup-gradle@v4
         if: matrix.connector
-        with:
-          cache-read-only: false
-          cache-write-only: false
 
       # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
       - name: Set up Python (For Airbyte-CI)
@@ -126,7 +135,9 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        if: matrix.connector
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
@@ -143,7 +154,8 @@ jobs:
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always() && !cancelled() && matrix.connector
+        # Skip if cancelled, if no connector is specified, or if running from a fork.
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           large_files: true
@@ -163,6 +175,8 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
@@ -222,7 +236,9 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        if: matrix.connector
+        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
@@ -239,7 +255,8 @@ jobs:
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always() && !cancelled() && matrix.connector
+        # Skip if cancelled, if no connector is specified, or if the repository is a fork.
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           large_files: true
