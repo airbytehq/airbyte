@@ -42,6 +42,7 @@ class BigqueryDirectLoadNativeTableOperations(
     private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
+    private val internalTableDataset: String,
 ) : DirectLoadTableNativeOperations {
     override fun ensureSchemaMatches(
         stream: DestinationStream,
@@ -236,7 +237,9 @@ class BigqueryDirectLoadNativeTableOperations(
         // a truncate-refresh temp table.
         // so add an explicit suffix that this is for schema change.
         val tempTableName =
-            tableName.asTempTable().let { it.copy(name = it.name + "_airbyte_tmp_schema_change") }
+            tableName.asTempTable(internalNamespace = internalTableDataset).let {
+                it.copy(name = it.name + "_airbyte_tmp_schema_change")
+            }
 
         val originalTableId = "`$projectId`.`${tableName.namespace}`.`${tableName.name}`"
         val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"

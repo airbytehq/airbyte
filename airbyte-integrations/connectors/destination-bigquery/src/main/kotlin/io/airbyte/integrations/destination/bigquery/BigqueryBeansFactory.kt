@@ -117,8 +117,13 @@ class BigqueryBeansFactory {
             @Suppress("UNCHECKED_CAST")
             streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>
             return DirectLoadTableWriter(
+                internalNamespace = config.internalTableDataset,
                 names = names,
-                stateGatherer = BigqueryDirectLoadDatabaseInitialStatusGatherer(bigquery),
+                stateGatherer =
+                    BigqueryDirectLoadDatabaseInitialStatusGatherer(
+                        bigquery,
+                        internalTableDataset = config.internalTableDataset,
+                    ),
                 destinationHandler = destinationHandler,
                 nativeTableOperations =
                     BigqueryDirectLoadNativeTableOperations(
@@ -126,11 +131,13 @@ class BigqueryBeansFactory {
                         sqlTableOperations,
                         destinationHandler,
                         projectId = config.projectId,
+                        internalTableDataset = config.internalTableDataset,
                     ),
                 sqlTableOperations = sqlTableOperations,
                 streamStateStore = streamStateStore,
                 directLoadTableTempTableNameMigration =
                     DefaultDirectLoadTableTempTableNameMigration(
+                        internalNamespace = config.internalTableDataset,
                         BigqueryDirectLoadTableExistenceChecker(bigquery),
                         sqlTableOperations,
                     ),
