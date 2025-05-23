@@ -86,3 +86,47 @@ class TestAccountsStream(BaseTest):
                 }
             ]
         }
+
+    def test_read_accounts_with_account_names_predicate(self):
+        """
+        Test reading accounts data with account_names predicate in the config.
+        This tests the ListPartitionRouter that processes the account_names configuration.
+        """
+        # Use a config with account_names predicate
+        config_with_account_names = {
+            **self._config,
+            "account_names": [{"operator": "Equals", "name": "Airbyte"}, {"operator": "Contains", "name": "demo"}],
+        }
+
+        http_mocker = self.http_mocker
+        http_mocker.post(
+            RequestBuilder(resource="User/Query").with_body('{"UserId": null}').build(),
+            HttpResponse(json.dumps(find_template("user_query", __file__)), 200),
+        )
+
+        # Mock the first Accounts/Search request with Equals operator for "Airbyte"
+        http_mocker.post(
+            RequestBuilder(resource="Accounts/Search")
+            .with_body(
+                b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}, {"Field": "AccountName", "Operator": "Equals", "Value": "Airbyte"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}'
+            )
+            .build(),
+            HttpResponse(json.dumps(find_template("accounts_search_equals_airbyte", __file__)), 200),
+        )
+
+        # Mock the second Accounts/Search request with Contains operator for "demo"
+        http_mocker.post(
+            RequestBuilder(resource="Accounts/Search")
+            .with_body(
+                b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}, {"Field": "AccountName", "Operator": "Contains", "Value": "demo"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}'
+            )
+            .build(),
+            HttpResponse(json.dumps(find_template("accounts_search_contains_demo", __file__)), 200),
+        )
+
+        # Read the accounts stream with account_names predicate
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, config_with_account_names)
+        assert len(output.records) == 2
+        account_names = [record.record.data["Name"] for record in output.records]
+        assert "Airbyte" in account_names
+        assert any("demo" in name.lower() for name in account_names)
