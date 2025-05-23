@@ -46,6 +46,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
   private Instant emittedAt;
   private Optional<CdcMetadataInjector<?>> cdcMetadataInjector;
   private boolean isEnforceSchema;
+  private boolean renderUuidFromBinary;
 
   private Map<AirbyteStreamNameNamespacePair, Object> streamPairToLastIdMap;
 
@@ -65,6 +66,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
     final MongoDbStateManager stateManager = new MongoDbStateManager();
     stateManager.streamPairToLastIdMap = new HashMap<>();
     stateManager.isEnforceSchema = config.getEnforceSchema();
+    stateManager.renderUuidFromBinary = config.getRenderUuidsFromBinary();
     stateManager.emittedAt = Instant.now();
     stateManager.cdcMetadataInjector = Optional.of(MongoDbCdcConnectorMetadataInjector.getInstance(stateManager.emittedAt));
 
@@ -256,7 +258,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
     final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
 
-    final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
+    final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields, renderUuidFromBinary) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document, renderUuidFromBinary);
 
     final var lastId = document.get(MongoConstants.ID_FIELD);
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());

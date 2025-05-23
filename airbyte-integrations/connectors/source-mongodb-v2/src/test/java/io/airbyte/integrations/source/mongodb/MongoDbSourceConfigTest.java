@@ -14,6 +14,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISC
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.RENDER_UUIDS_FROM_BINARY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -80,6 +81,7 @@ class MongoDbSourceConfigTest {
     assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());
     assertEquals(DEFAULT_DISCOVER_SAMPLE_SIZE, sourceConfig.getSampleSize());
     assertEquals(null, sourceConfig.getUsername());
+    assertEquals(false, sourceConfig.getRenderUuidsFromBinary());
   }
 
 }

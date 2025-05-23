@@ -19,12 +19,14 @@ import com.mongodb.DBRefCodecProvider;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonBinary;
+import org.bson.BsonBinarySubType;
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
@@ -32,6 +34,7 @@ import org.bson.BsonRegularExpression;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.UuidRepresentation;
+import org.bson.internal.UuidHelper;
 import org.bson.codecs.BsonCodecProvider;
 import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.DocumentCodecProvider;
@@ -128,47 +131,47 @@ public class MongoDbCdcEventUtils {
    * @param json The Debezium event data as JSON.
    * @return The transformed Debezium event data as JSON.
    */
-  public static ObjectNode transformDataTypes(final String json, final Set<String> configuredFields) {
+  public static ObjectNode transformDataTypes(final String json, final Set<String> configuredFields, final boolean renderUuidFromBinary) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
-    formatDocument(document, objectNode, configuredFields);
+    formatDocument(document, objectNode, configuredFields, renderUuidFromBinary);
     return normalizeObjectId(objectNode);
   }
 
-  public static ObjectNode transformDataTypesNoSchema(final String json) {
+  public static ObjectNode transformDataTypesNoSchema(final String json, final boolean renderUuidFromBinary) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
-    formatDocumentNoSchema(document, objectNode);
+    formatDocumentNoSchema(document, objectNode, renderUuidFromBinary);
     return normalizeObjectIdNoSchema(objectNode);
   }
 
-  public static JsonNode toJsonNode(final Document document, final Set<String> columnNames) {
+  public static JsonNode toJsonNode(final Document document, final Set<String> columnNames, final boolean renderUuidFromBinary) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    formatDocument(document, objectNode, columnNames);
+    formatDocument(document, objectNode, columnNames, renderUuidFromBinary);
     return normalizeObjectId(objectNode);
   }
 
-  public static JsonNode toJsonNodeNoSchema(final Document document) {
+  public static JsonNode toJsonNodeNoSchema(final Document document, final boolean renderUuidFromBinary) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    formatDocumentNoSchema(document, objectNode);
+    formatDocumentNoSchema(document, objectNode, renderUuidFromBinary);
     return normalizeObjectIdNoSchema(objectNode);
   }
 
-  private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
+  private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames, final boolean renderUuidFromBinary) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
-      readDocument(reader, objectNode, columnNames, false);
+      readDocument(reader, objectNode, columnNames, false, renderUuidFromBinary);
     } catch (final Exception e) {
       LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
 
-  private static void formatDocumentNoSchema(final Document document, final ObjectNode objectNode) {
+  private static void formatDocumentNoSchema(final Document document, final ObjectNode objectNode, final boolean renderUuidFromBinary) {
     objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
-      readDocument(reader, (ObjectNode) objectNode.get(SCHEMALESS_MODE_DATA_FIELD), Collections.emptySet(), true);
+      readDocument(reader, (ObjectNode) objectNode.get(SCHEMALESS_MODE_DATA_FIELD), Collections.emptySet(), true, renderUuidFromBinary);
       final Optional<JsonNode> maybeId = Optional.ofNullable(objectNode.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD));
       maybeId.ifPresent(id -> objectNode.set(DOCUMENT_OBJECT_ID_FIELD, id));
     } catch (final Exception e) {
@@ -180,7 +183,8 @@ public class MongoDbCdcEventUtils {
   private static ObjectNode readDocument(final BsonReader reader,
                                          final ObjectNode jsonNodes,
                                          final Set<String> includedFields,
-                                         final boolean allowAllFields) {
+                                         final boolean allowAllFields,
+                                         final boolean renderUuidFromBinary) {
     reader.readStartDocument();
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
       final var fieldName = reader.readName();
@@ -192,11 +196,11 @@ public class MongoDbCdcEventUtils {
            * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
            * are processed.
            */
-          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(), true));
+          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(), true, renderUuidFromBinary));
         } else if (ARRAY.equals(fieldType)) {
-          jsonNodes.set(fieldName, readArray(reader, includedFields, fieldName));
+          jsonNodes.set(fieldName, readArray(reader, includedFields, fieldName, renderUuidFromBinary));
         } else {
-          readField(reader, jsonNodes, fieldName, fieldType);
+          readField(reader, jsonNodes, fieldName, fieldType, renderUuidFromBinary);
         }
         transformToStringIfMarked(jsonNodes, includedFields, fieldName);
       } else {
@@ -208,7 +212,7 @@ public class MongoDbCdcEventUtils {
     return jsonNodes;
   }
 
-  private static JsonNode readArray(final BsonReader reader, final Set<String> columnNames, final String fieldName) {
+  private static JsonNode readArray(final BsonReader reader, final Set<String> columnNames, final String fieldName, final boolean renderUuidFromBinary) {
     reader.readStartArray();
     final var elements = Lists.newArrayList();
 
@@ -216,12 +220,12 @@ public class MongoDbCdcEventUtils {
       final var currentBsonType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(currentBsonType)) {
         // recursion is used to read inner doc
-        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, true));
+        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, true, renderUuidFromBinary));
       } else if (ARRAY.equals(currentBsonType)) {
         // recursion is used to read inner array
-        elements.add(readArray(reader, columnNames, fieldName));
+        elements.add(readArray(reader, columnNames, fieldName, renderUuidFromBinary));
       } else {
-        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), fieldName, currentBsonType);
+        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), fieldName, currentBsonType, renderUuidFromBinary);
         elements.add(element.get(fieldName));
       }
     }
@@ -232,7 +236,8 @@ public class MongoDbCdcEventUtils {
   private static ObjectNode readField(final BsonReader reader,
                                       final ObjectNode o,
                                       final String fieldName,
-                                      final BsonType fieldType) {
+                                      final BsonType fieldType,
+                                      final boolean renderUuidFromBinary) {
     switch (fieldType) {
       case BOOLEAN -> o.put(fieldName, reader.readBoolean());
       case INT32 -> o.put(fieldName, reader.readInt32());
@@ -241,12 +246,12 @@ public class MongoDbCdcEventUtils {
       case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
       case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
       case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
-      case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
+      case BINARY -> o.put(fieldName, formatBinaryData(reader.readBinaryData(), renderUuidFromBinary));
       case SYMBOL -> o.put(fieldName, reader.readSymbol());
       case STRING -> o.put(fieldName, reader.readString());
       case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
       case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
-      case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName);
+      case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName, renderUuidFromBinary);
       case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
       case NULL -> readNull(o, reader, fieldName);
       default -> reader.skipValue();
@@ -286,8 +291,21 @@ public class MongoDbCdcEventUtils {
     return value == null ? null : value.doubleValue();
   }
 
-  private static byte[] toByteArray(final BsonBinary value) {
-    return value == null ? null : value.getData();
+  private static String formatBinaryData(final BsonBinary value, final boolean renderUuidFromBinary) {
+    if (value == null) {
+      return null;
+    }
+
+    if (renderUuidFromBinary) {
+      if (value.getType() == BsonBinarySubType.UUID_STANDARD.getValue()) {
+        return UuidHelper.decodeBinaryToUuid(value.getData(), value.getType(), UuidRepresentation.STANDARD).toString();
+      } else if (value.getType() == BsonBinarySubType.UUID_LEGACY.getValue()) {
+        return UuidHelper.decodeBinaryToUuid(value.getData(), value.getType(), UuidRepresentation.JAVA_LEGACY).toString();
+      }
+    }
+
+    // Convert byte array to Base64 string if not a UUID
+    return Base64.getEncoder().encodeToString(value.getData());
   }
 
   private static void readNull(final ObjectNode o, final BsonReader reader, final String fieldName) {
@@ -295,9 +313,9 @@ public class MongoDbCdcEventUtils {
     reader.readNull();
   }
 
-  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName) {
+  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final boolean renderUuidFromBinary) {
     final var code = reader.readJavaScriptWithScope();
-    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"), false);
+    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"), false, renderUuidFromBinary);
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 

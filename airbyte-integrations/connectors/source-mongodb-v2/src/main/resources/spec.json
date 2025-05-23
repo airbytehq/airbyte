@@ -205,6 +205,14 @@
         "max": 24,
         "order": 14,
         "group": "advanced"
+      },
+      "render_uuids_from_binary": {
+        "type": "boolean",
+        "title": "Render UUIDs from Binary (Advanced)",
+        "description": "When enabled, binary fields with UUID subtypes will be rendered as UUID strings instead of base64-encoded binary data.",
+        "default": false,
+        "order": 15,
+        "group": "advanced"
       }
     },
     "groups": [

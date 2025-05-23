@@ -115,6 +115,14 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
     }
   }
 
+  public boolean getRenderUuidsFromBinary() {
+    if (rawConfig.has(RENDER_UUIDS_FROM_BINARY)) {
+      return rawConfig.get(RENDER_UUIDS_FROM_BINARY).asBoolean(false);
+    } else {
+      return false;
+    }
+  }
+
   private void addAdvancedPropertiesToDatabaseConfig(JsonNode dbConfig) {
     ((ObjectNode) dbConfig).put(UPDATE_CAPTURE_MODE, getUpdateCaptureMode());
   }

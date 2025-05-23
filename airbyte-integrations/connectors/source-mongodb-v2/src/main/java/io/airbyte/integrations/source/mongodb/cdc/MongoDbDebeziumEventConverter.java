@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -51,10 +52,15 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
      * of the MongoDB server, the contents Debezium event data will be different. See
      * #formatMongoDbDeleteDebeziumData() for more details.
      */
+    // Get the renderUuidFromBinary flag from the configuration
+    // When enabled, binary fields with UUID subtypes will be rendered as UUID strings
+    final boolean renderUuidFromBinary = config.has(MongoConstants.RENDER_UUIDS_FROM_BINARY) &&
+                                         config.get(MongoConstants.RENDER_UUIDS_FROM_BINARY).asBoolean();
+
     final JsonNode data = switch (operation) {
       case "c", "i", "u" -> formatMongoDbDebeziumData(
-          before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema);
-      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
+          before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema, renderUuidFromBinary);
+      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema, renderUuidFromBinary);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 
@@ -67,19 +73,20 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                     final JsonNode debeziumEventKey,
                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                     final Set<String> configuredFields,
-                                                    final boolean isEnforceSchema) {
+                                                    final boolean isEnforceSchema,
+                                                    final boolean renderUuidFromBinary) {
 
     if ((before == null || before.isNull()) && (after == null || after.isNull())) {
       // In case a mongodb document was updated and then deleted, the update change event will not have
       // any information ({after: null})
       // We are going to treat it as a delete.
-      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
+      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema, renderUuidFromBinary);
     } else {
       final String eventJson = (after.isNull() ? before : after).asText();
       return DebeziumEventConverter.addCdcMetadata(
           isEnforceSchema
-              ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
-              : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
+              ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields, renderUuidFromBinary)
+              : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson, renderUuidFromBinary),
           source, cdcMetadataInjector, false);
     }
   }
@@ -89,7 +96,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector,
                                                           final Set<String> configuredFields,
-                                                          final boolean isEnforceSchema) {
+                                                          final boolean isEnforceSchema,
+                                                          final boolean renderUuidFromBinary) {
     final String eventJson;
 
     /*
@@ -111,8 +119,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
 
     return DebeziumEventConverter.addCdcMetadata(
         isEnforceSchema
-            ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
-            : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
+            ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields, renderUuidFromBinary)
+            : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson, renderUuidFromBinary),
         source, cdcMetadataInjector, true);
   }
 
