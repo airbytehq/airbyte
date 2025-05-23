@@ -36,6 +36,10 @@ To push and pull images to your private Docker registry, you need to authenticat
 - Your local or CI environment (where you build your connector image) must be able to **push** images to your registry.
 - Your Airbyte instance must be able to **pull** images from your registry.
 
+## 3. Adhere to Airbyte's Docker Image Requirements
+
+See the [Airbyte Protocol Docker Interface](../understanding-airbyte/airbyte-protocol-docker.md) page for specific Docker image requirements, such as required environment variables.
+
 ### For Docker-compose Airbyte deployments
 
 #### On GCP - Artifact Registry:
