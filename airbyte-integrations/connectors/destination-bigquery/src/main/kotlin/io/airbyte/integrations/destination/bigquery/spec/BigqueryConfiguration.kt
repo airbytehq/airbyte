@@ -18,7 +18,7 @@ data class BigqueryConfiguration(
     val credentialsJson: String?,
     val cdcDeletionMode: CdcDeletionMode,
     val transformationPriority: TransformationPriority,
-    val rawTableDataset: String,
+    val internalTableDataset: String,
     val legacyRawTablesOnly: Boolean,
 ) : DestinationConfiguration() {
     override val numOpenStreamWorkers = 3
@@ -58,11 +58,11 @@ class BigqueryConfigurationFactory :
             // default to hard delete for backwards compatibility.
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             pojo.transformationPriority ?: TransformationPriority.INTERACTIVE,
-            rawTableDataset =
-                if (pojo.rawTableDataset.isNullOrBlank()) {
+            internalTableDataset =
+                if (pojo.internalTableDataset.isNullOrBlank()) {
                     DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
                 } else {
-                    pojo.rawTableDataset!!
+                    pojo.internalTableDataset!!
                 },
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
         )

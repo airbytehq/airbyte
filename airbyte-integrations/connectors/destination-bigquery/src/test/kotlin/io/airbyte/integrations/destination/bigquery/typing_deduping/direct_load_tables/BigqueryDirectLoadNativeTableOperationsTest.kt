@@ -77,7 +77,8 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Mockito.mock(),
                     Mockito.mock(),
                     Mockito.mock(),
-                    projectId = "unused"
+                    projectId = "unused",
+                    internalTableDataset = "unused",
                 )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         Assertions.assertAll(
@@ -133,7 +134,8 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     Mockito.mock(),
                     Mockito.mock(),
                     Mockito.mock(),
-                    projectId = "unused"
+                    projectId = "unused",
+                    internalTableDataset = "unused",
                 )
                 .buildAlterTableReport(stream, columnNameMapping, existingTable)
         // NB: column names in AlterTableReport are all _after_ destination name transform
