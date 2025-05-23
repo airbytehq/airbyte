@@ -110,8 +110,6 @@ You can pull your connector image from your private registry to validate the pre
    This documentation will be linked in your connector setting's page.
 
 5. `Add` the connector to save the configuration. You can now select your new connector when setting up a new connection!
-
-
 # Troubleshooting
 
 ## Loading connector docker containers into kind
