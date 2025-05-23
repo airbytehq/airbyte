@@ -11,6 +11,7 @@ import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TableDefinition
 import com.google.cloud.bigquery.TimePartitioning
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
@@ -26,6 +27,7 @@ import io.airbyte.cdk.util.findIgnoreCase
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.digest.DigestUtils
 
 private val logger = KotlinLogging.logger {}
@@ -63,14 +65,14 @@ class BigqueryDirectLoadNativeTableOperations(
             logger.info {
                 "Stream ${stream.descriptor.toPrettyString()} detected schema change. Altering the table."
             }
-            databaseHandler.execute(
-                getAlterTableSql(
+            runBlocking {
+                alterTable(
                     tableName,
                     columnsToAdd = alterTableReport.columnsToAdd,
                     columnsToRemove = alterTableReport.columnsToRemove,
                     columnsToChange = alterTableReport.columnsToChangeType,
                 )
-            )
+            }
         } else {
             logger.info {
                 "Stream ${stream.descriptor.toPrettyString()} has correct schema; no action needed."
@@ -82,7 +84,7 @@ class BigqueryDirectLoadNativeTableOperations(
         val result =
             bigquery.query(
                 QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name} LIMIT 1"
+                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name} LIMIT 1",
                 ),
             )
         val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
@@ -228,7 +230,7 @@ class BigqueryDirectLoadNativeTableOperations(
         val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
         val columnList =
             (Meta.COLUMN_NAMES + columnsToRetain + columnsToChange.map { it.name }).joinToString(
-                ","
+                ",",
             )
         val valueList =
             (Meta.COLUMN_NAMES +
@@ -251,7 +253,7 @@ class BigqueryDirectLoadNativeTableOperations(
                 SELECT
                 $valueList
                 FROM $originalTableId
-                """.trimIndent()
+                """.trimIndent(),
             )
 
         logger.info {
@@ -267,52 +269,101 @@ class BigqueryDirectLoadNativeTableOperations(
         sqlOperations.overwriteTable(tempTableName, tableName)
     }
 
-    private fun getAlterTableSql(
+    private suspend fun alterTable(
         tableName: TableName,
         columnsToAdd: List<ColumnAdd<StandardSQLTypeName>>,
         columnsToRemove: List<String>,
         columnsToChange: List<ColumnChange<StandardSQLTypeName>>,
-    ): Sql {
+    ) {
+        // the bigquery API only supports adding new fields; you can't drop/rename existing fields.
+        // so we'll do everything via DDL.
+        // We also try to batch operations into a single statement, because bigquery enforces
+        // somewhat low rate limits on how many ALTER TABLE operations you can run in a short
+        // timeframe.
         val tableId = """`$projectId`.`${tableName.namespace}`.`${tableName.name}`"""
-        val addColumns =
-            columnsToAdd.map { (name, type) -> """ALTER TABLE $tableId ADD COLUMN $name $type""" }
-        val removeColumns =
-            columnsToRemove.map { name -> """ALTER TABLE $tableId DROP COLUMN $name""" }
-        val changeColumns =
-            columnsToChange.flatMap { (name, originalType, newType) ->
-                // prefix with underscore in case the SHA256 starts with a number
-                val nameHash = "_" + DigestUtils.sha256Hex(name)
+
+        // bigquery has strict limits on what types can be altered to other types.
+        // so instead, we actually add a new column, explicitly cast the old column
+        // into the new column, then swap the new column into the old column.
+        // this struct contains everything we need to do that.
+        // we also need a backup column for safety - see usage of backupColumnName.
+        data class ColumnTypeChangePlan(
+            val realColumnName: String,
+            val tempColumnName: String,
+            val backupColumnName: String,
+            val originalType: StandardSQLTypeName,
+            val newType: StandardSQLTypeName,
+        )
+        val typeChangePlans: List<ColumnTypeChangePlan> =
+            columnsToChange.map { (name, originalType, newType) ->
+                // prefix with letter in case the SHA256 starts with a number
+                val nameHash = "a" + DigestUtils.sha256Hex(name)
                 val tempColumnName = "${nameHash}_airbyte_tmp"
                 val backupColumnName = "${nameHash}_airbyte_tmp_to_drop"
-                val castStatement = getColumnCastStatement(name, originalType, newType)
-                listOf(
-                    // bigquery has strict limits on what types can be altered to other types.
-                    // so instead, we actually add a new column, explicitly cast the old column
-                    // into the new column, then swap the new column into the old column.
-                    """ALTER TABLE $tableId ADD COLUMN $tempColumnName $newType""",
-                    """UPDATE $tableId SET $tempColumnName = $castStatement WHERE 1=1""",
-                    // bigquery doesn't support DDL in transactions,
-                    // and also doesn't support having RENAME COLUMN and DROP COLUMN in the same
-                    // ALTER TABLE statement.
-                    // so this gives us the safest way to drop the old column:
-                    // we atomically rename the old column to a holding location
-                    // and rename the new column to replace it.
-                    // (we'd prefer to just DROP the old column, but bigquery disallows that.)
-                    // Then, in a second ALTER TABLE, we drop the old column.
-                    // this means that there's never a time when the table is completely missing
-                    // the actual column.
-                    // If we crash immediately after the ALTER TABLE RENAME, everything is fine:
-                    // the next sync will see $backupColumnName as a column to drop,
-                    // and we'll recover naturally.
-                    """
-                    ALTER TABLE $tableId
-                      RENAME COLUMN $name TO $backupColumnName,
-                      RENAME COLUMN $tempColumnName TO $name
-                    """.trimIndent(),
-                    """ALTER TABLE $tableId DROP COLUMN $backupColumnName"""
+                ColumnTypeChangePlan(
+                    realColumnName = name,
+                    tempColumnName = tempColumnName,
+                    backupColumnName = backupColumnName,
+                    originalType = originalType,
+                    newType = newType,
                 )
             }
-        return Sql.separately(addColumns + removeColumns + changeColumns)
+
+        val initialAlterations =
+            columnsToRemove.map { name -> """DROP COLUMN $name""" } +
+                columnsToAdd.map { (name, type) -> """ADD COLUMN $name $type""" } +
+                // in the initial statement, we just add the temporary column.
+                typeChangePlans.map { plan ->
+                    """ADD COLUMN ${plan.tempColumnName} ${plan.newType}"""
+                }
+        databaseHandler.executeWithRetries(
+            """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
+        )
+
+        // now we execute the rest of the table alterations.
+        // these happen on a per-column basis, so that a failed UPDATE statement in one column
+        // doesn't block other schema changes from happening.
+        typeChangePlans.forEach {
+            (realColumnName, tempColumnName, backupColumnName, originalType, newType) ->
+            // first, update the temp column to contain the casted value.
+            val castStatement = getColumnCastStatement(realColumnName, originalType, newType)
+            try {
+                databaseHandler.executeWithRetries(
+                    """UPDATE $tableId SET $tempColumnName = $castStatement WHERE 1=1"""
+                )
+            } catch (e: Exception) {
+                val message =
+                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table."
+                logger.warn(e) { message }
+                // no rollback logic. On the next sync, we'll see the temp columns in columnsToDrop.
+                throw ConfigErrorException(message, e)
+            }
+
+            // then, swap the temp column to replace the original column.
+            // this is surprisingly nontrivial.
+            // bigquery doesn't support DDL in transactions,
+            // and also doesn't support having RENAME COLUMN and DROP COLUMN in the same
+            // ALTER TABLE statement.
+            // so this gives us the safest way to drop the old column:
+            // we atomically rename the old column to a holding location
+            // and rename the new column to replace it.
+            // Then, in a second ALTER TABLE, we drop the old column.
+            // this means that there's never a time when the table is completely missing
+            // the actual column.
+            // If we crash immediately after the RENAME COLUMNs, everything is fine:
+            // the next sync will see $backupColumnName as a column to drop,
+            // and we'll recover naturally.
+            databaseHandler.executeWithRetries(
+                """
+                ALTER TABLE $tableId
+                  RENAME COLUMN $realColumnName TO $backupColumnName,
+                  RENAME COLUMN $tempColumnName TO $realColumnName
+                """.trimIndent(),
+            )
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId DROP COLUMN $backupColumnName""",
+            )
+        }
     }
 
     companion object {
@@ -325,7 +376,7 @@ class BigqueryDirectLoadNativeTableOperations(
             return (existingTable.clustering != null &&
                 containsAllIgnoreCase(
                     HashSet<String>(existingTable.clustering!!.fields),
-                    BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping)
+                    BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping),
                 ))
         }
 
