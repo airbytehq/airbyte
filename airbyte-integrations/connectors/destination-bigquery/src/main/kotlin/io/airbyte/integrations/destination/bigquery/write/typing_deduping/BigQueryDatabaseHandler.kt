@@ -40,7 +40,8 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
     suspend fun executeWithRetries(
         statement: String,
         initialDelay: Long = 1000,
-        numAttempts: Int = 5
+        numAttempts: Int = 5,
+        maxDelay: Long = 60,
     ) {
         var delay = initialDelay
         for (attemptNumber in 1..numAttempts) {
@@ -59,8 +60,9 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                     logger.warn(e) {
                         "Rate limit exceeded while executing SQL (attempt $attemptNumber/$numAttempts). Sleeping ${delay}ms and retrying."
                     }
-                    delay(delay)
-                    delay *= 2
+                    val withJitter = delay + 1000 * Math.random()
+                    delay(withJitter.toLong())
+                    delay = min(delay * 2, maxDelay)
                 } else {
                     logger.error(e) {
                         "Caught exception while executing SQL (attempt $attemptNumber/$numAttempts). Not retrying."

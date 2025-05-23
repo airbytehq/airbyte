@@ -50,33 +50,40 @@ class BigqueryDirectLoadNativeTableOperations(
         logger.info {
             "Stream ${stream.descriptor.toPrettyString()} had alter table report $alterTableReport"
         }
-        if (shouldRecreateTable) {
-            logger.info {
-                "Stream ${stream.descriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
-            }
-            recreateTable(
-                stream,
-                columnNameMapping,
-                tableName,
-                alterTableReport.columnsToRetain,
-                alterTableReport.columnsToChangeType,
-            )
-        } else if (!alterTableReport.isNoOp) {
-            logger.info {
-                "Stream ${stream.descriptor.toPrettyString()} detected schema change. Altering the table."
-            }
-            runBlocking {
-                alterTable(
+        try {
+            if (shouldRecreateTable) {
+                logger.info {
+                    "Stream ${stream.descriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
+                }
+                recreateTable(
+                    stream,
+                    columnNameMapping,
                     tableName,
-                    columnsToAdd = alterTableReport.columnsToAdd,
-                    columnsToRemove = alterTableReport.columnsToRemove,
-                    columnsToChange = alterTableReport.columnsToChangeType,
+                    alterTableReport.columnsToRetain,
+                    alterTableReport.columnsToChangeType,
                 )
+            } else if (!alterTableReport.isNoOp) {
+                logger.info {
+                    "Stream ${stream.descriptor.toPrettyString()} detected schema change. Altering the table."
+                }
+                runBlocking {
+                    alterTable(
+                        tableName,
+                        columnsToAdd = alterTableReport.columnsToAdd,
+                        columnsToRemove = alterTableReport.columnsToRemove,
+                        columnsToChange = alterTableReport.columnsToChangeType,
+                    )
+                }
+            } else {
+                logger.info {
+                    "Stream ${stream.descriptor.toPrettyString()} has correct schema; no action needed."
+                }
             }
-        } else {
-            logger.info {
-                "Stream ${stream.descriptor.toPrettyString()} has correct schema; no action needed."
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Encountered an error while modifying the schema for stream ${stream.descriptor.toPrettyString()}. If this error persists, you may need to manually modify the table's schema."
             }
+            throw e
         }
     }
 
