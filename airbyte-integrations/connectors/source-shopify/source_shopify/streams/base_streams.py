@@ -57,6 +57,9 @@ class ShopifyStream(HttpStream, ABC):
 
     @property
     def default_filter_field_value(self) -> Union[int, str]:
+        # certain streams are using `since_id` field as `filter_field`, which requires to use `int` type,
+        # but many other use `str` values for this, we determine what to use based on `filter_field` value
+        # by default, we use the user defined `Start Date` as initial value, or 0 for `id`-dependent streams.
         return 0 if self.filter_field == "since_id" else (self.config.get("start_date") or "")
 
     def path(self, **kwargs) -> str:
@@ -104,11 +107,18 @@ class ShopifyStream(HttpStream, ABC):
     def produce_records(
         self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None
     ) -> Iterable[Mapping[str, Any]]:
+        # transform method was implemented according to issue 4841
+        # Shopify API returns price fields as a string and it should be converted to number
+        # this solution designed to convert string into number, but in future can be modified for general purpose
         if isinstance(records, dict):
+            # for cases when we have a single record as dict
+            # add shop_url to the record to make querying easy
             records["shop_url"] = self.config["shop"]
             yield self._transformer.transform(records)
         else:
+            # for other cases
             for record in records:
+                # add shop_url to the record to make querying easy
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
