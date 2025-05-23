@@ -13,7 +13,7 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 import requests
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -327,22 +327,14 @@ class EagerlyCachedStreamState:
         return decorator
 
 
-class LimitReducingErrorHandler(ErrorHandler):
-    """Custom error handler that reduces the request limit (of items/page) on 500 errors and retries.
-    limit is halved on each retry until it reaches 1. We still exponentially backoff on retries in addition to this.
+class LimitReducingErrorHandler(HttpStatusErrorHandler):
+    """Custom error handler that reduces the request limit on 500 errors and retries.
+    The limit is halved on each retry until it reaches 1, while still applying exponential backoff.
     """
 
-    def __init__(self, stream: "ShopifyStream", default_handler: ErrorHandler):
+    def __init__(self, stream: "ShopifyStream", logger: logging.Logger, max_retries: int, error_mapping: dict):
+        super().__init__(logger=logger, max_retries=max_retries, error_mapping=error_mapping)
         self.stream = stream
-        self.default_handler = default_handler
-
-    @property
-    def max_retries(self) -> Optional[int]:
-        return self.default_handler.max_retries
-
-    @property
-    def max_time(self) -> Optional[int]:
-        return self.default_handler.max_time
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
@@ -364,7 +356,7 @@ class LimitReducingErrorHandler(ErrorHandler):
                     failure_type=FailureType.transient_error,
                     error_message="Persistent 500 error after reducing limit to 1",
                 )
-        return self.default_handler.interpret_response(response_or_exception)
+        return super().interpret_response(response_or_exception)
 
     def update_limit_in_url(self, url: str, new_limit: int) -> str:
         """Update the 'limit' parameter in the URL query string."""

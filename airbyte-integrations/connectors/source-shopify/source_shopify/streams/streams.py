@@ -31,8 +31,8 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
-from source_shopify.utils import LimitReducingErrorHandler
-
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
@@ -96,8 +96,14 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         return params
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        default_handler = super().get_error_handler()
-        return LimitReducingErrorHandler(stream=self, default_handler=default_handler)
+        known_errors = ShopifyNonRetryableErrors(self.name)
+        error_mapping = DEFAULT_ERROR_MAPPING | known_errors
+        return LimitReducingErrorHandler(
+            stream=self,
+            logger=self.logger,
+            max_retries=5,
+            error_mapping=error_mapping
+        )
 
 
 class Disputes(IncrementalShopifyStream):
