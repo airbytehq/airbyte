@@ -1,0 +1,53 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/exact
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Exact Spec
+  type: object
+  required:
+    - base_url
+    - divisions
+    - credentials
+  properties:
+    base_url:
+      type: string
+      title: Base URL
+      description: Base URL of the Exact API. Defaults to Dutch version.
+      default: "https://start.exactonline.nl"
+    divisions:
+      type: array
+      minItems: 1
+      title: Divisions
+      description: List of divisions code to extract. The division code refers to the administration in Exact.
+    credentials:
+      title: OAuth Credentials
+      type: object
+      required:
+        - client_id
+        - client_secret
+        - access_token
+        - refresh_token
+        - token_expiry_date
+      properties:
+        access_token:
+          type: string
+          title: OAuth Access Token
+          description: Access token from Exact.
+          airbyte_secret: true
+        refresh_token:
+          type: string
+          title: OAuth Refresh Token
+          description: Refresh token from Exact.
+          airbyte_secret: true
+        token_expiry_date:
+          type: string
+          title: OAuth Token Expiry Date
+          description: Timestamp when the token expires.
+        client_id:
+          type: string
+          title: OAuth Client ID
+          description: OAuth client_id, can be found at apps.exactonline.com.
+        client_secret:
+          type: string
+          title: OAuth Client Secret
+          description: OAuth client_secret, can be found at apps.exactonline.com.
+          airbyte_secret: true
