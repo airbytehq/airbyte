@@ -3,7 +3,7 @@ products: oss-*
 sidebar_label: Uploading custom connectors
 ---
 
-import ContainerProviders from '@site/static/_docker_image_registries.md';
+import ContainerProviders from '@site/static/\_docker_image_registries.md';
 
 # Uploading Docker-based custom connectors
 
