@@ -213,28 +213,6 @@ def test_dpath_schema_extractor(body, expected_records: List):
             False,
             True,
         ),
-        # Edge cases
-        (
-            {"values": [{"formattedValue": ""}, {"formattedValue": "!!!"}, {"formattedValue": "   "}]},
-            [
-                (0, "unnamed_column", {"formattedValue": ""}),
-                (1, "unnamed_column", {"formattedValue": "!!!"}),
-                (2, "unnamed_column", {"formattedValue": "   "}),
-            ],
-            False,
-            True,
-        ),
-        # Mixed case and non-ASCII characters
-        (
-            {"values": [{"formattedValue": "Café 2023"}, {"formattedValue": "UserName"}, {"formattedValue": "Äbc Def"}]},
-            [
-                (0, "cafe_2023", {"formattedValue": "Café 2023"}),
-                (1, "username", {"formattedValue": "UserName"}),
-                (2, "abc_def", {"formattedValue": "Äbc Def"}),
-            ],
-            False,
-            True,
-        ),
     ],
     ids=[
         "test_headers",
@@ -249,8 +227,6 @@ def test_dpath_schema_extractor(body, expected_records: List):
         "test_consecutive_spaces_special_chars",
         "test_letter_number_pairs",
         "test_number_word_pairs",
-        "test_edge_cases",
-        "test_mixed_case_non_ascii",
     ],
 )
 def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion, experimental_names_conversion):

@@ -40,7 +40,7 @@ def name_conversion(text: str) -> str:
 def experimental_name_conversion(text: str) -> str:
     """
     Convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
-    Removes leading/trailing spaces, combines number-word pairs (e.g., '50th' -> '50th'), 
+    Removes leading/trailing spaces, combines number-word pairs (e.g., '50th' -> '50th'),
     letter-number pairs (e.g., 'Q3' -> 'Q3'), and removes special characters without adding underscores.
     Spaces are converted to underscores for snake_case.
     """
@@ -100,19 +100,22 @@ def safe_name_conversion(text: str) -> str:
         raise Exception(f"initial string '{text}' converted to empty")
     return new
 
+
 import csv
+
+
 def experimental_safe_name_conversion(text: str, output_file: str = "conversion_results2.csv") -> str:
     if not text:
         return text
     new = experimental_name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
-    
+
     # Write to CSV
     with open(output_file, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow([text, new])  # Write the original and converted text
-    
+
     return new
 
 
