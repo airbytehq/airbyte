@@ -234,6 +234,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
 class DirectLoadTableDedupTruncateStreamLoader(
     override val stream: DestinationStream,
     private val initialStatus: DirectLoadInitialStatus,
+    private val internalNamespace: String,
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
@@ -342,7 +343,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
     /** Performs upsert using an additional temporary table for safer operation */
     private fun performUpsertWithTemporaryTable() {
-        val tempTempTable = tempTableName.asTempTable()
+        val tempTempTable = tempTableName.asTempTable(internalNamespace = internalNamespace)
 
         // Create temporary table for intermediate operations
         sqlTableOperations.createTable(stream, tempTempTable, columnNameMapping, replace = true)

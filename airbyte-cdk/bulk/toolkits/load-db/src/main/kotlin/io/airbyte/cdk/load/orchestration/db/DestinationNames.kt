@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.orchestration.db
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import org.apache.commons.codec.digest.DigestUtils
 
@@ -50,17 +49,19 @@ data class TableName(val namespace: String, val name: String) {
      * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
      * [asOldStyleTempTable] instead
      */
-    fun asTempTable(length: Int = 32) =
-        copy(
+    fun asTempTable(internalNamespace: String, length: Int = 32) =
+        TableName(
             name =
-                DigestUtils.sha256Hex(
-                        TypingDedupingUtil.concatenateRawTableName(
-                            namespace,
-                            name + TMP_TABLE_SUFFIX
-                        )
-                    )
+                // sha256 might start with a digit, so prefix with a letter
+                ("a" +
+                        DigestUtils.sha256Hex(
+                            TypingDedupingUtil.concatenateRawTableName(
+                                namespace,
+                                name + TMP_TABLE_SUFFIX
+                            )
+                        ))
                     .substring(length),
-            namespace = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+            namespace = internalNamespace,
         )
 
     fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
