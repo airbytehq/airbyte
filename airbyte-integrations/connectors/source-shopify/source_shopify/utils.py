@@ -9,12 +9,13 @@ from functools import wraps
 from time import sleep
 from typing import Any, Callable, Dict, Final, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
-
+import logging
 import requests
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -326,47 +327,44 @@ class EagerlyCachedStreamState:
 
         return decorator
 
-
 class LimitReducingErrorHandler(HttpStatusErrorHandler):
-    """Custom error handler that reduces the request limit on 500 errors and retries.
-    The limit is halved on each retry until it reaches 1, while still applying exponential backoff.
-    """
-
-    def __init__(self, initial_limit: int, logger: logging.Logger, max_retries: int, error_mapping: dict):
+    def __init__(self, logger: logging.Logger, max_retries: int, error_mapping: dict, initial_limit: int):
+        print("[DEBUG] utils.py - LimitReducingErrorHandler.__init__ called")
         super().__init__(logger=logger, max_retries=max_retries, error_mapping=error_mapping)
-        self.original_limit = initial_limit
-        self.current_limit = initial_limit
+        self.logger = logger
+        self.current_limit = initial_limit  # Manage current_limit here
+        self.initial_limit = initial_limit
+        self.retry_count = 0
+        print(f"[DEBUG] utils.py - LimitReducingErrorHandler.__init__ initialized with initial_limit={self.initial_limit}, max_retries={max_retries}")
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response called with response_or_exception={response_or_exception}")
         if isinstance(response_or_exception, requests.Response):
             response = response_or_exception
-            if response.status_code == 200:
-                # Reset limit to original value on success
-                self.current_limit = self.original_limit
-                return super().interpret_response(response_or_exception)
-            elif response.status_code == 500:
-                if self.current_limit > 1:
+            print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response response status code: {response.status_code}")
+            if response.status_code == 500:
+                print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response handling 500 error. Current limit: {self.current_limit}")
+                if self.current_limit > 1 and self.retry_count < self.max_retries:
+                    self.retry_count += 1
                     new_limit = max(1, self.current_limit // 2)
                     self.current_limit = new_limit
-                    new_url = self.update_limit_in_url(response.request.url, new_limit)
-                    response.request.url = new_url
+                    print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response reduced limit to {new_limit}, retry attempt {self.retry_count}/{self.max_retries}")
+                    self.logger.info(f"Server error 500: Reduced limit to {new_limit}, preparing retry")
                     return ErrorResolution(
                         response_action=ResponseAction.RETRY,
                         failure_type=FailureType.transient_error,
-                        error_message=f"Server error 500: Reduced limit to {new_limit}",
+                        error_message=f"Server error 500: Reduced limit to {new_limit}"
                     )
+                print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response persistent 500 error or max retries reached")
+                self.retry_count = 0
                 return ErrorResolution(
                     response_action=ResponseAction.FAIL,
                     failure_type=FailureType.transient_error,
-                    error_message="Persistent 500 error after reducing limit to 1",
+                    error_message="Persistent 500 error or max retries exceeded"
                 )
+            elif response.status_code == 200:
+                print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response resetting current limit to initial limit: {self.initial_limit}")
+                self.current_limit = self.initial_limit
+                self.retry_count = 0
+        print(f"[DEBUG] utils.py - LimitReducingErrorHandler.interpret_response delegating to parent class")
         return super().interpret_response(response_or_exception)
-
-    def update_limit_in_url(self, url: str, new_limit: int) -> str:
-        """Update the 'limit' parameter in the URL query string."""
-        parsed = urlparse(url)
-        query = parse_qs(parsed.query)
-        query["limit"] = [str(new_limit)]
-        new_query = urlencode(query, doseq=True)
-        updated_url = urlunparse(parsed._replace(query=new_query))
-        return updated_url

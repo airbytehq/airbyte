@@ -1,14 +1,11 @@
-#
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
-#
 
 import pytest
 import requests
 from source_shopify.streams.streams import OrderRefunds, Orders
-from source_shopify.utils import LimitReducingErrorHandler
-
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
-
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 # Mock data for Orders stream with pagination via Link headers
 ORDERS_PAGE_1 = {"orders": [{"id": i, "name": f"Order {i}"} for i in range(1, 126)]}  # 125 orders
@@ -28,7 +25,6 @@ ORDERS_WITH_REFUNDS_PAGE_2 = {
         for i in range(126, 251)  # 125 orders, each with 1 refund
     ]
 }
-
 
 class TestOrdersLimitReducingErrorHandler:
     def test_orders_stream_500_error_handling(self, requests_mock):
@@ -87,18 +83,19 @@ class TestOrdersLimitReducingErrorHandler:
         config = {"shop": "test-shop", "authenticator": None}
         stream = Orders(config)
 
-        # Mock the error handler
-        default_handler = HttpStatusErrorHandler(logger=stream.logger, max_retries=5)
-        stream.get_error_handler = lambda: LimitReducingErrorHandler(stream=stream, default_handler=default_handler)
+        # Mock the error handler with correct parameters
+        stream.get_error_handler = lambda: LimitReducingErrorHandler(
+            logger=stream.logger,
+            max_retries=5,
+            error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(stream.name),
+            initial_limit=stream.limit
+        )
 
         # Read records
         records = list(stream.read_records(sync_mode="full_refresh"))
-
-        # Assertions
-        assert len(records) == 375  # Total orders: 125 + 125 + 125
+        assert len(records) == 375
         assert records[0]["id"] == 1
         assert records[-1]["id"] == 375
-
 
 class TestOrderRefundsLimitReducingErrorHandler:
     def test_order_refunds_stream_500_error_handling(self, requests_mock):
@@ -145,9 +142,13 @@ class TestOrderRefundsLimitReducingErrorHandler:
         parent_stream = Orders(config)
         stream = OrderRefunds(config)
 
-        # Mock the error handler for the parent stream
-        default_handler = HttpStatusErrorHandler(logger=parent_stream.logger, max_retries=5)
-        parent_stream.get_error_handler = lambda: LimitReducingErrorHandler(stream=parent_stream, default_handler=default_handler)
+        # Mock the error handler for the parent stream with correct parameters
+        parent_stream.get_error_handler = lambda: LimitReducingErrorHandler(
+            logger=parent_stream.logger,
+            max_retries=5,
+            error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(parent_stream.name),
+            initial_limit=parent_stream.limit
+        )
 
         # Read records
         records = []
@@ -155,6 +156,6 @@ class TestOrderRefundsLimitReducingErrorHandler:
             records.extend(list(stream.read_records(sync_mode="full_refresh", stream_slice=slice_)))
 
         # Assertions
-        assert len(records) == 250  # Total refunds: 125 + 125
-        assert records[0]["id"] == 10  # First refund ID
-        assert records[-1]["id"] == 2500  # Last refund ID
+        assert len(records) == 250
+        assert records[0]["id"] == 10
+        assert records[-1]["id"] == 2500
