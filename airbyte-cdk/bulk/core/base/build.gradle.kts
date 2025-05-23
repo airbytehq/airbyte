@@ -80,6 +80,13 @@ tasks.test {
     environment=mapOf("PRESENT" to "present-value")
 }
 
+tasks.register<Download>("downloadFlatc") {
+    src(flatBuffersDownloadUrl)
+    dest(project.layout.buildDirectory.file(flatBuffersArchive))
+    overwrite(true)
+
+}
+
 tasks.register<Copy>("installFlatc") {
     dependsOn("downloadFlatc")
     val file = project.layout.buildDirectory.file(flatBuffersArchive)
@@ -88,12 +95,6 @@ tasks.register<Copy>("installFlatc") {
     into(outputDir)
 }
 
-tasks.register<Download>("downloadFlatc") {
-    src(flatBuffersDownloadUrl)
-    dest(project.layout.buildDirectory.file(flatBuffersArchive))
-    overwrite(true)
-
-}
 
 tasks.register<FlatBuffers>("generateFbs") {
     inputDir = file("src/main/fbs")
