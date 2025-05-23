@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
 from source_exact import SourceExact
 
 
-def _get_source():
+def _get_source(_args):
 
     try:
         return SourceExact(
