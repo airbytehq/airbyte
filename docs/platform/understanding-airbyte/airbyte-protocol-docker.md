@@ -56,9 +56,9 @@ The `write` command will consume `AirbyteMessage`s from STDIN.
 
 ### Environment variable: `AIRBYTE_ENTRYPOINT` 
 
-The Docker image should contain an environment variable called `AIRBYTE_ENTRYPOINT`. This must be the same as the `ENTRYPOINT` of the image.
+The Docker image must contain an environment variable called `AIRBYTE_ENTRYPOINT`. This must be the same as the `ENTRYPOINT` of the image.
 
-## User: `Airbyte`
+## Non-Root User: `airbyte`
 
 The Docker image should run under a user named `airbyte`.
 
