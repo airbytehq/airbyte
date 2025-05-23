@@ -51,7 +51,8 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         val (_, rawTableName) =
             BigqueryRawTableNameGenerator(config).getTableName(stream.descriptor)
 
-        return bigquery.getTable(TableId.of(config.rawTableDataset, rawTableName))?.let { table ->
+        return bigquery.getTable(TableId.of(config.internalTableDataset, rawTableName))?.let { table
+            ->
             val bigquerySchema = table.getDefinition<StandardTableDefinition>().schema!!
             table.list(bigquerySchema).iterateAll().map { row ->
                 OutputRecord(
@@ -72,7 +73,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
         }
             ?: run {
                 logger.warn {
-                    "Raw table does not exist: ${config.rawTableDataset}.$rawTableName. Returning empty list."
+                    "Raw table does not exist: ${config.internalTableDataset}.$rawTableName. Returning empty list."
                 }
                 emptyList()
             }
