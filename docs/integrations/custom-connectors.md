@@ -36,7 +36,6 @@ See the following guides for more information on building custom Airbyte Docker 
 
 :::
 
-
 ## Upgrading a connector
 
 To upgrade your connector version, go to the Settings in the left hand side of the UI and navigate to either Sources or Destinations. Find your connector in the list, and input the latest connector version.
