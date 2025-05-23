@@ -1932,15 +1932,15 @@ dynamic_streams:
   - type: DynamicDeclarativeStream
     stream_template:
       type: StateDelegatingStream
-      name: custom_object_stream_name
+      name: custom_object_stream_name # will be set by components_resolver
       $parameters:
-        entity: "custom_entity"
-        schema_properties: "schema_properties_placeholder"
+        entity: "custom_entity" # will be set by components_resolver
+        schema_properties: "schema_properties_placeholder" # will be set by components_resolver
         schema_loader:
           type: CustomSchemaLoader
           class_name: source_hubspot.components.HubspotCustomObjectsSchemaLoader
       full_refresh_stream:
-        name: custom_object_stream_name
+        name: custom_object_stream_name # will be set by components_resolver
         primary_key:
           - id
         $ref: "#/definitions/stream_base"
@@ -1954,7 +1954,7 @@ dynamic_streams:
               properties:
                 type: QueryProperties
                 property_list:
-                  - "placeholder_for_properties"
+                  - "placeholder_for_properties" # will be set by components_resolver
                 property_chunking:
                   type: PropertyChunking
                   property_limit_type: characters
@@ -1984,7 +1984,7 @@ dynamic_streams:
           $ref: "#/definitions/incremental_sync"
           is_client_side_incremental: true
       incremental_stream:
-        name: custom_object_stream_name
+        name: custom_object_stream_name # will be set by components_resolver
         primary_key:
           - id
         $ref: "#/definitions/stream_base"
@@ -2008,7 +2008,7 @@ dynamic_streams:
                 - propertyName: hs_object_id
                   operator: GTE
                   value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
-              properties: "properties_placeholder"
+              properties: "properties_placeholder" # will be set by components_resolver
               after: "{{ next_page_token['next_page_token']['after'] }}"
           paginator:
             type: DefaultPaginator
@@ -2046,6 +2046,48 @@ dynamic_streams:
           $ref: "#/definitions/base_requester"
           path: /crm/v3/schemas
           http_method: GET
+          error_handler:
+            # Same as the base error handler, but ignores 403 errors
+            # to avoid failing the sync when fetching dynamic streams.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+              # HubSpot API does not always return Retry-After value for 429 HTTP error
+              - type: ExponentialBackoffStrategy
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: >-
+                  HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 502
+                  - 503
+                error_message: >-
+                  HubSpot server error (5xx). Retrying with exponential backoff...
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 530
+                error_message: >-
+                  The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                error_message: >-
+                  Access denied (403). The authenticated user does not have permissions to access the resource. Verify your permissions to access this endpoint.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                error_message: >-
+                  Bad request (400). Please verify your credentials and try again.
         record_selector:
           type: RecordSelector
           extractor:

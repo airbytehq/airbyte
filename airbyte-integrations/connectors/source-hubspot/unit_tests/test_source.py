@@ -87,12 +87,29 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
         assert error_msg
 
 
+@pytest.mark.parametrize(
+    "status_code,response_json,expected_total",
+    [
+        # case 1: 403 error → no custom streams, total == 32
+        (
+            403,
+            {"status": "error", "message": "This access_token does not have proper permissions!"},
+            32,
+        ),
+        # case 2: 200 OK → one custom stream named “cars”, total == 33
+        (
+            200,
+            {"results": [{"name": "cars", "fullyQualifiedName": "cars", "properties": {}}]},
+            33,
+        ),
+    ],
+)
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_streams(mock_get_custom_object_streams, requests_mock, config):
-    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+def test_streams(mock_get_custom_object_streams, status_code, response_json, expected_total, requests_mock, config):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=response_json, status_code=status_code)
     streams = SourceHubspot(config, None, None).streams(config)
 
-    assert len(streams) == 32
+    assert len(streams) == expected_total
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
