@@ -109,12 +109,14 @@ def test_dpath_schema_extractor(body, expected_records: List):
 @pytest.mark.parametrize(
     "raw_schema_data, expected_data, names_conversion, experimental_names_conversion",
     [
+        # Basic header handling
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h2"}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"}), (1, "h2", {"formattedValue": "h2"}), (2, "h3", {"formattedValue": "h3"})],
             False,
             False,
         ),
+        # Duplicate headers
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]},
             [(2, "h3", {"formattedValue": "h3"})],
@@ -127,25 +129,108 @@ def test_dpath_schema_extractor(body, expected_records: List):
             False,
             False,
         ),
+        # Blank values and whitespace
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"})],
             False,
             False,
         ),
-        ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, [], False, False),
+        (
+            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
+            [],
+            False,
+            False,
+        ),
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"})],
             False,
             False,
         ),
+        # Experimental name conversion: basic case
         (
             {"values": [{"formattedValue": "AMPED Domain "}, {"formattedValue": "50th Percentile"}, {"formattedValue": "Normal Header"}]},
             [
                 (0, "amped_domain", {"formattedValue": "AMPED Domain "}),
                 (1, "50th_percentile", {"formattedValue": "50th Percentile"}),
                 (2, "normal_header", {"formattedValue": "Normal Header"}),
+            ],
+            False,
+            True,
+        ),
+        # Special characters
+        (
+            {"values": [{"formattedValue": "Customer ID*"}, {"formattedValue": "Order#"}, {"formattedValue": "Price!"}]},
+            [
+                (0, "customer_id", {"formattedValue": "Customer ID*"}),
+                (1, "order", {"formattedValue": "Order#"}),
+                (2, "price", {"formattedValue": "Price!"}),
+            ],
+            False,
+            True,
+        ),
+        # Leading and trailing spaces
+        (
+            {"values": [{"formattedValue": "  Leading Space"}, {"formattedValue": "Trailing Space  "}, {"formattedValue": "  Both  "}]},
+            [
+                (0, "leading_space", {"formattedValue": "  Leading Space"}),
+                (1, "trailing_space", {"formattedValue": "Trailing Space  "}),
+                (2, "both", {"formattedValue": "  Both  "}),
+            ],
+            False,
+            True,
+        ),
+        # Consecutive spaces and special characters
+        (
+            {"values": [{"formattedValue": "Word  ?!"}, {"formattedValue": "Multi   Space"}, {"formattedValue": "@@Item@@"}]},
+            [
+                (0, "word", {"formattedValue": "Word  ?!"}),
+                (1, "multi_space", {"formattedValue": "Multi   Space"}),
+                (2, "item", {"formattedValue": "@@Item@@"}),
+            ],
+            False,
+            True,
+        ),
+        # Letter-number and number-word pairs
+        (
+            {"values": [{"formattedValue": "Q3 2023"}, {"formattedValue": "A1 Test"}, {"formattedValue": "X9 Data"}]},
+            [
+                (0, "q3_2023", {"formattedValue": "Q3 2023"}),
+                (1, "a1_test", {"formattedValue": "A1 Test"}),
+                (2, "x9_data", {"formattedValue": "X9 Data"}),
+            ],
+            False,
+            True,
+        ),
+        (
+            {"values": [{"formattedValue": "50th Percentile"}, {"formattedValue": "1st Place"}, {"formattedValue": "3rd Rank"}]},
+            [
+                (0, "50th_percentile", {"formattedValue": "50th Percentile"}),
+                (1, "1st_place", {"formattedValue": "1st Place"}),
+                (2, "3rd_rank", {"formattedValue": "3rd Rank"}),
+            ],
+            False,
+            True,
+        ),
+        # Edge cases
+        (
+            {"values": [{"formattedValue": ""}, {"formattedValue": "!!!"}, {"formattedValue": "   "}]},
+            [
+                (0, "unnamed_column", {"formattedValue": ""}),
+                (1, "unnamed_column", {"formattedValue": "!!!"}),
+                (2, "unnamed_column", {"formattedValue": "   "}),
+            ],
+            False,
+            True,
+        ),
+        # Mixed case and non-ASCII characters
+        (
+            {"values": [{"formattedValue": "Café 2023"}, {"formattedValue": "UserName"}, {"formattedValue": "Äbc Def"}]},
+            [
+                (0, "cafe_2023", {"formattedValue": "Café 2023"}),
+                (1, "username", {"formattedValue": "UserName"}),
+                (2, "abc_def", {"formattedValue": "Äbc Def"}),
             ],
             False,
             True,
@@ -159,6 +244,13 @@ def test_dpath_schema_extractor(body, expected_records: List):
         "test_is_row_empty_with_empty_row",
         "test_whitespace_terminates_row",
         "test_experimental_names_conversion",
+        "test_special_characters",
+        "test_leading_trailing_spaces",
+        "test_consecutive_spaces_special_chars",
+        "test_letter_number_pairs",
+        "test_number_word_pairs",
+        "test_edge_cases",
+        "test_mixed_case_non_ascii",
     ],
 )
 def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion, experimental_names_conversion):

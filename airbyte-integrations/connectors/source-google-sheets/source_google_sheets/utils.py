@@ -40,7 +40,9 @@ def name_conversion(text: str) -> str:
 def experimental_name_conversion(text: str) -> str:
     """
     Convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
-    Removes leading/trailing spaces and combines number-word pairs (e.g., '50th' -> '50th').
+    Removes leading/trailing spaces, combines number-word pairs (e.g., '50th' -> '50th'), 
+    letter-number pairs (e.g., 'Q3' -> 'Q3'), and removes special characters without adding underscores.
+    Spaces are converted to underscores for snake_case.
     """
     text = unidecode.unidecode(text.strip())  # Strip leading/trailing spaces
 
@@ -49,18 +51,35 @@ def experimental_name_conversion(text: str) -> str:
         if m.group("NoToken") is None:
             tokens.append(m.group(0))
         else:
-            tokens.append("")
+            # Only add an empty token for spaces to preserve snake_case; skip other special characters
+            if m.group(0).isspace():
+                tokens.append("")
+            # Otherwise, skip the special character entirely
 
-    # Combine number followed by word (e.g., "50" and "th" -> "50th")
+    # Combine single uppercase letter followed by number (e.g., "Q" and "3" -> "Q3"), then number-word pairs
     combined_tokens = []
     i = 0
     while i < len(tokens):
-        if i + 1 < len(tokens) and tokens[i].isdigit() and tokens[i + 1].isalpha():
+        # Check for letter-number pair (e.g., "Q3")
+        if i + 1 < len(tokens) and len(tokens[i]) == 1 and tokens[i].isupper() and tokens[i + 1].isdigit():
+            combined_tokens.append(tokens[i] + tokens[i + 1])
+            i += 2
+        # Check for number-word pair (e.g., "50th")
+        elif i + 1 < len(tokens) and tokens[i].isdigit() and tokens[i + 1].isalpha():
             combined_tokens.append(tokens[i] + tokens[i + 1])
             i += 2
         else:
-            combined_tokens.append(tokens[i])
+            # Only add the token if it's non-empty to avoid underscores from spaces near special characters
+            if tokens[i]:
+                combined_tokens.append(tokens[i])
             i += 1
+
+    # Remove trailing empty tokens to avoid trailing underscores
+    while combined_tokens and combined_tokens[-1] == "":
+        combined_tokens.pop()
+    # Remove leading empty tokens to avoid leading underscores
+    while combined_tokens and combined_tokens[0] == "":
+        combined_tokens.pop(0)
 
     if len(combined_tokens) >= 3:
         combined_tokens = combined_tokens[:1] + [t for t in combined_tokens[1:-1] if t] + combined_tokens[-1:]
@@ -81,13 +100,19 @@ def safe_name_conversion(text: str) -> str:
         raise Exception(f"initial string '{text}' converted to empty")
     return new
 
-
-def experimental_safe_name_conversion(text: str) -> str:
+import csv
+def experimental_safe_name_conversion(text: str, output_file: str = "conversion_results2.csv") -> str:
     if not text:
         return text
     new = experimental_name_conversion(text)
     if not new:
         raise Exception(f"initial string '{text}' converted to empty")
+    
+    # Write to CSV
+    with open(output_file, mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow([text, new])  # Write the original and converted text
+    
     return new
 
 
