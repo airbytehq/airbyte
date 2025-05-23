@@ -178,6 +178,13 @@ def mock_dynamic_schema_requests(requests_mock):
 
 
 def mock_dynamic_schema_requests_with_skip(requests_mock, object_to_skip: list):
+    # Mock CustomObjects streams
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={},
+        status_code=200,
+    )
+
     for object_name in OBJECTS_WITH_DYNAMIC_SCHEMA:
         if object_name in object_to_skip:
             continue
@@ -247,3 +254,21 @@ def configured_catalog_fixture():
         ]
     }
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+
+
+
+@pytest.fixture(name="expected_custom_object_json_schema")
+def expected_custom_object_json_schema():
+    return {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "additionalProperties": True,
+        "properties": {
+            "id": {"type": ["null", "string"]},
+            "createdAt": {"type": ["null", "string"], "format": "date-time"},
+            "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+            "archived": {"type": ["null", "boolean"]},
+            "properties": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}},
+            "properties_name": {"type": ["null", "string"]},
+        },
+    }

@@ -19,6 +19,7 @@ from airbyte_cdk.sources.types import Record
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .conftest import find_stream, get_source, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
@@ -83,6 +84,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
     ],
 )
 def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_properties_list, config):
+    mock_dynamic_schema_requests_with_skip(requests_mock, [])
     stream = find_stream(stream_class, config)
     data_field = (
         stream.retriever.record_selector.extractor.field_path[0] if len(stream.retriever.record_selector.extractor.field_path) > 0 else None
@@ -191,6 +193,7 @@ def test_stream_read_with_legacy_field_transformation(
     migrated_properties_list,
     config,
 ):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     stream = find_stream(stream_class, config)
     data_field = stream.retriever.record_selector.extractor.field_path[0]
     responses = [
@@ -266,6 +269,7 @@ def test_stream_read_with_legacy_field_transformation(
 
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
 def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_properties_list, config):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     stream_state = AirbyteStateMessage(
         type=AirbyteStateType.STREAM,
         stream=AirbyteStreamState(
@@ -330,6 +334,8 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
 )
 def test_common_error_retry(error_response, requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
     """Error once, check that we retry and not fail"""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     properties_response = [
         {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
         for property_name in fake_properties_list
@@ -400,6 +406,7 @@ def test_contact_lists_transform(requests_mock, config, custom_object_schema, mo
 
 
 def test_client_side_incremental_stream(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     data_field = "results"
     latest_cursor_value = "2024-01-30T23:46:36.287000Z"
     responses = [
@@ -430,50 +437,27 @@ def test_client_side_incremental_stream(mock_dynamic_schema_requests, requests_m
     assert output.state_messages[-1].state.stream.stream_state.__dict__["updatedAt"] == latest_cursor_value
 
 
-# TODO: uncomment when custom objects is low code
-# @pytest.fixture(name="expected_custom_object_json_schema")
-# def expected_custom_object_json_schema():
-#     return {
-#         "$schema": "http://json-schema.org/draft-07/schema#",
-#         "type": ["null", "object"],
-#         "additionalProperties": True,
-#         "properties": {
-#             "id": {"type": ["null", "string"]},
-#             "createdAt": {"type": ["null", "string"], "format": "date-time"},
-#             "updatedAt": {"type": ["null", "string"], "format": "date-time"},
-#             "archived": {"type": ["null", "boolean"]},
-#             "properties": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}},
-#             "properties_name": {"type": ["null", "string"]},
-#         },
-#     }
-#
-#
-# def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
-#     requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
-# ):
-#     stream = CustomObject(
-#         entity="animals",
-#         schema=expected_custom_object_json_schema,
-#         fully_qualified_name="p123_animals",
-#         custom_properties={"name": {"type": ["null", "string"]}},
-#         **common_params,
-#     )
-#
-#     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
-#     json_schema = stream.get_json_schema()
-#
-#     assert json_schema == expected_custom_object_json_schema
-#     assert not adapter.called
-#
-#
-# def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
-#     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
-#     for entity, fully_qualified_name, schema, custom_properties in api.get_custom_objects_metadata():
-#         assert entity == "animals"
-#         assert fully_qualified_name == "p19936848_Animal"
-#         assert schema == expected_custom_object_json_schema
-#
-#
+def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
+    requests_mock, custom_object_schema, config, expected_custom_object_json_schema, mock_dynamic_schema_requests
+):
+    adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    streams = discover(get_source(config), config)
+    json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == 'animals'][0]
+
+    assert json_schema == expected_custom_object_json_schema
+    # called only once when creating dynamic streams
+    assert adapter.call_count == 1
+
+
+def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, config, mock_dynamic_schema_requests):
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+    source_hubspot = get_source(config)
+    streams = discover(source_hubspot, config)
+    custom_stream = [s for s in source_hubspot.streams(config) if s.name == "animals"][0]
+    custom_stream_json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "animals"][0]
+
+    assert custom_stream_json_schema == expected_custom_object_json_schema
+    assert custom_stream.retriever._parameters["entity"] == "p19936848_Animal"
 
 
 @pytest.mark.parametrize(
@@ -489,6 +473,7 @@ def test_cast_record_fields_with_schema_if_needed(stream_class, cursor_value, re
     """
     Test that the stream cast record fields with stream json schema if needed
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     stream = find_stream(stream_class, config)
     data_field = stream.retriever.record_selector.extractor.field_path[0]
 
@@ -575,6 +560,8 @@ def test_cast_record_fields_if_needed(
     """
     Test that the stream cast record fields in properties key with properties endpoint response if needed
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     stream = find_stream(stream_class, config)
     data_field = stream.retriever.record_selector.extractor.field_path[0]
 

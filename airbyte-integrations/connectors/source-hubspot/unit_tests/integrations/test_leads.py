@@ -55,8 +55,7 @@ class TestLeadsStream(HubspotTestCase):
     def _set_up_requests(self, http_mocker: HttpMocker, with_oauth: bool = False, with_dynamic_schema: bool = True):
         if with_oauth:
             self._set_up_oauth(http_mocker)
-        # TODO: uncomment when custom objects is low-code
-        # self.mock_custom_objects(http_mocker)
+        self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, self.OBJECT_TYPE, self.MOCK_PROPERTIES_FOR_SCHEMA_LOADER)
         if with_dynamic_schema:
             self.mock_dynamic_schema_requests(http_mocker)
@@ -111,6 +110,7 @@ class TestLeadsStream(HubspotTestCase):
     @HttpMocker()
     def test_given_missing_scopes_error_when_read_then_stop_sync(self, http_mocker: HttpMocker):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
+        self.mock_custom_objects_streams(http_mocker)
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh, expecting_exception=True)
 
     @HttpMocker()

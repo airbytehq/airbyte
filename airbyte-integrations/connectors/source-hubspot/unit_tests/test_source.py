@@ -9,11 +9,15 @@ from urllib.parse import urlencode
 
 import pytest
 
+import mock
+
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -41,6 +45,7 @@ def test_check_connection_ok(requests_mock, config):
         },
     ]
 
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", {})
     ok, error_msg = get_source(config).check_connection(logger, config=config)
@@ -72,21 +77,11 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
     assert not ok
     assert error_msg
 
-
-def test_streams(config):
+def test_streams(requests_mock, config):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     streams = get_source(config).streams(config)
+
     assert len(streams) == 32
-
-
-# TODO: uncomment when custom streams are low code
-# def test_custom_streams(config_experimental):
-#     custom_object_stream_instances = [MagicMock()]
-#     streams = SourceHubspot(config_experimental, None, None).get_web_analytics_custom_objects_stream(
-#         custom_object_stream_instances=custom_object_stream_instances,
-#         common_params={"api": MagicMock(), "start_date": "2021-01-01T00:00:00Z", "credentials": config_experimental["credentials"]},
-#     )
-#     assert len(list(streams)) == 1
-
 
 def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
@@ -112,7 +107,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
         {"json": [], "status_code": 200},
     ]
-
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", responses)
     source = get_source(config)
@@ -124,6 +119,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
 
 def test_check_connection_backoff_on_server_error(requests_mock, config):
     """Error once, check that we retry and not fail"""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     prop_response = [
         {
             "json": [
@@ -673,6 +669,7 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
     """
     Test pagination for Marketing Emails stream
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
     requests_mock.register_uri(
         "GET",
