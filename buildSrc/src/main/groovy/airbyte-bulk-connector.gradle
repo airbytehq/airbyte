@@ -191,6 +191,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 testLogging() {
                     events 'skipped', 'started', 'passed', 'failed'
                     exceptionFormat 'full'
+                    showStandardStreams = true
                 }
 
                 // Always re-run integration tests no matter what.

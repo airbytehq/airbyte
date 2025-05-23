@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
-import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
@@ -21,33 +20,83 @@ import io.airbyte.cdk.load.command.SoftDelete
 import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.AlterTableReport
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.AlterTableReport
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
-import io.airbyte.cdk.util.CollectionUtils.containsIgnoreCase
-import io.airbyte.cdk.util.CollectionUtils.matchingKey
+import io.airbyte.cdk.util.containsIgnoreCase
+import io.airbyte.cdk.util.findIgnoreCase
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.stream.Collectors
-import java.util.stream.Stream
+import kotlinx.coroutines.runBlocking
+import org.apache.commons.codec.digest.DigestUtils
 
 private val logger = KotlinLogging.logger {}
 
-class BigqueryDirectLoadNativeTableOperations(private val bigquery: BigQuery) :
-    DirectLoadTableNativeOperations {
+class BigqueryDirectLoadNativeTableOperations(
+    private val bigquery: BigQuery,
+    private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
+    private val databaseHandler: BigQueryDatabaseHandler,
+    private val projectId: String,
+) : DirectLoadTableNativeOperations {
     override fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ) {
-        //        TODO("Not yet implemented")
+        val existingTable =
+            bigquery.getTable(tableName.toTableId()).getDefinition<TableDefinition>()
+        val shouldRecreateTable = shouldRecreateTable(stream, columnNameMapping, existingTable)
+        val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
+        logger.info {
+            "Stream ${stream.descriptor.toPrettyString()} had alter table report $alterTableReport"
+        }
+        try {
+            if (shouldRecreateTable) {
+                logger.info {
+                    "Stream ${stream.descriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
+                }
+                recreateTable(
+                    stream,
+                    columnNameMapping,
+                    tableName,
+                    alterTableReport.columnsToRetain,
+                    alterTableReport.columnsToChangeType,
+                )
+            } else if (!alterTableReport.isNoOp) {
+                logger.info {
+                    "Stream ${stream.descriptor.toPrettyString()} detected schema change. Altering the table."
+                }
+                runBlocking {
+                    alterTable(
+                        tableName,
+                        columnsToAdd = alterTableReport.columnsToAdd,
+                        columnsToRemove = alterTableReport.columnsToRemove,
+                        columnsToChange = alterTableReport.columnsToChangeType,
+                    )
+                }
+            } else {
+                logger.info {
+                    "Stream ${stream.descriptor.toPrettyString()} has correct schema; no action needed."
+                }
+            }
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Encountered an error while modifying the schema for stream ${stream.descriptor.toPrettyString()}. If this error persists, you may need to manually modify the table's schema."
+            }
+            throw e
+        }
     }
 
     override fun getGenerationId(tableName: TableName): Long {
         val result =
             bigquery.query(
                 QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name} LIMIT 1"
+                    "SELECT _airbyte_generation_id FROM ${tableName.namespace}.${tableName.name} LIMIT 1",
                 ),
             )
         val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
@@ -58,95 +107,277 @@ class BigqueryDirectLoadNativeTableOperations(private val bigquery: BigQuery) :
         }
     }
 
-    private fun existingSchemaMatchesStreamConfig(
+    /**
+     * Bigquery doesn't support changing a table's partitioning / clustering scheme in-place. So
+     * check whether we want to change those here.
+     */
+    private fun shouldRecreateTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         existingTable: TableDefinition
     ): Boolean {
-        val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
         var tableClusteringMatches = false
         var tablePartitioningMatches = false
         if (existingTable is StandardTableDefinition) {
             tableClusteringMatches = clusteringMatches(stream, columnNameMapping, existingTable)
             tablePartitioningMatches = partitioningMatches(existingTable)
         }
-        logger.info {
-            "Alter Table Report ${alterTableReport.columnsToAdd} ${alterTableReport.columnsToRemove} ${alterTableReport.columnsToChangeType}; Clustering $tableClusteringMatches; Partitioning $tablePartitioningMatches"
-        }
-
-        return alterTableReport.isNoOp && tableClusteringMatches && tablePartitioningMatches
+        return !tableClusteringMatches || !tablePartitioningMatches
     }
 
     internal fun buildAlterTableReport(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         existingTable: TableDefinition,
-    ): AlterTableReport {
-        val pks = getPks(stream, columnNameMapping)
-
-        val streamSchema: Map<String, StandardSQLTypeName> =
-            (stream.schema as ObjectType).properties.entries.associate {
+    ): AlterTableReport<StandardSQLTypeName> {
+        val expectedSchema: Map<String, StandardSQLTypeName> =
+            stream.schema.asColumns().entries.associate {
                 columnNameMapping[it.key]!! to
                     BigqueryDirectLoadSqlGenerator.toDialectType(it.value.type)
             }
-
-        val existingSchema =
+        val actualSchema =
             existingTable.schema!!.fields.associate { it.name to it.type.standardType }
 
         // Columns in the StreamConfig that don't exist in the TableDefinition
         val columnsToAdd =
-            streamSchema.keys
-                .stream()
-                .filter { name: String -> !containsIgnoreCase(existingSchema.keys, name) }
-                .collect(Collectors.toSet())
+            expectedSchema
+                .filter { (name, _) -> actualSchema.findIgnoreCase(name) == null }
+                .map { (name, type) -> ColumnAdd(name, type) }
+                .toList()
 
-        // Columns in the current schema that are no longer in the StreamConfig
+        // Columns in the current schema that are no longer in the DestinationStream
         val columnsToRemove =
-            existingSchema.keys
-                .stream()
-                .filter { name: String ->
-                    !containsIgnoreCase(streamSchema.keys, name) &&
-                        !containsIgnoreCase(Meta.COLUMN_NAMES, name)
-                }
-                .collect(Collectors.toSet())
+            actualSchema.keys.filter { name ->
+                !expectedSchema.keys.containsIgnoreCase(name) &&
+                    !Meta.COLUMN_NAMES.containsIgnoreCase(name)
+            }
 
-        // Columns that are typed differently than the StreamConfig
+        // Columns that are typed differently than the DestinationStream
         val columnsToChangeType =
-            Stream.concat(
-                    streamSchema.keys
-                        .stream() // If it's not in the existing schema, it should already be in the
-                        // columnsToAdd Set
-                        .filter { name: String ->
-                            matchingKey(
-                                    existingSchema.keys,
-                                    name
-                                ) // if it does exist, only include it in this set if the type (the
-                                // value in each respective map)
-                                // is different between the stream and existing schemas
-                                .map { key: String ->
-                                    existingSchema[key] != streamSchema[name]
-                                } // if there is no matching key, then don't include it because it
-                                // is probably already in columnsToAdd
-                                .orElse(false)
-                        }, // OR columns that used to have a non-null constraint and shouldn't
-                    // (https://github.com/airbytehq/airbyte/pull/31082)
+            expectedSchema.mapNotNull { (expectedName, expectedType) ->
+                actualSchema.findIgnoreCase(expectedName)?.let { actualType ->
+                    if (actualType != expectedType) {
+                        ColumnChange(
+                            name = expectedName,
+                            originalType = actualType,
+                            newType = expectedType,
+                        )
+                    } else {
+                        null
+                    }
+                }
+            }
 
-                    existingTable.schema!!
-                        .fields
-                        .stream()
-                        .filter { pks.contains(it.name) && it.mode == Field.Mode.REQUIRED }
-                        .map { obj: Field -> obj.name }
-                )
-                .collect(Collectors.toSet())
+        val columnsToRetain =
+            actualSchema.mapNotNull { (actualName, _) ->
+                if (
+                    !columnsToRemove.contains(actualName) &&
+                        !columnsToChangeType.any { it.name.equals(actualName, ignoreCase = true) }
+                ) {
+                    actualName
+                } else {
+                    null
+                }
+            }
 
         return AlterTableReport(
-            columnsToAdd,
-            columnsToRemove,
-            columnsToChangeType,
+            columnsToAdd = columnsToAdd,
+            columnsToRemove = columnsToRemove,
+            columnsToChangeType = columnsToChangeType,
+            columnsToRetain = columnsToRetain,
         )
     }
 
-    // TODO this stuff will be useful for ensureSchemaMatches, maybe
+    private fun getColumnCastStatement(
+        columnName: String,
+        originalType: StandardSQLTypeName,
+        newType: StandardSQLTypeName,
+    ): String {
+        if (originalType == StandardSQLTypeName.JSON) {
+            // somewhat annoying.
+            // TO_JSON_STRING returns string values with double quotes, which is not what we want
+            // (i.e. we should unwrap the strings).
+            // but JSON_VALUE doesn't handle non-scalar values.
+            // so we have to handle both cases explicitly.
+            // there's technically some cases where this doesn't round-trip, e.g.
+            // JSON'"{\"foo\": 42}"' -> '{"foo":42}' -> JSON'{"foo": 42}'
+            // but that seems like a weird enough situation that we shouldn't worry about it.
+            return """
+                CAST(
+                  CASE JSON_TYPE($columnName)
+                    WHEN 'object' THEN TO_JSON_STRING($columnName)
+                    WHEN 'array' THEN TO_JSON_STRING($columnName)
+                    ELSE JSON_VALUE($columnName)
+                  END
+                  AS $newType
+                )
+                """.trimIndent()
+        } else if (newType == StandardSQLTypeName.JSON) {
+            return "TO_JSON($columnName)"
+        } else {
+            return "CAST($columnName AS $newType)"
+        }
+    }
+
+    /**
+     * roughly:
+     * 1. create a temp table
+     * 2. copy the existing data into it (casting columns as needed)
+     * 3. replace the real table with the temp table
+     */
+    private fun recreateTable(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        tableName: TableName,
+        columnsToRetain: List<String>,
+        columnsToChange: List<ColumnChange<StandardSQLTypeName>>,
+    ) {
+        // can't just use asTempTable(), since that could conflict with
+        // a truncate-refresh temp table.
+        // so add an explicit suffix that this is for schema change.
+        val tempTableName =
+            tableName.asTempTable().let { it.copy(name = it.name + "_airbyte_tmp_schema_change") }
+
+        val originalTableId = "`$projectId`.`${tableName.namespace}`.`${tableName.name}`"
+        val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
+        val columnList =
+            (Meta.COLUMN_NAMES + columnsToRetain + columnsToChange.map { it.name }).joinToString(
+                ",",
+            )
+        val valueList =
+            (Meta.COLUMN_NAMES +
+                    columnsToRetain +
+                    columnsToChange.map {
+                        getColumnCastStatement(
+                            columnName = it.name,
+                            originalType = it.originalType,
+                            newType = it.newType,
+                        )
+                    })
+                .joinToString(",")
+        // note: we don't care about columnsToDrop (because they don't exist in the tempTable)
+        // and we don't care about columnsToAdd (because they'll just default to null)
+        val insertToTempTable =
+            Sql.of(
+                """
+                INSERT INTO $tempTableId
+                ($columnList)
+                SELECT
+                $valueList
+                FROM $originalTableId
+                """.trimIndent(),
+            )
+
+        logger.info {
+            "Stream ${stream.descriptor.toPrettyString()} using temporary table ${tempTableName.toPrettyString()} to recreate table ${tableName.toPrettyString()}."
+        }
+        sqlOperations.createTable(
+            stream,
+            tempTableName,
+            columnNameMapping,
+            replace = true,
+        )
+        databaseHandler.execute(insertToTempTable)
+        sqlOperations.overwriteTable(tempTableName, tableName)
+    }
+
+    private suspend fun alterTable(
+        tableName: TableName,
+        columnsToAdd: List<ColumnAdd<StandardSQLTypeName>>,
+        columnsToRemove: List<String>,
+        columnsToChange: List<ColumnChange<StandardSQLTypeName>>,
+    ) {
+        // the bigquery API only supports adding new fields; you can't drop/rename existing fields.
+        // so we'll do everything via DDL.
+        // We also try to batch operations into a single statement, because bigquery enforces
+        // somewhat low rate limits on how many ALTER TABLE operations you can run in a short
+        // timeframe.
+        val tableId = """`$projectId`.`${tableName.namespace}`.`${tableName.name}`"""
+
+        // bigquery has strict limits on what types can be altered to other types.
+        // so instead, we actually add a new column, explicitly cast the old column
+        // into the new column, then swap the new column into the old column.
+        // this struct contains everything we need to do that.
+        // we also need a backup column for safety - see usage of backupColumnName.
+        data class ColumnTypeChangePlan(
+            val realColumnName: String,
+            val tempColumnName: String,
+            val backupColumnName: String,
+            val originalType: StandardSQLTypeName,
+            val newType: StandardSQLTypeName,
+        )
+        val typeChangePlans: List<ColumnTypeChangePlan> =
+            columnsToChange.map { (name, originalType, newType) ->
+                // prefix with letter in case the SHA256 starts with a number
+                val nameHash = "a" + DigestUtils.sha256Hex(name)
+                val tempColumnName = "${nameHash}_airbyte_tmp"
+                val backupColumnName = "${nameHash}_airbyte_tmp_to_drop"
+                ColumnTypeChangePlan(
+                    realColumnName = name,
+                    tempColumnName = tempColumnName,
+                    backupColumnName = backupColumnName,
+                    originalType = originalType,
+                    newType = newType,
+                )
+            }
+
+        val initialAlterations =
+            columnsToRemove.map { name -> """DROP COLUMN $name""" } +
+                columnsToAdd.map { (name, type) -> """ADD COLUMN $name $type""" } +
+                // in the initial statement, we just add the temporary column.
+                typeChangePlans.map { plan ->
+                    """ADD COLUMN ${plan.tempColumnName} ${plan.newType}"""
+                }
+        databaseHandler.executeWithRetries(
+            """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
+        )
+
+        // now we execute the rest of the table alterations.
+        // these happen on a per-column basis, so that a failed UPDATE statement in one column
+        // doesn't block other schema changes from happening.
+        typeChangePlans.forEach {
+            (realColumnName, tempColumnName, backupColumnName, originalType, newType) ->
+            // first, update the temp column to contain the casted value.
+            val castStatement = getColumnCastStatement(realColumnName, originalType, newType)
+            try {
+                databaseHandler.executeWithRetries(
+                    """UPDATE $tableId SET $tempColumnName = $castStatement WHERE 1=1"""
+                )
+            } catch (e: Exception) {
+                val message =
+                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table."
+                logger.warn(e) { message }
+                // no rollback logic. On the next sync, we'll see the temp columns in columnsToDrop.
+                throw ConfigErrorException(message, e)
+            }
+
+            // then, swap the temp column to replace the original column.
+            // this is surprisingly nontrivial.
+            // bigquery doesn't support DDL in transactions,
+            // and also doesn't support having RENAME COLUMN and DROP COLUMN in the same
+            // ALTER TABLE statement.
+            // so this gives us the safest way to drop the old column:
+            // we atomically rename the old column to a holding location
+            // and rename the new column to replace it.
+            // Then, in a second ALTER TABLE, we drop the old column.
+            // this means that there's never a time when the table is completely missing
+            // the actual column.
+            // If we crash immediately after the RENAME COLUMNs, everything is fine:
+            // the next sync will see $backupColumnName as a column to drop,
+            // and we'll recover naturally.
+            databaseHandler.executeWithRetries(
+                """
+                ALTER TABLE $tableId
+                  RENAME COLUMN $realColumnName TO $backupColumnName,
+                  RENAME COLUMN $tempColumnName TO $realColumnName
+                """.trimIndent(),
+            )
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId DROP COLUMN $backupColumnName""",
+            )
+        }
+    }
+
     companion object {
         @VisibleForTesting
         fun clusteringMatches(
@@ -157,7 +388,7 @@ class BigqueryDirectLoadNativeTableOperations(private val bigquery: BigQuery) :
             return (existingTable.clustering != null &&
                 containsAllIgnoreCase(
                     HashSet<String>(existingTable.clustering!!.fields),
-                    BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping)
+                    BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping),
                 ))
         }
 
