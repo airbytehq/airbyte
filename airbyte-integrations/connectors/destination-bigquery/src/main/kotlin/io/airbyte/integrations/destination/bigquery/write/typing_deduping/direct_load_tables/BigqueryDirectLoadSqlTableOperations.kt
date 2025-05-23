@@ -18,10 +18,13 @@ class BigqueryDirectLoadSqlTableOperations(
     private val bq: BigQuery,
 ) : DirectLoadTableSqlOperations by defaultOperations {
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
+        // manually delete the target table - otherwise we can't e.g. update the partitioning scheme
+        bq.getTable(targetTableName.toTableId())?.delete()
+
         // Bigquery's SQL `ALTER TABLE RENAME TO` statement doesn't support moving tables
         // across datasets.
         // So we'll use a Copy job instead.
-        // TODO verify this works in e.g. schema change.
+        // (this is more efficient than just `insert into tgt select * from src`)
         val sourceTableId = sourceTableName.toTableId()
         val job =
             bq.create(
