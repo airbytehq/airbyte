@@ -30,6 +30,7 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -671,6 +672,65 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size
+
+
+@dataclass
+class HubspotCustomObjectsSchemaLoader(SchemaLoader):
+    """
+    Custom schema loader for HubSpot custom object streams.
+
+    This class generates a JSON schema based on the properties defined in the manifest.
+    These properties are injected into the parameters by the HttpComponentsResolver used within the DynamicDeclarativeStream.
+    """
+
+    config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        raw_schema_properties: List[Mapping[str, Any]] = parameters.get("schema_properties", {})
+        properties = self._get_properties(raw_schema=raw_schema_properties)
+        self._schema = self._generate_schema(properties)
+
+    def _get_properties(self, raw_schema: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+        return {field["name"]: self._field_to_property_schema(field) for field in raw_schema}
+
+    def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
+        field_type = field["type"]
+
+        if field_type in ["string", "enumeration", "phone_number", "object_coordinates", "json"]:
+            return {"type": ["null", "string"]}
+        elif field_type == "datetime" or field_type == "date-time":
+            return {"type": ["null", "string"], "format": "date-time"}
+        elif field_type == "date":
+            return {"type": ["null", "string"], "format": "date"}
+        elif field_type == "number":
+            return {"type": ["null", "number"]}
+        elif field_type == "boolean" or field_type == "bool":
+            return {"type": ["null", "boolean"]}
+        else:
+            logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
+            return {"type": ["null", "string"]}
+
+    def _generate_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Any]:
+        unnested_properties = {f"properties_{property_name}": property_value for (property_name, property_value) in properties.items()}
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+                "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+                "archived": {"type": ["null", "boolean"]},
+                "properties": {"type": ["null", "object"], "properties": properties},
+                **unnested_properties,
+            },
+        }
+
+        return schema
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._schema
 
 
 _TRUTHY_STRINGS = ("y", "yes", "t", "true", "on", "1")

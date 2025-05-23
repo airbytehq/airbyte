@@ -1928,6 +1928,173 @@ streams:
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
 
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      type: StateDelegatingStream
+      name: custom_object_stream_name
+      $parameters:
+        entity: "custom_entity"
+        schema_properties: "schema_properties_placeholder"
+        schema_loader:
+          type: CustomSchemaLoader
+          class_name: source_hubspot.components.HubspotCustomObjectsSchemaLoader
+      full_refresh_stream:
+        name: custom_object_stream_name
+        primary_key:
+          - id
+        $ref: "#/definitions/stream_base"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: "/crm/v3/objects/{{ parameters['entity'] }}"
+            request_parameters:
+              archived: "false"
+              properties:
+                type: QueryProperties
+                property_list:
+                  - "placeholder_for_properties"
+                property_chunking:
+                  type: PropertyChunking
+                  property_limit_type: characters
+                  property_limit: 15000
+                  record_merge_strategy:
+                    type: GroupByKeyMergeStrategy
+                    key: id
+          paginator:
+            $ref: "#/definitions/cursor_paginator"
+          record_selector:
+            $ref: "#/definitions/base_selector"
+            schema_normalization:
+              type: CustomSchemaNormalization
+              class_name: source_hubspot.components.EntitySchemaNormalization
+        transformations:
+          - type: AddFields
+            fields:
+              - path: ["updatedAt"]
+                value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+          - type: DpathFlattenFields
+            field_path:
+              - properties
+            key_transformation:
+              type: KeyTransformation
+              prefix: properties_
+        incremental_sync:
+          $ref: "#/definitions/incremental_sync"
+          is_client_side_incremental: true
+      incremental_stream:
+        name: custom_object_stream_name
+        primary_key:
+          - id
+        $ref: "#/definitions/stream_base"
+        retriever:
+          $ref: "#/definitions/base_retriever"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+            http_method: POST
+            request_body_json:
+              sorts:
+                - propertyName: hs_object_id
+                  direction: ASCENDING
+              filters:
+                - propertyName: "hs_lastmodifieddate"
+                  operator: GTE
+                  value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+                - propertyName: "hs_lastmodifieddate"
+                  operator: LTE
+                  value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+                - propertyName: hs_object_id
+                  operator: GTE
+                  value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+              properties: "properties_placeholder"
+              after: "{{ next_page_token['next_page_token']['after'] }}"
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: CustomPaginationStrategy
+              class_name: source_hubspot.components.HubspotCRMSearchPaginationStrategy
+              page_size: 200
+            page_size_option:
+              type: RequestOption
+              inject_into: body_json
+              field_name: limit
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - results
+            schema_normalization:
+              type: CustomSchemaNormalization
+              class_name: source_hubspot.components.EntitySchemaNormalization
+        transformations:
+          - type: DpathFlattenFields
+            field_path: ["properties"]
+            key_transformation:
+              type: KeyTransformation
+              prefix: properties_
+        incremental_sync:
+          $ref: "#/definitions/incremental_sync"
+          is_client_side_incremental: true
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /crm/v3/schemas
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - full_refresh_stream
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_stream
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - $parameters
+            - entity
+          value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - full_refresh_stream
+            - retriever
+            - requester
+            - request_parameters
+            - properties
+            - property_list
+          value: "{{ components_values.properties | map(attribute='name') | list }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_stream
+            - retriever
+            - requester
+            - request_body_json
+            - properties
+          value: "{{ components_values.properties | map(attribute='name') | list }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - $parameters
+            - schema_properties
+          value: "{{ components_values.properties }}"
+
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
   type: ConcurrencyLevel

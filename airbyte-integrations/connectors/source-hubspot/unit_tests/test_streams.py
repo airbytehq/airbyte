@@ -18,7 +18,7 @@ from source_hubspot.streams import (
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.types import Record
 
-from .conftest import find_stream, read_from_stream
+from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -91,6 +91,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, common_params
 def test_streams_read(
     mock_get_custom_object_streams, stream_class, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, config
 ):
+    mock_dynamic_schema_requests_with_skip(requests_mock, [])
     stream = find_stream(stream_class, config)
     data_field = (
         stream.retriever.record_selector.extractor.field_path[0] if len(stream.retriever.record_selector.extractor.field_path) > 0 else None
@@ -203,6 +204,7 @@ def test_stream_read_with_legacy_field_transformation(
     migrated_properties_list,
     config,
 ):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     if isinstance(stream_class, str):
         stream = find_stream(stream_class, config)
         data_field = stream.retriever.record_selector.extractor.field_path[0]
@@ -285,6 +287,8 @@ def test_stream_read_with_legacy_field_transformation(
 def test_crm_search_streams_with_no_associations(
     mock_get_custom_object_streams, sync_mode, common_params, requests_mock, fake_properties_list, config
 ):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     stream_state = AirbyteStateMessage(
         type=AirbyteStateType.STREAM,
         stream=AirbyteStreamState(
@@ -350,6 +354,8 @@ def test_crm_search_streams_with_no_associations(
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_common_error_retry(mock_get_custom_object_streams, error_response, requests_mock, common_params, fake_properties_list, config):
     """Error once, check that we retry and not fail"""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     properties_response = [
         {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
         for property_name in fake_properties_list
@@ -425,6 +431,8 @@ def test_contact_lists_transform(requests_mock, common_params, config, custom_ob
 def test_client_side_incremental_stream(
     mock_get_custom_object_streams, mock_dynamic_schema_requests, requests_mock, common_params, fake_properties_list, config
 ):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     stream = find_stream("forms", config)
     data_field = stream.retriever.record_selector.extractor.field_path[0]
     latest_cursor_value = "2024-01-30T23:46:36.287000Z"
@@ -677,6 +685,8 @@ def test_cast_record_fields_with_schema_if_needed(
     """
     Test that the stream cast record fields with stream json schema if needed
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     if isinstance(stream_class, str):
         stream = find_stream(stream_class, config)
         data_field = stream.retriever.record_selector.extractor.field_path[0]
@@ -769,6 +779,8 @@ def test_cast_record_fields_if_needed(
     """
     Test that the stream cast record fields in properties key with properties endpoint response if needed
     """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
     if isinstance(stream_class, str):
         stream = find_stream(stream_class, config)
         data_field = stream.retriever.record_selector.extractor.field_path[0]
