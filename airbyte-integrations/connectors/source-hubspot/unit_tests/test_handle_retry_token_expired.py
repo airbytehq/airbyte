@@ -5,6 +5,7 @@ import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+
 from .conftest import find_stream
 
 

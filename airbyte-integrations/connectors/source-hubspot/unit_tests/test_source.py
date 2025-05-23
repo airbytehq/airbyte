@@ -7,9 +7,8 @@ import logging
 from datetime import timedelta
 from urllib.parse import urlencode
 
-import pytest
-
 import mock
+import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -17,7 +16,6 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
-from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -77,11 +75,13 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
     assert not ok
     assert error_msg
 
+
 def test_streams(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     streams = get_source(config).streams(config)
 
     assert len(streams) == 32
+
 
 def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")

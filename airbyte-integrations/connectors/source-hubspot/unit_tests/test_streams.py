@@ -19,8 +19,7 @@ from airbyte_cdk.sources.types import Record
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
-from .conftest import find_stream, mock_dynamic_schema_requests_with_skip, read_from_stream
-from .conftest import find_stream, get_source, read_from_stream
+from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
 
 
@@ -442,14 +441,16 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
 ):
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     streams = discover(get_source(config), config)
-    json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == 'animals'][0]
+    json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "animals"][0]
 
     assert json_schema == expected_custom_object_json_schema
     # called only once when creating dynamic streams
     assert adapter.call_count == 1
 
 
-def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, config, mock_dynamic_schema_requests):
+def test_get_custom_objects_metadata_success(
+    requests_mock, custom_object_schema, expected_custom_object_json_schema, config, mock_dynamic_schema_requests
+):
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     source_hubspot = get_source(config)
     streams = discover(source_hubspot, config)

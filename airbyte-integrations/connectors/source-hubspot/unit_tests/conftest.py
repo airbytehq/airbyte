@@ -256,7 +256,6 @@ def configured_catalog_fixture():
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
-
 @pytest.fixture(name="expected_custom_object_json_schema")
 def expected_custom_object_json_schema():
     return {
