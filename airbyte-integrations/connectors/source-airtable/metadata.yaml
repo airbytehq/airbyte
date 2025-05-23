@@ -38,7 +38,7 @@ data:
       enableProgressiveRollout: false
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
