@@ -124,12 +124,7 @@ class ObjectStorageDestinationStateUTest {
                     MockObj("cat/2"),
                     MockObj("cat/3"),
                     MockObj("turtle-1/1"),
-                    MockObj("turtle-1/2"),
-                    MockObj("file-1/2025_05_12_1747072042466/1"),
-                    MockObj("file-1/2025_05_12_1747072175452/2"),
-                    MockObj("file-1/2025_05_12_1747072196432/3"),
-                    MockObj("file-2/2025_05_12_1747072196432/3"),
-                    MockObj("file-1/2025_05_12_1747072200811/4"),
+                    MockObj("turtle-1/2")
                 )
             )
         coEvery { client.list(any()) } answers
@@ -181,21 +176,5 @@ class ObjectStorageDestinationStateUTest {
         every { turtleStream.shouldBeTruncatedAtEndOfSync() } returns false
         val turtleState = persister.load(turtleStream)
         assertEquals(0, turtleState.getObjectsToDelete().size)
-
-        every { pathFactory.getLongestStreamConstantPrefix(any()) } returns "file"
-        val fileStream = mockk<DestinationStream>(relaxed = true)
-        every { fileStream.descriptor } returns DestinationStream.Descriptor("test", "file-1")
-        every { fileStream.minimumGenerationId } returns 4L
-        every { fileStream.shouldBeTruncatedAtEndOfSync() } returns true
-
-        // when the stream is not configured to include files, we filter out subdirs
-        every { fileStream.includeFiles } returns false
-        val fileState1 = persister.load(fileStream)
-        assertEquals(0, fileState1.getObjectsToDelete().size)
-
-        // when the stream _is_ configured to include files, we match against subdirs
-        every { fileStream.includeFiles } returns true
-        val fileState2 = persister.load(fileStream)
-        assertEquals(4, fileState2.getObjectsToDelete().size)
     }
 }

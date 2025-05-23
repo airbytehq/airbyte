@@ -58,7 +58,7 @@ class ObjectStorageDestinationState(
 
         return client
             .list(prefix)
-            .filter { stream.includeFiles || matcher.match(it.key) != null }
+            .filter { matcher.match(it.key) != null }
             .toList() // Force the list call to complete before initiating metadata calls
             .mapNotNull { obj ->
                 val generationId =
