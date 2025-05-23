@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.write
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
@@ -60,6 +59,7 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.util.Jsons
@@ -1575,6 +1575,80 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     /**
+     * In many databases/warehouses, changing a column to/from JSON is nontrivial. This test runs
+     * syncs to execute that schema change (under the assumption that UnknownType is rendered as a
+     * JSON column).
+     */
+    @Test
+    open fun testAppendJsonSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(schema: LinkedHashMap<String, FieldType>) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+            )
+
+        val stream1 =
+            makeStream(linkedMapOf("id" to intType, "a" to unknownType, "b" to stringType))
+        runSync(
+            updatedConfig,
+            stream1,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "a": "foo1", "b": "bar1"}""",
+                    emittedAtMs = 100,
+                ),
+            ),
+        )
+
+        // note: `a` is changed from unknown -> string; `b` is changed from string -> unknown
+        val stream2 =
+            makeStream(linkedMapOf("id" to intType, "a" to stringType, "b" to unknownType))
+        runSync(
+            updatedConfig,
+            stream2,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 43, "a": "foo2", "b": "bar2"}""",
+                    emittedAtMs = 200,
+                )
+            )
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // no need to branch based on isStreamSchemaRetroactive.
+                // the values are always strings, the only change is how the destination
+                // represents them.
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "a" to "foo1", "b" to "bar1"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 0),
+                ),
+                OutputRecord(
+                    extractedAt = 200,
+                    generationId = 0,
+                    data = mapOf("id" to 43, "a" to "foo2", "b" to "bar2"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 0),
+                )
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
      * Some destinations have better support for schema evolution in single-generation truncate
      * syncs. For example, if a destination imposes limitations on column type changes, we can
      * actually ignore those limits in a truncate sync (because we're dropping all older data
@@ -2008,9 +2082,6 @@ abstract class BasicFunctionalityIntegrationTest(
             InputRecord(
                 stream1,
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
-                // this is unrealistic (extractedAt should always increase between syncs),
-                // but it lets us force the dedupe behavior to rely solely on the cursor column,
-                // instead of being able to fallback onto extractedAt.
                 emittedAtMs = emittedAtMs,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
             )
@@ -2039,6 +2110,89 @@ abstract class BasicFunctionalityIntegrationTest(
             stream2,
             primaryKey = listOf(listOf("id")),
             cursor = listOf("cursor2"),
+        )
+    }
+
+    /**
+     * This is a bit of an edge case, but we should handle it regardless. If the user configures a
+     * primary key, then changes it (e.g. they realize that their composite key doesn't need to
+     * include a certain column), we should do _something_ reasonable.
+     *
+     * Intentionally not doing a complex scenario here; users should probably just truncate refresh
+     * if they want to do this. Just assert that if we upsert a record after changing the PK, the
+     * upsert looks correct.
+     */
+    @Test
+    open fun testDedupChangePk() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
+        fun makeStream(secondPk: String) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Dedupe(
+                    primaryKey = listOf(listOf("id1"), listOf(secondPk)),
+                    cursor = listOf("updated_at"),
+                ),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id1" to intType,
+                            "id2" to intType,
+                            "id3" to intType,
+                            "updated_at" to intType,
+                            "name" to stringType,
+                        )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        fun makeRecord(secondPk: String, emittedAtMs: Long) =
+            InputRecord(
+                randomizedNamespace,
+                "test_stream",
+                data =
+                    """{"id1": 1, "$secondPk": 200, "updated_at": 1, "name": "foo_$emittedAtMs"}""",
+                emittedAtMs = emittedAtMs,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(secondPk = "id2"),
+            listOf(makeRecord(secondPk = "id2", emittedAtMs = 100)),
+        )
+        val stream2 = makeStream(secondPk = "id3")
+        runSync(updatedConfig, stream2, listOf(makeRecord(secondPk = "id3", emittedAtMs = 200)))
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to 1,
+                            "id2" to 200,
+                            "updated_at" to 1,
+                            "name" to "foo_100",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 200,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to 1,
+                            "id3" to 200,
+                            "updated_at" to 1,
+                            "name" to "foo_200",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id1"), listOf("id3")),
+            cursor = listOf("updated_at"),
         )
     }
 
@@ -2741,18 +2895,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "problematic_types",
                 Append,
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        "name" to
-                            FieldType(
-                                UnknownType(
-                                    JsonNodeFactory.instance.objectNode().put("type", "whatever")
-                                ),
-                                nullable = true
-                            ),
-                    ),
-                ),
+                ObjectType(linkedMapOf("id" to intType, "name" to unknownType)),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
@@ -3468,8 +3611,13 @@ abstract class BasicFunctionalityIntegrationTest(
 
     companion object {
         val intType = FieldType(IntegerType, nullable = true)
-        private val numberType = FieldType(NumberType, nullable = true)
+        val numberType = FieldType(NumberType, nullable = true)
         val stringType = FieldType(StringType, nullable = true)
+        val unknownType =
+            FieldType(
+                UnknownType(Jsons.readTree("""{"type": "potato"}""")),
+                nullable = true,
+            )
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 
