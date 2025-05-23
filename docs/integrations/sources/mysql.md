@@ -62,7 +62,9 @@ binlog_row_image           = FULL
 binlog_expire_logs_seconds  = 864000
 ```
 
-> **Note for Amazon RDS MySQL instances**: RDS does not use `binlog_expire_logs_seconds`. Instead, it uses a parameter called `binlog retention hours` which defaults to 0 (meaning binary logs are removed immediately). You need to increase this value using the RDS-specific procedure described in the [AWS documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/mysql-stored-proc-configuring.html).
+:::note Amazon RDS MySQL Configuration
+RDS does not use `binlog_expire_logs_seconds`. Instead, it uses a parameter called `binlog retention hours` which defaults to 0 (meaning binary logs are removed immediately). You need to increase this value using the RDS-specific procedure described in the [AWS documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/mysql-stored-proc-configuring.html).
+:::
 
 - server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
 - log_bin : The value of log_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
