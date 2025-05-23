@@ -12,12 +12,11 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.cdc.PostgresDebeziumStateUtil;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.stream.Stream;
-
-import io.airbyte.integrations.source.postgres.cdc.PostgresDebeziumStateUtil;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -207,4 +206,5 @@ public class PostgresTestDatabase extends
     PostgresDebeziumStateUtil.disposeInitialState();
     super.close();
   }
+
 }
