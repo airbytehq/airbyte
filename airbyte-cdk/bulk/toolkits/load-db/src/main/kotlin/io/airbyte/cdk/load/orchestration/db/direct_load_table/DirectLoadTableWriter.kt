@@ -33,6 +33,7 @@ class DirectLoadTableWriter(
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
     override suspend fun setup() {
+        // TODO also create airbyte_internal namespace
         val namespaces =
             names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }.toSet()
         destinationHandler.createNamespaces(namespaces)
